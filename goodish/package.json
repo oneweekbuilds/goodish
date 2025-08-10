@@ -1,0 +1,25 @@
+{
+  "name": "goodish",
+  "version": "1.0.0",
+  "description": "Goodish - AI-powered projects that direct money and energy toward doing good in the world",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm -w run dev:all",
+    "dev:all": "concurrently -r \"pnpm --filter @goodish/web dev\" \"pnpm --filter @goodish/goodheart dev\"",
+    "build": "pnpm -w -r build",
+    "lint": "pnpm -w -r lint",
+    "clean": "turbo run clean",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+  },
+  "devDependencies": {
+    "@turbo/gen": "^1.12.4",
+    "turbo": "^1.12.4",
+    "prettier": "^3.1.1",
+    "typescript": "^5.3.3",
+    "concurrently": "^9.0.1"
+  },
+  "packageManager": "pnpm@8.15.4",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
