@@ -1,4 +1,5 @@
-import { Section, EmailSignup } from '@goodish/ui'
+import { Section, EmailSignup, Button } from '@goodish/ui'
+import Link from 'next/link'
 
 export default function AboutPage() {
   const faqs = [
@@ -18,13 +19,13 @@ export default function AboutPage() {
 
   return (
     <div>
-      <Section>
+      <Section className="bg-gradient-to-br from-goodish-green/5 to-goodish-teal/5">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-goodish-charcoal mb-6">
+          <div className="text-center mb-16">
+            <h1 className="text-5xl md:text-6xl font-bold text-goodish-charcoal mb-6">
               About Goodish
             </h1>
-            <p className="text-xl text-gray-600 leading-relaxed">
+            <p className="text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto">
               Goodish is a studio and platform for building small, fast, AI-powered projects that do real good. We believe anyone can build something that helps—AI makes it easier than ever.
             </p>
           </div>
@@ -35,7 +36,7 @@ export default function AboutPage() {
               How Goodish works
             </h2>
             <div className="space-y-8">
-              <div>
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-goodish-gray">
                 <h3 className="text-xl font-semibold text-goodish-charcoal mb-3">
                   Nonprofit projects
                 </h3>
@@ -44,7 +45,7 @@ export default function AboutPage() {
                 </p>
               </div>
               
-              <div>
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-goodish-gray">
                 <h3 className="text-xl font-semibold text-goodish-charcoal mb-3">
                   For-profit with % donated
                 </h3>
@@ -53,7 +54,7 @@ export default function AboutPage() {
                 </p>
               </div>
               
-              <div>
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-goodish-gray">
                 <h3 className="text-xl font-semibold text-goodish-charcoal mb-3">
                   For-profit with a mission
                 </h3>
@@ -63,7 +64,7 @@ export default function AboutPage() {
               </div>
             </div>
             
-            <div className="mt-8 p-6 bg-goodish-gray rounded-lg">
+            <div className="mt-8 p-6 bg-goodish-teal/10 rounded-2xl border border-goodish-teal/20">
               <p className="text-goodish-charcoal font-medium">
                 What connects them all: each project is designed to deliver meaningful benefit to people or the planet.
               </p>
@@ -76,7 +77,7 @@ export default function AboutPage() {
               What you can expect
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="text-center">
+              <div className="text-center bg-white rounded-2xl p-6 shadow-sm border border-goodish-gray">
                 <h3 className="text-lg font-semibold text-goodish-charcoal mb-3">
                   New projects shipped quickly
                 </h3>
@@ -84,7 +85,7 @@ export default function AboutPage() {
                   We move fast and ship small tools that make a difference.
                 </p>
               </div>
-              <div className="text-center">
+              <div className="text-center bg-white rounded-2xl p-6 shadow-sm border border-goodish-gray">
                 <h3 className="text-lg font-semibold text-goodish-charcoal mb-3">
                   Clear, simple ways to contribute or replicate
                 </h3>
@@ -92,7 +93,7 @@ export default function AboutPage() {
                   We share how things are built so anyone can try.
                 </p>
               </div>
-              <div className="text-center">
+              <div className="text-center bg-white rounded-2xl p-6 shadow-sm border border-goodish-gray">
                 <h3 className="text-lg font-semibold text-goodish-charcoal mb-3">
                   Radical transparency
                 </h3>
@@ -119,6 +120,22 @@ export default function AboutPage() {
                   </p>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="text-center mb-16">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/projects">
+                <Button size="lg">
+                  Explore Projects
+                </Button>
+              </Link>
+              <Link href="/">
+                <Button variant="secondary" size="lg">
+                  Back to Home
+                </Button>
+              </Link>
             </div>
           </div>
 

@@ -85,12 +85,12 @@ export default function ProjectsPage() {
         </div>
 
         {/* Projects Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {filteredProjects.map((project) => (
             <Link
               key={project.slug}
               href={project.href}
-              className="group block"
+              className="group block h-full"
               tabIndex={0}
               role="link"
               aria-label={`Open ${project.name}`}
@@ -101,16 +101,16 @@ export default function ProjectsPage() {
                 }
               }}
             >
-              <div className="bg-white rounded-2xl border border-goodish-gray shadow-sm hover:shadow-lg transition-all duration-300 group-hover:-translate-y-1 group-focus-visible:outline-none group-focus-visible:ring-2 group-focus-visible:ring-goodish-teal group-focus-visible:ring-offset-2 overflow-hidden">
+              <div className="h-full flex flex-col bg-white rounded-2xl border border-goodish-gray shadow-sm hover:shadow-lg transition-all duration-300 group-hover:-translate-y-1 group-focus-visible:outline-none group-focus-visible:ring-2 group-focus-visible:ring-goodish-teal group-focus-visible:ring-offset-2 overflow-hidden">
                 {/* Project Image/Gradient */}
-                <div className={`h-48 bg-gradient-to-br ${getProjectGradient(project.slug)} flex items-center justify-center`}>
+                <div className={`aspect-[16/9] bg-gradient-to-br ${getProjectGradient(project.slug)} flex items-center justify-center overflow-hidden`}>
                   <div className="text-6xl font-bold text-white/30">
                     {project.name.charAt(0)}
                   </div>
                 </div>
                 
                 {/* Project Content */}
-                <div className="p-6 space-y-4">
+                <div className="flex flex-col gap-4 p-6 flex-1">
                   <div className="space-y-2">
                     <h3 className="text-xl font-semibold text-goodish-charcoal group-hover:text-goodish-teal transition-colors">
                       {project.name}
@@ -120,11 +120,11 @@ export default function ProjectsPage() {
                     </span>
                   </div>
                   
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-gray-600 leading-relaxed flex-1">
                     {project.summary}
                   </p>
                   
-                  <div className="pt-2">
+                  <div className="pt-2 mt-auto">
                     <span className="text-goodish-teal font-medium group-hover:text-goodish-green transition-colors">
                       View project →
                     </span>
