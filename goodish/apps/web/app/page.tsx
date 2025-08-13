@@ -1,10 +1,9 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Button, Card, EmailSignup } from '@goodish/ui'
+import { Button, Card, EmailSignup, InlineSignup } from '@goodish/ui'
 import { Section } from '../components/ui/Section'
-import { HeroVisual } from '../components/hero/HeroVisual'
-import { WordRotator } from '../components/hero/WordRotator'
+import { AmbientSpotlight } from '../components/hero/AmbientSpotlight'
 import { ArrowRight, CheckCircle, Clock, Heart, Zap, Brain, Share2, Sparkles, Rocket } from 'lucide-react'
 import Link from 'next/link'
 
@@ -102,18 +101,18 @@ export default function HomePage() {
       </a>
 
       {/* Hero Section */}
-      <Section className="bg-gradient-to-br from-goodish-green via-goodish-green/90 to-goodish-teal text-white relative overflow-hidden">
-        {/* Interactive visual */}
-        <HeroVisual />
+      <Section className="bg-gradient-to-br from-goodish-green via-goodish-green/90 to-goodish-teal text-white relative overflow-hidden pt-20 pb-12 md:pt-24 md:pb-16">
+        {/* Ambient spotlight */}
+        <AmbientSpotlight />
         
         <motion.div 
-          className="text-center max-w-4xl mx-auto relative z-10"
+          className="text-center max-w-4xl mx-auto relative z-10 space-y-4 md:space-y-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
         >
           <motion.h1 
-            className="text-6xl md:text-8xl font-bold mb-8 leading-tight"
+            className="text-6xl md:text-8xl font-bold leading-tight"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -121,17 +120,17 @@ export default function HomePage() {
             Do good, faster—with AI.
           </motion.h1>
           <motion.p 
-            className="text-xl md:text-2xl mb-10 text-green-50 leading-relaxed max-w-3xl mx-auto"
+            className="text-xl md:text-2xl text-green-50 leading-relaxed max-w-3xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            Goodish is a collection of <WordRotator /> built in just a few hours using AI—proving it's easy to do good, even if you're busy.
+            Goodish showcases small, fast, mission-driven projects—some nonprofits and some for-profits that donate a portion—built in hours with AI. Explore them, support the causes, and get inspired to build when you can.
           </motion.p>
           
           {/* Mission badges */}
           <motion.div 
-            className="flex flex-wrap justify-center gap-3 mb-10"
+            className="flex flex-wrap justify-center gap-3"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
@@ -161,7 +160,7 @@ export default function HomePage() {
             </Link>
             <Link href="#signup">
               <Button variant="secondary" size="lg" className="border-white text-white hover:bg-white hover:text-goodish-charcoal hover:scale-105 transition-transform">
-                Join the List
+                Get build updates
               </Button>
             </Link>
           </motion.div>
@@ -216,10 +215,9 @@ export default function HomePage() {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <Link href="#">
-            <Button variant="secondary" size="lg" className="group">
-              <Share2 className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
-              Share an idea
+          <Link href="#signup">
+            <Button size="lg" className="text-lg px-10 py-3 shadow-lg hover:shadow-xl">
+              Get build updates
             </Button>
           </Link>
         </motion.div>
@@ -354,19 +352,18 @@ export default function HomePage() {
       <div className="h-px bg-gradient-to-r from-transparent via-goodish-teal/30 to-transparent"></div>
 
       {/* Email Signup */}
-      <Section className="bg-goodish-teal/5">
+      <Section className="bg-goodish-teal/5 py-12 md:py-16" id="signup">
         <motion.div 
-          id="signup" 
-          className="flex justify-center"
+          className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
           <EmailSignup 
-            title="Join the list"
-            description="Get updates on new projects and how to build for good."
-            variant="card"
+            title="Follow along as new projects ship"
+            description="See examples in action—subscribing helps these projects grow."
+            variant="inline"
           />
         </motion.div>
       </Section>

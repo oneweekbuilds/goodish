@@ -5,9 +5,17 @@ interface SectionProps {
   children: React.ReactNode;
   className?: string;
   container?: boolean;
+  id?: string;
+  as?: 'section' | 'div' | 'article';
 }
 
-export function Section({ children, className, container = true }: SectionProps) {
+export function Section({ 
+  children, 
+  className, 
+  container = true, 
+  id,
+  as: Component = 'section'
+}: SectionProps) {
   const content = container ? (
     <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
       {children}
@@ -15,8 +23,8 @@ export function Section({ children, className, container = true }: SectionProps)
   ) : children;
 
   return (
-    <section className={cn('py-16 md:py-24', className)}>
+    <Component id={id} className={cn('py-20 md:py-32', className)}>
       {content}
-    </section>
+    </Component>
   );
 }

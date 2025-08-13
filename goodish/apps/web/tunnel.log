@@ -1,0 +1,8 @@
+/home/jwjwi/.local/share/pnpm/store/v3/tmp/dlx-83196:
+ ERR_PNPM_FETCH_404  GET https://registry.npmjs.org/@localtunnel%2Flocaltunnel: Not Found - 404
+
+This error happened while installing a direct dependency of /home/jwjwi/.local/share/pnpm/store/v3/tmp/dlx-83196
+
+@localtunnel/localtunnel is not in the npm registry, or you have no permission to fetch it.
+
+No authorization header was set for the request.

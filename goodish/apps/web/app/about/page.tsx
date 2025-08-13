@@ -2,24 +2,17 @@ import { Section, EmailSignup, Button } from '@goodish/ui'
 import Link from 'next/link'
 
 export default function AboutPage() {
-  const faqs = [
-    {
-      question: 'Are you a nonprofit?',
-      answer: 'No. Goodish is an umbrella brand. Some projects are nonprofits; others aren\'t. We\'re transparent about which is which.'
-    },
-    {
-      question: 'How can I get updates?',
-      answer: 'Join the list at the bottom of any page.'
-    }
-  ];
-
   return (
     <div>
       <Section className="bg-gradient-to-br from-goodish-green/5 to-goodish-teal/5">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <h1 className="text-5xl md:text-6xl font-bold text-goodish-charcoal mb-6">
-              About Goodish
+            <h1 className="text-5xl md:text-6xl font-bold text-goodish-charcoal mb-6 flex items-center justify-center gap-3">
+              About{' '}
+              <div className="flex items-center">
+                <span className="text-goodish-green">Good</span>
+                <span className="text-goodish-teal">ish</span>
+              </div>
             </h1>
             <p className="text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto">
               Goodish is a studio and platform for building small, fast, AI-powered projects that do real good. We believe anyone can build something that helps—AI makes it easier than ever.
@@ -100,25 +93,6 @@ export default function AboutPage() {
             </div>
           </div>
 
-          {/* FAQ */}
-          <div className="mb-16">
-            <h2 className="text-3xl font-bold text-goodish-charcoal mb-8">
-              FAQ
-            </h2>
-            <div className="space-y-6">
-              {faqs.map((faq, index) => (
-                <div key={index} className="border-b border-goodish-gray pb-6">
-                  <h3 className="text-lg font-semibold text-goodish-charcoal mb-2">
-                    {faq.question}
-                  </h3>
-                  <p className="text-gray-600">
-                    {faq.answer}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* CTA Buttons */}
           <div className="text-center mb-16">
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -137,13 +111,13 @@ export default function AboutPage() {
         </div>
       </Section>
 
-      {/* Email signup - centered */}
-      <Section className="bg-goodish-green/5">
-        <div className="mx-auto max-w-screen-sm flex flex-col items-center text-center gap-4 py-12 md:py-16">
+      {/* Email signup - full width */}
+      <Section className="bg-goodish-green/5 py-12 md:py-16">
+        <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
           <EmailSignup 
-            title="Join the list"
-            description="Get updates on new projects and how to build for good."
-            variant="card"
+            title="Follow along as new projects ship"
+            description="See examples in action—subscribing helps these projects grow."
+            variant="inline"
           />
         </div>
       </Section>

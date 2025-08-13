@@ -103,7 +103,7 @@ export default function ProjectsPage() {
                 }
               }}
             >
-              <div className="h-full flex flex-col bg-white rounded-2xl border border-goodish-gray shadow-sm hover:shadow-md transition-all duration-300 group-hover:-translate-y-1 group-focus-visible:outline-none group-focus-visible:ring-2 group-focus-visible:ring-goodish-teal group-focus-visible:ring-offset-2 overflow-hidden">
+              <div className="h-full flex flex-col bg-white rounded-2xl border border-goodish-gray shadow-sm hover:shadow-md transition-all duration-300 group-hover:-translate-y-1 group-hover:scale-[1.03] group-focus-visible:outline-none group-focus-visible:ring-2 group-focus-visible:ring-goodish-teal group-focus-visible:ring-offset-2 overflow-hidden">
                 {/* Project Image/Gradient */}
                 <div className={`aspect-[16/9] bg-gradient-to-br ${getProjectGradient(project.slug)} flex items-center justify-center overflow-hidden group-hover:scale-[1.03] transition-transform duration-500 ease-out`}>
                   <div className="text-6xl font-bold text-white/30">
