@@ -14,14 +14,14 @@ interface CardProps {
 
 export function Card({ title, description, href, tag, className }: CardProps) {
   return (
-    <div className={cn('bg-white rounded-lg border border-goodish-gray p-6 shadow-sm hover:shadow-md transition-shadow', className)}>
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-goodish-charcoal">{title}</h3>
+    <div className={cn('bg-white rounded-lg border border-goodish-gray p-8 shadow-sm hover:shadow-lg transition-all duration-200 hover:-translate-y-1', className)}>
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <h3 className="text-xl font-semibold text-goodish-charcoal leading-tight">{title}</h3>
           {tag && <Tag>{tag}</Tag>}
         </div>
         
-        <p className="text-sm text-gray-600 leading-relaxed">{description}</p>
+        <p className="text-base text-gray-600 leading-relaxed">{description}</p>
         
         <div className="pt-2">
           <Link href={href}>

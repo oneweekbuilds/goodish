@@ -10,7 +10,24 @@ const plusJakarta = Plus_Jakarta_Sans({ subsets: ['latin'], variable: '--font-pl
 export const metadata: Metadata = {
   title: 'Goodish - AI-powered projects that do good',
   description: 'Doing good is no longer hard. AI makes it easier—and you can do it too. Goodish is a home for small, fast, mission-driven projects.',
-  keywords: 'AI, good, projects, nonprofit, impact, charity',
+  keywords: 'AI, good, projects, nonprofit, impact, charity, social good, technology for good',
+  authors: [{ name: 'Goodish Team' }],
+  openGraph: {
+    title: 'Goodish - AI-powered projects that do good',
+    description: 'Doing good is no longer hard. AI makes it easier—and you can do it too.',
+    type: 'website',
+    url: 'https://goodish.org',
+    siteName: 'Goodish',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Goodish - AI-powered projects that do good',
+    description: 'Doing good is no longer hard. AI makes it easier—and you can do it too.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 }
 
 export default function RootLayout({
@@ -20,10 +37,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${plusJakarta.variable}`}>
+      <body className={`${inter.variable} ${plusJakarta.variable} text-base`}>
         <div className="min-h-screen flex flex-col">
+          {/* Skip to content link for accessibility */}
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-goodish-teal text-white px-4 py-2 rounded-md z-50"
+          >
+            Skip to main content
+          </a>
+          
           <Navbar />
-          <main className="flex-1">
+          <main id="main-content" className="flex-1">
             {children}
           </main>
           <Footer />

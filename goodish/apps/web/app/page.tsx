@@ -41,13 +41,13 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero Section */}
-      <Section className="bg-gradient-to-br from-goodish-green to-goodish-teal text-white">
+      <Section className="bg-gradient-to-br from-goodish-green via-goodish-green/90 to-goodish-teal text-white">
         <div className="text-center max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-            Doing good is no longer hard. AI makes it easier—and you can do it too.
+          <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
+            Doing good is no longer hard.
           </h1>
-          <p className="text-xl md:text-2xl mb-8 text-green-100 leading-relaxed">
-            Goodish is a home for small, fast, mission-driven projects. Some are nonprofits, some donate a percentage, and some are for-profit with purpose—all designed to make doing good easier.
+          <p className="text-xl md:text-2xl mb-10 text-green-50 leading-relaxed max-w-3xl mx-auto">
+            AI makes it easier—and you can do it too. Goodish is a home for small, fast, mission-driven projects. Some are nonprofits, some donate a percentage, and some are for-profit with purpose—all designed to make doing good easier.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/projects">
@@ -66,18 +66,21 @@ export default function HomePage() {
 
       {/* How it works */}
       <Section>
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-goodish-charcoal mb-4">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold text-goodish-charcoal mb-6">
             How it works
           </h2>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            We believe in building fast, designing for good, and inspiring others to do the same.
+          </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {howItWorks.map((item, index) => (
             <div key={index} className="text-center">
-              <h3 className="text-xl font-semibold text-goodish-charcoal mb-3">
+              <h3 className="text-2xl font-semibold text-goodish-charcoal mb-4">
                 {item.title}
               </h3>
-              <p className="text-gray-600">
+              <p className="text-lg text-gray-600 leading-relaxed">
                 {item.description}
               </p>
             </div>
@@ -87,10 +90,13 @@ export default function HomePage() {
 
       {/* Featured Projects */}
       <Section className="bg-gray-50">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-goodish-charcoal mb-4">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold text-goodish-charcoal mb-6">
             Featured Projects
           </h2>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Discover our latest projects that are making a difference in the world.
+          </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {featuredProjects.map((project, index) => (
