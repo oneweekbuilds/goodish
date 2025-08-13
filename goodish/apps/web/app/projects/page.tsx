@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Section, Button } from '@goodish/ui'
 import { type ProjectCategory } from '@goodish/lib'
 import { projects as seededProjects } from '@goodish/lib'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Filter } from 'lucide-react'
 import Link from 'next/link'
 
 function getCategoryLabel(category: ProjectCategory): string {
@@ -62,12 +62,13 @@ export default function ProjectsPage() {
         <div className="flex flex-wrap justify-center gap-3 mb-16">
           <button
             onClick={() => setSelectedCategory(undefined)}
-            className={`px-6 py-3 rounded-2xl text-sm font-medium transition-all duration-200 ${
+            className={`px-6 py-3 rounded-2xl text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
               !selectedCategory
                 ? 'bg-goodish-amber text-goodish-charcoal shadow-md'
                 : 'bg-white text-goodish-charcoal hover:bg-gray-50 border border-goodish-gray'
             }`}
           >
+            <Filter className="h-4 w-4" />
             All Projects
           </button>
           {categories.map((category) => (
@@ -91,10 +92,10 @@ export default function ProjectsPage() {
             <Link
               key={project.slug}
               href={project.href}
-              className="group block h-full"
+              className="group block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-goodish-teal focus-visible:ring-offset-2 rounded-2xl"
               tabIndex={0}
               role="link"
-              aria-label={`Open ${project.name}`}
+              aria-label={`Open ${project.name} - ${project.summary}`}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault()

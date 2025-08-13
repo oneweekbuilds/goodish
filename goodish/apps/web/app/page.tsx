@@ -3,7 +3,9 @@
 import { motion } from 'framer-motion'
 import { Button, Card, EmailSignup } from '@goodish/ui'
 import { Section } from '../components/ui/Section'
-import { ArrowRight, CheckCircle } from 'lucide-react'
+import { HeroVisual } from '../components/hero/HeroVisual'
+import { WordRotator } from '../components/hero/WordRotator'
+import { ArrowRight, CheckCircle, Clock, Heart, Zap, Brain, Share2, Sparkles, Rocket } from 'lucide-react'
 import Link from 'next/link'
 
 export default function HomePage() {
@@ -43,6 +45,52 @@ export default function HomePage() {
     }
   ];
 
+  const buildSteps = [
+    {
+      title: 'Plan',
+      description: 'Identify a clear problem and scope it to a few hours of work.',
+      icon: Brain,
+      color: 'goodish-teal'
+    },
+    {
+      title: 'Generate & Wire',
+      description: 'Use AI to scaffold the code and wire up the core functionality.',
+      icon: Zap,
+      color: 'goodish-amber'
+    },
+    {
+      title: 'Ship & Donate',
+      description: 'Deploy immediately and set up revenue sharing or nonprofit structure.',
+      icon: Heart,
+      color: 'goodish-green'
+    }
+  ];
+
+  const badges = [
+    { label: 'Nonprofits', icon: Heart, color: 'goodish-green' },
+    { label: 'For-profits that donate', icon: ArrowRight, color: 'goodish-teal' },
+    { label: 'Built in hours', icon: Clock, color: 'goodish-amber' },
+    { label: 'AI-powered', icon: Brain, color: 'goodish-charcoal' }
+  ];
+
+  const busyPeopleFeatures = [
+    {
+      title: 'Small scope',
+      description: 'Focus on one clear problem that can be solved in hours, not months.',
+      icon: Sparkles
+    },
+    {
+      title: 'AI assistance',
+      description: 'Use proven AI tools to scaffold code and reduce development time.',
+      icon: Brain
+    },
+    {
+      title: 'Template reuse',
+      description: 'Build on existing patterns and templates for faster deployment.',
+      icon: Rocket
+    }
+  ];
+
   return (
     <div>
       {/* Skip to Projects anchor */}
@@ -55,11 +103,8 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <Section className="bg-gradient-to-br from-goodish-green via-goodish-green/90 to-goodish-teal text-white relative overflow-hidden">
-        {/* Animated gradient accent */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
-        
-        {/* Subtle animated hero accent */}
-        <div className="absolute inset-0 bg-gradient-to-br from-goodish-teal/20 via-transparent to-goodish-amber/20 blur-3xl opacity-40 animate-[pulse_6s_ease-in-out_infinite] pointer-events-none" />
+        {/* Interactive visual */}
+        <HeroVisual />
         
         <motion.div 
           className="text-center max-w-4xl mx-auto relative z-10"
@@ -81,13 +126,32 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            Goodish builds small, fast, mission‑driven projects—nonprofits, revenue‑sharing, and purpose‑led products—to make doing good easier for everyone.
+            Goodish is a collection of <WordRotator /> built in just a few hours using AI—proving it's easy to do good, even if you're busy.
           </motion.p>
+          
+          {/* Mission badges */}
+          <motion.div 
+            className="flex flex-wrap justify-center gap-3 mb-10"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+          >
+            {badges.map((badge, index) => (
+              <span
+                key={badge.label}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-white/10 backdrop-blur border border-white/20 text-white`}
+              >
+                <badge.icon className="h-4 w-4" />
+                {badge.label}
+              </span>
+            ))}
+          </motion.div>
+          
           <motion.div 
             className="flex flex-col sm:flex-row gap-4 justify-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
           >
             <Link href="/projects">
               <Button size="lg" className="text-goodish-charcoal hover:scale-105 transition-transform group">
@@ -107,8 +171,108 @@ export default function HomePage() {
       {/* Gradient divider */}
       <div className="h-px bg-gradient-to-r from-transparent via-goodish-teal/30 to-transparent"></div>
 
-      {/* How it works */}
+      {/* For busy people strip */}
+      <Section className="bg-goodish-amber/5">
+        <motion.div 
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <h2 className="text-3xl md:text-4xl font-bold text-goodish-charcoal mb-4">
+            Even if you're busy
+          </h2>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Goodish reduces friction so you can make an impact with minimal time investment.
+          </p>
+        </motion.div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+          {busyPeopleFeatures.map((feature, index) => (
+            <motion.div 
+              key={index} 
+              className="text-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+            >
+              <div className="w-12 h-12 bg-goodish-amber/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <feature.icon className="text-xl text-goodish-amber" />
+              </div>
+              <h3 className="text-lg font-semibold text-goodish-charcoal mb-2">
+                {feature.title}
+              </h3>
+              <p className="text-gray-600">
+                {feature.description}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+        <motion.div 
+          className="text-center"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+        >
+          <Link href="#">
+            <Button variant="secondary" size="lg" className="group">
+              <Share2 className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
+              Share an idea
+            </Button>
+          </Link>
+        </motion.div>
+      </Section>
+
+      {/* Gradient divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-goodish-teal/30 to-transparent"></div>
+
+      {/* How we build in hours */}
       <Section className="bg-goodish-teal/5">
+        <motion.div 
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <h2 className="text-4xl md:text-5xl font-bold text-goodish-charcoal mb-6">
+            How we build in hours
+          </h2>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Small scope, AI assistance, and proven templates let us ship meaningful projects quickly.
+          </p>
+        </motion.div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {buildSteps.map((step, index) => (
+            <motion.div 
+              key={index} 
+              className="text-center group"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+            >
+              <div className={`w-16 h-16 bg-${step.color}/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform`}>
+                <step.icon className={`text-2xl text-${step.color}`} />
+              </div>
+              <h3 className="text-2xl font-semibold text-goodish-charcoal mb-4">
+                {step.title}
+              </h3>
+              <p className="text-lg text-gray-600 leading-relaxed">
+                {step.description}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+      </Section>
+
+      {/* Gradient divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-goodish-amber/30 to-transparent"></div>
+
+      {/* How it works */}
+      <Section className="bg-goodish-amber/5">
         <motion.div 
           className="text-center mb-16"
           initial={{ opacity: 0, y: 20 }}
@@ -148,10 +312,10 @@ export default function HomePage() {
       </Section>
 
       {/* Gradient divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-goodish-amber/30 to-transparent"></div>
+      <div className="h-px bg-gradient-to-r from-transparent via-goodish-green/30 to-transparent"></div>
 
       {/* Featured Projects */}
-      <Section id="projects" className="bg-goodish-amber/5">
+      <Section id="projects" className="bg-goodish-green/5">
         <motion.div 
           className="text-center mb-16"
           initial={{ opacity: 0, y: 20 }}
@@ -187,10 +351,10 @@ export default function HomePage() {
       </Section>
 
       {/* Gradient divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-goodish-green/30 to-transparent"></div>
+      <div className="h-px bg-gradient-to-r from-transparent via-goodish-teal/30 to-transparent"></div>
 
       {/* Email Signup */}
-      <Section className="bg-goodish-green/5">
+      <Section className="bg-goodish-teal/5">
         <motion.div 
           id="signup" 
           className="flex justify-center"

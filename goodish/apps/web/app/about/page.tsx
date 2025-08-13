@@ -10,10 +10,6 @@ export default function AboutPage() {
     {
       question: 'How can I get updates?',
       answer: 'Join the list at the bottom of any page.'
-    },
-    {
-      question: 'Can I contact you?',
-      answer: 'We don\'t publish a contact email yet. Please join the list for updates.'
     }
   ];
 
