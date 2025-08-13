@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import { Button, Card, EmailSignup } from '@goodish/ui'
 import { Section } from '../components/ui/Section'
+import { ArrowRight, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 
 export default function HomePage() {
@@ -44,10 +45,21 @@ export default function HomePage() {
 
   return (
     <div>
+      {/* Skip to Projects anchor */}
+      <a
+        href="#projects"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-goodish-teal text-white px-4 py-2 rounded-lg z-50"
+      >
+        Skip to Projects
+      </a>
+
       {/* Hero Section */}
       <Section className="bg-gradient-to-br from-goodish-green via-goodish-green/90 to-goodish-teal text-white relative overflow-hidden">
         {/* Animated gradient accent */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
+        
+        {/* Subtle animated hero accent */}
+        <div className="absolute inset-0 bg-gradient-to-br from-goodish-teal/20 via-transparent to-goodish-amber/20 blur-3xl opacity-40 animate-[pulse_6s_ease-in-out_infinite] pointer-events-none" />
         
         <motion.div 
           className="text-center max-w-4xl mx-auto relative z-10"
@@ -56,7 +68,7 @@ export default function HomePage() {
           transition={{ duration: 0.8 }}
         >
           <motion.h1 
-            className="text-5xl md:text-7xl font-bold mb-8 leading-tight"
+            className="text-6xl md:text-8xl font-bold mb-8 leading-tight"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -78,8 +90,9 @@ export default function HomePage() {
             transition={{ duration: 0.6, delay: 0.6 }}
           >
             <Link href="/projects">
-              <Button size="lg" className="text-goodish-charcoal hover:scale-105 transition-transform">
+              <Button size="lg" className="text-goodish-charcoal hover:scale-105 transition-transform group">
                 Explore Projects
+                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
             <Link href="#signup">
@@ -90,6 +103,9 @@ export default function HomePage() {
           </motion.div>
         </motion.div>
       </Section>
+
+      {/* Gradient divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-goodish-teal/30 to-transparent"></div>
 
       {/* How it works */}
       <Section className="bg-goodish-teal/5">
@@ -118,7 +134,7 @@ export default function HomePage() {
               transition={{ duration: 0.6, delay: index * 0.1 }}
             >
               <div className="w-16 h-16 bg-goodish-teal/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                <span className="text-2xl font-bold text-goodish-teal">{index + 1}</span>
+                <CheckCircle className="text-2xl text-goodish-teal" />
               </div>
               <h3 className="text-2xl font-semibold text-goodish-charcoal mb-4">
                 {item.title}
@@ -131,8 +147,11 @@ export default function HomePage() {
         </div>
       </Section>
 
+      {/* Gradient divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-goodish-amber/30 to-transparent"></div>
+
       {/* Featured Projects */}
-      <Section className="bg-goodish-amber/5">
+      <Section id="projects" className="bg-goodish-amber/5">
         <motion.div 
           className="text-center mb-16"
           initial={{ opacity: 0, y: 20 }}
@@ -166,6 +185,9 @@ export default function HomePage() {
           ))}
         </div>
       </Section>
+
+      {/* Gradient divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-goodish-green/30 to-transparent"></div>
 
       {/* Email Signup */}
       <Section className="bg-goodish-green/5">

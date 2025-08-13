@@ -39,10 +39,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} ${plusJakarta.variable} text-base`}>
         <div className="min-h-screen flex flex-col">
-          {/* Skip to content link for accessibility */}
+          {/* Skip to content links for accessibility */}
           <a
             href="#main-content"
-            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-goodish-teal text-white px-4 py-2 rounded-md z-50"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-goodish-teal text-white px-4 py-2 rounded-lg z-50"
           >
             Skip to main content
           </a>

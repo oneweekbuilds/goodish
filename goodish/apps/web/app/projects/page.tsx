@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Section, Button } from '@goodish/ui'
 import { type ProjectCategory } from '@goodish/lib'
 import { projects as seededProjects } from '@goodish/lib'
+import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
 function getCategoryLabel(category: ProjectCategory): string {
@@ -101,9 +102,9 @@ export default function ProjectsPage() {
                 }
               }}
             >
-              <div className="h-full flex flex-col bg-white rounded-2xl border border-goodish-gray shadow-sm hover:shadow-lg transition-all duration-300 group-hover:-translate-y-1 group-focus-visible:outline-none group-focus-visible:ring-2 group-focus-visible:ring-goodish-teal group-focus-visible:ring-offset-2 overflow-hidden">
+              <div className="h-full flex flex-col bg-white rounded-2xl border border-goodish-gray shadow-sm hover:shadow-md transition-all duration-300 group-hover:-translate-y-1 group-focus-visible:outline-none group-focus-visible:ring-2 group-focus-visible:ring-goodish-teal group-focus-visible:ring-offset-2 overflow-hidden">
                 {/* Project Image/Gradient */}
-                <div className={`aspect-[16/9] bg-gradient-to-br ${getProjectGradient(project.slug)} flex items-center justify-center overflow-hidden`}>
+                <div className={`aspect-[16/9] bg-gradient-to-br ${getProjectGradient(project.slug)} flex items-center justify-center overflow-hidden group-hover:scale-[1.03] transition-transform duration-500 ease-out`}>
                   <div className="text-6xl font-bold text-white/30">
                     {project.name.charAt(0)}
                   </div>
@@ -115,18 +116,19 @@ export default function ProjectsPage() {
                     <h3 className="text-xl font-semibold text-goodish-charcoal group-hover:text-goodish-teal transition-colors">
                       {project.name}
                     </h3>
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${getCategoryColor(project.category)}`}>
+                    <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${getCategoryColor(project.category)}`}>
                       {getCategoryLabel(project.category)}
                     </span>
                   </div>
                   
-                  <p className="text-gray-600 leading-relaxed flex-1">
+                  <p className="text-gray-600 leading-relaxed flex-1 line-clamp-3">
                     {project.summary}
                   </p>
                   
                   <div className="pt-2 mt-auto">
-                    <span className="text-goodish-teal font-medium group-hover:text-goodish-green transition-colors">
-                      View project →
+                    <span className="text-goodish-teal font-medium group-hover:text-goodish-green transition-colors inline-flex items-center">
+                      View project 
+                      <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </span>
                   </div>
                 </div>

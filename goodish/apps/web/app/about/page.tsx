@@ -138,15 +138,17 @@ export default function AboutPage() {
               </Link>
             </div>
           </div>
+        </div>
+      </Section>
 
-          {/* Email signup */}
-          <div className="text-center">
-            <EmailSignup 
-              title="Join the list"
-              description="Get updates on new projects and how to build for good."
-              variant="card"
-            />
-          </div>
+      {/* Email signup - centered */}
+      <Section className="bg-goodish-green/5">
+        <div className="mx-auto max-w-screen-sm flex flex-col items-center text-center gap-4 py-12 md:py-16">
+          <EmailSignup 
+            title="Join the list"
+            description="Get updates on new projects and how to build for good."
+            variant="card"
+          />
         </div>
       </Section>
     </div>
