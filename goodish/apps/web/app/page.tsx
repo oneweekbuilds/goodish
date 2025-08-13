@@ -44,10 +44,10 @@ export default function HomePage() {
       <Section className="bg-gradient-to-br from-goodish-green via-goodish-green/90 to-goodish-teal text-white">
         <div className="text-center max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
-            Doing good is no longer hard.
+            Do good, faster—with AI.
           </h1>
           <p className="text-xl md:text-2xl mb-10 text-green-50 leading-relaxed max-w-3xl mx-auto">
-            AI makes it easier—and you can do it too. Goodish is a home for small, fast, mission-driven projects. Some are nonprofits, some donate a percentage, and some are for-profit with purpose—all designed to make doing good easier.
+            Goodish builds small, fast, mission‑driven projects—nonprofits, revenue‑sharing, and purpose‑led products—to make doing good easier for everyone.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/projects">
@@ -65,7 +65,7 @@ export default function HomePage() {
       </Section>
 
       {/* How it works */}
-      <Section>
+      <Section className="bg-goodish-teal/5">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-goodish-charcoal mb-6">
             How it works
@@ -77,6 +77,9 @@ export default function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {howItWorks.map((item, index) => (
             <div key={index} className="text-center">
+              <div className="w-16 h-16 bg-goodish-teal/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <span className="text-2xl font-bold text-goodish-teal">{index + 1}</span>
+              </div>
               <h3 className="text-2xl font-semibold text-goodish-charcoal mb-4">
                 {item.title}
               </h3>
@@ -89,7 +92,7 @@ export default function HomePage() {
       </Section>
 
       {/* Featured Projects */}
-      <Section className="bg-gray-50">
+      <Section className="bg-goodish-amber/5">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-goodish-charcoal mb-6">
             Featured Projects
@@ -112,7 +115,7 @@ export default function HomePage() {
       </Section>
 
       {/* Email Signup */}
-      <Section>
+      <Section className="bg-goodish-green/5">
         <div id="signup" className="flex justify-center">
           <EmailSignup 
             title="Join the list"

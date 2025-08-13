@@ -47,11 +47,15 @@ export default function RootLayout({
             Skip to main content
           </a>
           
-          <Navbar />
+          <header>
+            <Navbar />
+          </header>
           <main id="main-content" className="flex-1">
             {children}
           </main>
-          <Footer />
+          <footer>
+            <Footer />
+          </footer>
         </div>
       </body>
     </html>
