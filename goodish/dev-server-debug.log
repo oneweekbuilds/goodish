@@ -1,0 +1,47 @@
+
+> goodish@1.0.0 dev /home/jwjwi/goodish-monorepo/goodish
+> pnpm -w run dev:all "--filter=@goodish/web" "--port" "3000"
+
+
+> goodish@1.0.0 dev:all /home/jwjwi/goodish-monorepo/goodish
+> concurrently -r "pnpm --filter @goodish/web dev" "pnpm --filter @goodish/goodheart dev" "--filter=@goodish/web" "--port" "3000"
+
+
+> @goodish/goodheart@1.0.0 dev /home/jwjwi/goodish-monorepo/goodish/apps/goodheart
+> next dev -p 3001
+
+
+> @goodish/web@1.0.0 dev /home/jwjwi/goodish-monorepo/goodish/apps/web
+> next dev -p 3000
+
+  ▲ Next.js 14.2.31
+  - Local:        http://localhost:3001
+
+ ✓ Starting...
+  ▲ Next.js 14.2.31
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 2.5s
+ ✓ Ready in 3s
+ ○ Compiling / ...
+ ✓ Compiled / in 8.6s (1400 modules)
+ HEAD / 200 in 9026ms
+ GET / 200 in 251ms
+ GET / 200 in 53ms
+ ✓ Compiled in 662ms (298 modules)
+ ✓ Compiled in 268ms (298 modules)
+ ✓ Compiled in 243ms (298 modules)
+ ✓ Compiled in 355ms (298 modules)
+/home/jwjwi/goodish-monorepo/goodish/apps/web:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @goodish/web@1.0.0 dev: `next dev -p 3000`
+Command failed with signal "SIGTERM"
+/home/jwjwi/goodish-monorepo/goodish/apps/goodheart:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @goodish/goodheart@1.0.0 dev: `next dev -p 3001`
+Command failed with signal "SIGTERM"
+Terminated
+Terminated
+ ELIFECYCLE  Command failed with exit code 1.
+[?25h
+ ELIFECYCLE  Command failed with exit code 1.
+[?25h

@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+// import { motion } from 'framer-motion'
 import { Button, Card, EmailSignup, InlineSignup } from '@goodish/ui'
 import { Section } from '../components/ui/Section'
 import { AmbientSpotlight } from '../components/hero/AmbientSpotlight'
@@ -105,35 +105,23 @@ export default function HomePage() {
         {/* Ambient spotlight */}
         <AmbientSpotlight />
         
-        <motion.div 
+        <div 
           className="text-center max-w-4xl mx-auto relative z-10 space-y-4 md:space-y-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8 }}
         >
-          <motion.h1 
+          <h1 
             className="text-6xl md:text-8xl font-bold leading-tight"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
           >
             Do good, faster—with AI.
-          </motion.h1>
-          <motion.p 
+          </h1>
+          <p 
             className="text-xl md:text-2xl text-green-50 leading-relaxed max-w-3xl mx-auto"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
           >
             Goodish showcases small, fast, mission-driven projects—some nonprofits and some for-profits that donate a portion—built in hours with AI. Explore them, support the causes, and get inspired to build when you can.
-          </motion.p>
+          </p>
           
           {/* Mission badges */}
-          <motion.div 
+          <div 
             className="flex flex-wrap justify-center gap-3"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
           >
             {badges.map((badge, index) => (
               <span
@@ -144,13 +132,10 @@ export default function HomePage() {
                 {badge.label}
               </span>
             ))}
-          </motion.div>
+          </div>
           
-          <motion.div 
+          <div 
             className="flex flex-col sm:flex-row gap-4 justify-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
           >
             <Link href="/projects">
               <Button size="lg" className="text-goodish-charcoal hover:scale-105 transition-transform group">
@@ -163,8 +148,8 @@ export default function HomePage() {
                 Get build updates
               </Button>
             </Link>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </Section>
 
       {/* Gradient divider */}
@@ -172,12 +157,8 @@ export default function HomePage() {
 
       {/* For busy people strip */}
       <Section className="bg-goodish-amber/5">
-        <motion.div 
+        <div 
           className="text-center mb-12"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
         >
           <h2 className="text-3xl md:text-4xl font-bold text-goodish-charcoal mb-4">
             Even if you're busy
@@ -185,16 +166,12 @@ export default function HomePage() {
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Goodish reduces friction so you can make an impact with minimal time investment.
           </p>
-        </motion.div>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {busyPeopleFeatures.map((feature, index) => (
-            <motion.div 
+            <div 
               key={index} 
               className="text-center"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
             >
               <div className="w-12 h-12 bg-goodish-amber/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <feature.icon className="text-xl text-goodish-amber" />
@@ -205,22 +182,18 @@ export default function HomePage() {
               <p className="text-gray-600">
                 {feature.description}
               </p>
-            </motion.div>
+            </div>
           ))}
         </div>
-        <motion.div 
+        <div 
           className="text-center"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.3 }}
         >
           <Link href="#signup">
             <Button size="lg" className="text-lg px-10 py-3 shadow-lg hover:shadow-xl">
               Get build updates
             </Button>
           </Link>
-        </motion.div>
+        </div>
       </Section>
 
       {/* Gradient divider */}
@@ -228,12 +201,8 @@ export default function HomePage() {
 
       {/* How we build in hours */}
       <Section className="bg-goodish-teal/5">
-        <motion.div 
+        <div 
           className="text-center mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
         >
           <h2 className="text-4xl md:text-5xl font-bold text-goodish-charcoal mb-6">
             How we build in hours
@@ -241,16 +210,12 @@ export default function HomePage() {
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Small scope, AI assistance, and proven templates let us ship meaningful projects quickly.
           </p>
-        </motion.div>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {buildSteps.map((step, index) => (
-            <motion.div 
+            <div 
               key={index} 
               className="text-center group"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
             >
               <div className={`w-16 h-16 bg-${step.color}/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform`}>
                 <step.icon className={`text-2xl text-${step.color}`} />
@@ -261,7 +226,7 @@ export default function HomePage() {
               <p className="text-lg text-gray-600 leading-relaxed">
                 {step.description}
               </p>
-            </motion.div>
+            </div>
           ))}
         </div>
       </Section>
@@ -271,12 +236,8 @@ export default function HomePage() {
 
       {/* How it works */}
       <Section className="bg-goodish-amber/5">
-        <motion.div 
+        <div 
           className="text-center mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
         >
           <h2 className="text-4xl md:text-5xl font-bold text-goodish-charcoal mb-6">
             How it works
@@ -284,16 +245,12 @@ export default function HomePage() {
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             We believe in building fast, designing for good, and inspiring others to do the same.
           </p>
-        </motion.div>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {howItWorks.map((item, index) => (
-            <motion.div 
+            <div 
               key={index} 
               className="text-center group"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
             >
               <div className="w-16 h-16 bg-goodish-teal/10 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
                 <CheckCircle className="text-2xl text-goodish-teal" />
@@ -304,7 +261,7 @@ export default function HomePage() {
               <p className="text-lg text-gray-600 leading-relaxed">
                 {item.description}
               </p>
-            </motion.div>
+            </div>
           ))}
         </div>
       </Section>
@@ -314,12 +271,8 @@ export default function HomePage() {
 
       {/* Featured Projects */}
       <Section id="projects" className="bg-goodish-green/5">
-        <motion.div 
+        <div 
           className="text-center mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
         >
           <h2 className="text-4xl md:text-5xl font-bold text-goodish-charcoal mb-6">
             Featured Projects
@@ -327,15 +280,11 @@ export default function HomePage() {
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Discover our latest projects that are making a difference in the world.
           </p>
-        </motion.div>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {featuredProjects.map((project, index) => (
-            <motion.div 
+            <div 
               key={index} 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
             >
               <Card
                 title={project.title}
@@ -343,7 +292,7 @@ export default function HomePage() {
                 href={project.href}
                 tag={project.tag}
               />
-            </motion.div>
+            </div>
           ))}
         </div>
       </Section>
@@ -353,19 +302,15 @@ export default function HomePage() {
 
       {/* Email Signup */}
       <Section className="bg-goodish-teal/5 py-12 md:py-16" id="signup">
-        <motion.div 
+        <div 
           className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
         >
           <EmailSignup 
             title="Follow along as new projects ship"
             description="See examples in action—subscribing helps these projects grow."
             variant="inline"
           />
-        </motion.div>
+        </div>
       </Section>
     </div>
   )
