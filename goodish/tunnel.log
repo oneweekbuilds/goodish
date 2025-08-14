@@ -1,0 +1,28 @@
+t=2025-08-13T20:00:39-0400 lvl=info msg="no configuration paths supplied"
+t=2025-08-13T20:00:39-0400 lvl=info msg="ignoring default config path, could not stat it" path=/home/jwjwi/.config/ngrok/ngrok.yml
+t=2025-08-13T20:00:39-0400 lvl=info msg="starting web service" obj=web addr=127.0.0.1:4040 allow_hosts=[]
+t=2025-08-13T20:00:42-0400 lvl=info msg=start pg=/api/tunnels id=a50bab3910e16f13
+t=2025-08-13T20:00:42-0400 lvl=info msg=end pg=/api/tunnels id=a50bab3910e16f13 status=200 dur=275.414µs
+t=2025-08-13T20:00:44-0400 lvl=warn msg="failed to check for update" obj=updater err="Post \"https://update.equinox.io/check\": context deadline exceeded"
+t=2025-08-13T20:00:55-0400 lvl=info msg=start pg=/api/tunnels id=9cf85257a975861c
+t=2025-08-13T20:00:55-0400 lvl=info msg=end pg=/api/tunnels id=9cf85257a975861c status=200 dur=138.571µs
+t=2025-08-13T20:01:06-0400 lvl=eror msg="heartbeat timeout, terminating session" obj=tunnels.session obj=csess id=e0364a21b022
+t=2025-08-13T20:01:06-0400 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="failed to send authentication request: session closed"
+t=2025-08-13T20:01:09-0400 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="authentication failed: The authtoken you specified is properly formed, but it is invalid.\nYour authtoken: 2oaJSGSrsUIaYr8zDWbj4JHE5v3_4RkBb7qpJ7mPqzF6KPG5n\nThis usually happens when:\n    - You reset your authtoken\n    - Your authtoken was for a team account that you were removed from\n    - You are using ngrok link and this credential was explicitly revoked\nGo to your ngrok dashboard and double check that your authtoken is correct:\nhttps://dashboard.ngrok.com/get-started/your-authtoken\r\n\r\nERR_NGROK_107\r\n"
+t=2025-08-13T20:01:09-0400 lvl=eror msg="session closing" obj=tunnels.session err="authentication failed: The authtoken you specified is properly formed, but it is invalid.\nYour authtoken: 2oaJSGSrsUIaYr8zDWbj4JHE5v3_4RkBb7qpJ7mPqzF6KPG5n\nThis usually happens when:\n    - You reset your authtoken\n    - Your authtoken was for a team account that you were removed from\n    - You are using ngrok link and this credential was explicitly revoked\nGo to your ngrok dashboard and double check that your authtoken is correct:\nhttps://dashboard.ngrok.com/get-started/your-authtoken\r\n\r\nERR_NGROK_107\r\n"
+t=2025-08-13T20:01:09-0400 lvl=info msg="received stop request" obj=app stopReq="{err:{Remote:true Inner:{Inner:0xc00032d150}} restart:false}"
+t=2025-08-13T20:01:09-0400 lvl=eror msg="terminating with error" obj=app err="authentication failed: The authtoken you specified is properly formed, but it is invalid.\nYour authtoken: 2oaJSGSrsUIaYr8zDWbj4JHE5v3_4RkBb7qpJ7mPqzF6KPG5n\nThis usually happens when:\n    - You reset your authtoken\n    - Your authtoken was for a team account that you were removed from\n    - You are using ngrok link and this credential was explicitly revoked\nGo to your ngrok dashboard and double check that your authtoken is correct:\nhttps://dashboard.ngrok.com/get-started/your-authtoken\r\n\r\nERR_NGROK_107\r\n"
+t=2025-08-13T20:01:09-0400 lvl=crit msg="command failed" err="authentication failed: The authtoken you specified is properly formed, but it is invalid.\nYour authtoken: 2oaJSGSrsUIaYr8zDWbj4JHE5v3_4RkBb7qpJ7mPqzF6KPG5n\nThis usually happens when:\n    - You reset your authtoken\n    - Your authtoken was for a team account that you were removed from\n    - You are using ngrok link and this credential was explicitly revoked\nGo to your ngrok dashboard and double check that your authtoken is correct:\nhttps://dashboard.ngrok.com/get-started/your-authtoken\r\n\r\nERR_NGROK_107\r\n"
+ERROR:  authentication failed: The authtoken you specified is properly formed, but it is invalid.
+ERROR:  Your authtoken: 2oaJSGSrsUIaYr8zDWbj4JHE5v3_4RkBb7qpJ7mPqzF6KPG5n
+ERROR:  This usually happens when:
+ERROR:      - You reset your authtoken
+ERROR:      - Your authtoken was for a team account that you were removed from
+ERROR:      - You are using ngrok link and this credential was explicitly revoked
+ERROR:  Go to your ngrok dashboard and double check that your authtoken is correct:
+t=2025-08-13T20:01:09-0400 lvl=info msg="no more state changes" obj=tunnels.session
+ERROR:  https://dashboard.ngrok.com/get-started/your-authtoken
+ERROR:  
+ERROR:  ERR_NGROK_107
+ERROR:  https://ngrok.com/docs/errors/err_ngrok_107
+ERROR:  

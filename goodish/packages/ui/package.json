@@ -14,15 +14,16 @@
     "react-dom": "^18.2.0"
   },
   "dependencies": {
-    "@goodish/lib": "workspace:*"
+    "@goodish/lib": "workspace:*",
+    "lucide-react": "^0.539.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
-    "typescript": "^5.3.3",
     "eslint": "^8.56.0",
     "next": "^14.2.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "typescript": "^5.3.3"
   }
 }

@@ -173,6 +173,9 @@ importers:
       '@goodish/lib':
         specifier: workspace:*
         version: link:../lib
+      lucide-react:
+        specifier: ^0.539.0
+        version: 0.539.0(react@18.3.1)
     devDependencies:
       '@types/react':
         specifier: ^18.2.45

@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { EmailSignup } from './email-signup';
 import { cn } from '@goodish/lib';
+import { Twitter } from 'lucide-react';
 
 interface FooterProps {
   className?: string;
@@ -78,6 +79,16 @@ export function Footer({ className }: FooterProps) {
             </div>
           </div>
           <div className="flex items-center space-x-4">
+            <a
+              href="https://x.com/Goodish_org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm hover:underline text-gray-400 hover:text-goodish-teal transition-colors"
+            >
+              <Twitter className="h-4 w-4" />
+              <span>X (Twitter)</span>
+            </a>
+            <span className="text-xs text-gray-500">•</span>
             <span className="text-xs text-gray-500">
               Built with transparency and impact in mind
             </span>

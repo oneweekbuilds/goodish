@@ -3,12 +3,12 @@
 import { useState } from 'react'
 import { Section, Button } from '@goodish/ui'
 import Link from 'next/link'
-import { ArrowUp, ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 
 interface FAQItem {
   id: string
   question: string
-  answer: string
+  answer: string | React.ReactNode
 }
 
 export default function FAQPage() {
@@ -38,7 +38,13 @@ export default function FAQPage() {
     {
       id: 'how-can-i-help',
       question: 'How can I help?',
-      answer: 'The simplest way is to use and share the projects or sign up for updates. If you have an idea or skill to contribute, you can suggest a project via the link on the site.'
+      answer: (
+        <>
+          The simplest way is to use and share the projects or sign up for updates. Interacting with the products, donating to the causes they highlight, and sharing the mission with others all help. Even posting a link to Goodish on social media{' '}
+          (<a href="https://x.com/Goodish_org" target="_blank" rel="noopener noreferrer" className="text-goodish-teal hover:underline">for example, on X</a>){' '}
+          can lead someone to discover and support a project.
+        </>
+      )
     }
   ];
 
@@ -72,24 +78,6 @@ export default function FAQPage() {
             </p>
           </div>
 
-          {/* Table of Contents */}
-          <div className="mb-16 bg-white rounded-2xl p-8 shadow-sm border border-goodish-gray">
-            <h2 className="text-2xl font-bold text-goodish-charcoal mb-6">Quick Navigation</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {faqs.map((faq, index) => (
-                <a
-                  key={faq.id}
-                  href={`#${faq.id}`}
-                  className="text-goodish-teal hover:text-goodish-green transition-colors flex items-center gap-2 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-goodish-teal focus-visible:ring-offset-2 rounded px-2 py-1"
-                >
-                  <span className="text-sm font-medium group-hover:underline">
-                    {index + 1}. {faq.question}
-                  </span>
-                  <ArrowUp className="h-3 w-3 rotate-45" />
-                </a>
-              ))}
-            </div>
-          </div>
 
           {/* FAQ Accordions */}
           <div className="space-y-4">

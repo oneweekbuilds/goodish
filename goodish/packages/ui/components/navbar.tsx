@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { cn } from '@goodish/lib';
+import { Twitter } from 'lucide-react';
 
 interface NavItem { href: string; label: string }
 
@@ -90,6 +91,17 @@ export function Navbar({ className, showLogo = true, homeHref = '/', links }: Na
               <span className="absolute bottom-0 left-0 bg-current h-[2px] w-0 group-hover:w-full group-focus-visible:w-full transition-[width] duration-300"></span>
             </Link>
           ))}
+          
+          {/* X Social Link */}
+          <a
+            href="https://x.com/Goodish_org"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Goodish on X"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-xl hover:bg-goodish-charcoal/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-goodish-teal transition-colors"
+          >
+            <Twitter className="h-4 w-4 text-goodish-charcoal" />
+          </a>
         </div>
         
         {/* Mobile menu button */}
