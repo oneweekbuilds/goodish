@@ -33,67 +33,73 @@ export function WhyWeBuilt() {
           <h2 className="text-center font-semibold text-3xl md:text-4xl tracking-tight text-goodish-charcoal">Principles</h2>
           <p className="mt-2 text-center text-balance text-gray-600">Our approach to building projects that matter</p>
           
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            <div className="h-full">
-              <div className="h-full rounded-2xl border bg-white shadow-sm transition hover:shadow-md">
-                <div className="h-full p-6 flex items-start gap-4">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl font-semibold bg-goodish-teal/10 text-goodish-teal">
-                    1
+          <div className="mt-8 space-y-6">
+            {/* Top row: 3 cards centered */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+              <div className="h-full">
+                <div className="h-full rounded-2xl border bg-white shadow-sm transition hover:shadow-md">
+                  <div className="h-full p-6 flex items-start gap-4">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl font-semibold bg-goodish-teal/10 text-goodish-teal">
+                      1
+                    </div>
+                    <div>
+                      <h4 className="text-base md:text-lg font-medium text-goodish-charcoal">Small scope, shipped fast</h4>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-base md:text-lg font-medium text-goodish-charcoal">Small scope, shipped fast</h4>
+                </div>
+              </div>
+              
+              <div className="h-full">
+                <div className="h-full rounded-2xl border bg-white shadow-sm transition hover:shadow-md">
+                  <div className="h-full p-6 flex items-start gap-4">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl font-semibold bg-goodish-green/10 text-goodish-green">
+                      2
+                    </div>
+                    <div>
+                      <h4 className="text-base md:text-lg font-medium text-goodish-charcoal">Give-back baked in</h4>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="h-full sm:col-span-2 lg:col-span-1">
+                <div className="h-full rounded-2xl border bg-white shadow-sm transition hover:shadow-md">
+                  <div className="h-full p-6 flex items-start gap-4">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl font-semibold bg-goodish-amber/10 text-goodish-amber">
+                      3
+                    </div>
+                    <div>
+                      <h4 className="text-base md:text-lg font-medium text-goodish-charcoal">Public by default</h4>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
             
-            <div className="h-full">
-              <div className="h-full rounded-2xl border bg-white shadow-sm transition hover:shadow-md">
-                <div className="h-full p-6 flex items-start gap-4">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl font-semibold bg-goodish-green/10 text-goodish-green">
-                    2
-                  </div>
-                  <div>
-                    <h4 className="text-base md:text-lg font-medium text-goodish-charcoal">Give-back baked in</h4>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="h-full">
-              <div className="h-full rounded-2xl border bg-white shadow-sm transition hover:shadow-md">
-                <div className="h-full p-6 flex items-start gap-4">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl font-semibold bg-goodish-amber/10 text-goodish-amber">
-                    3
-                  </div>
-                  <div>
-                    <h4 className="text-base md:text-lg font-medium text-goodish-charcoal">Public by default</h4>
+            {/* Bottom row: 2 cards centered */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 max-w-2xl mx-auto">
+              <div className="h-full">
+                <div className="h-full rounded-2xl border bg-white shadow-sm transition hover:shadow-md">
+                  <div className="h-full p-6 flex items-start gap-4">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl font-semibold bg-goodish-teal/10 text-goodish-teal">
+                      4
+                    </div>
+                    <div>
+                      <h4 className="text-base md:text-lg font-medium text-goodish-charcoal">Repeatable playbooks</h4>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            
-            <div className="h-full">
-              <div className="h-full rounded-2xl border bg-white shadow-sm transition hover:shadow-md">
-                <div className="h-full p-6 flex items-start gap-4">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl font-semibold bg-goodish-teal/10 text-goodish-teal">
-                    4
-                  </div>
-                  <div>
-                    <h4 className="text-base md:text-lg font-medium text-goodish-charcoal">Repeatable playbooks</h4>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="h-full md:col-span-2 lg:col-span-1">
-              <div className="h-full rounded-2xl border bg-white shadow-sm transition hover:shadow-md">
-                <div className="h-full p-6 flex items-start gap-4">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl font-semibold bg-goodish-green/10 text-goodish-green">
-                    5
-                  </div>
-                  <div>
-                    <h4 className="text-base md:text-lg font-medium text-goodish-charcoal">Bias to action over polish</h4>
+              
+              <div className="h-full">
+                <div className="h-full rounded-2xl border bg-white shadow-sm transition hover:shadow-md">
+                  <div className="h-full p-6 flex items-start gap-4">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl font-semibold bg-goodish-green/10 text-goodish-green">
+                      5
+                    </div>
+                    <div>
+                      <h4 className="text-base md:text-lg font-medium text-goodish-charcoal">Bias to action over polish</h4>
+                    </div>
                   </div>
                 </div>
               </div>
