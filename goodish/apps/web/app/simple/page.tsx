@@ -1,9 +1,10 @@
 export default function Simple() {
-  return (
-    <div>
-      <h1>Simple Page Works</h1>
-      <p>This is a minimal test page.</p>
-      <a href="/">Try Home</a> | <a href="/health">Try Health</a>
-    </div>
-  );
+  return <main style={{padding:24,fontFamily:'system-ui'}}>
+    <h1>/simple — OK</h1>
+    <ul>
+      <li><a href="/">/</a></li>
+      <li><a href="/test">/test</a></li>
+      <li><a href="/health">/health</a></li>
+    </ul>
+  </main>;
 }
