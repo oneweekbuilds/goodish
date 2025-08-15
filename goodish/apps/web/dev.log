@@ -1,0 +1,164 @@
+
+> @goodish/web@1.0.0 dev
+> next dev -p 3000
+
+  ▲ Next.js 14.2.31
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 2.4s
+ ○ Compiling / ...
+ ✓ Compiled / in 4.8s (620 modules)
+ HEAD / 200 in 5064ms
+ GET / 200 in 209ms
+ ○ Compiling /why ...
+ ✓ Compiled /why in 647ms (605 modules)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 514ms (594 modules)
+ GET /_next/static/webpack/3fd077c3bed2489a.webpack.hot-update.json 404 in 976ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /why 200 in 99ms
+ ○ Compiling /projects ...
+ ✓ Compiled /projects in 650ms (602 modules)
+ ✓ Compiled /about in 270ms (604 modules)
+ ✓ Compiled in 308ms (315 modules)
+ ✓ Compiled in 336ms (315 modules)
+ ✓ Compiled in 195ms (315 modules)
+ HEAD /why 200 in 111ms
+ GET /why 200 in 152ms
+ GET /why 200 in 113ms
+ ✓ Compiled in 354ms (315 modules)
+ ✓ Compiled in 205ms (315 modules)
+ ✓ Compiled in 268ms (315 modules)
+ ✓ Compiled in 371ms (315 modules)
+ ✓ Compiled in 232ms (315 modules)
+ ✓ Compiled in 342ms (315 modules)
+ ✓ Compiled in 167ms (315 modules)
+ ✓ Compiled in 204ms (315 modules)
+ ✓ Compiled in 268ms (315 modules)
+ HEAD /why 200 in 102ms
+ GET /why 200 in 195ms
+ ✓ Compiled in 575ms (315 modules)
+ ✓ Compiled in 182ms (315 modules)
+ ⨯ ./components/sections/WhyWeBuilt.tsx
+Error: 
+  [31mx[0m Expected ',', got 'className'
+    ,-[[36;1;4m/home/jwjwi/goodish-monorepo/goodish/apps/web/components/sections/WhyWeBuilt.tsx[0m:76:1]
+ [2m76[0m |               </div>
+ [2m77[0m |             </div>
+ [2m78[0m |             
+ [2m79[0m |             <div className="h-full">
+    : [31;1m                 ^^^^^^^^^[0m
+ [2m80[0m |               <div className="flex h-full flex-col items-center justify-center text-center gap-4 rounded-2xl border border-gray-100 bg-white/80 backdrop-blur-sm p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:bg-white group">
+ [2m81[0m |                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-bold bg-gradient-to-br from-goodish-teal to-goodish-green text-white shadow-md transition-transform group-hover:scale-110">
+ [2m82[0m |                   5
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/sections/WhyWeBuilt.tsx
+./app/why/page.tsx
+ ⨯ ./components/sections/WhyWeBuilt.tsx
+Error: 
+  [31mx[0m Unexpected token `section`. Expected jsx identifier
+   ,-[[36;1;4m/home/jwjwi/goodish-monorepo/goodish/apps/web/components/sections/WhyWeBuilt.tsx[0m:3:1]
+ [2m3[0m | 
+ [2m4[0m | export function WhyWeBuilt() {
+ [2m5[0m |   return (
+ [2m6[0m |     <section className="py-16 md:py-24 bg-gradient-to-br from-goodish-teal/5 via-white to-goodish-green/3">
+   : [31;1m     ^^^^^^^[0m
+ [2m7[0m |       <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
+ [2m8[0m |         <div className="text-center mb-16">
+ [2m9[0m |           <h2 className="text-4xl md:text-6xl font-bold text-goodish-charcoal mb-8 tracking-tight">
+   `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/sections/WhyWeBuilt.tsx
+./app/why/page.tsx
+ ⨯ ./components/sections/WhyWeBuilt.tsx
+Error: 
+  [31mx[0m Unexpected token `section`. Expected jsx identifier
+   ,-[[36;1;4m/home/jwjwi/goodish-monorepo/goodish/apps/web/components/sections/WhyWeBuilt.tsx[0m:3:1]
+ [2m3[0m | 
+ [2m4[0m | export function WhyWeBuilt() {
+ [2m5[0m |   return (
+ [2m6[0m |     <section className="py-16 md:py-24 bg-gradient-to-br from-goodish-teal/5 via-white to-goodish-green/3">
+   : [31;1m     ^^^^^^^[0m
+ [2m7[0m |       <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
+ [2m8[0m |         <div className="text-center mb-16">
+ [2m9[0m |           <h2 className="text-4xl md:text-6xl font-bold text-goodish-charcoal mb-8 tracking-tight">
+   `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/sections/WhyWeBuilt.tsx
+./app/why/page.tsx
+ ⨯ ./components/sections/WhyWeBuilt.tsx
+Error: 
+  [31mx[0m Unexpected token `section`. Expected jsx identifier
+   ,-[[36;1;4m/home/jwjwi/goodish-monorepo/goodish/apps/web/components/sections/WhyWeBuilt.tsx[0m:3:1]
+ [2m3[0m | 
+ [2m4[0m | export function WhyWeBuilt() {
+ [2m5[0m |   return (
+ [2m6[0m |     <section className="py-16 md:py-24 bg-gradient-to-br from-goodish-teal/5 via-white to-goodish-green/3">
+   : [31;1m     ^^^^^^^[0m
+ [2m7[0m |       <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
+ [2m8[0m |         <div className="text-center mb-16">
+ [2m9[0m |           <h2 className="text-4xl md:text-6xl font-bold text-goodish-charcoal mb-8 tracking-tight">
+   `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/sections/WhyWeBuilt.tsx
+./app/why/page.tsx
+ ⨯ ./components/sections/WhyWeBuilt.tsx
+Error: 
+  [31mx[0m Unexpected token `section`. Expected jsx identifier
+   ,-[[36;1;4m/home/jwjwi/goodish-monorepo/goodish/apps/web/components/sections/WhyWeBuilt.tsx[0m:3:1]
+ [2m3[0m | 
+ [2m4[0m | export function WhyWeBuilt() {
+ [2m5[0m |   return (
+ [2m6[0m |     <section className="py-16 md:py-24 bg-gradient-to-br from-goodish-teal/5 via-white to-goodish-green/3">
+   : [31;1m     ^^^^^^^[0m
+ [2m7[0m |       <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
+ [2m8[0m |         <div className="text-center mb-16">
+ [2m9[0m |           <h2 className="text-4xl md:text-6xl font-bold text-goodish-charcoal mb-8 tracking-tight">
+   `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/sections/WhyWeBuilt.tsx
+./app/why/page.tsx
+ ✓ Compiled in 433ms (315 modules)
+ HEAD /why 200 in 224ms
+ GET /why 200 in 159ms
+ ✓ Compiled in 380ms (315 modules)
+ HEAD /why 200 in 90ms
+ GET /why 200 in 157ms
+ ✓ Compiled in 308ms (315 modules)
+ ✓ Compiled in 672ms (315 modules)
+ HEAD /why 200 in 86ms
+ GET /why 200 in 112ms
+ ✓ Compiled in 1757ms (618 modules)
+ HEAD /why 200 in 123ms
+ GET /why 200 in 180ms
+ ✓ Compiled in 673ms (618 modules)
+ HEAD /why 200 in 263ms
+ GET /why 200 in 89ms
+ ✓ Compiled in 3.3s (618 modules)
+ ✓ Compiled in 547ms (618 modules)
+ HEAD / 200 in 241ms
+ ✓ Compiled in 851ms (618 modules)
+ HEAD / 200 in 211ms
+[?25h

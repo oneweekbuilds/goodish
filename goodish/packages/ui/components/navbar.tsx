@@ -72,8 +72,9 @@ export function Navbar({ className, showLogo = true, homeHref = '/', links }: Na
             aria-label="Goodish - Go to homepage"
           >
             <div className="flex items-center">
-              <span className="text-2xl md:text-3xl font-bold text-goodish-green">Good</span>
-              <span className="text-2xl md:text-3xl font-bold text-goodish-teal">ish</span>
+              <span className="text-2xl md:text-3xl font-bold leading-none">
+                <img src="/goodish-logo.png" alt="Goodish" className="h-12 md:h-15 w-auto block" />
+              </span>
             </div>
           </Link>
         )}

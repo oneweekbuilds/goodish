@@ -9,10 +9,7 @@ export default function AboutPage() {
           <div className="text-center mb-16">
             <h1 className="text-5xl md:text-6xl font-bold text-goodish-charcoal mb-6 flex items-center justify-center gap-3">
               About{' '}
-              <div className="flex items-center">
-                <span className="text-goodish-green">Good</span>
-                <span className="text-goodish-teal">ish</span>
-              </div>
+              <img src="/goodish-logo.png" alt="Goodish" className="h-16 md:h-20 w-auto" />
             </h1>
             <p className="text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto">
               Goodish is a studio and platform for building small, fast, AI-powered projects that do real good. We believe anyone can build something that helps—AI makes it easier than ever.

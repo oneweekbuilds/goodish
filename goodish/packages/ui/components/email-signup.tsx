@@ -92,7 +92,7 @@ export function EmailSignup({ title, description, variant = 'inline' }: EmailSig
             name="email"
             placeholder="you@example.com"
             required
-            className="w-full h-11 rounded-xl bg-white/90 backdrop-blur text-neutral-900 placeholder:text-neutral-500 px-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-500)]"
+            className="w-full h-11 rounded-xl bg-white/90 backdrop-blur border border-gray-300 text-neutral-900 placeholder:text-neutral-500 px-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-500)] focus:border-transparent"
             aria-describedby={errors.email ? 'email-error' : undefined}
             aria-invalid={!!errors.email}
           />
