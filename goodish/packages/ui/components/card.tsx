@@ -1,5 +1,5 @@
 import React from 'react';
-import Link from 'next/link';
+// removed Link import from next/link;
 import { cn } from '@goodish/lib';
 import { Button } from './button';
 
@@ -31,11 +31,11 @@ export function Card({ title, description, href, tag, className }: CardProps) {
         </div>
 
         <div className="mt-auto pt-4">
-          <Link href={href}>
+          <a href={href}>
             <Button variant="secondary" size="sm" className="rounded-xl">
               Learn more
             </Button>
-          </Link>
+          </a>
         </div>
       </div>
     </div>

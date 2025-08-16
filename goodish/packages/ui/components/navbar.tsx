@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
+// removed Link import from next/link;
 import { cn } from '@goodish/lib';
 import { Twitter } from 'lucide-react';
 
@@ -66,7 +66,7 @@ export function Navbar({ className, showLogo = true, homeHref = '/', links }: Na
       
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {showLogo && (
-          <Link 
+          <a 
             href={homeHref} 
             className="inline-flex items-center gap-2 px-3 py-2 -mx-3 -my-2 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-goodish-teal focus-visible:ring-offset-2 transition-all duration-200 hover:bg-gray-50 hover:scale-105"
             aria-label="Goodish - Go to homepage"
@@ -76,7 +76,7 @@ export function Navbar({ className, showLogo = true, homeHref = '/', links }: Na
                 <img src="/goodish-logo.png" alt="Goodish" className="h-12 md:h-15 w-auto block" />
               </span>
             </div>
-          </Link>
+          </a>
         )}
         
         {/* Desktop Navigation */}
@@ -90,7 +90,7 @@ export function Navbar({ className, showLogo = true, homeHref = '/', links }: Na
               {item.label}
               {/* Animated underline */}
               <span className="absolute bottom-0 left-0 bg-current h-[2px] w-0 group-hover:w-full group-focus-visible:w-full transition-[width] duration-300"></span>
-            </Link>
+            </a>
           ))}
           
           {/* X Social Link */}
@@ -144,7 +144,7 @@ export function Navbar({ className, showLogo = true, homeHref = '/', links }: Na
                 onClick={closeMenu}
               >
                 {item.label}
-              </Link>
+              </a>
             ))}
           </div>
         </div>
