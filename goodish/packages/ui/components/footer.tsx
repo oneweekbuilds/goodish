@@ -1,5 +1,4 @@
 import React from 'react';
-// removed Link import from next/link;
 import { EmailSignup } from './email-signup';
 import { cn } from '@goodish/lib';
 import { Twitter } from 'lucide-react';
@@ -44,7 +43,7 @@ export function Footer({ className }: FooterProps) {
             <h4 className="font-semibold text-lg">Navigation</h4>
             <nav className="space-y-3">
               {navItems.map((item) => (
-                <Link
+                <a
                   key={item.href}
                   href={item.href}
                   className="block text-sm text-gray-600 hover:text-gray-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-goodish-teal focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 rounded px-1 py-1"

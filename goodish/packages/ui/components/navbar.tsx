@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-// removed Link import from next/link;
 import { cn } from '@goodish/lib';
 import { Twitter } from 'lucide-react';
 
@@ -82,7 +81,7 @@ export function Navbar({ className, showLogo = true, homeHref = '/', links }: Na
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-8">
           {navItems.map((item) => (
-            <Link
+            <a
               key={item.href}
               href={item.href}
               className="group relative text-sm font-medium text-goodish-charcoal transition-colors hover:text-goodish-teal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-goodish-teal focus-visible:ring-offset-2 rounded-lg px-3 py-2 hover:bg-gray-50"
@@ -137,7 +136,7 @@ export function Navbar({ className, showLogo = true, homeHref = '/', links }: Na
         >
           <div className="container mx-auto px-4 py-4 space-y-2">
             {navItems.map((item) => (
-              <Link
+              <a
                 key={item.href}
                 href={item.href}
                 className="block text-sm font-medium text-goodish-charcoal transition-colors hover:text-goodish-teal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-goodish-teal focus-visible:ring-offset-2 rounded-lg px-3 py-2 hover:bg-gray-50"

@@ -1,5 +1,4 @@
 import React from 'react';
-// removed Link import from next/link;
 import { cn } from '@goodish/lib';
 import { Button } from './button';
 
