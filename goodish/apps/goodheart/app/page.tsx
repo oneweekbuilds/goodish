@@ -1,5 +1,5 @@
-import GoodheartBridgePage from '../../web/app/goodheart/page'
+import { redirect } from 'next/navigation';
 
 export default function GoodHeartPage() {
-  return <GoodheartBridgePage />
+  redirect('https://goodish.org/goodheart');
 }
