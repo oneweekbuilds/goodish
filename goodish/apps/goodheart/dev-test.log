@@ -1,0 +1,1056 @@
+
+> goodheart@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.2.4
+   - Local:        http://localhost:3000
+   - Network:      http://172.31.4.87:3000
+
+ ✓ Starting...
+ ✓ Ready in 29.1s
+ ○ Compiling / ...
+ ✓ Compiled / in 7.3s (777 modules)
+ GET / 200 in 8305ms
+ ✓ Compiled in 1008ms (344 modules)
+ ✓ Compiled in 161ms (344 modules)
+ ✓ Compiled in 173ms (344 modules)
+ ✓ Compiled in 189ms (344 modules)
+ ✓ Compiled in 217ms (344 modules)
+ ✓ Compiled in 230ms (344 modules)
+ ✓ Compiled in 156ms (344 modules)
+ ✓ Compiled in 158ms (344 modules)
+ ✓ Compiled in 146ms (344 modules)
+ ✓ Compiled in 173ms (344 modules)
+ ✓ Compiled in 164ms (344 modules)
+ ✓ Compiled in 140ms (344 modules)
+ ✓ Compiled in 105ms (344 modules)
+ ✓ Compiled in 111ms (344 modules)
+ ✓ Compiled in 122ms (344 modules)
+ ✓ Compiled in 117ms (344 modules)
+ ✓ Compiled in 118ms (344 modules)
+ ✓ Compiled in 141ms (344 modules)
+ ✓ Compiled in 140ms (344 modules)
+ ✓ Compiled in 136ms (344 modules)
+ ✓ Compiled in 149ms (344 modules)
+ ✓ Compiled in 165ms (344 modules)
+ ✓ Compiled in 128ms (344 modules)
+ ✓ Compiled in 130ms (344 modules)
+ ✓ Compiled in 181ms (344 modules)
+ ✓ Compiled in 137ms (344 modules)
+ ✓ Compiled in 132ms (344 modules)
+ ✓ Compiled in 132ms (344 modules)
+ ✓ Compiled in 150ms (344 modules)
+ ✓ Compiled in 171ms (344 modules)
+ ✓ Compiled in 159ms (344 modules)
+ ✓ Compiled in 127ms (344 modules)
+ ✓ Compiled in 145ms (344 modules)
+ ✓ Compiled in 114ms (344 modules)
+ ✓ Compiled in 140ms (344 modules)
+ ✓ Compiled in 124ms (344 modules)
+ ✓ Compiled in 129ms (344 modules)
+ ✓ Compiled in 161ms (344 modules)
+ ✓ Compiled in 160ms (344 modules)
+ ✓ Compiled in 180ms (344 modules)
+ ✓ Compiled in 133ms (344 modules)
+ ✓ Compiled in 136ms (344 modules)
+ ✓ Compiled in 134ms (344 modules)
+ ✓ Compiled in 127ms (344 modules)
+ ✓ Compiled in 259ms (344 modules)
+ ✓ Compiled in 193ms (344 modules)
+ ✓ Compiled in 144ms (344 modules)
+ ✓ Compiled in 158ms (344 modules)
+ ✓ Compiled in 149ms (344 modules)
+ ✓ Compiled in 154ms (344 modules)
+ ✓ Compiled in 172ms (344 modules)
+ ✓ Compiled in 169ms (344 modules)
+ ✓ Compiled in 154ms (344 modules)
+ ✓ Compiled in 176ms (344 modules)
+ ✓ Compiled in 163ms (344 modules)
+ ✓ Compiled in 167ms (344 modules)
+ ✓ Compiled in 203ms (344 modules)
+ ✓ Compiled in 193ms (344 modules)
+ ✓ Compiled in 204ms (344 modules)
+ ✓ Compiled in 215ms (344 modules)
+ ✓ Compiled in 234ms (344 modules)
+ ✓ Compiled in 303ms (344 modules)
+ ✓ Compiled in 307ms (344 modules)
+ ○ Compiling /quiz ...
+ ✓ Compiled /quiz in 15.8s (826 modules)
+ GET /quiz 200 in 17865ms
+ ✓ Compiled in 2.6s (367 modules)
+ ✓ Compiled in 439ms (367 modules)
+ ✓ Compiled in 459ms (367 modules)
+ ✓ Compiled in 511ms (367 modules)
+ ✓ Compiled in 440ms (367 modules)
+ ✓ Compiled in 461ms (367 modules)
+ ✓ Compiled in 338ms (367 modules)
+ ✓ Compiled in 289ms (367 modules)
+ ✓ Compiled in 264ms (367 modules)
+ ✓ Compiled in 269ms (367 modules)
+ ✓ Compiled in 229ms (367 modules)
+ ✓ Compiled in 229ms (367 modules)
+ ✓ Compiled in 223ms (367 modules)
+ ✓ Compiled in 224ms (367 modules)
+ ✓ Compiled in 229ms (367 modules)
+ ✓ Compiled in 227ms (367 modules)
+ ✓ Compiled in 194ms (367 modules)
+ ✓ Compiled in 212ms (367 modules)
+ ✓ Compiled in 211ms (367 modules)
+ ✓ Compiled in 201ms (367 modules)
+ ✓ Compiled in 186ms (367 modules)
+ ✓ Compiled in 184ms (367 modules)
+ ✓ Compiled in 192ms (367 modules)
+ ✓ Compiled in 198ms (367 modules)
+ ✓ Compiled in 203ms (367 modules)
+ ✓ Compiled in 189ms (367 modules)
+ ✓ Compiled in 180ms (367 modules)
+ ✓ Compiled in 186ms (367 modules)
+ ✓ Compiled in 194ms (367 modules)
+ ✓ Compiled in 220ms (367 modules)
+ ✓ Compiled in 175ms (367 modules)
+ ✓ Compiled in 184ms (367 modules)
+ ✓ Compiled in 176ms (367 modules)
+ ✓ Compiled in 199ms (367 modules)
+ ✓ Compiled in 180ms (367 modules)
+ ✓ Compiled in 164ms (367 modules)
+ ✓ Compiled in 167ms (367 modules)
+ ✓ Compiled in 159ms (367 modules)
+ ✓ Compiled in 162ms (367 modules)
+ ✓ Compiled in 160ms (367 modules)
+ ✓ Compiled in 179ms (367 modules)
+ ✓ Compiled in 165ms (367 modules)
+ ✓ Compiled in 182ms (367 modules)
+ ✓ Compiled in 175ms (367 modules)
+ ✓ Compiled in 188ms (367 modules)
+ ✓ Compiled in 157ms (367 modules)
+ ✓ Compiled in 185ms (367 modules)
+ ✓ Compiled in 172ms (367 modules)
+ ✓ Compiled in 181ms (367 modules)
+ ○ Compiling /quiz-questions ...
+ ✓ Compiled /quiz-questions in 868ms (843 modules)
+🎯 Event: session_started
+  Context: system
+  Time: 2025-08-01T02:27:35.770Z
+  Session: session_1754015255770_8s5r0mqe4
+ GET /quiz-questions 200 in 1096ms
+ ✓ Compiled in 376ms (374 modules)
+ ✓ Compiled in 145ms (374 modules)
+ ✓ Compiled in 161ms (374 modules)
+ ✓ Compiled in 161ms (374 modules)
+ ✓ Compiled in 147ms (374 modules)
+ ✓ Compiled in 142ms (374 modules)
+ ✓ Compiled in 149ms (374 modules)
+ ✓ Compiled in 157ms (374 modules)
+ ✓ Compiled in 146ms (374 modules)
+ ✓ Compiled in 135ms (374 modules)
+ ✓ Compiled in 118ms (374 modules)
+ ✓ Compiled in 137ms (374 modules)
+ ✓ Compiled in 111ms (374 modules)
+ ✓ Compiled in 175ms (374 modules)
+ ✓ Compiled in 139ms (374 modules)
+ ✓ Compiled in 186ms (374 modules)
+ ✓ Compiled in 127ms (374 modules)
+ ✓ Compiled in 108ms (374 modules)
+ ✓ Compiled in 115ms (374 modules)
+ ✓ Compiled in 118ms (374 modules)
+ ✓ Compiled in 110ms (374 modules)
+ ✓ Compiled in 118ms (374 modules)
+ ✓ Compiled in 130ms (374 modules)
+ ✓ Compiled in 139ms (374 modules)
+ ✓ Compiled in 118ms (374 modules)
+ ✓ Compiled in 117ms (374 modules)
+ ✓ Compiled in 131ms (374 modules)
+ ✓ Compiled in 105ms (374 modules)
+ ✓ Compiled in 113ms (374 modules)
+ ✓ Compiled in 116ms (374 modules)
+ ✓ Compiled in 113ms (374 modules)
+ ✓ Compiled in 122ms (374 modules)
+ ✓ Compiled in 140ms (374 modules)
+ ✓ Compiled in 123ms (374 modules)
+ ✓ Compiled in 166ms (374 modules)
+ ✓ Compiled in 129ms (374 modules)
+ ✓ Compiled in 110ms (374 modules)
+ ✓ Compiled in 117ms (374 modules)
+ ✓ Compiled in 137ms (374 modules)
+ ✓ Compiled in 114ms (374 modules)
+ ✓ Compiled in 144ms (374 modules)
+ ✓ Compiled in 103ms (374 modules)
+ ✓ Compiled in 117ms (374 modules)
+ ✓ Compiled in 109ms (374 modules)
+ ✓ Compiled in 109ms (374 modules)
+ ✓ Compiled in 109ms (374 modules)
+ ✓ Compiled in 135ms (374 modules)
+ ✓ Compiled in 149ms (374 modules)
+ ✓ Compiled in 163ms (374 modules)
+ ✓ Compiled in 132ms (374 modules)
+ ✓ Compiled in 164ms (374 modules)
+ ✓ Compiled in 169ms (374 modules)
+ ✓ Compiled in 175ms (374 modules)
+ ✓ Compiled in 181ms (374 modules)
+ ✓ Compiled in 199ms (374 modules)
+ ✓ Compiled in 180ms (374 modules)
+ ✓ Compiled in 212ms (374 modules)
+ ✓ Compiled in 166ms (374 modules)
+ ✓ Compiled in 217ms (374 modules)
+ ✓ Compiled in 212ms (374 modules)
+ ○ Compiling /quiz-results/[slug] ...
+ ✓ Compiled /quiz-results/[slug] in 1330ms (864 modules)
+ ✓ Compiled in 228ms (383 modules)
+ ✓ Compiled in 173ms (383 modules)
+ ✓ Compiled in 150ms (383 modules)
+ ✓ Compiled in 154ms (383 modules)
+🎯 Event: session_started
+  Context: system
+  Time: 2025-08-01T02:27:46.675Z
+  Session: session_1754015266674_tavuovziu
+ GET /quiz-results/the-lifesaver 200 in 2241ms
+ ✓ Compiled in 245ms (383 modules)
+ ✓ Compiled in 145ms (383 modules)
+ ✓ Compiled in 133ms (383 modules)
+ ✓ Compiled in 150ms (383 modules)
+ ✓ Compiled in 131ms (383 modules)
+ ✓ Compiled in 130ms (383 modules)
+ ✓ Compiled in 115ms (383 modules)
+ ✓ Compiled in 114ms (383 modules)
+ ✓ Compiled in 109ms (383 modules)
+ ✓ Compiled in 114ms (383 modules)
+ ✓ Compiled in 114ms (383 modules)
+ ✓ Compiled in 116ms (383 modules)
+ ✓ Compiled in 137ms (383 modules)
+ ✓ Compiled in 188ms (383 modules)
+ ✓ Compiled in 111ms (383 modules)
+ ✓ Compiled in 116ms (383 modules)
+ ✓ Compiled in 109ms (383 modules)
+ ✓ Compiled in 115ms (383 modules)
+ ✓ Compiled in 118ms (383 modules)
+ ✓ Compiled in 130ms (383 modules)
+ ✓ Compiled in 138ms (383 modules)
+ ✓ Compiled in 146ms (383 modules)
+ ✓ Compiled in 178ms (383 modules)
+ ✓ Compiled in 138ms (383 modules)
+ ✓ Compiled in 123ms (383 modules)
+ ✓ Compiled in 127ms (383 modules)
+ ✓ Compiled in 132ms (383 modules)
+ ✓ Compiled in 145ms (383 modules)
+ ✓ Compiled in 149ms (383 modules)
+ ✓ Compiled in 263ms (383 modules)
+ ✓ Compiled in 252ms (383 modules)
+ ✓ Compiled in 348ms (383 modules)
+ ✓ Compiled in 755ms (383 modules)
+ ✓ Compiled in 1732ms (383 modules)
+ ✓ Compiled in 1824ms (383 modules)
+ ✓ Compiled in 1544ms (383 modules)
+ ✓ Compiled in 1439ms (383 modules)
+ ✓ Compiled in 1546ms (383 modules)
+ ✓ Compiled in 1291ms (383 modules)
+ ✓ Compiled in 1532ms (383 modules)
+ ✓ Compiled in 1315ms (383 modules)
+ ✓ Compiled in 1758ms (383 modules)
+ ✓ Compiled in 1518ms (383 modules)
+ ✓ Compiled in 1203ms (383 modules)
+ ✓ Compiled in 1057ms (383 modules)
+ ✓ Compiled in 618ms (383 modules)
+ ✓ Compiled in 543ms (383 modules)
+ ✓ Compiled in 579ms (383 modules)
+ ✓ Compiled in 367ms (383 modules)
+ ✓ Compiled in 350ms (383 modules)
+ ✓ Compiled in 364ms (383 modules)
+ ✓ Compiled in 277ms (383 modules)
+ ✓ Compiled in 270ms (383 modules)
+ ✓ Compiled in 294ms (383 modules)
+ ✓ Compiled in 267ms (383 modules)
+ ✓ Compiled in 275ms (383 modules)
+ ✓ Compiled in 284ms (383 modules)
+ ✓ Compiled in 268ms (383 modules)
+ ✓ Compiled in 224ms (383 modules)
+ ✓ Compiled in 236ms (383 modules)
+ ✓ Compiled in 245ms (383 modules)
+ ✓ Compiled in 218ms (383 modules)
+ ✓ Compiled in 197ms (383 modules)
+ ✓ Compiled in 200ms (383 modules)
+ ✓ Compiled in 211ms (383 modules)
+ ✓ Compiled in 211ms (383 modules)
+ ✓ Compiled in 200ms (383 modules)
+ ✓ Compiled in 198ms (383 modules)
+ ✓ Compiled in 189ms (383 modules)
+ ✓ Compiled in 194ms (383 modules)
+ ✓ Compiled in 195ms (383 modules)
+ ✓ Compiled in 185ms (383 modules)
+ ✓ Compiled in 168ms (383 modules)
+ ✓ Compiled in 174ms (383 modules)
+ ✓ Compiled in 174ms (383 modules)
+ ✓ Compiled in 208ms (383 modules)
+ ✓ Compiled in 185ms (383 modules)
+ ✓ Compiled in 173ms (383 modules)
+ ✓ Compiled in 179ms (383 modules)
+ ✓ Compiled in 290ms (383 modules)
+ ✓ Compiled in 639ms (383 modules)
+ ✓ Compiled in 169ms (383 modules)
+ ✓ Compiled in 152ms (383 modules)
+ ✓ Compiled in 161ms (383 modules)
+ ✓ Compiled in 184ms (383 modules)
+ ✓ Compiled in 161ms (383 modules)
+ ✓ Compiled in 158ms (383 modules)
+ ✓ Compiled in 144ms (383 modules)
+ ✓ Compiled in 153ms (383 modules)
+ ✓ Compiled in 151ms (383 modules)
+ ✓ Compiled in 146ms (383 modules)
+ ✓ Compiled in 144ms (383 modules)
+ ✓ Compiled in 142ms (383 modules)
+ ✓ Compiled in 134ms (383 modules)
+ ✓ Compiled in 143ms (383 modules)
+ ✓ Compiled in 129ms (383 modules)
+ ✓ Compiled in 143ms (383 modules)
+ ✓ Compiled in 147ms (383 modules)
+ ✓ Compiled in 175ms (383 modules)
+ ✓ Compiled in 170ms (383 modules)
+ ✓ Compiled in 163ms (383 modules)
+ ✓ Compiled in 160ms (383 modules)
+ ✓ Compiled in 173ms (383 modules)
+ ✓ Compiled in 214ms (383 modules)
+ ✓ Compiled in 215ms (383 modules)
+ ✓ Compiled in 217ms (383 modules)
+ ✓ Compiled in 211ms (383 modules)
+ ✓ Compiled in 238ms (383 modules)
+ ✓ Compiled in 339ms (383 modules)
+ ✓ Compiled in 333ms (383 modules)
+ ✓ Compiled in 348ms (383 modules)
+ ✓ Compiled in 654ms (383 modules)
+ ✓ Compiled in 695ms (383 modules)
+ ✓ Compiled in 930ms (383 modules)
+ ✓ Compiled in 902ms (383 modules)
+ ✓ Compiled in 938ms (383 modules)
+ ✓ Compiled in 908ms (383 modules)
+ ✓ Compiled in 934ms (383 modules)
+ ✓ Compiled in 952ms (383 modules)
+ ✓ Compiled in 1608ms (383 modules)
+ ✓ Compiled in 996ms (383 modules)
+ ✓ Compiled in 1059ms (383 modules)
+ ✓ Compiled in 1108ms (383 modules)
+ ✓ Compiled in 3.2s (383 modules)
+ GET /quiz 200 in 3027ms
+ ✓ Compiled in 2.6s (383 modules)
+ ✓ Compiled in 9.3s (383 modules)
+ ✓ Compiled in 3s (383 modules)
+ ✓ Compiled in 1275ms (383 modules)
+ ✓ Compiled in 585ms (383 modules)
+ ✓ Compiled in 393ms (383 modules)
+ ✓ Compiled in 309ms (383 modules)
+ ✓ Compiled in 448ms (383 modules)
+ ✓ Compiled in 265ms (383 modules)
+ ✓ Compiled in 449ms (383 modules)
+ ✓ Compiled in 371ms (383 modules)
+ ✓ Compiled in 255ms (383 modules)
+ ✓ Compiled in 289ms (383 modules)
+ GET /quiz 200 in 388ms
+ ✓ Compiled in 403ms (383 modules)
+ ✓ Compiled in 280ms (383 modules)
+ ✓ Compiled in 241ms (383 modules)
+ GET /quiz 200 in 229ms
+ ✓ Compiled in 199ms (383 modules)
+ ✓ Compiled in 219ms (383 modules)
+ GET /quiz 200 in 201ms
+ ✓ Compiled in 159ms (383 modules)
+ ⨯ SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>) {
+  page: '/quiz'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 2.3s (1158 modules)
+ ✓ Compiled in 294ms (625 modules)
+ GET /quiz 500 in 2913ms
+ ✓ Compiled in 277ms (625 modules)
+ GET /quiz 200 in 275ms
+ ✓ Compiled in 318ms (625 modules)
+ GET /quiz 200 in 143ms
+ ✓ Compiled in 255ms (625 modules)
+ GET /quiz 200 in 121ms
+ ✓ Compiled in 186ms (625 modules)
+ GET /quiz 200 in 96ms
+ ✓ Compiled in 171ms (625 modules)
+ GET /quiz 200 in 88ms
+ ✓ Compiled in 187ms (625 modules)
+ GET /quiz 200 in 104ms
+ ✓ Compiled in 211ms (625 modules)
+ GET /quiz 200 in 122ms
+ ✓ Compiled in 229ms (625 modules)
+ GET /quiz 200 in 111ms
+ ✓ Compiled in 170ms (625 modules)
+ GET /quiz 200 in 88ms
+ ✓ Compiled in 170ms (625 modules)
+ GET /quiz 200 in 57ms
+ ✓ Compiled in 192ms (625 modules)
+ GET /quiz 200 in 102ms
+ ✓ Compiled in 197ms (625 modules)
+ GET /quiz 200 in 69ms
+ ✓ Compiled in 202ms (625 modules)
+ GET /quiz 200 in 62ms
+ ✓ Compiled in 190ms (625 modules)
+ GET /quiz 200 in 103ms
+ ✓ Compiled in 203ms (625 modules)
+ GET /quiz 200 in 110ms
+ ✓ Compiled in 265ms (625 modules)
+ GET /quiz 200 in 138ms
+ ✓ Compiled in 258ms (625 modules)
+ GET /quiz 200 in 130ms
+ ✓ Compiled in 215ms (625 modules)
+ GET /quiz 200 in 125ms
+ ✓ Compiled in 201ms (625 modules)
+ GET /quiz 200 in 94ms
+ ✓ Compiled in 168ms (625 modules)
+ GET /quiz 200 in 100ms
+ ✓ Compiled in 194ms (625 modules)
+ GET /quiz 200 in 107ms
+ ✓ Compiled in 200ms (625 modules)
+ GET /quiz 200 in 107ms
+ ✓ Compiled in 207ms (625 modules)
+ GET /quiz 200 in 98ms
+ ✓ Compiled in 178ms (625 modules)
+ GET /quiz 200 in 98ms
+ ✓ Compiled in 189ms (625 modules)
+ GET /quiz 200 in 77ms
+ ✓ Compiled in 230ms (625 modules)
+ GET /quiz 200 in 126ms
+ ✓ Compiled in 247ms (625 modules)
+ GET /quiz 200 in 131ms
+ ✓ Compiled in 262ms (625 modules)
+ GET /quiz 200 in 108ms
+ ✓ Compiled in 227ms (625 modules)
+ GET /quiz 200 in 124ms
+ ✓ Compiled in 252ms (625 modules)
+ GET /quiz 200 in 158ms
+ ✓ Compiled in 262ms (625 modules)
+ GET /quiz 200 in 132ms
+ ✓ Compiled in 223ms (625 modules)
+ GET /quiz 200 in 107ms
+ ✓ Compiled in 288ms (625 modules)
+ GET /quiz 200 in 170ms
+ ✓ Compiled in 262ms (625 modules)
+ GET /quiz 200 in 141ms
+ ✓ Compiled in 269ms (625 modules)
+ GET /quiz 200 in 121ms
+ ✓ Compiled in 251ms (625 modules)
+ GET /quiz 200 in 120ms
+ ✓ Compiled in 254ms (625 modules)
+ GET /quiz 200 in 153ms
+ ✓ Compiled in 309ms (625 modules)
+ GET /quiz 200 in 137ms
+ ✓ Compiled in 277ms (625 modules)
+ GET /quiz 200 in 128ms
+ ✓ Compiled in 266ms (625 modules)
+ GET /quiz 200 in 141ms
+ ✓ Compiled in 318ms (625 modules)
+ GET /quiz 200 in 177ms
+ ✓ Compiled in 359ms (625 modules)
+ GET /quiz 200 in 157ms
+ ✓ Compiled in 321ms (625 modules)
+ GET /quiz 200 in 152ms
+ ✓ Compiled in 422ms (625 modules)
+ GET /quiz 200 in 211ms
+ ✓ Compiled in 437ms (625 modules)
+ GET /quiz 200 in 191ms
+ ✓ Compiled in 564ms (625 modules)
+ GET /quiz 200 in 324ms
+ ✓ Compiled in 575ms (625 modules)
+ GET /quiz 200 in 299ms
+ ✓ Compiled in 896ms (625 modules)
+ GET /quiz 200 in 503ms
+ ✓ Compiled in 1833ms (625 modules)
+ GET /quiz 200 in 1989ms
+ ✓ Compiled in 1978ms (625 modules)
+ GET /quiz 200 in 2288ms
+ ✓ Compiled in 2.3s (625 modules)
+ ✓ Compiled in 2.2s (625 modules)
+ GET /quiz 200 in 2292ms
+ ✓ Compiled in 2.2s (625 modules)
+ GET /quiz 200 in 1172ms
+ ✓ Compiled in 1008ms (625 modules)
+ GET /quiz 200 in 641ms
+ ✓ Compiled in 748ms (625 modules)
+ GET /quiz 200 in 466ms
+ ✓ Compiled in 571ms (625 modules)
+ GET /quiz 200 in 365ms
+ ✓ Compiled in 435ms (625 modules)
+ GET /quiz 200 in 316ms
+ ✓ Compiled in 431ms (625 modules)
+ GET /quiz 200 in 310ms
+ ✓ Compiled in 404ms (625 modules)
+ GET /quiz 200 in 231ms
+ ✓ Compiled in 292ms (625 modules)
+ GET /quiz 200 in 98ms
+ ✓ Compiled in 338ms (625 modules)
+ GET /quiz 200 in 144ms
+ ✓ Compiled in 296ms (625 modules)
+ GET /quiz 200 in 147ms
+ ✓ Compiled in 281ms (625 modules)
+ GET /quiz 200 in 121ms
+ ✓ Compiled in 374ms (625 modules)
+ GET /quiz 200 in 268ms
+ ✓ Compiled in 331ms (625 modules)
+ GET /quiz 200 in 140ms
+ ✓ Compiled in 231ms (625 modules)
+ GET /quiz 200 in 99ms
+ ✓ Compiled in 217ms (625 modules)
+ GET /quiz 200 in 123ms
+ ✓ Compiled in 244ms (625 modules)
+ GET /quiz 200 in 103ms
+ ✓ Compiled in 224ms (625 modules)
+ GET /quiz 200 in 107ms
+ ✓ Compiled in 216ms (625 modules)
+ GET /quiz 200 in 98ms
+ ✓ Compiled in 203ms (625 modules)
+ GET /quiz 200 in 105ms
+ ✓ Compiled in 220ms (625 modules)
+ GET /quiz 200 in 110ms
+ ✓ Compiled in 205ms (625 modules)
+ GET /quiz 200 in 95ms
+ ✓ Compiled in 207ms (625 modules)
+ GET /quiz 200 in 107ms
+ ✓ Compiled in 192ms (625 modules)
+ GET /quiz 200 in 98ms
+ ✓ Compiled in 175ms (625 modules)
+ GET /quiz 200 in 99ms
+ ✓ Compiled in 197ms (625 modules)
+ GET /quiz 200 in 98ms
+ ✓ Compiled in 192ms (625 modules)
+ GET /quiz 200 in 93ms
+ ✓ Compiled in 179ms (625 modules)
+ GET /quiz 200 in 62ms
+ ✓ Compiled in 202ms (625 modules)
+ GET /quiz 200 in 106ms
+ ✓ Compiled in 179ms (625 modules)
+ GET /quiz 200 in 77ms
+ ✓ Compiled /quiz-questions in 471ms (1168 modules)
+ GET /quiz-questions 200 in 432ms
+ ✓ Compiled in 240ms (625 modules)
+ GET /quiz-questions 200 in 71ms
+ ✓ Compiled in 221ms (625 modules)
+ GET /quiz-questions 200 in 110ms
+ ✓ Compiled in 199ms (625 modules)
+ GET /quiz-questions 200 in 101ms
+ ✓ Compiled in 185ms (625 modules)
+ GET /quiz-questions 200 in 94ms
+ ✓ Compiled in 216ms (625 modules)
+ GET /quiz-questions 200 in 67ms
+ ✓ Compiled in 192ms (625 modules)
+ GET /quiz-questions 200 in 118ms
+ ✓ Compiled in 202ms (625 modules)
+ GET /quiz-questions 200 in 87ms
+ ✓ Compiled in 171ms (625 modules)
+ GET /quiz-questions 200 in 67ms
+ ✓ Compiled in 196ms (625 modules)
+ GET /quiz-questions 200 in 109ms
+ ✓ Compiled in 188ms (625 modules)
+ GET /quiz-questions 200 in 95ms
+ ✓ Compiled in 184ms (625 modules)
+ GET /quiz-questions 200 in 96ms
+ ✓ Compiled in 172ms (625 modules)
+ GET /quiz-questions 200 in 93ms
+ ✓ Compiled in 173ms (625 modules)
+ GET /quiz-questions 200 in 99ms
+ ✓ Compiled in 190ms (625 modules)
+ GET /quiz-questions 200 in 93ms
+ ✓ Compiled in 192ms (625 modules)
+ GET /quiz-questions 200 in 99ms
+ ✓ Compiled in 181ms (625 modules)
+ GET /quiz-questions 200 in 50ms
+ ✓ Compiled in 183ms (625 modules)
+ GET /quiz-questions 200 in 90ms
+ ✓ Compiled in 174ms (625 modules)
+ GET /quiz-questions 200 in 89ms
+ ✓ Compiled in 186ms (625 modules)
+ GET /quiz-questions 200 in 111ms
+ ✓ Compiled in 187ms (625 modules)
+ GET /quiz-questions 200 in 95ms
+ ✓ Compiled in 174ms (625 modules)
+ GET /quiz-questions 200 in 65ms
+ ✓ Compiled in 188ms (625 modules)
+ GET /quiz-questions 200 in 93ms
+ ✓ Compiled in 178ms (625 modules)
+ GET /quiz-questions 200 in 91ms
+ ✓ Compiled in 180ms (625 modules)
+ GET /quiz-questions 200 in 65ms
+ ✓ Compiled in 192ms (625 modules)
+ GET /quiz-questions 200 in 97ms
+ ✓ Compiled in 189ms (625 modules)
+ GET /quiz-questions 200 in 92ms
+ ✓ Compiled in 192ms (625 modules)
+ GET /quiz-questions 200 in 97ms
+ ✓ Compiled in 178ms (625 modules)
+ GET /quiz-questions 200 in 103ms
+ ✓ Compiled in 206ms (625 modules)
+ GET /quiz-questions 200 in 67ms
+ ✓ Compiled in 223ms (625 modules)
+ GET /quiz-questions 200 in 114ms
+ ✓ Compiled in 223ms (625 modules)
+ GET /quiz-questions 200 in 107ms
+ ✓ Compiled in 210ms (625 modules)
+ GET /quiz-questions 200 in 116ms
+ ✓ Compiled in 219ms (625 modules)
+ GET /quiz-questions 200 in 109ms
+ ✓ Compiled in 247ms (625 modules)
+ GET /quiz-questions 200 in 130ms
+ ✓ Compiled in 266ms (625 modules)
+ GET /quiz-questions 200 in 120ms
+ ✓ Compiled in 246ms (625 modules)
+ GET /quiz-questions 200 in 119ms
+ ✓ Compiled in 249ms (625 modules)
+ GET /quiz-questions 200 in 122ms
+ ✓ Compiled in 265ms (625 modules)
+ GET /quiz-questions 200 in 151ms
+ ✓ Compiled in 276ms (625 modules)
+ GET /quiz-questions 200 in 134ms
+ ✓ Compiled in 269ms (625 modules)
+ GET /quiz-questions 200 in 140ms
+ ✓ Compiled in 329ms (625 modules)
+ GET /quiz-questions 200 in 184ms
+ ✓ Compiled in 359ms (625 modules)
+ GET /quiz-questions 200 in 196ms
+ ✓ Compiled in 342ms (625 modules)
+ GET /quiz-questions 200 in 169ms
+ ✓ Compiled in 381ms (625 modules)
+ GET /quiz-questions 200 in 206ms
+ ✓ Compiled in 393ms (625 modules)
+ GET /quiz-questions 200 in 205ms
+ ✓ Compiled in 426ms (625 modules)
+ GET /quiz-questions 200 in 268ms
+ ✓ Compiled in 532ms (625 modules)
+ GET /quiz-questions 200 in 272ms
+ ✓ Compiled in 660ms (625 modules)
+ GET /quiz-questions 200 in 473ms
+ ✓ Compiled in 1249ms (625 modules)
+ GET /quiz-questions 200 in 1980ms
+ ✓ Compiled in 2.3s (625 modules)
+ GET /quiz-questions 200 in 2075ms
+ ✓ Compiled in 2.1s (625 modules)
+ ✓ Compiled in 3.2s (625 modules)
+ GET /quiz-questions 200 in 3165ms
+ ✓ Compiled in 2.2s (625 modules)
+ GET /quiz-questions 200 in 1366ms
+ ✓ Compiled in 4.5s (625 modules)
+ GET /quiz-questions 200 in 5197ms
+ ✓ Compiled in 4.9s (625 modules)
+ GET /quiz-questions 200 in 4584ms
+ ✓ Compiled in 4.6s (625 modules)
+ ✓ Compiled in 5.6s (625 modules)
+ GET /quiz-questions 200 in 6932ms
+ ✓ Compiled in 6s (625 modules)
+ GET /quiz-questions 200 in 5694ms
+ ✓ Compiled in 5.2s (625 modules)
+ GET /quiz-questions 200 in 1424ms
+ ✓ Compiled in 1385ms (625 modules)
+ ✓ Compiled in 553ms (625 modules)
+ GET /quiz-questions 200 in 375ms
+ ✓ Compiled in 471ms (625 modules)
+ GET /quiz-questions 200 in 554ms
+ ✓ Compiled in 694ms (625 modules)
+ GET /quiz-questions 200 in 322ms
+ ✓ Compiled in 397ms (625 modules)
+ GET /quiz-questions 200 in 258ms
+ ✓ Compiled in 329ms (625 modules)
+ GET /quiz-questions 200 in 206ms
+ ✓ Compiled in 254ms (625 modules)
+ GET /quiz-questions 200 in 67ms
+ ✓ Compiled in 235ms (625 modules)
+ GET /quiz-questions 200 in 122ms
+ ✓ Compiled in 210ms (625 modules)
+ GET /quiz-questions 200 in 453ms
+ ✓ Compiled in 940ms (625 modules)
+ GET /quiz-questions 200 in 166ms
+ ✓ Compiled in 229ms (625 modules)
+ GET /quiz-questions 200 in 142ms
+ ✓ Compiled in 263ms (625 modules)
+ GET /quiz-questions 200 in 134ms
+ ✓ Compiled in 244ms (625 modules)
+ GET /quiz-questions 200 in 119ms
+ ✓ Compiled in 229ms (625 modules)
+ GET /quiz-questions 200 in 128ms
+ ✓ Compiled in 308ms (625 modules)
+ GET /quiz-questions 200 in 182ms
+ ✓ Compiled in 303ms (625 modules)
+ GET /quiz-questions 200 in 122ms
+ ✓ Compiled in 248ms (625 modules)
+ GET /quiz-questions 200 in 132ms
+ ✓ Compiled in 233ms (625 modules)
+ GET /quiz-questions 200 in 122ms
+ ✓ Compiled in 239ms (625 modules)
+ GET /quiz-questions 200 in 119ms
+ ✓ Compiled in 267ms (625 modules)
+ GET /quiz-questions 200 in 138ms
+ ✓ Compiled in 263ms (625 modules)
+ GET /quiz-questions 200 in 127ms
+ ✓ Compiled in 229ms (625 modules)
+ GET /quiz-questions 200 in 110ms
+ ✓ Compiled in 295ms (625 modules)
+ GET /quiz-questions 200 in 151ms
+ ✓ Compiled in 280ms (625 modules)
+ GET /quiz-questions 200 in 125ms
+ ✓ Compiled in 245ms (625 modules)
+ GET /quiz-questions 200 in 116ms
+ ✓ Compiled in 207ms (625 modules)
+ GET /quiz-questions 200 in 114ms
+ ✓ Compiled in 245ms (625 modules)
+ GET /quiz-questions 200 in 109ms
+ ✓ Compiled in 226ms (625 modules)
+ GET /quiz-questions 200 in 119ms
+ ✓ Compiled in 243ms (625 modules)
+ GET /quiz-questions 200 in 69ms
+ ✓ Compiled in 204ms (625 modules)
+ GET /quiz-questions 200 in 109ms
+ ✓ Compiled in 224ms (625 modules)
+ GET /quiz-questions 200 in 123ms
+ ✓ Compiled in 238ms (625 modules)
+ GET /quiz-questions 200 in 116ms
+ ✓ Compiled in 217ms (625 modules)
+ GET /quiz-questions 200 in 103ms
+ ✓ Compiled in 206ms (625 modules)
+ GET /quiz-questions 200 in 102ms
+ ✓ Compiled in 188ms (625 modules)
+ GET /quiz-questions 200 in 100ms
+ ✓ Compiled in 226ms (625 modules)
+ GET /quiz-questions 200 in 115ms
+ ✓ Compiled in 246ms (625 modules)
+ GET /quiz-questions 200 in 149ms
+ ✓ Compiled in 232ms (624 modules)
+ GET /quiz-questions 200 in 186ms
+ ✓ Compiled in 200ms (624 modules)
+ GET /quiz-questions 200 in 190ms
+ ✓ Compiled in 244ms (624 modules)
+ GET /quiz-questions 200 in 79ms
+ ✓ Compiled in 235ms (624 modules)
+ GET /quiz-questions 200 in 217ms
+ ✓ Compiled in 213ms (624 modules)
+ GET /quiz-questions 200 in 173ms
+ ✓ Compiled in 220ms (624 modules)
+ GET /quiz-questions 200 in 66ms
+ ✓ Compiled in 207ms (624 modules)
+ GET /quiz-questions 200 in 208ms
+ ✓ Compiled in 220ms (624 modules)
+ GET /quiz-questions 200 in 184ms
+ ✓ Compiled in 235ms (624 modules)
+ GET /quiz-questions 200 in 176ms
+ ✓ Compiled in 248ms (624 modules)
+ GET /quiz-questions 200 in 139ms
+ ✓ Compiled in 182ms (624 modules)
+ GET /quiz-questions 200 in 80ms
+ ✓ Compiled in 215ms (624 modules)
+ GET /quiz-questions 200 in 117ms
+ ✓ Compiled in 218ms (624 modules)
+ GET /quiz-questions 200 in 177ms
+ ✓ Compiled in 234ms (624 modules)
+ GET /quiz-questions 200 in 173ms
+ ✓ Compiled in 223ms (624 modules)
+ GET /quiz-questions 200 in 156ms
+ ✓ Compiled in 213ms (624 modules)
+ GET /quiz-questions 200 in 199ms
+ ✓ Compiled in 262ms (624 modules)
+ GET /quiz-questions 200 in 203ms
+ ✓ Compiled in 261ms (624 modules)
+ GET /quiz-questions 200 in 214ms
+ ✓ Compiled in 277ms (624 modules)
+ GET /quiz-questions 200 in 211ms
+ ✓ Compiled in 289ms (624 modules)
+ GET /quiz-questions 200 in 237ms
+ ✓ Compiled in 316ms (624 modules)
+ GET /quiz-questions 200 in 294ms
+ ✓ Compiled in 380ms (624 modules)
+ GET /quiz-questions 200 in 289ms
+ ✓ Compiled in 382ms (624 modules)
+ GET /quiz-questions 200 in 409ms
+ ✓ Compiled in 484ms (624 modules)
+ GET /quiz-questions 200 in 309ms
+ ✓ Compiled in 399ms (624 modules)
+ GET /quiz-questions 200 in 303ms
+ ✓ Compiled in 409ms (624 modules)
+ GET /quiz-questions 200 in 366ms
+ ✓ Compiled in 453ms (624 modules)
+ GET /quiz-questions 200 in 398ms
+ ✓ Compiled in 537ms (624 modules)
+ GET /quiz-questions 200 in 483ms
+ ✓ Compiled in 604ms (624 modules)
+ GET /quiz-questions 200 in 706ms
+ ✓ Compiled in 889ms (624 modules)
+ GET /quiz-questions 200 in 1129ms
+ ✓ Compiled in 1728ms (624 modules)
+ GET /quiz-questions 200 in 2201ms
+ ✓ Compiled in 2.1s (624 modules)
+ ✓ Compiled in 2.2s (624 modules)
+ GET /quiz-questions 200 in 2493ms
+ GET /quiz-questions 200 in 2441ms
+ ✓ Compiled in 3.2s (624 modules)
+ GET /quiz-questions 200 in 1895ms
+ ✓ Compiled in 1753ms (624 modules)
+ ✓ Compiled in 654ms (624 modules)
+ GET /quiz-questions 200 in 598ms
+ ✓ Compiled in 576ms (624 modules)
+ GET /quiz-questions 200 in 376ms
+ ✓ Compiled in 517ms (624 modules)
+ GET /quiz-questions 200 in 426ms
+ ✓ Compiled in 424ms (624 modules)
+ GET /quiz-questions 200 in 295ms
+ ✓ Compiled in 382ms (624 modules)
+ GET /quiz-questions 200 in 301ms
+ ✓ Compiled in 380ms (624 modules)
+ GET /quiz-questions 200 in 708ms
+ ✓ Compiled in 715ms (624 modules)
+🎯 Event: session_started
+  Context: system
+  Time: 2025-08-01T02:31:10.740Z
+  Session: session_1754015470739_47xag45wt
+ GET /quiz-questions 200 in 779ms
+ ✓ Compiled in 890ms (624 modules)
+ GET /quiz-questions 200 in 518ms
+ ✓ Compiled in 482ms (624 modules)
+ GET /quiz-questions 200 in 488ms
+ ✓ Compiled in 311ms (624 modules)
+ GET /quiz-questions 200 in 232ms
+ ✓ Compiled in 279ms (624 modules)
+ GET /quiz-questions 200 in 180ms
+ ✓ Compiled in 240ms (624 modules)
+ GET /quiz-questions 200 in 184ms
+ ✓ Compiled in 252ms (624 modules)
+ GET /quiz-questions 200 in 205ms
+ ✓ Compiled in 276ms (624 modules)
+ GET /quiz-questions 200 in 99ms
+ ✓ Compiled in 255ms (624 modules)
+ GET /quiz-questions 200 in 129ms
+ ✓ Compiled in 216ms (624 modules)
+ GET /quiz-questions 200 in 170ms
+ ✓ Compiled in 288ms (624 modules)
+ GET /quiz-questions 200 in 291ms
+ ✓ Compiled in 384ms (624 modules)
+ GET /quiz-questions 200 in 211ms
+ ✓ Compiled in 291ms (624 modules)
+ GET /quiz-questions 200 in 231ms
+ ✓ Compiled in 470ms (624 modules)
+ GET /quiz-questions 200 in 365ms
+ ✓ Compiled in 349ms (624 modules)
+ ✓ Compiled in 227ms (624 modules)
+ GET /quiz-questions 200 in 229ms
+ ✓ Compiled in 307ms (624 modules)
+ GET /quiz-questions 200 in 303ms
+ ✓ Compiled in 299ms (624 modules)
+ GET /quiz-questions 200 in 287ms
+ ✓ Compiled in 211ms (624 modules)
+ GET /quiz-questions 200 in 300ms
+ ✓ Compiled in 223ms (624 modules)
+ GET /quiz-questions 200 in 260ms
+ ✓ Compiled in 283ms (624 modules)
+ GET /quiz-questions 200 in 188ms
+ ✓ Compiled in 280ms (624 modules)
+ GET /quiz-questions 200 in 144ms
+ ✓ Compiled in 224ms (624 modules)
+ GET /quiz-questions 200 in 197ms
+ ✓ Compiled in 199ms (624 modules)
+ GET /quiz-questions 200 in 204ms
+ ✓ Compiled in 238ms (624 modules)
+ GET /quiz-questions 200 in 281ms
+ ✓ Compiled in 282ms (624 modules)
+ GET /quiz-questions 200 in 146ms
+ ✓ Compiled in 190ms (624 modules)
+ ✓ Compiled in 227ms (624 modules)
+ GET /quiz-questions 200 in 202ms
+ ✓ Compiled in 182ms (624 modules)
+ ✓ Compiled in 267ms (624 modules)
+ GET /quiz-questions 200 in 241ms
+ ✓ Compiled in 216ms (624 modules)
+ GET /quiz-questions 200 in 145ms
+ ✓ Compiled in 195ms (624 modules)
+ GET /quiz-questions 200 in 159ms
+ ✓ Compiled in 214ms (624 modules)
+ GET /quiz-questions 200 in 188ms
+ ✓ Compiled in 289ms (624 modules)
+ GET /quiz-questions 200 in 197ms
+ ✓ Compiled in 244ms (624 modules)
+ ✓ Compiled in 203ms (624 modules)
+ GET /quiz-questions 200 in 207ms
+ ✓ Compiled in 197ms (624 modules)
+ ✓ Compiled in 219ms (624 modules)
+ ✓ Compiled in 250ms (624 modules)
+ ✓ Compiled in 198ms (624 modules)
+ ✓ Compiled in 212ms (624 modules)
+ ✓ Compiled in 197ms (624 modules)
+ ✓ Compiled in 255ms (624 modules)
+ ✓ Compiled in 279ms (624 modules)
+ ✓ Compiled in 231ms (624 modules)
+ ✓ Compiled in 231ms (624 modules)
+ ✓ Compiled in 313ms (624 modules)
+ ✓ Compiled in 260ms (624 modules)
+ ✓ Compiled in 251ms (624 modules)
+ ✓ Compiled in 343ms (624 modules)
+ ✓ Compiled in 354ms (624 modules)
+ ✓ Compiled in 314ms (624 modules)
+ ✓ Compiled in 544ms (624 modules)
+ ✓ Compiled in 362ms (624 modules)
+ ✓ Compiled in 495ms (624 modules)
+ ✓ Compiled in 498ms (624 modules)
+ ✓ Compiled in 644ms (624 modules)
+ ✓ Compiled in 794ms (624 modules)
+ ✓ Compiled in 1530ms (624 modules)
+ ○ Compiling /quiz-results/[slug] ...
+ ✓ Compiled /quiz-results/[slug] in 11s (1137 modules)
+🎯 Event: session_started
+  Context: system
+  Time: 2025-08-01T02:31:44.706Z
+  Session: session_1754015504705_agsaliibm
+ GET /quiz-results/the-nurturer 200 in 15899ms
+ ✓ Compiled in 6.5s (624 modules)
+ ✓ Compiled in 4.8s (624 modules)
+ ✓ Compiled in 2.8s (624 modules)
+ ✓ Compiled in 1853ms (624 modules)
+ ✓ Compiled in 2.1s (624 modules)
+ ✓ Compiled in 1984ms (624 modules)
+ ✓ Compiled in 1668ms (624 modules)
+ ✓ Compiled in 1628ms (624 modules)
+ ✓ Compiled in 1630ms (624 modules)
+ ✓ Compiled in 1877ms (624 modules)
+ ✓ Compiled in 2.4s (624 modules)
+ ✓ Compiled in 853ms (624 modules)
+ ✓ Compiled in 847ms (624 modules)
+ ✓ Compiled in 760ms (624 modules)
+ GET /quiz-results/the-nurturer 200 in 803ms
+ ✓ Compiled in 712ms (624 modules)
+ ✓ Compiled in 420ms (624 modules)
+ GET /quiz-results/the-nurturer 200 in 526ms
+ ✓ Compiled in 434ms (624 modules)
+ ✓ Compiled in 308ms (624 modules)
+ GET /quiz-results/the-nurturer 200 in 348ms
+ ✓ Compiled in 406ms (624 modules)
+ ✓ Compiled in 436ms (624 modules)
+ GET /quiz-results/the-nurturer 200 in 323ms
+ ✓ Compiled in 426ms (624 modules)
+ ✓ Compiled in 292ms (624 modules)
+ GET /quiz-results/the-nurturer 200 in 330ms
+ ✓ Compiled in 417ms (624 modules)
+ ✓ Compiled in 393ms (624 modules)
+ GET /quiz-results/the-nurturer 200 in 440ms
+ ✓ Compiled in 447ms (624 modules)
+ ✓ Compiled in 305ms (624 modules)
+ GET /quiz-results/the-nurturer 200 in 330ms
+ ✓ Compiled in 362ms (624 modules)
+ ✓ Compiled in 299ms (624 modules)
+ GET /quiz-results/the-nurturer 200 in 388ms
+ ✓ Compiled in 355ms (624 modules)
+ ✓ Compiled in 270ms (624 modules)
+ GET /quiz-results/the-nurturer 200 in 390ms
+ ✓ Compiled in 427ms (624 modules)
+ ✓ Compiled in 361ms (624 modules)
+ GET /quiz-results/the-nurturer 200 in 204ms
+ ✓ Compiled in 355ms (624 modules)
+ ✓ Compiled in 335ms (624 modules)
+ GET /quiz-results/the-nurturer 200 in 357ms
+ ✓ Compiled in 384ms (624 modules)
+ ✓ Compiled in 412ms (624 modules)
+ GET /quiz-results/the-nurturer 200 in 406ms
+ ✓ Compiled in 382ms (624 modules)
+ ✓ Compiled in 285ms (624 modules)
+ GET /quiz-results/the-nurturer 200 in 443ms
+ ✓ Compiled in 443ms (624 modules)
+ ✓ Compiled in 365ms (624 modules)
+ GET /quiz-results/the-nurturer 200 in 421ms
+ ✓ Compiled in 352ms (624 modules)
+ ✓ Compiled in 249ms (624 modules)
+ GET /quiz-results/the-nurturer 200 in 317ms
+ ✓ Compiled in 322ms (624 modules)
+ ✓ Compiled in 357ms (624 modules)
+ GET /quiz-results/the-nurturer 200 in 200ms
+ ✓ Compiled in 329ms (624 modules)
+ ✓ Compiled in 254ms (624 modules)
+ GET /quiz-results/the-nurturer 200 in 322ms
+ ✓ Compiled in 374ms (624 modules)
+ ✓ Compiled in 339ms (624 modules)
+ GET /quiz-results/the-nurturer 200 in 368ms
+ ✓ Compiled in 361ms (624 modules)
+ ✓ Compiled in 370ms (624 modules)
+ GET /quiz-results/the-nurturer 200 in 260ms
+ ✓ Compiled in 452ms (624 modules)
+ ✓ Compiled in 488ms (624 modules)
+ GET /quiz-results/the-nurturer 200 in 338ms
+ ✓ Compiled in 836ms (624 modules)
+ ✓ Compiled in 742ms (624 modules)
+ ✓ Compiled in 1073ms (624 modules)
+ ✓ Compiled in 1612ms (624 modules)
+ ✓ Compiled in 1576ms (624 modules)
+ ✓ Compiled in 2.3s (624 modules)
+ ✓ Compiled in 7.5s (624 modules)
+ ✓ Compiled in 1702ms (624 modules)
+ ✓ Compiled in 484ms (624 modules)
+ ✓ Compiled in 505ms (624 modules)
+ ✓ Compiled in 347ms (624 modules)
+ ✓ Compiled in 292ms (624 modules)
+ ✓ Compiled in 417ms (624 modules)
+ ✓ Compiled in 330ms (624 modules)
+ ✓ Compiled in 278ms (624 modules)
+ ✓ Compiled in 410ms (624 modules)
+ ✓ Compiled in 420ms (624 modules)
+ ✓ Compiled in 255ms (624 modules)
+ ✓ Compiled in 267ms (624 modules)
+ ✓ Compiled in 274ms (624 modules)
+ ✓ Compiled in 287ms (624 modules)
+ ✓ Compiled in 515ms (624 modules)
+ ✓ Compiled in 494ms (624 modules)
+ ✓ Compiled in 490ms (624 modules)
+ ✓ Compiled in 338ms (624 modules)
+ ✓ Compiled in 201ms (624 modules)
+ ✓ Compiled in 168ms (624 modules)
+ ✓ Compiled in 231ms (624 modules)
+ ✓ Compiled in 203ms (624 modules)
+ ✓ Compiled in 167ms (624 modules)
+ ✓ Compiled in 146ms (624 modules)
+ ✓ Compiled in 153ms (624 modules)
+ ✓ Compiled in 167ms (624 modules)
+ ✓ Compiled in 217ms (624 modules)
+ ✓ Compiled in 169ms (624 modules)
+ ✓ Compiled in 144ms (624 modules)
+ ✓ Compiled in 182ms (624 modules)
+ ✓ Compiled in 214ms (624 modules)
+ ✓ Compiled in 261ms (624 modules)
+ ✓ Compiled in 173ms (624 modules)
+ ✓ Compiled in 165ms (624 modules)
+ ✓ Compiled in 144ms (624 modules)
+ ✓ Compiled in 183ms (624 modules)
+ ✓ Compiled in 185ms (624 modules)
+ ✓ Compiled in 178ms (624 modules)
+ ✓ Compiled in 148ms (624 modules)
+ ✓ Compiled in 150ms (624 modules)
+ ✓ Compiled in 157ms (624 modules)
+ ✓ Compiled in 175ms (624 modules)
+ ✓ Compiled in 186ms (624 modules)
+ ✓ Compiled in 199ms (624 modules)
+ ✓ Compiled in 176ms (624 modules)
+ ✓ Compiled in 159ms (624 modules)
+ ✓ Compiled in 157ms (624 modules)
+ ✓ Compiled in 175ms (624 modules)
+ ✓ Compiled in 176ms (624 modules)
+ ✓ Compiled in 169ms (624 modules)
+ ✓ Compiled in 188ms (624 modules)
+ ✓ Compiled in 192ms (624 modules)
+ ✓ Compiled in 238ms (624 modules)
+ ✓ Compiled in 222ms (624 modules)
+ ✓ Compiled in 229ms (624 modules)
+ ✓ Compiled in 219ms (624 modules)
+ ✓ Compiled in 248ms (624 modules)
+ ✓ Compiled in 292ms (624 modules)
+ ✓ Compiled in 281ms (624 modules)
+ ✓ Compiled in 283ms (624 modules)
+ ✓ Compiled in 389ms (624 modules)
+ ✓ Compiled in 416ms (624 modules)
+ ✓ Compiled in 426ms (624 modules)
+ ✓ Compiled in 592ms (624 modules)
+ ✓ Compiled in 901ms (624 modules)
+ ✓ Compiled in 1208ms (624 modules)
+ ✓ Compiled in 2.1s (624 modules)
+ ✓ Compiled in 3.2s (624 modules)
+ ✓ Compiled in 2.1s (624 modules)
+ ✓ Compiled in 1671ms (624 modules)
+ ✓ Compiled in 2.2s (624 modules)
+ ✓ Compiled in 1721ms (624 modules)
+ ✓ Compiled in 2s (624 modules)
+ ✓ Compiled in 2.5s (624 modules)
+ ✓ Compiled in 1842ms (624 modules)
+ ✓ Compiled in 6s (624 modules)
+ ✓ Compiled in 3.9s (624 modules)
+ ✓ Compiled in 4.2s (624 modules)
+ ✓ Compiled in 3.5s (624 modules)
+ ✓ Compiled in 3s (624 modules)
+                                                                                                                                                  
