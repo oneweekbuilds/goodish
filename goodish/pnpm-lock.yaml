@@ -29,9 +29,6 @@ importers:
       '@goodish/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@goodish/goodheart':
-        specifier: workspace:*
-        version: link:../../packages/goodheart
       '@goodish/lib':
         specifier: workspace:*
         version: link:../../packages/lib
@@ -81,9 +78,6 @@ importers:
       '@goodish/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@goodish/goodheart':
-        specifier: workspace:*
-        version: link:../../packages/goodheart
       '@goodish/lib':
         specifier: workspace:*
         version: link:../../packages/lib
@@ -157,31 +151,6 @@ importers:
       tailwindcss:
         specifier: ^3.4.0
         version: 3.4.17
-
-  packages/goodheart:
-    dependencies:
-      '@goodish/lib':
-        specifier: workspace:*
-        version: link:../lib
-      '@goodish/ui':
-        specifier: workspace:*
-        version: link:../ui
-      react:
-        specifier: ^18.2.0
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
-    devDependencies:
-      '@types/react':
-        specifier: ^18.2.45
-        version: 18.3.23
-      '@types/react-dom':
-        specifier: ^18.2.18
-        version: 18.3.7(@types/react@18.3.23)
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.2
 
   packages/lib:
     dependencies:

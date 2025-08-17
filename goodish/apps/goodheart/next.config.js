@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['@goodish/ui', '@goodish/lib', '@goodish/goodheart'],
+  transpilePackages: ['@goodish/ui', '@goodish/lib'],
 }
 
 module.exports = nextConfig
