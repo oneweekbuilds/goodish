@@ -43,8 +43,8 @@ export default function ProjectsPage() {
 
   const categories: ProjectCategory[] = ['nonprofit', 'percent-donated', 'impact-first']
   const filteredProjects = selectedCategory
-    ? seededProjects.filter((p) => p.category === selectedCategory)
-    : seededProjects
+    ? seededProjects.filter((p) => p.category === selectedCategory && !p.hidden)
+    : seededProjects.filter((p) => !p.hidden)
 
   return (
     <div>

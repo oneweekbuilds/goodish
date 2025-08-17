@@ -6,4 +6,5 @@ export interface Project {
   summary: string
   category: ProjectCategory
   href: string
+  hidden?: boolean
 }

@@ -14,6 +14,7 @@ export const projects: Project[] = [
     summary: 'A simple tool to avoid surprise charges—cancel trials on time.',
     category: 'percent-donated',
     href: '#',
+    hidden: true,
   },
   {
     slug: 'next-up',
