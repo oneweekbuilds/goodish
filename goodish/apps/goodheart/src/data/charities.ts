@@ -40,7 +40,7 @@ export const charityData: Record<string, SuperpowerCharities> = {
     otherOption: {
       name: "Taimaka Project",
       description: "Locally-led team fights childhood malnutrition in northeast Nigeria with agility and trust.",
-      donationUrl: "https://www.every.org/taimaka-project",
+      donationUrl: "https://www.every.org/taimaka?viewport=desktop",
       website: "https://www.taimakaproject.org",
       category: "Nutrition"
     }
@@ -49,7 +49,7 @@ export const charityData: Record<string, SuperpowerCharities> = {
     topCharity: {
       name: "Helen Keller Intl – Vitamin A Program",
       description: "Prevents blindness and early death in young children for just a few dollars per dose.",
-      donationUrl: "https://www.every.org/helen-keller-international",
+      donationUrl: "https://www.every.org/hki?viewport=desktop",
       website: "https://www.hki.org",
       category: "Child Health"
     },
@@ -81,7 +81,7 @@ export const charityData: Record<string, SuperpowerCharities> = {
     topCharity: {
       name: "The Humane League",
       description: "Leads corporate campaigns to end cruel farming practices — huge reach per dollar.",
-      donationUrl: "https://www.every.org/the-humane-league",
+      donationUrl: "https://www.every.org/thehumaneleague?viewport=desktop",
       website: "https://thehumaneleague.org",
       category: "Animal Welfare"
     },
@@ -136,7 +136,7 @@ export const charityData: Record<string, SuperpowerCharities> = {
     otherOption: {
       name: "Nuclear Threat Initiative (NTI)",
       description: "Works globally to reduce the risk of nuclear weapons and other catastrophic threats.",
-      donationUrl: "https://www.every.org/nuclear-threat-initiative",
+      donationUrl: "https://www.every.org/nti?viewport=desktop",
       website: "https://www.nti.org",
       category: "Existential Risk"
     }
