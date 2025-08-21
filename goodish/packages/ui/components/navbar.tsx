@@ -24,6 +24,7 @@ export function Navbar({ className, showLogo = true, homeHref = '/', links }: Na
     { href: '/about', label: 'About' },
     { href: '/why', label: 'Why' },
     { href: '/faq', label: 'FAQ' },
+    { href: '/contact', label: 'Contact Us' },
   ];
   const navItems = links ?? defaultNavItems;
 

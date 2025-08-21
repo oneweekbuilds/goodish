@@ -100,6 +100,13 @@ const ProfessionalMobileNav = ({ isOpen, onClose }) => {
           >
             About
           </Link>
+          <Link
+            href="/contact"
+            className="text-left text-lg text-[#111] hover:text-[#F4C500] transition-colors font-medium"
+            style={{ fontFamily: "Inter, sans-serif" }}
+          >
+            Contact Us
+          </Link>
         </div>
       </div>
     </div>
@@ -474,6 +481,13 @@ export default function HomePage() {
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
                 About
+              </Link>
+              <Link
+                href="/contact"
+                className="text-xs md:text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium truncate px-1 md:px-2"
+                style={{ fontFamily: "Inter, sans-serif" }}
+              >
+                Contact Us
               </Link>
               <Link
                 href="/donate"
