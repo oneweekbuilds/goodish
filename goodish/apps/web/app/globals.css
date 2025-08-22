@@ -17,3 +17,10 @@
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 }
+
+iframe.beehiiv-embed {
+  display: block;
+  box-shadow: none !important;
+  border: none !important;
+}
+.bh-embed-shell { overflow: visible; }

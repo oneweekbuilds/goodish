@@ -6,7 +6,7 @@ import { Logo } from "@/src/components/logo"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { EmailSignupModal } from "@/src/components/EmailSignupModal"
+import SubscribeFormGoodHeart from "../../components/SubscribeFormGoodHeart"
 import { ArrowRight, Heart, Menu, X } from 'lucide-react'
 
 // Professional Floating Label Input
@@ -109,7 +109,6 @@ const ProfessionalMobileNav = ({ isOpen, onClose }) => {
 export default function DonatePage() {
   const [email, setEmail] = useState("")
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
-  const [showEmailModal, setShowEmailModal] = useState(false)
 
   return (
     <div
@@ -284,8 +283,8 @@ export default function DonatePage() {
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-                  <Link href="/quiz-questions" className="flex-1">
+                <div className="flex flex-col gap-6 justify-center max-w-2xl mx-auto">
+                  <Link href="/quiz-questions" className="max-w-md mx-auto">
                     <Button
                       className="bg-[#f8cc55] hover:bg-[#f0c043] text-gray-800 py-3 px-6 rounded-xl font-semibold w-full"
                       style={{ fontFamily: "Inter, sans-serif" }}
@@ -294,14 +293,12 @@ export default function DonatePage() {
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowEmailModal(true)}
-                    className="bg-white hover:bg-gray-50 border-gray-300 text-gray-800 py-3 px-6 rounded-xl font-semibold"
-                    style={{ fontFamily: "Inter, sans-serif" }}
-                  >
-                    Get Updates
-                  </Button>
+                  <div className="text-center">
+                    <p className="text-gray-700 mb-4 text-sm" style={{ fontFamily: "Inter, sans-serif" }}>
+                      Or get updates about our progress:
+                    </p>
+                    <SubscribeFormGoodHeart />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -376,10 +373,6 @@ export default function DonatePage() {
         </div>
       </footer>
 
-      <EmailSignupModal 
-        isOpen={showEmailModal} 
-        onClose={() => setShowEmailModal(false)} 
-      />
     </div>
   )
 }

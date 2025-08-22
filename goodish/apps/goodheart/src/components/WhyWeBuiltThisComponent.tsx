@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Logo } from "../components/logo"
+import SubscribeForm from "@/src/components/SubscribeForm"
 
 // Enhanced Floating Label Input (reused from homepage)
 const ProfessionalFloatingInput = ({ label, value, onChange, type = "text", ...props }) => {
@@ -553,15 +554,12 @@ export default function WhyWeBuiltThisComponent() {
               </p>
             </div>
 
-            <div className="max-w-md mx-auto">
-              <ProfessionalFloatingInput
-                label="Enter your email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
+            <SubscribeForm 
+              variant="wide" 
+              formId="goodheart"
+              showHeading={false}
+              bgBlendClass="bg-[#FFE066]"
+            />
           </div>
         </div>
       </section>

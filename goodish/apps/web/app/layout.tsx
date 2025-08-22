@@ -95,6 +95,8 @@ export default function RootLayout({
             })
           }}
         />
+        <Script src="https://subscribe-forms.beehiiv.com/embed.js" strategy="afterInteractive" />
+        <Script src="https://subscribe-forms.beehiiv.com/attribution.js" strategy="afterInteractive" />
       </head>
       <body className={`${inter.variable} ${plusJakarta.variable} text-base`}>
         <div className="min-h-screen flex flex-col">

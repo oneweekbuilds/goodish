@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Logo } from "@/src/components/logo"
-import { EmailSignupModal } from "@/src/components/EmailSignupModal"
+import SubscribeFormGoodHeart from "../components/SubscribeFormGoodHeart"
 import { ArrowRight, Heart, Users, Lightbulb, Globe, Shield, TreePine, GraduationCap, Menu, X, ChevronDown, Plus, Minus } from 'lucide-react'
 
 // Professional Floating Label Input
@@ -377,7 +377,6 @@ const FAQSection = () => {
 export default function HomePage() {
   const [email, setEmail] = useState("")
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
-  const [showEmailModal, setShowEmailModal] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
@@ -650,8 +649,8 @@ export default function HomePage() {
                 Join thousands finding their perfect charity match. Start with our quiz today.
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-                <Link href="/quiz-questions" className="flex-1">
+              <div className="flex flex-col gap-6 justify-center max-w-2xl mx-auto">
+                <Link href="/quiz-questions" className="max-w-md mx-auto">
                   <Button
                     className="bg-gray-800 hover:bg-gray-700 text-white py-3 px-6 rounded-xl font-semibold w-full"
                     style={{ fontFamily: "Inter, sans-serif" }}
@@ -660,14 +659,12 @@ export default function HomePage() {
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowEmailModal(true)}
-                  className="bg-white/90 hover:bg-white border-white text-gray-800 py-3 px-6 rounded-xl font-semibold"
-                  style={{ fontFamily: "Inter, sans-serif" }}
-                >
-                  Get Updates
-                </Button>
+                <div className="text-center">
+                  <p className="text-gray-700 mb-4 text-sm" style={{ fontFamily: "Inter, sans-serif" }}>
+                    Or get updates and giving tips:
+                  </p>
+                  <SubscribeFormGoodHeart />
+                </div>
               </div>
             </div>
           </div>
@@ -719,10 +716,6 @@ export default function HomePage() {
         </div>
       </footer>
 
-      <EmailSignupModal 
-        isOpen={showEmailModal} 
-        onClose={() => setShowEmailModal(false)} 
-      />
     </div>
   )
 }

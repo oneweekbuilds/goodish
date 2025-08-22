@@ -1,5 +1,6 @@
-import { Section, EmailSignup, Button } from '@goodish/ui'
+import { Section, Button } from '@goodish/ui'
 import Link from 'next/link'
+import { SubscribeForm } from '@goodish/ui'
 
 export default function AboutPage() {
   return (
@@ -110,11 +111,14 @@ export default function AboutPage() {
 
       {/* Email signup - full width */}
       <Section className="bg-goodish-green/5 py-12 md:py-16">
-        <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
-          <EmailSignup 
-            title="Follow along as new projects ship"
-            description="See examples in action—subscribing helps these projects grow."
-            variant="inline"
+        <div className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8 text-center">
+          <h3 className="text-2xl font-semibold text-goodish-charcoal mb-4">Follow along as new projects ship</h3>
+          <p className="text-gray-600 mb-8">See examples in action—subscribing helps these projects grow.</p>
+          <SubscribeForm 
+            variant="wide" 
+            formId="goodish"
+            showHeading={false}
+            bgBlendClass="bg-goodish-green/5"
           />
         </div>
       </Section>

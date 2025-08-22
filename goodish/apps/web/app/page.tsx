@@ -1,7 +1,8 @@
 'use client'
 
 // import { motion } from 'framer-motion'
-import { Button, Card, EmailSignup, InlineSignup } from '@goodish/ui'
+import { Button, Card } from '@goodish/ui'
+import { SubscribeForm } from '@goodish/ui'
 import { Section } from '../components/ui/Section'
 import { AmbientSpotlight } from '../components/hero/AmbientSpotlight'
 import { ArrowRight, CheckCircle, Clock, Heart, Zap, Brain, Share2, Sparkles, Rocket } from 'lucide-react'
@@ -305,10 +306,15 @@ export default function HomePage() {
         <div 
           className="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8"
         >
-          <EmailSignup 
-            title="Follow along as new projects ship"
-            description="See examples in action—subscribing helps these projects grow."
-            variant="inline"
+          <div className="text-center mb-6">
+            <h3 className="text-xl font-semibold text-goodish-charcoal mb-2">Follow along as new projects ship</h3>
+            <p className="text-gray-600">See examples in action—subscribing helps these projects grow.</p>
+          </div>
+          <SubscribeForm 
+            variant="wide" 
+            formId="goodish"
+            showHeading={false}
+            bgBlendClass="bg-goodish-teal/5"
           />
         </div>
       </Section>

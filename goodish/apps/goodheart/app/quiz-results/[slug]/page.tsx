@@ -11,7 +11,7 @@ import { getSuperpowerFromSlug, calculateSuperpower } from "@/src/utils/quizScor
 import { charityData, generateDonationUrl, getCharitiesForSuperpower } from "@/src/data/charities"
 import { eventLogger } from "@/src/utils/eventLogger"
 import { DonationFeedbackModal } from "@/src/components/DonationFeedbackModal"
-import { EmailSignupModal } from "@/src/components/EmailSignupModal"
+import SubscribeForm from "@/src/components/SubscribeForm"
 
 interface ResultPageProps {
   params: { slug: string }
@@ -431,12 +431,32 @@ export default function QuizResultPage({ params }: ResultPageProps) {
         )
       })()}
 
-      {/* Email Signup Modal */}
-      <EmailSignupModal
-        isOpen={showEmailSignup}
-        onClose={() => setShowEmailSignup(false)}
-        superpower={userSuperpower || undefined}
-      />
+      {/* Email Signup Section */}
+      {showEmailSignup && (
+        <div className="max-w-2xl mx-auto px-6 py-8">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-8 text-center">
+            <h3 className="text-2xl font-semibold text-[#111] mb-4" style={{ fontFamily: "Inter, sans-serif" }}>
+              Stay Connected
+            </h3>
+            <p className="text-[#444] mb-6" style={{ fontFamily: "Inter, sans-serif" }}>
+              Get personalized giving tips and updates about new effective giving opportunities.
+            </p>
+            <SubscribeForm 
+              variant="wide" 
+              formId="goodheart"
+              showHeading={false}
+              bgBlendClass="bg-white"
+            />
+            <button
+              onClick={() => setShowEmailSignup(false)}
+              className="mt-4 text-sm text-[#444] hover:text-[#111] transition-colors"
+              style={{ fontFamily: "Inter, sans-serif" }}
+            >
+              No thanks
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

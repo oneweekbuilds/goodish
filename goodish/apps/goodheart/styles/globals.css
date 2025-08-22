@@ -1,3 +1,9 @@
+iframe.beehiiv-embed {
+  display: block;
+  box-shadow: none !important;
+  border: none !important;
+}
+.bh-embed-shell { overflow: visible; }
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
