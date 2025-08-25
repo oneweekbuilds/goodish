@@ -24,7 +24,14 @@
       "WebFetch(domain:subscribe-forms.beehiiv.com)",
       "WebFetch(domain:subscribe-forms.beehiiv.com)",
       "Bash(curl:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(git commit:*)",
+      "Bash(gh pr create:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:goodish-3i45-git-deploy-subscribeform-jwjwin0-4390s-projects.vercel.app)",
+      "WebFetch(domain:goodish-bz1x-git-deploy-subscribeform-jwjwin0-4390s-projects.vercel.app)",
+      "WebFetch(domain:goodish-q8q1-git-deploy-subscribeform-jwjwin0-4390s-projects.vercel.app)",
+      "Bash(pnpm dedupe:*)"
     ],
     "deny": [],
     "ask": [],
