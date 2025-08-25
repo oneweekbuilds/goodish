@@ -81,14 +81,26 @@ export default function SubscribeForm({
       formData.append("utm_campaign", "");
       formData.append("referrer", window.location.href);
 
+      // Debug logging before submit
+      const hiddenFields = { form_id: config.formId, utm_source: "", utm_medium: "", utm_campaign: "", referrer: window.location.href };
+      console.log("[SubscribeForm] submitting", { action: config.action, hiddenKeys: Object.keys(hiddenFields) });
+
       // Post directly to Beehiiv
       const res = await fetch(config.action, {
         method: "POST",
         body: formData,
-        mode: 'no-cors' // Beehiiv endpoints may not support CORS
       });
 
-      // With no-cors mode, we can't check response status, so assume success
+      // Debug logging after submit
+      console.log("[SubscribeForm] response", res.status);
+      
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => null);
+        console.error("[SubscribeForm] error", errorText);
+        setError("Something went wrong. Please try again.");
+        return;
+      }
+
       setSuccess(true);
       setEmail("");
       
@@ -97,6 +109,7 @@ export default function SubscribeForm({
         setTimeout(() => onSuccess(), 1000);
       }
     } catch (err: any) {
+      console.error("[SubscribeForm] exception", err);
       setError(err?.message || "Something went wrong.");
     } finally {
       setSubmitting(false);
