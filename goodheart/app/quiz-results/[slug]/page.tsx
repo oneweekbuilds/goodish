@@ -11,7 +11,7 @@ import { getSuperpowerFromSlug, calculateSuperpower } from "@/src/utils/quizScor
 import { charityData, generateDonationUrl, getCharitiesForSuperpower } from "@/src/data/charities"
 import { eventLogger } from "@/src/utils/eventLogger"
 import { DonationFeedbackModal } from "@/src/components/DonationFeedbackModal"
-import { EmailSignupModal } from "@/src/components/EmailSignupModal"
+import { SubscribeModalGoodHeart } from "../../../components/SubscribeModalGoodHeart"
 
 interface ResultPageProps {
   params: { slug: string }
@@ -432,7 +432,7 @@ export default function QuizResultPage({ params }: ResultPageProps) {
       })()}
 
       {/* Email Signup Modal */}
-      <EmailSignupModal
+      <SubscribeModalGoodHeart
         isOpen={showEmailSignup}
         onClose={() => setShowEmailSignup(false)}
         superpower={userSuperpower || undefined}

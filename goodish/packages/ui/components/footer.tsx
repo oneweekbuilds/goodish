@@ -1,7 +1,7 @@
 import React from 'react';
-import { EmailSignup } from './email-signup';
 import { cn } from '@goodish/lib';
-import { Twitter } from 'lucide-react';
+import { X as TwitterIcon } from 'lucide-react';
+import { SubscribeForm } from '../index';
 
 interface FooterProps {
   className?: string;
@@ -57,11 +57,16 @@ export function Footer({ className }: FooterProps) {
           {/* Email signup */}
           <div className="space-y-4">
             <h4 className="font-semibold text-lg">Stay updated</h4>
-            <EmailSignup 
-              title="Follow along as new projects ship"
-              description="See examples in action—subscribing helps these projects grow."
-              variant="inline"
-            />
+            <p className="text-sm text-gray-600">Follow along as new projects ship</p>
+            <p className="text-xs text-gray-500">See examples in action—subscribing helps these projects grow.</p>
+            <div className="mt-4">
+              <SubscribeForm 
+                variant="compact" 
+                formId="goodish"
+                showHeading={false}
+                bgBlendClass="bg-transparent"
+              />
+            </div>
           </div>
         </div>
 
@@ -85,7 +90,7 @@ export function Footer({ className }: FooterProps) {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-sm hover:underline text-gray-500 hover:text-goodish-teal transition-colors"
             >
-              <Twitter className="h-4 w-4" />
+              <TwitterIcon className="h-4 w-4" />
               <span>X (Twitter)</span>
             </a>
             <span className="text-xs text-gray-400">•</span>

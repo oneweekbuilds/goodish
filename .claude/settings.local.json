@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev:*)",
+      "Bash(npm install)",
+      "Bash(pnpm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git add:*)",
+      "Bash(npm install:*)",
+      "Bash(git push:*)",
+      "WebFetch(domain:goodish.org)",
+      "WebFetch(domain:goodheart.goodish.org)",
+      "Bash(pnpm run dev:*)",
+      "Bash(pnpm run:*)",
+      "Bash(npm run build:*)",
+      "Bash(timeout 30 npm run build)",
+      "Bash(git log:*)",
+      "Bash(pnpm dev:*)",
+      "Bash(pnpm --filter @goodish/web dev:*)",
+      "Bash(pnpm --filter @goodish/goodheart dev:*)",
+      "Bash(npx next dev:*)",
+      "Bash(taskkill:*)",
+      "Bash(rm:*)",
+      "WebFetch(domain:subscribe-forms.beehiiv.com)",
+      "WebFetch(domain:subscribe-forms.beehiiv.com)",
+      "Bash(curl:*)",
+      "Bash(git checkout:*)",
+      "Bash(git commit:*)",
+      "Bash(gh pr create:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:goodish-3i45-git-deploy-subscribeform-jwjwin0-4390s-projects.vercel.app)",
+      "WebFetch(domain:goodish-bz1x-git-deploy-subscribeform-jwjwin0-4390s-projects.vercel.app)",
+      "WebFetch(domain:goodish-q8q1-git-deploy-subscribeform-jwjwin0-4390s-projects.vercel.app)",
+      "Bash(pnpm dedupe:*)"
+    ],
+    "deny": [],
+    "ask": [],
+    "additionalDirectories": [
+      "C:\\Users\\jwjwi\\OneDrive\\Documents\\GitHub\\oneweekbuilds",
+      "C:\\c\\Users\\jwjwi\\OneDrive\\Documents\\GitHub\\oneweekbuilds\\goodish"
+    ]
+  }
+}

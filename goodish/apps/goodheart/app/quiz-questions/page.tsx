@@ -10,6 +10,7 @@ import { useQuiz } from "@/src/contexts/QuizContext"
 import { calculateSuperpower, getSuperpowerSlug } from "@/src/utils/quizScoring"
 import { eventLogger } from "@/src/utils/eventLogger"
 import Link from "next/link"
+import SubscribeForm from "@/src/components/SubscribeForm"
 
 // Email Collection Modal Component
 interface EmailModalProps {
@@ -64,31 +65,15 @@ const EmailModal = ({ isOpen, onClose, onSubmit }: EmailModalProps) => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="relative">
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-[#FFD95C] focus:ring-2 focus:ring-[#FFD95C]/20"
-              style={{ fontFamily: "Inter, sans-serif" }}
-              required
-            />
-          </div>
-
-          <Button
-            type="submit"
-            disabled={!email || !email.includes("@") || isSubmitting}
-            className="w-full bg-[#FFD95C] hover:bg-[#F4C500] text-gray-800 py-3 rounded-xl font-bold transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{
-              fontFamily: "Inter, sans-serif",
-              boxShadow: "0 4px 14px rgba(248, 204, 85, 0.25)",
-            }}
-          >
-            {isSubmitting ? "Getting your results..." : "See My Giving Superpower"}
-          </Button>
-        </form>
+        <div className="space-y-4">
+          <SubscribeForm 
+            variant="compact"
+            formId="goodheart"
+            showHeading={false}
+            onSuccess={() => onSubmit("")}
+            bgBlendClass="bg-white"
+          />
+        </div>
       </div>
     </div>
   )

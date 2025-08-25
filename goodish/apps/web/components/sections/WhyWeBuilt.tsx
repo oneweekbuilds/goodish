@@ -1,4 +1,5 @@
-import { Section, Button, EmailSignup } from '@goodish/ui'
+import { Section, Button } from '@goodish/ui'
+import { SubscribeForm } from '@goodish/ui'
 import Link from 'next/link'
 
 export function WhyWeBuilt() {
@@ -31,10 +32,10 @@ export function WhyWeBuilt() {
 
         {/* Email Signup Section */}
         <div className="mt-16 mb-8">
-          <EmailSignup 
-            title="Follow along as new projects ship"
-            description="See examples in action—subscribing helps these projects grow."
-            variant="inline"
+          <SubscribeForm 
+            variant="wide" 
+            formId="goodish"
+            bgBlendClass="bg-white"
           />
         </div>
 

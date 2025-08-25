@@ -4,6 +4,7 @@ import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import { QuizProvider } from '@/src/contexts/QuizContext'
 import './globals.css'
+import Script from 'next/script'
 import '@/src/styles/mobile-optimizations.css'
 
 export const metadata: Metadata = {
@@ -26,6 +27,8 @@ html {
   --font-mono: ${GeistMono.variable};
 }
         `}</style>
+        <Script src="https://subscribe-forms.beehiiv.com/embed.js" strategy="afterInteractive" />
+        <Script src="https://subscribe-forms.beehiiv.com/attribution.js" strategy="afterInteractive" />
       </head>
       <body>
         <QuizProvider>

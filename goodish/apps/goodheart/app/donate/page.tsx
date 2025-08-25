@@ -6,7 +6,8 @@ import { Logo } from "@/src/components/logo"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { EmailSignupModal } from "@/src/components/EmailSignupModal"
+// Email signup handled via Beehiiv embed
+import SubscribeForm from "@/src/components/SubscribeForm"
 import { ArrowRight, Heart, Menu, X } from 'lucide-react'
 
 // Professional Floating Label Input
@@ -109,7 +110,6 @@ const ProfessionalMobileNav = ({ isOpen, onClose }) => {
 export default function DonatePage() {
   const [email, setEmail] = useState("")
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
-  const [showEmailModal, setShowEmailModal] = useState(false)
 
   return (
     <div
@@ -294,20 +294,21 @@ export default function DonatePage() {
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowEmailModal(true)}
-                    className="bg-white hover:bg-gray-50 border-gray-300 text-gray-800 py-3 px-6 rounded-xl font-semibold"
-                    style={{ fontFamily: "Inter, sans-serif" }}
-                  >
-                    Get Updates
-                  </Button>
+                  <Link href="#updates" className="flex-1">
+                    <Button
+                      variant="outline"
+                      className="bg-white hover:bg-gray-50 border-gray-300 text-gray-800 py-3 px-6 rounded-xl font-semibold w-full"
+                      style={{ fontFamily: "Inter, sans-serif" }}
+                    >
+                      Get Updates
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
 
             {/* Email Signup Section */}
-            <div className="bg-gradient-to-r from-[#f8cc55]/10 to-[#f0c043]/5 rounded-2xl p-12">
+            <div id="updates" className="bg-gradient-to-r from-[#f8cc55]/10 to-[#f0c043]/5 rounded-2xl p-12">
               <h3
                 className="font-bold text-gray-900 mb-6"
                 style={{
@@ -329,15 +330,12 @@ export default function DonatePage() {
                 Be the first to know when we launch new features, add more charities, and share stories of impact from our community.
               </p>
               
-              <div className="max-w-md mx-auto">
-                <ProfessionalFloatingInput
-                  label="Enter your email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
+              <SubscribeForm 
+                variant="wide" 
+                formId="goodheart"
+                showHeading={false}
+                bgBlendClass="bg-[#FFE066]"
+              />
             </div>
           </div>
         </div>
@@ -376,10 +374,7 @@ export default function DonatePage() {
         </div>
       </footer>
 
-      <EmailSignupModal 
-        isOpen={showEmailModal} 
-        onClose={() => setShowEmailModal(false)} 
-      />
+      {/* Email signup handled via Beehiiv embed */}
     </div>
   )
 }
