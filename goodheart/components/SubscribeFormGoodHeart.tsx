@@ -20,10 +20,10 @@ export default function SubscribeFormGoodHeart({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Beehiiv form configuration for GoodHeart (using local API proxy)
+  // Beehiiv form configuration for GoodHeart (direct API calls like Goodish)
   const config = {
     formId: "b8677a39-0139-4404-84df-df3b8e1d5c2f",
-    action: "/api/subscribe"
+    action: "https://subscribe-forms.beehiiv.com/api/submit"
   };
 
   const isCompact = variant === "compact";

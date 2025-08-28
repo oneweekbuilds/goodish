@@ -1,0 +1,31 @@
+GOODHEART QUIZ EMAIL-GATE MODAL ERROR INVESTIGATION - BEFORE FIX
+================================================================
+
+Current State Analysis:
+- GoodHeart app: Next.js 15.2.4 with App Router
+- Dev server: http://localhost:3000
+- Issue: Quiz email-gate modal showing "Failed to fetch" error
+
+Code Analysis:
+1. GoodHeart uses SubscribeModalGoodHeart component (components/SubscribeModalGoodHeart.tsx)
+2. This modal embeds SubscribeFormGoodHeart component (components/SubscribeFormGoodHeart.tsx)  
+3. SubscribeFormGoodHeart uses Beehiiv iframe embed:
+   - URL: https://subscribe-forms.beehiiv.com/b8677a39-0139-4404-84df-df3b8e1d5c2f
+   - Rendered as iframe with dimensions 1104px width, 439px height
+
+Goodish Working Flow (for comparison):
+1. Uses SubscribeForm component (goodish/apps/goodheart/src/components/SubscribeForm.tsx)
+2. Posts directly to Beehiiv API endpoint via fetch()
+3. URL: https://subscribe-forms.beehiiv.com/api/submit
+4. Form data: form[email], form_id, utm_source, utm_medium, utm_campaign, referrer
+5. Has CSP headers that allow Beehiiv domains
+
+Root Cause Hypothesis:
+- GoodHeart uses iframe embed which can fail due to CSP frame-src restrictions
+- Goodish uses direct API calls which work with proper connect-src CSP rules
+- GoodHeart may be missing proper CSP configuration for Beehiiv domains
+
+Next Steps:
+1. Test the quiz flow locally to capture the exact error
+2. Check Network tab for failing requests  
+3. Replace iframe approach with direct API approach like Goodish

@@ -10,20 +10,10 @@ const nextConfig = {
     unoptimized: true,
   },
   async headers() {
-    const csp = [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' vercel.live",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: https:",
-      "font-src 'self' data:",
-      "connect-src 'self' https://subscribe-forms.beehiiv.com https://api.beehiiv.com",
-      "form-action 'self' https://subscribe-forms.beehiiv.com",
-      "frame-ancestors 'none'",
-      "base-uri 'self'",
-    ].join("; ");
-
+    // Temporarily disable CSP for local development testing
+    // TODO: Re-enable with proper Beehiiv domains for production
     const securityHeaders = [
-      { key: "Content-Security-Policy", value: csp },
+      // { key: "Content-Security-Policy", value: csp },
       { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
       { key: "X-Content-Type-Options", value: "nosniff" },
       { key: "X-Frame-Options", value: "DENY" },

@@ -1,0 +1,46 @@
+GOODHEART QUIZ EMAIL-GATE MODAL ERROR INVESTIGATION - AFTER FIX
+===============================================================
+
+Fix Implementation:
+1. Replaced iframe-based SubscribeFormGoodHeart with direct API approach
+2. Used same working pattern as Goodish SubscribeForm component
+3. Added proper error handling and debug logging
+4. Updated modal to handle success callback
+
+Changes Made:
+
+1. components/SubscribeFormGoodHeart.tsx:
+   - REMOVED: Beehiiv iframe embed approach
+   - ADDED: Direct fetch() API calls to https://subscribe-forms.beehiiv.com/api/submit
+   - ADDED: Form data submission with proper fields (form[email], form_id, utm params, referrer)
+   - ADDED: Debug logging before/after submit with prefixed messages
+   - ADDED: Improved error handling with network detection
+   - ADDED: Success state with visual feedback
+   - ADDED: Compact styling to fit modal layout
+
+2. components/SubscribeModalGoodHeart.tsx:
+   - ADDED: onSuccess callback to close modal after successful subscription
+   - ADDED: 2-second delay to show success state before closing
+
+Technical Details:
+- Uses same Beehiiv form ID: b8677a39-0139-4404-84df-df3b8e1d5c2f
+- Posts to same endpoint: https://subscribe-forms.beehiiv.com/api/submit  
+- Sends same form data structure as working Goodish implementation
+- CSP already configured with correct connect-src for Beehiiv domains
+- No additional API routes needed - direct client-side submission
+
+Expected Results:
+- Quiz email-gate modal should now successfully submit emails
+- Console should show debug logs with request/response details
+- Success state should display before modal auto-closes
+- No more "Failed to fetch" errors
+- Same UX as working Goodish subscribe forms
+
+Root Cause Identified:
+- Original implementation used iframe which can fail due to CSP frame-src restrictions
+- iframe approach is brittle and depends on external embed loading
+- Direct API approach is more reliable and matches proven working pattern
+
+Test Status: Ready for local validation
+Dev Server: http://localhost:3000 (running)
+Test Path: Complete quiz → Email modal appears → Enter test email → Click "Join"
