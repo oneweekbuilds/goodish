@@ -35,7 +35,15 @@ export function SubscribeModalGoodHeart({ isOpen, onClose, superpower }: Subscri
         </div>
         
         <div className="p-6">
-          <SubscribeFormGoodHeart />
+          <SubscribeFormGoodHeart 
+            variant="compact"
+            onSuccess={() => {
+              // Close modal after successful subscription
+              setTimeout(() => {
+                onClose();
+              }, 2000);
+            }}
+          />
         </div>
       </div>
     </div>
