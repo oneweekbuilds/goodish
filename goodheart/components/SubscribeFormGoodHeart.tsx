@@ -20,10 +20,12 @@ export default function SubscribeFormGoodHeart({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Beehiiv form configuration for GoodHeart (direct API calls like Goodish)
+  // Beehiiv form configuration for GoodHeart
+  // Use local API proxy for localhost development, direct API for production
+  const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
   const config = {
     formId: "b8677a39-0139-4404-84df-df3b8e1d5c2f",
-    action: "https://subscribe-forms.beehiiv.com/api/submit"
+    action: isLocalhost ? "/api/subscribe" : "https://subscribe-forms.beehiiv.com/api/submit"
   };
 
   const isCompact = variant === "compact";
