@@ -21,12 +21,12 @@ export default function SubscribeFormGoodHeart({
   const [success, setSuccess] = useState(false);
 
   // Beehiiv form configuration for GoodHeart
-  // Use local API proxy for localhost development, direct API for production
-  const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
   const config = {
     formId: "b8677a39-0139-4404-84df-df3b8e1d5c2f",
-    action: isLocalhost ? "/api/subscribe" : "https://subscribe-forms.beehiiv.com/api/submit"
+    action: "https://subscribe-forms.beehiiv.com/api/submit"
   };
+
+  const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
 
   const isCompact = variant === "compact";
   const cardBg = bgBlendClass || "bg-transparent";
@@ -42,6 +42,28 @@ export default function SubscribeFormGoodHeart({
     setError(null);
 
     try {
+      // Debug logging before submit
+      const hiddenFields = { form_id: config.formId, utm_source: "", utm_medium: "", utm_campaign: "", referrer: window.location.href };
+      console.log("[SubscribeFormGoodHeart] submitting", { action: config.action, hiddenKeys: Object.keys(hiddenFields) });
+
+      if (isLocalhost) {
+        // For localhost development: simulate success since Beehiiv blocks CORS
+        console.log("[SubscribeFormGoodHeart] localhost detected - simulating success for UX testing");
+        console.log("[SubscribeFormGoodHeart] email would be submitted:", email);
+        
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        setSuccess(true);
+        setEmail("");
+        
+        if (onSuccess) {
+          setTimeout(() => onSuccess(), 1000);
+        }
+        return;
+      }
+
+      // Production: Make real API call
       const formData = new FormData();
       formData.append("form[email]", email);
       formData.append("form_id", config.formId);
@@ -51,10 +73,6 @@ export default function SubscribeFormGoodHeart({
       formData.append("utm_medium", "");
       formData.append("utm_campaign", "");
       formData.append("referrer", window.location.href);
-
-      // Debug logging before submit
-      const hiddenFields = { form_id: config.formId, utm_source: "", utm_medium: "", utm_campaign: "", referrer: window.location.href };
-      console.log("[SubscribeFormGoodHeart] submitting", { action: config.action, hiddenKeys: Object.keys(hiddenFields) });
 
       // Post directly to Beehiiv
       const res = await fetch(config.action, {
@@ -68,8 +86,7 @@ export default function SubscribeFormGoodHeart({
       if (!res.ok) {
         const errorText = await res.text().catch(() => null);
         console.error("[SubscribeFormGoodHeart] error", errorText);
-        const isNetwork = true;
-        setError(isNetwork ? 'Network error. Please try again.' : 'Something went wrong. Please try again.');
+        setError('Subscription failed. Please try again.');
         return;
       }
 
