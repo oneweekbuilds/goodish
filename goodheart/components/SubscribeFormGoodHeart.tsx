@@ -49,7 +49,7 @@ export default function SubscribeFormGoodHeart({
         utm_campaign,
       };
 
-      console.log("[SubscribeFormGoodHeart] submitting to /api/subscribe", payload);
+      console.info('GH_SUBMIT: using /api/subscribe', payload);
 
       // Call same-origin API route
       const res = await fetch("/api/subscribe", {
@@ -148,6 +148,11 @@ export default function SubscribeFormGoodHeart({
 
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
       </form>
+      {process.env.NODE_ENV !== 'production' ? (
+        <div style={{ fontSize: 12, opacity: 0.7, marginTop: 8 }}>
+          Wired to: <code>/api/subscribe</code>
+        </div>
+      ) : null}
     </div>
   );
 }

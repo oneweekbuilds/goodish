@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
+  console.info('[subscribe] hit', { when: new Date().toISOString() });
+  
   try {
     const { email, utm_source, utm_medium, utm_campaign } = await request.json();
 

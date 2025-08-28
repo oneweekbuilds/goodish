@@ -23,16 +23,43 @@ const EmailModal = ({ isOpen, onClose, onSubmit }: EmailModalProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e?.preventDefault?.()
     if (!email || !email.includes("@")) return
 
     setIsSubmitting(true)
     
-    // Simulate brief loading
-    setTimeout(() => {
-      onSubmit(email)
-      setIsSubmitting(false)
-    }, 800)
+    try {
+      // Extract UTM parameters from URL
+      const params = new URLSearchParams(window.location.search);
+      const payload = {
+        email,
+        utm_source: params.get('utm_source') || '',
+        utm_medium: params.get('utm_medium') || '',
+        utm_campaign: params.get('utm_campaign') || '',
+      };
+
+      console.info('GH_SUBMIT: using /api/subscribe', payload);
+
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        onSubmit(email);
+      } else {
+        console.error('Quiz EmailModal: API error', await res.text());
+        // Keep existing UX flow even on error for now
+        onSubmit(email);
+      }
+    } catch (error) {
+      console.error('Quiz EmailModal: Exception', error);
+      // Keep existing UX flow even on error for now
+      onSubmit(email);
+    }
+    
+    setIsSubmitting(false)
   }
 
   if (!isOpen) return null
@@ -89,6 +116,11 @@ const EmailModal = ({ isOpen, onClose, onSubmit }: EmailModalProps) => {
             {isSubmitting ? "Getting your results..." : "See My Giving Superpower"}
           </Button>
         </form>
+        {process.env.NODE_ENV !== 'production' ? (
+          <div style={{ fontSize: 12, opacity: 0.7, marginTop: 8 }}>
+            Wired to: <code>/api/subscribe</code>
+          </div>
+        ) : null}
       </div>
     </div>
   )
