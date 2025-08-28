@@ -20,13 +20,6 @@ export default function SubscribeFormGoodHeart({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Beehiiv form configuration for GoodHeart
-  const config = {
-    formId: "b8677a39-0139-4404-84df-df3b8e1d5c2f",
-    action: "https://subscribe-forms.beehiiv.com/api/submit"
-  };
-
-  const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
 
   const isCompact = variant === "compact";
   const cardBg = bgBlendClass || "bg-transparent";
@@ -42,53 +35,46 @@ export default function SubscribeFormGoodHeart({
     setError(null);
 
     try {
-      // Debug logging before submit
-      const hiddenFields = { form_id: config.formId, utm_source: "", utm_medium: "", utm_campaign: "", referrer: window.location.href };
-      console.log("[SubscribeFormGoodHeart] submitting", { action: config.action, hiddenKeys: Object.keys(hiddenFields) });
+      // Extract UTM parameters from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const utm_source = urlParams.get('utm_source') || '';
+      const utm_medium = urlParams.get('utm_medium') || '';
+      const utm_campaign = urlParams.get('utm_campaign') || '';
 
-      if (isLocalhost) {
-        // For localhost development: simulate success since Beehiiv blocks CORS
-        console.log("[SubscribeFormGoodHeart] localhost detected - simulating success for UX testing");
-        console.log("[SubscribeFormGoodHeart] email would be submitted:", email);
-        
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        setSuccess(true);
-        setEmail("");
-        
-        if (onSuccess) {
-          setTimeout(() => onSuccess(), 1000);
-        }
-        return;
-      }
+      // Build payload for same-origin API route
+      const payload = {
+        email,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+      };
 
-      // Production: Make real API call
-      const formData = new FormData();
-      formData.append("form[email]", email);
-      formData.append("form_id", config.formId);
-      
-      // Add optional UTM and referrer params (Beehiiv expects these)
-      formData.append("utm_source", "");
-      formData.append("utm_medium", "");
-      formData.append("utm_campaign", "");
-      formData.append("referrer", window.location.href);
+      console.log("[SubscribeFormGoodHeart] submitting to /api/subscribe", payload);
 
-      // Post directly to Beehiiv
-      const res = await fetch(config.action, {
+      // Call same-origin API route
+      const res = await fetch("/api/subscribe", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       });
 
-      // Debug logging after submit
       console.log("[SubscribeFormGoodHeart] response", res.status);
       
       if (!res.ok) {
-        const errorText = await res.text().catch(() => null);
-        console.error("[SubscribeFormGoodHeart] error", errorText);
-        setError('Subscription failed. Please try again.');
+        const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+        console.error("[SubscribeFormGoodHeart] API error:", errorData);
+        // Show friendly error, don't render raw HTML
+        const friendlyError = typeof errorData.error === 'string' && errorData.error.length < 200
+          ? errorData.error 
+          : 'Subscription failed. Please try again.';
+        setError(friendlyError);
         return;
       }
+
+      const result = await res.json();
+      console.log("[SubscribeFormGoodHeart] success:", result);
 
       setSuccess(true);
       setEmail("");
@@ -98,9 +84,8 @@ export default function SubscribeFormGoodHeart({
         setTimeout(() => onSuccess(), 1000);
       }
     } catch (err: any) {
-      console.error("[SubscribeFormGoodHeart] exception", err);
-      const isNetwork = err?.message?.toLowerCase?.().includes('fetch') || err?.name === 'TypeError';
-      setError(isNetwork ? 'Network error. Please try again.' : 'Something went wrong. Please try again.');
+      console.error("[SubscribeFormGoodHeart] exception:", err.message);
+      setError(`Network error: ${err.message}`);
     } finally {
       setSubmitting(false);
     }
