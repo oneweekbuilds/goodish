@@ -1,0 +1,13 @@
+Open Graph Image Placeholder
+
+The og-image.png file should be a 1200x630px image showcasing:
+- Algorithm Lens logo
+- Tagline: "Analyze Your Social Media Feed Privately"
+- Key features: 100% Local, No Tracking, Instant Insights
+- Brand colors: #01B1C0 (brand), #725cfd (accent)
+- Background: #fdfaf4
+
+Tools to create:
+- Figma, Canva, or any design tool
+- Export as PNG at 1200x630px
+- Place in apps/algorithm-lens/public/og-image.png

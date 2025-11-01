@@ -1,0 +1,127 @@
+/* AlgorithmLens Design Tokens */
+:root {
+  /* Brand Colors - derived from logo */
+  --color-bg: #FEFCF4;
+  --color-panel: #FFFFFF;
+  --color-ink: #5D5E58;
+  --color-ink-dim: #82827C;
+  --color-ink-muted: #A4A49E;
+  --ink: #5D5E58;
+  --ink-2: #82827C;
+  --ink-3: #A4A49E;
+  --surface-1: #FFFFFF;
+  --surface-2: #F7F6F2;
+  --stroke: #E7E6E1;
+  --shadow: 0 6px 24px rgba(0,0,0,0.06);
+
+  /* Accent Colors - muted steel, no political blues/reds */
+  --color-accent: #6E7A86;
+  --color-accent-light: #D7DDE2;
+  --accent: #6E7A86;
+  --accent-hover: #616C77;
+  --accent-soft: #D7DDE2;
+
+  /* Data Visualization Tones - low saturation */
+  --tone-blue: #7C8DA0;
+  --tone-teal: #6D8B83;
+  --tone-gold: #C1A874;
+  --tone-violet: #8D83A3;
+  --tone-rose: #A78688;
+  --tone-green: #87A189;
+
+  /* Brand Colors */
+  --color-brand: #01B1C0;
+  --color-brand-dark: #008B9A;
+  --color-brand-light: #E6F8F9;
+  
+  /* Line/Grid */
+  --color-line: #E7E6E1;
+  --color-grid: #F7F6F2;
+  
+  /* Sentiment Colors */
+  --color-pos: #2ec27e;
+  --color-pos-light: #E6F8F9;
+  --color-neu: #c1c7d0;
+  --color-neu-light: #F0F1F3;
+  --color-neg: #eb5757;
+  --color-neg-light: #FEE8E8;
+  
+  /* Yellow */
+  --color-yellow: #f2c94c;
+  
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+  --radius-3xl: 48px;
+  --radius-full: 9999px;
+  --radius: 16px;
+
+  /* Shadows */
+  --shadow-e1: 0 1px 3px rgba(0,0,0,0.05);
+  --shadow-e2: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-e3: 0 8px 24px rgba(0,0,0,0.12);
+  --shadow-e4: 0 16px 48px rgba(0,0,0,0.16);
+  --shadow-glow: 0 0 20px rgba(1,177,192,0.3);
+
+  /* Focus Ring */
+  --ring: 0 0 0 3px rgba(110,122,134,0.18);
+  
+  /* Typography */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+  --text-6xl: 3.75rem;
+  --text-7xl: 4.5rem;
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  
+  /* Max Widths */
+  --max-width-prose: 65ch;
+  --max-width-container: 1120px;
+  --max-width-wide: 1440px;
+}
+
+/* Global Resets + Typography */
+html, body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--accent-hover);
+}
+
+* {
+  outline-color: var(--accent);
+}
+
+*:focus-visible {
+  box-shadow: var(--ring);
+  border-radius: 8px;
+  outline: none;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: color, background-color, border-color, transform, box-shadow;
+  transition-duration: 120ms;
+  transition-timing-function: ease-out;
+}

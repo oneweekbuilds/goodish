@@ -1,0 +1,42 @@
+AlgorithmLens Brand Assets Specification
+
+═══════════════════════════════════════════════════════════════
+
+BRAND IDENTITY
+--------------
+Primary color: #01B1C0 (Teal)
+Slogan: "See what your algorithm sees in you."
+Visual element: Circular lens icon with data visualization bars
+
+OG IMAGE (1200×630)
+-------------------
+Background: Soft gradient from #FDFDFD (top-left) to #E9FBFC (bottom-right)
+Top accent bar: 8px solid #01B1C0
+Typography:
+  - Title: "AlgorithmLens" - Bold 96px, #0e0f11 (dark ink)
+  - Slogan: "See what your algorithm sees in you." - Regular 42px, #5b5f6a (muted)
+  - Position: Left-aligned at 80px from edge
+Icon:
+  - Circular lens on right side (950px, 315px center)
+  - Radius: 140px
+  - Teal outline (#01B1C0), white interior
+  - Small data visualization bars inside
+Privacy badge: "🔒 100% Private · Local Processing" in green (#2ec27e) at bottom
+
+FAVICONS
+--------
+Background: Same gradient as OG image (#FDFDFD to #E9FBFC)
+Icon: Centered circular lens
+  - Stroke: #01B1C0 (8px for 180px size, scaled proportionally)
+  - Fill: White
+  - Data bars inside lens (for 32px and larger)
+Sizes:
+  - favicon.svg (vector, 180×180 viewBox)
+  - favicon-16x16.png
+  - favicon-32x32.png
+  - apple-touch-icon.png (180×180)
+
+GENERATION
+----------
+Use /public/generate-assets.html for pixel-perfect Canvas API rendering.
+All assets feature anti-aliased rendering, no text shadows, clean typography.

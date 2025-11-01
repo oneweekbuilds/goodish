@@ -1,0 +1,17 @@
+window.YTD.tweets.part0 = [
+  { "tweet": { "created_at": "2025-01-15T12:00:00.000Z", "id_str": "1777001", "full_text": "Great workout today! Finally hit my PR on deadlifts #fitness 💪" } },
+  { "tweet": { "created_at": "2025-01-14T15:30:00.000Z", "id_str": "1777002", "full_text": "The new AI phones are absolutely wild. Can't believe we're living in this future #tech" } },
+  { "tweet": { "created_at": "2025-01-13T09:20:00.000Z", "id_str": "1777003", "full_text": "Meditation has been life-changing for my anxiety. Highly recommend the Calm app #wellness" } },
+  { "tweet": { "created_at": "2025-01-12T18:45:00.000Z", "id_str": "1777004", "full_text": "This election cycle is exhausting. When do we get to focus on actual policy? #politics" } },
+  { "tweet": { "created_at": "2025-01-11T14:10:00.000Z", "id_str": "1777005", "full_text": "Just discovered this new skincare serum. My skin has never looked better! #ad Use code GLOW20 #beauty" } },
+  { "tweet": { "created_at": "2025-01-10T11:00:00.000Z", "id_str": "1777006", "full_text": "Bitcoin is down again. Diversifying my portfolio was the best decision ever #finance" } },
+  { "tweet": { "created_at": "2025-01-09T16:25:00.000Z", "id_str": "1777007", "full_text": "That concert last night was amazing! Best show I've seen in years #entertainment" } },
+  { "tweet": { "created_at": "2025-01-08T13:40:00.000Z", "id_str": "1777008", "full_text": "Relationship advice: communication is everything. Don't assume your partner can read your mind #relationships" } },
+  { "tweet": { "created_at": "2025-01-07T10:15:00.000Z", "id_str": "1777009", "full_text": "Absolutely terrible customer service today. Never shopping there again #angry" } },
+  { "tweet": { "created_at": "2025-01-06T08:30:00.000Z", "id_str": "1777010", "full_text": "Love this new productivity app! Link in bio - sponsored partnership #tech" } },
+  { "tweet": { "created_at": "2025-01-05T14:20:00.000Z", "id_str": "1777011", "full_text": "Finally meal prepped for the week. Chicken, rice, and broccoli on repeat 🍗 #fitness #food" } },
+  { "tweet": { "created_at": "2025-01-04T11:45:00.000Z", "id_str": "1777012", "full_text": "The new season of that show dropped today. Already binged 3 episodes #entertainment" } },
+  { "tweet": { "created_at": "2025-01-03T09:30:00.000Z", "id_str": "1777013", "full_text": "Morning yoga session complete 🧘‍♀️ Feeling centered and ready for the day #wellness" } },
+  { "tweet": { "created_at": "2025-01-02T16:00:00.000Z", "id_str": "1777014", "full_text": "Just launched my new online course on investing basics! Use code REDDIT15 for 15% off #ad #finance" } },
+  { "tweet": { "created_at": "2025-01-01T10:00:00.000Z", "id_str": "1777015", "full_text": "Happy New Year everyone! 2025 is going to be amazing ✨" } }
+];
