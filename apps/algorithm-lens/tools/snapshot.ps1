@@ -72,7 +72,7 @@ try {
     
     Push-Location $AppFullPath
     try {
-        # Copy files excluding specified directories
+        # Copy files excluding specified directories and NUL files
         Get-ChildItem -Path . -Recurse -File | 
             Where-Object { 
                 $relativePath = $_.FullName.Replace($AppFullPath, "").TrimStart('\')
@@ -83,7 +83,10 @@ try {
                 $relativePath -notmatch "^\.vite" -and
                 $relativePath -notmatch "\.vite" -and
                 $relativePath -notmatch "^\.tailwind-cache" -and
-                $relativePath -notmatch "\.tailwind-cache"
+                $relativePath -notmatch "\.tailwind-cache" -and
+                $_.Name -ne "NUL" -and
+                $relativePath -notmatch "\\NUL$" -and
+                $relativePath -ne "NUL"
             } |
             ForEach-Object {
                 $relativePath = $_.FullName.Replace($AppFullPath, "").TrimStart('\')
@@ -113,7 +116,16 @@ try {
     $FullZip = Join-Path $BackupDir "full.zip"
     Push-Location $AppFullPath
     try {
-        Compress-Archive -Path * -DestinationPath $FullZip -Force
+        # Exclude NUL files and ZIP files
+        $itemsToZip = Get-ChildItem -Path . -Force | Where-Object { 
+            $_.Name -ne "NUL" -and 
+            $_.Name -ne "full.zip" -and 
+            $_.Name -ne "code-only.zip" -and
+            $_.Name -notmatch "\.zip$"
+        }
+        if ($itemsToZip) {
+            $itemsToZip | Compress-Archive -DestinationPath $FullZip -Force
+        }
     } finally {
         Pop-Location
     }
