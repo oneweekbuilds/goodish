@@ -1,18 +1,10 @@
-/* Import Figma design tokens */
-@import './styles/globals.css';
-
-/* Tailwind directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Base styles */
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
-  }
-}
+/* Global figma styles (scoped) */
+@import './figma-ui/styles/globals.css';
+
+/* Project utilities (may also define .outline-ring/50; duplication is fine) */
+@import './styles/utilities.css';
+

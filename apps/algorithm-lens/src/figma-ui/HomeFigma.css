@@ -1,0 +1,41 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+
+
+/* Scoped container */
+
+.alg-fm {
+
+  --font-headline: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+
+  --font-body: 'Inter', system-ui, sans-serif;
+
+  --brand-purple: #7B61FF;
+
+  --brand-teal: #3ED6B2;
+
+  --brand-gradient: linear-gradient(90deg, #7B61FF 0%, #3ED6B2 100%);
+
+  --brand-bg-gradient: linear-gradient(90deg, rgba(200, 193, 255, 0.12) 0%, rgba(190, 239, 231, 0.12) 100%);
+
+  --background: #FEFCF4;
+
+  --section-bg: #F5F7FC;
+
+  --card-bg: #FFFFFF;
+
+  --foreground: #1A1A1A;
+
+  --foreground-secondary: #444;
+
+  --foreground-muted: #777;
+
+  --transition-base: 250ms ease;
+
+}
+
+.alg-fm h1,h2,h3,h4 {font-family: var(--font-headline);}
+
+.alg-fm p,span,input,button {font-family: var(--font-body);}

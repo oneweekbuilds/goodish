@@ -1,0 +1,23 @@
+--- Route wiring report ---
+Dashboard: FOUND 2
+  - ../routes/Dashboard
+  - ../components/DashboardPage
+Analytics: MISSING
+Export: MISSING
+Pricing: FOUND 1
+  - ../components/PricingPage
+HowItWorks: FOUND 2
+  - ../components/homepage/HowItWorks
+  - ../sections/home/HowItWorks
+HowItWorksPage: MISSING
+About: FOUND 1
+  - ../components/AboutPage
+QuickStart: MISSING
+TierDemo: FOUND 1
+  - ../components/DashboardTierDemo
+Settings: MISSING
+Privacy: FOUND 1
+  - ../components/PrivacyTermsPage
+Contact: MISSING
+Developers: MISSING
+Signup: MISSING

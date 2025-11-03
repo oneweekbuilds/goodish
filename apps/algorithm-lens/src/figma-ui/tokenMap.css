@@ -1,0 +1,9 @@
+/* Utility classes to map Figma raw colors to your design tokens. 
+
+   Use these helpers if you can't change inline styles quickly. */
+.bg-token     { background: var(--color-bg); }
+.text-token   { color: var(--color-text); }
+.accent-token { color: var(--color-accent); }
+.border-token { border-color: var(--color-border); }
+.ring-token   { outline-color: var(--color-ring); }
+

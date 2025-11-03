@@ -1,0 +1,30 @@
+[
+  {
+    "id": "post_001",
+    "platform": "instagram",
+    "timestamp": "2025-01-01T12:00:00Z",
+    "author": "creator_a",
+    "content": "morning workout tips",
+    "categories": ["fitness","health"],
+    "is_ad": false
+  },
+  {
+    "id": "post_002",
+    "platform": "tiktok",
+    "timestamp": "2025-01-02T15:10:00Z",
+    "author": "brand_b",
+    "content": "new shoes launch",
+    "categories": ["shopping","fashion"],
+    "is_ad": true
+  },
+  {
+    "id": "post_003",
+    "platform": "youtube",
+    "timestamp": "2025-01-03T20:30:00Z",
+    "author": "chef_c",
+    "content": "quick high-protein dinner",
+    "categories": ["cooking","nutrition"],
+    "is_ad": false
+  }
+]
+
