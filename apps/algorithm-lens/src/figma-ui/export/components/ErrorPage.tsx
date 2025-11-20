@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { AlertCircle, Home, ArrowLeft } from 'lucide-react';
-import { Button } from '../../ui/button';
-import { Card } from '../../ui/card';
+import { Button } from '../../../components/ui/Button';
+import { Card } from '../../../components/ui/Card';
 
 interface ErrorPageProps {
   onNavigate: (page: string) => void;
@@ -63,4 +63,7 @@ export function ErrorPage({ onNavigate }: ErrorPageProps) {
     </div>
   );
 }
+
+
+
 

@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { HelpCircle, Lightbulb, TrendingUp, TrendingDown, Lock, ChevronDown, Calendar, Sparkles, ArrowRight, Info } from 'lucide-react';
-import { Card } from './ui/card';
+import { HelpCircle, Lightbulb, TrendingUp, TrendingDown, Lock, ChevronDown, Calendar as CalendarIcon, Sparkles, ArrowRight, Info } from 'lucide-react';
+import { Card } from './ui/Card';
 import { Switch } from './ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
-import { Button } from './ui/button';
+import { Button } from './ui/Button';
 import { FeatureGate } from './FeatureGate';
+import { Calendar } from './ui/calendar';
+import { DateRange } from 'react-day-picker';
 import {
   PieChart as RechartPie,
   Pie,
@@ -36,10 +38,19 @@ interface DashboardPageProps {
 }
 
 export function DashboardPage({ onNavigate, currentPlan, onUpgrade }: DashboardPageProps) {
-  const [showComparison, setShowComparison] = useState(true);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  const [showComparison, setShowComparison] = useState(false);
   const [dateRange, setDateRange] = useState<'7days' | '30days' | 'custom'>('7days');
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(['all']);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
+  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>(undefined);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const dateRangeRef = useRef<HTMLDivElement>(null);
+  const calendarRef = useRef<HTMLDivElement>(null);
   
   const isPremium = currentPlan === 'premium';
   
@@ -54,9 +65,74 @@ export function DashboardPage({ onNavigate, currentPlan, onUpgrade }: DashboardP
   
   const handleDateRangeChange = (range: '7days' | '30days' | 'custom') => {
     if (!isPremium) return;
-    setIsUpdating(true);
-    setDateRange(range);
-    setTimeout(() => setIsUpdating(false), 800);
+    if (range === 'custom') {
+      setDateRange('custom');
+      setIsDateRangeOpen(false);
+      setShowCalendar(true);
+    } else {
+      setIsUpdating(true);
+      setDateRange(range);
+      setIsDateRangeOpen(false);
+      setShowCalendar(false);
+      setTimeout(() => setIsUpdating(false), 800);
+    }
+  };
+
+  const handleCustomDateSelect = (range: DateRange | undefined) => {
+    setCustomDateRange(range);
+    if (range?.from && range?.to) {
+      setIsUpdating(true);
+      setTimeout(() => setIsUpdating(false), 800);
+      setShowCalendar(false);
+    }
+  };
+
+  const handleComparisonToggle = (checked: boolean) => {
+    console.log('Toggle clicked:', checked, 'isPremium:', isPremium);
+    if (!isPremium) {
+      console.log('Not premium, toggle disabled');
+      return;
+    }
+    console.log('Setting showComparison to:', checked);
+    setShowComparison(checked);
+  };
+
+  // Handle click outside to close date range dropdown and calendar
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dateRangeRef.current && !dateRangeRef.current.contains(event.target as Node)) {
+        setIsDateRangeOpen(false);
+      }
+      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
+        setShowCalendar(false);
+      }
+    };
+
+    if (isDateRangeOpen || showCalendar) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [isDateRangeOpen, showCalendar]);
+
+  const getDateRangeLabel = () => {
+    switch (dateRange) {
+      case '7days':
+        return 'Last 7 Days';
+      case '30days':
+        return 'Last 30 Days';
+      case 'custom':
+        if (customDateRange?.from && customDateRange?.to) {
+          const formatDate = (date: Date) => {
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          };
+          return `${formatDate(customDateRange.from)} - ${formatDate(customDateRange.to)}`;
+        }
+        return 'Custom Range';
+      default:
+        return 'Last 7 Days';
+    }
   };
   
   const handlePlatformToggle = (platformId: string) => {
@@ -284,13 +360,14 @@ export function DashboardPage({ onNavigate, currentPlan, onUpgrade }: DashboardP
         </div>
         <Button
           onClick={onUpgrade}
-          className="flex-shrink-0"
+          className="flex-shrink-0 rounded-lg"
           style={{
             background: 'linear-gradient(135deg, #7D66E6 0%, #4F9FA9 100%)',
-            borderRadius: '9999px',
+            borderRadius: '8px',
             paddingLeft: '24px',
             paddingRight: '24px',
             height: '44px',
+            color: 'white',
           }}
         >
           Upgrade to Premium
@@ -324,8 +401,8 @@ export function DashboardPage({ onNavigate, currentPlan, onUpgrade }: DashboardP
         </p>
         <button
           onClick={onUpgrade}
-          className="mt-4 px-4 py-2 rounded-full text-white text-sm transition-all hover:scale-105"
-          style={{ background: 'linear-gradient(135deg, #7D66E6 0%, #4F9FA9 100%)' }}
+          className="mt-4 px-4 py-2 rounded-lg text-sm transition-all hover:scale-105"
+          style={{ background: 'linear-gradient(135deg, #7D66E6 0%, #4F9FA9 100%)', color: 'white', borderRadius: '8px' }}
         >
           Unlock with Premium
         </button>
@@ -427,60 +504,188 @@ export function DashboardPage({ onNavigate, currentPlan, onUpgrade }: DashboardP
             <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
               {/* Left: Date Range Selector */}
               <div className="flex items-center gap-3">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className={`relative flex items-center gap-2 px-4 py-2 rounded-xl border ${
-                        isPremium 
-                          ? 'bg-white border-gray-200 cursor-pointer hover:border-gray-300' 
-                          : 'bg-gray-100 border-gray-300 cursor-not-allowed'
-                      }`}>
-                        <Calendar size={16} style={{ color: isPremium ? 'var(--foreground-secondary)' : '#9CA3AF' }} />
-                        <span style={{ fontSize: '14px', fontWeight: 500, color: isPremium ? 'var(--foreground)' : '#9CA3AF' }}>
+                <div className="relative" ref={dateRangeRef}>
+                  <button
+                    onClick={() => {
+                      if (!isPremium) return;
+                      if (dateRange === 'custom') {
+                        setShowCalendar(true);
+                        setIsDateRangeOpen(false);
+                      } else {
+                        setIsDateRangeOpen(!isDateRangeOpen);
+                      }
+                    }}
+                    disabled={!isPremium}
+                    className={`relative flex items-center gap-2 px-4 py-2 rounded-xl border transition-all ${
+                      isPremium 
+                        ? 'bg-white border-gray-200 cursor-pointer hover:border-gray-300' 
+                        : 'bg-gray-100 border-gray-300 cursor-not-allowed'
+                    }`}
+                  >
+                    <CalendarIcon size={16} style={{ color: isPremium ? 'var(--foreground-secondary)' : '#9CA3AF' }} />
+                    <span style={{ fontSize: '14px', fontWeight: 500, color: isPremium ? 'var(--foreground)' : '#9CA3AF' }}>
+                      {getDateRangeLabel()}
+                    </span>
+                    <ChevronDown 
+                      size={16} 
+                      className={`transition-transform duration-200 ${isDateRangeOpen ? 'rotate-180' : ''}`}
+                      style={{ color: isPremium ? 'var(--foreground-secondary)' : '#9CA3AF' }} 
+                    />
+                    {!isPremium && (
+                      <Lock size={14} className="ml-2" style={{ color: '#9CA3AF' }} />
+                    )}
+                  </button>
+
+                  {isDateRangeOpen && isPremium && (
+                    <div className="absolute top-full left-0 mt-2 w-48 rounded-xl bg-white border border-gray-200 shadow-xl overflow-hidden z-50">
+                      <div className="p-1">
+                        <button
+                          onClick={() => handleDateRangeChange('7days')}
+                          className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg text-left transition-all ${
+                            dateRange === '7days' 
+                              ? 'bg-gray-100 font-semibold' 
+                              : 'hover:bg-gray-50'
+                          }`}
+                          style={{ fontSize: '14px', color: 'var(--foreground)' }}
+                        >
                           Last 7 Days
-                        </span>
-                        <ChevronDown size={16} style={{ color: isPremium ? 'var(--foreground-secondary)' : '#9CA3AF' }} />
-                        {!isPremium && (
-                          <Lock size={14} className="ml-2" style={{ color: '#9CA3AF' }} />
-                        )}
+                        </button>
+                        <button
+                          onClick={() => handleDateRangeChange('30days')}
+                          className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg text-left transition-all ${
+                            dateRange === '30days' 
+                              ? 'bg-gray-100 font-semibold' 
+                              : 'hover:bg-gray-50'
+                          }`}
+                          style={{ fontSize: '14px', color: 'var(--foreground)' }}
+                        >
+                          Last 30 Days
+                        </button>
+                        <button
+                          onClick={() => handleDateRangeChange('custom')}
+                          className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg text-left transition-all ${
+                            dateRange === 'custom' 
+                              ? 'bg-gray-100 font-semibold' 
+                              : 'hover:bg-gray-50'
+                          }`}
+                          style={{ fontSize: '14px', color: 'var(--foreground)' }}
+                        >
+                          Custom Range
+                        </button>
                       </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="text-sm">
-                        {isPremium 
-                          ? 'Select date range for analysis' 
-                          : 'Custom date filters are available in Premium.'}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                    </div>
+                  )}
+
+                  {/* Calendar Popup for Custom Range */}
+                  {showCalendar && isPremium && (
+                    <div 
+                      ref={calendarRef}
+                      className="absolute top-full left-0 mt-2 rounded-xl bg-white border border-gray-200 shadow-xl overflow-hidden z-50"
+                      style={{ boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)', minWidth: '320px' }}
+                    >
+                      <div className="p-6">
+                        <Calendar
+                          mode="range"
+                          selected={customDateRange}
+                          onSelect={handleCustomDateSelect}
+                          numberOfMonths={1}
+                          className="calendar-custom"
+                          classNames={{
+                            months: "flex flex-col gap-4",
+                            month: "flex flex-col gap-4",
+                            caption: "flex justify-center pt-1 relative items-center w-full mb-4",
+                            caption_label: "text-base font-semibold text-gray-900",
+                            nav: "flex items-center gap-1",
+                            nav_button: "h-8 w-8 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 flex items-center justify-center active:scale-95",
+                            nav_button_previous: "absolute left-1",
+                            nav_button_next: "absolute right-1",
+                            table: "w-full border-collapse",
+                            head_row: "flex mb-2",
+                            head_cell: "text-gray-500 rounded-md w-10 font-medium text-xs uppercase tracking-wider",
+                            row: "flex w-full mt-1",
+                            cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20",
+                            day: "h-10 w-10 rounded-lg font-medium transition-all duration-200 hover:bg-gray-100 hover:scale-105 active:scale-95 text-gray-900",
+                            day_range_start: "!bg-gradient-to-r !from-[#7B61FF] !to-[#3ED6B2] !text-white rounded-l-lg font-semibold shadow-md",
+                            day_range_end: "!bg-gradient-to-r !from-[#7B61FF] !to-[#3ED6B2] !text-white rounded-r-lg font-semibold shadow-md",
+                            day_selected: "!bg-gradient-to-r !from-[#7B61FF] !to-[#3ED6B2] !text-white font-semibold shadow-md",
+                            day_today: "bg-gray-100 text-gray-900 font-semibold border-2 border-gray-300",
+                            day_outside: "text-gray-400 opacity-50",
+                            day_disabled: "text-gray-300 opacity-30 cursor-not-allowed",
+                            day_range_middle: "!bg-gradient-to-r !from-[#7B61FF]/20 !to-[#3ED6B2]/20 text-gray-900",
+                            day_hidden: "invisible",
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Compare Toggle */}
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border ${
-                        isPremium 
-                          ? 'bg-white border-gray-200' 
-                          : 'bg-gray-100 border-gray-300'
-                      }`}>
-                        <span style={{ fontSize: '14px', fontWeight: 500, color: isPremium ? 'var(--foreground)' : '#9CA3AF' }}>
-                          Compare to average
-                        </span>
-                        <Switch 
-                          checked={showComparison} 
-                          onCheckedChange={isPremium ? setShowComparison : undefined}
-                          disabled={!isPremium}
-                        />
-                        {!isPremium && (
-                          <Lock size={14} className="ml-1" style={{ color: '#9CA3AF' }} />
+                      <button
+                        onClick={() => {
+                          if (isPremium) {
+                            handleComparisonToggle(!showComparison);
+                          }
+                        }}
+                        disabled={!isPremium}
+                        className="group relative"
+                        style={{
+                          padding: '12px 24px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          background: isPremium
+                            ? (showComparison ? 'var(--brand-gradient)' : 'linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 100%)')
+                            : '#F3F4F6',
+                          color: isPremium && showComparison ? 'white' : isPremium ? 'var(--foreground)' : '#9CA3AF',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: isPremium ? 'pointer' : 'not-allowed',
+                          transition: 'all 0.3s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          position: 'relative',
+                          zIndex: 100,
+                        }}
+                        onMouseEnter={(e) => {
+                          if (isPremium && showComparison) {
+                            e.currentTarget.style.background = 'var(--brand-gradient-reverse)';
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(124, 58, 237, 0.3)';
+                          } else if (isPremium && !showComparison) {
+                            e.currentTarget.style.background = 'linear-gradient(135deg, #D1D5DB 0%, #9CA3AF 100%)';
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (isPremium && showComparison) {
+                            e.currentTarget.style.background = 'var(--brand-gradient)';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = 'none';
+                          } else if (isPremium && !showComparison) {
+                            e.currentTarget.style.background = 'linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 100%)';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                          }
+                        }}
+                      >
+                        <span>Compare to Average</span>
+                        {showComparison && isPremium && (
+                          <span style={{
+                            fontSize: '16px',
+                            display: 'inline-block',
+                            animation: 'pulse 2s ease-in-out infinite'
+                          }}>✓</span>
                         )}
-                      </div>
+                        {!isPremium && <Lock size={14} />}
+                      </button>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="text-sm">
-                        {isPremium 
-                          ? 'See how your feed differs from the average user' 
+                        {isPremium
+                          ? 'See how your feed differs from the average user'
                           : 'Available in Premium. See how your feed differs from the average user.'}
                       </p>
                     </TooltipContent>
@@ -668,13 +873,18 @@ export function DashboardPage({ onNavigate, currentPlan, onUpgrade }: DashboardP
               </Card>
             </div>
 
-            <div className="mb-6">
-              <p className="text-base p-4 rounded-2xl bg-gray-50 border border-gray-200 text-center" style={{ color: 'var(--foreground-tertiary)' }}>
-                Most users discover they spend far less time connecting than they thought.
-              </p>
-            </div>
+            {showComparison && (
+              <div className="mb-6">
+                <p className="text-base p-4 rounded-2xl bg-gray-50 border border-gray-200 text-center" style={{ color: 'var(--foreground-tertiary)' }}>
+                  Most users discover they spend far less time connecting than they thought.
+                </p>
+              </div>
+            )}
 
-            <TakeawayBox text="You spend only 15% of feed time with friends and family—nearly half the average. The algorithm prioritizes media over connections." />
+            <TakeawayBox text={showComparison
+              ? "You spend only 15% of feed time with friends and family—nearly half the average. The algorithm prioritizes media over connections."
+              : "You spend only 15% of feed time with friends and family. The algorithm prioritizes media over connections."
+            } />
           </motion.div>
         </section>
 
@@ -777,11 +987,13 @@ export function DashboardPage({ onNavigate, currentPlan, onUpgrade }: DashboardP
               </Card>
             </div>
 
-            <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-center">
-              <p className="text-sm" style={{ color: 'var(--foreground-secondary)' }}>
-                Your feed balances analytical content but features more outrage than average.
-              </p>
-            </div>
+            {showComparison && (
+              <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-center">
+                <p className="text-sm" style={{ color: 'var(--foreground-secondary)' }}>
+                  Your feed balances analytical content but features more outrage than average.
+                </p>
+              </div>
+            )}
 
             {/* Positive/Negative Topics - Stacked Horizontal Bars */}
             <Card className="p-8 mb-6" style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)', borderRadius: '16px' }}>
@@ -795,7 +1007,6 @@ export function DashboardPage({ onNavigate, currentPlan, onUpgrade }: DashboardP
                       <span style={{ fontSize: '16px', lineHeight: '22px', fontWeight: 500, color: '#1A1A1A' }}>
                         {item.topic}
                       </span>
-                      <span style={{ fontSize: '14px', color: '#777', fontWeight: 500 }}>100%</span>
                     </div>
                     {/* Single stacked horizontal bar */}
                     <TooltipProvider>
@@ -817,7 +1028,7 @@ export function DashboardPage({ onNavigate, currentPlan, onUpgrade }: DashboardP
                               viewport={{ once: true }}
                               transition={{ duration: 0.8, delay: i * 0.06, ease: 'easeOut' }}
                             >
-                              {item.positive > 15 && (
+                              {item.positive >= 5 && (
                                 <span style={{ fontSize: '14px', lineHeight: '18px', color: '#FFF', fontWeight: 600 }}>
                                   {item.positive}%
                                 </span>
@@ -835,7 +1046,7 @@ export function DashboardPage({ onNavigate, currentPlan, onUpgrade }: DashboardP
                               viewport={{ once: true }}
                               transition={{ duration: 0.8, delay: i * 0.06 + 0.1, ease: 'easeOut' }}
                             >
-                              {item.neutral > 15 && (
+                              {item.neutral >= 5 && (
                                 <span style={{ fontSize: '14px', lineHeight: '18px', color: '#FFF', fontWeight: 600 }}>
                                   {item.neutral}%
                                 </span>
@@ -853,7 +1064,7 @@ export function DashboardPage({ onNavigate, currentPlan, onUpgrade }: DashboardP
                               viewport={{ once: true }}
                               transition={{ duration: 0.8, delay: i * 0.06 + 0.2, ease: 'easeOut' }}
                             >
-                              {item.negative > 15 && (
+                              {item.negative >= 5 && (
                                 <span style={{ fontSize: '14px', lineHeight: '18px', color: '#FFF', fontWeight: 600 }}>
                                   {item.negative}%
                                 </span>

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Button } from '../../components/ui/Button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Card } from '../ui/card';
+import { Card } from '../../components/ui/Card';
 
 interface SignInPageProps {
   onNavigate: (page: string) => void;
@@ -109,7 +109,7 @@ export function SignInPage({ onNavigate }: SignInPageProps) {
               </div>
             )}
 
-            <Button type="submit" className="w-full h-12 text-lg" style={{ background: 'var(--brand-gradient)' }}>
+            <Button type="submit" className="w-full h-12 text-lg" style={{ background: 'var(--brand-gradient)', color: 'white' }}>
               {isSignUp ? 'Create Account' : 'Sign In'}
               <ArrowRight className="ml-2" size={20} />
             </Button>
@@ -175,4 +175,7 @@ export function SignInPage({ onNavigate }: SignInPageProps) {
     </div>
   );
 }
+
+
+
 

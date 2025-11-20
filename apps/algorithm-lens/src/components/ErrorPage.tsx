@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { AlertCircle, Home, ArrowLeft } from 'lucide-react';
-import { Button } from './ui/button';
-import { Card } from './ui/card';
+import { Button } from './ui/Button';
+import { Card } from './ui/Card';
 
 interface ErrorPageProps {
   onNavigate: (page: string) => void;

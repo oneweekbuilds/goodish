@@ -77,3 +77,11 @@ export function ScatterPlot({ data, className = '' }: ScatterPlotProps) {
 
 
 
+
+
+
+
+
+
+
+

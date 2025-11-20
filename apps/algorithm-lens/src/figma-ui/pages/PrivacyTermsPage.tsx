@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Button } from '../ui/button';
+import { Button } from '../../components/ui/Button';
 import { ArrowLeft } from 'lucide-react';
 
 interface PrivacyTermsPageProps {
@@ -210,4 +210,7 @@ export function PrivacyTermsPage({ onNavigate }: PrivacyTermsPageProps) {
     </div>
   );
 }
+
+
+
 

@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { ChevronRight, Share2, Download, ArrowLeft, AlertCircle } from 'lucide-react';
-import { Button } from './ui/button';
-import { Card } from './ui/card';
+import { Button } from './ui/Button';
+import { Card } from './ui/Card';
 import {
   Breadcrumb,
   BreadcrumbItem,

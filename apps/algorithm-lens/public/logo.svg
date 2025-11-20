@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="320" height="180" role="img" aria-label="AlgorithmLens logo (transparent)">
+  <defs>
+    <linearGradient id="algGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4"></stop>
+      <stop offset="50%" stop-color="#6366f1"></stop>
+      <stop offset="100%" stop-color="#10b981"></stop>
+    </linearGradient>
+  </defs>
+
+  <!-- ICON (no background; centered lockup) -->
+  <!-- Eye outline: taller (more circular), same width -->
+  <path d="M80,85 Q160,5 240,85 Q160,165 80,85 Z" fill="none" stroke="url(#algGradient)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
+
+  <!-- Lens (pupil) — outline-only, clearly inside eyelid with space -->
+  <circle cx="160" cy="85" r="24" fill="none" stroke="url(#algGradient)" stroke-width="10"></circle>
+
+  <!-- Subtle glass highlight -->
+  <path d="M148,75 A16 16 0 0 1 172,75" fill="none" stroke="#ffffff" stroke-opacity="0.6" stroke-width="3" stroke-linecap="round"></path>
+
+  <!-- Handle: starts at lens perimeter, never enters the circle -->
+  <!-- Perimeter point at ~45°: (160 + 24/√2, 85 + 24/√2) ≈ (177,102) -->
+  <line x1="177" y1="102" x2="210" y2="131" stroke="url(#algGradient)" stroke-width="10" stroke-linecap="round"></line>
+
+  <!-- WORDMARK (kept close; centered; gradient to match icon) -->
+  <text x="160" y="170" text-anchor="middle" font-family="Inter, Manrope, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="800" font-size="30" fill="url(#algGradient)">
+    AlgorithmLens
+  </text>
+</svg>

@@ -6,3 +6,11 @@ export default function SignIn() {
   return <SignInPage onNavigate={(path) => navigate('/' + path)} />;
 }
 
+
+
+
+
+
+
+
+

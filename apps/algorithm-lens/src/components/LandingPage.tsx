@@ -1,8 +1,8 @@
 import { motion } from 'motion/react';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from './ui/button';
-import { Card } from './ui/card';
+import { Button } from './ui/Button';
+import { Card } from './ui/Card';
 import { Input } from './ui/input';
 import { HeroComparison } from './HeroComparison';
 

@@ -31,9 +31,9 @@ export function Footer({ onNavigate }: FooterProps) {
         }}
       >
         <div className="max-w-[1280px] mx-auto">
-          <div className="grid md:grid-cols-3" style={{ gap: 'var(--spacing-4xl)' }}>
+          <div className="flex flex-col md:flex-row md:justify-between md:items-start" style={{ gap: 'var(--spacing-4xl)' }}>
             {/* Column 1: Logo & Mission */}
-            <div>
+            <div className="flex-shrink-0" style={{ maxWidth: '400px' }}>
               <div 
                 className="brand-gradient-text"
                 style={{
@@ -50,7 +50,7 @@ export function Footer({ onNavigate }: FooterProps) {
                 style={{ 
                   color: 'var(--foreground-secondary)',
                   lineHeight: '24px',
-                  maxWidth: '280px',
+                  maxWidth: '100%',
                 }}
               >
                 See your algorithm. Understand your feed. Built at MIT by students passionate about ethical AI and digital transparency.
@@ -170,7 +170,7 @@ export function Footer({ onNavigate }: FooterProps) {
             </div>
 
             {/* Column 2: Product Links */}
-            <div>
+            <div className="flex-shrink-0">
               <h4 
                 style={{
                   fontFamily: 'var(--font-headline)',
@@ -217,7 +217,7 @@ export function Footer({ onNavigate }: FooterProps) {
             </div>
 
             {/* Column 3: Company Links */}
-            <div>
+            <div className="flex-shrink-0">
               <h4 
                 style={{
                   fontFamily: 'var(--font-headline)',
@@ -260,7 +260,7 @@ export function Footer({ onNavigate }: FooterProps) {
                 </li>
                 <li>
                   <button
-                    onClick={() => onNavigate('legal')}
+                    onClick={() => onNavigate('privacy')}
                     style={{
                       fontSize: '16px',
                       lineHeight: '26px',

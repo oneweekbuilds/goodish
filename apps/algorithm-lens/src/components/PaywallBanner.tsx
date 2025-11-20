@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { Sparkles, ArrowRight } from 'lucide-react';
-import { Button } from './ui/button';
+import { Button } from './ui/Button';
 
 interface PaywallBannerProps {
   minPlan: 'premium';
@@ -64,9 +64,11 @@ export function PaywallBanner({
       <div className="flex flex-col sm:flex-row gap-3">
         <Button
           onClick={onUpgrade}
-          className="flex-1 h-12 text-base shadow-lg hover:shadow-xl transition-all duration-300"
+          className="flex-1 h-12 text-base shadow-lg hover:shadow-xl transition-all duration-300 rounded-lg"
           style={{
             background: 'linear-gradient(135deg, #34D1BF 0%, #8B6EF8 100%)',
+            color: 'white',
+            borderRadius: '8px',
           }}
         >
           Upgrade to Premium
@@ -75,7 +77,8 @@ export function PaywallBanner({
         <Button
           onClick={onLearnMore}
           variant="outline"
-          className="flex-1 h-12 text-base border-2"
+          className="flex-1 h-12 text-base border-2 rounded-lg"
+          style={{ borderRadius: '8px' }}
         >
           Learn More
         </Button>

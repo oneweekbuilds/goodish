@@ -26,10 +26,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-
 /* --- Tokens on the scoped root ---- */
 
 .alg-fm {
@@ -256,7 +252,7 @@
 
   --max-content-width: 1280px;
 
-  --navbar-height: 80px;
+  --navbar-height: 92px;
 
   --navbar-height-mobile: 64px;
 

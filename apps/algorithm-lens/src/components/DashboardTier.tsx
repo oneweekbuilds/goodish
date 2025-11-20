@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { Lock, TrendingUp, BarChart3, Users, Map, Activity, Layers, PieChart } from 'lucide-react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
+import { Card } from './ui/Card';
+import { Button } from './ui/Button';
 
 interface DashboardTierProps {
   tier: 'free' | 'pro' | 'premium';

@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { Database, Brain, Eye, Lightbulb, ArrowRight, Shield, Heart, Users } from 'lucide-react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
+import { Card } from './ui/Card';
+import { Button } from './ui/Button';
 
 interface AboutPageProps {
   onNavigate: (page: string) => void;

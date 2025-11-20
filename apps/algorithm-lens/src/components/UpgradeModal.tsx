@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Check } from 'lucide-react';
-import { Button } from './ui/button';
+import { Button } from './ui/Button';
 import { BillingToggle } from './BillingToggle';
 
 interface UpgradeModalProps {

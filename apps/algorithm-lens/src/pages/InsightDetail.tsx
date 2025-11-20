@@ -7,3 +7,11 @@ export default function InsightDetail() {
   return <InsightDetailPage onNavigate={(path) => navigate('/' + path)} topic={id} />;
 }
 
+
+
+
+
+
+
+
+

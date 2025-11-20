@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { DashboardTier } from './DashboardTier';
-import { Button } from '../ui/button';
+import { Button } from '../../components/ui/Button';
 
 export function DashboardTierDemo() {
   const [currentTier, setCurrentTier] = useState<'free' | 'pro' | 'premium'>('free');
@@ -140,4 +140,7 @@ export function DashboardTierDemo() {
     </div>
   );
 }
+
+
+
 

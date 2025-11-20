@@ -33,3 +33,11 @@ export function FigmaPageLoader({ name }: { name: string }) {
   );
 }
 
+
+
+
+
+
+
+
+

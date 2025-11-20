@@ -1,330 +1,96 @@
-import { motion, useInView } from 'motion/react';
-import { useRef } from 'react';
+import React from "react";
 
-export function HeroComparison() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(containerRef, { once: false, amount: 0.3 });
-
+function XIcon({ className = "" }) {
   return (
-    <div 
-      ref={containerRef}
-      className="w-full max-w-[1440px] mx-auto rounded-3xl overflow-hidden shadow-lg relative"
-      style={{
-        background: 'linear-gradient(90deg, #f9f9fb 0%, #ececf1 25%, #d1d6ff 50%, #cfe9f5 75%, #b3ecf7 100%)',
-      }}
-    >
-      <div className="flex flex-col md:grid md:grid-cols-2 relative">
-        {/* LEFT PANEL - Before AlgorithmLens */}
-        <motion.div 
-          className="relative flex flex-col items-center min-h-[640px]"
-          style={{
-            paddingTop: '80px',
-            paddingBottom: '72px',
-            paddingLeft: '60px',
-            paddingRight: '60px',
-          }}
-          animate={isInView ? { opacity: 1 } : { opacity: 0.85 }}
-          transition={{ duration: 0.6 }}
-        >
-          {/* Header */}
-          <h2 
-            className="text-center"
-            style={{
-              fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
-              fontWeight: 700,
-              fontSize: '22px',
-              lineHeight: '28px',
-              color: '#7b61ff',
-              letterSpacing: '0.02em',
-              textTransform: 'uppercase',
-              marginBottom: '24px',
-            }}
-          >
-            Before AlgorithmLens
-          </h2>
-
-          {/* Pills - 2×2 Grid */}
-          <div className="flex flex-col items-center gap-7 mb-16">
-            {/* Top Row */}
-            <div className="flex gap-10">
-              {/* Bias */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={isInView ? { opacity: 0.9, y: 0 } : { opacity: 0, y: 10 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-              >
-                <div 
-                  className="flex items-center justify-center"
-                  style={{ 
-                    width: '140px',
-                    height: '48px',
-                    borderRadius: '24px',
-                    background: 'linear-gradient(135deg, #e7e7e7 0%, #f3f3f3 100%)',
-                  }}
-                >
-                  <span 
-                    style={{
-                      fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
-                      fontWeight: 600,
-                      fontSize: '18px',
-                      color: '#555555',
-                      textAlign: 'center',
-                    }}
-                  >
-                    Bias
-                  </span>
-                </div>
-              </motion.div>
-
-              {/* Ads */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={isInView ? { opacity: 0.9, y: 0 } : { opacity: 0, y: 10 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
-                <div 
-                  className="flex items-center justify-center"
-                  style={{ 
-                    width: '140px',
-                    height: '48px',
-                    borderRadius: '24px',
-                    background: 'linear-gradient(135deg, #e7e7e7 0%, #f3f3f3 100%)',
-                  }}
-                >
-                  <span 
-                    style={{
-                      fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
-                      fontWeight: 600,
-                      fontSize: '18px',
-                      color: '#555555',
-                      textAlign: 'center',
-                    }}
-                  >
-                    Ads
-                  </span>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Bottom Row */}
-            <div className="flex gap-10">
-              {/* Mindless */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={isInView ? { opacity: 0.9, y: 0 } : { opacity: 0, y: 10 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-              >
-                <div 
-                  className="flex items-center justify-center"
-                  style={{ 
-                    width: '140px',
-                    height: '48px',
-                    borderRadius: '24px',
-                    background: 'linear-gradient(135deg, #e7e7e7 0%, #f3f3f3 100%)',
-                  }}
-                >
-                  <span 
-                    style={{
-                      fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
-                      fontWeight: 600,
-                      fontSize: '18px',
-                      color: '#555555',
-                      textAlign: 'center',
-                    }}
-                  >
-                    Mindless
-                  </span>
-                </div>
-              </motion.div>
-
-              {/* Opaque */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={isInView ? { opacity: 0.9, y: 0 } : { opacity: 0, y: 10 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-              >
-                <div 
-                  className="flex items-center justify-center"
-                  style={{ 
-                    width: '140px',
-                    height: '48px',
-                    borderRadius: '24px',
-                    background: 'linear-gradient(135deg, #e7e7e7 0%, #f3f3f3 100%)',
-                  }}
-                >
-                  <span 
-                    style={{
-                      fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
-                      fontWeight: 600,
-                      fontSize: '18px',
-                      color: '#555555',
-                      textAlign: 'center',
-                    }}
-                  >
-                    Opaque
-                  </span>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-
-          {/* Text Block */}
-          <div className="text-center space-y-3 max-w-[360px]">
-            <h3 
-              style={{
-                fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
-                fontWeight: 700,
-                fontSize: '28px',
-                lineHeight: '130%',
-                color: '#1a1a1a',
-              }}
-            >
-              You absorb what your feed feeds you.
-            </h3>
-            <p 
-              style={{
-                fontFamily: 'Inter, system-ui, sans-serif',
-                fontWeight: 400,
-                fontSize: '18px',
-                lineHeight: '130%',
-                color: '#555555',
-              }}
-            >
-              You scroll, you absorb, you react — without realizing why.
-            </p>
-          </div>
-        </motion.div>
-
-        {/* RIGHT PANEL - With AlgorithmLens */}
-        <motion.div 
-          className="relative flex flex-col items-center min-h-[640px]"
-          style={{
-            paddingTop: '80px',
-            paddingBottom: '72px',
-            paddingLeft: '60px',
-            paddingRight: '60px',
-          }}
-          animate={isInView ? { opacity: 1 } : { opacity: 0.9 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-        >
-          {/* Header */}
-          <h2 
-            className="text-center relative z-10"
-            style={{
-              fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
-              fontWeight: 700,
-              fontSize: '22px',
-              lineHeight: '28px',
-              color: '#7b61ff',
-              letterSpacing: '0.02em',
-              textTransform: 'uppercase',
-              marginBottom: '24px',
-            }}
-          >
-            With AlgorithmLens
-          </h2>
-
-          {/* Pills */}
-          <div className="flex flex-col items-center gap-7 mb-16 z-10">
-            <div className="flex gap-10">
-              {["Transparent","Mindful"].map((label, idx) => (
-                <motion.div
-                  key={label}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
-                  transition={{ duration: 0.5, delay: 0.2 + idx*0.1 }}
-                  whileHover={{ scale: 1.03 }}
-                >
-                  <div 
-                    className="flex items-center justify-center"
-                    style={{ 
-                      width: '140px',
-                      height: '48px',
-                      borderRadius: '24px',
-                      background: 'linear-gradient(135deg, #7b61ff 0%, #3ed6b2 100%)',
-                      boxShadow: '0 0 5px rgba(255, 255, 255, 0.1)',
-                    }}
-                  >
-                    <span 
-                      style={{
-                        fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
-                        fontWeight: 600,
-                        fontSize: '18px',
-                        color: 'white',
-                        textAlign: 'center',
-                      }}
-                    >
-                      {label}
-                    </span>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            <div className="flex gap-10">
-              {["Aware","Balanced"].map((label, idx) => (
-                <motion.div
-                  key={label}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
-                  transition={{ duration: 0.5, delay: 0.4 + idx*0.1 }}
-                  whileHover={{ scale: 1.03 }}
-                >
-                  <div 
-                    className="flex items-center justify-center"
-                    style={{ 
-                      width: '140px',
-                      height: '48px',
-                      borderRadius: '24px',
-                      background: 'linear-gradient(135deg, #7b61ff 0%, #3ed6b2 100%)',
-                      boxShadow: '0 0 5px rgba(255, 255, 255, 0.1)',
-                    }}
-                  >
-                    <span 
-                      style={{
-                        fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
-                        fontWeight: 600,
-                        fontSize: '18px',
-                        color: 'white',
-                        textAlign: 'center',
-                      }}
-                    >
-                      {label}
-                    </span>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-
-          {/* Text Block */}
-          <div className="text-center space-y-3 max-w-[360px] relative z-10">
-            <h3 
-              style={{
-                fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
-                fontWeight: 700,
-                fontSize: '28px',
-                lineHeight: '130%',
-                color: '#1a1a1a',
-              }}
-            >
-              You see your feed with awareness.
-            </h3>
-            <p 
-              style={{
-                fontFamily: 'Inter, system-ui, sans-serif',
-                fontWeight: 400,
-                fontSize: '18px',
-                lineHeight: '130%',
-                color: '#555555',
-              }}
-            >
-              You notice what you're shown, and decide what to believe.
-            </p>
-          </div>
-        </motion.div>
-      </div>
-    </div>
+    <svg className={`w-4 h-4 ${className}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+    </svg>
   );
 }
 
+function CheckIcon({ className = "" }) {
+  return (
+    <svg className={`w-4 h-4 ${className}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.5 7.5a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414L8.5 12.086l6.793-6.793a1 1 0 011.414 0z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+export default function HeroComparison() {
+  return (
+    <section className="max-w-5xl mx-auto px-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* BEFORE card — muted, gray, centered */}
+        <div className="rounded-2xl border border-gray-200 bg-gray-50 p-8 shadow-sm text-center">
+          <div className="mx-auto mb-2 inline-flex items-center gap-2 text-xs font-semibold tracking-wide uppercase text-gray-500">
+            <XIcon className="text-gray-400" />
+            <span>Before AlgorithmLens</span>
+          </div>
+
+          <h3 className="text-2xl font-semibold text-gray-700 mb-2">
+            You absorb what your feed feeds you.
+          </h3>
+          <p className="text-sm text-gray-500 mb-5">
+            You scroll, you absorb, you react, without realizing why.
+          </p>
+
+          <ul className="mx-auto inline-flex flex-col gap-2 text-left">
+            <li className="flex items-center gap-2 text-gray-600">
+              <XIcon className="text-gray-400" />
+              <span className="text-sm">Unaware</span>
+            </li>
+            <li className="flex items-center gap-2 text-gray-600">
+              <XIcon className="text-gray-400" />
+              <span className="text-sm">Reactive</span>
+            </li>
+            <li className="flex items-center gap-2 text-gray-600">
+              <XIcon className="text-gray-400" />
+              <span className="text-sm">Easily influenced</span>
+            </li>
+            <li className="flex items-center gap-2 text-gray-600">
+              <XIcon className="text-gray-400" />
+              <span className="text-sm">Scrolling mindlessly</span>
+            </li>
+          </ul>
+        </div>
+
+        {/* WITH card — AlgorithmLens brand gradient matching button, centered */}
+        <div className="relative rounded-2xl border border-cyan-300 shadow-lg bg-gradient-to-br from-cyan-200 via-indigo-200 to-emerald-200 before:absolute before:inset-0 before:bg-white/55 before:rounded-2xl text-center hover:shadow-xl transition duration-200 ease-out hover:scale-[1.01]">
+          <div className="relative z-10 p-8">
+            <div className="mx-auto mb-2 inline-flex items-center gap-2 text-xs font-semibold tracking-wide uppercase text-indigo-600">
+              <CheckIcon className="text-cyan-600" />
+              <span>With AlgorithmLens</span>
+            </div>
+
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              You see your feed with awareness.
+            </h3>
+            <p className="text-sm text-gray-800 mb-5">
+              You notice what you are shown and decide what to believe.
+            </p>
+
+            <ul className="mx-auto inline-flex flex-col gap-2 text-left">
+              <li className="flex items-center gap-2 text-gray-800">
+                <CheckIcon className="text-emerald-600" />
+                <span className="text-sm">Aware</span>
+              </li>
+              <li className="flex items-center gap-2 text-gray-800">
+                <CheckIcon className="text-emerald-600" />
+                <span className="text-sm">In control</span>
+              </li>
+              <li className="flex items-center gap-2 text-gray-800">
+                <CheckIcon className="text-emerald-600" />
+                <span className="text-sm">Empowered</span>
+              </li>
+              <li className="flex items-center gap-2 text-gray-800">
+                <CheckIcon className="text-emerald-600" />
+                <span className="text-sm">Clear-minded</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  );
+}

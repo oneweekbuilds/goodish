@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { Lock, TrendingUp, BarChart3, Users, Map, Activity, Layers, PieChart } from 'lucide-react';
-import { Card } from '../ui/card';
-import { Button } from '../ui/button';
+import { Card } from '../../components/ui/Card';
+import { Button } from '../../components/ui/Button';
 
 interface DashboardTierProps {
   tier: 'free' | 'pro' | 'premium';
@@ -436,4 +436,7 @@ export function DashboardTier({ tier, onUpgrade }: DashboardTierProps) {
     </div>
   );
 }
+
+
+
 

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
-import { Button } from './ui/button';
+import { Button } from './ui/Button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Card } from './ui/card';
+import { Card } from './ui/Card';
 import { AbstractVisual } from './AbstractVisual';
 import { BrandLogo } from './BrandLogo';
 

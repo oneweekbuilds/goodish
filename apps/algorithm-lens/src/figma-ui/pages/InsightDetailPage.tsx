@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { ChevronRight, Share2, Download, ArrowLeft, AlertCircle } from 'lucide-react';
-import { Button } from '../ui/button';
-import { Card } from '../ui/card';
+import { Button } from '../../components/ui/Button';
+import { Card } from '../../components/ui/Card';
 
 interface InsightDetailPageProps {
   onNavigate: (page: string) => void;
@@ -206,7 +206,7 @@ export function InsightDetailPage({ onNavigate, topic = 'wellness' }: InsightDet
               ))}
             </ul>
 
-            <Button size="lg" onClick={() => onNavigate('dashboard')} style={{ background: 'var(--brand-gradient)' }}>
+            <Button size="lg" onClick={() => onNavigate('dashboard')} style={{ background: 'var(--brand-gradient)', color: 'white' }}>
               Back to Dashboard
             </Button>
           </Card>
@@ -215,4 +215,7 @@ export function InsightDetailPage({ onNavigate, topic = 'wellness' }: InsightDet
     </div>
   );
 }
+
+
+
 

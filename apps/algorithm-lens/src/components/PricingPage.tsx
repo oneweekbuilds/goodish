@@ -64,48 +64,52 @@ function AccordionItem({ question, answer }: { question: string; answer: string 
   );
 }
 
+type PlanData = {
+  name: string;
+  tagline?: string;
+  description?: string;
+  leadSentence?: string;
+  price: { monthly: string; annual: string };
+  features: string[];
+  cta: string;
+  plan: 'free' | 'premium';
+  isMostPopular?: boolean;
+  accentColor: string;
+};
+
 export function PricingPage({ currentPlan, onPlanChange }: PricingPageProps) {
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('annual');
 
-  const plans = [
+  const plans: PlanData[] = [
     {
-      name: 'Free',
-      tagline: 'See your algorithm',
-      description: 'See what your feed really shows you — instantly',
+      name: 'Starter',
       price: { monthly: '$0/mo', annual: '$0/yr' },
       features: [
-        'One platform snapshot',
-        'Topic mix visualization',
-        'Content tone overview',
-        'Top 5 topics & creators',
-        'Feed fingerprint chart',
-        'Local-only processing',
-        '7-day static history',
+        'Analyze one platform',
+        'Visualize topic mix and content tone',
+        'See your top 5 topics and creators',
+        'Get a 7-day snapshot of your feed',
+        'Private, local-only processing',
       ],
       cta: 'Start Free',
-      plan: 'free' as const,
+      plan: 'free',
       accentColor: '#8BBF9F',
     },
     {
-      name: 'Premium',
-      tagline: 'Understand & Control',
-      description: 'Full algorithmic transparency across all platforms',
-      price: { monthly: '$9.99/mo', annual: '$89/yr' },
+      name: 'Pro Insights',
+      leadSentence: 'Go beyond the surface and understand how your feed really works.',
+      price: { monthly: '$9.99/mo', annual: '$7.99/mo' },
       features: [
-        'All platforms (5+ supported)',
-        '7-day & 30-day trend analysis',
-        'Per-platform insights & comparison',
-        'Sentiment & bias tracking',
-        'Brand & product exposure',
-        'Influencer network analysis',
-        'Custom date ranges & filters',
-        'Weekly email digests',
-        'Cloud sync & CSV export',
-        'AI "Blind Spot" reports',
-        'Priority support',
+        'Track all major platforms (5+)',
+        'See 7-day and 30-day trends',
+        'Compare bias, tone, and sentiment across platforms',
+        'Reveal brand, product, and influencer influence',
+        'Filter by custom dates and ranges',
+        'Sync your data and export CSV',
+        'Get exclusive Blind Spot reports',
       ],
-      cta: 'Upgrade to Premium',
-      plan: 'premium' as const,
+      cta: 'Upgrade to Pro Insights',
+      plan: 'premium',
       isMostPopular: true,
       accentColor: '#7D66E6',
     },
@@ -115,7 +119,7 @@ export function PricingPage({ currentPlan, onPlanChange }: PricingPageProps) {
     if (plan === currentPlan) return;
     
     onPlanChange(plan);
-    toast.success(`Upgraded to ${plan.charAt(0).toUpperCase() + plan.slice(1)}! 🎉`);
+    toast.success(`Upgraded to ${plan.charAt(0).toUpperCase() + plan.slice(1)}!`);
   };
 
   return (
@@ -123,7 +127,7 @@ export function PricingPage({ currentPlan, onPlanChange }: PricingPageProps) {
       <div className="max-w-[1440px] mx-auto">
         {/* Header */}
         <motion.div
-          className="text-center max-w-3xl mx-auto mb-12"
+          className="text-center max-w-3xl mx-auto mb-16"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
@@ -148,17 +152,17 @@ export function PricingPage({ currentPlan, onPlanChange }: PricingPageProps) {
             <BillingToggle value={billingPeriod} onChange={setBillingPeriod} />
           </div>
           <p className="text-sm" style={{ color: 'var(--foreground-muted)', marginBottom: 'var(--spacing-md)' }}>
-            Save up to 17% with annual billing
+            Save up to 20% with annual billing
           </p>
         </motion.div>
 
         {/* Benefits Text */}
         <motion.div
-          className="text-center mb-12"
+          className="text-center mb-16"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2 }}
-          style={{ marginTop: 'var(--spacing-md)', marginBottom: 'var(--spacing-md)' }}
+          style={{ marginTop: 'var(--spacing-lg)', marginBottom: 'var(--spacing-lg)' }}
         >
           <ul className="flex flex-wrap items-center justify-center gap-6" style={{ fontSize: '18px', lineHeight: '28px', color: 'var(--foreground-secondary)' }}>
             <li className="flex items-center gap-2">
@@ -193,7 +197,7 @@ export function PricingPage({ currentPlan, onPlanChange }: PricingPageProps) {
         </motion.div>
 
         {/* Plan Cards - now 2 columns */}
-        <div className="grid md:grid-cols-2 gap-8 mb-16" style={{ maxWidth: '900px', margin: '0 auto' }}>
+        <div className="grid md:grid-cols-2 gap-10" style={{ maxWidth: '900px', margin: '7rem auto', marginBottom: '7rem' }}>
           {plans.map((plan, i) => (
             <PlanCard
               key={i}
@@ -201,12 +205,14 @@ export function PricingPage({ currentPlan, onPlanChange }: PricingPageProps) {
               tagline={plan.tagline}
               price={plan.price}
               description={plan.description}
+              leadSentence={plan.leadSentence}
               features={plan.features}
               cta={plan.cta}
               isMostPopular={plan.isMostPopular}
               isCurrent={currentPlan === plan.plan}
               billingPeriod={billingPeriod}
               accentColor={plan.accentColor}
+              planType={plan.plan}
               onSelect={() => handlePlanSelect(plan.plan)}
             />
           ))}
@@ -245,10 +251,6 @@ export function PricingPage({ currentPlan, onPlanChange }: PricingPageProps) {
               {
                 q: 'What payment methods do you accept?',
                 a: 'We accept all major credit cards and PayPal. All transactions are secure and encrypted.',
-              },
-              {
-                q: 'Do you offer refunds?',
-                a: 'Yes, we offer a 30-day money-back guarantee. If you are not satisfied, contact us for a full refund.',
               },
             ].map((faq, i) => (
               <AccordionItem key={i} question={faq.q} answer={faq.a} />

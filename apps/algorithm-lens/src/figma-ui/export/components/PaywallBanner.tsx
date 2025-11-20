@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { Sparkles, ArrowRight } from 'lucide-react';
-import { Button } from '../../ui/button';
+import { Button } from '../../../components/ui/Button';
 
 interface PaywallBannerProps {
   minPlan: 'premium';
@@ -67,6 +67,7 @@ export function PaywallBanner({
           className="flex-1 h-12 text-base shadow-lg hover:shadow-xl transition-all duration-300"
           style={{
             background: 'linear-gradient(135deg, #34D1BF 0%, #8B6EF8 100%)',
+            color: 'white',
           }}
         >
           Upgrade to Premium
@@ -83,4 +84,7 @@ export function PaywallBanner({
     </motion.div>
   );
 }
+
+
+
 

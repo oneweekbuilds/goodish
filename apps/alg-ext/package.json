@@ -1,0 +1,26 @@
+{
+  "name": "@goodish/alg-ext",
+  "version": "1.0.0",
+  "description": "AlgorithmLens Chrome extension for desktop content capture",
+  "type": "module",
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": ["algorithmlens", "chrome-extension", "content-capture"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "preact": "^10.24.3",
+    "idb": "^8.0.1"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.9.3",
+    "@types/chrome": "^0.0.278",
+    "@types/node": "^20.17.9",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11",
+    "vite-plugin-static-copy": "^2.1.0"
+  }
+}

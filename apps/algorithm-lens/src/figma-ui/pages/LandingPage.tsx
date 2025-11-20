@@ -1,10 +1,11 @@
 import { motion } from 'motion/react';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '../ui/button';
-import { Card } from '../ui/card';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '../../components/ui/Button';
+import { Card } from '../../components/ui/Card';
 import { Input } from '../ui/input';
-import { HeroComparison } from './HeroComparison';
+import HeroComparison from './HeroComparison';
 
 interface LandingPageProps {
   onNavigate?: (page: string) => void;
@@ -12,12 +13,7 @@ interface LandingPageProps {
 
 export default function LandingPage({ onNavigate }: LandingPageProps) {
   const [email, setEmail] = useState('');
-
-  const scrollToDashboard = () => {
-    if (onNavigate) {
-      onNavigate('dashboard');
-    }
-  };
+  const navigate = useNavigate();
 
   const scrollToHowItWorks = () => {
     const element = document.getElementById('how-it-works');
@@ -71,7 +67,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                 fontWeight: 700,
                 letterSpacing: '-0.01em',
                 fontFamily: 'var(--font-headline)',
-                marginBottom: 'var(--spacing-md)',
+                marginBottom: 'var(--spacing-sm)',
                 color: 'var(--foreground)',
               }}
               initial={{ opacity: 0, y: 30 }}
@@ -105,7 +101,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                 width: '48px',
                 height: '4px',
                 background: 'var(--brand-gradient)',
-                borderRadius: '2px',
+                borderRadius: '8px',
                 margin: '0 auto var(--spacing-sm)',
               }}
               initial={{ opacity: 0, scaleX: 0 }}
@@ -119,7 +115,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
               style={{ 
                 color: 'var(--foreground-secondary)',
                 maxWidth: '600px',
-                margin: '0 auto var(--spacing-xl)',
+                margin: '0 auto var(--spacing-md)',
               }}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -135,7 +131,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
               style={{
                 maxWidth: '736px',
                 width: '100%',
-                margin: '0 auto var(--spacing-sm)',
+                margin: '0 auto var(--spacing-xs)',
               }}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -160,7 +156,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                   }}
                   className="focus:outline-none focus:ring-1 focus:ring-[var(--brand-purple)]"
                 />
-                <Button 
+                <Button
                   type="submit"
                   style={{
                     height: '56px',
@@ -176,8 +172,9 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    color: '#FFFFFF',
                   }}
-                  className="group"
+                  className="group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 hover:opacity-90 active:scale-[.98]"
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = 'var(--brand-gradient-reverse)';
                   }}
@@ -186,29 +183,30 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                   }}
                 >
                   Get Your Free Analysis
-                  <ArrowRight className="group-hover:translate-x-1 transition-transform" size={16} />
+                  <ArrowRight className="group-hover:translate-x-1 transition-transform motion-reduce:transition-none" size={16} />
                 </Button>
               </div>
             </motion.form>
 
             {/* Trust copy */}
             <motion.p
-              className="text-small"
+              className="text-sm text-center text-gray-500"
               style={{ 
-                color: 'var(--foreground-tertiary)',
-                marginBottom: 'var(--spacing-md)',
+                maxWidth: '736px',
+                margin: '0 auto var(--spacing-md)',
+                fontWeight: 400,
               }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.7 }}
             >
-              Takes under 60 seconds. No setup. Just insight.
+              Understand why you're shown what you see.
             </motion.p>
 
             {/* Secondary link */}
             <motion.button
               onClick={scrollToHowItWorks}
-              className="inline-flex items-center hover:underline group"
+              className="inline-flex items-center hover:underline group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded-md"
               style={{ 
                 color: 'var(--brand-teal)',
                 fontSize: '16px',
@@ -221,15 +219,16 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
               transition={{ duration: 0.8, delay: 0.8 }}
             >
               Learn how it works
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" style={{ transition: 'var(--transition-base)' }} />
+              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform motion-reduce:transition-none" style={{ transition: 'var(--transition-base)' }} />
             </motion.button>
 
             {/* Hero Comparison Visual */}
             <motion.div
-              style={{ marginTop: 'var(--spacing-3xl)' }}
+              style={{ marginTop: 'var(--spacing-2xl)' }}
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.9 }}
+              className="motion-reduce:animate-none"
             >
               <HeroComparison />
             </motion.div>
@@ -237,7 +236,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             {/* Bottom CTA */}
             <motion.div
               className="text-center"
-              style={{ marginTop: 'var(--spacing-3xl)' }}
+              style={{ marginTop: 'var(--spacing-2xl)' }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 1.1 }}
@@ -246,17 +245,18 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                 See what your algorithm sees in you. It starts here.
               </p>
               <Button
-                onClick={scrollToDashboard}
+                onClick={() => navigate('/dashboard')}
                 style={{
                   height: '56px',
                   padding: '0 var(--spacing-lg)',
-                  borderRadius: 'var(--radius-button)',
+                  borderRadius: '8px',
                   background: 'var(--brand-gradient)',
                   transition: 'var(--transition-hover)',
                   fontSize: '16px',
                   fontWeight: 600,
+                  color: '#FFFFFF',
                 }}
-                className="group"
+                className="group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 hover:opacity-90 active:scale-[.98]"
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = 'var(--brand-gradient-reverse)';
                 }}
@@ -265,7 +265,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                 }}
               >
                 Try it free
-                <ArrowRight className="group-hover:translate-x-1 transition-transform" size={18} style={{ marginLeft: 'var(--spacing-xs)' }} />
+                <ArrowRight className="group-hover:translate-x-1 transition-transform motion-reduce:transition-none" size={18} style={{ marginLeft: 'var(--spacing-xs)' }} />
               </Button>
             </motion.div>
 
@@ -295,9 +295,8 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
       {/* How It Works Section */}
       <section 
         id="how-it-works" 
-        className="container-content section-spacing"
+        className="container-content mt-12 pt-16"
         style={{ 
-          paddingTop: 'var(--spacing-section)',
           paddingBottom: '72px',
           background: 'var(--section-bg)',
         }}
@@ -490,8 +489,9 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                 background: 'var(--brand-gradient)',
                 color: '#FFFFFF',
                 boxShadow: 'inset 0 0 20px rgba(255, 255, 255, 0.05)',
+                borderRadius: '8px',
               }}
-              onClick={scrollToDashboard}
+              onClick={() => navigate('/dashboard')}
               onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--brand-gradient-reverse)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--brand-gradient)'; }}
             >
@@ -504,4 +504,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
     </div>
   );
 }
+
+
+
 

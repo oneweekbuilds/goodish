@@ -46,3 +46,11 @@ export function BrandFrequency({ brand, frequency, index }: BrandFrequencyProps)
   );
 }
 
+
+
+
+
+
+
+
+

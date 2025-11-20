@@ -34,5 +34,45 @@
   .btn-accent:hover { filter: brightness(1.05); }
 
   .split-divider { border-left: 1px solid var(--color-border); }
+
+  .brand-gradient-text {
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent !important;
+  }
+
+  .brand-gradient-text-continuous {
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent !important;
+  }
+}
+
+/* Calendar custom styling */
+.calendar-custom [role="gridcell"] button[aria-selected="true"].day-range-start,
+.calendar-custom [role="gridcell"] button[aria-selected="true"].day-range-end,
+.calendar-custom [role="gridcell"] button[aria-selected="true"]:not(.day-range-start):not(.day-range-end) {
+  background: linear-gradient(90deg, #7B61FF 0%, #3ED6B2 100%) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 4px rgba(123, 97, 255, 0.3) !important;
+}
+
+.calendar-custom [role="gridcell"] button.day-range-middle {
+  background: linear-gradient(90deg, rgba(123, 97, 255, 0.2) 0%, rgba(62, 214, 178, 0.2) 100%) !important;
+  color: #1f2937 !important;
+}
+
+.calendar-custom [role="gridcell"] button:hover:not([disabled]):not([aria-selected="true"]) {
+  background-color: #f3f4f6 !important;
+  transform: scale(1.05);
+}
+
+.calendar-custom [role="gridcell"] button:active:not([disabled]) {
+  transform: scale(0.95);
 }
 

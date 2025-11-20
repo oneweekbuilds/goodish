@@ -1,0 +1,30 @@
+{
+  // Cursor workspace settings for Multi-Model and Background Agents
+  // This helps Cursor recognize this as a project-scoped workspace
+  
+  // Trust workspace (prevent prompts)
+  "security.workspace.trust.enabled": true,
+  
+  // Enable AI features
+  "cursor.ai.enabled": true,
+  
+  // Project-scoped settings
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/.git/**": true
+  },
+  
+  // Git settings
+  "git.enabled": true,
+  "git.autoRepositoryDetection": true,
+  
+  // Search exclude patterns
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/.next": true
+  }
+}
+
+

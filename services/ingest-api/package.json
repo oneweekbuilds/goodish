@@ -1,0 +1,33 @@
+{
+  "name": "@goodish/ingest-api",
+  "version": "1.0.0",
+  "description": "AlgorithmLens ingestion API - receives and stores rich text block events",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "seed:test-session": "ts-node-dev --transpile-only src/scripts/seedTestSession.ts",
+    "smoke:analysis": "ts-node-dev --transpile-only src/dev/analysisSmokeTest.ts"
+  },
+  "keywords": ["algorithmlens", "ingest", "api"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^20.17.9",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

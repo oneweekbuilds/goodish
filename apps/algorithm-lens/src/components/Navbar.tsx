@@ -1,38 +1,37 @@
-import { Link, NavLink, useLocation } from 'react-router-dom'
-import { Search } from 'lucide-react'
+import { Link, NavLink } from 'react-router-dom'
+import Logo from './Logo'
 
 const navLink =
-  'px-3 py-2 text-sm font-medium transition-colors rounded-md hover:bg-accent/30'
+  'px-4 py-3 text-[20px] font-bold transition-all duration-200 hover:bg-gray-100/40 rounded-lg flex items-center'
 
 export default function Navbar() {
-  const { pathname } = useLocation()
 
   return (
     <header
       className="sticky top-0 z-40 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/70 border-b"
       style={{ height: 'var(--navbar-height)' }}
     >
-      <div className="max-w-[1200px] mx-auto flex items-center justify-between px-4 md:px-6 h-full">
-        <Link to="/" className="flex items-center gap-2">
-          <Search className="w-5 h-5 text-primary" />
-          <span className="font-semibold">AlgorithmLens</span>
+      <div className="max-w-[1200px] mx-auto flex items-center justify-between px-10 md:px-12 h-full">
+        <Link to="/" className="focus:outline-none flex items-center">
+          <Logo />
         </Link>
 
-        <nav className="hidden md:flex items-center gap-1">
-          <NavLink to="/dashboard" className={navLink + (pathname === '/dashboard' ? ' bg-accent/40' : '')}>Dashboard</NavLink>
-          <NavLink to="/how-it-works" className={navLink + (pathname === '/how-it-works' ? ' bg-accent/40' : '')}>How It Works</NavLink>
-          <NavLink to="/pricing" className={navLink + (pathname === '/pricing' ? ' bg-accent/40' : '')}>Pricing</NavLink>
-          <NavLink to="/export" className={navLink + (pathname === '/export' ? ' bg-accent/40' : '')}>Export</NavLink>
-          <NavLink to="/privacy" className={navLink + (pathname === '/privacy' ? ' bg-accent/40' : '')}>Privacy & Terms</NavLink>
-        </nav>
-
-        <div className="flex items-center gap-2">
-          <NavLink
-            to="/signin"
-            className="px-4 py-2 rounded-full text-sm font-semibold bg-foreground/80 text-background hover:opacity-90 transition"
-          >
-            Get Started
-          </NavLink>
+        <div className="hidden md:flex items-center gap-4 brand-gradient-text-continuous">
+          <nav className="flex items-center gap-4">
+            <NavLink to="/dashboard" className={navLink + ' focus:outline-none'}>Dashboard</NavLink>
+            <NavLink to="/how-it-works" className={navLink + ' focus:outline-none'}>How It Works</NavLink>
+            <NavLink to="/pricing" className={navLink + ' focus:outline-none'}>Pricing</NavLink>
+            <NavLink to="/export" className={navLink + ' focus:outline-none'}>Export</NavLink>
+            <NavLink to="/connected-sessions" className={navLink + ' focus:outline-none'}>Sessions</NavLink>
+            <NavLink to="/dataset" className={navLink + ' focus:outline-none'}>Dataset</NavLink>
+            <NavLink to="/privacy" className={navLink + ' focus:outline-none'}>Privacy & Terms</NavLink>
+            <NavLink
+              to="/signin"
+              className="px-6 py-3 rounded-full text-[20px] font-bold hover:bg-gray-100/40 active:scale-[.98] transition-all duration-200 focus:outline-none flex items-center"
+            >
+              Get Started
+            </NavLink>
+          </nav>
         </div>
       </div>
     </header>

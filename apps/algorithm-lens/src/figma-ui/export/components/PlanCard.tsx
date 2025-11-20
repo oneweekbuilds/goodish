@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { Check } from 'lucide-react';
-import { Button } from '../../ui/button';
+import { Button } from '../../../components/ui/Button';
 
 interface PlanCardProps {
   name: string;
@@ -141,6 +141,7 @@ export function PlanCard({
             isPro && !isCurrent
               ? {
                   background: 'linear-gradient(135deg, #34D1BF 0%, #8B6EF8 100%)',
+                  color: 'white',
                 }
               : undefined
           }
@@ -170,4 +171,7 @@ export function PlanCard({
     </motion.div>
   );
 }
+
+
+
 

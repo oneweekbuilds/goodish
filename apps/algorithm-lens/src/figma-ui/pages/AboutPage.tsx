@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { Database, Brain, Eye, Lightbulb, ArrowRight, Shield, Heart, Users } from 'lucide-react';
-import { Card } from '../ui/card';
-import { Button } from '../ui/button';
+import { Card } from '../../components/ui/Card';
+import { Button } from '../../components/ui/Button';
 
 interface AboutPageProps {
   onNavigate: (page: string) => void;
@@ -277,6 +277,7 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
             className="text-lg h-14 px-10 shadow-xl"
             style={{
               background: 'linear-gradient(135deg, #14b8a6 0%, #8b5cf6 100%)',
+              color: 'white',
             }}
             onClick={() => onNavigate('dashboard')}
           >
@@ -288,4 +289,7 @@ export function AboutPage({ onNavigate }: AboutPageProps) {
     </div>
   );
 }
+
+
+
 
