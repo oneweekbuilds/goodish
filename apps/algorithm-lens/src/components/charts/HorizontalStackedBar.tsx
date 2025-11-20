@@ -72,3 +72,4 @@ export function HorizontalStackedBar({ data, className = '' }: HorizontalStacked
 
 
 
+

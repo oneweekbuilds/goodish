@@ -34,3 +34,4 @@ export function AdTriggerBadge({ trigger, confidence }: AdTriggerBadgeProps) {
 
 
 
+
