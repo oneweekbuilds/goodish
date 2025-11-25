@@ -6,7 +6,7 @@ export function HeroComparison() {
   const isInView = useInView(containerRef, { once: false, amount: 0.3 });
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="w-full max-w-[1440px] mx-auto rounded-3xl overflow-hidden shadow-lg relative"
       style={{
@@ -15,7 +15,7 @@ export function HeroComparison() {
     >
       <div className="flex flex-col md:grid md:grid-cols-2 relative">
         {/* LEFT PANEL - Before AlgorithmLens */}
-        <motion.div 
+        <motion.div
           className="relative flex flex-col items-center min-h-[640px]"
           style={{
             paddingTop: '80px',
@@ -27,7 +27,7 @@ export function HeroComparison() {
           transition={{ duration: 0.6 }}
         >
           {/* Header */}
-          <h2 
+          <h2
             className="text-center"
             style={{
               fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
@@ -53,16 +53,16 @@ export function HeroComparison() {
                 animate={isInView ? { opacity: 0.9, y: 0 } : { opacity: 0, y: 10 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
               >
-                <div 
+                <div
                   className="flex items-center justify-center"
-                  style={{ 
+                  style={{
                     width: '140px',
                     height: '48px',
                     borderRadius: '24px',
                     background: 'linear-gradient(135deg, #e7e7e7 0%, #f3f3f3 100%)',
                   }}
                 >
-                  <span 
+                  <span
                     style={{
                       fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
                       fontWeight: 600,
@@ -82,16 +82,16 @@ export function HeroComparison() {
                 animate={isInView ? { opacity: 0.9, y: 0 } : { opacity: 0, y: 10 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                <div 
+                <div
                   className="flex items-center justify-center"
-                  style={{ 
+                  style={{
                     width: '140px',
                     height: '48px',
                     borderRadius: '24px',
                     background: 'linear-gradient(135deg, #e7e7e7 0%, #f3f3f3 100%)',
                   }}
                 >
-                  <span 
+                  <span
                     style={{
                       fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
                       fontWeight: 600,
@@ -114,16 +114,16 @@ export function HeroComparison() {
                 animate={isInView ? { opacity: 0.9, y: 0 } : { opacity: 0, y: 10 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
               >
-                <div 
+                <div
                   className="flex items-center justify-center"
-                  style={{ 
+                  style={{
                     width: '140px',
                     height: '48px',
                     borderRadius: '24px',
                     background: 'linear-gradient(135deg, #e7e7e7 0%, #f3f3f3 100%)',
                   }}
                 >
-                  <span 
+                  <span
                     style={{
                       fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
                       fontWeight: 600,
@@ -143,16 +143,16 @@ export function HeroComparison() {
                 animate={isInView ? { opacity: 0.9, y: 0 } : { opacity: 0, y: 10 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
               >
-                <div 
+                <div
                   className="flex items-center justify-center"
-                  style={{ 
+                  style={{
                     width: '140px',
                     height: '48px',
                     borderRadius: '24px',
                     background: 'linear-gradient(135deg, #e7e7e7 0%, #f3f3f3 100%)',
                   }}
                 >
-                  <span 
+                  <span
                     style={{
                       fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
                       fontWeight: 600,
@@ -170,7 +170,7 @@ export function HeroComparison() {
 
           {/* Text Block - 64px spacing from pills */}
           <div className="text-center space-y-3 max-w-[360px]">
-            <h3 
+            <h3
               style={{
                 fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
                 fontWeight: 700,
@@ -181,7 +181,7 @@ export function HeroComparison() {
             >
               You absorb what your feed feeds you.
             </h3>
-            <p 
+            <p
               style={{
                 fontFamily: 'Inter, system-ui, sans-serif',
                 fontWeight: 400,
@@ -196,7 +196,7 @@ export function HeroComparison() {
         </motion.div>
 
         {/* RIGHT PANEL - With AlgorithmLens */}
-        <motion.div 
+        <motion.div
           className="relative flex flex-col items-center min-h-[640px]"
           style={{
             paddingTop: '80px',
@@ -208,21 +208,29 @@ export function HeroComparison() {
           transition={{ duration: 0.6, delay: 0.1 }}
         >
           {/* Header */}
-          <h2 
-            className="text-center relative z-10"
-            style={{
-              fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
-              fontWeight: 700,
-              fontSize: '22px',
-              lineHeight: '28px',
-              color: '#7b61ff',
-              letterSpacing: '0.02em',
-              textTransform: 'uppercase',
-              marginBottom: '24px',
-            }}
-          >
-            With AlgorithmLens
-          </h2>
+          <div className="absolute top-1/2 -left-8 hidden md:block z-20 transform -translate-y-1/2">
+            <svg width="64" height="24" viewBox="0 0 64 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0 12H58M58 12L48 2M58 12L48 22" stroke="#7b61ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+
+          <div className="text-center mb-6">
+            <span className="text-sm font-bold tracking-widest text-primary uppercase mb-2 block">Key Takeaways</span>
+            <h2
+              className="text-center relative z-10"
+              style={{
+                fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
+                fontWeight: 700,
+                fontSize: '22px',
+                lineHeight: '28px',
+                color: '#7b61ff',
+                letterSpacing: '0.02em',
+                textTransform: 'uppercase',
+              }}
+            >
+              With AlgorithmLens
+            </h2>
+          </div>
 
           {/* Pills - 2×2 Grid */}
           <div className="flex flex-col items-center gap-7 mb-16 z-10">
@@ -235,9 +243,9 @@ export function HeroComparison() {
                 transition={{ duration: 0.5, delay: 0.2 }}
                 whileHover={{ scale: 1.03 }}
               >
-                <div 
+                <div
                   className="flex items-center justify-center"
-                  style={{ 
+                  style={{
                     width: '140px',
                     height: '48px',
                     borderRadius: '24px',
@@ -245,7 +253,7 @@ export function HeroComparison() {
                     boxShadow: '0 0 5px rgba(255, 255, 255, 0.1)',
                   }}
                 >
-                  <span 
+                  <span
                     style={{
                       fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
                       fontWeight: 600,
@@ -266,9 +274,9 @@ export function HeroComparison() {
                 transition={{ duration: 0.5, delay: 0.3 }}
                 whileHover={{ scale: 1.03 }}
               >
-                <div 
+                <div
                   className="flex items-center justify-center"
-                  style={{ 
+                  style={{
                     width: '140px',
                     height: '48px',
                     borderRadius: '24px',
@@ -276,7 +284,7 @@ export function HeroComparison() {
                     boxShadow: '0 0 5px rgba(255, 255, 255, 0.1)',
                   }}
                 >
-                  <span 
+                  <span
                     style={{
                       fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
                       fontWeight: 600,
@@ -300,9 +308,9 @@ export function HeroComparison() {
                 transition={{ duration: 0.5, delay: 0.4 }}
                 whileHover={{ scale: 1.03 }}
               >
-                <div 
+                <div
                   className="flex items-center justify-center"
-                  style={{ 
+                  style={{
                     width: '140px',
                     height: '48px',
                     borderRadius: '24px',
@@ -310,7 +318,7 @@ export function HeroComparison() {
                     boxShadow: '0 0 5px rgba(255, 255, 255, 0.1)',
                   }}
                 >
-                  <span 
+                  <span
                     style={{
                       fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
                       fontWeight: 600,
@@ -331,9 +339,9 @@ export function HeroComparison() {
                 transition={{ duration: 0.5, delay: 0.5 }}
                 whileHover={{ scale: 1.03 }}
               >
-                <div 
+                <div
                   className="flex items-center justify-center"
-                  style={{ 
+                  style={{
                     width: '140px',
                     height: '48px',
                     borderRadius: '24px',
@@ -341,7 +349,7 @@ export function HeroComparison() {
                     boxShadow: '0 0 5px rgba(255, 255, 255, 0.1)',
                   }}
                 >
-                  <span 
+                  <span
                     style={{
                       fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
                       fontWeight: 600,
@@ -359,7 +367,7 @@ export function HeroComparison() {
 
           {/* Text Block - 64px spacing from pills */}
           <div className="text-center space-y-3 max-w-[360px] relative z-10">
-            <h3 
+            <h3
               style={{
                 fontFamily: 'Plus Jakarta Sans, Inter, system-ui, sans-serif',
                 fontWeight: 700,
@@ -370,7 +378,7 @@ export function HeroComparison() {
             >
               You see your feed with awareness.
             </h3>
-            <p 
+            <p
               style={{
                 fontFamily: 'Inter, system-ui, sans-serif',
                 fontWeight: 400,

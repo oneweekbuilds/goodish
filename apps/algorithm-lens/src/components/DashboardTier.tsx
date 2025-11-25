@@ -27,7 +27,7 @@ const DashboardCard = ({ title, subtitle, locked, lockMessage, chartType, tier }
 
   const renderChartPlaceholder = () => {
     const background = getChartBackground();
-    
+
     switch (chartType) {
       case 'pie':
         return (
@@ -37,7 +37,7 @@ const DashboardCard = ({ title, subtitle, locked, lockMessage, chartType, tier }
             </div>
           </div>
         );
-      
+
       case 'bar':
         return (
           <div className="w-full h-full flex items-end justify-around gap-3 p-6" style={{ background }}>
@@ -46,40 +46,40 @@ const DashboardCard = ({ title, subtitle, locked, lockMessage, chartType, tier }
             ))}
           </div>
         );
-      
+
       case 'bubble':
         return (
           <div className="w-full h-full flex items-center justify-center gap-4 p-6" style={{ background }}>
             {[60, 80, 45, 70].map((size, i) => (
-              <div 
-                key={i} 
-                className="rounded-full" 
-                style={{ 
-                  width: size, 
-                  height: size, 
+              <div
+                key={i}
+                className="rounded-full"
+                style={{
+                  width: size,
+                  height: size,
                   background: locked ? '#D1D5DB' : i % 2 === 0 ? '#7D66E6' : '#4F9FA9',
                   opacity: 0.7
-                }} 
+                }}
               />
             ))}
           </div>
         );
-      
+
       case 'heatmap':
         return (
           <div className="w-full h-full grid grid-cols-6 grid-rows-4 gap-2 p-6" style={{ background }}>
             {Array.from({ length: 24 }).map((_, i) => (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 className="rounded"
-                style={{ 
+                style={{
                   background: locked ? '#E5E7EB' : `rgba(125, 102, 230, ${0.2 + (i % 5) * 0.15})`
-                }} 
+                }}
               />
             ))}
           </div>
         );
-      
+
       case 'line':
         return (
           <div className="w-full h-full flex items-end p-6" style={{ background }}>
@@ -99,7 +99,7 @@ const DashboardCard = ({ title, subtitle, locked, lockMessage, chartType, tier }
             </svg>
           </div>
         );
-      
+
       case 'stacked':
         return (
           <div className="w-full h-full flex items-end justify-around gap-3 p-6" style={{ background }}>
@@ -112,7 +112,7 @@ const DashboardCard = ({ title, subtitle, locked, lockMessage, chartType, tier }
             ))}
           </div>
         );
-      
+
       case 'donut':
         return (
           <div className="w-full h-full flex items-center justify-center" style={{ background }}>
@@ -122,7 +122,7 @@ const DashboardCard = ({ title, subtitle, locked, lockMessage, chartType, tier }
             </div>
           </div>
         );
-      
+
       case 'sparkline':
         return (
           <div className="w-full h-full flex items-center p-6" style={{ background }}>
@@ -147,7 +147,7 @@ const DashboardCard = ({ title, subtitle, locked, lockMessage, chartType, tier }
             </svg>
           </div>
         );
-      
+
       default:
         return <div className="w-full h-full" style={{ background }} />;
     }
@@ -171,7 +171,7 @@ const DashboardCard = ({ title, subtitle, locked, lockMessage, chartType, tier }
               </p>
             )}
           </div>
-          
+
           <div className="flex-1 relative rounded-lg overflow-hidden">
             {renderChartPlaceholder()}
           </div>
@@ -217,9 +217,9 @@ export function DashboardTier({ tier, onUpgrade }: DashboardTierProps) {
   const badgeStyles = getTierBadgeStyles();
 
   return (
-    <div 
+    <div
       className="w-full min-h-screen px-6 py-12 md:px-24 md:py-12"
-      style={{ 
+      style={{
         background: '#FFFFFF',
       }}
     >
@@ -241,10 +241,10 @@ export function DashboardTier({ tier, onUpgrade }: DashboardTierProps) {
           <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#111827', fontFamily: 'Inter' }}>
             AlgorithmLens Dashboard
           </h1>
-          <div 
+          <div
             className="px-4 py-2 rounded-full"
-            style={{ 
-              background: badgeStyles.background, 
+            style={{
+              background: badgeStyles.background,
               color: badgeStyles.color,
             }}
           >
@@ -301,7 +301,7 @@ export function DashboardTier({ tier, onUpgrade }: DashboardTierProps) {
             title="Platform Bias Map"
             subtitle="Content bias by platform and topic"
             locked={tier !== 'premium'}
-            lockMessage={tier === 'free' ? 'Upgrade to Premium to explore bias by platform and topic.' : 'Upgrade to Premium to explore bias by platform and topic.'}
+            lockMessage="Upgrade to Premium to explore bias by platform and topic."
             chartType="heatmap"
             tier={tier}
           />
@@ -360,7 +360,7 @@ export function DashboardTier({ tier, onUpgrade }: DashboardTierProps) {
                 Unlock ad transparency, creator analysis, and sentiment tracking.
               </p>
             </div>
-            <Button 
+            <Button
               onClick={onUpgrade}
               className="px-6 py-3 rounded-lg"
               style={{ background: '#7D66E6', color: '#FFFFFF', fontWeight: 600 }}
@@ -389,7 +389,7 @@ export function DashboardTier({ tier, onUpgrade }: DashboardTierProps) {
                 See platform bias, advanced comparisons, and complete algorithmic analysis.
               </p>
             </div>
-            <Button 
+            <Button
               onClick={onUpgrade}
               className="px-6 py-3 rounded-lg"
               style={{ background: '#4F9FA9', color: '#FFFFFF', fontWeight: 600 }}

@@ -34,36 +34,24 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section 
+      <section
         className="relative overflow-visible flex items-center"
-        style={{ 
+        style={{
           minHeight: '100vh',
           paddingTop: 'var(--navbar-height)',
           paddingBottom: 'var(--spacing-4xl)',
           paddingLeft: 'var(--grid-margin)',
           paddingRight: 'var(--grid-margin)',
-          background: 'linear-gradient(180deg, #FAFBFF 0%, rgba(240, 253, 250, 0.85) 40%, rgba(250, 245, 255, 0.85) 100%)',
+          background: 'var(--background)',
         }}
       >
-        {/* Subtle radial gradient behind H1 */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] opacity-[0.06]" style={{
-          background: 'var(--brand-bg-gradient)',
-          filter: 'blur(80px)',
-          pointerEvents: 'none',
-        }} />
-
-        {/* Subtle grid pattern */}
-        <div className="absolute inset-0 opacity-[0.02]" style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, var(--brand-purple) 1px, transparent 0)`,
-          backgroundSize: '48px 48px',
-        }} />
 
         <div className="w-full max-w-[1280px] mx-auto relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             {/* Main Headline - H1 */}
             <motion.h1
               className="text-h1"
-              style={{ 
+              style={{
                 fontSize: '48px',
                 lineHeight: '60px',
                 fontWeight: 700,
@@ -82,7 +70,7 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
 
             {/* BUILT AT MIT - Below H1 */}
             <motion.p
-              style={{ 
+              style={{
                 fontSize: '16px',
                 lineHeight: '22px',
                 color: 'var(--foreground-muted)',
@@ -102,7 +90,7 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
               style={{
                 width: '48px',
                 height: '4px',
-                background: 'var(--brand-gradient)',
+                background: 'var(--primary)',
                 borderRadius: '2px',
                 margin: '0 auto var(--spacing-sm)',
               }}
@@ -114,7 +102,7 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
             {/* Descriptive subhead */}
             <motion.p
               className="text-body-large"
-              style={{ 
+              style={{
                 color: 'var(--foreground-secondary)',
                 maxWidth: '600px',
                 margin: '0 auto var(--spacing-xl)',
@@ -158,7 +146,7 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
                   }}
                   className="focus:outline-none focus:ring-1 focus:ring-[var(--brand-purple)]"
                 />
-                <Button 
+                <Button
                   type="submit"
                   style={{
                     height: '56px',
@@ -167,7 +155,8 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
                     fontWeight: 600,
                     letterSpacing: '0.01em',
                     borderRadius: '8px',
-                    background: 'var(--brand-gradient)',
+                    borderRadius: '8px',
+                    background: 'var(--primary)',
                     transition: 'var(--transition-hover)',
                     whiteSpace: 'nowrap',
                     gap: '8px',
@@ -177,10 +166,10 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
                   }}
                   className="group"
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--brand-gradient-reverse)';
+                    e.currentTarget.style.background = 'var(--brand-blue)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'var(--brand-gradient)';
+                    e.currentTarget.style.background = 'var(--primary)';
                   }}
                 >
                   Get Your Free Analysis
@@ -192,7 +181,7 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
             {/* Trust copy */}
             <motion.p
               className="text-small"
-              style={{ 
+              style={{
                 color: 'var(--foreground-tertiary)',
                 marginBottom: 'var(--spacing-md)',
               }}
@@ -207,7 +196,7 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
             <motion.button
               onClick={scrollToHowItWorks}
               className="inline-flex items-center hover:underline group"
-              style={{ 
+              style={{
                 color: 'var(--brand-teal)',
                 fontSize: '16px',
                 gap: 'var(--spacing-xs)',
@@ -249,17 +238,18 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
                   height: '56px',
                   padding: '0 var(--spacing-lg)',
                   borderRadius: 'var(--radius-button)',
-                  background: 'var(--brand-gradient)',
+                  borderRadius: 'var(--radius-button)',
+                  background: 'var(--primary)',
                   transition: 'var(--transition-hover)',
                   fontSize: '16px',
                   fontWeight: 600,
                 }}
                 className="group"
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--brand-gradient-reverse)';
+                  e.currentTarget.style.background = 'var(--brand-blue)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'var(--brand-gradient)';
+                  e.currentTarget.style.background = 'var(--primary)';
                 }}
               >
                 Try it free
@@ -290,10 +280,10 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
       </section>
 
       {/* How It Works Section */}
-      <section 
-        id="how-it-works" 
+      <section
+        id="how-it-works"
         className="container-content section-spacing"
-        style={{ 
+        style={{
           paddingTop: 'var(--spacing-section)',
           paddingBottom: '72px',
           background: 'var(--section-bg)',
@@ -308,27 +298,27 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
           >
-            <h2 
+            <h2
               className="text-h2"
-              style={{ 
+              style={{
                 marginBottom: 'var(--spacing-md)',
                 color: 'var(--foreground)',
               }}
             >
               Your feed is an invisible mirror
             </h2>
-            
+
             {/* Gradient bar beneath H2 */}
             <div
               style={{
                 width: '48px',
                 height: '4px',
-                background: 'var(--brand-gradient)',
+                background: 'var(--primary)',
                 borderRadius: '2px',
                 margin: '0 auto var(--spacing-md)',
               }}
             />
-            
+
             <p className="text-body-large" style={{ color: 'var(--foreground-secondary)' }}>
               AlgorithmLens helps you finally see the reflection — built by MIT students passionate about ethical AI.
             </p>
@@ -337,16 +327,16 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
           {/* Four-step flow */}
           <div className="grid md:grid-cols-4 relative" style={{ gap: 'var(--spacing-2xl)', marginBottom: 'var(--spacing-3xl)' }}>
             {/* Connector line */}
-            <div 
-              className="hidden md:block absolute left-0 right-0 -z-10" 
+            <div
+              className="hidden md:block absolute left-0 right-0 -z-10"
               style={{
                 top: '80px',
                 height: '2px',
-                background: 'var(--brand-gradient)',
-                opacity: 0.2,
+                background: 'var(--border)',
+                opacity: 1,
               }}
             />
-            
+
             {[
               {
                 step: '1',
@@ -405,9 +395,9 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.06, duration: 0.24 }}
               >
-                <Card 
+                <Card
                   className="h-full transition-all group relative"
-                  style={{ 
+                  style={{
                     borderRadius: '20px',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
                     padding: '32px',
@@ -435,7 +425,7 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
                   }}
                 >
                   {/* Subtle diagonal pattern background */}
-                  <div 
+                  <div
                     style={{
                       position: 'absolute',
                       top: 0,
@@ -449,7 +439,7 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
                   />
 
                   {/* Number badge - top-left */}
-                  <div 
+                  <div
                     className="inline-flex items-center justify-center"
                     style={{
                       width: '28px',
@@ -466,16 +456,16 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
                   >
                     {step.step}
                   </div>
-                  
+
                   {/* Icon chip - 56x56 circular with gradient and elevation shadow */}
-                  <div 
+                  <div
                     className="icon-chip flex items-center justify-center mx-auto"
-                    style={{ 
+                    style={{
                       width: '56px',
                       height: '56px',
                       marginBottom: 'var(--spacing-md)',
                       borderRadius: '50%',
-                      background: 'var(--brand-gradient)',
+                      background: 'var(--primary)',
                       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)',
                       color: 'white',
                       transition: 'var(--transition-hover)',
@@ -487,10 +477,10 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
                       {step.icon}
                     </div>
                   </div>
-                  
-                  <h3 
-                    className="text-center" 
-                    style={{ 
+
+                  <h3
+                    className="text-center"
+                    style={{
                       marginBottom: 'var(--spacing-sm)',
                       fontSize: '24px',
                       lineHeight: '34px',
@@ -503,9 +493,9 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
                   >
                     {step.title}
                   </h3>
-                  <p 
-                    className="text-center" 
-                    style={{ 
+                  <p
+                    className="text-center"
+                    style={{
                       fontSize: '18px',
                       lineHeight: '28px',
                       color: 'var(--foreground-secondary)',
@@ -534,16 +524,16 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
               size="lg"
               className="text-lg h-14 px-10 transition-all duration-300"
               style={{
-                background: 'var(--brand-gradient)',
+                background: 'var(--primary)',
                 color: '#FFFFFF',
                 boxShadow: 'inset 0 0 20px rgba(255, 255, 255, 0.05)',
               }}
               onClick={scrollToDashboard}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--brand-gradient-reverse)';
+                e.currentTarget.style.background = 'var(--brand-blue)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'var(--brand-gradient)';
+                e.currentTarget.style.background = 'var(--primary)';
               }}
             >
               Try the Dashboard

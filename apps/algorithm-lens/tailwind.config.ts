@@ -12,6 +12,11 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        heading: ['"DM Sans"', 'sans-serif'],
+        body: ['"Inter"', 'sans-serif'],
+        sans: ['"Inter"', 'sans-serif'],
+      },
       colors: {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
@@ -31,7 +36,7 @@ export default {
         'destructive-foreground': 'var(--destructive-foreground)',
         border: 'var(--border)',
         input: 'var(--input)',
-        ring: 'var(--ring)',   // enables ring-ring/50 and friends
+        ring: 'var(--ring)',
         success: 'var(--success)',
         warning: 'var(--warning)',
         error: 'var(--error)',

@@ -8,7 +8,7 @@ export default function Navbar() {
 
   return (
     <header
-      className="sticky top-0 z-40 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/70 border-b"
+      className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200"
       style={{ height: 'var(--navbar-height)' }}
     >
       <div className="max-w-[1200px] mx-auto flex items-center justify-between px-10 md:px-12 h-full">
@@ -16,7 +16,7 @@ export default function Navbar() {
           <Logo />
         </Link>
 
-        <div className="hidden md:flex items-center gap-4 brand-gradient-text-continuous">
+        <div className="hidden md:flex items-center gap-4">
           <nav className="flex items-center gap-4">
             <NavLink to="/dashboard" className={navLink + ' focus:outline-none'}>Dashboard</NavLink>
             <NavLink to="/how-it-works" className={navLink + ' focus:outline-none'}>How It Works</NavLink>

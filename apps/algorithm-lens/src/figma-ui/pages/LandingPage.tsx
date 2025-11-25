@@ -2,19 +2,16 @@ import { motion } from 'motion/react';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../../components/ui/Button';
+import { Hero } from '../../components/homepage/Hero';
 import { Card } from '../../components/ui/Card';
-import { Input } from '../ui/input';
-import HeroComparison from './HeroComparison';
+import { Button } from '../../components/ui/Button';
 
 interface LandingPageProps {
   onNavigate?: (page: string) => void;
 }
 
 export default function LandingPage({ onNavigate }: LandingPageProps) {
-  const [email, setEmail] = useState('');
   const navigate = useNavigate();
-
   const scrollToHowItWorks = () => {
     const element = document.getElementById('how-it-works');
     if (element) {
@@ -22,281 +19,16 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
     }
   };
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email && onNavigate) {
-      onNavigate('signin');
-    }
-  };
-
   return (
     <div className="alg-fm min-h-screen">
       {/* Hero Section */}
-      <section 
-        className="relative overflow-visible flex items-center"
-        style={{ 
-          minHeight: '100vh',
-          paddingTop: 'var(--navbar-height)',
-          paddingBottom: 'var(--spacing-4xl)',
-          paddingLeft: 'var(--grid-margin)',
-          paddingRight: 'var(--grid-margin)',
-          background: 'linear-gradient(180deg, #FAFBFF 0%, rgba(240, 253, 250, 0.85) 40%, rgba(250, 245, 255, 0.85) 100%)',
-        }}
-      >
-        {/* Subtle radial gradient behind H1 */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] opacity-[0.06]" style={{
-          background: 'var(--brand-bg-gradient)',
-          filter: 'blur(80px)',
-          pointerEvents: 'none',
-        }} />
-
-        {/* Subtle grid pattern */}
-        <div className="absolute inset-0 opacity-[0.02]" style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, var(--brand-purple) 1px, transparent 0)`,
-          backgroundSize: '48px 48px',
-        }} />
-
-        <div className="w-full max-w-[1280px] mx-auto relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Main Headline - H1 */}
-            <motion.h1
-              className="text-h1"
-              style={{ 
-                fontSize: '48px',
-                lineHeight: '60px',
-                fontWeight: 700,
-                letterSpacing: '-0.01em',
-                fontFamily: 'var(--font-headline)',
-                marginBottom: 'var(--spacing-sm)',
-                color: 'var(--foreground)',
-              }}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.1 }}
-            >
-              See your algorithm.{' '}
-              <span className="block" style={{ marginTop: 'var(--spacing-xs)' }}>Understand your feed.</span>
-            </motion.h1>
-
-            {/* BUILT AT MIT - Below H1 */}
-            <motion.p
-              style={{ 
-                fontSize: '16px',
-                lineHeight: '22px',
-                color: 'var(--foreground-muted)',
-                letterSpacing: '0.04em',
-                textTransform: 'uppercase',
-                marginBottom: 'var(--spacing-sm)',
-              }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              BUILT AT MIT
-            </motion.p>
-
-            {/* Gradient bar beneath BUILT AT MIT label */}
-            <motion.div
-              style={{
-                width: '48px',
-                height: '4px',
-                background: 'var(--brand-gradient)',
-                borderRadius: '8px',
-                margin: '0 auto var(--spacing-sm)',
-              }}
-              initial={{ opacity: 0, scaleX: 0 }}
-              animate={{ opacity: 1, scaleX: 1 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            />
-
-            {/* Descriptive subhead */}
-            <motion.p
-              className="text-body-large"
-              style={{ 
-                color: 'var(--foreground-secondary)',
-                maxWidth: '600px',
-                margin: '0 auto var(--spacing-md)',
-              }}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-            >
-              Algorithms quietly learn what you like — and feed it back to you.
-              With AlgorithmLens, you can finally see what they see in you — and decide for yourself what to believe.
-            </motion.p>
-
-            {/* Email Capture Form */}
-            <motion.form
-              onSubmit={handleEmailSubmit}
-              style={{
-                maxWidth: '736px',
-                width: '100%',
-                margin: '0 auto var(--spacing-xs)',
-              }}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-            >
-              <div className="flex flex-col sm:flex-row" style={{ gap: '16px' }}>
-                <Input
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  style={{
-                    height: '56px',
-                    padding: '16px',
-                    fontSize: '16px',
-                    borderRadius: '8px',
-                    border: '1px solid #E4E7EC',
-                    flex: '1',
-                    minWidth: '320px',
-                    background: 'var(--card-bg)',
-                  }}
-                  className="focus:outline-none focus:ring-1 focus:ring-[var(--brand-purple)]"
-                />
-                <Button
-                  type="submit"
-                  style={{
-                    height: '56px',
-                    width: '240px',
-                    fontSize: '16px',
-                    fontWeight: 600,
-                    letterSpacing: '0.01em',
-                    borderRadius: '8px',
-                    background: 'var(--brand-gradient)',
-                    transition: 'var(--transition-hover)',
-                    whiteSpace: 'nowrap',
-                    gap: '8px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#FFFFFF',
-                  }}
-                  className="group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 hover:opacity-90 active:scale-[.98]"
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--brand-gradient-reverse)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'var(--brand-gradient)';
-                  }}
-                >
-                  Get Your Free Analysis
-                  <ArrowRight className="group-hover:translate-x-1 transition-transform motion-reduce:transition-none" size={16} />
-                </Button>
-              </div>
-            </motion.form>
-
-            {/* Trust copy */}
-            <motion.p
-              className="text-sm text-center text-gray-500"
-              style={{ 
-                maxWidth: '736px',
-                margin: '0 auto var(--spacing-md)',
-                fontWeight: 400,
-              }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.7 }}
-            >
-              Understand why you're shown what you see.
-            </motion.p>
-
-            {/* Secondary link */}
-            <motion.button
-              onClick={scrollToHowItWorks}
-              className="inline-flex items-center hover:underline group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded-md"
-              style={{ 
-                color: 'var(--brand-teal)',
-                fontSize: '16px',
-                gap: 'var(--spacing-xs)',
-                marginBottom: 'var(--spacing-2xl)',
-                transition: 'var(--transition-fast)',
-              }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.8 }}
-            >
-              Learn how it works
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform motion-reduce:transition-none" style={{ transition: 'var(--transition-base)' }} />
-            </motion.button>
-
-            {/* Hero Comparison Visual */}
-            <motion.div
-              style={{ marginTop: 'var(--spacing-2xl)' }}
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.9 }}
-              className="motion-reduce:animate-none"
-            >
-              <HeroComparison />
-            </motion.div>
-
-            {/* Bottom CTA */}
-            <motion.div
-              className="text-center"
-              style={{ marginTop: 'var(--spacing-2xl)' }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 1.1 }}
-            >
-              <p className="text-body" style={{ color: 'var(--foreground-secondary)', marginBottom: 'var(--spacing-md)' }}>
-                See what your algorithm sees in you. It starts here.
-              </p>
-              <Button
-                onClick={() => navigate('/dashboard')}
-                style={{
-                  height: '56px',
-                  padding: '0 var(--spacing-lg)',
-                  borderRadius: '8px',
-                  background: 'var(--brand-gradient)',
-                  transition: 'var(--transition-hover)',
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  color: '#FFFFFF',
-                }}
-                className="group focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 hover:opacity-90 active:scale-[.98]"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--brand-gradient-reverse)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'var(--brand-gradient)';
-                }}
-              >
-                Try it free
-                <ArrowRight className="group-hover:translate-x-1 transition-transform motion-reduce:transition-none" size={18} style={{ marginLeft: 'var(--spacing-xs)' }} />
-              </Button>
-            </motion.div>
-
-            {/* Scroll cue */}
-            <motion.div
-              className="inline-flex flex-col items-center gap-2 cursor-pointer mt-16"
-              onClick={scrollToHowItWorks}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 1.5 }}
-            >
-              <span className="text-xs uppercase tracking-wider mb-2" style={{ color: 'var(--foreground-muted)', fontWeight: 600 }}>
-                Learn More
-              </span>
-              <motion.div
-                animate={{ y: [0, 8, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                <ChevronDown size={24} style={{ color: 'var(--foreground-muted)' }} />
-              </motion.div>
-            </motion.div>
-
-          </div>
-        </div>
-      </section>
+      <Hero onNavigate={onNavigate} />
 
       {/* How It Works Section */}
-      <section 
-        id="how-it-works" 
+      <section
+        id="how-it-works"
         className="container-content mt-12 pt-16"
-        style={{ 
+        style={{
           paddingBottom: '72px',
           background: 'var(--section-bg)',
         }}
@@ -310,27 +42,26 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
           >
-            <h2 
+            <h2
               className="text-h2"
-              style={{ 
+              style={{
                 marginBottom: 'var(--spacing-md)',
                 color: 'var(--foreground)',
               }}
             >
               Your feed is an invisible mirror
             </h2>
-            
-            {/* Gradient bar beneath H2 */}
+
             <div
               style={{
                 width: '48px',
                 height: '4px',
-                background: 'var(--brand-gradient)',
+                background: 'var(--primary)',
                 borderRadius: '2px',
                 margin: '0 auto var(--spacing-md)',
               }}
             />
-            
+
             <p className="text-body-large" style={{ color: 'var(--foreground-secondary)' }}>
               AlgorithmLens helps you finally see the reflection — built by MIT students passionate about ethical AI.
             </p>
@@ -339,16 +70,16 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
           {/* Four-step flow */}
           <div className="grid md:grid-cols-4 relative" style={{ gap: 'var(--spacing-2xl)', marginBottom: 'var(--spacing-3xl)' }}>
             {/* Connector line */}
-            <div 
-              className="hidden md:block absolute left-0 right-0 -z-10" 
+            <div
+              className="hidden md:block absolute left-0 right-0 -z-10"
               style={{
                 top: '80px',
                 height: '2px',
-                background: 'var(--brand-gradient)',
-                opacity: 0.2,
+                background: 'var(--border)',
+                opacity: 1,
               }}
             />
-            
+
             {[{
               step: '1', title: 'Data', description: 'Connect your social feeds securely',
               icon: (<svg width="36" height="36" viewBox="0 0 36 36" fill="none">
@@ -356,20 +87,20 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                 <rect x="6" y="13" width="24" height="8" rx="2" stroke="currentColor" strokeWidth="2.5" />
                 <rect x="6" y="4" width="24" height="8" rx="2" stroke="currentColor" strokeWidth="2.5" />
               </svg>)
-            },{
+            }, {
               step: '2', title: 'Algorithm Analysis', description: 'AI identifies patterns and biases',
               icon: (<svg width="36" height="36" viewBox="0 0 36 36" fill="none">
                 <circle cx="18" cy="18" r="10" stroke="currentColor" strokeWidth="2.5" />
                 <path d="M 25 25 L 31 31" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
                 <circle cx="18" cy="18" r="3" fill="currentColor" />
               </svg>)
-            },{
+            }, {
               step: '3', title: 'Insights', description: 'Clear visualizations reveal patterns',
               icon: (<svg width="36" height="36" viewBox="0 0 36 36" fill="none">
                 <path d="M 18 6 L 22 16 L 32 16 L 24 22 L 28 32 L 18 26 L 8 32 L 12 22 L 4 16 L 14 16 Z" stroke="currentColor" strokeWidth="2.5" fill="none" />
                 <rect x="14" y="10" width="8" height="3" fill="currentColor" opacity="0.5" />
               </svg>)
-            },{
+            }, {
               step: '4', title: 'Reflection', description: 'Understand and reshape your feed',
               icon: (<svg width="36" height="36" viewBox="0 0 36 36" fill="none">
                 <circle cx="18" cy="14" r="8" stroke="currentColor" strokeWidth="2.5" />
@@ -386,9 +117,9 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.06, duration: 0.24 }}
               >
-                <Card 
+                <Card
                   className="h-full transition-all group relative"
-                  style={{ 
+                  style={{
                     borderRadius: '20px',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
                     padding: '32px',
@@ -412,7 +143,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                   }}
                 >
                   {/* Subtle diagonal pattern background */}
-                  <div 
+                  <div
                     style={{
                       position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
                       opacity: 0.02,
@@ -422,7 +153,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                   />
 
                   {/* Number badge */}
-                  <div 
+                  <div
                     className="inline-flex items-center justify-center"
                     style={{
                       width: '28px', height: '28px', borderRadius: '14px',
@@ -433,13 +164,13 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                   >
                     {step.step}
                   </div>
-                  
+
                   {/* Icon chip */}
-                  <div 
+                  <div
                     className="icon-chip flex items-center justify-center mx-auto"
-                    style={{ 
+                    style={{
                       width: '56px', height: '56px', marginBottom: 'var(--spacing-md)',
-                      borderRadius: '50%', background: 'var(--brand-gradient)',
+                      borderRadius: '50%', background: 'var(--primary)',
                       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)', color: 'white',
                       transition: 'var(--transition-hover)', position: 'relative', zIndex: 1,
                     }}
@@ -448,10 +179,10 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                       {step.icon}
                     </div>
                   </div>
-                  
-                  <h3 
-                    className="text-center" 
-                    style={{ 
+
+                  <h3
+                    className="text-center"
+                    style={{
                       marginBottom: 'var(--spacing-sm)',
                       fontSize: '24px', lineHeight: '34px', fontWeight: 600,
                       fontFamily: 'var(--font-headline)', color: 'var(--foreground)',
@@ -460,9 +191,9 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                   >
                     {step.title}
                   </h3>
-                  <p 
-                    className="text-center" 
-                    style={{ 
+                  <p
+                    className="text-center"
+                    style={{
                       fontSize: '18px', lineHeight: '28px', color: 'var(--foreground-secondary)',
                       maxWidth: '280px', margin: '0 auto', position: 'relative', zIndex: 1,
                     }}
@@ -484,16 +215,12 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             transition={{ duration: 0.7 }}
           >
             <Button
-              className="text-lg h-14 px-10 transition-all duration-300"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition-all duration-300 text-lg h-14 px-10"
               style={{
-                background: 'var(--brand-gradient)',
-                color: '#FFFFFF',
                 boxShadow: 'inset 0 0 20px rgba(255, 255, 255, 0.05)',
                 borderRadius: '8px',
               }}
               onClick={() => navigate('/dashboard')}
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--brand-gradient-reverse)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--brand-gradient)'; }}
             >
               Try the Dashboard
               <ArrowRight className="ml-2" size={20} />

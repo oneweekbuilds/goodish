@@ -2,7 +2,7 @@ import { Lock, BarChart3, Folder } from "lucide-react";
 import LogoMark from "../components/LogoMark";
 import { PrivacyBadge } from "../components/PrivacyBadge";
 
-export function Home({onGetStarted, onSamples}:{onGetStarted:()=>void; onSamples:()=>void;}){
+export function Home({ onGetStarted, onSamples }: { onGetStarted: () => void; onSamples: () => void; }) {
   return (
     <div className="min-h-screen">
       {/* Premium Hero Section - Improvements #1, #2, #3, #8, #10 */}
@@ -23,11 +23,8 @@ export function Home({onGetStarted, onSamples}:{onGetStarted:()=>void; onSamples
           {/* Main heading - fixed clipping with proper line-height and guard space */}
           <div className="inline-block pb-2">
             <h1
-              className="text-[clamp(40px,6vw,96px)] font-bold tracking-[0] bg-gradient-to-r from-brand via-accent to-pos animate-fade-in"
+              className="text-[clamp(40px,6vw,96px)] font-bold tracking-[0] text-foreground animate-fade-in"
               style={{
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
                 lineHeight: '1.1',
                 animationDelay: '0.1s',
                 paddingBottom: '6px'
@@ -39,7 +36,7 @@ export function Home({onGetStarted, onSamples}:{onGetStarted:()=>void; onSamples
 
           {/* Slogan - responsive typography */}
           <p
-            className="text-[clamp(16px,2.2vw,28px)] text-inkDim mt-4 mb-6 max-w-2xl mx-auto font-normal animate-fade-in"
+            className="text-[clamp(16px,2.2vw,28px)] text-muted-foreground mt-4 mb-6 max-w-2xl mx-auto font-normal animate-fade-in"
             style={{
               lineHeight: '1.35',
               animationDelay: '0.2s'
@@ -49,7 +46,7 @@ export function Home({onGetStarted, onSamples}:{onGetStarted:()=>void; onSamples
           </p>
 
           {/* Description */}
-          <p className="text-base sm:text-lg md:text-xl text-inkMuted mb-10 max-w-xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: '0.3s' }}>
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-10 max-w-xl mx-auto leading-relaxed animate-fade-in" style={{ animationDelay: '0.3s' }}>
             Upload your feed data to discover how algorithms shape what you see.
           </p>
 
@@ -57,7 +54,7 @@ export function Home({onGetStarted, onSamples}:{onGetStarted:()=>void; onSamples
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
             <button
               onClick={onGetStarted}
-              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-brand to-accent text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all shadow-e2 focus-visible:outline focus-visible:outline-2 outline-brand"
+              className="w-full sm:w-auto px-8 py-4 bg-primary text-primary-foreground rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all shadow-sm focus-visible:outline focus-visible:outline-2 outline-primary"
             >
               Get Started
             </button>
@@ -95,17 +92,17 @@ export function Home({onGetStarted, onSamples}:{onGetStarted:()=>void; onSamples
       <section className="max-w-[1120px] mx-auto px-6 py-20">
         <div className="grid md:grid-cols-3 gap-8">
           <div className="bg-panel rounded-2xl border border-line shadow-e1 p-8 text-center">
-            <Lock className="w-12 h-12 text-brand mx-auto mb-4"/>
+            <Lock className="w-12 h-12 text-brand mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2">Privacy First</h3>
             <p className="text-inkMuted">100% local processing. Your data never leaves your device. No servers, no tracking, no telemetry.</p>
           </div>
           <div className="bg-panel rounded-2xl border border-line shadow-e1 p-8 text-center">
-            <BarChart3 className="w-12 h-12 text-accent mx-auto mb-4"/>
+            <BarChart3 className="w-12 h-12 text-accent mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2">Deep Insights</h3>
             <p className="text-inkMuted">Topic mix, sentiment trends, echo scores, ad ratios, and creator diversity—all visualized beautifully.</p>
           </div>
           <div className="bg-panel rounded-2xl border border-line shadow-e1 p-8 text-center">
-            <Folder className="w-12 h-12 text-pos mx-auto mb-4"/>
+            <Folder className="w-12 h-12 text-pos mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2">Smart Import</h3>
             <p className="text-inkMuted">Supports Instagram, TikTok, X (Twitter), YouTube, Facebook, and Reddit. Drop your exports and go.</p>
           </div>
@@ -161,7 +158,7 @@ export function Home({onGetStarted, onSamples}:{onGetStarted:()=>void; onSamples
             </a>
             <span className="text-neu">•</span>
             <button
-              onClick={()=>window.location.hash='#privacy'}
+              onClick={() => window.location.hash = '#privacy'}
               className="text-inkMuted hover:text-brand hover:underline focus-visible:outline focus-visible:outline-2 outline-brand rounded px-2 py-1"
             >
               Privacy Policy

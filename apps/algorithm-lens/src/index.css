@@ -1,6 +1,14 @@
 /* @import statements must come first - before any other CSS rules */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;700;800&family=Inter:wght@400;500;600&display=swap');
+
+/* Global figma styles (scoped) */
+@import './figma-ui/styles/globals.css';
+
+/* Project utilities (may also define .outline-ring/50; duplication is fine) */
+@import './styles/utilities.css';
+
+/* @import statements must come first - before any other CSS rules */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;700&family=Inter:wght@400;500;600&display=swap');
 
 /* Global figma styles (scoped) */
 @import './figma-ui/styles/globals.css';
@@ -16,6 +24,4 @@
 :root {
   --navbar-height: 92px;
   --navbar-height-mobile: 64px;
-  --brand-gradient: linear-gradient(90deg, #7B61FF 0%, #3ED6B2 100%);
 }
-

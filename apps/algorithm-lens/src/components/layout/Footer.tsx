@@ -16,16 +16,16 @@ export function Footer({ onNavigate }: FooterProps) {
   };
 
   return (
-    <footer 
+    <footer
       className="border-t"
-      style={{ 
+      style={{
         background: 'var(--section-bg)',
         borderColor: 'var(--border)',
       }}
     >
-      <div 
+      <div
         className="container-content"
-        style={{ 
+        style={{
           paddingTop: 'var(--spacing-3xl)',
           paddingBottom: 'var(--spacing-3xl)',
         }}
@@ -34,8 +34,8 @@ export function Footer({ onNavigate }: FooterProps) {
           <div className="flex flex-col md:flex-row md:justify-between md:items-start" style={{ gap: 'var(--spacing-4xl)' }}>
             {/* Column 1: Logo & Mission */}
             <div className="flex-shrink-0" style={{ maxWidth: '400px' }}>
-              <div 
-                className="brand-gradient-text"
+              <div
+                className="text-primary"
                 style={{
                   fontFamily: 'var(--font-headline)',
                   fontSize: '20px',
@@ -45,9 +45,9 @@ export function Footer({ onNavigate }: FooterProps) {
               >
                 AlgorithmLens
               </div>
-              <p 
+              <p
                 className="text-small"
-                style={{ 
+                style={{
                   color: 'var(--foreground-secondary)',
                   lineHeight: '24px',
                   maxWidth: '100%',
@@ -55,11 +55,11 @@ export function Footer({ onNavigate }: FooterProps) {
               >
                 See your algorithm. Understand your feed. Built at MIT by students passionate about ethical AI and digital transparency.
               </p>
-              
+
               {/* Social Links */}
-              <div 
+              <div
                 className="flex items-center"
-                style={{ 
+                style={{
                   gap: 'var(--spacing-xs)',
                   marginTop: 'var(--spacing-md)',
                 }}
@@ -80,8 +80,8 @@ export function Footer({ onNavigate }: FooterProps) {
                     transition: 'var(--transition-fast)',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.color = 'var(--brand-teal)';
-                    e.currentTarget.style.background = 'var(--brand-bg-gradient)';
+                    e.currentTarget.style.color = 'var(--brand-blue)';
+                    e.currentTarget.style.background = 'var(--accent)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.color = 'var(--foreground-muted)';
@@ -114,8 +114,8 @@ export function Footer({ onNavigate }: FooterProps) {
                     transition: 'var(--transition-fast)',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.color = 'var(--brand-teal)';
-                    e.currentTarget.style.background = 'var(--brand-bg-gradient)';
+                    e.currentTarget.style.color = 'var(--brand-blue)';
+                    e.currentTarget.style.background = 'var(--accent)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.color = 'var(--foreground-muted)';
@@ -148,8 +148,8 @@ export function Footer({ onNavigate }: FooterProps) {
                     transition: 'var(--transition-fast)',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.color = 'var(--brand-teal)';
-                    e.currentTarget.style.background = 'var(--brand-bg-gradient)';
+                    e.currentTarget.style.color = 'var(--brand-blue)';
+                    e.currentTarget.style.background = 'var(--accent)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.color = 'var(--foreground-muted)';
@@ -171,7 +171,7 @@ export function Footer({ onNavigate }: FooterProps) {
 
             {/* Column 2: Product Links */}
             <div className="flex-shrink-0">
-              <h4 
+              <h4
                 style={{
                   fontFamily: 'var(--font-headline)',
                   fontSize: '14px',
@@ -218,7 +218,7 @@ export function Footer({ onNavigate }: FooterProps) {
 
             {/* Column 3: Company Links */}
             <div className="flex-shrink-0">
-              <h4 
+              <h4
                 style={{
                   fontFamily: 'var(--font-headline)',
                   fontSize: '14px',
@@ -322,17 +322,17 @@ export function Footer({ onNavigate }: FooterProps) {
           </div>
 
           {/* Bottom Bar */}
-          <div 
+          <div
             className="border-t"
-            style={{ 
+            style={{
               marginTop: 'var(--spacing-3xl)',
               paddingTop: 'var(--spacing-md)',
               borderColor: 'var(--border)',
             }}
           >
-            <p 
+            <p
               className="text-small text-center"
-              style={{ 
+              style={{
                 color: 'var(--foreground-muted)',
               }}
             >
