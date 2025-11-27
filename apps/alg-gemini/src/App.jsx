@@ -9,6 +9,7 @@ import HeroDashboardPreview from './components/Hero/HeroDashboardPreview';
 import HowItWorksSection from './components/Sections/HowItWorksSection';
 import { Instagram, Twitter, Youtube, Linkedin } from 'lucide-react';
 import PricingPage from './components/PricingPage';
+import ScanTestPage from './pages/ScanTestPage';
 
 function App() {
   return (
@@ -49,6 +50,9 @@ function App() {
 
           {/* PRICING ROUTE – NEW PAGE */}
           <Route path="/pricing" element={<PricingPage />} />
+
+          {/* INTERNAL TEST ROUTE */}
+          <Route path="/scan-test" element={<ScanTestPage />} />
         </Routes>
       </main>
 
