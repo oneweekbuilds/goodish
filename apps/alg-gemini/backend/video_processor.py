@@ -6,7 +6,7 @@ import os
 import uuid
 from datetime import datetime
 import time
-from .unified_scan_models import (
+from unified_scan_models import (
     UnifiedScanResult, ScanMetadata, Environment, VideoCaptureInfo,
     FeedItem, AdMetadata, ContentText, TopicsInfo, PoliticalInfo,
     WellbeingInfo, EngagementDrivers, RepetitionInfo, SourceDetails,

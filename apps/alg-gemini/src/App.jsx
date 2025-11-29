@@ -10,6 +10,8 @@ import HowItWorksSection from './components/Sections/HowItWorksSection';
 import { Instagram, Twitter, Youtube, Linkedin } from 'lucide-react';
 import PricingPage from './components/PricingPage';
 import ScanTestPage from './pages/ScanTestPage';
+import ScanPage from './pages/ScanPage';
+import ScanHistoryPage from './pages/ScanHistoryPage';
 
 function App() {
   return (
@@ -50,6 +52,12 @@ function App() {
 
           {/* PRICING ROUTE – NEW PAGE */}
           <Route path="/pricing" element={<PricingPage />} />
+
+          {/* SCAN FLOW – USER-FACING */}
+          <Route path="/scan" element={<ScanPage />} />
+
+          {/* SCAN HISTORY */}
+          <Route path="/history" element={<ScanHistoryPage />} />
 
           {/* INTERNAL TEST ROUTE */}
           <Route path="/scan-test" element={<ScanTestPage />} />
