@@ -5,8 +5,9 @@ import { ChevronLeft, Upload, Smartphone, Play, CheckCircle, AlertCircle, Loader
 const PLATFORMS = [
     { id: 'tiktok', name: 'TikTok', icon: '📱', color: 'bg-black text-white' },
     { id: 'instagram', name: 'Instagram', icon: '📷', color: 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' },
-    { id: 'youtube', name: 'YouTube Shorts', icon: '▶️', color: 'bg-red-600 text-white' },
+    { id: 'youtube', name: 'YouTube', icon: '▶️', color: 'bg-red-600 text-white' },
     { id: 'facebook', name: 'Facebook', icon: '👤', color: 'bg-blue-600 text-white' },
+    { id: 'twitter', name: 'Twitter/X', icon: '𝕏', color: 'bg-black text-white' },
 ];
 
 // Recording instructions per platform
@@ -27,9 +28,9 @@ const INSTRUCTIONS = {
     ],
     youtube: [
         'Open YouTube on your phone',
-        'Go to the Shorts section',
+        'Go to the Shorts section or Home page',
         'Start screen recording',
-        'Scroll through 10-20 Shorts naturally',
+        'Scroll through 10-20 videos naturally',
         'Stop recording and save the video',
     ],
     facebook: [
@@ -37,6 +38,13 @@ const INSTRUCTIONS = {
         'Go to your main feed or Reels',
         'Start screen recording',
         'Scroll through 10-20 posts/videos naturally',
+        'Stop recording and save the video',
+    ],
+    twitter: [
+        'Open X (Twitter) on your phone',
+        'Go to your Home or For You timeline',
+        'Start screen recording',
+        'Scroll through 10-20 tweets naturally',
         'Stop recording and save the video',
     ],
 };
@@ -152,11 +160,18 @@ const ScanPage = () => {
                 {step === 1 && (
                     <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200">
                         <h1 className="text-3xl font-bold text-slate-900 mb-2">Scan Your Feed</h1>
-                        <p className="text-slate-600 mb-8">
+                        <p className="text-slate-600 mb-4">
                             Choose the platform you want to analyze. We'll show you what the algorithm thinks about you.
+                        </p>
+                        <p className="text-sm text-slate-500 mb-8">
+                            Showing {PLATFORMS.length} platforms: {PLATFORMS.map(p => p.id).join(', ')}
                         </p>
 
                         <div className="grid grid-cols-2 gap-4">
+                            {(() => {
+                                console.debug('[ScanPage] Rendering platform cards:', PLATFORMS.map(p => p.id));
+                                return null;
+                            })()}
                             {PLATFORMS.map((platform) => (
                                 <button
                                     key={platform.id}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Link } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import HeroSection from './components/Hero/HeroSection';
 import SectionTracking from './components/Sections/SectionTracking';
@@ -7,11 +7,17 @@ import LabelsPreviewSection from './components/Sections/LabelsPreviewSection';
 import SectionLoop from './components/Sections/SectionLoop';
 import HeroDashboardPreview from './components/Hero/HeroDashboardPreview';
 import HowItWorksSection from './components/Sections/HowItWorksSection';
-import { Instagram, Twitter, Youtube, Linkedin } from 'lucide-react';
 import PricingPage from './components/PricingPage';
 import ScanTestPage from './pages/ScanTestPage';
 import ScanPage from './pages/ScanPage';
 import ScanHistoryPage from './pages/ScanHistoryPage';
+
+// New Phase 3 Pages
+import StartPage from './pages/StartPage';
+import ScanPlatformPage from './pages/ScanPlatformPage';
+import ProcessingPage from './pages/ProcessingPage';
+import ResultsPage from './pages/ResultsPage';
+import HistoryPage from './pages/HistoryPage';
 
 function App() {
   return (
@@ -38,26 +44,52 @@ function App() {
                       Ready to see your profile?
                     </h2>
                     <p className="text-lg text-text-muted mb-12 max-w-xl mx-auto">
-                      Link your feeds to generate your AlgorithmLens dashboard. Read-only access. We never post on your behalf.
+                      Upload a screen recording of your feed to generate your AlgorithmLens dashboard. Private and secure.
                     </p>
 
-                    <button className="px-10 py-4 bg-primary-blue text-white rounded-full font-bold text-lg shadow-glow hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                      Get Started
-                    </button>
+                    <Link 
+                      to="/start"
+                      className="inline-block px-10 py-4 bg-primary-blue text-white rounded-full font-bold text-lg shadow-glow hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                    >
+                      Start a Scan
+                    </Link>
                   </div>
                 </section>
               </>
             }
           />
 
-          {/* PRICING ROUTE – NEW PAGE */}
+          {/* PRICING ROUTE */}
           <Route path="/pricing" element={<PricingPage />} />
 
-          {/* SCAN FLOW – USER-FACING */}
-          <Route path="/scan" element={<ScanPage />} />
+          {/* ========================================
+              PHASE 3: UNIFIED SCAN FLOW ROUTES
+              ======================================== */}
+          
+          {/* Platform Selection - Entry point for new scan flow */}
+          <Route path="/start" element={<StartPage />} />
+          
+          {/* Platform-specific scan methods (extension or upload) */}
+          <Route path="/scan/platform/:platform" element={<ScanPlatformPage />} />
+          
+          {/* Processing animation while scan is being analyzed */}
+          <Route path="/scan/processing" element={<ProcessingPage />} />
+          
+          {/* Full results page for a specific scan */}
+          <Route path="/scan/results/:scanId" element={<ResultsPage />} />
+          
+          {/* New improved scan history page */}
+          <Route path="/history" element={<HistoryPage />} />
 
-          {/* SCAN HISTORY */}
-          <Route path="/history" element={<ScanHistoryPage />} />
+          {/* ========================================
+              LEGACY ROUTES (kept for backwards compatibility)
+              ======================================== */}
+          
+          {/* Legacy scan page - redirects or shows old flow */}
+          <Route path="/scan" element={<ScanPage />} />
+          
+          {/* Legacy scan history - kept for Chrome extension compatibility */}
+          <Route path="/scan-history" element={<ScanHistoryPage />} />
 
           {/* INTERNAL TEST ROUTE */}
           <Route path="/scan-test" element={<ScanTestPage />} />
@@ -82,16 +114,5 @@ function App() {
     </div>
   );
 }
-
-const SocialIcon = ({ icon: Icon, color }) => (
-  <div
-    className={`w-16 h-16 rounded-2xl bg-white border border-border-light flex items-center justify-center transition-all duration-300 cursor-pointer shadow-soft hover:scale-110 ${color === 'blue'
-      ? 'text-text-muted hover:text-primary-blue hover:border-primary-blue hover:bg-primary-blue/5'
-      : 'text-text-muted hover:text-accent-green hover:border-accent-green hover:bg-accent-green/5'
-      }`}
-  >
-    <Icon size={26} strokeWidth={2} />
-  </div>
-);
 
 export default App;

@@ -1,0 +1,20 @@
+{
+  "name": "@goodish/alg-gemini-extension",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AlgorithmLens Chrome Extension for desktop feed scanning",
+  "type": "module",
+  "scripts": {
+    "dev": "vite build --watch --mode development",
+    "build": "vite build",
+    "clean": "rimraf dist"
+  },
+  "devDependencies": {
+    "vite": "^5.4.21",
+    "@crxjs/vite-plugin": "^2.0.0-beta.25",
+    "rimraf": "^5.0.5"
+  }
+}
+
+
+

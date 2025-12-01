@@ -1,1 +1,23 @@
-node_modules
+# Python bytecode caches
+__pycache__/
+*.pyc
+
+# Local dev database
+scans.db
+
+# Virtual environments
+venv/
+*/venv/
+
+# Node modules
+node_modules/
+
+# VSCode settings (optional to ignore)
+.vscode/
+
+# Build artifacts
+dist/
+build/
+
+# Chrome extension build output (if you ever build it)
+apps/alg-gemini-extension/dist/

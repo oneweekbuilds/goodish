@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlgorithmLens</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      width: 320px;
+      min-height: 200px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      color: #1e293b;
+    }
+    
+    .container {
+      padding: 20px;
+    }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #2563eb 0%, #10b981 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .logo-icon {
+      font-size: 18px;
+    }
+    
+    .title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    
+    .status {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 13px;
+    }
+    
+    .status.supported {
+      background: #dcfce7;
+      color: #166534;
+    }
+    
+    .status.unsupported {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    
+    .status.loading {
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+    
+    .status.session-active {
+      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+      color: #1e40af;
+      border: 1px solid #93c5fd;
+    }
+    
+    .platform-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #fff;
+      border-radius: 4px;
+      font-weight: 600;
+      margin-left: 4px;
+    }
+    
+    /* Primary scan button */
+    .scan-button {
+      width: 100%;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+    }
+    
+    .scan-button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    }
+    
+    .scan-button:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    
+    /* Stop button (when session is active) */
+    .scan-button.stop {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3);
+    }
+    
+    .scan-button.stop:hover:not(:disabled) {
+      box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+    }
+    
+    /* Session timer */
+    .session-timer {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      color: #1e40af;
+      margin-bottom: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+    
+    .session-timer small {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    
+    .footer {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid #e2e8f0;
+      text-align: center;
+      font-size: 11px;
+      color: #64748b;
+    }
+    
+    .footer a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+    
+    .footer a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Scan Results Styles */
+    .status.results {
+      background: #f0fdf4;
+      color: #166534;
+      padding: 0;
+      overflow: hidden;
+    }
+    
+    .scan-result {
+      padding: 12px;
+    }
+    
+    .result-header {
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 12px;
+      color: #166534;
+    }
+    
+    .result-stats {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .stat {
+      flex: 1;
+      background: white;
+      padding: 8px;
+      border-radius: 6px;
+      text-align: center;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .stat-value {
+      display: block;
+      font-size: 18px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    
+    .stat-value.high {
+      color: #dc2626;
+    }
+    
+    .stat-label {
+      font-size: 10px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .result-section {
+      margin-bottom: 10px;
+    }
+    
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    
+    .hashtag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    
+    .hashtag {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #dbeafe;
+      color: #1d4ed8;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    
+    .creator-list {
+      font-size: 12px;
+      color: #475569;
+    }
+    
+    .creator {
+      color: #2563eb;
+      font-weight: 500;
+    }
+    
+    .more {
+      color: #94a3b8;
+      font-style: italic;
+    }
+    
+    .result-footer {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 11px;
+      color: #64748b;
+    }
+    
+    .result-footer small {
+      display: block;
+      margin-top: 2px;
+      color: #94a3b8;
+    }
+    
+    /* Additional stat value colors */
+    .stat-value.positive {
+      color: #16a34a;
+    }
+    
+    .stat-value.negative {
+      color: #dc2626;
+    }
+    
+    /* Topic list styles */
+    .topic-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    
+    .topic {
+      display: inline-block;
+      padding: 3px 8px;
+      background: #f0f9ff;
+      color: #0369a1;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      border: 1px solid #bae6fd;
+    }
+    
+    .topic small {
+      opacity: 0.7;
+      margin-left: 2px;
+    }
+    
+    /* CTA list styles */
+    .cta-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    
+    .cta {
+      display: inline-block;
+      padding: 3px 8px;
+      background: #fef3c7;
+      color: #92400e;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      border: 1px solid #fcd34d;
+    }
+    
+    .cta small {
+      opacity: 0.7;
+      margin-left: 2px;
+    }
+    
+    /* Theme list styles */
+    .theme-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    
+    .theme {
+      display: inline-block;
+      padding: 3px 8px;
+      background: #f0fdf4;
+      color: #166534;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      border: 1px solid #86efac;
+    }
+    
+    /* Political content section */
+    .result-section.political {
+      background: #fef2f2;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #fecaca;
+    }
+    
+    .result-section.political .section-title {
+      color: #991b1b;
+    }
+    
+    .political-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #fee2e2;
+      color: #dc2626;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    /* Saved confirmation banner */
+    .saved-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      border: 1px solid #86efac;
+    }
+    
+    .saved-banner.error {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border-color: #fcd34d;
+    }
+    
+    .saved-banner.warning {
+      background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+      border-color: #7dd3fc;
+    }
+    
+    .saved-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    
+    .saved-text {
+      flex: 1;
+    }
+    
+    .saved-text strong {
+      display: block;
+      font-size: 13px;
+      color: #166534;
+      margin-bottom: 2px;
+    }
+    
+    .saved-banner.error .saved-text strong {
+      color: #92400e;
+    }
+    
+    .saved-banner.warning .saved-text strong {
+      color: #0369a1;
+    }
+    
+    .saved-text small {
+      display: block;
+      font-size: 11px;
+      color: #15803d;
+    }
+    
+    .saved-banner.error .saved-text small {
+      color: #a16207;
+    }
+    
+    .saved-banner.warning .saved-text small {
+      color: #0284c7;
+    }
+    
+    /* Dashboard button */
+    .dashboard-button {
+      width: 100%;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+      margin-bottom: 12px;
+    }
+    
+    .dashboard-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+    
+    .dashboard-button:active {
+      transform: translateY(0);
+    }
+    
+    /* Session explanation text */
+    .session-hint {
+      font-size: 11px;
+      color: #64748b;
+      line-height: 1.4;
+      margin-top: 12px;
+      padding: 10px;
+      background: #f8fafc;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">
+        <span class="logo-icon">🔍</span>
+      </div>
+      <span class="title">AlgorithmLens</span>
+    </div>
+    
+    <div id="status" class="status loading">
+      Checking current page...
+    </div>
+    
+    <div id="sessionTimer" class="session-timer" style="display: none;">
+      00:00
+      <small>Session recording...</small>
+    </div>
+    
+    <button id="scanButton" class="scan-button" disabled>
+      Start Session Scan
+    </button>
+    
+    <p class="session-hint">
+      🎬 AlgorithmLens records which posts appear in your feed during this session. Currently supports TikTok, Instagram, YouTube, and X/Twitter. Facebook support is coming soon.
+    </p>
+    
+    <div class="footer">
+      Powered by <a href="https://goodish.co" target="_blank">Goodish</a>
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

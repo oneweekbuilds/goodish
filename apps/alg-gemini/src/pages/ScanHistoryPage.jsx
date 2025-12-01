@@ -231,7 +231,12 @@ const ScanHistoryPage = () => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-slate-600">
-                                            {Math.round(scan.duration_seconds || 0)}s
+                                            {/* Desktop snapshots (duration = 0) show N/A, session scans show actual duration */}
+                                            {(scan.source_type === "DESKTOP_EXTENSION" && (!scan.duration_seconds || scan.duration_seconds === 0)) ||
+                                             (scan.id?.startsWith("desktop-") && (!scan.duration_seconds || scan.duration_seconds === 0))
+                                                ? <span className="text-slate-400 italic text-sm">N/A (desktop snapshot)</span>
+                                                : `${Math.round(scan.duration_seconds || 0)}s`
+                                            }
                                         </td>
                                         <td className="px-6 py-4 text-slate-600">
                                             {scan.total_items || 0} items
@@ -358,6 +363,7 @@ const ScanResultsView = ({ result, scanMeta }) => {
 
         return {
             platform: data.scan_metadata?.platform || "Unknown",
+            sourceType: data.scan_metadata?.source_type || null,
             scanDurationSeconds: data.environment?.video_capture?.duration_seconds || 0,
             timestamp: data.scan_metadata?.created_at || new Date().toISOString(),
             frameCountAnalyzed: data.aggregates?.total_feed_items || 0,
@@ -391,7 +397,13 @@ const ScanResultsView = ({ result, scanMeta }) => {
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                 <h2 className="text-xl font-bold mb-4">Scan Summary</h2>
                 <p className="text-slate-700">
-                    <span className="capitalize font-semibold">{displayData.platform}</span> scan · {Math.round(displayData.scanDurationSeconds)} second scan · {displayData.frameCountAnalyzed} frames analyzed
+                    <span className="capitalize font-semibold">{displayData.platform}</span> scan · {
+                        /* Desktop snapshots (duration = 0) show "desktop snapshot", session scans show actual duration */
+                        (displayData.sourceType === "DESKTOP_EXTENSION" && (!displayData.scanDurationSeconds || displayData.scanDurationSeconds === 0)) ||
+                        (scanMeta?.id?.startsWith("desktop-") && (!displayData.scanDurationSeconds || displayData.scanDurationSeconds === 0))
+                            ? <span className="text-slate-500 italic">desktop snapshot</span>
+                            : `${Math.round(displayData.scanDurationSeconds)} second scan`
+                    } · {displayData.frameCountAnalyzed} posts analyzed
                 </p>
                 <p className="text-sm text-slate-500 mt-1">
                     Timestamp: {new Date(displayData.timestamp).toLocaleString()}

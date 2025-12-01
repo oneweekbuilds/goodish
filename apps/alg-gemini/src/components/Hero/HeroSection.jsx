@@ -1,8 +1,15 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 
 const HeroSection = () => {
+    const navigate = useNavigate();
+
+    const handleStartScan = () => {
+        navigate('/start');
+    };
+
     return (
         <section className="relative w-full min-h-screen flex flex-col items-center justify-center pt-20 pb-12 bg-bg-page overflow-hidden">
 
@@ -41,8 +48,11 @@ const HeroSection = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                 >
-                    <button className="group relative px-8 py-4 bg-primary-blue text-white rounded-full font-semibold text-lg shadow-glow hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 flex items-center gap-2">
-                        Reveal My Profile
+                    <button 
+                        onClick={handleStartScan}
+                        className="group relative px-8 py-4 bg-primary-blue text-white rounded-full font-semibold text-lg shadow-glow hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 flex items-center gap-2"
+                    >
+                        Start a Scan
                         <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </button>
                 </motion.div>

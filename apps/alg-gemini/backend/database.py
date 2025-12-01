@@ -52,6 +52,13 @@ def save_scan(scan_result: Dict[str, Any]) -> str:
     """
     Save a scan result to the database.
     Returns the scan_id.
+    
+    Duration is extracted from multiple possible sources (in order of priority):
+    1. aggregates.duration_seconds (session scans)
+    2. scan_metadata.session_duration_seconds (session scans)
+    3. environment.video_capture.duration_seconds (video scans)
+    4. environment.extension_capture.session_duration_seconds (session scans)
+    5. Fallback to 0
     """
     conn = get_connection()
     cursor = conn.cursor()
@@ -62,15 +69,41 @@ def save_scan(scan_result: Dict[str, Any]) -> str:
     platform = scan_result.get("scan_metadata", {}).get("platform", "UNKNOWN")
     user_id = scan_result.get("scan_metadata", {}).get("user_identifier", "")
     
-    # Get duration from environment.video_capture
-    video_capture = scan_result.get("environment", {}).get("video_capture", {})
-    duration_seconds = video_capture.get("duration_seconds", 0) if video_capture else 0
-    
     # Get aggregates
     aggregates = scan_result.get("aggregates", {})
     total_items = aggregates.get("total_feed_items", 0)
     total_ads = aggregates.get("total_ads", 0)
     ad_percentage = aggregates.get("ad_percentage", 0.0)
+    
+    # Get duration from multiple possible sources (session scans vs video scans)
+    # Use isinstance checks to ensure we get numeric values, not falsy 0s
+    duration_seconds = 0
+    
+    # Extract nested objects safely
+    scan_metadata = scan_result.get("scan_metadata", {}) or {}
+    environment = scan_result.get("environment", {}) or {}
+    ext_capture = environment.get("extension_capture", {}) or {}
+    video_capture = environment.get("video_capture", {}) or {}
+    
+    # Priority 1: aggregates.duration_seconds (session scans inject here)
+    agg_duration = aggregates.get("duration_seconds")
+    if isinstance(agg_duration, (int, float)) and agg_duration > 0:
+        duration_seconds = agg_duration
+        print(f"[database] Using aggregates.duration_seconds: {duration_seconds}")
+    # Priority 2: scan_metadata.session_duration_seconds
+    elif isinstance(scan_metadata.get("session_duration_seconds"), (int, float)) and scan_metadata.get("session_duration_seconds") > 0:
+        duration_seconds = scan_metadata["session_duration_seconds"]
+        print(f"[database] Using scan_metadata.session_duration_seconds: {duration_seconds}")
+    # Priority 3: environment.video_capture.duration_seconds (video uploads)
+    elif isinstance(video_capture.get("duration_seconds"), (int, float)) and video_capture.get("duration_seconds") > 0:
+        duration_seconds = video_capture["duration_seconds"]
+        print(f"[database] Using video_capture.duration_seconds: {duration_seconds}")
+    # Priority 4: environment.extension_capture.session_duration_seconds
+    elif isinstance(ext_capture.get("session_duration_seconds"), (int, float)) and ext_capture.get("session_duration_seconds") > 0:
+        duration_seconds = ext_capture["session_duration_seconds"]
+        print(f"[database] Using extension_capture.session_duration_seconds: {duration_seconds}")
+    else:
+        print(f"[database] No valid duration found, using default: {duration_seconds}")
     
     # Serialize the full result to JSON
     result_json = json.dumps(scan_result)
@@ -92,12 +125,13 @@ def get_all_scans() -> List[Dict[str, Any]]:
     """
     Get list of all scans (without full result JSON for efficiency).
     Returns list sorted by created_at descending (newest first).
+    Includes source_type extracted from result_json for UI display logic.
     """
     conn = get_connection()
     cursor = conn.cursor()
     
     cursor.execute("""
-        SELECT id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage
+        SELECT id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, result_json
         FROM scans
         ORDER BY created_at DESC
     """)
@@ -107,6 +141,14 @@ def get_all_scans() -> List[Dict[str, Any]]:
     
     scans = []
     for row in rows:
+        # Extract source_type from the stored result JSON
+        source_type = None
+        try:
+            result_data = json.loads(row["result_json"])
+            source_type = result_data.get("scan_metadata", {}).get("source_type", None)
+        except (json.JSONDecodeError, TypeError):
+            pass
+        
         scans.append({
             "id": row["id"],
             "created_at": row["created_at"],
@@ -115,7 +157,8 @@ def get_all_scans() -> List[Dict[str, Any]]:
             "duration_seconds": row["duration_seconds"],
             "total_items": row["total_items"],
             "total_ads": row["total_ads"],
-            "ad_percentage": row["ad_percentage"]
+            "ad_percentage": row["ad_percentage"],
+            "source_type": source_type
         })
     
     return scans
