@@ -1,5 +1,5 @@
 /**
- * Dashboard Catalog - Phase 2 Implementation
+ * Dashboard Catalog - Phase 3 Implementation
  *
  * Each view includes:
  * - tab: which tab it belongs to
@@ -10,7 +10,15 @@
  * - dataFn: function name from dataHelpers to get data
  * - takeaway: function that returns takeaway string given data
  * - action: function that returns action string given data (optional)
+ * - emptyStateType: 'needs_more_scans' | 'needs_broader_behavior' | 'future_feature'
  */
+
+// Empty state type constants
+export const EMPTY_STATE_TYPES = {
+  NEEDS_MORE_SCANS: 'needs_more_scans',
+  NEEDS_BROADER_BEHAVIOR: 'needs_broader_behavior',
+  FUTURE_FEATURE: 'future_feature',
+};
 
 export const TABS = [
   { id: 'ads', label: 'Ads & Influence' },
@@ -31,6 +39,7 @@ export const dashboardCatalog = [
     description: 'Track the percentage of posts labeled as ads or sponsored content.',
     outputType: 'number_line',
     dataFn: 'getAdPercentageData',
+    emptyStateType: 'needs_more_scans',
     takeaway: (data) => data?.currentPercent !== undefined
       ? `About ${data.currentPercent}% of your feed is clearly marked as advertising.`
       : null,
@@ -40,21 +49,23 @@ export const dashboardCatalog = [
     tab: 'ads',
     id: 'ads-likely-promo',
     title: 'Likely Promotional Posts (Not Labeled)',
-    description: 'Posts that look promotional even without an ad label.',
+    description: 'Content that shows patterns commonly associated with promotion, even when not labeled as an ad.',
     outputType: 'number',
     dataFn: 'getLikelyPromoData',
-    takeaway: () => 'Some posts look promotional even without an ad label.',
+    emptyStateType: 'future_feature',
+    takeaway: () => 'This content shows patterns commonly associated with promotion, even when not labeled as an ad.',
     action: () => 'Treat recommendations as marketing when products keep showing up.',
   },
   {
     tab: 'ads',
     id: 'ads-explicit-vs-hidden',
-    title: 'Explicit Ads vs Hidden Promotions',
-    description: 'Compare labeled ads versus likely promotional content.',
+    title: 'Clearly Labeled Ads vs Possible Influence',
+    description: 'Compare labeled advertising versus content that may be incentivized.',
     outputType: 'stacked100',
     dataFn: 'getAdsVsPromoData',
-    takeaway: () => 'Most promotional content is either labeled or unlabeled.',
-    action: () => 'Unlabeled promo is easier to miss. Be extra skeptical of casual product mentions.',
+    emptyStateType: 'future_feature',
+    takeaway: () => 'This comparison shows clearly labeled ads alongside possible incentivized content.',
+    action: () => 'Unlabeled influence is easier to miss. Be extra skeptical of casual product mentions.',
   },
   {
     tab: 'ads',
@@ -63,6 +74,7 @@ export const dashboardCatalog = [
     description: 'The product categories or brands that appear repeatedly in your feed.',
     outputType: 'bar',
     dataFn: 'getProductMentionsData',
+    emptyStateType: 'needs_more_scans',
     takeaway: (data) => data?.length > 0
       ? 'These products show up repeatedly in your feed.'
       : null,
@@ -75,6 +87,7 @@ export const dashboardCatalog = [
     description: 'Creators who post the most promotional content in your feed.',
     outputType: 'table',
     dataFn: 'getPromoCreatorsData',
+    emptyStateType: 'needs_more_scans',
     takeaway: () => 'A small set of creators drive most promotions.',
     action: () => 'Mute or unfollow high-promo creators if you want fewer sales pitches.',
   },
@@ -85,6 +98,7 @@ export const dashboardCatalog = [
     description: 'How concentrated promotional content is among top creators.',
     outputType: 'number',
     dataFn: 'getAdConcentrationData',
+    emptyStateType: 'needs_more_scans',
     takeaway: (data) => data?.concentration !== undefined
       ? `${data.concentration}% of promotions come from the top ${data.top5Count} creators.`
       : null,
@@ -97,6 +111,7 @@ export const dashboardCatalog = [
     description: 'Common emotional narratives used in promotional content.',
     outputType: 'bar',
     dataFn: 'getPromoThemesData',
+    emptyStateType: 'future_feature',
     takeaway: () => 'Promotions often rely on these emotional narratives.',
     action: () => 'When you notice a pattern, you can reduce engagement to stop reinforcing it.',
   },
@@ -107,6 +122,7 @@ export const dashboardCatalog = [
     description: 'Track how ad percentage has changed across your scans.',
     outputType: 'line',
     dataFn: 'getAdTrendData',
+    emptyStateType: 'needs_more_scans',
     takeaway: (data) => data?.direction
       ? `Advertising in your feed is ${data.direction}.`
       : null,
@@ -119,6 +135,7 @@ export const dashboardCatalog = [
     description: 'Compare promotional content across different platforms.',
     outputType: 'bar',
     dataFn: 'getPlatformPromoData',
+    emptyStateType: 'needs_broader_behavior',
     takeaway: () => 'Some platforms rely more heavily on promotion.',
     action: () => 'If one platform feels salesy, reduce time there or reset engagement.',
   },
@@ -129,6 +146,9 @@ export const dashboardCatalog = [
     description: 'Inferred interest areas based on repeated products and categories.',
     outputType: 'text',
     dataFn: 'getAdvertiserInsightsData',
+    emptyStateType: 'needs_more_scans',
+    confidenceDisclaimer: true,
+    isSummaryCard: true, // This is the "What This Means for You" anchor for the ads tab
     takeaway: (data) => data?.interests?.length > 0
       ? `Advertisers appear to associate you with: ${data.interests.join(', ')}.`
       : null,
@@ -145,6 +165,7 @@ export const dashboardCatalog = [
     description: 'What percentage of your feed contains political content.',
     outputType: 'number_line',
     dataFn: 'getPoliticalShareData',
+    emptyStateType: 'needs_more_scans',
     takeaway: (data) => data?.currentPercent !== undefined
       ? `Political content appears in about ${data.currentPercent}% of your feed.`
       : null,
@@ -157,6 +178,7 @@ export const dashboardCatalog = [
     description: 'Distribution of political content by leaning (Left / Neutral / Right).',
     outputType: 'stacked100',
     dataFn: 'getPoliticalLeaningData',
+    emptyStateType: 'future_feature',
     takeaway: () => 'Political content distribution by leaning.',
     action: () => 'If one side dominates, your feed may be narrowing.',
   },
@@ -167,6 +189,7 @@ export const dashboardCatalog = [
     description: 'Assessment of whether your political content is balanced or skewed.',
     outputType: 'status',
     dataFn: 'getPoliticalBalanceData',
+    emptyStateType: 'future_feature',
     takeaway: () => 'Your political content balance status.',
     action: () => 'To rebalance, engage with credible sources across perspectives.',
   },
@@ -177,6 +200,7 @@ export const dashboardCatalog = [
     description: 'Creators who post the most political content in your feed.',
     outputType: 'table',
     dataFn: 'getPoliticalCreatorsData',
+    emptyStateType: 'needs_more_scans',
     takeaway: () => 'A small number of creators drive most political exposure.',
     action: () => 'Unfollow the top drivers if you want less politics.',
   },
@@ -187,6 +211,7 @@ export const dashboardCatalog = [
     description: 'How often you see the same political themes repeated.',
     outputType: 'number',
     dataFn: 'getPoliticalRepetitionData',
+    emptyStateType: 'future_feature',
     takeaway: () => 'You often see the same political ideas repeated.',
     action: () => 'Search and engage with different subtopics to widen the feed.',
   },
@@ -197,6 +222,7 @@ export const dashboardCatalog = [
     description: 'The emotional tone of political content in your feed.',
     outputType: 'bar',
     dataFn: 'getPoliticalToneData',
+    emptyStateType: 'future_feature',
     takeaway: () => 'Political content tends to feel calm or intense.',
     action: () => 'If it\'s intense, consider muting accounts that post outrage content.',
   },
@@ -207,6 +233,7 @@ export const dashboardCatalog = [
     description: 'Track how political content percentage has changed.',
     outputType: 'line',
     dataFn: 'getPoliticalTrendData',
+    emptyStateType: 'needs_more_scans',
     takeaway: (data) => data?.direction
       ? `Your political exposure has been ${data.direction}.`
       : null,
@@ -219,6 +246,7 @@ export const dashboardCatalog = [
     description: 'Viewpoints or themes that rarely appear in your feed.',
     outputType: 'list',
     dataFn: 'getPoliticalBlindSpotsData',
+    emptyStateType: 'future_feature',
     takeaway: () => 'Some viewpoints rarely appear in your feed.',
     action: () => 'If you want balance, intentionally follow credible sources from missing areas.',
   },
@@ -229,6 +257,7 @@ export const dashboardCatalog = [
     description: 'Compare political content across different platforms.',
     outputType: 'bar',
     dataFn: 'getCrossPlatformPoliticalData',
+    emptyStateType: 'needs_broader_behavior',
     takeaway: () => 'Political exposure varies by platform.',
     action: () => 'Use the lowest-politics platform when you want a mental break.',
   },
@@ -239,6 +268,8 @@ export const dashboardCatalog = [
     description: 'Summary of political themes your feed emphasizes.',
     outputType: 'text',
     dataFn: 'getPoliticalProfileData',
+    emptyStateType: 'needs_more_scans',
+    isSummaryCard: true, // This is the "What This Means for You" anchor for the politics tab
     takeaway: (data) => data?.politicalPercent !== undefined
       ? `Your feed emphasizes political content (${data.politicalPercent}%).`
       : null,
@@ -255,6 +286,7 @@ export const dashboardCatalog = [
     description: 'How many different topics appear in your feed.',
     outputType: 'number_bar',
     dataFn: 'getTopicVarietyData',
+    emptyStateType: 'needs_more_scans',
     takeaway: (data) => data?.topicCount !== undefined
       ? `Your feed covers ${data.topicCount} topics.`
       : null,
@@ -267,6 +299,7 @@ export const dashboardCatalog = [
     description: 'What percentage of your feed concentrates in the top 3 topics.',
     outputType: 'number',
     dataFn: 'getRepeatedThemesData',
+    emptyStateType: 'needs_more_scans',
     takeaway: (data) => data?.top3Percent !== undefined
       ? `${data.top3Percent}% of your feed is in the top 3 topics.`
       : null,
@@ -279,6 +312,7 @@ export const dashboardCatalog = [
     description: 'The overall emotional tone of content in your feed.',
     outputType: 'stacked100',
     dataFn: 'getEmotionalWeightData',
+    emptyStateType: 'needs_more_scans',
     takeaway: (data) => data?.intensity
       ? `Your feed feels ${data.intensity} emotionally.`
       : null,
@@ -291,6 +325,7 @@ export const dashboardCatalog = [
     description: 'Distribution of positive, neutral, and negative content.',
     outputType: 'stacked100',
     dataFn: 'getSentimentBalanceData',
+    emptyStateType: 'needs_more_scans',
     takeaway: () => 'Content sentiment distribution in your feed.',
     action: () => 'If negative is high, intentionally interact with uplifting accounts.',
   },
@@ -301,6 +336,7 @@ export const dashboardCatalog = [
     description: 'How much your feed content changes between scans.',
     outputType: 'status',
     dataFn: 'getFeedStabilityData',
+    emptyStateType: 'needs_more_scans',
     takeaway: (data) => data?.stability
       ? `Your feed is ${data.stability} between scans (${data.overlapPercent}% topic overlap).`
       : null,
@@ -313,6 +349,7 @@ export const dashboardCatalog = [
     description: 'Percentage of content from new creators you haven\'t seen before.',
     outputType: 'number',
     dataFn: 'getDiscoveryRateData',
+    emptyStateType: 'needs_more_scans',
     takeaway: (data) => data?.discoveryRate !== undefined
       ? `${data.discoveryRate}% of creators in your latest scan were new.`
       : null,
@@ -325,6 +362,7 @@ export const dashboardCatalog = [
     description: 'Assessment of whether your feed may be reinforcing the same ideas.',
     outputType: 'status',
     dataFn: 'getEchoRiskData',
+    emptyStateType: 'needs_more_scans',
     takeaway: (data) => data?.riskLevel
       ? `Echo chamber risk: ${data.riskLevel}.`
       : null,
@@ -337,6 +375,7 @@ export const dashboardCatalog = [
     description: 'Topics that rarely appear in your feed.',
     outputType: 'list',
     dataFn: 'getRareContentData',
+    emptyStateType: 'future_feature',
     takeaway: () => 'Some topics rarely appear in your feed.',
     action: () => 'If you want a broader feed, deliberately engage with missing topics.',
   },
@@ -347,6 +386,7 @@ export const dashboardCatalog = [
     description: 'Track when intense or negative content peaks in your feed.',
     outputType: 'line',
     dataFn: 'getIntensitySpikesData',
+    emptyStateType: 'needs_more_scans',
     takeaway: () => 'Some periods show spikes in intense content.',
     action: () => 'When spikes happen, take a short break or reset engagement signals.',
   },
@@ -357,6 +397,8 @@ export const dashboardCatalog = [
     description: 'Summary of variety, repetition, and emotional weight patterns.',
     outputType: 'text',
     dataFn: 'getPatternSummaryData',
+    emptyStateType: 'needs_more_scans',
+    isSummaryCard: true, // This is the "What This Means for You" anchor for the patterns tab
     takeaway: (data) => data?.insights?.length > 0
       ? data.insights.join(' ')
       : null,
@@ -373,6 +415,7 @@ export const dashboardCatalog = [
     description: 'The creators who appear most frequently in your feed.',
     outputType: 'table',
     dataFn: 'getTopCreatorsData',
+    emptyStateType: 'needs_more_scans',
     takeaway: () => 'These creators appear most frequently in your feed.',
     action: () => 'If one creator dominates, consider diversifying who you follow.',
   },
@@ -383,6 +426,7 @@ export const dashboardCatalog = [
     description: 'What percentage of your feed comes from the top 10 creators.',
     outputType: 'number',
     dataFn: 'getCreatorConcentrationData',
+    emptyStateType: 'needs_more_scans',
     takeaway: (data) => data?.concentration !== undefined
       ? `${data.concentration}% of your feed comes from the top ${data.top10Count} creators.`
       : null,
@@ -395,6 +439,7 @@ export const dashboardCatalog = [
     description: 'Breakdown of content from new versus repeat creators.',
     outputType: 'stacked100',
     dataFn: 'getNewVsFamiliarData',
+    emptyStateType: 'needs_more_scans',
     takeaway: () => 'Your feed mix of new and familiar creators.',
     action: () => 'To discover more, interact with unfamiliar accounts.',
   },
@@ -405,6 +450,7 @@ export const dashboardCatalog = [
     description: 'Which creators contribute the most promotional content.',
     outputType: 'table',
     dataFn: 'getPromoCreatorsData',
+    emptyStateType: 'needs_more_scans',
     takeaway: () => 'These creators contribute most promotional content.',
     action: () => 'Mute high-promo creators to reduce ads.',
   },
@@ -415,6 +461,7 @@ export const dashboardCatalog = [
     description: 'Which creators contribute the most political content.',
     outputType: 'table',
     dataFn: 'getPoliticalCreatorsData',
+    emptyStateType: 'needs_more_scans',
     takeaway: () => 'These creators drive most political exposure.',
     action: () => 'Unfollow the top drivers if you want less politics.',
   },
@@ -425,6 +472,7 @@ export const dashboardCatalog = [
     description: 'Which creators dominate which topics in your feed.',
     outputType: 'bar',
     dataFn: 'getCreatorsByTopicData',
+    emptyStateType: 'future_feature',
     takeaway: () => 'Different creators dominate different topics.',
     action: () => 'Follow creators in topics you want more of.',
   },
@@ -435,6 +483,7 @@ export const dashboardCatalog = [
     description: 'Which creators consistently post intense content.',
     outputType: 'table',
     dataFn: 'getCreatorsByToneData',
+    emptyStateType: 'future_feature',
     takeaway: () => 'Some creators consistently post intense content.',
     action: () => 'If intense content affects you, mute those accounts.',
   },
@@ -445,6 +494,7 @@ export const dashboardCatalog = [
     description: 'Creators who appear across multiple platforms you scan.',
     outputType: 'table',
     dataFn: 'getCrossplatformCreatorData',
+    emptyStateType: 'needs_broader_behavior',
     takeaway: () => 'Some creators follow you across platforms.',
     action: () => 'If one voice is everywhere, you can diversify intentionally.',
   },
@@ -455,6 +505,7 @@ export const dashboardCatalog = [
     description: 'Assessment of how diverse the voices in your feed are.',
     outputType: 'status',
     dataFn: 'getVoiceDiversityData',
+    emptyStateType: 'needs_more_scans',
     takeaway: (data) => data?.diversity
       ? `Your feed shows ${data.diversity} voice diversity.`
       : null,
@@ -467,6 +518,8 @@ export const dashboardCatalog = [
     description: 'Top creators and what they contribute (ads/politics/topics).',
     outputType: 'text',
     dataFn: 'getInfluentialCreatorsData',
+    emptyStateType: 'needs_more_scans',
+    isSummaryCard: true, // This is the "What This Means for You" anchor for the creators tab
     takeaway: () => 'These accounts have the biggest influence on what you see.',
     action: () => 'Adjust who you follow to shift what the algorithm learns.',
   },
@@ -481,6 +534,7 @@ export const dashboardCatalog = [
     description: 'Topics most strongly associated with your profile.',
     outputType: 'list',
     dataFn: 'getAlgoTopicsLikedData',
+    emptyStateType: 'needs_more_scans',
     takeaway: () => 'The algorithm strongly associates you with these topics.',
     action: () => 'If it\'s inaccurate, engage with other topics to retrain it.',
   },
@@ -491,6 +545,7 @@ export const dashboardCatalog = [
     description: 'Topics that rarely appear in your feed.',
     outputType: 'list',
     dataFn: 'getAlgoTopicsAvoidedData',
+    emptyStateType: 'future_feature',
     takeaway: () => 'These topics rarely appear, suggesting low interest.',
     action: () => 'To see them more, search and follow accounts in those areas.',
   },
@@ -501,6 +556,8 @@ export const dashboardCatalog = [
     description: 'Product categories that appear repeatedly in ads shown to you.',
     outputType: 'bar',
     dataFn: 'getAlgoProductsData',
+    emptyStateType: 'needs_more_scans',
+    confidenceDisclaimer: true,
     takeaway: () => 'Your feed suggests interest in these product categories.',
     action: () => 'If you don\'t want targeted selling, reduce engagement with product content.',
   },
@@ -511,6 +568,7 @@ export const dashboardCatalog = [
     description: 'Political themes that appear prioritized in your feed.',
     outputType: 'list',
     dataFn: 'getAlgoPoliticalThemesData',
+    emptyStateType: 'future_feature',
     takeaway: () => 'These political themes appear prioritized in your feed.',
     action: () => 'If it feels unbalanced, diversify what you watch and follow.',
   },
@@ -521,6 +579,7 @@ export const dashboardCatalog = [
     description: 'Emotional content types that appear most often.',
     outputType: 'bar',
     dataFn: 'getAlgoEmotionalTriggersData',
+    emptyStateType: 'needs_more_scans',
     takeaway: () => 'Content with these emotions appears more often.',
     action: () => 'If a trigger is unhelpful, stop lingering on that content.',
   },
@@ -531,6 +590,7 @@ export const dashboardCatalog = [
     description: 'Patterns that remain consistent across your scans.',
     outputType: 'text',
     dataFn: 'getAlgoConfidentData',
+    emptyStateType: 'needs_more_scans',
     takeaway: (data) => data?.insights?.length > 0
       ? data.insights.join(' ')
       : null,
@@ -543,6 +603,7 @@ export const dashboardCatalog = [
     description: 'Areas with high variance across your scans.',
     outputType: 'text',
     dataFn: 'getAlgoUncertainData',
+    emptyStateType: 'needs_more_scans',
     takeaway: (data) => data?.insights?.length > 0
       ? data.insights.join(' ')
       : null,
@@ -555,6 +616,7 @@ export const dashboardCatalog = [
     description: 'Assessment of your algorithmic profile breadth.',
     outputType: 'status',
     dataFn: 'getProfileBreadthData',
+    emptyStateType: 'needs_more_scans',
     takeaway: (data) => data?.breadth
       ? `Your inferred profile is ${data.breadth.toLowerCase()}.`
       : null,
@@ -567,6 +629,8 @@ export const dashboardCatalog = [
     description: 'Predictions about what content you\'ll likely see more of.',
     outputType: 'text',
     dataFn: 'getFutureRecommendationsData',
+    emptyStateType: 'needs_more_scans',
+    confidenceDisclaimer: true,
     takeaway: (data) => data?.predictions?.length > 0
       ? data.predictions.join(' ')
       : null,
@@ -579,6 +643,8 @@ export const dashboardCatalog = [
     description: 'Concrete actions you can take to shift your algorithmic profile.',
     outputType: 'list',
     dataFn: 'getAlgoChangeAdviceData',
+    emptyStateType: 'needs_more_scans',
+    isSummaryCard: true, // This is the "What This Means for You" anchor for the algorithm tab
     takeaway: () => 'Small behavior changes can shift these assumptions.',
     action: null, // Action is embedded in the tips
   },

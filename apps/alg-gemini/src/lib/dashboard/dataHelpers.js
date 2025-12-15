@@ -502,6 +502,23 @@ export function getPoliticalProfileData(scans, scanDetails) {
 // =====================================================
 
 /**
+ * Confusing topic labels that should be combined (also defined in TAB 5 section)
+ */
+const CONFUSING_TOPICS = ['unknown', 'general', 'uncategorized', 'other', 'misc', 'miscellaneous'];
+const UNCLASSIFIED_TOPIC = 'Unclassified / unclear topics';
+
+/**
+ * Normalize topic label for display
+ */
+function normalizeTopicForDisplay(label) {
+  const lower = label.toLowerCase().trim();
+  if (CONFUSING_TOPICS.includes(lower)) {
+    return UNCLASSIFIED_TOPIC;
+  }
+  return label;
+}
+
+/**
  * View 21: Topic variety
  */
 export function getTopicVarietyData(scans, scanDetails) {
@@ -516,20 +533,40 @@ export function getTopicVarietyData(scans, scanDetails) {
   }
 
   const aggregates = getAggregates(detail);
-  const topics = aggregates?.topic_distribution || [];
+  const rawTopics = aggregates?.topic_distribution || [];
 
-  if (topics.length === 0) {
+  if (rawTopics.length === 0) {
     return { hasData: false, data: null, missing: 'No topic classification data available.' };
   }
+
+  // Normalize and combine confusing topics
+  const topicMap = {};
+  rawTopics.forEach(t => {
+    const normalized = normalizeTopicForDisplay(t.category);
+    topicMap[normalized] = (topicMap[normalized] || 0) + t.percentage;
+  });
+
+  const topics = Object.entries(topicMap)
+    .map(([category, percentage]) => ({ category, percentage }))
+    .sort((a, b) => b.percentage - a.percentage);
 
   const topTopics = topics.slice(0, 5).map(t => ({
     label: t.category,
     value: Math.round(t.percentage * 100),
+    isUnclassified: t.category === UNCLASSIFIED_TOPIC,
   }));
+
+  // Check if there's unclassified content
+  const hasUnclassified = topTopics.some(t => t.isUnclassified);
 
   return {
     hasData: true,
-    data: { topicCount: topics.length, topTopics },
+    data: {
+      topicCount: topics.length,
+      topTopics,
+      hasUnclassified,
+      unclassifiedNote: hasUnclassified ? 'Some content can\'t be reliably categorized yet.' : null,
+    },
     missing: null,
   };
 }
@@ -994,6 +1031,23 @@ export function getInfluentialCreatorsData(scans, scanDetails) {
 // =====================================================
 
 /**
+ * Confusing topic labels that should be combined
+ */
+const CONFUSING_TOPIC_LABELS = ['unknown', 'general', 'uncategorized', 'other', 'misc', 'miscellaneous'];
+const UNCLASSIFIED_LABEL = 'Unclassified / unclear topics';
+
+/**
+ * Normalize topic labels by combining confusing categories
+ */
+function normalizeTopicLabel(label) {
+  const lower = label.toLowerCase().trim();
+  if (CONFUSING_TOPIC_LABELS.includes(lower)) {
+    return UNCLASSIFIED_LABEL;
+  }
+  return label;
+}
+
+/**
  * View 41: Topics the algorithm thinks you like
  */
 export function getAlgoTopicsLikedData(scans, scanDetails) {
@@ -1006,12 +1060,19 @@ export function getAlgoTopicsLikedData(scans, scanDetails) {
 
     const topics = getAggregates(detail)?.topic_distribution || [];
     topics.forEach(t => {
-      topicScores[t.category] = (topicScores[t.category] || 0) + t.percentage;
+      // Normalize confusing topic labels
+      const normalizedCategory = normalizeTopicLabel(t.category);
+      topicScores[normalizedCategory] = (topicScores[normalizedCategory] || 0) + t.percentage;
     });
   }
 
   const sorted = Object.entries(topicScores)
-    .map(([topic, score]) => ({ topic, score }))
+    .map(([topic, score]) => ({
+      topic,
+      score,
+      // Flag if this is the combined unclassified category
+      isUnclassified: topic === UNCLASSIFIED_LABEL,
+    }))
     .sort((a, b) => b.score - a.score)
     .slice(0, 10);
 
@@ -1019,7 +1080,16 @@ export function getAlgoTopicsLikedData(scans, scanDetails) {
     return { hasData: false, data: null, missing: 'No topic data available.' };
   }
 
-  return { hasData: true, data: sorted, missing: null };
+  // Check if there's unclassified content
+  const hasUnclassified = sorted.some(t => t.isUnclassified);
+
+  return {
+    hasData: true,
+    data: sorted,
+    hasUnclassified,
+    unclassifiedNote: hasUnclassified ? 'Some content can\'t be reliably categorized yet.' : null,
+    missing: null,
+  };
 }
 
 /**

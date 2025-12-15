@@ -15,7 +15,7 @@ import {
  * Supports multiple output types with takeaways and actions.
  */
 const ViewCard = ({ view, dataResult }) => {
-  const { title, description, outputType, takeaway, action } = view;
+  const { title, description, outputType, takeaway, action, emptyStateType, isSummaryCard } = view;
   const hasData = dataResult?.hasData === true;
   const data = dataResult?.data;
   const missing = dataResult?.missing;
@@ -91,6 +91,11 @@ const ViewCard = ({ view, dataResult }) => {
         {data.topTopics && data.topTopics.length > 0 && (
           <BarChartSimple data={data.topTopics} valueLabel="%" />
         )}
+        {data.unclassifiedNote && (
+          <p className="text-xs text-slate-400 italic">
+            {data.unclassifiedNote}
+          </p>
+        )}
       </div>
     );
   };
@@ -154,25 +159,44 @@ const ViewCard = ({ view, dataResult }) => {
 
     // Handle different data shapes
     let items = [];
+    let unclassifiedNote = null;
+
     if (Array.isArray(data)) {
-      items = data.map(d => d.topic || d.label || d);
+      items = data.map(d => ({
+        text: d.topic || d.label || d,
+        isUnclassified: d.isUnclassified || false,
+      }));
     } else if (data.tips) {
-      items = data.tips;
+      items = data.tips.map(t => ({ text: t, isUnclassified: false }));
     } else if (data.interests) {
-      items = data.interests;
+      items = data.interests.map(i => ({ text: i, isUnclassified: false }));
+    }
+
+    // Check for unclassifiedNote in the data result
+    if (dataResult?.data?.unclassifiedNote) {
+      unclassifiedNote = dataResult.data.unclassifiedNote;
     }
 
     if (items.length === 0) return null;
 
     return (
-      <ul className="space-y-2">
-        {items.map((item, index) => (
-          <li key={index} className="flex items-start gap-2 text-slate-700">
-            <span className="text-primary-blue mt-1">•</span>
-            <span>{typeof item === 'string' ? item : item.topic || item.label || JSON.stringify(item)}</span>
-          </li>
-        ))}
-      </ul>
+      <div className="space-y-3">
+        <ul className="space-y-2">
+          {items.map((item, index) => (
+            <li key={index} className="flex items-start gap-2 text-slate-700">
+              <span className={item.isUnclassified ? 'text-slate-400 mt-1' : 'text-primary-blue mt-1'}>•</span>
+              <span className={item.isUnclassified ? 'text-slate-500 italic' : ''}>
+                {typeof item === 'string' ? item : item.text}
+              </span>
+            </li>
+          ))}
+        </ul>
+        {unclassifiedNote && (
+          <p className="text-xs text-slate-400 italic">
+            {unclassifiedNote}
+          </p>
+        )}
+      </div>
     );
   };
 
@@ -231,9 +255,18 @@ const ViewCard = ({ view, dataResult }) => {
   };
 
   return (
-    <div className="bg-surface-card border border-border-card rounded-2xl overflow-hidden flex flex-col">
+    <div className={`bg-surface-card border rounded-2xl overflow-hidden flex flex-col ${
+      isSummaryCard ? 'border-primary-blue/30 ring-1 ring-primary-blue/10' : 'border-border-card'
+    }`}>
       {/* Card Header */}
-      <div className="px-5 py-4 border-b border-border-card">
+      <div className={`px-5 py-4 border-b ${
+        isSummaryCard ? 'border-primary-blue/20 bg-primary-blue/5' : 'border-border-card'
+      }`}>
+        {isSummaryCard && (
+          <span className="inline-block text-xs font-semibold text-primary-blue uppercase tracking-wide mb-1">
+            What This Means for You
+          </span>
+        )}
         <h3 className="text-base font-semibold text-text-main mb-1">
           {title}
         </h3>
@@ -249,24 +282,36 @@ const ViewCard = ({ view, dataResult }) => {
             {/* Main visualization */}
             {renderContent()}
 
-            {/* Takeaway */}
+            {/* Takeaway - styled differently for summary cards */}
             {takeawayText && (
               <div className="pt-4 border-t border-border-card">
+                {isSummaryCard && (
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
+                    What does this say about my feed?
+                  </p>
+                )}
                 <p className="text-sm text-slate-700 font-medium">
                   {takeawayText}
                 </p>
               </div>
             )}
 
-            {/* Action */}
+            {/* Action - styled differently for summary cards */}
             {actionText && (
-              <p className="text-sm text-slate-500 italic">
-                {actionText}
-              </p>
+              <div>
+                {isSummaryCard && (
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
+                    What can I do if I want this to change?
+                  </p>
+                )}
+                <p className={`text-sm ${isSummaryCard ? 'text-slate-600' : 'text-slate-500 italic'}`}>
+                  {actionText}
+                </p>
+              </div>
             )}
           </div>
         ) : (
-          <EmptyState missing={missing} />
+          <EmptyState emptyStateType={emptyStateType} missing={missing} />
         )}
       </div>
     </div>
