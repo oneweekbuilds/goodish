@@ -1,5 +1,6 @@
 import React from 'react';
 import EmptyState from './EmptyState';
+import { DataQualityFooter } from './ConfidenceBadge';
 import {
   BarChartSimple,
   StackedBar100,
@@ -13,8 +14,13 @@ import {
 /**
  * ViewCard component - renders a single dashboard view card.
  * Supports multiple output types with takeaways and actions.
+ *
+ * @param {Object} view - View configuration from dashboardCatalog
+ * @param {Object} dataResult - Result from data helper function
+ * @param {number} scanCount - Total number of scans used
+ * @param {number} platformCount - Number of platforms scanned
  */
-const ViewCard = ({ view, dataResult }) => {
+const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
   const { title, description, outputType, takeaway, action, emptyStateType, isSummaryCard, confidenceDisclaimer, category } = view;
   const hasData = dataResult?.hasData === true;
   const data = dataResult?.data;
@@ -315,6 +321,14 @@ const ViewCard = ({ view, dataResult }) => {
               <p className="text-xs text-slate-400 italic pt-2 border-t border-slate-100">
                 This insight is based on repeated patterns, not confirmed intent.
               </p>
+            )}
+
+            {/* Data quality footer - shows scan count and confidence */}
+            {hasData && scanCount > 0 && (
+              <DataQualityFooter
+                scanCount={scanCount}
+                platformCount={platformCount}
+              />
             )}
           </div>
         ) : (
