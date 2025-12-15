@@ -19,6 +19,9 @@ import ProcessingPage from './pages/ProcessingPage';
 import ResultsPage from './pages/ResultsPage';
 import HistoryPage from './pages/HistoryPage';
 
+// Dashboard
+import DashboardPage from './pages/dashboard/DashboardPage';
+
 function App() {
   return (
     <div className="min-h-screen bg-bg-page font-sans text-text-main selection:bg-primary-blue/20">
@@ -80,6 +83,9 @@ function App() {
           
           {/* New improved scan history page */}
           <Route path="/history" element={<HistoryPage />} />
+
+          {/* Dashboard - catalog-driven analytics views */}
+          <Route path="/dashboard" element={<DashboardPage />} />
 
           {/* ========================================
               LEGACY ROUTES (kept for backwards compatibility)
