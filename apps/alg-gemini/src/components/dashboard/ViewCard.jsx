@@ -15,7 +15,7 @@ import {
  * Supports multiple output types with takeaways and actions.
  */
 const ViewCard = ({ view, dataResult }) => {
-  const { title, description, outputType, takeaway, action, emptyStateType, isSummaryCard } = view;
+  const { title, description, outputType, takeaway, action, emptyStateType, isSummaryCard, confidenceDisclaimer, category } = view;
   const hasData = dataResult?.hasData === true;
   const data = dataResult?.data;
   const missing = dataResult?.missing;
@@ -308,6 +308,13 @@ const ViewCard = ({ view, dataResult }) => {
                   {actionText}
                 </p>
               </div>
+            )}
+
+            {/* Confidence disclaimer for influence-related cards */}
+            {confidenceDisclaimer && hasData && (
+              <p className="text-xs text-slate-400 italic pt-2 border-t border-slate-100">
+                This insight is based on repeated patterns, not confirmed intent.
+              </p>
             )}
           </div>
         ) : (

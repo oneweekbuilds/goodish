@@ -31,7 +31,11 @@ export const TABS = [
 export const dashboardCatalog = [
   // ==========================================
   // TAB 1: ADS & INFLUENCE (10 views)
+  // Grouped into: "Clearly labeled advertising" and "Possible influence or incentivized content"
+  // Note: Not all influence is labeled as advertising, and not all influence is intentional.
   // ==========================================
+
+  // --- Clearly labeled advertising ---
   {
     tab: 'ads',
     id: 'ads-percentage',
@@ -40,80 +44,11 @@ export const dashboardCatalog = [
     outputType: 'number_line',
     dataFn: 'getAdPercentageData',
     emptyStateType: 'needs_more_scans',
+    category: 'labeled_ads', // Clearly labeled advertising
     takeaway: (data) => data?.currentPercent !== undefined
       ? `About ${data.currentPercent}% of your feed is clearly marked as advertising.`
       : null,
     action: () => 'If this feels high, engage more with non-commercial creators to rebalance.',
-  },
-  {
-    tab: 'ads',
-    id: 'ads-likely-promo',
-    title: 'Likely Promotional Posts (Not Labeled)',
-    description: 'Content that shows patterns commonly associated with promotion, even when not labeled as an ad.',
-    outputType: 'number',
-    dataFn: 'getLikelyPromoData',
-    emptyStateType: 'future_feature',
-    takeaway: () => 'This content shows patterns commonly associated with promotion, even when not labeled as an ad.',
-    action: () => 'Treat recommendations as marketing when products keep showing up.',
-  },
-  {
-    tab: 'ads',
-    id: 'ads-explicit-vs-hidden',
-    title: 'Clearly Labeled Ads vs Possible Influence',
-    description: 'Compare labeled advertising versus content that may be incentivized.',
-    outputType: 'stacked100',
-    dataFn: 'getAdsVsPromoData',
-    emptyStateType: 'future_feature',
-    takeaway: () => 'This comparison shows clearly labeled ads alongside possible incentivized content.',
-    action: () => 'Unlabeled influence is easier to miss. Be extra skeptical of casual product mentions.',
-  },
-  {
-    tab: 'ads',
-    id: 'ads-products',
-    title: 'Products Mentioned Most Often',
-    description: 'The product categories or brands that appear repeatedly in your feed.',
-    outputType: 'bar',
-    dataFn: 'getProductMentionsData',
-    emptyStateType: 'needs_more_scans',
-    takeaway: (data) => data?.length > 0
-      ? 'These products show up repeatedly in your feed.'
-      : null,
-    action: () => 'If you see repeat product pushes, the algorithm may be optimizing for purchases.',
-  },
-  {
-    tab: 'ads',
-    id: 'ads-promo-creators',
-    title: 'Who is Doing the Promoting',
-    description: 'Creators who post the most promotional content in your feed.',
-    outputType: 'table',
-    dataFn: 'getPromoCreatorsData',
-    emptyStateType: 'needs_more_scans',
-    takeaway: () => 'A small set of creators drive most promotions.',
-    action: () => 'Mute or unfollow high-promo creators if you want fewer sales pitches.',
-  },
-  {
-    tab: 'ads',
-    id: 'ads-concentration',
-    title: 'Ad Concentration',
-    description: 'How concentrated promotional content is among top creators.',
-    outputType: 'number',
-    dataFn: 'getAdConcentrationData',
-    emptyStateType: 'needs_more_scans',
-    takeaway: (data) => data?.concentration !== undefined
-      ? `${data.concentration}% of promotions come from the top ${data.top5Count} creators.`
-      : null,
-    action: () => 'Concentrated promotion often comes from a few influencer-heavy accounts.',
-  },
-  {
-    tab: 'ads',
-    id: 'ads-themes',
-    title: 'Promotional Themes',
-    description: 'Common emotional narratives used in promotional content.',
-    outputType: 'bar',
-    dataFn: 'getPromoThemesData',
-    emptyStateType: 'future_feature',
-    takeaway: () => 'Promotions often rely on these emotional narratives.',
-    action: () => 'When you notice a pattern, you can reduce engagement to stop reinforcing it.',
   },
   {
     tab: 'ads',
@@ -123,6 +58,7 @@ export const dashboardCatalog = [
     outputType: 'line',
     dataFn: 'getAdTrendData',
     emptyStateType: 'needs_more_scans',
+    category: 'labeled_ads', // Clearly labeled advertising
     takeaway: (data) => data?.direction
       ? `Advertising in your feed is ${data.direction}.`
       : null,
@@ -136,8 +72,91 @@ export const dashboardCatalog = [
     outputType: 'bar',
     dataFn: 'getPlatformPromoData',
     emptyStateType: 'needs_broader_behavior',
+    category: 'labeled_ads', // Clearly labeled advertising
     takeaway: () => 'Some platforms rely more heavily on promotion.',
     action: () => 'If one platform feels salesy, reduce time there or reset engagement.',
+  },
+
+  // --- Possible influence or incentivized content ---
+  {
+    tab: 'ads',
+    id: 'ads-likely-promo',
+    title: 'Possible Promotional Content (Not Labeled)',
+    description: 'Content that shows patterns commonly associated with promotion, even when not labeled as an ad.',
+    outputType: 'number',
+    dataFn: 'getLikelyPromoData',
+    emptyStateType: 'future_feature',
+    category: 'possible_influence', // Possible influence or incentivized content
+    confidenceDisclaimer: true,
+    takeaway: () => 'This content shows patterns commonly associated with promotion, even when not labeled as an ad.',
+    action: () => 'Treat recommendations as marketing when products keep showing up.',
+  },
+  {
+    tab: 'ads',
+    id: 'ads-explicit-vs-hidden',
+    title: 'Clearly Labeled Ads vs Possible Influence',
+    description: 'Compare labeled advertising versus content that may be incentivized. Not all influence is labeled as advertising, and not all influence is intentional.',
+    outputType: 'stacked100',
+    dataFn: 'getAdsVsPromoData',
+    emptyStateType: 'future_feature',
+    category: 'possible_influence', // Possible influence or incentivized content
+    confidenceDisclaimer: true,
+    takeaway: () => 'This comparison shows clearly labeled ads alongside possible incentivized content.',
+    action: () => 'Unlabeled influence is easier to miss. Be extra skeptical of casual product mentions.',
+  },
+  {
+    tab: 'ads',
+    id: 'ads-products',
+    title: 'Products Mentioned Most Often',
+    description: 'The product categories or brands that appear repeatedly in your feed.',
+    outputType: 'bar',
+    dataFn: 'getProductMentionsData',
+    emptyStateType: 'needs_more_scans',
+    category: 'possible_influence', // Possible influence or incentivized content
+    confidenceDisclaimer: true,
+    takeaway: (data) => data?.length > 0
+      ? 'These products show up repeatedly in your feed.'
+      : null,
+    action: () => 'If you see repeat product pushes, the algorithm may be optimizing for purchases.',
+  },
+  {
+    tab: 'ads',
+    id: 'ads-promo-creators',
+    title: 'Who is Doing the Promoting',
+    description: 'Creators who post the most promotional content in your feed.',
+    outputType: 'table',
+    dataFn: 'getPromoCreatorsData',
+    emptyStateType: 'needs_more_scans',
+    category: 'possible_influence', // Possible influence or incentivized content
+    takeaway: () => 'A small set of creators drive most promotions.',
+    action: () => 'Mute or unfollow high-promo creators if you want fewer sales pitches.',
+  },
+  {
+    tab: 'ads',
+    id: 'ads-concentration',
+    title: 'Ad Concentration',
+    description: 'How concentrated promotional content is among top creators.',
+    outputType: 'number',
+    dataFn: 'getAdConcentrationData',
+    emptyStateType: 'needs_more_scans',
+    category: 'possible_influence', // Possible influence or incentivized content
+    takeaway: (data) => data?.concentration !== undefined
+      ? `${data.concentration}% of promotions come from the top ${data.top5Count} creators.`
+      : null,
+    action: () => 'Concentrated promotion often comes from a few influencer-heavy accounts.',
+  },
+  {
+    tab: 'ads',
+    id: 'ads-themes',
+    title: 'Promotional Themes',
+    description: 'Common emotional narratives used in promotional content.',
+    outputType: 'bar',
+    dataFn: 'getPromoThemesData',
+    emptyStateType: 'future_feature',
+    category: 'possible_influence', // Possible influence or incentivized content
+    confidenceDisclaimer: true,
+    takeaway: () => 'Promotions often rely on these emotional narratives.',
+    action: () => 'When you notice a pattern, you can reduce engagement to stop reinforcing it.',
   },
   {
     tab: 'ads',
@@ -147,6 +166,7 @@ export const dashboardCatalog = [
     outputType: 'text',
     dataFn: 'getAdvertiserInsightsData',
     emptyStateType: 'needs_more_scans',
+    category: 'possible_influence', // Possible influence or incentivized content
     confidenceDisclaimer: true,
     isSummaryCard: true, // This is the "What This Means for You" anchor for the ads tab
     takeaway: (data) => data?.interests?.length > 0
