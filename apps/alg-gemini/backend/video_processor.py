@@ -157,7 +157,7 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
             if detected_topic == "politics":
                 item.political.is_political = True
                 political_items_count += 1
-                item.political.stance_or_alignment_guess = "neutral" # Mock
+                # Note: stance_or_alignment_guess left as None - we don't have enough signal to infer this
 
             feed_items.append(item)
 
@@ -229,7 +229,7 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
                 political_percentage=political_items_count/total_samples
             ),
             repetition_summary=RepetitionSummary(
-                items_in_repetition_clusters=int(0.3 * frames_analyzed), # Mock based on previous score 0.3
+                items_in_repetition_clusters=0,  # Real repetition detection not implemented yet
                 largest_cluster_size=0
             ),
             engagement_pattern_summary=EngagementPatternSummary(

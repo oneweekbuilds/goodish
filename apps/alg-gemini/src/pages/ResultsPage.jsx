@@ -608,7 +608,10 @@ const ResultsPage = () => {
                 ))}
               </div>
             ) : (
-              <p className="text-slate-400 italic">No specific topics detected</p>
+              <div className="py-4 text-center">
+                <p className="text-slate-400 italic">Not enough captured text to infer topics yet</p>
+                <p className="text-xs text-slate-300 mt-2">Topics are derived from post captions and hashtags</p>
+              </div>
             )}
           </div>
 
@@ -620,44 +623,51 @@ const ResultsPage = () => {
               </div>
               Content Tone
             </h2>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-green-600 font-medium">Positive</span>
-                  <span className="text-slate-500">{Math.round(displayData.toneBreakdown.positive * 100)}%</span>
+            {displayData.toneBreakdown.hasData ? (
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-green-600 font-medium">Positive</span>
+                    <span className="text-slate-500">{Math.round(displayData.toneBreakdown.positive * 100)}%</span>
+                  </div>
+                  <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-green-500 rounded-full"
+                      style={{ width: `${displayData.toneBreakdown.positive * 100}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-green-500 rounded-full"
-                    style={{ width: `${displayData.toneBreakdown.positive * 100}%` }}
-                  />
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-slate-600 font-medium">Neutral</span>
+                    <span className="text-slate-500">{Math.round(displayData.toneBreakdown.neutral * 100)}%</span>
+                  </div>
+                  <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-slate-400 rounded-full"
+                      style={{ width: `${displayData.toneBreakdown.neutral * 100}%` }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-red-600 font-medium">Negative</span>
+                    <span className="text-slate-500">{Math.round(displayData.toneBreakdown.negative * 100)}%</span>
+                  </div>
+                  <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-red-500 rounded-full"
+                      style={{ width: `${displayData.toneBreakdown.negative * 100}%` }}
+                    />
+                  </div>
                 </div>
               </div>
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-slate-600 font-medium">Neutral</span>
-                  <span className="text-slate-500">{Math.round(displayData.toneBreakdown.neutral * 100)}%</span>
-                </div>
-                <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-slate-400 rounded-full"
-                    style={{ width: `${displayData.toneBreakdown.neutral * 100}%` }}
-                  />
-                </div>
+            ) : (
+              <div className="py-6 text-center">
+                <p className="text-slate-400 italic">Not enough captured text to analyze tone yet</p>
+                <p className="text-xs text-slate-300 mt-2">Tone analysis requires text content from posts</p>
               </div>
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-red-600 font-medium">Negative</span>
-                  <span className="text-slate-500">{Math.round(displayData.toneBreakdown.negative * 100)}%</span>
-                </div>
-                <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-red-500 rounded-full"
-                    style={{ width: `${displayData.toneBreakdown.negative * 100}%` }}
-                  />
-                </div>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Political Content */}
@@ -691,32 +701,39 @@ const ResultsPage = () => {
               </div>
               Wellbeing Signals
             </h2>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between py-2 border-b border-slate-100">
-                <span className="text-slate-600">Body image focus</span>
-                <span className={`font-semibold ${
-                  displayData.wellbeing.bodyImage > 0.2 ? 'text-amber-600' : 'text-slate-700'
-                }`}>
-                  {Math.round(displayData.wellbeing.bodyImage * 100)}%
-                </span>
+            {displayData.wellbeing.hasData ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between py-2 border-b border-slate-100">
+                  <span className="text-slate-600">Body image focus</span>
+                  <span className={`font-semibold ${
+                    displayData.wellbeing.bodyImage > 0.2 ? 'text-amber-600' : 'text-slate-700'
+                  }`}>
+                    {Math.round(displayData.wellbeing.bodyImage * 100)}%
+                  </span>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-slate-100">
+                  <span className="text-slate-600">Diet/weight content</span>
+                  <span className={`font-semibold ${
+                    displayData.wellbeing.dietWeight > 0.2 ? 'text-amber-600' : 'text-slate-700'
+                  }`}>
+                    {Math.round(displayData.wellbeing.dietWeight * 100)}%
+                  </span>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-slate-600">Conflict/controversy</span>
+                  <span className={`font-semibold ${
+                    displayData.wellbeing.conflict > 0.2 ? 'text-amber-600' : 'text-slate-700'
+                  }`}>
+                    {Math.round(displayData.wellbeing.conflict * 100)}%
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-slate-100">
-                <span className="text-slate-600">Diet/weight content</span>
-                <span className={`font-semibold ${
-                  displayData.wellbeing.dietWeight > 0.2 ? 'text-amber-600' : 'text-slate-700'
-                }`}>
-                  {Math.round(displayData.wellbeing.dietWeight * 100)}%
-                </span>
+            ) : (
+              <div className="py-6 text-center">
+                <p className="text-slate-400 italic">No posts captured to analyze wellbeing signals</p>
+                <p className="text-xs text-slate-300 mt-2">Wellbeing themes are detected from post content</p>
               </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-slate-600">Conflict/controversy</span>
-                <span className={`font-semibold ${
-                  displayData.wellbeing.conflict > 0.2 ? 'text-amber-600' : 'text-slate-700'
-                }`}>
-                  {Math.round(displayData.wellbeing.conflict * 100)}%
-                </span>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -874,24 +891,24 @@ function getDisplayData(data) {
     }));
     const categoriesCount = topTopics.length;
 
-    // Tone breakdown
+    // Tone breakdown - show actual data only, no synthetic defaults
     const valence = aggregates.wellbeing_summary?.valence_distribution || {};
     const totalValence = (valence.POSITIVE || 0) + (valence.NEUTRAL || 0) + (valence.NEGATIVE || 0);
     const toneBreakdown = {
-      positive: totalValence > 0 ? (valence.POSITIVE || 0) / totalValence : 0.33,
-      neutral: totalValence > 0 ? (valence.NEUTRAL || 0) / totalValence : 0.34,
-      negative: totalValence > 0 ? (valence.NEGATIVE || 0) / totalValence : 0.33,
+      positive: totalValence > 0 ? (valence.POSITIVE || 0) / totalValence : 0,
+      neutral: totalValence > 0 ? (valence.NEUTRAL || 0) / totalValence : 0,
+      negative: totalValence > 0 ? (valence.NEGATIVE || 0) / totalValence : 0,
+      hasData: totalValence > 0, // Flag to indicate if we have real data
     };
 
     // Political
     const politicalPercentage = aggregates.political_content_summary?.political_percentage || 0;
 
-    // Wellbeing
+    // Wellbeing - calculated from actual feed items only
     const feedItems = scanData.feed_items || [];
     let bodyImageCount = 0;
     let dietCount = 0;
     let conflictCount = 0;
-    const itemCount = feedItems.length || 1;
 
     feedItems.forEach(item => {
       const themes = item.wellbeing?.themes || [];
@@ -901,9 +918,10 @@ function getDisplayData(data) {
     });
 
     const wellbeing = {
-      bodyImage: bodyImageCount / itemCount,
-      dietWeight: dietCount / itemCount,
-      conflict: conflictCount / itemCount,
+      bodyImage: feedItems.length > 0 ? bodyImageCount / feedItems.length : 0,
+      dietWeight: feedItems.length > 0 ? dietCount / feedItems.length : 0,
+      conflict: feedItems.length > 0 ? conflictCount / feedItems.length : 0,
+      hasData: feedItems.length > 0, // Flag to indicate if we have real data
     };
 
     // Feed items for post-by-post breakdown
