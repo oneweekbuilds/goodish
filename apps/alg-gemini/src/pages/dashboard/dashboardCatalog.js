@@ -93,14 +93,13 @@ export const dashboardCatalog = [
     id: 'ads-concentration',
     title: 'Where Promotions Come From',
     description: 'Are promotions coming from many sources or just a few?',
-    outputType: 'number',
+    outputType: 'text',
     dataFn: 'getAdConcentrationData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     whyExplanation: 'Measures how many accounts produce the promotional content you see.',
-    takeaway: (data) => data?.concentration !== undefined
-      ? `${data.concentration}% of promotions come from just ${data.top5Count} sources.`
-      : null,
+    // PHASE 9: Qualitative labels only
+    takeaway: (data) => data?.qualitativeLabel || null,
     action: () => 'You could mute accounts that post frequent promotions.',
   },
   {
@@ -308,8 +307,8 @@ export const dashboardCatalog = [
     tab: 'politics',
     id: 'politics-leaning',
     title: 'Perspective Distribution',
-    description: 'Rough breakdown by left/center/right. Low confidence.',
-    outputType: 'stacked100',
+    description: 'Rough estimate of political lean. Low confidence.',
+    outputType: 'text',
     dataFn: 'getPoliticalLeaningData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
@@ -317,7 +316,8 @@ export const dashboardCatalog = [
     confidenceDisclaimer: true,
     collapsedByDefault: true,
     whyExplanation: 'Simple keyword matching. Cannot detect nuance or context.',
-    takeaway: (data) => data?.takeaway || 'Rough estimate only.',
+    // PHASE 9: Qualitative labels only
+    takeaway: (data) => data?.qualitativeLabel || null,
     action: () => 'If one perspective dominates, your exposure may be narrowing.',
   },
   {
@@ -437,13 +437,8 @@ export const dashboardCatalog = [
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     whyExplanation: 'Measured by how concentrated your content is in a small number of topics.',
-    takeaway: (data) => data?.riskLevel
-      ? data.riskLevel === 'low'
-        ? 'You\'re seeing a good variety of topics.'
-        : data.riskLevel === 'moderate'
-        ? 'You\'re seeing some topics repeatedly.'
-        : 'You\'re seeing the same topics a lot.'
-      : null,
+    // PHASE 9: Qualitative concentration labels
+    takeaway: (data) => data?.riskLevel || null,
     action: () => 'You could follow creators outside your usual themes.',
   },
 
@@ -607,15 +602,14 @@ export const dashboardCatalog = [
     id: 'creators-concentration',
     title: 'Creator Concentration',
     description: 'How much of your feed comes from just a few accounts.',
-    outputType: 'number',
+    outputType: 'text',
     dataFn: 'getCreatorConcentrationData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     whyExplanation: 'Measures what percentage comes from your top creators.',
-    takeaway: (data) => data?.concentration !== undefined
-      ? `${data.concentration}% of your feed is from ${data.top10Count} creators.`
-      : null,
-    action: () => 'You could follow more accounts to reduce concentration.',
+    // PHASE 9: Qualitative labels only
+    takeaway: (data) => data?.qualitativeLabel || null,
+    action: () => 'You could follow more accounts for more variety.',
   },
 
   {

@@ -278,6 +278,7 @@ export function getPromoCreatorsData(scans, scanDetails) {
 
 /**
  * View 6: Ad concentration (% from top 5 creators)
+ * PHASE 9 (Trust): Qualitative labels only
  */
 export function getAdConcentrationData(scans, scanDetails) {
   const result = getPromoCreatorsData(scans, scanDetails);
@@ -290,9 +291,17 @@ export function getAdConcentrationData(scans, scanDetails) {
   const top5Promo = rows.slice(0, 5).reduce((sum, r) => sum + r.promoPosts, 0);
   const concentration = totalPromo > 0 ? Math.round((top5Promo / totalPromo) * 100) : 0;
 
+  // PHASE 9: Qualitative labels only - no percentages
+  let qualitativeLabel;
+  if (concentration >= 60) {
+    qualitativeLabel = 'A small number of accounts make up most of your promotions';
+  } else {
+    qualitativeLabel = 'Your promotions come from a mix of sources';
+  }
+
   return createResponse(
     true,
-    { concentration, totalPromo, top5Count: Math.min(rows.length, 5) },
+    { qualitativeLabel, top5Count: Math.min(rows.length, 5) },
     null,
     result.scansUsed,
     result.scansWithData
@@ -399,6 +408,7 @@ export function getPlatformPromoData(scans, scanDetails) {
 
 /**
  * View 10: What advertisers seem to want from you
+ * PHASE 9 (Trust): Threshold of 50 signals AND 3 categories
  */
 export function getAdvertiserInsightsData(scans, scanDetails) {
   const products = getProductMentionsData(scans, scanDetails);
@@ -409,6 +419,20 @@ export function getAdvertiserInsightsData(scans, scanDetails) {
       'Need product/category data from ad analysis to generate insights.',
       0,
       []
+    );
+  }
+
+  // PHASE 9: Require ≥50 brand/product signals AND ≥3 categories
+  const totalSignals = products.data.reduce((sum, p) => sum + p.value, 0);
+  const categoryCount = products.data.length;
+
+  if (totalSignals < 50 || categoryCount < 3) {
+    return createResponse(
+      false,
+      null,
+      'Not enough data to identify a pattern yet.',
+      products.scansUsed,
+      products.scansWithData
     );
   }
 
@@ -480,32 +504,34 @@ export function getPoliticalLeaningData(scans, scanDetails, options = {}) {
 
   const leaning = aggregatePoliticalLeaning(scans, scanDetails);
 
-  if (!leaning.hasData) {
+  // PHASE 9 (Trust): Raised threshold to 30 political content signals
+  if (leaning.totalPolitical < 30) {
     return createResponse(
       false,
       null,
-      `Need at least 5 political posts to estimate leaning (found ${leaning.totalPolitical}).`,
+      'Not enough data to determine political lean.',
       leaning.scansUsed,
       []
     );
   }
 
-  // Create stacked bar segments
-  const segments = [
-    { label: 'Left', value: leaning.percentages.left, color: '#3B82F6' },
-    { label: 'Neutral', value: leaning.percentages.neutral, color: '#94A3B8' },
-    { label: 'Right', value: leaning.percentages.right, color: '#EF4444' },
-    { label: 'Unknown', value: leaning.percentages.unknown, color: '#E5E7EB' },
-  ];
+  // PHASE 9: Qualitative labels only - no percentages or charts
+  const left = leaning.percentages.left;
+  const right = leaning.percentages.right;
+
+  let qualitativeLabel = 'Mixed';
+  if (left > right + 20) {
+    qualitativeLabel = 'Leans left';
+  } else if (right > left + 20) {
+    qualitativeLabel = 'Leans right';
+  }
 
   return createResponse(
     true,
     {
-      segments,
-      totalPolitical: leaning.totalPolitical,
+      qualitativeLabel,
       disclaimer: leaning.disclaimer,
       confidence: leaning.confidence,
-      takeaway: 'Most of the political content in your feed is categorized as Neutral or Unknown. These are rough estimates, not facts.',
     },
     null,
     leaning.scansUsed,
@@ -516,6 +542,7 @@ export function getPoliticalLeaningData(scans, scanDetails, options = {}) {
 /**
  * View 13: Balance vs imbalance
  * PHASE 6A: Uses heuristic political leaning data (opt-in)
+ * PHASE 9 (Trust): Qualitative only, raised threshold to 30
  */
 export function getPoliticalBalanceData(scans, scanDetails, options = {}) {
   const { enabled = false } = options;
@@ -533,33 +560,33 @@ export function getPoliticalBalanceData(scans, scanDetails, options = {}) {
 
   const leaning = aggregatePoliticalLeaning(scans, scanDetails);
 
-  if (!leaning.hasData) {
+  // PHASE 9: Raised threshold to 30 political content signals
+  if (leaning.totalPolitical < 30) {
     return createResponse(
       false,
       null,
-      'Need more political content to assess balance.',
+      'Not enough data to determine political lean.',
       leaning.scansUsed,
       []
     );
   }
 
-  // Calculate balance based on left vs right ratio
+  // PHASE 9: Qualitative labels only - no percentages
   const left = leaning.percentages.left;
   const right = leaning.percentages.right;
-  const difference = Math.abs(left - right);
 
-  let status = 'balanced';
-  let variant = 'positive';
-  let message = 'Your political content appears relatively balanced.';
+  let status = 'Mixed';
+  let variant = 'neutral';
+  let message = 'Your political content appears mixed.';
 
-  if (difference > 40) {
-    status = 'heavily skewed';
-    variant = 'warning';
-    message = `Political content appears heavily skewed (${left > right ? 'left-leaning' : 'right-leaning'}).`;
-  } else if (difference > 20) {
-    status = 'somewhat skewed';
+  if (left > right + 30) {
+    status = 'Leans left';
     variant = 'neutral';
-    message = `Political content appears somewhat skewed (${left > right ? 'left-leaning' : 'right-leaning'}).`;
+    message = 'Leans left';
+  } else if (right > left + 30) {
+    status = 'Leans right';
+    variant = 'neutral';
+    message = 'Leans right';
   }
 
   return createResponse(
@@ -568,8 +595,6 @@ export function getPoliticalBalanceData(scans, scanDetails, options = {}) {
       status,
       variant,
       message,
-      leftPercent: left,
-      rightPercent: right,
       disclaimer: leaning.disclaimer,
       confidence: leaning.confidence,
     },
@@ -778,7 +803,7 @@ export function getPoliticalProfileData(scans, scanDetails) {
 /**
  * View 21: Topic variety
  * PHASE 5 CRITICAL FIX: Now aggregates topics across ALL scans
- * Previously used only the latest scan (scans[0])
+ * PHASE 9 (Trust): Threshold of 25 posts with topics
  */
 export function getTopicVarietyData(scans, scanDetails) {
   const topicsData = aggregateTopics(scans, scanDetails);
@@ -790,6 +815,18 @@ export function getTopicVarietyData(scans, scanDetails) {
       'No topic classification data available.',
       0,
       []
+    );
+  }
+
+  // PHASE 9: Require ≥25 posts with topics (use uniqueTopicCount as proxy)
+  // If we have fewer than 3 unique topics, we likely don't have enough data
+  if (topicsData.uniqueTopicCount < 3) {
+    return createResponse(
+      false,
+      null,
+      'Not enough topics detected yet.',
+      topicsData.scansUsed,
+      topicsData.scansWithData
     );
   }
 
@@ -841,7 +878,7 @@ export function getRepeatedThemesData(scans, scanDetails) {
 /**
  * View 23: Emotional weight (tone breakdown)
  * PHASE 5 CRITICAL FIX: Now aggregates emotions across ALL scans
- * Previously used only the latest scan (scans[0])
+ * PHASE 9 (Trust): Threshold of 50 posts, qualitative labels
  */
 export function getEmotionalWeightData(scans, scanDetails) {
   const emotionsData = aggregateEmotions(scans, scanDetails);
@@ -853,6 +890,17 @@ export function getEmotionalWeightData(scans, scanDetails) {
       'No tone/sentiment data available.',
       0,
       []
+    );
+  }
+
+  // PHASE 9: Require ≥50 posts with text
+  if (emotionsData.totalPostsAnalyzed < 50) {
+    return createResponse(
+      false,
+      null,
+      'Not enough content to analyze tone patterns.',
+      emotionsData.scansUsed,
+      emotionsData.scansWithData
     );
   }
 
@@ -952,6 +1000,7 @@ export function getDiscoveryRateData(scans, scanDetails) {
 /**
  * View 27: Reinforcement warning (echo risk)
  * PHASE 5: Uses calculateEchoRisk from aggregator
+ * PHASE 9 (Trust): Qualitative concentration labels
  */
 export function getEchoRiskData(scans, scanDetails) {
   const topicsData = aggregateTopics(scans, scanDetails);
@@ -968,12 +1017,21 @@ export function getEchoRiskData(scans, scanDetails) {
     );
   }
 
+  // PHASE 9: Qualitative concentration labels - no numeric risk levels
+  let concentrationLabel;
+  if (echoRisk.riskLevel === 'high') {
+    concentrationLabel = 'High concentration';
+  } else if (echoRisk.riskLevel === 'moderate') {
+    concentrationLabel = 'Moderate concentration';
+  } else {
+    concentrationLabel = 'Low concentration';
+  }
+
   return createResponse(
     true,
     {
-      riskLevel: echoRisk.riskLevel,
+      riskLevel: concentrationLabel,
       factors: echoRisk.factors,
-      top3Concentration: echoRisk.top3Concentration,
       topicCount: echoRisk.topicCount,
     },
     null,
@@ -1150,6 +1208,7 @@ export function getTopCreatorsData(scans, scanDetails) {
 
 /**
  * View 32: Creator concentration
+ * PHASE 9 (Trust): Qualitative only, threshold of 100 posts
  */
 export function getCreatorConcentrationData(scans, scanDetails) {
   const creatorsData = aggregateCreators(scans, scanDetails);
@@ -1164,17 +1223,37 @@ export function getCreatorConcentrationData(scans, scanDetails) {
     );
   }
 
+  const totalPosts = creatorsData.totalPostsWithCreatorData;
+
+  // PHASE 9: Require ≥100 posts analyzed
+  if (totalPosts < 100) {
+    return createResponse(
+      false,
+      null,
+      'We need more data to assess source diversity.',
+      creatorsData.scansUsed,
+      creatorsData.scansWithData
+    );
+  }
+
   // Calculate top 10 concentration
   const sortedCreators = Object.values(creatorsData.creators)
     .sort((a, b) => b.totalPosts - a.totalPosts);
 
   const top10Posts = sortedCreators.slice(0, 10).reduce((sum, c) => sum + c.totalPosts, 0);
-  const totalPosts = creatorsData.totalPostsWithCreatorData;
   const concentration = totalPosts > 0 ? Math.round((top10Posts / totalPosts) * 100) : 0;
+
+  // PHASE 9: Qualitative labels only - no percentages
+  let qualitativeLabel;
+  if (concentration >= 60) {
+    qualitativeLabel = 'A small number of accounts make up most of your feed';
+  } else {
+    qualitativeLabel = 'Your feed comes from a mix of sources';
+  }
 
   return createResponse(
     true,
-    { concentration, top10Count: Math.min(sortedCreators.length, 10) },
+    { qualitativeLabel, top10Count: Math.min(sortedCreators.length, 10) },
     null,
     creatorsData.scansUsed,
     creatorsData.scansWithData
