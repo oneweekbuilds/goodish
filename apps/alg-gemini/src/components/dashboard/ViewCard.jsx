@@ -14,6 +14,7 @@ import {
 /**
  * ViewCard component - renders a single dashboard view card.
  * Supports multiple output types with takeaways and actions.
+ * Phase 4: Added visual hierarchy for primary vs secondary cards.
  *
  * @param {Object} view - View configuration from dashboardCatalog
  * @param {Object} dataResult - Result from data helper function
@@ -21,10 +22,13 @@ import {
  * @param {number} platformCount - Number of platforms scanned
  */
 const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
-  const { title, description, outputType, takeaway, action, emptyStateType, isSummaryCard, confidenceDisclaimer, category } = view;
+  const { title, description, outputType, takeaway, action, emptyStateType, isSummaryCard, confidenceDisclaimer, isPrimary, sortOrder } = view;
   const hasData = dataResult?.hasData === true;
   const data = dataResult?.data;
   const missing = dataResult?.missing;
+
+  // Determine if this is a future/coming soon card
+  const isFutureCard = sortOrder === 'future' || emptyStateType === 'future_feature';
 
   // Compute takeaway text
   const takeawayText = hasData && typeof takeaway === 'function'
@@ -260,23 +264,68 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
     return 'neutral';
   };
 
+  // Card container styles based on hierarchy
+  const getCardClasses = () => {
+    const baseClasses = 'bg-surface-card border rounded-2xl overflow-hidden flex flex-col transition-all';
+
+    if (isSummaryCard) {
+      return `${baseClasses} border-primary-blue/30 ring-1 ring-primary-blue/10`;
+    }
+
+    if (isPrimary && hasData) {
+      // Primary cards with data: stronger visual presence
+      return `${baseClasses} border-slate-300 ring-1 ring-slate-200/50 shadow-sm`;
+    }
+
+    if (isPrimary && !hasData) {
+      // Primary cards without data: subtle emphasis
+      return `${baseClasses} border-slate-200 bg-slate-50/30`;
+    }
+
+    if (isFutureCard) {
+      // Future feature cards: visually muted
+      return `${baseClasses} border-slate-100 bg-slate-50/50 opacity-75`;
+    }
+
+    // Secondary/supporting cards: lighter borders
+    return `${baseClasses} border-slate-100`;
+  };
+
+  // Header styles based on hierarchy
+  const getHeaderClasses = () => {
+    if (isSummaryCard) {
+      return 'px-5 py-4 border-b border-primary-blue/20 bg-primary-blue/5';
+    }
+
+    if (isPrimary && hasData) {
+      return 'px-5 py-4 border-b border-slate-200 bg-slate-50/50';
+    }
+
+    if (isFutureCard) {
+      return 'px-5 py-3 border-b border-slate-100';
+    }
+
+    return 'px-5 py-4 border-b border-border-card';
+  };
+
   return (
-    <div className={`bg-surface-card border rounded-2xl overflow-hidden flex flex-col ${
-      isSummaryCard ? 'border-primary-blue/30 ring-1 ring-primary-blue/10' : 'border-border-card'
-    }`}>
+    <div className={getCardClasses()}>
       {/* Card Header */}
-      <div className={`px-5 py-4 border-b ${
-        isSummaryCard ? 'border-primary-blue/20 bg-primary-blue/5' : 'border-border-card'
-      }`}>
+      <div className={getHeaderClasses()}>
         {isSummaryCard && (
           <span className="inline-block text-xs font-semibold text-primary-blue uppercase tracking-wide mb-1">
             What This Means for You
           </span>
         )}
-        <h3 className="text-base font-semibold text-text-main mb-1">
+        {isPrimary && !isSummaryCard && hasData && (
+          <span className="inline-block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+            Key Insight
+          </span>
+        )}
+        <h3 className={`font-semibold text-text-main mb-1 ${isFutureCard ? 'text-sm text-slate-500' : 'text-base'}`}>
           {title}
         </h3>
-        <p className="text-sm text-text-muted line-clamp-2">
+        <p className={`text-sm line-clamp-2 ${isFutureCard ? 'text-slate-400' : 'text-text-muted'}`}>
           {description}
         </p>
       </div>

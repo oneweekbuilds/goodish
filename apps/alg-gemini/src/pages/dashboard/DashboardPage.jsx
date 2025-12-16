@@ -1,14 +1,228 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, RefreshCw, BarChart3 } from 'lucide-react';
-import { TABS, getViewsForTab } from './dashboardCatalog';
+import { Loader2, RefreshCw, BarChart3, Clock, Globe } from 'lucide-react';
+import { TABS, getViewsForTab, EMPTY_STATE_TYPES } from './dashboardCatalog';
 import ViewCard from '../../components/dashboard/ViewCard';
 import { useDashboardData } from '../../lib/dashboard/useDashboardData';
 import * as dataHelpers from '../../lib/dashboard/dataHelpers';
 
 /**
+ * CollapsedEmptyStateCard - Shows a composite placeholder when 3+ cards share the same empty state
+ */
+const CollapsedEmptyStateCard = ({ emptyStateType, count, tabName }) => {
+  const configs = {
+    [EMPTY_STATE_TYPES.NEEDS_MORE_SCANS]: {
+      icon: <BarChart3 size={24} className="text-slate-400" />,
+      title: `${count} More Insights Available`,
+      message: `More insights about ${tabName.toLowerCase()} will appear as you scan more content.`,
+      cta: { label: 'Run Another Scan', to: '/start' },
+    },
+    [EMPTY_STATE_TYPES.NEEDS_BROADER_BEHAVIOR]: {
+      icon: <Globe size={24} className="text-slate-400" />,
+      title: `${count} Cross-Platform Insights`,
+      message: `These insights appear when you scan across more platforms.`,
+      cta: { label: 'Scan Another Platform', to: '/start' },
+    },
+    [EMPTY_STATE_TYPES.FUTURE_FEATURE]: {
+      icon: <Clock size={24} className="text-slate-400" />,
+      title: `${count} Features Coming Soon`,
+      message: `These insights require features that are still in development.`,
+      cta: null,
+    },
+  };
+
+  const config = configs[emptyStateType] || configs[EMPTY_STATE_TYPES.NEEDS_MORE_SCANS];
+
+  return (
+    <div className="bg-slate-50/50 border border-slate-100 rounded-2xl p-6 col-span-full">
+      <div className="flex items-start gap-4">
+        <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0">
+          {config.icon}
+        </div>
+        <div className="flex-1">
+          <h3 className="text-base font-semibold text-slate-600 mb-1">
+            {config.title}
+          </h3>
+          <p className="text-sm text-slate-500 mb-3">
+            {config.message}
+          </p>
+          {config.cta && (
+            <Link
+              to={config.cta.to}
+              className="inline-flex items-center gap-1 text-sm font-medium text-primary-blue hover:underline"
+            >
+              {config.cta.label}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * SectionHeader - Subtle divider between view groups
+ */
+const SectionHeader = ({ title, subtitle }) => (
+  <div className="col-span-full pt-6 pb-2 first:pt-0">
+    <div className="flex items-center gap-3">
+      <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wider">
+        {title}
+      </h3>
+      <div className="flex-1 h-px bg-slate-200" />
+    </div>
+    {subtitle && (
+      <p className="text-xs text-slate-400 mt-1">{subtitle}</p>
+    )}
+  </div>
+);
+
+/**
+ * ViewsGridWithCollapsing - Renders views grid with collapsed empty states and narrative sections
+ * When 3+ cards share the same empty state reason, they're collapsed into one placeholder
+ */
+const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCount, tabName }) => {
+  // Group views by sortOrder AND data availability
+  const groupedViews = {
+    primary: { withData: [], empty: [] },
+    supporting: { withData: [], empty: [] },
+    future: { withData: [], empty: [] },
+    summary: { withData: [], empty: [] },
+  };
+
+  const emptyByType = {
+    [EMPTY_STATE_TYPES.NEEDS_MORE_SCANS]: [],
+    [EMPTY_STATE_TYPES.NEEDS_BROADER_BEHAVIOR]: [],
+    [EMPTY_STATE_TYPES.FUTURE_FEATURE]: [],
+  };
+
+  views.forEach((view) => {
+    const result = viewDataResults[view.id] || { hasData: false };
+    const group = view.sortOrder || 'supporting';
+
+    if (result.hasData) {
+      if (groupedViews[group]) {
+        groupedViews[group].withData.push(view);
+      } else {
+        groupedViews.supporting.withData.push(view);
+      }
+    } else {
+      if (groupedViews[group]) {
+        groupedViews[group].empty.push(view);
+      } else {
+        groupedViews.supporting.empty.push(view);
+      }
+      // Also track by empty state type for collapsing
+      const type = view.emptyStateType || EMPTY_STATE_TYPES.NEEDS_MORE_SCANS;
+      if (emptyByType[type]) {
+        emptyByType[type].push(view);
+      }
+    }
+  });
+
+  // Determine which empty states to collapse (3+ cards of same type)
+  const collapsedEmptyTypes = new Set();
+  Object.entries(emptyByType).forEach(([type, emptyViews]) => {
+    if (emptyViews.length >= 3) {
+      collapsedEmptyTypes.add(type);
+    }
+  });
+
+  // Helper to check if view should be hidden (collapsed)
+  const isCollapsed = (view) => {
+    const result = viewDataResults[view.id] || { hasData: false };
+    if (result.hasData) return false;
+    const type = view.emptyStateType || EMPTY_STATE_TYPES.NEEDS_MORE_SCANS;
+    return collapsedEmptyTypes.has(type);
+  };
+
+  // Render a view card
+  const renderViewCard = (view) => (
+    <ViewCard
+      key={view.id}
+      view={view}
+      dataResult={viewDataResults[view.id] || { hasData: false, data: null, missing: 'Loading...' }}
+      scanCount={scanCount}
+      platformCount={platformCount}
+    />
+  );
+
+  // Count total views with data and total empty
+  const primaryWithData = groupedViews.primary.withData;
+  const supportingWithData = groupedViews.supporting.withData;
+  const futureWithData = groupedViews.future.withData;
+  const summaryWithData = groupedViews.summary.withData;
+
+  // Individual empty views (not collapsed)
+  const individualEmptyPrimary = groupedViews.primary.empty.filter(v => !isCollapsed(v));
+  const individualEmptySupporting = groupedViews.supporting.empty.filter(v => !isCollapsed(v));
+
+  // Collapsed placeholder cards to show at the end
+  const collapsedPlaceholders = [];
+  collapsedEmptyTypes.forEach((type) => {
+    const count = emptyByType[type].length;
+    collapsedPlaceholders.push({ type, count });
+  });
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* PRIMARY INSIGHTS - What is happening */}
+      {(primaryWithData.length > 0 || individualEmptyPrimary.length > 0) && (
+        <>
+          <SectionHeader title="Key Insights" subtitle="What is happening in your feed" />
+          {primaryWithData.map(renderViewCard)}
+          {individualEmptyPrimary.map(renderViewCard)}
+        </>
+      )}
+
+      {/* SUPPORTING DETAILS - Why / how this shows up */}
+      {(supportingWithData.length > 0 || individualEmptySupporting.length > 0) && (
+        <>
+          <SectionHeader title="Supporting Details" subtitle="Why and how this shows up" />
+          {supportingWithData.map(renderViewCard)}
+          {individualEmptySupporting.map(renderViewCard)}
+        </>
+      )}
+
+      {/* FUTURE FEATURES - Coming soon views */}
+      {futureWithData.length > 0 && (
+        <>
+          <SectionHeader title="Additional Insights" />
+          {futureWithData.map(renderViewCard)}
+        </>
+      )}
+
+      {/* COLLAPSED EMPTY STATE PLACEHOLDERS */}
+      {collapsedPlaceholders.length > 0 && (
+        <>
+          {collapsedPlaceholders.map(({ type, count }) => (
+            <CollapsedEmptyStateCard
+              key={`collapsed-${type}`}
+              emptyStateType={type}
+              count={count}
+              tabName={tabName}
+            />
+          ))}
+        </>
+      )}
+
+      {/* SUMMARY CARD - What this means for you */}
+      {summaryWithData.length > 0 && (
+        <>
+          <SectionHeader title="What This Means" subtitle="Summary and actions you can take" />
+          {summaryWithData.map(renderViewCard)}
+        </>
+      )}
+    </div>
+  );
+};
+
+/**
  * DashboardPage - Main dashboard with 5 tabs and catalog-driven views.
- * Phase 2: Real data integration with honest empty states.
+ * Phase 4: Hierarchy, density reduction, and narrative flow.
  */
 const DashboardPage = () => {
   const [activeTab, setActiveTab] = useState(TABS[0].id);
@@ -191,6 +405,16 @@ const DashboardPage = () => {
           </div>
         )}
 
+        {/* Global orientation cue (Phase 4F) */}
+        {!detailsLoading && (
+          <div className="mb-6 px-4 py-3 bg-slate-50 rounded-lg border border-slate-100">
+            <p className="text-sm text-slate-600 text-center">
+              <span className="font-medium">Start with the highlighted insights.</span>
+              {' '}Other views unlock as you scan more content.
+            </p>
+          </div>
+        )}
+
         {/* Tab Content */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
@@ -202,18 +426,14 @@ const DashboardPage = () => {
             </span>
           </div>
 
-          {/* Views Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {currentViews.map((view) => (
-              <ViewCard
-                key={view.id}
-                view={view}
-                dataResult={viewDataResults[view.id] || { hasData: false, data: null, missing: 'Loading...' }}
-                scanCount={scans.length}
-                platformCount={platforms.length}
-              />
-            ))}
-          </div>
+          {/* Views Grid with empty state collapsing */}
+          <ViewsGridWithCollapsing
+            views={currentViews}
+            viewDataResults={viewDataResults}
+            scanCount={scans.length}
+            platformCount={platforms.length}
+            tabName={TABS.find((t) => t.id === activeTab)?.label || 'insights'}
+          />
         </div>
 
         {/* Global explanation - shows once per dashboard */}

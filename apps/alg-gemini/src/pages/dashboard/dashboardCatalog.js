@@ -1,5 +1,5 @@
 /**
- * Dashboard Catalog - Phase 3 Implementation
+ * Dashboard Catalog - Phase 4 Implementation
  *
  * Each view includes:
  * - tab: which tab it belongs to
@@ -11,6 +11,8 @@
  * - takeaway: function that returns takeaway string given data
  * - action: function that returns action string given data (optional)
  * - emptyStateType: 'needs_more_scans' | 'needs_broader_behavior' | 'future_feature'
+ * - isPrimary: boolean - if true, this card appears first and is visually emphasized
+ * - sortOrder: 'primary' | 'supporting' | 'future' | 'summary' - controls narrative flow
  */
 
 // Empty state type constants
@@ -44,7 +46,9 @@ export const dashboardCatalog = [
     outputType: 'number_line',
     dataFn: 'getAdPercentageData',
     emptyStateType: 'needs_more_scans',
-    category: 'labeled_ads', // Clearly labeled advertising
+    category: 'labeled_ads',
+    isPrimary: true, // PRIMARY INSIGHT: Core metric for this tab
+    sortOrder: 'primary',
     takeaway: (data) => data?.currentPercent !== undefined
       ? `About ${data.currentPercent}% of your feed is clearly marked as advertising.`
       : null,
@@ -58,7 +62,8 @@ export const dashboardCatalog = [
     outputType: 'line',
     dataFn: 'getAdTrendData',
     emptyStateType: 'needs_more_scans',
-    category: 'labeled_ads', // Clearly labeled advertising
+    category: 'labeled_ads',
+    sortOrder: 'supporting',
     takeaway: (data) => data?.direction
       ? `Advertising in your feed is ${data.direction}.`
       : null,
@@ -72,7 +77,8 @@ export const dashboardCatalog = [
     outputType: 'bar',
     dataFn: 'getPlatformPromoData',
     emptyStateType: 'needs_broader_behavior',
-    category: 'labeled_ads', // Clearly labeled advertising
+    category: 'labeled_ads',
+    sortOrder: 'supporting',
     takeaway: () => 'Some platforms rely more heavily on promotion.',
     action: () => 'If one platform feels salesy, reduce time there or reset engagement.',
   },
@@ -86,7 +92,9 @@ export const dashboardCatalog = [
     outputType: 'number',
     dataFn: 'getLikelyPromoData',
     emptyStateType: 'future_feature',
-    category: 'possible_influence', // Possible influence or incentivized content
+    category: 'possible_influence',
+    isPrimary: true, // PRIMARY INSIGHT: Critical even if sparse
+    sortOrder: 'future',
     confidenceDisclaimer: true,
     takeaway: () => 'This content shows patterns commonly associated with promotion, even when not labeled as an ad.',
     action: () => 'Treat recommendations as marketing when products keep showing up.',
@@ -99,7 +107,8 @@ export const dashboardCatalog = [
     outputType: 'stacked100',
     dataFn: 'getAdsVsPromoData',
     emptyStateType: 'future_feature',
-    category: 'possible_influence', // Possible influence or incentivized content
+    category: 'possible_influence',
+    sortOrder: 'future',
     confidenceDisclaimer: true,
     takeaway: () => 'This comparison shows clearly labeled ads alongside possible incentivized content.',
     action: () => 'Unlabeled influence is easier to miss. Be extra skeptical of casual product mentions.',
@@ -112,7 +121,9 @@ export const dashboardCatalog = [
     outputType: 'bar',
     dataFn: 'getProductMentionsData',
     emptyStateType: 'needs_more_scans',
-    category: 'possible_influence', // Possible influence or incentivized content
+    category: 'possible_influence',
+    isPrimary: true, // PRIMARY INSIGHT: Reveals targeting patterns
+    sortOrder: 'primary',
     confidenceDisclaimer: true,
     takeaway: (data) => data?.length > 0
       ? 'These products show up repeatedly in your feed.'
@@ -127,7 +138,8 @@ export const dashboardCatalog = [
     outputType: 'table',
     dataFn: 'getPromoCreatorsData',
     emptyStateType: 'needs_more_scans',
-    category: 'possible_influence', // Possible influence or incentivized content
+    category: 'possible_influence',
+    sortOrder: 'supporting',
     takeaway: () => 'A small set of creators drive most promotions.',
     action: () => 'Mute or unfollow high-promo creators if you want fewer sales pitches.',
   },
@@ -139,7 +151,8 @@ export const dashboardCatalog = [
     outputType: 'number',
     dataFn: 'getAdConcentrationData',
     emptyStateType: 'needs_more_scans',
-    category: 'possible_influence', // Possible influence or incentivized content
+    category: 'possible_influence',
+    sortOrder: 'supporting',
     takeaway: (data) => data?.concentration !== undefined
       ? `${data.concentration}% of promotions come from the top ${data.top5Count} creators.`
       : null,
@@ -153,7 +166,8 @@ export const dashboardCatalog = [
     outputType: 'bar',
     dataFn: 'getPromoThemesData',
     emptyStateType: 'future_feature',
-    category: 'possible_influence', // Possible influence or incentivized content
+    category: 'possible_influence',
+    sortOrder: 'future',
     confidenceDisclaimer: true,
     takeaway: () => 'Promotions often rely on these emotional narratives.',
     action: () => 'When you notice a pattern, you can reduce engagement to stop reinforcing it.',
@@ -166,9 +180,10 @@ export const dashboardCatalog = [
     outputType: 'text',
     dataFn: 'getAdvertiserInsightsData',
     emptyStateType: 'needs_more_scans',
-    category: 'possible_influence', // Possible influence or incentivized content
+    category: 'possible_influence',
+    sortOrder: 'summary',
     confidenceDisclaimer: true,
-    isSummaryCard: true, // This is the "What This Means for You" anchor for the ads tab
+    isSummaryCard: true,
     takeaway: (data) => data?.interests?.length > 0
       ? `Advertisers appear to associate you with: ${data.interests.join(', ')}.`
       : null,
@@ -186,6 +201,8 @@ export const dashboardCatalog = [
     outputType: 'number_line',
     dataFn: 'getPoliticalShareData',
     emptyStateType: 'needs_more_scans',
+    isPrimary: true, // PRIMARY INSIGHT: Core metric for this tab
+    sortOrder: 'primary',
     takeaway: (data) => data?.currentPercent !== undefined
       ? `Political content appears in about ${data.currentPercent}% of your feed.`
       : null,
@@ -199,6 +216,8 @@ export const dashboardCatalog = [
     outputType: 'stacked100',
     dataFn: 'getPoliticalLeaningData',
     emptyStateType: 'future_feature',
+    isPrimary: true, // PRIMARY INSIGHT: Critical perspective balance metric
+    sortOrder: 'future',
     takeaway: () => 'Political content distribution by leaning.',
     action: () => 'If one side dominates, your feed may be narrowing.',
   },
@@ -210,6 +229,7 @@ export const dashboardCatalog = [
     outputType: 'status',
     dataFn: 'getPoliticalBalanceData',
     emptyStateType: 'future_feature',
+    sortOrder: 'future',
     takeaway: () => 'Your political content balance status.',
     action: () => 'To rebalance, engage with credible sources across perspectives.',
   },
@@ -221,6 +241,8 @@ export const dashboardCatalog = [
     outputType: 'table',
     dataFn: 'getPoliticalCreatorsData',
     emptyStateType: 'needs_more_scans',
+    isPrimary: true, // PRIMARY INSIGHT: Shows who shapes your political exposure
+    sortOrder: 'primary',
     takeaway: () => 'A small number of creators drive most political exposure.',
     action: () => 'Unfollow the top drivers if you want less politics.',
   },
@@ -232,6 +254,7 @@ export const dashboardCatalog = [
     outputType: 'number',
     dataFn: 'getPoliticalRepetitionData',
     emptyStateType: 'future_feature',
+    sortOrder: 'future',
     takeaway: () => 'You often see the same political ideas repeated.',
     action: () => 'Search and engage with different subtopics to widen the feed.',
   },
@@ -243,6 +266,7 @@ export const dashboardCatalog = [
     outputType: 'bar',
     dataFn: 'getPoliticalToneData',
     emptyStateType: 'future_feature',
+    sortOrder: 'future',
     takeaway: () => 'Political content tends to feel calm or intense.',
     action: () => 'If it\'s intense, consider muting accounts that post outrage content.',
   },
@@ -254,6 +278,7 @@ export const dashboardCatalog = [
     outputType: 'line',
     dataFn: 'getPoliticalTrendData',
     emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
     takeaway: (data) => data?.direction
       ? `Your political exposure has been ${data.direction}.`
       : null,
@@ -267,6 +292,7 @@ export const dashboardCatalog = [
     outputType: 'list',
     dataFn: 'getPoliticalBlindSpotsData',
     emptyStateType: 'future_feature',
+    sortOrder: 'future',
     takeaway: () => 'Some viewpoints rarely appear in your feed.',
     action: () => 'If you want balance, intentionally follow credible sources from missing areas.',
   },
@@ -278,6 +304,7 @@ export const dashboardCatalog = [
     outputType: 'bar',
     dataFn: 'getCrossPlatformPoliticalData',
     emptyStateType: 'needs_broader_behavior',
+    sortOrder: 'supporting',
     takeaway: () => 'Political exposure varies by platform.',
     action: () => 'Use the lowest-politics platform when you want a mental break.',
   },
@@ -289,7 +316,8 @@ export const dashboardCatalog = [
     outputType: 'text',
     dataFn: 'getPoliticalProfileData',
     emptyStateType: 'needs_more_scans',
-    isSummaryCard: true, // This is the "What This Means for You" anchor for the politics tab
+    sortOrder: 'summary',
+    isSummaryCard: true,
     takeaway: (data) => data?.politicalPercent !== undefined
       ? `Your feed emphasizes political content (${data.politicalPercent}%).`
       : null,
@@ -307,6 +335,8 @@ export const dashboardCatalog = [
     outputType: 'number_bar',
     dataFn: 'getTopicVarietyData',
     emptyStateType: 'needs_more_scans',
+    isPrimary: true, // PRIMARY INSIGHT: Core diversity metric
+    sortOrder: 'primary',
     takeaway: (data) => data?.topicCount !== undefined
       ? `Your feed covers ${data.topicCount} topics.`
       : null,
@@ -320,6 +350,7 @@ export const dashboardCatalog = [
     outputType: 'number',
     dataFn: 'getRepeatedThemesData',
     emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
     takeaway: (data) => data?.top3Percent !== undefined
       ? `${data.top3Percent}% of your feed is in the top 3 topics.`
       : null,
@@ -333,6 +364,8 @@ export const dashboardCatalog = [
     outputType: 'stacked100',
     dataFn: 'getEmotionalWeightData',
     emptyStateType: 'needs_more_scans',
+    isPrimary: true, // PRIMARY INSIGHT: Key wellbeing metric
+    sortOrder: 'primary',
     takeaway: (data) => data?.intensity
       ? `Your feed feels ${data.intensity} emotionally.`
       : null,
@@ -346,6 +379,7 @@ export const dashboardCatalog = [
     outputType: 'stacked100',
     dataFn: 'getSentimentBalanceData',
     emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
     takeaway: () => 'Content sentiment distribution in your feed.',
     action: () => 'If negative is high, intentionally interact with uplifting accounts.',
   },
@@ -357,6 +391,7 @@ export const dashboardCatalog = [
     outputType: 'status',
     dataFn: 'getFeedStabilityData',
     emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
     takeaway: (data) => data?.stability
       ? `Your feed is ${data.stability} between scans (${data.overlapPercent}% topic overlap).`
       : null,
@@ -370,6 +405,7 @@ export const dashboardCatalog = [
     outputType: 'number',
     dataFn: 'getDiscoveryRateData',
     emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
     takeaway: (data) => data?.discoveryRate !== undefined
       ? `${data.discoveryRate}% of creators in your latest scan were new.`
       : null,
@@ -383,6 +419,8 @@ export const dashboardCatalog = [
     outputType: 'status',
     dataFn: 'getEchoRiskData',
     emptyStateType: 'needs_more_scans',
+    isPrimary: true, // PRIMARY INSIGHT: Critical even if sparse
+    sortOrder: 'primary',
     takeaway: (data) => data?.riskLevel
       ? `Echo chamber risk: ${data.riskLevel}.`
       : null,
@@ -396,6 +434,7 @@ export const dashboardCatalog = [
     outputType: 'list',
     dataFn: 'getRareContentData',
     emptyStateType: 'future_feature',
+    sortOrder: 'future',
     takeaway: () => 'Some topics rarely appear in your feed.',
     action: () => 'If you want a broader feed, deliberately engage with missing topics.',
   },
@@ -407,6 +446,7 @@ export const dashboardCatalog = [
     outputType: 'line',
     dataFn: 'getIntensitySpikesData',
     emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
     takeaway: () => 'Some periods show spikes in intense content.',
     action: () => 'When spikes happen, take a short break or reset engagement signals.',
   },
@@ -418,7 +458,8 @@ export const dashboardCatalog = [
     outputType: 'text',
     dataFn: 'getPatternSummaryData',
     emptyStateType: 'needs_more_scans',
-    isSummaryCard: true, // This is the "What This Means for You" anchor for the patterns tab
+    sortOrder: 'summary',
+    isSummaryCard: true,
     takeaway: (data) => data?.insights?.length > 0
       ? data.insights.join(' ')
       : null,
@@ -436,6 +477,8 @@ export const dashboardCatalog = [
     outputType: 'table',
     dataFn: 'getTopCreatorsData',
     emptyStateType: 'needs_more_scans',
+    isPrimary: true, // PRIMARY INSIGHT: Core metric for this tab
+    sortOrder: 'primary',
     takeaway: () => 'These creators appear most frequently in your feed.',
     action: () => 'If one creator dominates, consider diversifying who you follow.',
   },
@@ -447,6 +490,8 @@ export const dashboardCatalog = [
     outputType: 'number',
     dataFn: 'getCreatorConcentrationData',
     emptyStateType: 'needs_more_scans',
+    isPrimary: true, // PRIMARY INSIGHT: Key diversity metric
+    sortOrder: 'primary',
     takeaway: (data) => data?.concentration !== undefined
       ? `${data.concentration}% of your feed comes from the top ${data.top10Count} creators.`
       : null,
@@ -460,6 +505,7 @@ export const dashboardCatalog = [
     outputType: 'stacked100',
     dataFn: 'getNewVsFamiliarData',
     emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
     takeaway: () => 'Your feed mix of new and familiar creators.',
     action: () => 'To discover more, interact with unfamiliar accounts.',
   },
@@ -471,6 +517,7 @@ export const dashboardCatalog = [
     outputType: 'table',
     dataFn: 'getPromoCreatorsData',
     emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
     takeaway: () => 'These creators contribute most promotional content.',
     action: () => 'Mute high-promo creators to reduce ads.',
   },
@@ -482,6 +529,7 @@ export const dashboardCatalog = [
     outputType: 'table',
     dataFn: 'getPoliticalCreatorsData',
     emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
     takeaway: () => 'These creators drive most political exposure.',
     action: () => 'Unfollow the top drivers if you want less politics.',
   },
@@ -493,6 +541,7 @@ export const dashboardCatalog = [
     outputType: 'bar',
     dataFn: 'getCreatorsByTopicData',
     emptyStateType: 'future_feature',
+    sortOrder: 'future',
     takeaway: () => 'Different creators dominate different topics.',
     action: () => 'Follow creators in topics you want more of.',
   },
@@ -504,6 +553,7 @@ export const dashboardCatalog = [
     outputType: 'table',
     dataFn: 'getCreatorsByToneData',
     emptyStateType: 'future_feature',
+    sortOrder: 'future',
     takeaway: () => 'Some creators consistently post intense content.',
     action: () => 'If intense content affects you, mute those accounts.',
   },
@@ -515,6 +565,7 @@ export const dashboardCatalog = [
     outputType: 'table',
     dataFn: 'getCrossplatformCreatorData',
     emptyStateType: 'needs_broader_behavior',
+    sortOrder: 'supporting',
     takeaway: () => 'Some creators follow you across platforms.',
     action: () => 'If one voice is everywhere, you can diversify intentionally.',
   },
@@ -526,6 +577,8 @@ export const dashboardCatalog = [
     outputType: 'status',
     dataFn: 'getVoiceDiversityData',
     emptyStateType: 'needs_more_scans',
+    isPrimary: true, // PRIMARY INSIGHT: Critical perspective metric
+    sortOrder: 'primary',
     takeaway: (data) => data?.diversity
       ? `Your feed shows ${data.diversity} voice diversity.`
       : null,
@@ -539,7 +592,8 @@ export const dashboardCatalog = [
     outputType: 'text',
     dataFn: 'getInfluentialCreatorsData',
     emptyStateType: 'needs_more_scans',
-    isSummaryCard: true, // This is the "What This Means for You" anchor for the creators tab
+    sortOrder: 'summary',
+    isSummaryCard: true,
     takeaway: () => 'These accounts have the biggest influence on what you see.',
     action: () => 'Adjust who you follow to shift what the algorithm learns.',
   },
@@ -555,6 +609,8 @@ export const dashboardCatalog = [
     outputType: 'list',
     dataFn: 'getAlgoTopicsLikedData',
     emptyStateType: 'needs_more_scans',
+    isPrimary: true, // PRIMARY INSIGHT: Core algorithmic inference
+    sortOrder: 'primary',
     takeaway: () => 'The algorithm strongly associates you with these topics.',
     action: () => 'If it\'s inaccurate, engage with other topics to retrain it.',
   },
@@ -566,6 +622,7 @@ export const dashboardCatalog = [
     outputType: 'list',
     dataFn: 'getAlgoTopicsAvoidedData',
     emptyStateType: 'future_feature',
+    sortOrder: 'future',
     takeaway: () => 'These topics rarely appear, suggesting low interest.',
     action: () => 'To see them more, search and follow accounts in those areas.',
   },
@@ -577,6 +634,8 @@ export const dashboardCatalog = [
     outputType: 'bar',
     dataFn: 'getAlgoProductsData',
     emptyStateType: 'needs_more_scans',
+    isPrimary: true, // PRIMARY INSIGHT: Key commercial targeting metric
+    sortOrder: 'primary',
     confidenceDisclaimer: true,
     takeaway: () => 'Your feed suggests interest in these product categories.',
     action: () => 'If you don\'t want targeted selling, reduce engagement with product content.',
@@ -589,6 +648,7 @@ export const dashboardCatalog = [
     outputType: 'list',
     dataFn: 'getAlgoPoliticalThemesData',
     emptyStateType: 'future_feature',
+    sortOrder: 'future',
     takeaway: () => 'These political themes appear prioritized in your feed.',
     action: () => 'If it feels unbalanced, diversify what you watch and follow.',
   },
@@ -600,6 +660,7 @@ export const dashboardCatalog = [
     outputType: 'bar',
     dataFn: 'getAlgoEmotionalTriggersData',
     emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
     takeaway: () => 'Content with these emotions appears more often.',
     action: () => 'If a trigger is unhelpful, stop lingering on that content.',
   },
@@ -611,6 +672,7 @@ export const dashboardCatalog = [
     outputType: 'text',
     dataFn: 'getAlgoConfidentData',
     emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
     takeaway: (data) => data?.insights?.length > 0
       ? data.insights.join(' ')
       : null,
@@ -624,6 +686,7 @@ export const dashboardCatalog = [
     outputType: 'text',
     dataFn: 'getAlgoUncertainData',
     emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
     takeaway: (data) => data?.insights?.length > 0
       ? data.insights.join(' ')
       : null,
@@ -637,6 +700,8 @@ export const dashboardCatalog = [
     outputType: 'status',
     dataFn: 'getProfileBreadthData',
     emptyStateType: 'needs_more_scans',
+    isPrimary: true, // PRIMARY INSIGHT: Critical overall profile assessment
+    sortOrder: 'primary',
     takeaway: (data) => data?.breadth
       ? `Your inferred profile is ${data.breadth.toLowerCase()}.`
       : null,
@@ -650,6 +715,7 @@ export const dashboardCatalog = [
     outputType: 'text',
     dataFn: 'getFutureRecommendationsData',
     emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
     confidenceDisclaimer: true,
     takeaway: (data) => data?.predictions?.length > 0
       ? data.predictions.join(' ')
@@ -664,15 +730,30 @@ export const dashboardCatalog = [
     outputType: 'list',
     dataFn: 'getAlgoChangeAdviceData',
     emptyStateType: 'needs_more_scans',
-    isSummaryCard: true, // This is the "What This Means for You" anchor for the algorithm tab
+    sortOrder: 'summary',
+    isSummaryCard: true,
     takeaway: () => 'Small behavior changes can shift these assumptions.',
     action: null, // Action is embedded in the tips
   },
 ];
 
-// Helper function to get views for a specific tab
+// Sort order priority (for narrative flow)
+const SORT_ORDER_PRIORITY = {
+  primary: 1,
+  supporting: 2,
+  future: 3,
+  summary: 4,
+};
+
+// Helper function to get views for a specific tab (sorted by narrative order)
 export const getViewsForTab = (tabId) => {
-  return dashboardCatalog.filter((view) => view.tab === tabId);
+  return dashboardCatalog
+    .filter((view) => view.tab === tabId)
+    .sort((a, b) => {
+      const orderA = SORT_ORDER_PRIORITY[a.sortOrder] || 2;
+      const orderB = SORT_ORDER_PRIORITY[b.sortOrder] || 2;
+      return orderA - orderB;
+    });
 };
 
 // Helper function to get a specific view by ID
