@@ -78,7 +78,8 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
   const renderNumberLine = (data, type) => {
     if (!data) return null;
 
-    const value = data.currentPercent ?? data.concentration ?? data.discoveryRate ?? data.top3Percent;
+    // PHASE 6A: Handle possibleInfluencePercent for promotion heuristic
+    const value = data.currentPercent ?? data.concentration ?? data.discoveryRate ?? data.top3Percent ?? data.possibleInfluencePercent;
     const showLine = type === 'number_line' && data.trend && data.trend.length >= 2;
 
     return (
@@ -91,6 +92,24 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
             data={data.trend.map(t => ({ label: t.label, value: t.value })).reverse()}
             valueLabel="%"
           />
+        )}
+        {/* PHASE 6A: Show top signals for promotion heuristic */}
+        {data.topSignals && data.topSignals.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-slate-100">
+            <p className="text-xs font-medium text-slate-500 mb-2">Why flagged:</p>
+            <ul className="space-y-1">
+              {data.topSignals.slice(0, 3).map((signal, i) => (
+                <li key={i} className="text-xs text-slate-600 flex items-center gap-2">
+                  <span className="text-slate-400">•</span>
+                  {signal.signal} ({signal.count})
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {/* PHASE 6A: Show message if no promotional signals */}
+        {data.message && (
+          <p className="text-sm text-slate-600">{data.message}</p>
         )}
       </div>
     );
@@ -117,8 +136,21 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
 
   // Horizontal bar chart
   const renderBar = (data) => {
-    if (!data || !Array.isArray(data)) return null;
-    return <BarChartSimple data={data} valueLabel="%" />;
+    if (!data) return null;
+
+    // PHASE 6A: Handle bars field for promo themes
+    const bars = data.bars || data;
+    if (!Array.isArray(bars)) return null;
+
+    return (
+      <div className="space-y-3">
+        <BarChartSimple data={bars} valueLabel="%" />
+        {/* PHASE 6A: Show note if present */}
+        {data.note && (
+          <p className="text-xs text-slate-400 italic">{data.note}</p>
+        )}
+      </div>
+    );
   };
 
   // 100% stacked bar
@@ -126,7 +158,15 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
     if (!data) return null;
     const segments = data.segments || data;
     if (!Array.isArray(segments)) return null;
-    return <StackedBar100 segments={segments} />;
+    return (
+      <div className="space-y-3">
+        <StackedBar100 segments={segments} />
+        {/* PHASE 6A: Show disclaimer if present (political leaning) */}
+        {data.disclaimer && (
+          <p className="text-xs text-slate-400 italic">{data.disclaimer}</p>
+        )}
+      </div>
+    );
   };
 
   // Line chart
@@ -155,17 +195,31 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
 
   // Table
   const renderTable = (data) => {
-    if (!data || !Array.isArray(data) || data.length === 0) return null;
+    if (!data) return null;
+
+    // PHASE 6A: Handle rows field for creator-topic and creator-tone views
+    const rows = data.rows || data;
+    if (!Array.isArray(rows) || rows.length === 0) return null;
 
     // Auto-detect columns from first row
-    const firstRow = data[0];
+    const firstRow = rows[0];
     const columns = Object.keys(firstRow).map(key => ({
       key,
       label: formatColumnLabel(key),
-      align: typeof firstRow[key] === 'number' || key.includes('Percent') || key.includes('posts') ? 'right' : 'left',
+      align: typeof firstRow[key] === 'number' || key.includes('Percent') || key.includes('posts') || key.includes('count') ? 'right' : 'left',
     }));
 
-    return <SimpleTable columns={columns} rows={data} />;
+    return (
+      <div className="space-y-3">
+        {/* PHASE 6A: Show takeaway above table if present */}
+        {data.takeaway && (
+          <p className="text-sm text-slate-700 font-medium bg-blue-50 px-3 py-2 rounded-lg">
+            {data.takeaway}
+          </p>
+        )}
+        <SimpleTable columns={columns} rows={rows} />
+      </div>
+    );
   };
 
   // List
@@ -174,25 +228,49 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
 
     // Handle different data shapes
     let items = [];
-    let unclassifiedNote = null;
+    let note = null;
 
     if (Array.isArray(data)) {
       items = data.map(d => ({
         text: d.topic || d.label || d,
         isUnclassified: d.isUnclassified || false,
+        subtext: d.share !== undefined ? `${d.share}%` : null,
       }));
     } else if (data.tips) {
       items = data.tips.map(t => ({ text: t, isUnclassified: false }));
     } else if (data.interests) {
       items = data.interests.map(i => ({ text: i, isUnclassified: false }));
+    } else if (data.rareTopics) {
+      // PHASE 6A: Handle rare topics format
+      items = data.rareTopics.map(t => ({
+        text: t.topic,
+        isUnclassified: false,
+        subtext: `${t.share}% of feed`,
+      }));
+    } else if (data.topics) {
+      // PHASE 6A: Handle topics array (for algo-topics-avoided)
+      items = data.topics.map(t => ({
+        text: t,
+        isUnclassified: false,
+      }));
+    } else if (data.blindSpots) {
+      // PHASE 6A: Handle political blind spots
+      items = data.blindSpots.map(b => ({
+        text: b,
+        isUnclassified: false,
+      }));
     }
 
-    // Check for unclassifiedNote in the data result
-    if (dataResult?.data?.unclassifiedNote) {
-      unclassifiedNote = dataResult.data.unclassifiedNote;
-    }
+    // Check for notes
+    note = dataResult?.data?.unclassifiedNote || data.note || data.message;
 
-    if (items.length === 0) return null;
+    // PHASE 6A: Show message if no items
+    if (items.length === 0) {
+      if (data.message) {
+        return <p className="text-sm text-slate-600">{data.message}</p>;
+      }
+      return null;
+    }
 
     return (
       <div className="space-y-3">
@@ -202,13 +280,16 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
               <span className={item.isUnclassified ? 'text-slate-400 mt-1' : 'text-primary-blue mt-1'}>•</span>
               <span className={item.isUnclassified ? 'text-slate-500 italic' : ''}>
                 {typeof item === 'string' ? item : item.text}
+                {item.subtext && (
+                  <span className="text-xs text-slate-400 ml-2">({item.subtext})</span>
+                )}
               </span>
             </li>
           ))}
         </ul>
-        {unclassifiedNote && (
+        {note && (
           <p className="text-xs text-slate-400 italic">
-            {unclassifiedNote}
+            {note}
           </p>
         )}
       </div>
@@ -371,10 +452,22 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
             )}
 
             {/* Confidence disclaimer for influence-related cards */}
+            {/* PHASE 6A: Show actual disclaimer from data if available */}
             {confidenceDisclaimer && hasData && (
-              <p className="text-xs text-slate-400 italic pt-2 border-t border-slate-100">
-                This insight is based on repeated patterns, not confirmed intent.
-              </p>
+              <div className="pt-2 border-t border-slate-100">
+                {data?.confidence && (
+                  <span className={`inline-block text-xs px-2 py-0.5 rounded mb-1 ${
+                    data.confidence === 'LOW' || data.confidence === 'VERY_LOW'
+                      ? 'bg-amber-100 text-amber-700'
+                      : 'bg-slate-100 text-slate-600'
+                  }`}>
+                    {data.confidence} confidence
+                  </span>
+                )}
+                <p className="text-xs text-slate-400 italic">
+                  {data?.disclaimer || 'This insight is based on repeated patterns, not confirmed intent.'}
+                </p>
+              </div>
             )}
 
             {/* Data quality footer - shows ACTUAL scan count used for this metric */}

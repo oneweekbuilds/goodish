@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, RefreshCw, BarChart3, Clock, Globe } from 'lucide-react';
+import { Loader2, RefreshCw, BarChart3, Clock, Globe, Database, Info, ToggleLeft, ToggleRight } from 'lucide-react';
 import { TABS, getViewsForTab, EMPTY_STATE_TYPES } from './dashboardCatalog';
 import ViewCard from '../../components/dashboard/ViewCard';
 import { useDashboardData } from '../../lib/dashboard/useDashboardData';
@@ -79,6 +79,131 @@ const SectionHeader = ({ title, subtitle }) => (
     )}
   </div>
 );
+
+/**
+ * DataCoverageBar - Shows data coverage stats for a tab
+ * PHASE 6A: Tab-level data coverage line
+ */
+const DataCoverageBar = ({ scans, scanDetails, tabId }) => {
+  // Calculate aggregate stats
+  const stats = useMemo(() => {
+    if (!scans || scans.length === 0) return null;
+
+    let totalItems = 0;
+    const platformSet = new Set();
+
+    for (const scan of scans) {
+      const detail = scanDetails[scan.id];
+      if (detail) {
+        const data = detail.result || detail.scan || detail;
+        const items = data?.feed_items || [];
+        totalItems += items.length;
+      }
+      if (scan.platform) {
+        platformSet.add(scan.platform.toLowerCase());
+      }
+    }
+
+    return {
+      scanCount: scans.length,
+      platformCount: platformSet.size,
+      platforms: Array.from(platformSet),
+      totalItems,
+    };
+  }, [scans, scanDetails]);
+
+  if (!stats) return null;
+
+  return (
+    <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-100 text-xs text-slate-600">
+      <Database size={14} className="text-slate-400" />
+      <span>
+        Using <span className="font-medium">{stats.scanCount}</span> scan{stats.scanCount !== 1 ? 's' : ''},
+        {' '}<span className="font-medium">{stats.platformCount}</span> platform{stats.platformCount !== 1 ? 's' : ''},
+        {' '}<span className="font-medium">{stats.totalItems}</span> posts
+      </span>
+    </div>
+  );
+};
+
+/**
+ * PoliticalLeaningToggle - Opt-in toggle for political leaning estimates
+ * PHASE 6A: Political leaning requires explicit opt-in
+ */
+const PoliticalLeaningToggle = ({ enabled, onToggle }) => (
+  <div className="flex items-center gap-3 px-4 py-3 bg-amber-50 rounded-lg border border-amber-100">
+    <Info size={16} className="text-amber-600 flex-shrink-0" />
+    <div className="flex-1">
+      <p className="text-sm text-amber-800">
+        <span className="font-medium">Political leaning estimates</span> use keyword matching and are LOW confidence.
+      </p>
+      <p className="text-xs text-amber-600 mt-0.5">
+        These are rough estimates, not facts about content or creators.
+      </p>
+    </div>
+    <button
+      onClick={onToggle}
+      className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+      style={{
+        backgroundColor: enabled ? '#3B82F6' : '#E5E7EB',
+        color: enabled ? 'white' : '#64748B',
+      }}
+    >
+      {enabled ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+      {enabled ? 'Enabled' : 'Enable'}
+    </button>
+  </div>
+);
+
+/**
+ * HowToUnlockBox - Shows when a tab has insufficient data
+ * PHASE 6A: Friendly guidance for sparse data
+ */
+const HowToUnlockBox = ({ tabId }) => {
+  const tips = {
+    ads: [
+      'Run more scans to see promotional patterns',
+      'Scan different platforms to compare ad loads',
+      'Scan feeds with sponsored content for better detection',
+    ],
+    politics: [
+      'Scan feeds that contain political content',
+      'Run multiple scans over time to see trends',
+      'Enable political leaning estimates for detailed analysis',
+    ],
+    patterns: [
+      'Run at least 2-3 scans to see patterns emerge',
+      'Scan different platforms to compare topic variety',
+      'Give it time - patterns become clearer with more data',
+    ],
+    creators: [
+      'Scan feeds with diverse creator content',
+      'Run multiple scans to track which creators appear most',
+      'Scan multiple platforms to find cross-platform creators',
+    ],
+    algorithm: [
+      'Run more scans to build a clearer algorithmic profile',
+      'Scan consistently over days/weeks for best results',
+      'Diverse platform scans reveal more about targeting',
+    ],
+  };
+
+  const tabTips = tips[tabId] || tips.patterns;
+
+  return (
+    <div className="col-span-full px-4 py-3 bg-blue-50 rounded-lg border border-blue-100">
+      <p className="text-sm font-medium text-blue-800 mb-2">How to unlock more insights:</p>
+      <ul className="text-sm text-blue-700 space-y-1">
+        {tabTips.map((tip, i) => (
+          <li key={i} className="flex items-start gap-2">
+            <span className="text-blue-400 mt-0.5">•</span>
+            {tip}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
 
 /**
  * ViewsGridWithCollapsing - Renders views grid with collapsed empty states and narrative sections
@@ -226,6 +351,8 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
  */
 const DashboardPage = () => {
   const [activeTab, setActiveTab] = useState(TABS[0].id);
+  // PHASE 6A: Political leaning toggle state (default OFF)
+  const [politicalLeaningEnabled, setPoliticalLeaningEnabled] = useState(false);
   const {
     scans,
     scanDetails,
@@ -258,6 +385,7 @@ const DashboardPage = () => {
   const currentViews = getViewsForTab(activeTab);
 
   // Compute data for all views in current tab
+  // PHASE 6A: Pass options like politicalLeaningEnabled to relevant data functions
   const viewDataResults = useMemo(() => {
     if (!detailsLoaded) return {};
 
@@ -266,7 +394,12 @@ const DashboardPage = () => {
       const dataFn = dataHelpers[view.dataFn];
       if (typeof dataFn === 'function') {
         try {
-          results[view.id] = dataFn(scans, scanDetails);
+          // Pass options for views that require opt-in
+          if (view.requiresOptIn && activeTab === 'politics') {
+            results[view.id] = dataFn(scans, scanDetails, { enabled: politicalLeaningEnabled });
+          } else {
+            results[view.id] = dataFn(scans, scanDetails);
+          }
         } catch (err) {
           console.error(`Error computing data for ${view.id}:`, err);
           results[view.id] = { hasData: false, data: null, missing: 'Error loading data.' };
@@ -276,7 +409,7 @@ const DashboardPage = () => {
       }
     }
     return results;
-  }, [currentViews, scans, scanDetails, detailsLoaded]);
+  }, [currentViews, scans, scanDetails, detailsLoaded, activeTab, politicalLeaningEnabled]);
 
   // Loading state
   if (loading) {
@@ -417,7 +550,7 @@ const DashboardPage = () => {
 
         {/* Tab Content */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-text-main">
               {TABS.find((t) => t.id === activeTab)?.label}
             </h2>
@@ -425,6 +558,25 @@ const DashboardPage = () => {
               {currentViews.length} views
             </span>
           </div>
+
+          {/* PHASE 6A: Data Coverage Bar */}
+          <div className="mb-4">
+            <DataCoverageBar
+              scans={scans}
+              scanDetails={scanDetails}
+              tabId={activeTab}
+            />
+          </div>
+
+          {/* PHASE 6A: Political Leaning Toggle (only on politics tab) */}
+          {activeTab === 'politics' && (
+            <div className="mb-4">
+              <PoliticalLeaningToggle
+                enabled={politicalLeaningEnabled}
+                onToggle={() => setPoliticalLeaningEnabled(!politicalLeaningEnabled)}
+              />
+            </div>
+          )}
 
           {/* Views Grid with empty state collapsing */}
           <ViewsGridWithCollapsing

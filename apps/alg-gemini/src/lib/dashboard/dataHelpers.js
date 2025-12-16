@@ -26,6 +26,14 @@ import {
   calculateStability,
   calculateDiscoveryRate,
   calculateEchoRisk,
+  // Phase 6A additions
+  buildTopicUniverse,
+  deriveRareTopics,
+  aggregateCreatorTopics,
+  aggregateCreatorTones,
+  summarizeInfluence,
+  classifyPromoThemes,
+  aggregatePoliticalLeaning,
   UNCLASSIFIED_TOPIC,
   normalizeTopicLabel,
   formatDateLabel,
@@ -98,28 +106,98 @@ export function getAdPercentageData(scans, scanDetails) {
 
 /**
  * View 2: Likely promotional posts (not labeled as ads)
- * BLOCKED: Requires "likely promotional" classifier which doesn't exist
+ * PHASE 6A: Now uses heuristic detection with LOW confidence
  */
 export function getLikelyPromoData(scans, scanDetails) {
+  const influence = summarizeInfluence(scans, scanDetails);
+
+  if (!influence.hasData) {
+    return createResponse(
+      false,
+      null,
+      'Need more scans with content to analyze promotional patterns.',
+      0,
+      []
+    );
+  }
+
+  // Only show if we found some possible influence
+  if (influence.possibleInfluence === 0) {
+    return createResponse(
+      true,
+      {
+        possibleInfluencePercent: 0,
+        topSignals: [],
+        disclaimer: influence.disclaimer,
+        confidence: influence.confidence,
+        message: 'No potential promotional signals detected in your feed.',
+      },
+      null,
+      influence.scansUsed,
+      []
+    );
+  }
+
   return createResponse(
-    false,
+    true,
+    {
+      possibleInfluencePercent: influence.possibleInfluenceShare,
+      possibleInfluenceCount: influence.possibleInfluence,
+      topSignals: influence.topSignals,
+      disclaimer: influence.disclaimer,
+      confidence: influence.confidence,
+    },
     null,
-    'Hidden promo detection is not available yet. This feature requires content analysis beyond current capabilities.',
-    0,
+    influence.scansUsed,
     []
   );
 }
 
 /**
  * View 3: Explicit ads vs hidden promotions
- * BLOCKED: Requires likely promotional data
+ * PHASE 6A: Now compares labeled ads vs possible influence (heuristic)
  */
 export function getAdsVsPromoData(scans, scanDetails) {
+  const influence = summarizeInfluence(scans, scanDetails);
+
+  if (!influence.hasData) {
+    return createResponse(
+      false,
+      null,
+      'Need more scans to compare labeled ads vs possible influence.',
+      0,
+      []
+    );
+  }
+
+  // Create stacked bar segments
+  const segments = [
+    {
+      label: 'Labeled Ads',
+      value: influence.labeledShare,
+      color: '#3B82F6', // Blue
+    },
+    {
+      label: 'Possible Influence',
+      value: influence.possibleInfluenceShare,
+      color: '#F59E0B', // Amber
+    },
+    {
+      label: 'Other Content',
+      value: Math.max(0, 100 - influence.labeledShare - influence.possibleInfluenceShare),
+      color: '#94A3B8', // Gray
+    },
+  ];
+
   return createResponse(
-    false,
+    true,
+    {
+      segments,
+      disclaimer: influence.disclaimer,
+      confidence: influence.confidence,
+    },
     null,
-    'Requires both explicit ad detection and hidden promotion detection to compare.',
-    0,
+    influence.scansUsed,
     []
   );
 }
@@ -223,13 +301,36 @@ export function getAdConcentrationData(scans, scanDetails) {
 
 /**
  * View 7: Promotional themes
- * BLOCKED: Requires theme classifier
+ * PHASE 6A: Uses keyword-based theme classification (not ML)
  */
 export function getPromoThemesData(scans, scanDetails) {
+  const themes = classifyPromoThemes(scans, scanDetails);
+
+  if (!themes.hasData) {
+    return createResponse(
+      false,
+      null,
+      'Need more ad content to identify promotional themes.',
+      0,
+      []
+    );
+  }
+
+  // Convert to bar chart format
+  const bars = themes.themes.slice(0, 8).map(t => ({
+    label: t.theme,
+    value: t.share,
+  }));
+
   return createResponse(
-    false,
+    true,
+    {
+      bars,
+      note: themes.note,
+      totalClassified: themes.totalClassified,
+      confidence: 'LOW',
+    },
     null,
-    'Promotional theme detection is not available yet.',
     0,
     []
   );
@@ -359,28 +460,121 @@ export function getPoliticalShareData(scans, scanDetails) {
 
 /**
  * View 12: Political leaning breakdown
- * BLOCKED: Requires Left/Neutral/Right classification
+ * PHASE 6A: Heuristic classification with opt-in toggle (handled by UI)
+ * Returns data structure for stacked bar chart
  */
-export function getPoliticalLeaningData(scans, scanDetails) {
+export function getPoliticalLeaningData(scans, scanDetails, options = {}) {
+  const { enabled = false } = options;
+
+  // If not enabled, return special state
+  if (!enabled) {
+    return createResponse(
+      false,
+      null,
+      'Political leaning estimates are disabled. Enable them in settings to see this view.',
+      0,
+      [],
+      { requiresOptIn: true }
+    );
+  }
+
+  const leaning = aggregatePoliticalLeaning(scans, scanDetails);
+
+  if (!leaning.hasData) {
+    return createResponse(
+      false,
+      null,
+      `Need at least 5 political posts to estimate leaning (found ${leaning.totalPolitical}).`,
+      leaning.scansUsed,
+      []
+    );
+  }
+
+  // Create stacked bar segments
+  const segments = [
+    { label: 'Left', value: leaning.percentages.left, color: '#3B82F6' },
+    { label: 'Neutral', value: leaning.percentages.neutral, color: '#94A3B8' },
+    { label: 'Right', value: leaning.percentages.right, color: '#EF4444' },
+    { label: 'Unknown', value: leaning.percentages.unknown, color: '#E5E7EB' },
+  ];
+
   return createResponse(
-    false,
+    true,
+    {
+      segments,
+      totalPolitical: leaning.totalPolitical,
+      disclaimer: leaning.disclaimer,
+      confidence: leaning.confidence,
+      takeaway: 'Most of the political content in your feed is categorized as Neutral or Unknown. These are rough estimates, not facts.',
+    },
     null,
-    'Political leaning classification (Left/Neutral/Right) is not available yet.',
-    0,
+    leaning.scansUsed,
     []
   );
 }
 
 /**
  * View 13: Balance vs imbalance
- * BLOCKED: Requires political leaning data
+ * PHASE 6A: Uses heuristic political leaning data (opt-in)
  */
-export function getPoliticalBalanceData(scans, scanDetails) {
+export function getPoliticalBalanceData(scans, scanDetails, options = {}) {
+  const { enabled = false } = options;
+
+  if (!enabled) {
+    return createResponse(
+      false,
+      null,
+      'Political balance requires political leaning estimates to be enabled.',
+      0,
+      [],
+      { requiresOptIn: true }
+    );
+  }
+
+  const leaning = aggregatePoliticalLeaning(scans, scanDetails);
+
+  if (!leaning.hasData) {
+    return createResponse(
+      false,
+      null,
+      'Need more political content to assess balance.',
+      leaning.scansUsed,
+      []
+    );
+  }
+
+  // Calculate balance based on left vs right ratio
+  const left = leaning.percentages.left;
+  const right = leaning.percentages.right;
+  const difference = Math.abs(left - right);
+
+  let status = 'balanced';
+  let variant = 'positive';
+  let message = 'Your political content appears relatively balanced.';
+
+  if (difference > 40) {
+    status = 'heavily skewed';
+    variant = 'warning';
+    message = `Political content appears heavily skewed (${left > right ? 'left-leaning' : 'right-leaning'}).`;
+  } else if (difference > 20) {
+    status = 'somewhat skewed';
+    variant = 'neutral';
+    message = `Political content appears somewhat skewed (${left > right ? 'left-leaning' : 'right-leaning'}).`;
+  }
+
   return createResponse(
-    false,
+    true,
+    {
+      status,
+      variant,
+      message,
+      leftPercent: left,
+      rightPercent: right,
+      disclaimer: leaning.disclaimer,
+      confidence: leaning.confidence,
+    },
     null,
-    'Requires political leaning breakdown to assess balance.',
-    0,
+    leaning.scansUsed,
     []
   );
 }
@@ -469,8 +663,60 @@ export function getPoliticalTrendData(scans, scanDetails) {
   );
 }
 
-export function getPoliticalBlindSpotsData() {
-  return createResponse(false, null, 'Requires political leaning + theme analysis.', 0, []);
+export function getPoliticalBlindSpotsData(scans, scanDetails, options = {}) {
+  const { enabled = false } = options;
+
+  if (!enabled) {
+    return createResponse(
+      false,
+      null,
+      'Political blind spots require political leaning estimates to be enabled.',
+      0,
+      [],
+      { requiresOptIn: true }
+    );
+  }
+
+  const leaning = aggregatePoliticalLeaning(scans, scanDetails);
+
+  if (!leaning.hasData) {
+    return createResponse(
+      false,
+      null,
+      'Need more political content to identify blind spots.',
+      leaning.scansUsed,
+      []
+    );
+  }
+
+  // Identify potential blind spots based on low representation
+  const blindSpots = [];
+  const threshold = 10; // Less than 10% = potential blind spot
+
+  if (leaning.percentages.left < threshold && leaning.percentages.right > threshold) {
+    blindSpots.push('Left-leaning perspectives');
+  }
+  if (leaning.percentages.right < threshold && leaning.percentages.left > threshold) {
+    blindSpots.push('Right-leaning perspectives');
+  }
+  if (leaning.percentages.neutral < threshold) {
+    blindSpots.push('Neutral/centrist perspectives');
+  }
+
+  return createResponse(
+    true,
+    {
+      blindSpots,
+      disclaimer: leaning.disclaimer,
+      confidence: leaning.confidence,
+      message: blindSpots.length > 0
+        ? 'These perspectives rarely appear in your political content.'
+        : 'No clear blind spots detected based on available data.',
+    },
+    null,
+    leaning.scansUsed,
+    []
+  );
 }
 
 export function getCrossPlatformPoliticalData(scans, scanDetails) {
@@ -738,14 +984,46 @@ export function getEchoRiskData(scans, scanDetails) {
 
 /**
  * View 28: Content you almost never see
- * BLOCKED: Requires reference topic universe
+ * PHASE 6A: Uses observed topic universe to find rare topics
  */
 export function getRareContentData(scans, scanDetails) {
+  const universe = buildTopicUniverse(scans, scanDetails);
+  const rare = deriveRareTopics(universe);
+
+  if (!rare.hasData) {
+    return createResponse(
+      false,
+      null,
+      rare.reason || 'Need more scannable content to identify rare topics.',
+      universe.scansUsed,
+      []
+    );
+  }
+
+  if (rare.rareTopics.length === 0) {
+    return createResponse(
+      true,
+      {
+        rareTopics: [],
+        message: 'Your feed has fairly even topic distribution. No extremely rare topics found.',
+        confidence: rare.confidence,
+      },
+      null,
+      universe.scansUsed,
+      []
+    );
+  }
+
   return createResponse(
-    false,
+    true,
+    {
+      rareTopics: rare.rareTopics,
+      blindSpots: rare.blindSpots,
+      totalTopicsInUniverse: rare.totalTopicsInUniverse,
+      confidence: rare.confidence,
+    },
     null,
-    'Requires a reference topic universe to identify missing content.',
-    0,
+    universe.scansUsed,
     []
   );
 }
@@ -928,14 +1206,98 @@ export function getNewVsFamiliarData(scans, scanDetails) {
 }
 
 /**
- * View 34-40: Various creator views
+ * View 34: Creators by Topic
+ * PHASE 6A: Maps which creators dominate which topics
  */
 export function getCreatorsByTopicData(scans, scanDetails) {
-  return createResponse(false, null, 'Creator-topic mapping not available yet.', 0, []);
+  const creatorTopics = aggregateCreatorTopics(scans, scanDetails);
+
+  if (creatorTopics.totalPairs < 10) {
+    return createResponse(
+      false,
+      null,
+      `Need more creator-topic pairs (found ${creatorTopics.totalPairs}/10 minimum).`,
+      creatorTopics.scansUsed,
+      []
+    );
+  }
+
+  // Build table data
+  const rows = creatorTopics.topCreatorsByTopic.map(t => ({
+    topic: t.topic,
+    topCreator: t.topCreator,
+    share: `${t.topCreatorShare}%`,
+    count: t.topCreatorCount,
+    creatorCount: t.creatorCount,
+  }));
+
+  // Generate takeaway
+  const topRow = rows[0];
+  let takeaway = null;
+  if (topRow && topRow.creatorCount <= 2) {
+    takeaway = `Most of your "${topRow.topic}" posts come from ${topRow.creatorCount} creator${topRow.creatorCount > 1 ? 's' : ''}. Following one new ${topRow.topic.toLowerCase()} creator could diversify this topic.`;
+  }
+
+  return createResponse(
+    true,
+    {
+      rows,
+      takeaway,
+      totalPairs: creatorTopics.totalPairs,
+    },
+    null,
+    creatorTopics.scansUsed,
+    []
+  );
 }
 
+/**
+ * View 35: Creators by Emotional Tone
+ * PHASE 6A: Only works if per-item emotion data exists
+ */
 export function getCreatorsByToneData(scans, scanDetails) {
-  return createResponse(false, null, 'Creator tone analysis not available yet.', 0, []);
+  const creatorTones = aggregateCreatorTones(scans, scanDetails);
+
+  if (!creatorTones.hasPerItemData) {
+    return createResponse(
+      false,
+      null,
+      `Per-item emotion data not available. Missing: ${creatorTones.missingField}`,
+      0,
+      [],
+      { missingField: creatorTones.missingField }
+    );
+  }
+
+  if (creatorTones.topCreatorsByTone.length === 0) {
+    return createResponse(
+      false,
+      null,
+      'Not enough creator-tone pairs to analyze.',
+      creatorTones.scansUsed,
+      []
+    );
+  }
+
+  // Build table data
+  const rows = creatorTones.topCreatorsByTone.map(c => ({
+    creator: c.displayName,
+    dominantTone: c.dominantTone,
+    negativePercent: `${c.negativePercent}%`,
+    positivePercent: `${c.positivePercent}%`,
+    posts: c.totalPosts,
+  }));
+
+  return createResponse(
+    true,
+    {
+      rows,
+      totalPairs: creatorTones.totalPairs,
+    },
+    null,
+    creatorTones.scansUsed,
+    []
+  );
 }
 
 export function getCrossplatformCreatorData(scans, scanDetails) {
@@ -1103,10 +1465,52 @@ export function getAlgoTopicsLikedData(scans, scanDetails) {
 
 /**
  * View 42: Topics the algorithm thinks you avoid
- * BLOCKED: Requires reference topic universe
+ * PHASE 6A: Uses observed topic universe (renamed to "Topics that rarely show up")
  */
-export function getAlgoTopicsAvoidedData() {
-  return createResponse(false, null, 'Requires a reference topic universe.', 0, []);
+export function getAlgoTopicsAvoidedData(scans, scanDetails) {
+  const universe = buildTopicUniverse(scans, scanDetails);
+  const rare = deriveRareTopics(universe);
+
+  if (!rare.hasData) {
+    return createResponse(
+      false,
+      null,
+      rare.reason || 'Need more topic data to identify rarely-shown topics.',
+      universe.scansUsed,
+      []
+    );
+  }
+
+  // Combine rare topics and blind spots
+  const rarelyShown = [...rare.rareTopics.map(t => t.topic), ...rare.blindSpots]
+    .filter((v, i, a) => a.indexOf(v) === i) // dedupe
+    .slice(0, 8);
+
+  if (rarelyShown.length === 0) {
+    return createResponse(
+      true,
+      {
+        topics: [],
+        message: 'No topics are significantly underrepresented in your feed.',
+        confidence: rare.confidence,
+      },
+      null,
+      universe.scansUsed,
+      []
+    );
+  }
+
+  return createResponse(
+    true,
+    {
+      topics: rarelyShown,
+      confidence: rare.confidence,
+      note: 'These topics rarely appear in your feed based on observed content.',
+    },
+    null,
+    universe.scansUsed,
+    []
+  );
 }
 
 /**

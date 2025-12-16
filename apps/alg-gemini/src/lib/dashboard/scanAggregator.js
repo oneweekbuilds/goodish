@@ -856,6 +856,690 @@ export function aggregateAllScanData(scans, scanDetails) {
 }
 
 // ============================================
+// PHASE 6A: TOPIC UNIVERSE (Unblocks "Content You Almost Never See" + "Topics You Avoid")
+// ============================================
+
+/**
+ * Build a reference topic universe from ALL observed topics across scans.
+ * This is the union of all normalized topics with their total counts and shares.
+ *
+ * @param {Array} scans
+ * @param {Object} scanDetails
+ * @returns {Object} { topics: [{topic, count, share}], totalTopics, totalItems, scansUsed }
+ */
+export function buildTopicUniverse(scans, scanDetails) {
+  const topicCounts = {};
+  let totalTaggedItems = 0;
+  let scansUsed = 0;
+
+  for (const scan of scans) {
+    const detail = scanDetails[scan.id];
+    if (!detail) continue;
+
+    const feedItems = getFeedItems(detail);
+    if (feedItems.length === 0) continue;
+
+    let scanHasTopicData = false;
+
+    for (const item of feedItems) {
+      // Get topic from various possible fields
+      const rawTopic = item.topic || item.category || item.content_category;
+      if (!rawTopic) continue;
+
+      const topic = normalizeTopicLabel(rawTopic);
+      topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+      totalTaggedItems++;
+      scanHasTopicData = true;
+    }
+
+    if (scanHasTopicData) {
+      scansUsed++;
+    }
+  }
+
+  // Convert to sorted array
+  const topics = Object.entries(topicCounts)
+    .map(([topic, count]) => ({
+      topic,
+      count,
+      share: totalTaggedItems > 0 ? count / totalTaggedItems : 0,
+    }))
+    .sort((a, b) => b.count - a.count);
+
+  return {
+    topics,
+    totalTopics: topics.length,
+    totalItems: totalTaggedItems,
+    scansUsed,
+  };
+}
+
+/**
+ * Derive topics that rarely appear in the user's feed.
+ * Uses the topic universe to identify gaps.
+ *
+ * Thresholds:
+ * - "almost never see" = topics below 2% share but nonzero
+ * - "avoided" is renamed to "rarely show up" to avoid implying intent
+ *
+ * @param {Object} universe - Result from buildTopicUniverse
+ * @param {Object} options - { minItems: 20, lowShareThreshold: 0.02 }
+ * @returns {Object} { rareTopics, confidence, reason }
+ */
+export function deriveRareTopics(universe, options = {}) {
+  const { minItems = 20, lowShareThreshold = 0.02 } = options;
+
+  // Check if we have enough data
+  if (universe.totalItems < minItems) {
+    return {
+      rareTopics: [],
+      confidence: 'LOW',
+      reason: `Need more scannable content (${universe.totalItems}/${minItems} items with topics)`,
+      hasData: false,
+    };
+  }
+
+  // Check if most content is unclassified
+  const unclassifiedTopic = universe.topics.find(t => t.topic === UNCLASSIFIED_TOPIC);
+  const unclassifiedShare = unclassifiedTopic?.share || 0;
+
+  if (unclassifiedShare > 0.5) {
+    return {
+      rareTopics: [],
+      confidence: 'LOW',
+      reason: 'Most content could not be classified into topics',
+      hasData: false,
+    };
+  }
+
+  // Find rare topics (low share but nonzero)
+  const rareTopics = universe.topics
+    .filter(t => t.topic !== UNCLASSIFIED_TOPIC && t.share < lowShareThreshold && t.share > 0)
+    .slice(0, 10);
+
+  // Also identify potential blind spots - topics that exist in universe but are very low
+  const blindSpots = universe.topics
+    .filter(t => t.topic !== UNCLASSIFIED_TOPIC && t.share < 0.01)
+    .slice(0, 5);
+
+  return {
+    rareTopics: rareTopics.map(t => ({
+      topic: t.topic,
+      share: Math.round(t.share * 100 * 10) / 10, // One decimal place
+      count: t.count,
+    })),
+    blindSpots: blindSpots.map(t => t.topic),
+    confidence: universe.scansUsed >= 3 ? 'MEDIUM' : 'LOW',
+    reason: null,
+    hasData: true,
+    totalTopicsInUniverse: universe.totalTopics,
+  };
+}
+
+// ============================================
+// PHASE 6A: CREATOR-TOPIC MAPPING
+// ============================================
+
+/**
+ * Aggregate creator-topic relationships across all scans.
+ * For each feed item with both a creator and a topic, increment a counter.
+ *
+ * @param {Array} scans
+ * @param {Object} scanDetails
+ * @returns {Object} { creatorTopics, topCreatorsByTopic, scansUsed, totalPairs }
+ */
+export function aggregateCreatorTopics(scans, scanDetails) {
+  const creatorTopics = {}; // creatorId -> { topics: { topic: count }, displayName, totalPosts }
+  const topicCreators = {}; // topic -> { creators: { creatorId: count }, totalPosts }
+  let totalPairs = 0;
+  let scansUsed = 0;
+
+  for (const scan of scans) {
+    const detail = scanDetails[scan.id];
+    if (!detail) continue;
+
+    const feedItems = getFeedItems(detail);
+    if (feedItems.length === 0) continue;
+
+    let scanHasData = false;
+
+    for (const item of feedItems) {
+      const creatorId = normalizeCreatorId(item.creator || item.account);
+      const rawTopic = item.topic || item.category || item.content_category;
+
+      if (!creatorId || !rawTopic) continue;
+
+      const topic = normalizeTopicLabel(rawTopic);
+      if (topic === UNCLASSIFIED_TOPIC) continue; // Skip unclassified
+
+      scanHasData = true;
+      totalPairs++;
+
+      // Track creator -> topics
+      if (!creatorTopics[creatorId]) {
+        creatorTopics[creatorId] = {
+          displayName: item.creator?.name || item.creator?.handle || creatorId,
+          topics: {},
+          totalPosts: 0,
+        };
+      }
+      creatorTopics[creatorId].topics[topic] = (creatorTopics[creatorId].topics[topic] || 0) + 1;
+      creatorTopics[creatorId].totalPosts++;
+
+      // Track topic -> creators
+      if (!topicCreators[topic]) {
+        topicCreators[topic] = { creators: {}, totalPosts: 0 };
+      }
+      if (!topicCreators[topic].creators[creatorId]) {
+        topicCreators[topic].creators[creatorId] = {
+          displayName: creatorTopics[creatorId].displayName,
+          count: 0,
+        };
+      }
+      topicCreators[topic].creators[creatorId].count++;
+      topicCreators[topic].totalPosts++;
+    }
+
+    if (scanHasData) {
+      scansUsed++;
+    }
+  }
+
+  // Build top creators by topic table
+  const topCreatorsByTopic = Object.entries(topicCreators)
+    .map(([topic, data]) => {
+      const sortedCreators = Object.entries(data.creators)
+        .sort((a, b) => b[1].count - a[1].count)
+        .slice(0, 3); // Top 3 creators per topic
+
+      const topCreator = sortedCreators[0];
+      return {
+        topic,
+        topCreator: topCreator ? topCreator[1].displayName : null,
+        topCreatorShare: topCreator && data.totalPosts > 0
+          ? Math.round((topCreator[1].count / data.totalPosts) * 100)
+          : 0,
+        topCreatorCount: topCreator ? topCreator[1].count : 0,
+        totalPosts: data.totalPosts,
+        creatorCount: Object.keys(data.creators).length,
+      };
+    })
+    .filter(t => t.topCreator !== null)
+    .sort((a, b) => b.totalPosts - a.totalPosts)
+    .slice(0, 10); // Top 10 topics
+
+  return {
+    creatorTopics,
+    topicCreators,
+    topCreatorsByTopic,
+    scansUsed,
+    totalPairs,
+  };
+}
+
+// ============================================
+// PHASE 6A: CREATOR-TONE MAPPING (if per-item emotion data exists)
+// ============================================
+
+/**
+ * Aggregate creator-tone relationships across all scans.
+ * Only works if feed items have per-item emotion/valence data.
+ *
+ * @param {Array} scans
+ * @param {Object} scanDetails
+ * @returns {Object} { creatorTones, topCreatorsByTone, scansUsed, hasPerItemData }
+ */
+export function aggregateCreatorTones(scans, scanDetails) {
+  const creatorTones = {}; // creatorId -> { valences: { POSITIVE: n, NEGATIVE: n, ... }, displayName, total }
+  let totalPairs = 0;
+  let scansUsed = 0;
+  let hasPerItemData = false;
+
+  for (const scan of scans) {
+    const detail = scanDetails[scan.id];
+    if (!detail) continue;
+
+    const feedItems = getFeedItems(detail);
+    if (feedItems.length === 0) continue;
+
+    let scanHasData = false;
+
+    for (const item of feedItems) {
+      const creatorId = normalizeCreatorId(item.creator || item.account);
+      // Check for per-item emotion data in various possible fields
+      const valence = item.valence || item.emotion?.valence || item.wellbeing?.valence || item.sentiment;
+
+      if (!creatorId || !valence) continue;
+
+      const normalizedValence = valence.toUpperCase();
+      if (!['POSITIVE', 'NEGATIVE', 'NEUTRAL', 'MIXED'].includes(normalizedValence)) continue;
+
+      scanHasData = true;
+      hasPerItemData = true;
+      totalPairs++;
+
+      if (!creatorTones[creatorId]) {
+        creatorTones[creatorId] = {
+          displayName: item.creator?.name || item.creator?.handle || creatorId,
+          valences: { POSITIVE: 0, NEGATIVE: 0, NEUTRAL: 0, MIXED: 0 },
+          total: 0,
+        };
+      }
+      creatorTones[creatorId].valences[normalizedValence]++;
+      creatorTones[creatorId].total++;
+    }
+
+    if (scanHasData) {
+      scansUsed++;
+    }
+  }
+
+  // If no per-item data, return early
+  if (!hasPerItemData) {
+    return {
+      creatorTones: {},
+      topCreatorsByTone: [],
+      scansUsed: 0,
+      totalPairs: 0,
+      hasPerItemData: false,
+      missingField: 'per-item valence/emotion field on feed_items',
+    };
+  }
+
+  // Build creators ranked by negative content percentage
+  const creatorsByNegative = Object.entries(creatorTones)
+    .map(([id, data]) => ({
+      creatorId: id,
+      displayName: data.displayName,
+      negativePercent: data.total > 0 ? Math.round((data.valences.NEGATIVE / data.total) * 100) : 0,
+      positivePercent: data.total > 0 ? Math.round((data.valences.POSITIVE / data.total) * 100) : 0,
+      totalPosts: data.total,
+      dominantTone: Object.entries(data.valences).sort((a, b) => b[1] - a[1])[0][0],
+    }))
+    .filter(c => c.totalPosts >= 3) // Minimum 3 posts for reliability
+    .sort((a, b) => b.negativePercent - a.negativePercent)
+    .slice(0, 10);
+
+  return {
+    creatorTones,
+    topCreatorsByTone: creatorsByNegative,
+    scansUsed,
+    totalPairs,
+    hasPerItemData: true,
+  };
+}
+
+// ============================================
+// PHASE 6A: HIDDEN PROMOTION HEURISTIC
+// ============================================
+
+// Disclosure keywords (indicate labeled promotional content)
+const DISCLOSURE_KEYWORDS = [
+  'ad', 'sponsored', 'paid partnership', 'promotion', 'advertisement',
+  '#ad', '#sponsored', '#paidpartnership',
+];
+
+// Affiliate and CTA signals (may indicate unlabeled influence)
+const AFFILIATE_SIGNALS = [
+  'use my code', 'use code', 'discount code', 'promo code', 'coupon code',
+  'link in bio', 'affiliate', 'shop now', 'limited time', 'sponsored by',
+  'check out', 'get yours', 'click the link', 'swipe up', 'tap to shop',
+  'available now', 'order now', 'buy now', "i'm partnering", 'partnership',
+];
+
+// URL patterns that suggest affiliate links
+const AFFILIATE_URL_PATTERNS = [
+  'utm_', 'ref=', 'aff=', 'affiliate', 'partner', 'tracking',
+];
+
+// Promotional theme keyword buckets
+const PROMO_THEME_KEYWORDS = {
+  Beauty: ['makeup', 'skincare', 'beauty', 'cosmetic', 'lipstick', 'foundation', 'serum'],
+  Fitness: ['workout', 'fitness', 'protein', 'supplement', 'gym', 'weight loss', 'diet'],
+  Finance: ['invest', 'crypto', 'trading', 'stock', 'money', 'finance', 'loan', 'credit'],
+  Food: ['food', 'recipe', 'restaurant', 'meal', 'cooking', 'snack', 'drink'],
+  Tech: ['app', 'software', 'tech', 'device', 'phone', 'computer', 'gadget'],
+  Lifestyle: ['lifestyle', 'home', 'decor', 'travel', 'vacation', 'hotel'],
+  Fashion: ['fashion', 'clothing', 'outfit', 'dress', 'shoes', 'accessories'],
+  Gaming: ['game', 'gaming', 'console', 'esports', 'stream'],
+  Other: [],
+};
+
+/**
+ * Detect labeled ads in feed items.
+ *
+ * @param {Array} items - Feed items
+ * @returns {Object} { count, items }
+ */
+export function detectLabeledAds(items) {
+  const labeledAds = items.filter(item => item.is_ad === true);
+  return {
+    count: labeledAds.length,
+    items: labeledAds,
+  };
+}
+
+/**
+ * Detect possible promotional content using heuristic signals.
+ * This is a CONSERVATIVE estimate with LOW confidence.
+ *
+ * @param {Array} items - Feed items
+ * @returns {Object} { count, items, signalBreakdown, confidence }
+ */
+export function detectPossibleInfluence(items) {
+  const flaggedItems = [];
+  const signalCounts = {};
+
+  for (const item of items) {
+    // Skip already-labeled ads
+    if (item.is_ad) continue;
+
+    const signals = [];
+    const text = (item.caption || item.text || item.content || '').toLowerCase();
+
+    // Check for affiliate signals in text
+    for (const signal of AFFILIATE_SIGNALS) {
+      if (text.includes(signal.toLowerCase())) {
+        signals.push('affiliate_language');
+        signalCounts['affiliate_language'] = (signalCounts['affiliate_language'] || 0) + 1;
+        break;
+      }
+    }
+
+    // Check for URL patterns (if URLs exist)
+    const urls = item.urls || [];
+    const urlString = urls.join(' ').toLowerCase();
+    for (const pattern of AFFILIATE_URL_PATTERNS) {
+      if (urlString.includes(pattern)) {
+        signals.push('affiliate_url');
+        signalCounts['affiliate_url'] = (signalCounts['affiliate_url'] || 0) + 1;
+        break;
+      }
+    }
+
+    // Check for disclosure keywords that might be informal
+    for (const keyword of DISCLOSURE_KEYWORDS) {
+      if (text.includes(keyword.toLowerCase())) {
+        signals.push('disclosure_language');
+        signalCounts['disclosure_language'] = (signalCounts['disclosure_language'] || 0) + 1;
+        break;
+      }
+    }
+
+    // Check ad_metadata for product mentions (even if not flagged as ad)
+    if (item.ad_metadata?.product_or_service) {
+      signals.push('product_mention');
+      signalCounts['product_mention'] = (signalCounts['product_mention'] || 0) + 1;
+    }
+
+    if (signals.length > 0) {
+      flaggedItems.push({
+        ...item,
+        influenceSignals: signals,
+      });
+    }
+  }
+
+  return {
+    count: flaggedItems.length,
+    items: flaggedItems,
+    signalBreakdown: signalCounts,
+    confidence: 'LOW', // Always LOW for heuristic
+  };
+}
+
+/**
+ * Summarize promotional influence across all scans.
+ *
+ * @param {Array} scans
+ * @param {Object} scanDetails
+ * @returns {Object} Summary with labeled, possible, and breakdown
+ */
+export function summarizeInfluence(scans, scanDetails) {
+  let totalItems = 0;
+  let labeledAds = 0;
+  let possibleInfluence = 0;
+  const allSignals = {};
+  let scansUsed = 0;
+
+  for (const scan of scans) {
+    const detail = scanDetails[scan.id];
+    if (!detail) continue;
+
+    const feedItems = getFeedItems(detail);
+    if (feedItems.length === 0) continue;
+
+    scansUsed++;
+    totalItems += feedItems.length;
+
+    const labeled = detectLabeledAds(feedItems);
+    labeledAds += labeled.count;
+
+    const possible = detectPossibleInfluence(feedItems);
+    possibleInfluence += possible.count;
+
+    // Aggregate signals
+    for (const [signal, count] of Object.entries(possible.signalBreakdown)) {
+      allSignals[signal] = (allSignals[signal] || 0) + count;
+    }
+  }
+
+  // Top signals
+  const topSignals = Object.entries(allSignals)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([signal, count]) => ({
+      signal: signal.replace(/_/g, ' '),
+      count,
+    }));
+
+  return {
+    totalItems,
+    labeledAds,
+    labeledShare: totalItems > 0 ? Math.round((labeledAds / totalItems) * 100) : 0,
+    possibleInfluence,
+    possibleInfluenceShare: totalItems > 0 ? Math.round((possibleInfluence / totalItems) * 100) : 0,
+    topSignals,
+    scansUsed,
+    hasData: scansUsed > 0 && totalItems > 0,
+    confidence: 'LOW',
+    disclaimer: 'This is a best-effort guess based on language patterns, not proof of sponsorship.',
+  };
+}
+
+/**
+ * Classify promotional content into theme buckets.
+ * Simple keyword matching, NOT ML.
+ *
+ * @param {Array} scans
+ * @param {Object} scanDetails
+ * @returns {Object} Theme breakdown
+ */
+export function classifyPromoThemes(scans, scanDetails) {
+  const themeCounts = {};
+  let totalClassified = 0;
+
+  for (const scan of scans) {
+    const detail = scanDetails[scan.id];
+    if (!detail) continue;
+
+    const feedItems = getFeedItems(detail);
+
+    for (const item of feedItems) {
+      // Only classify ads or possible promotional content
+      if (!item.is_ad) continue;
+
+      const text = (item.caption || item.text || item.ad_metadata?.product_or_service || '').toLowerCase();
+      let matchedTheme = 'Other';
+
+      for (const [theme, keywords] of Object.entries(PROMO_THEME_KEYWORDS)) {
+        if (theme === 'Other') continue;
+        for (const keyword of keywords) {
+          if (text.includes(keyword)) {
+            matchedTheme = theme;
+            break;
+          }
+        }
+        if (matchedTheme !== 'Other') break;
+      }
+
+      themeCounts[matchedTheme] = (themeCounts[matchedTheme] || 0) + 1;
+      totalClassified++;
+    }
+  }
+
+  const themes = Object.entries(themeCounts)
+    .map(([theme, count]) => ({
+      theme,
+      count,
+      share: totalClassified > 0 ? Math.round((count / totalClassified) * 100) : 0,
+    }))
+    .sort((a, b) => b.count - a.count);
+
+  return {
+    themes,
+    totalClassified,
+    hasData: totalClassified > 0,
+    note: 'Themes classified by keyword matching, not ML.',
+  };
+}
+
+// ============================================
+// PHASE 6A: POLITICAL LEANING HEURISTIC (OPT-IN)
+// ============================================
+
+// Conservative left-leaning signals (explicit only)
+const LEFT_SIGNALS = [
+  'progressive', 'liberal', 'democrat', 'left-wing', 'socialism', 'leftist',
+  'bernie', 'aoc', 'green new deal', 'defund', 'blm', 'black lives matter',
+];
+
+// Conservative right-leaning signals (explicit only)
+const RIGHT_SIGNALS = [
+  'conservative', 'republican', 'right-wing', 'maga', 'trump', 'gop',
+  'patriot', 'second amendment', '2a', 'pro-life', 'america first',
+];
+
+// Neutral political signals
+const NEUTRAL_SIGNALS = [
+  'bipartisan', 'moderate', 'centrist', 'independent', 'both sides',
+];
+
+/**
+ * Classify political leaning of a single item using heuristic keywords.
+ * Very conservative - defaults to 'unknown' unless explicit signals.
+ *
+ * @param {Object} item - Feed item
+ * @returns {Object} { bucket: 'left'|'neutral'|'right'|'unknown', reasons: [], confidence: 'LOW' }
+ */
+export function classifyPoliticalLeaningHeuristic(item) {
+  const text = (item.caption || item.text || item.content || '').toLowerCase();
+
+  // Check for explicit signals
+  let leftScore = 0;
+  let rightScore = 0;
+  let neutralScore = 0;
+  const reasons = [];
+
+  for (const signal of LEFT_SIGNALS) {
+    if (text.includes(signal)) {
+      leftScore++;
+      reasons.push(`contains "${signal}"`);
+    }
+  }
+
+  for (const signal of RIGHT_SIGNALS) {
+    if (text.includes(signal)) {
+      rightScore++;
+      reasons.push(`contains "${signal}"`);
+    }
+  }
+
+  for (const signal of NEUTRAL_SIGNALS) {
+    if (text.includes(signal)) {
+      neutralScore++;
+      reasons.push(`contains "${signal}"`);
+    }
+  }
+
+  // Determine bucket
+  let bucket = 'unknown';
+
+  if (neutralScore > 0 && neutralScore >= leftScore && neutralScore >= rightScore) {
+    bucket = 'neutral';
+  } else if (leftScore > rightScore && leftScore > 0) {
+    bucket = 'left';
+  } else if (rightScore > leftScore && rightScore > 0) {
+    bucket = 'right';
+  } else if (leftScore > 0 && rightScore > 0) {
+    // Mixed signals -> neutral
+    bucket = 'neutral';
+    reasons.push('mixed signals');
+  }
+
+  return {
+    bucket,
+    reasons: reasons.slice(0, 3),
+    confidence: 'LOW',
+  };
+}
+
+/**
+ * Aggregate political leaning classification across scans.
+ * Only classifies POLITICAL content (items marked as political).
+ *
+ * @param {Array} scans
+ * @param {Object} scanDetails
+ * @returns {Object} Political leaning breakdown
+ */
+export function aggregatePoliticalLeaning(scans, scanDetails) {
+  const buckets = { left: 0, neutral: 0, right: 0, unknown: 0 };
+  let totalPolitical = 0;
+  let scansUsed = 0;
+
+  for (const scan of scans) {
+    const detail = scanDetails[scan.id];
+    if (!detail) continue;
+
+    const feedItems = getFeedItems(detail);
+    if (feedItems.length === 0) continue;
+
+    let scanHasData = false;
+
+    for (const item of feedItems) {
+      // Only classify items marked as political
+      if (!item.political?.is_political) continue;
+
+      scanHasData = true;
+      totalPolitical++;
+
+      const result = classifyPoliticalLeaningHeuristic(item);
+      buckets[result.bucket]++;
+    }
+
+    if (scanHasData) {
+      scansUsed++;
+    }
+  }
+
+  // Calculate percentages
+  const percentages = {};
+  for (const [bucket, count] of Object.entries(buckets)) {
+    percentages[bucket] = totalPolitical > 0 ? Math.round((count / totalPolitical) * 100) : 0;
+  }
+
+  return {
+    buckets,
+    percentages,
+    totalPolitical,
+    scansUsed,
+    hasData: totalPolitical >= 5, // Need at least 5 political items
+    confidence: totalPolitical >= 10 ? 'LOW' : 'VERY_LOW',
+    disclaimer: 'These are rough estimates based on keyword patterns, not facts about content or creators.',
+  };
+}
+
+// ============================================
 // UTILITY FUNCTIONS
 // ============================================
 

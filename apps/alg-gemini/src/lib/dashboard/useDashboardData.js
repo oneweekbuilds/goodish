@@ -56,6 +56,9 @@ export function useDashboardData() {
   // Fetch details for all scans (for trend views)
   const fetchAllScanDetails = useCallback(async (scanList) => {
     const details = {};
+    let totalFeedItems = 0;
+    const platformSet = new Set();
+
     for (const scan of scanList) {
       if (!scanDetails[scan.id]) {
         const detail = await fetchScanDetail(scan.id);
@@ -65,7 +68,30 @@ export function useDashboardData() {
       } else {
         details[scan.id] = scanDetails[scan.id];
       }
+
+      // Aggregate stats for debug
+      const scanData = details[scan.id];
+      if (scanData) {
+        const data = scanData.result || scanData.scan || scanData;
+        const items = data?.feed_items || [];
+        totalFeedItems += items.length;
+        if (scan.platform) {
+          platformSet.add(scan.platform.toLowerCase());
+        }
+      }
     }
+
+    // DEV-ONLY DEBUG: Print aggregation stats (remove in production)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Dashboard Debug] Scan aggregation stats:', {
+        totalScans: scanList.length,
+        scansWithDetails: Object.keys(details).length,
+        platforms: Array.from(platformSet),
+        platformCount: platformSet.size,
+        totalFeedItems,
+      });
+    }
+
     return details;
   }, [scanDetails, fetchScanDetail]);
 
