@@ -81,19 +81,24 @@ const CounterfactualNote = ({ text }) => {
 };
 
 /**
- * ViewCard component - renders a single dashboard view card.
- * Phase 8: UX Simplification
- *   - Increased whitespace for visual breathing room
- *   - Takeaways visually dominant over data/charts
- *   - Reduced emphasis on charts
- *   - Simplified feedback affordance
+ * ViewCard component - UI Refoundation
+ *
+ * Card Anatomy Contract:
+ * 1. Eyebrow label (small, muted)
+ * 2. Title (clear, max 2 lines)
+ * 3. Takeaway sentence (LARGEST TEXT)
+ * 4. Optional chart (visually de-emphasized, max-height 120px)
+ * 5. Why explanation (small)
  *
  * @param {Object} view - View configuration from dashboardCatalog
- * @param {Object} dataResult - Result from data helper function (includes scansUsed, scansWithData)
- * @param {number} scanCount - Total number of scans (for reference only)
+ * @param {Object} dataResult - Result from data helper function
+ * @param {number} scanCount - Total number of scans
  * @param {number} platformCount - Number of platforms scanned
+ * @param {string} accentColor - 'blue' or 'green' for semantic color lane
+ * @param {boolean} isFullWidth - Full width card (primary/summary)
+ * @param {boolean} isInline - Inline card (inside expandable section)
  */
-const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
+const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0, accentColor = 'blue', isFullWidth = false, isInline = false }) => {
   const {
     title,
     description,
@@ -129,6 +134,13 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
     ? action(data)
     : null;
 
+  /**
+   * ChartContainer - UI Refoundation: Enforce reduced opacity for chart portions only
+   * Contract: opacity 0.8 for visual de-emphasis on secondary cards
+   * Max-height is enforced by the chart components themselves (120px for lines)
+   */
+  const deemphasizeCharts = !isPrimary;
+
   // Render the appropriate chart/content based on outputType
   const renderContent = () => {
     if (!hasData) return null;
@@ -159,6 +171,7 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
   };
 
   // Number + optional line chart
+  // UI Refoundation: Chart portion de-emphasized on secondary cards
   const renderNumberLine = (data, type) => {
     if (!data) return null;
 
@@ -172,10 +185,12 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
           <BigNumber value={`${value}%`} />
         )}
         {showLine && (
-          <LineChartSimple
-            data={data.trend.map(t => ({ label: t.label, value: t.value })).reverse()}
-            valueLabel="%"
-          />
+          <div className={deemphasizeCharts ? 'opacity-80' : ''}>
+            <LineChartSimple
+              data={data.trend.map(t => ({ label: t.label, value: t.value })).reverse()}
+              valueLabel="%"
+            />
+          </div>
         )}
         {/* PHASE 6A: Show top signals for promotion heuristic */}
         {data.topSignals && data.topSignals.length > 0 && (
@@ -200,6 +215,7 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
   };
 
   // Number + bar chart for topic variety
+  // UI Refoundation: Chart portion de-emphasized on secondary cards
   const renderNumberBar = (data) => {
     if (!data) return null;
 
@@ -207,7 +223,9 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
       <div className="space-y-4">
         <BigNumber value={data.topicCount} label="topics detected" />
         {data.topTopics && data.topTopics.length > 0 && (
-          <BarChartSimple data={data.topTopics} valueLabel="%" />
+          <div className={deemphasizeCharts ? 'opacity-80' : ''}>
+            <BarChartSimple data={data.topTopics} valueLabel="%" />
+          </div>
         )}
         {data.unclassifiedNote && (
           <p className="text-xs text-slate-400 italic">
@@ -219,6 +237,7 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
   };
 
   // Horizontal bar chart
+  // UI Refoundation: De-emphasized on secondary cards
   const renderBar = (data) => {
     if (!data) return null;
 
@@ -228,7 +247,9 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
 
     return (
       <div className="space-y-3">
-        <BarChartSimple data={bars} valueLabel="%" />
+        <div className={deemphasizeCharts ? 'opacity-80' : ''}>
+          <BarChartSimple data={bars} valueLabel="%" />
+        </div>
         {/* PHASE 6A: Show note if present */}
         {data.note && (
           <p className="text-xs text-slate-400 italic">{data.note}</p>
@@ -238,13 +259,16 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
   };
 
   // 100% stacked bar
+  // UI Refoundation: De-emphasized on secondary cards
   const renderStacked100 = (data) => {
     if (!data) return null;
     const segments = data.segments || data;
     if (!Array.isArray(segments)) return null;
     return (
       <div className="space-y-3">
-        <StackedBar100 segments={segments} />
+        <div className={deemphasizeCharts ? 'opacity-80' : ''}>
+          <StackedBar100 segments={segments} />
+        </div>
         {/* PHASE 6A: Show disclaimer if present (political leaning) */}
         {data.disclaimer && (
           <p className="text-xs text-slate-400 italic">{data.disclaimer}</p>
@@ -254,6 +278,7 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
   };
 
   // Line chart
+  // UI Refoundation: De-emphasized on secondary cards
   const renderLine = (data) => {
     if (!data) return null;
     const trend = data.trend || data;
@@ -267,7 +292,9 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
 
     return (
       <div className="space-y-2">
-        <LineChartSimple data={chartData} valueLabel="%" />
+        <div className={deemphasizeCharts ? 'opacity-80' : ''}>
+          <LineChartSimple data={chartData} valueLabel="%" />
+        </div>
         {data.direction && (
           <p className="text-sm text-center text-slate-600">
             Trend: <span className="font-medium">{data.direction}</span>
@@ -356,12 +383,15 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
       return null;
     }
 
+    // UI Refoundation: Bullet color uses semantic accent
+    const bulletColor = accentColor === 'green' ? 'text-emerald-500' : 'text-primary-blue';
+
     return (
       <div className="space-y-3">
         <ul className="space-y-2">
           {items.map((item, index) => (
             <li key={index} className="flex items-start gap-2 text-slate-700">
-              <span className={item.isUnclassified ? 'text-slate-400 mt-1' : 'text-primary-blue mt-1'}>•</span>
+              <span className={item.isUnclassified ? 'text-slate-400 mt-1' : `${bulletColor} mt-1`}>•</span>
               <span className={item.isUnclassified ? 'text-slate-500 italic' : ''}>
                 {typeof item === 'string' ? item : item.text}
                 {item.subtext && (
@@ -434,41 +464,55 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
     return 'neutral';
   };
 
-  // Card container styles based on hierarchy - Phase 10: assertive visual hierarchy
+  // Semantic accent classes based on color lane
+  const accentBorder = accentColor === 'green' ? 'border-emerald-200' : 'border-primary-blue/20';
+  const accentRing = accentColor === 'green' ? 'ring-emerald-100' : 'ring-primary-blue/10';
+  const accentBg = accentColor === 'green' ? 'bg-emerald-50/50' : 'bg-primary-blue/5';
+  const accentText = accentColor === 'green' ? 'text-emerald-600' : 'text-primary-blue';
+
+  // Card container styles - UI Refoundation: Enforced padding contract
   const getCardClasses = () => {
-    const baseClasses = 'bg-surface-card border rounded-2xl overflow-hidden flex flex-col transition-all';
+    // Inline cards (inside expandable) have no container styling
+    if (isInline) {
+      return '';
+    }
+
+    const baseClasses = 'bg-white border rounded-2xl overflow-hidden flex flex-col transition-all';
 
     if (isSummaryCard) {
-      return `${baseClasses} border-primary-blue/20 ring-1 ring-primary-blue/10 shadow-sm`;
+      // Summary: muted, full-width, subtle accent
+      return `${baseClasses} ${accentBorder} ring-1 ${accentRing} shadow-sm`;
     }
 
     if (isPrimary && hasData) {
-      // Primary cards with data: unmistakable presence, larger shadow
+      // Primary: strong presence, shadow-md
       return `${baseClasses} border-slate-200 shadow-md ring-1 ring-slate-100`;
     }
 
     if (isPrimary && !hasData) {
-      // Primary cards without data: subtle
       return `${baseClasses} border-slate-100 bg-slate-50/30`;
     }
 
     if (isFutureCard) {
-      // Future feature cards: visually muted
       return `${baseClasses} border-slate-100 bg-slate-50/30 opacity-50`;
     }
 
-    // Secondary/supporting cards: clearly secondary, muted
-    return `${baseClasses} border-slate-100/80 bg-slate-50/20`;
+    // Secondary: muted background
+    return `${baseClasses} border-slate-100 bg-slate-50/30`;
   };
 
-  // Header styles based on hierarchy - Phase 10: clear visual distinction
+  // Header styles - UI Refoundation: Padding contract
+  // Primary: p-7, Secondary: p-5, Summary: p-6
   const getHeaderClasses = () => {
+    if (isInline) {
+      return 'pb-4';
+    }
+
     if (isSummaryCard) {
-      return 'px-7 py-6 border-b border-primary-blue/10 bg-primary-blue/5';
+      return `px-6 py-5 border-b border-slate-100 ${accentBg}`;
     }
 
     if (isPrimary && hasData) {
-      // Primary: generous padding, clean background
       return 'px-7 py-6 border-b border-slate-100 bg-white';
     }
 
@@ -476,42 +520,54 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
       return 'px-5 py-3 border-b border-slate-100';
     }
 
-    // Secondary: smaller, lighter
-    return 'px-5 py-4 border-b border-slate-50 bg-slate-50/30';
+    // Secondary: p-5
+    return 'px-5 py-4 border-b border-slate-50';
+  };
+
+  // Content padding based on card type
+  const getContentPadding = () => {
+    if (isInline) return '';
+    if (isPrimary && hasData) return 'p-7';
+    if (isSummaryCard) return 'p-6';
+    return 'p-5';
   };
 
   return (
     <div className={getCardClasses()}>
-      {/* Card Header */}
+      {/* Card Header - Anatomy: Eyebrow → Title → Description */}
       <div className={getHeaderClasses()}>
+        {/* Eyebrow label with semantic accent */}
         {isSummaryCard && (
-          <span className="inline-block text-xs font-semibold text-primary-blue uppercase tracking-wide mb-1">
-            What This Means for You
+          <span className={`inline-block text-[10px] font-semibold uppercase tracking-widest mb-2 ${accentText}`}>
+            Summary
           </span>
         )}
-        {isPrimary && !isSummaryCard && hasData && (
-          <span className="inline-block text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1.5">
+        {isPrimary && !isSummaryCard && hasData && !isInline && (
+          <span className={`inline-block text-[10px] font-semibold uppercase tracking-widest mb-2 ${accentText}`}>
             Key Insight
           </span>
         )}
-        <h3 className={`font-semibold text-text-main ${
-          isPrimary && hasData ? 'text-lg mb-1.5' :
-          isFutureCard ? 'text-sm text-slate-500 mb-1' :
-          'text-base mb-1'
+        {/* Title */}
+        <h3 className={`font-semibold text-text-main line-clamp-2 ${
+          isPrimary && hasData ? 'text-lg' :
+          isFutureCard ? 'text-sm text-slate-500' :
+          'text-base'
         }`}>
           {title}
         </h3>
-        <p className={`line-clamp-2 ${
-          isPrimary && hasData ? 'text-sm text-text-muted' :
-          isFutureCard ? 'text-xs text-slate-400' :
-          'text-xs text-slate-400'
-        }`}>
-          {description}
-        </p>
+        {/* Description - subtle */}
+        {!isInline && (
+          <p className={`mt-1 line-clamp-2 ${
+            isPrimary && hasData ? 'text-sm text-text-muted' :
+            'text-xs text-slate-400'
+          }`}>
+            {description}
+          </p>
+        )}
       </div>
 
-      {/* Card Content - Phase 10: clear hierarchy in content area */}
-      <div className={`flex-1 ${isPrimary && hasData ? 'p-7' : 'p-5'}`}>
+      {/* Card Content - Anatomy: Takeaway (largest) → Chart (de-emphasized) → Why */}
+      <div className={`flex-1 ${getContentPadding()}`}>
         {hasData ? (
           <div className="space-y-5">
             {/* Takeaway FIRST for primary cards - makes it visually dominant */}

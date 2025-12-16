@@ -4,11 +4,13 @@ import React from 'react';
  * Simple horizontal bar chart component.
  * No external dependencies - pure HTML/CSS.
  *
+ * UI Refoundation: Default to max 5 bars for visual clarity
+ *
  * @param {Array} data - Array of { label: string, value: number, color?: string }
  * @param {string} valueLabel - Label for values (e.g., "%" or "posts")
- * @param {number} maxBars - Maximum number of bars to show (default 10)
+ * @param {number} maxBars - Maximum number of bars to show (default 5)
  */
-const BarChartSimple = ({ data = [], valueLabel = '', maxBars = 10 }) => {
+const BarChartSimple = ({ data = [], valueLabel = '', maxBars = 5 }) => {
   if (!data || data.length === 0) return null;
 
   const displayData = data.slice(0, maxBars);

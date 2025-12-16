@@ -80,18 +80,17 @@ const TabTrustSentence = ({ tabId }) => {
 };
 
 /**
- * SectionHeader - Phase 10: Quiet, clear section markers
+ * SectionHeader - UI Refoundation: Subtle accent from semantic color lane
  */
-const SectionHeader = ({ title, subtitle }) => (
-  <div className="col-span-full pt-10 pb-4 first:pt-2">
-    <div className="flex items-center gap-4">
-      <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">
-        {title}
-      </h3>
-      <div className="flex-1 h-px bg-slate-100/80" />
-    </div>
+const SectionHeader = ({ title, subtitle, accentColor = 'blue' }) => (
+  <div className="flex items-center gap-4">
+    <div className={`w-1 h-4 rounded-full ${accentColor === 'green' ? 'bg-emerald-400' : 'bg-primary-blue'}`} />
+    <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest">
+      {title}
+    </h3>
+    <div className="flex-1 h-px bg-slate-100" />
     {subtitle && (
-      <p className="text-xs text-slate-400 mt-1.5">{subtitle}</p>
+      <span className="text-xs text-slate-400">{subtitle}</span>
     )}
   </div>
 );
@@ -143,6 +142,7 @@ const DataCoverageBar = ({ scans, scanDetails, tabId }) => {
 /**
  * PoliticalLeaningToggle - Opt-in toggle for political leaning estimates
  * PHASE 6A: Political leaning requires explicit opt-in
+ * UI Refoundation: Uses green accent (politics tab semantic color lane)
  */
 const PoliticalLeaningToggle = ({ enabled, onToggle }) => (
   <div className="flex items-center gap-3 px-4 py-3 bg-amber-50 rounded-lg border border-amber-100">
@@ -159,7 +159,7 @@ const PoliticalLeaningToggle = ({ enabled, onToggle }) => (
       onClick={onToggle}
       className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
       style={{
-        backgroundColor: enabled ? '#3B82F6' : '#E5E7EB',
+        backgroundColor: enabled ? '#10B981' : '#E5E7EB',
         color: enabled ? 'white' : '#64748B',
       }}
     >
@@ -220,209 +220,204 @@ const HowToUnlockBox = ({ tabId }) => {
 };
 
 /**
- * CollapsedByDefaultCard - A collapsed view that can be expanded
- * PHASE 10: Clearly "out of the way" - minimal visual weight
+ * ExpandableDetailRow - Inline expandable row replacing "View" buttons
+ * UI Refoundation: No "View" buttons allowed - use inline expand
  */
-const CollapsedByDefaultCard = ({ view, dataResult, onExpand }) => {
+const ExpandableDetailRow = ({ view, dataResult, isExpanded, onToggle, accentColor }) => {
   const hasData = dataResult?.hasData;
+  const takeawayText = hasData && typeof view.takeaway === 'function'
+    ? view.takeaway(dataResult?.data)
+    : null;
 
   return (
-    <div className="bg-slate-50/40 border border-slate-100/60 rounded-lg px-4 py-3 hover:bg-slate-50/70 transition-colors">
-      <div className="flex items-center justify-between gap-3">
+    <div className="border-t border-slate-100 first:border-t-0">
+      <button
+        onClick={onToggle}
+        className="w-full px-5 py-4 flex items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors text-left"
+      >
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-medium text-slate-500 truncate">
+          <h4 className="text-sm font-medium text-slate-600">
             {view.title}
-          </h3>
-          {hasData && (
+          </h4>
+          {!isExpanded && takeawayText && (
             <p className="text-xs text-slate-400 mt-0.5 truncate">
-              {typeof view.takeaway === 'function'
-                ? view.takeaway(dataResult?.data)
-                : 'Data available'}
+              {takeawayText}
             </p>
           )}
         </div>
-        <button
-          onClick={onExpand}
-          className="px-3 py-1 text-xs font-medium text-slate-500 hover:text-primary-blue hover:bg-white rounded-md transition-colors flex-shrink-0 border border-transparent hover:border-slate-200"
-        >
-          View
-        </button>
-      </div>
+        <span className={`text-xs font-medium transition-colors ${accentColor === 'green' ? 'text-emerald-600' : 'text-primary-blue'}`}>
+          {isExpanded ? 'Show less' : 'Show more'}
+        </span>
+      </button>
+      {isExpanded && (
+        <div className="px-5 pb-5 pt-1">
+          <ViewCard
+            view={view}
+            dataResult={dataResult}
+            scanCount={0}
+            platformCount={0}
+            accentColor={accentColor}
+            isInline={true}
+          />
+        </div>
+      )}
     </div>
   );
 };
 
 /**
- * ViewsGridWithCollapsing - Renders views grid with collapsed empty states and narrative sections
- * PHASE 6B Updates:
- * - Hidden views are already filtered out by getViewsForTab
- * - collapsedByDefault views show compact preview with "See details" button
- * - When 3+ cards share the same empty state reason, they're collapsed into one placeholder
+ * ViewsGridWithCollapsing - UI Refoundation: Enforced section structure
+ *
+ * Structure per tab:
+ * - PRIMARY CARD: Full width
+ * - SECONDARY ROW: 2 cards, equal width
+ * - EXPANDABLE SECTION: Inline collapsed details
+ * - SUMMARY CARD: Full width, muted
+ *
+ * Semantic color lanes (logo consistent):
+ * - Ads & Influence → blue
+ * - Politics & Worldview → green
+ * - Patterns → blue
+ * - Creators → green
+ * - Algorithm → blue
  */
-const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCount, tabName }) => {
+const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCount, tabName, tabId }) => {
   // Track which collapsedByDefault views have been expanded
   const [expandedViews, setExpandedViews] = useState(new Set());
 
-  const handleExpand = (viewId) => {
-    setExpandedViews((prev) => new Set([...prev, viewId]));
+  // Semantic color lanes - alternating blue/green by tab
+  const accentColor = ['politics', 'creators'].includes(tabId) ? 'green' : 'blue';
+
+  const handleToggle = (viewId) => {
+    setExpandedViews((prev) => {
+      const next = new Set(prev);
+      if (next.has(viewId)) {
+        next.delete(viewId);
+      } else {
+        next.add(viewId);
+      }
+      return next;
+    });
   };
 
   // Group views by sortOrder AND data availability
   const groupedViews = {
-    primary: { withData: [], empty: [], collapsed: [] },
-    supporting: { withData: [], empty: [], collapsed: [] },
-    future: { withData: [], empty: [], collapsed: [] },
-    summary: { withData: [], empty: [], collapsed: [] },
-  };
-
-  const emptyByType = {
-    [EMPTY_STATE_TYPES.NEEDS_MORE_SCANS]: [],
-    [EMPTY_STATE_TYPES.NEEDS_BROADER_BEHAVIOR]: [],
-    [EMPTY_STATE_TYPES.FUTURE_FEATURE]: [],
+    primary: { withData: [], collapsed: [] },
+    supporting: { withData: [], collapsed: [] },
+    summary: { withData: [] },
   };
 
   views.forEach((view) => {
     const result = viewDataResults[view.id] || { hasData: false };
     const group = view.sortOrder || 'supporting';
+
+    // Skip views without data entirely (cleaner UI)
+    if (!result.hasData) return;
+
     const targetGroup = groupedViews[group] || groupedViews.supporting;
 
-    // Check if this view should be collapsed by default (and hasn't been expanded)
-    const isCollapsedByDefault = view.collapsedByDefault && !expandedViews.has(view.id);
-
-    if (result.hasData) {
-      if (isCollapsedByDefault) {
-        targetGroup.collapsed.push(view);
-      } else {
-        targetGroup.withData.push(view);
-      }
+    // Check if this view should be collapsed by default
+    if (view.collapsedByDefault) {
+      targetGroup.collapsed.push(view);
     } else {
-      targetGroup.empty.push(view);
-      // Track by empty state type for collapsing
-      const type = view.emptyStateType || EMPTY_STATE_TYPES.NEEDS_MORE_SCANS;
-      if (emptyByType[type]) {
-        emptyByType[type].push(view);
-      }
+      targetGroup.withData.push(view);
     }
   });
-
-  // Determine which empty states to collapse (3+ cards of same type)
-  const collapsedEmptyTypes = new Set();
-  Object.entries(emptyByType).forEach(([type, emptyViews]) => {
-    if (emptyViews.length >= 3) {
-      collapsedEmptyTypes.add(type);
-    }
-  });
-
-  // Helper to check if view should be hidden (collapsed into placeholder)
-  const isEmptyCollapsed = (view) => {
-    const result = viewDataResults[view.id] || { hasData: false };
-    if (result.hasData) return false;
-    const type = view.emptyStateType || EMPTY_STATE_TYPES.NEEDS_MORE_SCANS;
-    return collapsedEmptyTypes.has(type);
-  };
-
-  // Render a view card
-  const renderViewCard = (view) => (
-    <ViewCard
-      key={view.id}
-      view={view}
-      dataResult={viewDataResults[view.id] || { hasData: false, data: null, missing: 'Loading...' }}
-      scanCount={scanCount}
-      platformCount={platformCount}
-    />
-  );
-
-  // Render a collapsed-by-default card
-  const renderCollapsedCard = (view) => (
-    <CollapsedByDefaultCard
-      key={view.id}
-      view={view}
-      dataResult={viewDataResults[view.id] || { hasData: false, data: null }}
-      onExpand={() => handleExpand(view.id)}
-    />
-  );
 
   // Get views for each section
-  const primaryWithData = groupedViews.primary.withData;
-  const primaryCollapsed = groupedViews.primary.collapsed;
-  const supportingWithData = groupedViews.supporting.withData;
-  const supportingCollapsed = groupedViews.supporting.collapsed;
-  const futureWithData = groupedViews.future.withData;
-  const summaryWithData = groupedViews.summary.withData;
-
-  // Individual empty views (not collapsed into placeholder)
-  const individualEmptyPrimary = groupedViews.primary.empty.filter(v => !isEmptyCollapsed(v));
-  const individualEmptySupporting = groupedViews.supporting.empty.filter(v => !isEmptyCollapsed(v));
-
-  // Collapsed placeholder cards to show at the end
-  const collapsedPlaceholders = [];
-  collapsedEmptyTypes.forEach((type) => {
-    const count = emptyByType[type].length;
-    collapsedPlaceholders.push({ type, count });
-  });
+  const primaryCards = groupedViews.primary.withData;
+  const secondaryCards = groupedViews.supporting.withData.slice(0, 2); // Max 2
+  const collapsedCards = [
+    ...groupedViews.primary.collapsed,
+    ...groupedViews.supporting.collapsed,
+    ...groupedViews.supporting.withData.slice(2), // Overflow goes to collapsed
+  ];
+  const summaryCards = groupedViews.summary.withData;
 
   // Check if sections have content
-  const hasPrimaryContent = primaryWithData.length > 0 || individualEmptyPrimary.length > 0;
-  const hasSupportingContent = supportingWithData.length > 0 || supportingCollapsed.length > 0 || individualEmptySupporting.length > 0;
-  const hasCollapsedContent = primaryCollapsed.length > 0;
+  const hasPrimaryContent = primaryCards.length > 0;
+  const hasSecondaryContent = secondaryCards.length > 0;
+  const hasCollapsedContent = collapsedCards.length > 0;
+  const hasSummaryContent = summaryCards.length > 0;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-      {/* PRIMARY INSIGHTS - The key insight */}
+    <div className="space-y-8">
+      {/* PRIMARY CARD - Full width */}
       {hasPrimaryContent && (
-        <>
-          <SectionHeader title="Key Insight" />
-          {primaryWithData.map(renderViewCard)}
-          {individualEmptyPrimary.map(renderViewCard)}
-        </>
+        <section>
+          <SectionHeader title="Key Insight" accentColor={accentColor} />
+          <div className="mt-4">
+            {primaryCards.map((view) => (
+              <ViewCard
+                key={view.id}
+                view={view}
+                dataResult={viewDataResults[view.id]}
+                scanCount={scanCount}
+                platformCount={platformCount}
+                accentColor={accentColor}
+                isFullWidth={true}
+              />
+            ))}
+          </div>
+        </section>
       )}
 
-      {/* SUPPORTING DETAILS - Additional context */}
-      {hasSupportingContent && (
-        <>
-          <SectionHeader title="Details" />
-          {supportingWithData.map(renderViewCard)}
-          {supportingCollapsed.map(renderCollapsedCard)}
-          {individualEmptySupporting.map(renderViewCard)}
-        </>
+      {/* SECONDARY ROW - Exactly 2 cards, equal width */}
+      {hasSecondaryContent && (
+        <section>
+          <SectionHeader title="Details" accentColor={accentColor} />
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+            {secondaryCards.map((view) => (
+              <ViewCard
+                key={view.id}
+                view={view}
+                dataResult={viewDataResults[view.id]}
+                scanCount={scanCount}
+                platformCount={platformCount}
+                accentColor={accentColor}
+              />
+            ))}
+          </div>
+        </section>
       )}
 
-      {/* COLLAPSED BY DEFAULT CARDS */}
+      {/* EXPANDABLE SECTION - Inline collapsed */}
       {hasCollapsedContent && (
-        <>
-          <SectionHeader title="More" />
-          {primaryCollapsed.map(renderCollapsedCard)}
-        </>
+        <section>
+          <SectionHeader title="More Details" accentColor={accentColor} />
+          <div className="mt-4 bg-slate-50/50 border border-slate-100 rounded-xl overflow-hidden">
+            {collapsedCards.map((view) => (
+              <ExpandableDetailRow
+                key={view.id}
+                view={view}
+                dataResult={viewDataResults[view.id]}
+                isExpanded={expandedViews.has(view.id)}
+                onToggle={() => handleToggle(view.id)}
+                accentColor={accentColor}
+              />
+            ))}
+          </div>
+        </section>
       )}
 
-      {/* FUTURE FEATURES */}
-      {futureWithData.length > 0 && (
-        <>
-          <SectionHeader title="Coming Soon" />
-          {futureWithData.map(renderViewCard)}
-        </>
-      )}
-
-      {/* COLLAPSED EMPTY STATE PLACEHOLDERS */}
-      {collapsedPlaceholders.length > 0 && (
-        <>
-          {collapsedPlaceholders.map(({ type, count }) => (
-            <CollapsedEmptyStateCard
-              key={`collapsed-${type}`}
-              emptyStateType={type}
-              count={count}
-              tabName={tabName}
-            />
-          ))}
-        </>
-      )}
-
-      {/* SUMMARY CARD */}
-      {summaryWithData.length > 0 && (
-        <>
-          <SectionHeader title="Summary" />
-          {summaryWithData.map(renderViewCard)}
-        </>
+      {/* SUMMARY CARD - Full width, muted */}
+      {hasSummaryContent && (
+        <section>
+          <SectionHeader title="Summary" accentColor={accentColor} />
+          <div className="mt-4">
+            {summaryCards.map((view) => (
+              <ViewCard
+                key={view.id}
+                view={view}
+                dataResult={viewDataResults[view.id]}
+                scanCount={scanCount}
+                platformCount={platformCount}
+                accentColor={accentColor}
+                isFullWidth={true}
+              />
+            ))}
+          </div>
+        </section>
       )}
     </div>
   );
@@ -596,27 +591,33 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        {/* Tab Navigation */}
+        {/* Tab Navigation - UI Refoundation: Semantic color lanes */}
         <div className="mb-8 border-b border-border-card">
           <nav className="flex gap-1 overflow-x-auto pb-px" aria-label="Dashboard tabs">
-            {TABS.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`
-                  px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors
-                  border-b-2 -mb-px
-                  ${activeTab === tab.id
-                    ? 'border-primary-blue text-primary-blue'
-                    : 'border-transparent text-text-muted hover:text-text-main hover:border-border-card'
-                  }
-                `}
-                aria-selected={activeTab === tab.id}
-                role="tab"
-              >
-                {tab.label}
-              </button>
-            ))}
+            {TABS.map((tab) => {
+              // Semantic color lanes: green for politics/creators, blue for others
+              const isGreenTab = ['politics', 'creators'].includes(tab.id);
+              const activeColor = isGreenTab ? 'border-emerald-500 text-emerald-600' : 'border-primary-blue text-primary-blue';
+
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`
+                    px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors
+                    border-b-2 -mb-px
+                    ${activeTab === tab.id
+                      ? activeColor
+                      : 'border-transparent text-text-muted hover:text-text-main hover:border-border-card'
+                    }
+                  `}
+                  aria-selected={activeTab === tab.id}
+                  role="tab"
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </nav>
         </div>
 
@@ -658,13 +659,14 @@ const DashboardPage = () => {
             </div>
           )}
 
-          {/* Views Grid with empty state collapsing */}
+          {/* Views Grid with enforced section structure */}
           <ViewsGridWithCollapsing
             views={currentViews}
             viewDataResults={viewDataResults}
             scanCount={scans.length}
             platformCount={platforms.length}
             tabName={TABS.find((t) => t.id === activeTab)?.label || 'insights'}
+            tabId={activeTab}
           />
         </div>
 

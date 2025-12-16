@@ -4,27 +4,33 @@ import React from 'react';
  * Simple line chart using SVG.
  * Requires at least 2 data points to render.
  *
+ * UI Refoundation: Max height 120px, max 7 data points
+ *
  * @param {Array} data - Array of { label: string, value: number }
  * @param {string} valueLabel - Label suffix for values (e.g., "%")
  * @param {string} color - Line color (default blue)
- * @param {number} height - Chart height in pixels
+ * @param {number} height - Chart height in pixels (max 120)
+ * @param {number} maxPoints - Maximum data points to show (default 7)
  */
-const LineChartSimple = ({ data = [], valueLabel = '', color = '#3B82F6', height = 160 }) => {
+const LineChartSimple = ({ data = [], valueLabel = '', color = '#3B82F6', height = 120, maxPoints = 7 }) => {
   if (!data || data.length < 2) return null;
+
+  // UI Refoundation: Limit data points for visual clarity
+  const displayData = data.slice(-maxPoints);
 
   const width = 100; // percentage-based
   const padding = { top: 10, right: 10, bottom: 30, left: 10 };
   const chartWidth = 100 - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
 
-  const values = data.map(d => d.value);
+  const values = displayData.map(d => d.value);
   const minValue = Math.min(...values);
   const maxValue = Math.max(...values);
   const range = maxValue - minValue || 1;
 
   // Calculate points
-  const points = data.map((d, i) => {
-    const x = padding.left + (i / (data.length - 1)) * chartWidth;
+  const points = displayData.map((d, i) => {
+    const x = padding.left + (i / (displayData.length - 1)) * chartWidth;
     const y = padding.top + chartHeight - ((d.value - minValue) / range) * chartHeight;
     return { x, y, ...d };
   });
@@ -97,7 +103,7 @@ const LineChartSimple = ({ data = [], valueLabel = '', color = '#3B82F6', height
 
       {/* X-axis labels */}
       <div className="flex justify-between px-2 mt-1">
-        {data.map((d, i) => (
+        {displayData.map((d, i) => (
           <div key={i} className="text-xs text-slate-500 text-center" style={{ maxWidth: '60px' }}>
             <div className="truncate">{d.label}</div>
             <div className="font-medium text-slate-700">
