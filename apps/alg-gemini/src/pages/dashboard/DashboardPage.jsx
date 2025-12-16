@@ -64,16 +64,15 @@ const CollapsedEmptyStateCard = ({ emptyStateType, count, tabName }) => {
 };
 
 /**
- * TabTrustSentence - Phase 8: Simplified, less prominent
- * A subtle trust note that doesn't dominate the tab
+ * TabTrustSentence - Phase 10: Quiet, integrated trust note
  */
 const TabTrustSentence = ({ tabId }) => {
   const sentence = TAB_TRUST_SENTENCES[tabId];
   if (!sentence) return null;
 
   return (
-    <div className="mb-4">
-      <p className="text-xs text-slate-400 leading-relaxed">
+    <div className="mb-5">
+      <p className="text-xs text-slate-400 leading-relaxed italic">
         {sentence}
       </p>
     </div>
@@ -81,18 +80,18 @@ const TabTrustSentence = ({ tabId }) => {
 };
 
 /**
- * SectionHeader - Phase 8: Very subtle divider, more whitespace
+ * SectionHeader - Phase 10: Quiet, clear section markers
  */
 const SectionHeader = ({ title, subtitle }) => (
-  <div className="col-span-full pt-8 pb-3 first:pt-0">
-    <div className="flex items-center gap-3">
-      <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+  <div className="col-span-full pt-10 pb-4 first:pt-2">
+    <div className="flex items-center gap-4">
+      <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">
         {title}
       </h3>
-      <div className="flex-1 h-px bg-slate-100" />
+      <div className="flex-1 h-px bg-slate-100/80" />
     </div>
     {subtitle && (
-      <p className="text-xs text-slate-400 mt-1">{subtitle}</p>
+      <p className="text-xs text-slate-400 mt-1.5">{subtitle}</p>
     )}
   </div>
 );
@@ -132,12 +131,10 @@ const DataCoverageBar = ({ scans, scanDetails, tabId }) => {
   if (!stats) return null;
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg border border-slate-100 text-xs text-slate-600">
-      <Database size={14} className="text-slate-400" />
+    <div className="inline-flex items-center gap-2 px-3 py-1.5 text-[11px] text-slate-400">
+      <Database size={12} className="text-slate-300" />
       <span>
-        Using <span className="font-medium">{stats.scanCount}</span> scan{stats.scanCount !== 1 ? 's' : ''},
-        {' '}<span className="font-medium">{stats.platformCount}</span> platform{stats.platformCount !== 1 ? 's' : ''},
-        {' '}<span className="font-medium">{stats.totalItems}</span> posts
+        {stats.scanCount} scan{stats.scanCount !== 1 ? 's' : ''} · {stats.platformCount} platform{stats.platformCount !== 1 ? 's' : ''} · {stats.totalItems} posts
       </span>
     </div>
   );
@@ -224,20 +221,20 @@ const HowToUnlockBox = ({ tabId }) => {
 
 /**
  * CollapsedByDefaultCard - A collapsed view that can be expanded
- * PHASE 6B: Views with collapsedByDefault show a compact preview
+ * PHASE 10: Clearly "out of the way" - minimal visual weight
  */
 const CollapsedByDefaultCard = ({ view, dataResult, onExpand }) => {
   const hasData = dataResult?.hasData;
 
   return (
-    <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-4">
-      <div className="flex items-center justify-between">
+    <div className="bg-slate-50/40 border border-slate-100/60 rounded-lg px-4 py-3 hover:bg-slate-50/70 transition-colors">
+      <div className="flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-medium text-slate-600 truncate">
+          <h3 className="text-sm font-medium text-slate-500 truncate">
             {view.title}
           </h3>
           {hasData && (
-            <p className="text-xs text-slate-500 mt-0.5 truncate">
+            <p className="text-xs text-slate-400 mt-0.5 truncate">
               {typeof view.takeaway === 'function'
                 ? view.takeaway(dataResult?.data)
                 : 'Data available'}
@@ -246,9 +243,9 @@ const CollapsedByDefaultCard = ({ view, dataResult, onExpand }) => {
         </div>
         <button
           onClick={onExpand}
-          className="ml-3 px-3 py-1.5 text-xs font-medium text-primary-blue hover:bg-blue-50 rounded-lg transition-colors flex-shrink-0"
+          className="px-3 py-1 text-xs font-medium text-slate-500 hover:text-primary-blue hover:bg-white rounded-md transition-colors flex-shrink-0 border border-transparent hover:border-slate-200"
         >
-          See details
+          View
         </button>
       </div>
     </div>
@@ -370,7 +367,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
   const hasCollapsedContent = primaryCollapsed.length > 0;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
       {/* PRIMARY INSIGHTS - The key insight */}
       {hasPrimaryContent && (
         <>
@@ -635,25 +632,20 @@ const DashboardPage = () => {
 
         {/* Tab Content */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-text-main">
-              {TABS.find((t) => t.id === activeTab)?.label}
-            </h2>
-            <span className="text-sm text-text-muted">
-              {currentViews.length} insight{currentViews.length !== 1 ? 's' : ''}
-            </span>
-          </div>
-
-          {/* PHASE 7: Tab-level trust sentence */}
-          <TabTrustSentence tabId={activeTab} />
-
-          {/* PHASE 6A: Data Coverage Bar */}
-          <div className="mb-4">
-            <DataCoverageBar
-              scans={scans}
-              scanDetails={scanDetails}
-              tabId={activeTab}
-            />
+          {/* Tab header with trust sentence integrated */}
+          <div className="mb-6">
+            <div className="flex items-baseline justify-between gap-4 mb-2">
+              <h2 className="text-xl font-semibold text-text-main">
+                {TABS.find((t) => t.id === activeTab)?.label}
+              </h2>
+              <DataCoverageBar
+                scans={scans}
+                scanDetails={scanDetails}
+                tabId={activeTab}
+              />
+            </div>
+            {/* PHASE 10: Trust sentence directly under title */}
+            <TabTrustSentence tabId={activeTab} />
           </div>
 
           {/* PHASE 6A: Political Leaning Toggle (only on politics tab) */}

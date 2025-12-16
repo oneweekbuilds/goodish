@@ -12,36 +12,46 @@ import {
 } from './charts';
 
 /**
- * FeedbackAffordance - Phase 8: Simplified, less intrusive
- * A subtle trust affordance that invites reflection without demanding interaction
+ * FeedbackAffordance - Phase 10: Very minimal, almost invisible
+ * Only appears on interaction - doesn't compete for attention
  */
 const FeedbackAffordance = () => {
   const [selected, setSelected] = useState(null);
+  const [showOptions, setShowOptions] = useState(false);
 
   if (selected) {
     return (
-      <div className="pt-3">
-        <p className="text-xs text-slate-400 italic">
-          Thanks for reflecting.
+      <div className="pt-2">
+        <p className="text-[11px] text-slate-400 italic">
+          Thanks for the feedback.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="pt-4 border-t border-slate-50">
-      <p className="text-xs text-slate-400 mb-2">Does this match your experience?</p>
-      <div className="flex gap-2">
-        {['Yes', 'Somewhat', 'No'].map((option) => (
-          <button
-            key={option}
-            onClick={() => setSelected(option)}
-            className="px-3 py-1 text-xs rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
-          >
-            {option}
-          </button>
-        ))}
-      </div>
+    <div className="pt-3">
+      {!showOptions ? (
+        <button
+          onClick={() => setShowOptions(true)}
+          className="text-[11px] text-slate-400 hover:text-slate-500 transition-colors"
+        >
+          Does this match your experience?
+        </button>
+      ) : (
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] text-slate-400">Match?</span>
+          {['Yes', 'Somewhat', 'No'].map((option) => (
+            <button
+              key={option}
+              onClick={() => setSelected(option)}
+              className="px-2 py-0.5 text-[11px] rounded bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -424,48 +434,50 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
     return 'neutral';
   };
 
-  // Card container styles based on hierarchy - Phase 8: more whitespace
+  // Card container styles based on hierarchy - Phase 10: assertive visual hierarchy
   const getCardClasses = () => {
     const baseClasses = 'bg-surface-card border rounded-2xl overflow-hidden flex flex-col transition-all';
 
     if (isSummaryCard) {
-      return `${baseClasses} border-primary-blue/20 ring-1 ring-primary-blue/5`;
+      return `${baseClasses} border-primary-blue/20 ring-1 ring-primary-blue/10 shadow-sm`;
     }
 
     if (isPrimary && hasData) {
-      // Primary cards with data: calm, clear presence
-      return `${baseClasses} border-slate-200 shadow-sm`;
+      // Primary cards with data: unmistakable presence, larger shadow
+      return `${baseClasses} border-slate-200 shadow-md ring-1 ring-slate-100`;
     }
 
     if (isPrimary && !hasData) {
       // Primary cards without data: subtle
-      return `${baseClasses} border-slate-100 bg-slate-50/20`;
+      return `${baseClasses} border-slate-100 bg-slate-50/30`;
     }
 
     if (isFutureCard) {
       // Future feature cards: visually muted
-      return `${baseClasses} border-slate-100 bg-slate-50/30 opacity-60`;
+      return `${baseClasses} border-slate-100 bg-slate-50/30 opacity-50`;
     }
 
-    // Secondary/supporting cards: very light
-    return `${baseClasses} border-slate-100`;
+    // Secondary/supporting cards: clearly secondary, muted
+    return `${baseClasses} border-slate-100/80 bg-slate-50/20`;
   };
 
-  // Header styles based on hierarchy - Phase 8: increased padding
+  // Header styles based on hierarchy - Phase 10: clear visual distinction
   const getHeaderClasses = () => {
     if (isSummaryCard) {
-      return 'px-6 py-5 border-b border-primary-blue/10 bg-primary-blue/5';
+      return 'px-7 py-6 border-b border-primary-blue/10 bg-primary-blue/5';
     }
 
     if (isPrimary && hasData) {
-      return 'px-6 py-5 border-b border-slate-100 bg-white';
+      // Primary: generous padding, clean background
+      return 'px-7 py-6 border-b border-slate-100 bg-white';
     }
 
     if (isFutureCard) {
       return 'px-5 py-3 border-b border-slate-100';
     }
 
-    return 'px-6 py-4 border-b border-slate-50';
+    // Secondary: smaller, lighter
+    return 'px-5 py-4 border-b border-slate-50 bg-slate-50/30';
   };
 
   return (
@@ -478,26 +490,34 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
           </span>
         )}
         {isPrimary && !isSummaryCard && hasData && (
-          <span className="inline-block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+          <span className="inline-block text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1.5">
             Key Insight
           </span>
         )}
-        <h3 className={`font-semibold text-text-main mb-1 ${isFutureCard ? 'text-sm text-slate-500' : 'text-base'}`}>
+        <h3 className={`font-semibold text-text-main ${
+          isPrimary && hasData ? 'text-lg mb-1.5' :
+          isFutureCard ? 'text-sm text-slate-500 mb-1' :
+          'text-base mb-1'
+        }`}>
           {title}
         </h3>
-        <p className={`text-sm line-clamp-2 ${isFutureCard ? 'text-slate-400' : 'text-text-muted'}`}>
+        <p className={`line-clamp-2 ${
+          isPrimary && hasData ? 'text-sm text-text-muted' :
+          isFutureCard ? 'text-xs text-slate-400' :
+          'text-xs text-slate-400'
+        }`}>
           {description}
         </p>
       </div>
 
-      {/* Card Content - Phase 8: more whitespace, takeaway-dominant */}
-      <div className="flex-1 p-6">
+      {/* Card Content - Phase 10: clear hierarchy in content area */}
+      <div className={`flex-1 ${isPrimary && hasData ? 'p-7' : 'p-5'}`}>
         {hasData ? (
           <div className="space-y-5">
             {/* Takeaway FIRST for primary cards - makes it visually dominant */}
             {isPrimary && takeawayText && (
-              <div className="pb-4 mb-2">
-                <p className="text-lg text-slate-800 font-medium leading-relaxed">
+              <div className="pb-5 mb-3 border-b border-slate-100">
+                <p className="text-xl text-slate-800 font-semibold leading-relaxed tracking-tight">
                   {takeawayText}
                 </p>
               </div>
@@ -513,15 +533,15 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
               <WhyExplanation text={whyExplanation} />
             )}
 
-            {/* Takeaway for non-primary cards */}
+            {/* Takeaway for non-primary cards - smaller, muted */}
             {!isPrimary && takeawayText && (
-              <div className="pt-4 border-t border-slate-100">
+              <div className="pt-3 border-t border-slate-50">
                 {isSummaryCard && (
                   <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">
                     Summary
                   </p>
                 )}
-                <p className="text-sm text-slate-700 font-medium">
+                <p className={`${isSummaryCard ? 'text-sm text-slate-700 font-medium' : 'text-sm text-slate-600'}`}>
                   {takeawayText}
                 </p>
               </div>
