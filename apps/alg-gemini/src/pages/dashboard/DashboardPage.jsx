@@ -20,6 +20,7 @@ const DashboardPage = () => {
     fetchScans,
     fetchAllScanDetails,
     hasScans,
+    platforms,
   } = useDashboardData();
 
   // Track which scan details we've loaded
