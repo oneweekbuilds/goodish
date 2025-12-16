@@ -2,6 +2,15 @@ import React from 'react';
 
 /**
  * Confidence levels for data quality assessment
+ *
+ * PHASE 5 DATA TRUTH RULES:
+ * - LOW: Data exists but is sparse or narrow (1-3 scans, single platform)
+ * - MEDIUM: Moderate data (4-6 scans OR 2+ platforms)
+ * - HIGH: Strong data (7+ scans across 2+ platforms with consistency)
+ *
+ * IMPORTANT: We NEVER claim "high confidence" or "stable" unless:
+ * - Data is supported across MULTIPLE scans
+ * - Data is supported across MULTIPLE platforms (when applicable)
  */
 export const CONFIDENCE_LEVELS = {
   HIGH: 'high',
@@ -10,47 +19,49 @@ export const CONFIDENCE_LEVELS = {
 };
 
 /**
- * Calculate confidence level based on scan data
+ * Calculate confidence level based on ACTUAL scan data used for a metric.
  *
- * Phase 4 Recalibration:
- * - High: STRICT requirements - many scans + multiple platforms + consistent signal
- * - Medium: Now the default for most cases
- * - Low: Used more often for sparse or narrow data
+ * Phase 5 Strict Rules:
+ * - HIGH: VERY strict - 7+ scans + 2+ platforms + consistent signal
+ * - MEDIUM: 4-6 scans OR (3 scans + 2+ platforms)
+ * - LOW: 1-3 scans on single platform (default for sparse data)
  *
- * Rules:
- * - High: 7+ scans across 3+ platforms AND consistent signal
- * - Medium: 3-6 scans OR 2 platforms OR inconsistent high-scan data
- * - Low: 1-2 scans OR single narrow signal
+ * This function takes the ACTUAL scans used for the metric (from dataResult.scansUsed),
+ * not the total scan count in the database.
  *
- * @param {number} scanCount - Number of scans used
- * @param {number} platformCount - Number of platforms scanned
+ * @param {number} scanCount - ACTUAL number of scans used for this metric
+ * @param {number} platformCount - Number of platforms in the data
  * @param {boolean} hasConsistentSignal - Whether data shows consistent patterns
  * @returns {string} One of CONFIDENCE_LEVELS
  */
 export function calculateConfidence(scanCount, platformCount, hasConsistentSignal = true) {
+  // No data = low confidence
   if (scanCount === 0) {
     return CONFIDENCE_LEVELS.LOW;
   }
 
-  // Low confidence: very sparse data
-  if (scanCount <= 2) {
+  // Low confidence: sparse data (1-3 scans, single platform)
+  // PHASE 5: Be more conservative - don't claim medium until we have more data
+  if (scanCount <= 3 && platformCount <= 1) {
     return CONFIDENCE_LEVELS.LOW;
   }
 
-  // High confidence: strict requirements
-  // Must have 7+ scans AND 3+ platforms AND consistent signal
-  if (scanCount >= 7 && platformCount >= 3 && hasConsistentSignal) {
+  // High confidence: STRICT requirements
+  // PHASE 5: Must have 7+ scans AND 2+ platforms AND consistent signal
+  // We never claim high confidence lightly
+  if (scanCount >= 7 && platformCount >= 2 && hasConsistentSignal) {
     return CONFIDENCE_LEVELS.HIGH;
   }
 
-  // High confidence alternative: very many scans with consistency
-  if (scanCount >= 15 && hasConsistentSignal) {
+  // High confidence alternative: very many scans (10+) with consistency
+  // Single platform can reach high if we have lots of data
+  if (scanCount >= 10 && hasConsistentSignal) {
     return CONFIDENCE_LEVELS.HIGH;
   }
 
-  // Medium confidence: moderate data (3-6 scans or 2+ platforms)
-  // This is now the default for most populated views
-  if (scanCount >= 3 || platformCount >= 2) {
+  // Medium confidence: moderate data
+  // PHASE 5: Requires either multiple platforms OR substantial scans
+  if (scanCount >= 4 || (scanCount >= 3 && platformCount >= 2)) {
     return CONFIDENCE_LEVELS.MEDIUM;
   }
 
@@ -60,17 +71,20 @@ export function calculateConfidence(scanCount, platformCount, hasConsistentSigna
 
 /**
  * Get display text for scan count footer
+ *
+ * PHASE 5: This text reflects the ACTUAL scans used for this specific metric.
+ * Different views may show different scan counts depending on data availability.
  */
 export function getScanCountText(scanCount, platformCount) {
   if (scanCount === 0) {
-    return 'No scan data yet';
+    return 'No scan data for this metric';
   }
 
   if (scanCount === 1) {
     return 'Based on 1 scan (limited data)';
   }
 
-  if (scanCount <= 2) {
+  if (scanCount <= 3) {
     return `Based on ${scanCount} scans (limited data)`;
   }
 

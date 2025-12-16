@@ -1,5 +1,5 @@
 /**
- * Dashboard Catalog - Phase 4 Implementation
+ * Dashboard Catalog - Phase 4 Implementation + Phase 5 Data Accuracy
  *
  * Each view includes:
  * - tab: which tab it belongs to
@@ -13,6 +13,21 @@
  * - emptyStateType: 'needs_more_scans' | 'needs_broader_behavior' | 'future_feature'
  * - isPrimary: boolean - if true, this card appears first and is visually emphasized
  * - sortOrder: 'primary' | 'supporting' | 'future' | 'summary' - controls narrative flow
+ *
+ * PHASE 5 DATA TRUTH VALIDATION:
+ * ==============================
+ * All views now use the canonical scanAggregator layer which ensures:
+ * 1. Data is aggregated across ALL scans (not just latest)
+ * 2. Creators/topics are deduplicated across platforms
+ * 3. "Based on X scans" labels reflect ACTUAL scans used for that metric
+ * 4. Confidence badges are based on data quality, not total scan count
+ *
+ * PRIMARY INSIGHTS (isPrimary: true) VALIDATION:
+ * Each primary insight satisfies:
+ * - Data comes from aggregated source (scanAggregator.js)
+ * - Numbers change when scans are removed (not hard-coded)
+ * - Insight is traceable to underlying feed_items or aggregates
+ * - Empty state shows only if data is mathematically impossible to compute
  */
 
 // Empty state type constants
@@ -47,7 +62,12 @@ export const dashboardCatalog = [
     dataFn: 'getAdPercentageData',
     emptyStateType: 'needs_more_scans',
     category: 'labeled_ads',
-    isPrimary: true, // PRIMARY INSIGHT: Core metric for this tab
+    // PHASE 5 VALIDATION: PRIMARY INSIGHT
+    // - Source: aggregateAds() sums total_ads/total_feed_items across ALL scans
+    // - Traceable: Maps directly to aggregates.total_ads from each scan's result_json
+    // - Dynamic: Percentage recalculates as scans are added/removed
+    // - Why primary: Core metric for understanding commercial influence on feed
+    isPrimary: true,
     sortOrder: 'primary',
     takeaway: (data) => data?.currentPercent !== undefined
       ? `About ${data.currentPercent}% of your feed is clearly marked as advertising.`
@@ -192,6 +212,7 @@ export const dashboardCatalog = [
 
   // ==========================================
   // TAB 2: POLITICS & WORLDVIEW (10 views)
+  // PHASE 5: Uses aggregatePolitics() for all political views
   // ==========================================
   {
     tab: 'politics',
@@ -201,7 +222,12 @@ export const dashboardCatalog = [
     outputType: 'number_line',
     dataFn: 'getPoliticalShareData',
     emptyStateType: 'needs_more_scans',
-    isPrimary: true, // PRIMARY INSIGHT: Core metric for this tab
+    // PHASE 5 VALIDATION: PRIMARY INSIGHT
+    // - Source: aggregatePolitics() sums political_items/total_feed_items across ALL scans
+    // - Traceable: Maps to aggregates.political_content_summary from each scan
+    // - Dynamic: Percentage recalculates as scans are added/removed
+    // - Why primary: Core metric for understanding political exposure
+    isPrimary: true,
     sortOrder: 'primary',
     takeaway: (data) => data?.currentPercent !== undefined
       ? `Political content appears in about ${data.currentPercent}% of your feed.`
@@ -326,6 +352,8 @@ export const dashboardCatalog = [
 
   // ==========================================
   // TAB 3: PATTERNS IN YOUR FEED (10 views)
+  // PHASE 5 CRITICAL FIX: Topic and emotion views now aggregate ALL scans
+  // (Previously used only scans[0], the latest scan)
   // ==========================================
   {
     tab: 'patterns',
@@ -335,7 +363,13 @@ export const dashboardCatalog = [
     outputType: 'number_bar',
     dataFn: 'getTopicVarietyData',
     emptyStateType: 'needs_more_scans',
-    isPrimary: true, // PRIMARY INSIGHT: Core diversity metric
+    // PHASE 5 VALIDATION: PRIMARY INSIGHT (CRITICAL FIX)
+    // - Source: aggregateTopics() averages topic_distribution across ALL scans
+    // - FIXED: Previously only used scans[0] (latest), now uses all scans
+    // - Traceable: Maps to aggregates.topic_distribution from each scan
+    // - Dynamic: Topic counts change as scans are added/removed
+    // - Why primary: Core metric for understanding feed diversity
+    isPrimary: true,
     sortOrder: 'primary',
     takeaway: (data) => data?.topicCount !== undefined
       ? `Your feed covers ${data.topicCount} topics.`
@@ -364,7 +398,13 @@ export const dashboardCatalog = [
     outputType: 'stacked100',
     dataFn: 'getEmotionalWeightData',
     emptyStateType: 'needs_more_scans',
-    isPrimary: true, // PRIMARY INSIGHT: Key wellbeing metric
+    // PHASE 5 VALIDATION: PRIMARY INSIGHT (CRITICAL FIX)
+    // - Source: aggregateEmotions() sums valence_distribution across ALL scans
+    // - FIXED: Previously only used scans[0] (latest), now uses all scans
+    // - Traceable: Maps to aggregates.wellbeing_summary.valence_distribution
+    // - Dynamic: Percentages change as scans are added/removed
+    // - Why primary: Core metric for understanding emotional impact of feed
+    isPrimary: true,
     sortOrder: 'primary',
     takeaway: (data) => data?.intensity
       ? `Your feed feels ${data.intensity} emotionally.`

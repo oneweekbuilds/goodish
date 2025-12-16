@@ -1,189 +1,201 @@
 /**
  * Data processing helpers for dashboard views.
- * All functions return { hasData: boolean, data: any, missing: string }
+ * Phase 5: Rewired to use canonical scanAggregator layer.
+ *
+ * All functions return:
+ * {
+ *   hasData: boolean,
+ *   data: any,
+ *   missing: string | null,
+ *   scansUsed: number,        // ACTUAL scans used for this metric
+ *   scansWithData: string[],  // IDs of scans that contributed
+ * }
+ *
+ * IMPORTANT: scansUsed reflects the ACTUAL number of scans that contributed
+ * to this specific metric, not the total scan count. This ensures "Based on X scans"
+ * labels are accurate.
  */
 
+import {
+  aggregateAds,
+  aggregatePolitics,
+  aggregateTopics,
+  aggregateCreators,
+  aggregateEmotions,
+  aggregateProducts,
+  calculateStability,
+  calculateDiscoveryRate,
+  calculateEchoRisk,
+  UNCLASSIFIED_TOPIC,
+  normalizeTopicLabel,
+  formatDateLabel,
+} from './scanAggregator';
+
+// Re-export formatDateLabel for backward compatibility
+export { formatDateLabel };
+
+// =====================================================
+// INTERNAL HELPERS
+// =====================================================
+
 /**
- * Format a date to a short label
+ * Create a standardized response with metadata
  */
-export function formatDateLabel(dateStr) {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+function createResponse(hasData, data, missing = null, scansUsed = 0, scansWithData = []) {
+  return { hasData, data, missing, scansUsed, scansWithData };
 }
 
 /**
- * Process scan for aggregates extraction
+ * Get aggregates from a single scan detail (for backward compatibility)
  */
 function getAggregates(scanDetail) {
   if (!scanDetail) return null;
   const data = scanDetail.result || scanDetail.scan || scanDetail;
-  return data.aggregates || null;
+  return data?.aggregates || null;
 }
 
 /**
- * Process scan for feed items extraction
+ * Get feed items from a single scan detail
  */
 function getFeedItems(scanDetail) {
   if (!scanDetail) return [];
   const data = scanDetail.result || scanDetail.scan || scanDetail;
-  return data.feed_items || [];
-}
-
-/**
- * Get scan metadata
- */
-function getScanMeta(scanDetail) {
-  if (!scanDetail) return {};
-  const data = scanDetail.result || scanDetail.scan || scanDetail;
-  return data.scan_metadata || {};
+  return data?.feed_items || [];
 }
 
 // =====================================================
 // TAB 1: ADS & INFLUENCE
+// Phase 5: All views now use aggregateAds for consistency
 // =====================================================
 
 /**
  * View 1: How much of your feed is advertising
+ * PHASE 5 FIX: Now aggregates across ALL scans, not just latest
+ * PRIMARY INSIGHT: Uses aggregated ad data across all scans
  */
 export function getAdPercentageData(scans, scanDetails) {
-  const dataPoints = [];
+  const adsData = aggregateAds(scans, scanDetails);
 
-  for (const scan of scans) {
-    const detail = scanDetails[scan.id];
-    if (!detail) continue;
-
-    const aggregates = getAggregates(detail);
-    if (aggregates && typeof aggregates.ad_percentage === 'number') {
-      dataPoints.push({
-        scanId: scan.id,
-        date: scan.created_at,
-        label: formatDateLabel(scan.created_at),
-        value: Math.round(aggregates.ad_percentage * 100),
-        platform: scan.platform,
-      });
-    }
+  if (adsData.scansUsed === 0) {
+    return createResponse(false, null, 'Run at least 1 scan with post-level data.');
   }
 
-  if (dataPoints.length === 0) {
-    return { hasData: false, data: null, missing: 'Run at least 1 scan with post-level data.' };
-  }
-
-  const latest = dataPoints[0];
-  return {
-    hasData: true,
-    data: {
-      currentPercent: latest.value,
-      trend: dataPoints.length >= 2 ? dataPoints : null,
+  return createResponse(
+    true,
+    {
+      currentPercent: adsData.adPercentageOverall,
+      // Provide trend data if multiple scans
+      trend: adsData.byDate.length >= 2 ? adsData.byDate : null,
+      // Additional context
+      totalAds: adsData.totalAds,
+      totalPosts: adsData.totalPosts,
     },
-    missing: null,
-  };
+    null,
+    adsData.scansUsed,
+    adsData.scansWithData
+  );
 }
 
 /**
  * View 2: Likely promotional posts (not labeled as ads)
- * NOTE: This requires a "likely promotional" classifier which doesn't exist yet
+ * BLOCKED: Requires "likely promotional" classifier which doesn't exist
  */
 export function getLikelyPromoData(scans, scanDetails) {
-  // Not available in current schema
-  return {
-    hasData: false,
-    data: null,
-    missing: 'Hidden promo detection is not available yet. This feature requires content analysis beyond current capabilities.',
-  };
+  return createResponse(
+    false,
+    null,
+    'Hidden promo detection is not available yet. This feature requires content analysis beyond current capabilities.',
+    0,
+    []
+  );
 }
 
 /**
  * View 3: Explicit ads vs hidden promotions
- * NOTE: Requires likely promotional data
+ * BLOCKED: Requires likely promotional data
  */
 export function getAdsVsPromoData(scans, scanDetails) {
-  return {
-    hasData: false,
-    data: null,
-    missing: 'Requires both explicit ad detection and hidden promotion detection to compare.',
-  };
+  return createResponse(
+    false,
+    null,
+    'Requires both explicit ad detection and hidden promotion detection to compare.',
+    0,
+    []
+  );
 }
 
 /**
  * View 4: Products mentioned most often
+ * PHASE 5: Uses aggregateProducts for deduplication
  */
 export function getProductMentionsData(scans, scanDetails) {
-  const productCounts = {};
+  const productsData = aggregateProducts(scans, scanDetails);
 
-  for (const scan of scans) {
-    const detail = scanDetails[scan.id];
-    if (!detail) continue;
-
-    const feedItems = getFeedItems(detail);
-    for (const item of feedItems) {
-      const product = item.ad_metadata?.product_or_service;
-      if (product && product.trim()) {
-        const key = product.trim().toLowerCase();
-        productCounts[key] = (productCounts[key] || 0) + 1;
-      }
-    }
+  if (productsData.scansUsed === 0 || productsData.sortedProducts.length === 0) {
+    return createResponse(
+      false,
+      null,
+      'No product data extracted from ads yet. Run more scans with ad content.',
+      0,
+      []
+    );
   }
 
-  const sorted = Object.entries(productCounts)
-    .map(([label, value]) => ({ label, value }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 10);
-
-  if (sorted.length === 0) {
-    return {
-      hasData: false,
-      data: null,
-      missing: 'No product data extracted from ads yet. Run more scans with ad content.',
-    };
-  }
-
-  return { hasData: true, data: sorted, missing: null };
+  // Return top 10 products
+  return createResponse(
+    true,
+    productsData.sortedProducts.slice(0, 10),
+    null,
+    productsData.scansUsed,
+    productsData.scansWithData
+  );
 }
 
 /**
  * View 5: Who is doing the promoting (creators with promo content)
+ * PHASE 5: Uses aggregateCreators for consistent creator tracking
  */
 export function getPromoCreatorsData(scans, scanDetails) {
-  const creatorStats = {};
+  const creatorsData = aggregateCreators(scans, scanDetails);
 
-  for (const scan of scans) {
-    const detail = scanDetails[scan.id];
-    if (!detail) continue;
-
-    const feedItems = getFeedItems(detail);
-    for (const item of feedItems) {
-      const creator = item.creator?.handle || item.creator?.name;
-      if (!creator) continue;
-
-      if (!creatorStats[creator]) {
-        creatorStats[creator] = { total: 0, promo: 0 };
-      }
-      creatorStats[creator].total++;
-      if (item.is_ad) {
-        creatorStats[creator].promo++;
-      }
-    }
+  if (creatorsData.scansUsed === 0) {
+    return createResponse(
+      false,
+      null,
+      'No creator data with promotional content found. Run more scans.',
+      0,
+      []
+    );
   }
 
-  const rows = Object.entries(creatorStats)
-    .filter(([_, stats]) => stats.promo > 0)
-    .map(([creator, stats]) => ({
-      creator,
-      promoPosts: stats.promo,
-      promoPercent: `${Math.round((stats.promo / stats.total) * 100)}%`,
+  // Filter to creators who have ads
+  const promoCreators = Object.entries(creatorsData.creators)
+    .filter(([_, c]) => c.ads > 0)
+    .map(([id, c]) => ({
+      creator: c.displayName,
+      promoPosts: c.ads,
+      promoPercent: `${Math.round((c.ads / c.totalPosts) * 100)}%`,
     }))
     .sort((a, b) => b.promoPosts - a.promoPosts)
     .slice(0, 10);
 
-  if (rows.length === 0) {
-    return {
-      hasData: false,
-      data: null,
-      missing: 'No creator data with promotional content found. Run more scans.',
-    };
+  if (promoCreators.length === 0) {
+    return createResponse(
+      false,
+      null,
+      'No promotional content with creator attribution found.',
+      creatorsData.scansUsed,
+      creatorsData.scansWithData
+    );
   }
 
-  return { hasData: true, data: rows, missing: null };
+  return createResponse(
+    true,
+    promoCreators,
+    null,
+    creatorsData.scansUsed,
+    creatorsData.scansWithData
+  );
 }
 
 /**
@@ -200,92 +212,88 @@ export function getAdConcentrationData(scans, scanDetails) {
   const top5Promo = rows.slice(0, 5).reduce((sum, r) => sum + r.promoPosts, 0);
   const concentration = totalPromo > 0 ? Math.round((top5Promo / totalPromo) * 100) : 0;
 
-  return {
-    hasData: true,
-    data: { concentration, totalPromo, top5Count: Math.min(rows.length, 5) },
-    missing: null,
-  };
+  return createResponse(
+    true,
+    { concentration, totalPromo, top5Count: Math.min(rows.length, 5) },
+    null,
+    result.scansUsed,
+    result.scansWithData
+  );
 }
 
 /**
  * View 7: Promotional themes
- * NOTE: Requires theme classifier which doesn't exist
+ * BLOCKED: Requires theme classifier
  */
 export function getPromoThemesData(scans, scanDetails) {
-  return {
-    hasData: false,
-    data: null,
-    missing: 'Promotional theme detection is not available yet.',
-  };
+  return createResponse(
+    false,
+    null,
+    'Promotional theme detection is not available yet.',
+    0,
+    []
+  );
 }
 
 /**
  * View 8: Changes in advertising over time
  */
 export function getAdTrendData(scans, scanDetails) {
-  const result = getAdPercentageData(scans, scanDetails);
-  if (!result.hasData || !result.data.trend || result.data.trend.length < 2) {
-    return {
-      hasData: false,
-      data: null,
-      missing: 'Need at least 2 scans to show advertising trends over time.',
-    };
+  const adsData = aggregateAds(scans, scanDetails);
+
+  if (adsData.scansUsed < 2 || adsData.byDate.length < 2) {
+    return createResponse(
+      false,
+      null,
+      'Need at least 2 scans to show advertising trends over time.',
+      adsData.scansUsed,
+      adsData.scansWithData
+    );
   }
 
-  const trend = result.data.trend;
-  const first = trend[trend.length - 1].value;
-  const last = trend[0].value;
+  const trend = adsData.byDate;
+  const first = trend[0].value;
+  const last = trend[trend.length - 1].value;
   const direction = last > first ? 'rising' : last < first ? 'falling' : 'stable';
 
-  return {
-    hasData: true,
-    data: { trend, direction, firstValue: first, lastValue: last },
-    missing: null,
-  };
+  return createResponse(
+    true,
+    { trend, direction, firstValue: first, lastValue: last },
+    null,
+    adsData.scansUsed,
+    adsData.scansWithData
+  );
 }
 
 /**
  * View 9: Platforms driving the most promotion
  */
 export function getPlatformPromoData(scans, scanDetails) {
-  const platformStats = {};
+  const adsData = aggregateAds(scans, scanDetails);
+  const platforms = Object.keys(adsData.byPlatform);
 
-  for (const scan of scans) {
-    const platform = scan.platform?.toLowerCase();
-    if (!platform) continue;
-
-    const detail = scanDetails[scan.id];
-    if (!detail) continue;
-
-    const aggregates = getAggregates(detail);
-    if (!aggregates) continue;
-
-    if (!platformStats[platform]) {
-      platformStats[platform] = { totalAds: 0, totalPosts: 0 };
-    }
-    platformStats[platform].totalPosts += aggregates.total_feed_items || 0;
-    platformStats[platform].totalAds += Math.round(
-      (aggregates.total_feed_items || 0) * (aggregates.ad_percentage || 0)
-    );
-  }
-
-  const platforms = Object.keys(platformStats);
   if (platforms.length < 2) {
-    return {
-      hasData: false,
-      data: null,
-      missing: 'Need scans from at least 2 platforms to compare.',
-    };
+    return createResponse(
+      false,
+      null,
+      'Need scans from at least 2 platforms to compare.',
+      adsData.scansUsed,
+      adsData.scansWithData
+    );
   }
 
   const bars = platforms.map(platform => ({
     label: platform.charAt(0).toUpperCase() + platform.slice(1),
-    value: platformStats[platform].totalPosts > 0
-      ? Math.round((platformStats[platform].totalAds / platformStats[platform].totalPosts) * 100)
-      : 0,
+    value: adsData.byPlatform[platform].adPercentage,
   })).sort((a, b) => b.value - a.value);
 
-  return { hasData: true, data: bars, missing: null };
+  return createResponse(
+    true,
+    bars,
+    null,
+    adsData.scansUsed,
+    adsData.scansWithData
+  );
 }
 
 /**
@@ -294,119 +302,110 @@ export function getPlatformPromoData(scans, scanDetails) {
 export function getAdvertiserInsightsData(scans, scanDetails) {
   const products = getProductMentionsData(scans, scanDetails);
   if (!products.hasData) {
-    return {
-      hasData: false,
-      data: null,
-      missing: 'Need product/category data from ad analysis to generate insights.',
-    };
+    return createResponse(
+      false,
+      null,
+      'Need product/category data from ad analysis to generate insights.',
+      0,
+      []
+    );
   }
 
   const topProducts = products.data.slice(0, 3).map(p => p.label);
-  return {
-    hasData: true,
-    data: { interests: topProducts },
-    missing: null,
-  };
+  return createResponse(
+    true,
+    { interests: topProducts },
+    null,
+    products.scansUsed,
+    products.scansWithData
+  );
 }
 
 // =====================================================
 // TAB 2: POLITICS & WORLDVIEW
+// Phase 5: Uses aggregatePolitics for all political views
 // =====================================================
 
 /**
  * View 11: Political content share
+ * PHASE 5 FIX: Uses aggregated political data
  */
 export function getPoliticalShareData(scans, scanDetails) {
-  const dataPoints = [];
+  const politicsData = aggregatePolitics(scans, scanDetails);
 
-  for (const scan of scans) {
-    const detail = scanDetails[scan.id];
-    if (!detail) continue;
-
-    const aggregates = getAggregates(detail);
-    const politicalPct = aggregates?.political_content_summary?.political_percentage;
-
-    if (typeof politicalPct === 'number') {
-      dataPoints.push({
-        scanId: scan.id,
-        label: formatDateLabel(scan.created_at),
-        value: Math.round(politicalPct * 100),
-        platform: scan.platform,
-      });
-    }
+  if (politicsData.scansUsed === 0) {
+    return createResponse(
+      false,
+      null,
+      'Political classification is not available for your scans.',
+      0,
+      []
+    );
   }
 
-  if (dataPoints.length === 0) {
-    return {
-      hasData: false,
-      data: null,
-      missing: 'Political classification is not available for your scans.',
-    };
-  }
-
-  return {
-    hasData: true,
-    data: {
-      currentPercent: dataPoints[0].value,
-      trend: dataPoints.length >= 2 ? dataPoints : null,
+  return createResponse(
+    true,
+    {
+      currentPercent: politicsData.politicalPercentageOverall,
+      trend: politicsData.byDate.length >= 2 ? politicsData.byDate : null,
+      totalPolitical: politicsData.totalPolitical,
+      totalPosts: politicsData.totalPosts,
     },
-    missing: null,
-  };
+    null,
+    politicsData.scansUsed,
+    politicsData.scansWithData
+  );
 }
 
 /**
  * View 12: Political leaning breakdown
- * NOTE: Requires Left/Neutral/Right classification which doesn't exist
+ * BLOCKED: Requires Left/Neutral/Right classification
  */
 export function getPoliticalLeaningData(scans, scanDetails) {
-  return {
-    hasData: false,
-    data: null,
-    missing: 'Political leaning classification (Left/Neutral/Right) is not available yet.',
-  };
+  return createResponse(
+    false,
+    null,
+    'Political leaning classification (Left/Neutral/Right) is not available yet.',
+    0,
+    []
+  );
 }
 
 /**
  * View 13: Balance vs imbalance
- * NOTE: Requires political leaning data
+ * BLOCKED: Requires political leaning data
  */
 export function getPoliticalBalanceData(scans, scanDetails) {
-  return {
-    hasData: false,
-    data: null,
-    missing: 'Requires political leaning breakdown to assess balance.',
-  };
+  return createResponse(
+    false,
+    null,
+    'Requires political leaning breakdown to assess balance.',
+    0,
+    []
+  );
 }
 
 /**
  * View 14: Who drives political content
+ * PHASE 5: Uses aggregatePolitics.byCreator for creator attribution
  */
 export function getPoliticalCreatorsData(scans, scanDetails) {
-  const creatorStats = {};
+  const politicsData = aggregatePolitics(scans, scanDetails);
 
-  for (const scan of scans) {
-    const detail = scanDetails[scan.id];
-    if (!detail) continue;
-
-    const feedItems = getFeedItems(detail);
-    for (const item of feedItems) {
-      const creator = item.creator?.handle || item.creator?.name;
-      if (!creator) continue;
-
-      if (!creatorStats[creator]) {
-        creatorStats[creator] = { total: 0, political: 0 };
-      }
-      creatorStats[creator].total++;
-      if (item.political?.is_political) {
-        creatorStats[creator].political++;
-      }
-    }
+  if (politicsData.scansUsed === 0) {
+    return createResponse(
+      false,
+      null,
+      'No political content data available.',
+      0,
+      []
+    );
   }
 
-  const rows = Object.entries(creatorStats)
+  const rows = Object.entries(politicsData.byCreator)
     .filter(([_, stats]) => stats.political > 0)
-    .map(([creator, stats]) => ({
-      creator,
+    .map(([_, stats]) => ({
+      creator: stats.displayName,
       politicalPosts: stats.political,
       politicalPercent: `${Math.round((stats.political / stats.total) * 100)}%`,
     }))
@@ -414,161 +413,165 @@ export function getPoliticalCreatorsData(scans, scanDetails) {
     .slice(0, 10);
 
   if (rows.length === 0) {
-    return {
-      hasData: false,
-      data: null,
-      missing: 'No political content with creator attribution found.',
-    };
+    return createResponse(
+      false,
+      null,
+      'No political content with creator attribution found.',
+      politicsData.scansUsed,
+      politicsData.scansWithData
+    );
   }
 
-  return { hasData: true, data: rows, missing: null };
+  return createResponse(
+    true,
+    rows,
+    null,
+    politicsData.scansUsed,
+    politicsData.scansWithData
+  );
 }
 
 /**
- * View 15-20: Various political views requiring unavailable data
+ * View 15-20: Various political views
  */
 export function getPoliticalRepetitionData() {
-  return { hasData: false, data: null, missing: 'Political theme clustering is not available yet.' };
+  return createResponse(false, null, 'Political theme clustering is not available yet.', 0, []);
 }
 
 export function getPoliticalToneData() {
-  return { hasData: false, data: null, missing: 'Political tone classification is not available yet.' };
+  return createResponse(false, null, 'Political tone classification is not available yet.', 0, []);
 }
 
 export function getPoliticalTrendData(scans, scanDetails) {
-  const result = getPoliticalShareData(scans, scanDetails);
-  if (!result.hasData || !result.data.trend || result.data.trend.length < 2) {
-    return { hasData: false, data: null, missing: 'Need at least 2 scans with political data.' };
+  const politicsData = aggregatePolitics(scans, scanDetails);
+
+  if (politicsData.scansUsed < 2 || politicsData.byDate.length < 2) {
+    return createResponse(
+      false,
+      null,
+      'Need at least 2 scans with political data.',
+      politicsData.scansUsed,
+      politicsData.scansWithData
+    );
   }
-  const trend = result.data.trend;
-  const direction = trend[0].value > trend[trend.length - 1].value ? 'rising' :
-                    trend[0].value < trend[trend.length - 1].value ? 'falling' : 'stable';
-  return { hasData: true, data: { trend, direction }, missing: null };
+
+  const trend = politicsData.byDate;
+  const first = trend[0].value;
+  const last = trend[trend.length - 1].value;
+  const direction = last > first ? 'rising' : last < first ? 'falling' : 'stable';
+
+  return createResponse(
+    true,
+    { trend, direction },
+    null,
+    politicsData.scansUsed,
+    politicsData.scansWithData
+  );
 }
 
 export function getPoliticalBlindSpotsData() {
-  return { hasData: false, data: null, missing: 'Requires political leaning + theme analysis.' };
+  return createResponse(false, null, 'Requires political leaning + theme analysis.', 0, []);
 }
 
 export function getCrossPlatformPoliticalData(scans, scanDetails) {
-  const platformStats = {};
+  const politicsData = aggregatePolitics(scans, scanDetails);
+  const platforms = Object.keys(politicsData.byPlatform);
 
-  for (const scan of scans) {
-    const platform = scan.platform?.toLowerCase();
-    if (!platform) continue;
-
-    const detail = scanDetails[scan.id];
-    if (!detail) continue;
-
-    const aggregates = getAggregates(detail);
-    const politicalPct = aggregates?.political_content_summary?.political_percentage;
-
-    if (typeof politicalPct === 'number') {
-      if (!platformStats[platform]) {
-        platformStats[platform] = { sum: 0, count: 0 };
-      }
-      platformStats[platform].sum += politicalPct;
-      platformStats[platform].count++;
-    }
-  }
-
-  const platforms = Object.keys(platformStats);
   if (platforms.length < 2) {
-    return { hasData: false, data: null, missing: 'Need scans from at least 2 platforms.' };
+    return createResponse(
+      false,
+      null,
+      'Need scans from at least 2 platforms.',
+      politicsData.scansUsed,
+      politicsData.scansWithData
+    );
   }
 
   const bars = platforms.map(p => ({
     label: p.charAt(0).toUpperCase() + p.slice(1),
-    value: Math.round((platformStats[p].sum / platformStats[p].count) * 100),
+    value: politicsData.byPlatform[p].politicalPercentage,
   })).sort((a, b) => b.value - a.value);
 
-  return { hasData: true, data: bars, missing: null };
+  return createResponse(
+    true,
+    bars,
+    null,
+    politicsData.scansUsed,
+    politicsData.scansWithData
+  );
 }
 
 export function getPoliticalProfileData(scans, scanDetails) {
-  const political = getPoliticalShareData(scans, scanDetails);
-  if (!political.hasData) {
-    return { hasData: false, data: null, missing: 'Need political content data to generate insights.' };
+  const politicsData = aggregatePolitics(scans, scanDetails);
+
+  if (politicsData.scansUsed === 0) {
+    return createResponse(
+      false,
+      null,
+      'Need political content data to generate insights.',
+      0,
+      []
+    );
   }
-  return {
-    hasData: true,
-    data: { politicalPercent: political.data.currentPercent },
-    missing: null,
-  };
+
+  return createResponse(
+    true,
+    { politicalPercent: politicsData.politicalPercentageOverall },
+    null,
+    politicsData.scansUsed,
+    politicsData.scansWithData
+  );
 }
 
 // =====================================================
 // TAB 3: PATTERNS IN YOUR FEED
+// Phase 5: Uses aggregateTopics and aggregateEmotions
+// CRITICAL FIXES: Topic and emotion views now aggregate ALL scans
 // =====================================================
 
 /**
- * Confusing topic labels that should be combined (also defined in TAB 5 section)
- */
-const CONFUSING_TOPICS = ['unknown', 'general', 'uncategorized', 'other', 'misc', 'miscellaneous'];
-const UNCLASSIFIED_TOPIC = 'Unclassified / unclear topics';
-
-/**
- * Normalize topic label for display
- */
-function normalizeTopicForDisplay(label) {
-  const lower = label.toLowerCase().trim();
-  if (CONFUSING_TOPICS.includes(lower)) {
-    return UNCLASSIFIED_TOPIC;
-  }
-  return label;
-}
-
-/**
  * View 21: Topic variety
+ * PHASE 5 CRITICAL FIX: Now aggregates topics across ALL scans
+ * Previously used only the latest scan (scans[0])
  */
 export function getTopicVarietyData(scans, scanDetails) {
-  if (scans.length === 0) {
-    return { hasData: false, data: null, missing: 'Run at least 1 scan.' };
+  const topicsData = aggregateTopics(scans, scanDetails);
+
+  if (topicsData.scansUsed === 0) {
+    return createResponse(
+      false,
+      null,
+      'No topic classification data available.',
+      0,
+      []
+    );
   }
 
-  const latestScan = scans[0];
-  const detail = scanDetails[latestScan.id];
-  if (!detail) {
-    return { hasData: false, data: null, missing: 'Scan details not loaded yet.' };
-  }
-
-  const aggregates = getAggregates(detail);
-  const rawTopics = aggregates?.topic_distribution || [];
-
-  if (rawTopics.length === 0) {
-    return { hasData: false, data: null, missing: 'No topic classification data available.' };
-  }
-
-  // Normalize and combine confusing topics
-  const topicMap = {};
-  rawTopics.forEach(t => {
-    const normalized = normalizeTopicForDisplay(t.category);
-    topicMap[normalized] = (topicMap[normalized] || 0) + t.percentage;
-  });
-
-  const topics = Object.entries(topicMap)
+  // Sort topics by aggregated percentage
+  const sortedTopics = Object.entries(topicsData.topics)
     .map(([category, percentage]) => ({ category, percentage }))
     .sort((a, b) => b.percentage - a.percentage);
 
-  const topTopics = topics.slice(0, 5).map(t => ({
+  const topTopics = sortedTopics.slice(0, 5).map(t => ({
     label: t.category,
     value: Math.round(t.percentage * 100),
     isUnclassified: t.category === UNCLASSIFIED_TOPIC,
   }));
 
-  // Check if there's unclassified content
-  const hasUnclassified = topTopics.some(t => t.isUnclassified);
-
-  return {
-    hasData: true,
-    data: {
-      topicCount: topics.length,
+  return createResponse(
+    true,
+    {
+      topicCount: topicsData.uniqueTopicCount,
       topTopics,
-      hasUnclassified,
-      unclassifiedNote: hasUnclassified ? 'Some content can\'t be reliably categorized yet.' : null,
+      hasUnclassified: topicsData.hasUnclassified,
+      unclassifiedNote: topicsData.hasUnclassified
+        ? "Some content can't be reliably categorized yet."
+        : null,
     },
-    missing: null,
-  };
+    null,
+    topicsData.scansUsed,
+    topicsData.scansWithData
+  );
 }
 
 /**
@@ -579,46 +582,47 @@ export function getRepeatedThemesData(scans, scanDetails) {
   if (!result.hasData) return result;
 
   const top3Percent = result.data.topTopics.slice(0, 3).reduce((sum, t) => sum + t.value, 0);
-  return {
-    hasData: true,
-    data: { top3Percent, topTopics: result.data.topTopics.slice(0, 3) },
-    missing: null,
-  };
+
+  return createResponse(
+    true,
+    { top3Percent, topTopics: result.data.topTopics.slice(0, 3) },
+    null,
+    result.scansUsed,
+    result.scansWithData
+  );
 }
 
 /**
  * View 23: Emotional weight (tone breakdown)
+ * PHASE 5 CRITICAL FIX: Now aggregates emotions across ALL scans
+ * Previously used only the latest scan (scans[0])
  */
 export function getEmotionalWeightData(scans, scanDetails) {
-  if (scans.length === 0) {
-    return { hasData: false, data: null, missing: 'Run at least 1 scan.' };
-  }
+  const emotionsData = aggregateEmotions(scans, scanDetails);
 
-  const latestScan = scans[0];
-  const detail = scanDetails[latestScan.id];
-  if (!detail) {
-    return { hasData: false, data: null, missing: 'Scan details not loaded yet.' };
-  }
-
-  const aggregates = getAggregates(detail);
-  const valence = aggregates?.wellbeing_summary?.valence_distribution || {};
-  const total = (valence.POSITIVE || 0) + (valence.NEUTRAL || 0) + (valence.NEGATIVE || 0);
-
-  if (total === 0) {
-    return { hasData: false, data: null, missing: 'No tone/sentiment data available.' };
+  if (emotionsData.scansUsed === 0 || emotionsData.totalPostsAnalyzed === 0) {
+    return createResponse(
+      false,
+      null,
+      'No tone/sentiment data available.',
+      0,
+      []
+    );
   }
 
   const segments = [
-    { label: 'Calm/Positive', value: valence.POSITIVE || 0, color: '#22C55E' },
-    { label: 'Neutral', value: valence.NEUTRAL || 0, color: '#94A3B8' },
-    { label: 'Intense/Negative', value: valence.NEGATIVE || 0, color: '#EF4444' },
+    { label: 'Calm/Positive', value: emotionsData.valencePercentages.POSITIVE, color: '#22C55E' },
+    { label: 'Neutral', value: emotionsData.valencePercentages.NEUTRAL, color: '#94A3B8' },
+    { label: 'Intense/Negative', value: emotionsData.valencePercentages.NEGATIVE, color: '#EF4444' },
   ];
 
-  const dominant = segments.reduce((a, b) => a.value > b.value ? a : b);
-  const intensity = dominant.label === 'Intense/Negative' ? 'heavy' :
-                    dominant.label === 'Neutral' ? 'neutral' : 'light';
-
-  return { hasData: true, data: { segments, intensity }, missing: null };
+  return createResponse(
+    true,
+    { segments, intensity: emotionsData.intensity },
+    null,
+    emotionsData.scansUsed,
+    emotionsData.scansWithData
+  );
 }
 
 /**
@@ -628,168 +632,152 @@ export function getSentimentBalanceData(scans, scanDetails) {
   const result = getEmotionalWeightData(scans, scanDetails);
   if (!result.hasData) return result;
 
-  return {
-    hasData: true,
-    data: { segments: result.data.segments },
-    missing: null,
-  };
+  return createResponse(
+    true,
+    { segments: result.data.segments },
+    null,
+    result.scansUsed,
+    result.scansWithData
+  );
 }
 
 /**
  * View 25: Stability of your feed
+ * PHASE 5: Uses calculateStability from aggregator
  */
 export function getFeedStabilityData(scans, scanDetails) {
-  if (scans.length < 2) {
-    return { hasData: false, data: null, missing: 'Need at least 2 scans to measure stability.' };
+  const topicsData = aggregateTopics(scans, scanDetails);
+  const stability = calculateStability(topicsData, scans, scanDetails);
+
+  if (!stability.hasData) {
+    return createResponse(
+      false,
+      null,
+      stability.reason || 'Need at least 2 scans to measure stability.',
+      0,
+      []
+    );
   }
 
-  // Compare topic distributions between latest 2 scans
-  const scan1 = scanDetails[scans[0].id];
-  const scan2 = scanDetails[scans[1].id];
-
-  if (!scan1 || !scan2) {
-    return { hasData: false, data: null, missing: 'Scan details not loaded.' };
-  }
-
-  const topics1 = getAggregates(scan1)?.topic_distribution || [];
-  const topics2 = getAggregates(scan2)?.topic_distribution || [];
-
-  if (topics1.length === 0 || topics2.length === 0) {
-    return { hasData: false, data: null, missing: 'Need topic data from both scans.' };
-  }
-
-  const categories1 = new Set(topics1.map(t => t.category));
-  const categories2 = new Set(topics2.map(t => t.category));
-  const overlap = [...categories1].filter(c => categories2.has(c)).length;
-  const total = new Set([...categories1, ...categories2]).size;
-  const overlapPercent = Math.round((overlap / total) * 100);
-
-  const stability = overlapPercent > 70 ? 'stable' : overlapPercent > 40 ? 'moderate' : 'changing';
-
-  return { hasData: true, data: { overlapPercent, stability }, missing: null };
+  return createResponse(
+    true,
+    {
+      overlapPercent: stability.overlapPercent,
+      stability: stability.stability,
+      scansCompared: stability.scansCompared,
+    },
+    null,
+    stability.scansCompared,
+    topicsData.scansWithData.slice(0, stability.scansCompared)
+  );
 }
 
 /**
  * View 26: Discovery rate (new creators)
+ * PHASE 5: Uses calculateDiscoveryRate from aggregator
  */
 export function getDiscoveryRateData(scans, scanDetails) {
-  if (scans.length < 2) {
-    return { hasData: false, data: null, missing: 'Need at least 2 scans to measure discovery.' };
+  const creatorsData = aggregateCreators(scans, scanDetails);
+  const discovery = calculateDiscoveryRate(creatorsData, scans, scanDetails);
+
+  if (!discovery.hasData) {
+    return createResponse(
+      false,
+      null,
+      discovery.reason || 'Need at least 2 scans to measure discovery.',
+      0,
+      []
+    );
   }
 
-  const latestDetail = scanDetails[scans[0].id];
-  if (!latestDetail) {
-    return { hasData: false, data: null, missing: 'Scan details not loaded.' };
-  }
-
-  // Get creators from latest scan
-  const latestItems = getFeedItems(latestDetail);
-  const latestCreators = new Set();
-  latestItems.forEach(item => {
-    const creator = item.creator?.handle || item.creator?.name;
-    if (creator) latestCreators.add(creator);
-  });
-
-  // Get creators from all previous scans
-  const pastCreators = new Set();
-  for (let i = 1; i < scans.length; i++) {
-    const detail = scanDetails[scans[i].id];
-    if (!detail) continue;
-    const items = getFeedItems(detail);
-    items.forEach(item => {
-      const creator = item.creator?.handle || item.creator?.name;
-      if (creator) pastCreators.add(creator);
-    });
-  }
-
-  if (latestCreators.size === 0) {
-    return { hasData: false, data: null, missing: 'No creator data in latest scan.' };
-  }
-
-  const newCreators = [...latestCreators].filter(c => !pastCreators.has(c));
-  const discoveryRate = Math.round((newCreators.length / latestCreators.size) * 100);
-
-  return {
-    hasData: true,
-    data: { discoveryRate, newCount: newCreators.length, totalCreators: latestCreators.size },
-    missing: null,
-  };
+  return createResponse(
+    true,
+    {
+      discoveryRate: discovery.discoveryRate,
+      newCount: discovery.newCount,
+      totalCreators: discovery.totalCreators,
+    },
+    null,
+    creatorsData.scansUsed,
+    creatorsData.scansWithData
+  );
 }
 
 /**
  * View 27: Reinforcement warning (echo risk)
+ * PHASE 5: Uses calculateEchoRisk from aggregator
  */
 export function getEchoRiskData(scans, scanDetails) {
-  const stability = getFeedStabilityData(scans, scanDetails);
-  const themes = getRepeatedThemesData(scans, scanDetails);
+  const topicsData = aggregateTopics(scans, scanDetails);
+  const stability = calculateStability(topicsData, scans, scanDetails);
+  const echoRisk = calculateEchoRisk(topicsData, stability);
 
-  if (!stability.hasData && !themes.hasData) {
-    return { hasData: false, data: null, missing: 'Need topic and stability data.' };
+  if (!echoRisk.hasData) {
+    return createResponse(
+      false,
+      null,
+      'Need topic and stability data.',
+      0,
+      []
+    );
   }
 
-  let riskLevel = 'low';
-  const factors = [];
-
-  if (stability.hasData && stability.data.overlapPercent > 80) {
-    factors.push('High topic consistency across scans');
-    riskLevel = 'moderate';
-  }
-
-  if (themes.hasData && themes.data.top3Percent > 70) {
-    factors.push('Feed heavily concentrated in few topics');
-    riskLevel = factors.length > 1 ? 'high' : 'moderate';
-  }
-
-  return {
-    hasData: true,
-    data: { riskLevel, factors },
-    missing: null,
-  };
+  return createResponse(
+    true,
+    {
+      riskLevel: echoRisk.riskLevel,
+      factors: echoRisk.factors,
+      top3Concentration: echoRisk.top3Concentration,
+      topicCount: echoRisk.topicCount,
+    },
+    null,
+    topicsData.scansUsed,
+    topicsData.scansWithData
+  );
 }
 
 /**
  * View 28: Content you almost never see
+ * BLOCKED: Requires reference topic universe
  */
 export function getRareContentData(scans, scanDetails) {
-  // This would require a known universe of topics to compare against
-  return {
-    hasData: false,
-    data: null,
-    missing: 'Requires a reference topic universe to identify missing content.',
-  };
+  return createResponse(
+    false,
+    null,
+    'Requires a reference topic universe to identify missing content.',
+    0,
+    []
+  );
 }
 
 /**
  * View 29: Intensity spikes
  */
 export function getIntensitySpikesData(scans, scanDetails) {
-  if (scans.length < 2) {
-    return { hasData: false, data: null, missing: 'Need at least 2 scans.' };
+  const emotionsData = aggregateEmotions(scans, scanDetails);
+
+  if (emotionsData.scansUsed < 2 || emotionsData.byDate.length < 2) {
+    return createResponse(
+      false,
+      null,
+      'Need tone data from at least 2 scans.',
+      emotionsData.scansUsed,
+      emotionsData.scansWithData
+    );
   }
 
-  const dataPoints = [];
-  for (const scan of scans) {
-    const detail = scanDetails[scan.id];
-    if (!detail) continue;
+  const dataPoints = emotionsData.byDate.map(d => ({
+    label: d.label,
+    value: d.negativePercent,
+  }));
 
-    const aggregates = getAggregates(detail);
-    const valence = aggregates?.wellbeing_summary?.valence_distribution || {};
-    const total = (valence.POSITIVE || 0) + (valence.NEUTRAL || 0) + (valence.NEGATIVE || 0);
-
-    if (total > 0) {
-      const negativePercent = Math.round(((valence.NEGATIVE || 0) / total) * 100);
-      dataPoints.push({
-        label: formatDateLabel(scan.created_at),
-        value: negativePercent,
-      });
-    }
-  }
-
-  if (dataPoints.length < 2) {
-    return { hasData: false, data: null, missing: 'Need tone data from at least 2 scans.' };
-  }
-
-  return { hasData: true, data: dataPoints, missing: null };
+  return createResponse(
+    true,
+    dataPoints,
+    null,
+    emotionsData.scansUsed,
+    emotionsData.scansWithData
+  );
 }
 
 /**
@@ -801,85 +789,118 @@ export function getPatternSummaryData(scans, scanDetails) {
   const stability = getFeedStabilityData(scans, scanDetails);
 
   const insights = [];
+  let totalScansUsed = 0;
+  const allScansWithData = new Set();
 
   if (topics.hasData) {
     const variety = topics.data.topicCount > 10 ? 'diverse' : topics.data.topicCount > 5 ? 'moderate' : 'narrow';
     insights.push(`Your feed covers ${topics.data.topicCount} topics (${variety} variety).`);
+    totalScansUsed = Math.max(totalScansUsed, topics.scansUsed);
+    topics.scansWithData.forEach(id => allScansWithData.add(id));
   }
 
   if (emotional.hasData) {
     insights.push(`Content tone feels ${emotional.data.intensity}.`);
+    totalScansUsed = Math.max(totalScansUsed, emotional.scansUsed);
+    emotional.scansWithData.forEach(id => allScansWithData.add(id));
   }
 
   if (stability.hasData) {
     insights.push(`Feed content is ${stability.data.stability} between scans.`);
+    totalScansUsed = Math.max(totalScansUsed, stability.scansUsed);
+    stability.scansWithData.forEach(id => allScansWithData.add(id));
   }
 
   if (insights.length === 0) {
-    return { hasData: false, data: null, missing: 'Need more scan data to generate pattern summary.' };
+    return createResponse(
+      false,
+      null,
+      'Need more scan data to generate pattern summary.',
+      0,
+      []
+    );
   }
 
-  return { hasData: true, data: { insights }, missing: null };
+  return createResponse(
+    true,
+    { insights },
+    null,
+    totalScansUsed,
+    Array.from(allScansWithData)
+  );
 }
 
 // =====================================================
 // TAB 4: CREATORS & VOICES
+// Phase 5: Uses aggregateCreators for all creator views
 // =====================================================
 
 /**
  * View 31: Creators you see most
+ * PHASE 5: Uses aggregateCreators with deduplication
  */
 export function getTopCreatorsData(scans, scanDetails) {
-  const creatorCounts = {};
-  let totalPosts = 0;
+  const creatorsData = aggregateCreators(scans, scanDetails);
 
-  for (const scan of scans) {
-    const detail = scanDetails[scan.id];
-    if (!detail) continue;
-
-    const feedItems = getFeedItems(detail);
-    for (const item of feedItems) {
-      const creator = item.creator?.handle || item.creator?.name;
-      if (creator) {
-        creatorCounts[creator] = (creatorCounts[creator] || 0) + 1;
-        totalPosts++;
-      }
-    }
+  if (creatorsData.scansUsed === 0 || creatorsData.uniqueCreatorCount === 0) {
+    return createResponse(
+      false,
+      null,
+      'No creator data found in scans.',
+      0,
+      []
+    );
   }
 
-  const rows = Object.entries(creatorCounts)
-    .map(([creator, count]) => ({
-      creator,
-      posts: count,
-      share: `${Math.round((count / totalPosts) * 100)}%`,
+  const rows = Object.entries(creatorsData.creators)
+    .map(([_, c]) => ({
+      creator: c.displayName,
+      posts: c.totalPosts,
+      share: `${Math.round((c.totalPosts / creatorsData.totalPostsWithCreatorData) * 100)}%`,
     }))
     .sort((a, b) => b.posts - a.posts)
     .slice(0, 10);
 
-  if (rows.length === 0) {
-    return { hasData: false, data: null, missing: 'No creator data found in scans.' };
-  }
-
-  return { hasData: true, data: rows, missing: null };
+  return createResponse(
+    true,
+    rows,
+    null,
+    creatorsData.scansUsed,
+    creatorsData.scansWithData
+  );
 }
 
 /**
  * View 32: Creator concentration
  */
 export function getCreatorConcentrationData(scans, scanDetails) {
-  const result = getTopCreatorsData(scans, scanDetails);
-  if (!result.hasData) return result;
+  const creatorsData = aggregateCreators(scans, scanDetails);
 
-  const rows = result.data;
-  const totalPosts = rows.reduce((sum, r) => sum + r.posts, 0);
-  const top10Posts = rows.slice(0, 10).reduce((sum, r) => sum + r.posts, 0);
-  const concentration = Math.round((top10Posts / totalPosts) * 100);
+  if (creatorsData.scansUsed === 0 || creatorsData.uniqueCreatorCount === 0) {
+    return createResponse(
+      false,
+      null,
+      'No creator data found.',
+      0,
+      []
+    );
+  }
 
-  return {
-    hasData: true,
-    data: { concentration, top10Count: Math.min(rows.length, 10) },
-    missing: null,
-  };
+  // Calculate top 10 concentration
+  const sortedCreators = Object.values(creatorsData.creators)
+    .sort((a, b) => b.totalPosts - a.totalPosts);
+
+  const top10Posts = sortedCreators.slice(0, 10).reduce((sum, c) => sum + c.totalPosts, 0);
+  const totalPosts = creatorsData.totalPostsWithCreatorData;
+  const concentration = totalPosts > 0 ? Math.round((top10Posts / totalPosts) * 100) : 0;
+
+  return createResponse(
+    true,
+    { concentration, top10Count: Math.min(sortedCreators.length, 10) },
+    null,
+    creatorsData.scansUsed,
+    creatorsData.scansWithData
+  );
 }
 
 /**
@@ -892,80 +913,69 @@ export function getNewVsFamiliarData(scans, scanDetails) {
   const newPercent = discovery.data.discoveryRate;
   const familiarPercent = 100 - newPercent;
 
-  return {
-    hasData: true,
-    data: {
+  return createResponse(
+    true,
+    {
       segments: [
         { label: 'New creators', value: newPercent, color: '#3B82F6' },
         { label: 'Familiar creators', value: familiarPercent, color: '#94A3B8' },
       ],
     },
-    missing: null,
-  };
+    null,
+    discovery.scansUsed,
+    discovery.scansWithData
+  );
 }
 
 /**
  * View 34-40: Various creator views
  */
 export function getCreatorsByTopicData(scans, scanDetails) {
-  // Would need topic-per-creator mapping
-  return { hasData: false, data: null, missing: 'Creator-topic mapping not available yet.' };
+  return createResponse(false, null, 'Creator-topic mapping not available yet.', 0, []);
 }
 
 export function getCreatorsByToneData(scans, scanDetails) {
-  // Would need tone-per-creator aggregation
-  return { hasData: false, data: null, missing: 'Creator tone analysis not available yet.' };
+  return createResponse(false, null, 'Creator tone analysis not available yet.', 0, []);
 }
 
 export function getCrossplatformCreatorData(scans, scanDetails) {
-  const platformCreators = {};
+  const creatorsData = aggregateCreators(scans, scanDetails);
+  const platforms = Object.keys(creatorsData.byPlatform);
 
-  for (const scan of scans) {
-    const platform = scan.platform?.toLowerCase();
-    if (!platform) continue;
-
-    const detail = scanDetails[scan.id];
-    if (!detail) continue;
-
-    if (!platformCreators[platform]) {
-      platformCreators[platform] = new Set();
-    }
-
-    const feedItems = getFeedItems(detail);
-    feedItems.forEach(item => {
-      const creator = item.creator?.handle || item.creator?.name;
-      if (creator) platformCreators[platform].add(creator);
-    });
-  }
-
-  const platforms = Object.keys(platformCreators);
   if (platforms.length < 2) {
-    return { hasData: false, data: null, missing: 'Need scans from at least 2 platforms.' };
+    return createResponse(
+      false,
+      null,
+      'Need scans from at least 2 platforms.',
+      creatorsData.scansUsed,
+      creatorsData.scansWithData
+    );
   }
 
-  // Find overlap
-  const allCreators = new Map(); // creator -> [platforms]
-  for (const [platform, creators] of Object.entries(platformCreators)) {
-    for (const creator of creators) {
-      if (!allCreators.has(creator)) {
-        allCreators.set(creator, []);
-      }
-      allCreators.get(creator).push(platform);
-    }
-  }
-
-  const overlapping = [];
-  for (const [creator, plats] of allCreators) {
-    if (plats.length >= 2) {
-      overlapping.push({ creator, platforms: plats.join(', ') });
-    }
-  }
+  const overlapping = creatorsData.crossPlatformCreators
+    .slice(0, 10)
+    .map(c => ({
+      creator: c.displayName,
+      platforms: c.platforms.join(', '),
+    }));
 
   if (overlapping.length === 0) {
-    return { hasData: true, data: { overlapping: [], message: 'No creators found across multiple platforms.' }, missing: null };
+    return createResponse(
+      true,
+      { overlapping: [], message: 'No creators found across multiple platforms.' },
+      null,
+      creatorsData.scansUsed,
+      creatorsData.scansWithData
+    );
   }
 
-  return { hasData: true, data: { overlapping: overlapping.slice(0, 10) }, missing: null };
+  return createResponse(
+    true,
+    { overlapping },
+    null,
+    creatorsData.scansUsed,
+    creatorsData.scansWithData
+  );
 }
 
 export function getVoiceDiversityData(scans, scanDetails) {
@@ -975,8 +985,13 @@ export function getVoiceDiversityData(scans, scanDetails) {
 
   let diversity = 'moderate';
   const factors = [];
+  let totalScansUsed = 0;
+  const allScansWithData = new Set();
 
   if (concentration.hasData) {
+    totalScansUsed = Math.max(totalScansUsed, concentration.scansUsed);
+    concentration.scansWithData.forEach(id => allScansWithData.add(id));
+
     if (concentration.data.concentration > 70) {
       diversity = 'low';
       factors.push('Few creators dominate your feed');
@@ -986,20 +1001,33 @@ export function getVoiceDiversityData(scans, scanDetails) {
     }
   }
 
-  if (discovery.hasData && discovery.data.discoveryRate < 10) {
-    if (diversity !== 'low') diversity = 'low';
-    factors.push('Few new creators appearing');
+  if (discovery.hasData) {
+    totalScansUsed = Math.max(totalScansUsed, discovery.scansUsed);
+    discovery.scansWithData.forEach(id => allScansWithData.add(id));
+
+    if (discovery.data.discoveryRate < 10) {
+      if (diversity !== 'low') diversity = 'low';
+      factors.push('Few new creators appearing');
+    }
   }
 
   if (factors.length === 0 && !concentration.hasData) {
-    return { hasData: false, data: null, missing: 'Need creator data to assess voice diversity.' };
+    return createResponse(
+      false,
+      null,
+      'Need creator data to assess voice diversity.',
+      0,
+      []
+    );
   }
 
-  return {
-    hasData: true,
-    data: { diversity, factors },
-    missing: null,
-  };
+  return createResponse(
+    true,
+    { diversity, factors },
+    null,
+    totalScansUsed,
+    Array.from(allScansWithData)
+  );
 }
 
 export function getInfluentialCreatorsData(scans, scanDetails) {
@@ -1008,7 +1036,7 @@ export function getInfluentialCreatorsData(scans, scanDetails) {
   const politicalCreators = getPoliticalCreatorsData(scans, scanDetails);
 
   if (!topCreators.hasData) {
-    return { hasData: false, data: null, missing: 'Need creator data.' };
+    return createResponse(false, null, 'Need creator data.', 0, []);
   }
 
   const top3 = topCreators.data.slice(0, 3).map(c => {
@@ -1023,80 +1051,62 @@ export function getInfluentialCreatorsData(scans, scanDetails) {
     return { creator: c.creator, share: c.share, contributions: contributions.join(', ') };
   });
 
-  return { hasData: true, data: top3, missing: null };
+  return createResponse(
+    true,
+    top3,
+    null,
+    topCreators.scansUsed,
+    topCreators.scansWithData
+  );
 }
 
 // =====================================================
 // TAB 5: WHAT THE ALGORITHM THINKS ABOUT YOU
+// Phase 5: Uses aggregated data from all tabs
 // =====================================================
 
 /**
- * Confusing topic labels that should be combined
- */
-const CONFUSING_TOPIC_LABELS = ['unknown', 'general', 'uncategorized', 'other', 'misc', 'miscellaneous'];
-const UNCLASSIFIED_LABEL = 'Unclassified / unclear topics';
-
-/**
- * Normalize topic labels by combining confusing categories
- */
-function normalizeTopicLabel(label) {
-  const lower = label.toLowerCase().trim();
-  if (CONFUSING_TOPIC_LABELS.includes(lower)) {
-    return UNCLASSIFIED_LABEL;
-  }
-  return label;
-}
-
-/**
  * View 41: Topics the algorithm thinks you like
+ * PHASE 5: Uses aggregateTopics for multi-scan aggregation
  */
 export function getAlgoTopicsLikedData(scans, scanDetails) {
-  // Aggregate topics across all scans
-  const topicScores = {};
+  const topicsData = aggregateTopics(scans, scanDetails);
 
-  for (const scan of scans) {
-    const detail = scanDetails[scan.id];
-    if (!detail) continue;
-
-    const topics = getAggregates(detail)?.topic_distribution || [];
-    topics.forEach(t => {
-      // Normalize confusing topic labels
-      const normalizedCategory = normalizeTopicLabel(t.category);
-      topicScores[normalizedCategory] = (topicScores[normalizedCategory] || 0) + t.percentage;
-    });
+  if (topicsData.scansUsed === 0) {
+    return createResponse(false, null, 'No topic data available.', 0, []);
   }
 
-  const sorted = Object.entries(topicScores)
+  const sorted = Object.entries(topicsData.topics)
     .map(([topic, score]) => ({
       topic,
       score,
-      // Flag if this is the combined unclassified category
-      isUnclassified: topic === UNCLASSIFIED_LABEL,
+      isUnclassified: topic === UNCLASSIFIED_TOPIC,
     }))
     .sort((a, b) => b.score - a.score)
     .slice(0, 10);
 
-  if (sorted.length === 0) {
-    return { hasData: false, data: null, missing: 'No topic data available.' };
-  }
-
-  // Check if there's unclassified content
   const hasUnclassified = sorted.some(t => t.isUnclassified);
 
-  return {
-    hasData: true,
-    data: sorted,
-    hasUnclassified,
-    unclassifiedNote: hasUnclassified ? 'Some content can\'t be reliably categorized yet.' : null,
-    missing: null,
-  };
+  // Return with additional metadata for the view
+  const result = createResponse(
+    true,
+    sorted,
+    null,
+    topicsData.scansUsed,
+    topicsData.scansWithData
+  );
+  result.hasUnclassified = hasUnclassified;
+  result.unclassifiedNote = hasUnclassified ? "Some content can't be reliably categorized yet." : null;
+
+  return result;
 }
 
 /**
  * View 42: Topics the algorithm thinks you avoid
+ * BLOCKED: Requires reference topic universe
  */
 export function getAlgoTopicsAvoidedData() {
-  return { hasData: false, data: null, missing: 'Requires a reference topic universe.' };
+  return createResponse(false, null, 'Requires a reference topic universe.', 0, []);
 }
 
 /**
@@ -1108,9 +1118,10 @@ export function getAlgoProductsData(scans, scanDetails) {
 
 /**
  * View 44: Political themes the algorithm thinks matter to you
+ * BLOCKED: Requires political theme extraction
  */
 export function getAlgoPoliticalThemesData() {
-  return { hasData: false, data: null, missing: 'Political theme extraction not available.' };
+  return createResponse(false, null, 'Political theme extraction not available.', 0, []);
 }
 
 /**
@@ -1124,58 +1135,91 @@ export function getAlgoEmotionalTriggersData(scans, scanDetails) {
  * View 46: What the algorithm is confident about
  */
 export function getAlgoConfidentData(scans, scanDetails) {
-  if (scans.length < 2) {
-    return { hasData: false, data: null, missing: 'Need at least 2 scans to identify patterns.' };
-  }
+  const topicsData = aggregateTopics(scans, scanDetails);
+  const stability = calculateStability(topicsData, scans, scanDetails);
 
-  const stability = getFeedStabilityData(scans, scanDetails);
-  const topics = getAlgoTopicsLikedData(scans, scanDetails);
+  if (topicsData.scansUsed < 2) {
+    return createResponse(
+      false,
+      null,
+      'Need at least 2 scans to identify patterns.',
+      topicsData.scansUsed,
+      topicsData.scansWithData
+    );
+  }
 
   const insights = [];
 
-  if (stability.hasData && stability.data.overlapPercent > 60) {
+  if (stability.hasData && stability.overlapPercent > 60) {
     insights.push('Your topic interests appear consistent across scans.');
   }
 
-  if (topics.hasData && topics.data.length > 0) {
-    const top = topics.data[0].topic;
-    insights.push(`Strong association with "${top}" content.`);
+  if (Object.keys(topicsData.topics).length > 0) {
+    const topTopic = Object.entries(topicsData.topics)
+      .sort((a, b) => b[1] - a[1])[0][0];
+    insights.push(`Strong association with "${topTopic}" content.`);
   }
 
   if (insights.length === 0) {
-    return { hasData: false, data: null, missing: 'Not enough consistent patterns found.' };
+    return createResponse(
+      false,
+      null,
+      'Not enough consistent patterns found.',
+      topicsData.scansUsed,
+      topicsData.scansWithData
+    );
   }
 
-  return { hasData: true, data: { insights }, missing: null };
+  return createResponse(
+    true,
+    { insights },
+    null,
+    topicsData.scansUsed,
+    topicsData.scansWithData
+  );
 }
 
 /**
  * View 47: What the algorithm is uncertain about
  */
 export function getAlgoUncertainData(scans, scanDetails) {
-  if (scans.length < 2) {
-    return { hasData: false, data: null, missing: 'Need at least 2 scans.' };
-  }
+  const topicsData = aggregateTopics(scans, scanDetails);
+  const stability = calculateStability(topicsData, scans, scanDetails);
 
-  const stability = getFeedStabilityData(scans, scanDetails);
+  if (topicsData.scansUsed < 2) {
+    return createResponse(
+      false,
+      null,
+      'Need at least 2 scans.',
+      topicsData.scansUsed,
+      topicsData.scansWithData
+    );
+  }
 
   if (!stability.hasData) {
-    return { hasData: false, data: null, missing: 'Need topic data.' };
+    return createResponse(
+      false,
+      null,
+      'Need topic data.',
+      topicsData.scansUsed,
+      topicsData.scansWithData
+    );
   }
 
-  if (stability.data.overlapPercent < 50) {
-    return {
-      hasData: true,
-      data: { insights: ['Your topics vary significantly between scans, suggesting the algorithm is still learning your preferences.'] },
-      missing: null,
-    };
+  const insights = [];
+  if (stability.overlapPercent < 50) {
+    insights.push('Your topics vary significantly between scans, suggesting the algorithm is still learning your preferences.');
+  } else {
+    insights.push('Your feed appears relatively stable. The algorithm seems confident about your interests.');
   }
 
-  return {
-    hasData: true,
-    data: { insights: ['Your feed appears relatively stable. The algorithm seems confident about your interests.'] },
-    missing: null,
-  };
+  return createResponse(
+    true,
+    { insights },
+    null,
+    topicsData.scansUsed,
+    topicsData.scansWithData
+  );
 }
 
 /**
@@ -1187,8 +1231,13 @@ export function getProfileBreadthData(scans, scanDetails) {
 
   let breadth = 'Moderate';
   const factors = [];
+  let totalScansUsed = 0;
+  const allScansWithData = new Set();
 
   if (topics.hasData) {
+    totalScansUsed = Math.max(totalScansUsed, topics.scansUsed);
+    topics.scansWithData.forEach(id => allScansWithData.add(id));
+
     if (topics.data.topicCount > 10) {
       breadth = 'Broad';
       factors.push('Many different topics');
@@ -1199,6 +1248,9 @@ export function getProfileBreadthData(scans, scanDetails) {
   }
 
   if (concentration.hasData) {
+    totalScansUsed = Math.max(totalScansUsed, concentration.scansUsed);
+    concentration.scansWithData.forEach(id => allScansWithData.add(id));
+
     if (concentration.data.concentration > 70) {
       if (breadth !== 'Narrow') breadth = 'Narrow';
       factors.push('Few creators dominate');
@@ -1209,12 +1261,18 @@ export function getProfileBreadthData(scans, scanDetails) {
   }
 
   if (factors.length === 0) {
-    return { hasData: false, data: null, missing: 'Need topic and creator data.' };
+    return createResponse(false, null, 'Need topic and creator data.', 0, []);
   }
 
   const variant = breadth === 'Broad' ? 'positive' : breadth === 'Narrow' ? 'warning' : 'neutral';
 
-  return { hasData: true, data: { breadth, variant, factors }, missing: null };
+  return createResponse(
+    true,
+    { breadth, variant, factors },
+    null,
+    totalScansUsed,
+    Array.from(allScansWithData)
+  );
 }
 
 /**
@@ -1225,27 +1283,41 @@ export function getFutureRecommendationsData(scans, scanDetails) {
   const products = getProductMentionsData(scans, scanDetails);
 
   const predictions = [];
+  let totalScansUsed = 0;
+  const allScansWithData = new Set();
 
   if (topics.hasData && topics.data.length > 0) {
+    totalScansUsed = Math.max(totalScansUsed, topics.scansUsed);
+    topics.scansWithData.forEach(id => allScansWithData.add(id));
+
     const top = topics.data[0].topic;
     predictions.push(`Because your feed emphasizes "${top}", you'll likely see more similar content.`);
   }
 
   if (products.hasData && products.data.length > 0) {
+    totalScansUsed = Math.max(totalScansUsed, products.scansUsed);
+    products.scansWithData.forEach(id => allScansWithData.add(id));
+
     const topProduct = products.data[0].label;
     predictions.push(`Product recommendations may continue focusing on ${topProduct}.`);
   }
 
   if (predictions.length === 0) {
-    return { hasData: false, data: null, missing: 'Need topic or product data.' };
+    return createResponse(false, null, 'Need topic or product data.', 0, []);
   }
 
-  return { hasData: true, data: { predictions }, missing: null };
+  return createResponse(
+    true,
+    { predictions },
+    null,
+    totalScansUsed,
+    Array.from(allScansWithData)
+  );
 }
 
 /**
  * View 50: How to change what the algorithm thinks about you
- * This one is always available - no data required
+ * Always available - no data required
  */
 export function getAlgoChangeAdviceData() {
   const tips = [
@@ -1256,5 +1328,6 @@ export function getAlgoChangeAdviceData() {
     'Like and save content you want more of',
   ];
 
-  return { hasData: true, data: { tips }, missing: null };
+  // This view doesn't depend on scan data
+  return createResponse(true, { tips }, null, 0, []);
 }

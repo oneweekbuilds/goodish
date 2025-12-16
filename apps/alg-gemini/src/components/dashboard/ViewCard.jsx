@@ -15,10 +15,11 @@ import {
  * ViewCard component - renders a single dashboard view card.
  * Supports multiple output types with takeaways and actions.
  * Phase 4: Added visual hierarchy for primary vs secondary cards.
+ * Phase 5: Now uses ACTUAL scansUsed from dataResult for accurate labeling.
  *
  * @param {Object} view - View configuration from dashboardCatalog
- * @param {Object} dataResult - Result from data helper function
- * @param {number} scanCount - Total number of scans used
+ * @param {Object} dataResult - Result from data helper function (includes scansUsed, scansWithData)
+ * @param {number} scanCount - Total number of scans (for reference only)
  * @param {number} platformCount - Number of platforms scanned
  */
 const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
@@ -26,6 +27,10 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
   const hasData = dataResult?.hasData === true;
   const data = dataResult?.data;
   const missing = dataResult?.missing;
+
+  // PHASE 5: Use the ACTUAL scans used for this metric, not total scan count
+  // This ensures "Based on X scans" labels are accurate for each view
+  const actualScansUsed = dataResult?.scansUsed ?? scanCount;
 
   // Determine if this is a future/coming soon card
   const isFutureCard = sortOrder === 'future' || emptyStateType === 'future_feature';
@@ -372,10 +377,11 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
               </p>
             )}
 
-            {/* Data quality footer - shows scan count and confidence */}
-            {hasData && scanCount > 0 && (
+            {/* Data quality footer - shows ACTUAL scan count used for this metric */}
+            {/* PHASE 5: Using actualScansUsed for accurate labeling */}
+            {hasData && actualScansUsed > 0 && (
               <DataQualityFooter
-                scanCount={scanCount}
+                scanCount={actualScansUsed}
                 platformCount={platformCount}
               />
             )}
