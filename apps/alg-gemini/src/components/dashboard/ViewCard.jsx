@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import EmptyState from './EmptyState';
 import { DataQualityFooter } from './ConfidenceBadge';
 import {
@@ -12,10 +12,75 @@ import {
 } from './charts';
 
 /**
+ * FeedbackAffordance - PHASE 7: Non-functional self-correction prompt
+ * Displays "Does this feel accurate?" with Yes/Somewhat/Not really options
+ * These are trust affordances, not functional inputs - no state or handlers needed
+ */
+const FeedbackAffordance = () => {
+  const [selected, setSelected] = useState(null);
+
+  return (
+    <div className="pt-3 border-t border-slate-100">
+      <p className="text-xs text-slate-500 mb-2">Does this feel accurate?</p>
+      <div className="flex gap-2">
+        {['Yes', 'Somewhat', 'Not really'].map((option) => (
+          <button
+            key={option}
+            onClick={() => setSelected(option)}
+            className={`
+              px-3 py-1 text-xs rounded-full transition-colors
+              ${selected === option
+                ? 'bg-slate-200 text-slate-700'
+                : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+              }
+            `}
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+      {selected && (
+        <p className="text-xs text-slate-400 mt-2 italic">
+          Thanks for reflecting. Your input helps calibrate your own understanding.
+        </p>
+      )}
+    </div>
+  );
+};
+
+/**
+ * WhyExplanation - PHASE 7: Micro-explanation of how insight was inferred
+ */
+const WhyExplanation = ({ text }) => {
+  if (!text) return null;
+  return (
+    <p className="text-xs text-slate-400 mt-3 leading-relaxed">
+      {text}
+    </p>
+  );
+};
+
+/**
+ * CounterfactualNote - PHASE 7: Legitimizes disagreement for primary cards
+ */
+const CounterfactualNote = ({ text }) => {
+  if (!text) return null;
+  return (
+    <p className="text-xs text-slate-500 italic mt-2 bg-slate-50 px-3 py-2 rounded-lg">
+      {text}
+    </p>
+  );
+};
+
+/**
  * ViewCard component - renders a single dashboard view card.
  * Supports multiple output types with takeaways and actions.
  * Phase 4: Added visual hierarchy for primary vs secondary cards.
  * Phase 5: Now uses ACTUAL scansUsed from dataResult for accurate labeling.
+ * Phase 7: Added belief calibration and trust framing elements:
+ *   - whyExplanation: micro-explanation of how insight was inferred
+ *   - counterfactual: legitimizes disagreement (primary cards only)
+ *   - FeedbackAffordance: non-functional self-correction prompt (primary cards only)
  *
  * @param {Object} view - View configuration from dashboardCatalog
  * @param {Object} dataResult - Result from data helper function (includes scansUsed, scansWithData)
@@ -23,7 +88,20 @@ import {
  * @param {number} platformCount - Number of platforms scanned
  */
 const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
-  const { title, description, outputType, takeaway, action, emptyStateType, isSummaryCard, confidenceDisclaimer, isPrimary, sortOrder } = view;
+  const {
+    title,
+    description,
+    outputType,
+    takeaway,
+    action,
+    emptyStateType,
+    isSummaryCard,
+    confidenceDisclaimer,
+    isPrimary,
+    sortOrder,
+    whyExplanation,
+    counterfactual,
+  } = view;
   const hasData = dataResult?.hasData === true;
   const data = dataResult?.data;
   const missing = dataResult?.missing;
@@ -423,6 +501,11 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
             {/* Main visualization */}
             {renderContent()}
 
+            {/* PHASE 7: Why explanation - how insight was inferred */}
+            {whyExplanation && (
+              <WhyExplanation text={whyExplanation} />
+            )}
+
             {/* Takeaway - styled differently for summary cards */}
             {takeawayText && (
               <div className="pt-4 border-t border-border-card">
@@ -435,6 +518,11 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
                   {takeawayText}
                 </p>
               </div>
+            )}
+
+            {/* PHASE 7: Counterfactual framing for PRIMARY cards only */}
+            {isPrimary && counterfactual && (
+              <CounterfactualNote text={counterfactual} />
             )}
 
             {/* Action - styled differently for summary cards */}
@@ -468,6 +556,11 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
                   {data?.disclaimer || 'This insight is based on repeated patterns, not confirmed intent.'}
                 </p>
               </div>
+            )}
+
+            {/* PHASE 7: Non-functional feedback affordance for PRIMARY cards only */}
+            {isPrimary && hasData && (
+              <FeedbackAffordance />
             )}
 
             {/* Data quality footer - shows ACTUAL scan count used for this metric */}

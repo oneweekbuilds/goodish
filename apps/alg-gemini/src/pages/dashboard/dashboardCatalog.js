@@ -1,10 +1,10 @@
 /**
- * Dashboard Catalog - Phase 4 Implementation + Phase 5 Data Accuracy
+ * Dashboard Catalog - Phase 7: Belief Calibration and Trust Framing
  *
  * Each view includes:
  * - tab: which tab it belongs to
  * - id: unique identifier
- * - title: display title
+ * - title: display title (PHASE 7: exposure-based, not intent-based)
  * - description: what this view shows
  * - outputType: number_line | bar | stacked100 | line | table | list | text | status
  * - dataFn: function name from dataHelpers to get data
@@ -13,21 +13,26 @@
  * - emptyStateType: 'needs_more_scans' | 'needs_broader_behavior' | 'future_feature'
  * - isPrimary: boolean - if true, this card appears first and is visually emphasized
  * - sortOrder: 'primary' | 'supporting' | 'future' | 'summary' - controls narrative flow
+ * - hidden: boolean - if true, this view is not rendered at all
+ * - collapsedByDefault: boolean - if true, this view starts collapsed (user can expand)
+ * - whyExplanation: string - PHASE 7: brief explanation of how insight was inferred
+ * - counterfactual: string - PHASE 7: (PRIMARY only) legitimizes disagreement
  *
- * PHASE 5 DATA TRUTH VALIDATION:
- * ==============================
- * All views now use the canonical scanAggregator layer which ensures:
- * 1. Data is aggregated across ALL scans (not just latest)
- * 2. Creators/topics are deduplicated across platforms
- * 3. "Based on X scans" labels reflect ACTUAL scans used for that metric
- * 4. Confidence badges are based on data quality, not total scan count
+ * PHASE 7 PRINCIPLES:
+ * ===================
+ * 1. Patterns, not truths - never imply intent, belief, desire, or motivation
+ * 2. Always frame insights as exposure, repetition, or association
+ * 3. Explain why an insight exists (whyExplanation)
+ * 4. Acknowledge uncertainty proactively
+ * 5. Invite reflection, not compliance
+ * 6. No moralizing - especially for politics, ads, or emotional tone
  *
- * PRIMARY INSIGHTS (isPrimary: true) VALIDATION:
- * Each primary insight satisfies:
- * - Data comes from aggregated source (scanAggregator.js)
- * - Numbers change when scans are removed (not hard-coded)
- * - Insight is traceable to underlying feed_items or aggregates
- * - Empty state shows only if data is mathematically impossible to compute
+ * TAB NARRATIVE QUESTIONS:
+ * - Ads & Influence: "What's being sold to me and how?"
+ * - Politics & Worldview: "How politically skewed is my feed?"
+ * - Patterns in Your Feed: "Is my feed diverse or repetitive?"
+ * - Creators & Voices: "Who dominates what I see?"
+ * - What the Algorithm Thinks: "What does the algorithm believe about me?"
  */
 
 // Empty state type constants
@@ -35,6 +40,15 @@ export const EMPTY_STATE_TYPES = {
   NEEDS_MORE_SCANS: 'needs_more_scans',
   NEEDS_BROADER_BEHAVIOR: 'needs_broader_behavior',
   FUTURE_FEATURE: 'future_feature',
+};
+
+// PHASE 7: Tab-level trust sentences
+export const TAB_TRUST_SENTENCES = {
+  ads: 'These insights summarize repeated promotional patterns across your scans, not individual posts or purchases.',
+  politics: 'These insights reflect content exposure based on keywords and patterns, not your actual political views or beliefs.',
+  patterns: 'These insights show what appears repeatedly in your feed. If something feels off, your behavior may be changing faster than these patterns.',
+  creators: 'These insights show which voices appear most often. This reflects algorithmic surfacing, not necessarily who you follow or prefer.',
+  algorithm: 'These are rough estimates of how platforms may categorize you based on content patterns. They reflect exposure, not identity.',
 };
 
 export const TABS = [
@@ -47,33 +61,99 @@ export const TABS = [
 
 export const dashboardCatalog = [
   // ==========================================
-  // TAB 1: ADS & INFLUENCE (10 views)
-  // Grouped into: "Clearly labeled advertising" and "Possible influence or incentivized content"
-  // Note: Not all influence is labeled as advertising, and not all influence is intentional.
+  // TAB 1: ADS & INFLUENCE
+  // Core question: "What's being sold to me and how?"
+  // Primary (3): Ad percentage, Ad concentration, Platforms
+  // Secondary (2): Possible promo, Products mentioned
+  // Summary (1): Advertiser insights
   // ==========================================
 
-  // --- Clearly labeled advertising ---
+  // --- PRIMARY: Core metrics about advertising load ---
   {
     tab: 'ads',
     id: 'ads-percentage',
     title: 'How Much of Your Feed is Advertising',
-    description: 'Track the percentage of posts labeled as ads or sponsored content.',
+    description: 'The percentage of posts clearly labeled as ads or sponsored content.',
     outputType: 'number_line',
     dataFn: 'getAdPercentageData',
     emptyStateType: 'needs_more_scans',
-    category: 'labeled_ads',
-    // PHASE 5 VALIDATION: PRIMARY INSIGHT
-    // - Source: aggregateAds() sums total_ads/total_feed_items across ALL scans
-    // - Traceable: Maps directly to aggregates.total_ads from each scan's result_json
-    // - Dynamic: Percentage recalculates as scans are added/removed
-    // - Why primary: Core metric for understanding commercial influence on feed
     isPrimary: true,
     sortOrder: 'primary',
+    whyExplanation: 'Based on posts explicitly labeled as ads or sponsored across your scans.',
+    counterfactual: 'This may feel higher or lower than expected if your recent browsing differs from your scan history.',
     takeaway: (data) => data?.currentPercent !== undefined
-      ? `About ${data.currentPercent}% of your feed is clearly marked as advertising.`
+      ? `About ${data.currentPercent}% of the content you're shown is advertising.`
       : null,
-    action: () => 'If this feels high, engage more with non-commercial creators to rebalance.',
+    action: () => 'Engaging more with non-commercial creators may gradually reduce ad density.',
   },
+  {
+    tab: 'ads',
+    id: 'ads-concentration',
+    title: 'Where Promotions Come From',
+    description: 'How much promotional content comes from a small set of sources.',
+    outputType: 'number',
+    dataFn: 'getAdConcentrationData',
+    emptyStateType: 'needs_more_scans',
+    isPrimary: true,
+    sortOrder: 'primary',
+    whyExplanation: 'Calculated by measuring how many creators account for the majority of promotional posts.',
+    counterfactual: 'If you recently followed or unfollowed promotional accounts, this may not reflect those changes yet.',
+    takeaway: (data) => data?.concentration !== undefined
+      ? `${data.concentration}% of promotions you're shown come from just ${data.top5Count} sources.`
+      : null,
+    action: () => 'Muting or unfollowing concentrated promo sources may diversify your feed over time.',
+  },
+  {
+    tab: 'ads',
+    id: 'ads-by-platform',
+    title: 'Platforms Showing You the Most Promotion',
+    description: 'Which platforms surface the most promotional content in your feed.',
+    outputType: 'bar',
+    dataFn: 'getPlatformPromoData',
+    emptyStateType: 'needs_broader_behavior',
+    isPrimary: true,
+    sortOrder: 'primary',
+    whyExplanation: 'Compares ad and promotional content rates across the platforms you\'ve scanned.',
+    counterfactual: 'Platform differences may vary based on when and how you use each one.',
+    takeaway: () => 'Some platforms surface more promotional content than others.',
+    action: () => 'Spending less time on high-promo platforms may reduce overall ad exposure.',
+  },
+
+  // --- SECONDARY: Supporting details ---
+  {
+    tab: 'ads',
+    id: 'ads-likely-promo',
+    title: 'Possible Promotional Content (Estimate)',
+    description: 'Content showing promotional signals even when not labeled as an ad.',
+    outputType: 'number',
+    dataFn: 'getLikelyPromoData',
+    emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
+    confidenceDisclaimer: true,
+    whyExplanation: 'Detected using keyword patterns like discount codes, affiliate links, or product mentions. This is a rough estimate.',
+    takeaway: (data) => data?.possibleInfluencePercent !== undefined
+      ? `About ${data.possibleInfluencePercent}% of content may contain unlabeled promotion.`
+      : null,
+    action: () => 'Being aware of casual product mentions can help you notice unlabeled influence.',
+  },
+  {
+    tab: 'ads',
+    id: 'ads-products',
+    title: 'Product Categories Appearing Most Often',
+    description: 'Product categories that appear repeatedly in promotional content you\'re shown.',
+    outputType: 'bar',
+    dataFn: 'getProductMentionsData',
+    emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
+    confidenceDisclaimer: true,
+    whyExplanation: 'Identified by matching product-related keywords in promotional posts across your scans.',
+    takeaway: (data) => data?.length > 0
+      ? 'These product categories appear frequently in the promotions you\'re shown.'
+      : null,
+    action: () => 'Avoiding engagement with unwanted product content may reduce similar targeting.',
+  },
+
+  // --- HIDDEN: Removed for cognitive load reduction ---
   {
     tab: 'ads',
     id: 'ads-trend',
@@ -82,8 +162,8 @@ export const dashboardCatalog = [
     outputType: 'line',
     dataFn: 'getAdTrendData',
     emptyStateType: 'needs_more_scans',
-    category: 'labeled_ads',
     sortOrder: 'supporting',
+    hidden: true,
     takeaway: (data) => data?.direction
       ? `Advertising in your feed is ${data.direction}.`
       : null,
@@ -91,66 +171,17 @@ export const dashboardCatalog = [
   },
   {
     tab: 'ads',
-    id: 'ads-by-platform',
-    title: 'Platforms Driving the Most Promotion',
-    description: 'Compare promotional content across different platforms.',
-    outputType: 'bar',
-    dataFn: 'getPlatformPromoData',
-    emptyStateType: 'needs_broader_behavior',
-    category: 'labeled_ads',
-    sortOrder: 'supporting',
-    takeaway: () => 'Some platforms rely more heavily on promotion.',
-    action: () => 'If one platform feels salesy, reduce time there or reset engagement.',
-  },
-
-  // --- Possible influence or incentivized content ---
-  {
-    tab: 'ads',
-    id: 'ads-likely-promo',
-    title: 'Possible Promotional Content (Not Labeled)',
-    description: 'Content that shows patterns commonly associated with promotion, even when not labeled as an ad. Uses heuristic detection.',
-    outputType: 'number',
-    dataFn: 'getLikelyPromoData',
-    emptyStateType: 'needs_more_scans',
-    category: 'possible_influence',
-    isPrimary: true, // PRIMARY INSIGHT: Critical even if sparse
-    sortOrder: 'primary',
-    confidenceDisclaimer: true,
-    takeaway: (data) => data?.possibleInfluencePercent !== undefined
-      ? `About ${data.possibleInfluencePercent}% of your feed shows possible promotional signals (not labeled as ads).`
-      : 'This content shows patterns commonly associated with promotion.',
-    action: () => 'Treat recommendations as marketing when products keep showing up.',
-  },
-  {
-    tab: 'ads',
     id: 'ads-explicit-vs-hidden',
     title: 'Clearly Labeled Ads vs Possible Influence',
-    description: 'Compare labeled advertising versus content that may be incentivized. Not all influence is labeled as advertising, and not all influence is intentional.',
+    description: 'Compare labeled advertising versus content that may be incentivized.',
     outputType: 'stacked100',
     dataFn: 'getAdsVsPromoData',
     emptyStateType: 'needs_more_scans',
-    category: 'possible_influence',
     sortOrder: 'supporting',
+    hidden: true,
     confidenceDisclaimer: true,
-    takeaway: () => 'This comparison shows clearly labeled ads alongside possible incentivized content.',
-    action: () => 'Unlabeled influence is easier to miss. Be extra skeptical of casual product mentions.',
-  },
-  {
-    tab: 'ads',
-    id: 'ads-products',
-    title: 'Products Mentioned Most Often',
-    description: 'The product categories or brands that appear repeatedly in your feed.',
-    outputType: 'bar',
-    dataFn: 'getProductMentionsData',
-    emptyStateType: 'needs_more_scans',
-    category: 'possible_influence',
-    isPrimary: true, // PRIMARY INSIGHT: Reveals targeting patterns
-    sortOrder: 'primary',
-    confidenceDisclaimer: true,
-    takeaway: (data) => data?.length > 0
-      ? 'These products show up repeatedly in your feed.'
-      : null,
-    action: () => 'If you see repeat product pushes, the algorithm may be optimizing for purchases.',
+    takeaway: () => 'Labeled ads alongside possible incentivized content.',
+    action: () => 'Unlabeled influence is easier to miss.',
   },
   {
     tab: 'ads',
@@ -160,124 +191,154 @@ export const dashboardCatalog = [
     outputType: 'table',
     dataFn: 'getPromoCreatorsData',
     emptyStateType: 'needs_more_scans',
-    category: 'possible_influence',
     sortOrder: 'supporting',
+    hidden: true,
     takeaway: () => 'A small set of creators drive most promotions.',
-    action: () => 'Mute or unfollow high-promo creators if you want fewer sales pitches.',
-  },
-  {
-    tab: 'ads',
-    id: 'ads-concentration',
-    title: 'Ad Concentration',
-    description: 'How concentrated promotional content is among top creators.',
-    outputType: 'number',
-    dataFn: 'getAdConcentrationData',
-    emptyStateType: 'needs_more_scans',
-    category: 'possible_influence',
-    sortOrder: 'supporting',
-    takeaway: (data) => data?.concentration !== undefined
-      ? `${data.concentration}% of promotions come from the top ${data.top5Count} creators.`
-      : null,
-    action: () => 'Concentrated promotion often comes from a few influencer-heavy accounts.',
+    action: () => 'Mute or unfollow high-promo creators.',
   },
   {
     tab: 'ads',
     id: 'ads-themes',
     title: 'Promotional Themes',
-    description: 'Common product categories in promotional content, classified by keyword matching.',
+    description: 'Common product categories in promotional content.',
     outputType: 'bar',
     dataFn: 'getPromoThemesData',
     emptyStateType: 'needs_more_scans',
-    category: 'possible_influence',
     sortOrder: 'supporting',
+    hidden: true,
     confidenceDisclaimer: true,
-    takeaway: () => 'Promotions in your feed tend to focus on these product categories.',
-    action: () => 'When you notice a pattern, you can reduce engagement to stop reinforcing it.',
+    takeaway: () => 'Promotions focus on these product categories.',
+    action: () => 'Reduce engagement to stop reinforcing patterns.',
   },
+
+  // --- SUMMARY: What this means for you ---
   {
     tab: 'ads',
     id: 'ads-advertiser-insights',
-    title: 'What Advertisers Seem to Want From You',
-    description: 'Inferred interest areas based on repeated products and categories.',
+    title: 'Signals Advertisers May Be Responding To',
+    description: 'Inferred interest areas based on repeated products and categories you\'re shown.',
     outputType: 'text',
     dataFn: 'getAdvertiserInsightsData',
     emptyStateType: 'needs_more_scans',
-    category: 'possible_influence',
     sortOrder: 'summary',
     confidenceDisclaimer: true,
     isSummaryCard: true,
+    whyExplanation: 'Summarized from product categories and ad themes that appear repeatedly across your scans.',
     takeaway: (data) => data?.interests?.length > 0
-      ? `Advertisers appear to associate you with: ${data.interests.join(', ')}.`
+      ? `Advertisers may associate you with: ${data.interests.join(', ')}. This reflects ad targeting, not your actual interests.`
       : null,
-    action: () => 'If it\'s wrong, deliberately engage with content outside these categories.',
+    action: () => 'Engaging with content outside these categories may gradually shift how you\'re targeted.',
   },
 
   // ==========================================
-  // TAB 2: POLITICS & WORLDVIEW (10 views)
-  // PHASE 5: Uses aggregatePolitics() for all political views
+  // TAB 2: POLITICS & WORLDVIEW
+  // Core question: "How politically skewed is my feed?"
+  // Tab remains opt-in for leaning insights
+  // Primary (2): Political share, Balance status
+  // Secondary (2): Who drives politics, Cross-platform differences
+  // Collapsed (2): Leaning breakdown, Blind spots (LOW confidence, opt-in)
+  // Summary (1): Political profile
   // ==========================================
+
+  // --- PRIMARY: Core metrics about political exposure ---
   {
     tab: 'politics',
     id: 'politics-share',
-    title: 'Political Content Share',
-    description: 'What percentage of your feed contains political content.',
+    title: 'Political Content in Your Feed',
+    description: 'What percentage of content you\'re shown contains political themes.',
     outputType: 'number_line',
     dataFn: 'getPoliticalShareData',
     emptyStateType: 'needs_more_scans',
-    // PHASE 5 VALIDATION: PRIMARY INSIGHT
-    // - Source: aggregatePolitics() sums political_items/total_feed_items across ALL scans
-    // - Traceable: Maps to aggregates.political_content_summary from each scan
-    // - Dynamic: Percentage recalculates as scans are added/removed
-    // - Why primary: Core metric for understanding political exposure
     isPrimary: true,
     sortOrder: 'primary',
+    whyExplanation: 'Detected using keyword matching for political topics. This is a rough estimate based on content patterns.',
+    counterfactual: 'This may feel inaccurate if you engage with political content differently than what appears in your feed.',
     takeaway: (data) => data?.currentPercent !== undefined
-      ? `Political content appears in about ${data.currentPercent}% of your feed.`
+      ? `About ${data.currentPercent}% of the content you're shown contains political themes.`
       : null,
-    action: () => 'If this feels high, follow more non-political creators to diversify.',
-  },
-  {
-    tab: 'politics',
-    id: 'politics-leaning',
-    title: 'Political Leaning Breakdown',
-    description: 'Distribution of political content by leaning (Left / Neutral / Right). Requires opt-in. Uses heuristic keyword matching.',
-    outputType: 'stacked100',
-    dataFn: 'getPoliticalLeaningData',
-    emptyStateType: 'needs_more_scans',
-    isPrimary: true, // PRIMARY INSIGHT: Critical perspective balance metric
-    sortOrder: 'primary',
-    requiresOptIn: true,
-    confidenceDisclaimer: true,
-    takeaway: (data) => data?.takeaway || 'Political content distribution by leaning.',
-    action: () => 'If one side dominates, your feed may be narrowing.',
+    action: () => 'Following non-political creators may gradually reduce political content exposure.',
   },
   {
     tab: 'politics',
     id: 'politics-balance',
-    title: 'Balance vs Imbalance',
-    description: 'Assessment of whether your political content is balanced or skewed. Requires opt-in.',
+    title: 'Perspective Balance (Rough Estimate)',
+    description: 'A rough estimate of whether political content skews toward particular perspectives.',
     outputType: 'status',
     dataFn: 'getPoliticalBalanceData',
+    emptyStateType: 'needs_more_scans',
+    isPrimary: true,
+    sortOrder: 'primary',
+    requiresOptIn: true,
+    confidenceDisclaimer: true,
+    whyExplanation: 'Uses keyword matching to estimate perspective distribution. This is LOW confidence and may not reflect nuance.',
+    counterfactual: 'Political content is complex. This rough estimate may miss context, irony, or critique.',
+    takeaway: (data) => data?.message || 'This is a rough estimate of political content balance in what you\'re shown.',
+    action: () => 'Engaging with credible sources across perspectives may help diversify exposure.',
+  },
+
+  // --- SECONDARY: Supporting details ---
+  {
+    tab: 'politics',
+    id: 'politics-creators',
+    title: 'Sources of Political Content',
+    description: 'Creators contributing the most political content to what you\'re shown.',
+    outputType: 'table',
+    dataFn: 'getPoliticalCreatorsData',
+    emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
+    whyExplanation: 'Identified by counting political keyword matches per creator across your scans.',
+    takeaway: () => 'A few sources account for most of the political content you\'re shown.',
+    action: () => 'Unfollowing top political sources may reduce political content if desired.',
+  },
+  {
+    tab: 'politics',
+    id: 'politics-by-platform',
+    title: 'Political Content by Platform',
+    description: 'How political content exposure varies across the platforms you\'ve scanned.',
+    outputType: 'bar',
+    dataFn: 'getCrossPlatformPoliticalData',
+    emptyStateType: 'needs_broader_behavior',
+    sortOrder: 'supporting',
+    whyExplanation: 'Compares political content percentages across each platform you\'ve scanned.',
+    takeaway: () => 'Political content exposure varies significantly by platform.',
+    action: () => 'Using lower-politics platforms may provide a break when needed.',
+  },
+
+  // --- COLLAPSED BY DEFAULT: Low confidence, opt-in required ---
+  {
+    tab: 'politics',
+    id: 'politics-leaning',
+    title: 'Perspective Distribution (Low Confidence)',
+    description: 'Rough distribution by perspective. Uses keyword matching only.',
+    outputType: 'stacked100',
+    dataFn: 'getPoliticalLeaningData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     requiresOptIn: true,
     confidenceDisclaimer: true,
-    takeaway: (data) => data?.message || 'Your political content balance status.',
-    action: () => 'To rebalance, engage with credible sources across perspectives.',
+    collapsedByDefault: true,
+    whyExplanation: 'Based on simple keyword matching. Cannot detect nuance, irony, or context. Treat as a rough signal only.',
+    takeaway: (data) => data?.takeaway || 'Rough estimate of content distribution. This reflects exposure, not your views.',
+    action: () => 'If one perspective dominates, your feed exposure may be narrowing.',
   },
   {
     tab: 'politics',
-    id: 'politics-creators',
-    title: 'Who Drives Political Content',
-    description: 'Creators who post the most political content in your feed.',
-    outputType: 'table',
-    dataFn: 'getPoliticalCreatorsData',
+    id: 'politics-blind-spots',
+    title: 'Underrepresented Perspectives (Low Confidence)',
+    description: 'Perspectives that rarely appear in content you\'re shown.',
+    outputType: 'list',
+    dataFn: 'getPoliticalBlindSpotsData',
     emptyStateType: 'needs_more_scans',
-    isPrimary: true, // PRIMARY INSIGHT: Shows who shapes your political exposure
-    sortOrder: 'primary',
-    takeaway: () => 'A small number of creators drive most political exposure.',
-    action: () => 'Unfollow the top drivers if you want less politics.',
+    sortOrder: 'supporting',
+    requiresOptIn: true,
+    confidenceDisclaimer: true,
+    collapsedByDefault: true,
+    whyExplanation: 'Detected by absence of keywords associated with certain perspectives. This is a very rough estimate.',
+    takeaway: (data) => data?.message || 'Some perspectives may be underrepresented in what you\'re shown.',
+    action: () => 'Following credible sources from underrepresented areas may broaden exposure.',
   },
+
+  // --- HIDDEN: Removed for cognitive load reduction ---
   {
     tab: 'politics',
     id: 'politics-repetition',
@@ -287,6 +348,7 @@ export const dashboardCatalog = [
     dataFn: 'getPoliticalRepetitionData',
     emptyStateType: 'future_feature',
     sortOrder: 'future',
+    hidden: true,
     takeaway: () => 'You often see the same political ideas repeated.',
     action: () => 'Search and engage with different subtopics to widen the feed.',
   },
@@ -299,8 +361,9 @@ export const dashboardCatalog = [
     dataFn: 'getPoliticalToneData',
     emptyStateType: 'future_feature',
     sortOrder: 'future',
+    hidden: true,
     takeaway: () => 'Political content tends to feel calm or intense.',
-    action: () => 'If it\'s intense, consider muting accounts that post outrage content.',
+    action: () => 'Mute accounts that post outrage content.',
   },
   {
     tab: 'politics',
@@ -311,114 +374,127 @@ export const dashboardCatalog = [
     dataFn: 'getPoliticalTrendData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
+    hidden: true,
     takeaway: (data) => data?.direction
       ? `Your political exposure has been ${data.direction}.`
       : null,
     action: () => 'Feeds shift quickly based on what you pause on and share.',
   },
-  {
-    tab: 'politics',
-    id: 'politics-blind-spots',
-    title: 'Political Blind Spots',
-    description: 'Viewpoints or themes that rarely appear in your feed. Requires opt-in.',
-    outputType: 'list',
-    dataFn: 'getPoliticalBlindSpotsData',
-    emptyStateType: 'needs_more_scans',
-    sortOrder: 'supporting',
-    requiresOptIn: true,
-    confidenceDisclaimer: true,
-    takeaway: (data) => data?.message || 'Some viewpoints rarely appear in your feed.',
-    action: () => 'If you want balance, intentionally follow credible sources from missing areas.',
-  },
-  {
-    tab: 'politics',
-    id: 'politics-by-platform',
-    title: 'Cross-Platform Political Differences',
-    description: 'Compare political content across different platforms.',
-    outputType: 'bar',
-    dataFn: 'getCrossPlatformPoliticalData',
-    emptyStateType: 'needs_broader_behavior',
-    sortOrder: 'supporting',
-    takeaway: () => 'Political exposure varies by platform.',
-    action: () => 'Use the lowest-politics platform when you want a mental break.',
-  },
+
+  // --- SUMMARY: What this means for you ---
   {
     tab: 'politics',
     id: 'politics-profile',
-    title: 'What Your Feed Suggests About Your Political Interests',
-    description: 'Summary of political themes your feed emphasizes.',
+    title: 'Political Themes You\'re Shown Most',
+    description: 'Summary of political themes that appear frequently in your feed.',
     outputType: 'text',
     dataFn: 'getPoliticalProfileData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'summary',
     isSummaryCard: true,
+    whyExplanation: 'Summarized from political keywords detected across your scans. Reflects content exposure, not your views.',
     takeaway: (data) => data?.politicalPercent !== undefined
-      ? `Your feed emphasizes political content (${data.politicalPercent}%).`
+      ? `Your feed contains ${data.politicalPercent}% political content. This reflects what you're shown, not what you believe.`
       : null,
-    action: () => 'If it doesn\'t reflect you, diversify what you watch and follow.',
+    action: () => 'Diversifying what you watch and follow may shift the balance over time.',
   },
 
   // ==========================================
-  // TAB 3: PATTERNS IN YOUR FEED (10 views)
-  // PHASE 5 CRITICAL FIX: Topic and emotion views now aggregate ALL scans
-  // (Previously used only scans[0], the latest scan)
+  // TAB 3: PATTERNS IN YOUR FEED
+  // Core question: "Is my feed diverse or repetitive?"
+  // Primary (2): Topic variety, Reinforcement warning
+  // Secondary (2): Repeated themes, Feed stability
+  // Collapsed (1): Emotional weight
+  // Summary (1): Pattern summary
   // ==========================================
+
+  // --- PRIMARY: Core metrics about feed diversity ---
   {
     tab: 'patterns',
     id: 'patterns-topic-variety',
-    title: 'Topic Variety',
-    description: 'How many different topics appear in your feed.',
+    title: 'Topics You\'re Shown',
+    description: 'How many different topics appear in the content you\'re shown.',
     outputType: 'number_bar',
     dataFn: 'getTopicVarietyData',
     emptyStateType: 'needs_more_scans',
-    // PHASE 5 VALIDATION: PRIMARY INSIGHT (CRITICAL FIX)
-    // - Source: aggregateTopics() averages topic_distribution across ALL scans
-    // - FIXED: Previously only used scans[0] (latest), now uses all scans
-    // - Traceable: Maps to aggregates.topic_distribution from each scan
-    // - Dynamic: Topic counts change as scans are added/removed
-    // - Why primary: Core metric for understanding feed diversity
     isPrimary: true,
     sortOrder: 'primary',
+    whyExplanation: 'Counted by matching content to topic categories across your scans.',
+    counterfactual: 'This may feel different from your interests if the algorithm shows you content you didn\'t seek out.',
     takeaway: (data) => data?.topicCount !== undefined
-      ? `Your feed covers ${data.topicCount} topics.`
+      ? `You're shown content across ${data.topicCount} distinct topics.`
       : null,
-    action: () => 'Search for a new interest to increase variety.',
+    action: () => 'Searching for new interests may expand the topics you\'re shown.',
   },
   {
     tab: 'patterns',
+    id: 'patterns-echo-risk',
+    title: 'Content Repetition Signal',
+    description: 'Whether the same ideas appear repeatedly in what you\'re shown.',
+    outputType: 'status',
+    dataFn: 'getEchoRiskData',
+    emptyStateType: 'needs_more_scans',
+    isPrimary: true,
+    sortOrder: 'primary',
+    whyExplanation: 'Measured by how concentrated your content is in a small number of topics or themes.',
+    counterfactual: 'Repetition isn\'t always bad. It may reflect genuine interest or algorithmic over-optimization.',
+    takeaway: (data) => data?.riskLevel
+      ? `Content repetition level: ${data.riskLevel}. This reflects patterns in what you're shown.`
+      : null,
+    action: () => 'Following creators outside your usual themes may increase variety.',
+  },
+
+  // --- SECONDARY: Supporting details ---
+  {
+    tab: 'patterns',
     id: 'patterns-repeated-themes',
-    title: 'Repeated Themes',
-    description: 'What percentage of your feed concentrates in the top 3 topics.',
+    title: 'Topic Concentration',
+    description: 'How concentrated the content you\'re shown is in just a few topics.',
     outputType: 'number',
     dataFn: 'getRepeatedThemesData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
+    whyExplanation: 'Calculated by measuring what percentage of content falls into your top topics.',
     takeaway: (data) => data?.top3Percent !== undefined
-      ? `${data.top3Percent}% of your feed is in the top 3 topics.`
+      ? `${data.top3Percent}% of what you're shown is in your top 3 topics.`
       : null,
-    action: () => 'Engage with content outside the top topics to broaden recommendations.',
+    action: () => 'Engaging with content outside top topics may broaden recommendations.',
   },
   {
     tab: 'patterns',
+    id: 'patterns-stability',
+    title: 'How Much Your Feed Changes',
+    description: 'How much the content you\'re shown changes between scans.',
+    outputType: 'status',
+    dataFn: 'getFeedStabilityData',
+    emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
+    whyExplanation: 'Measured by comparing topic and creator overlap between your scans.',
+    takeaway: (data) => data?.stability
+      ? `Your feed is ${data.stability} (${data.overlapPercent}% overlap between scans).`
+      : null,
+    action: () => 'Following new creators may inject variety into stable feeds.',
+  },
+
+  // --- COLLAPSED BY DEFAULT: Still available but de-emphasized ---
+  {
+    tab: 'patterns',
     id: 'patterns-emotional-weight',
-    title: 'Emotional Weight',
-    description: 'The overall emotional tone of content in your feed.',
+    title: 'Emotional Tone of Content',
+    description: 'The overall emotional tone of content you\'re shown.',
     outputType: 'stacked100',
     dataFn: 'getEmotionalWeightData',
     emptyStateType: 'needs_more_scans',
-    // PHASE 5 VALIDATION: PRIMARY INSIGHT (CRITICAL FIX)
-    // - Source: aggregateEmotions() sums valence_distribution across ALL scans
-    // - FIXED: Previously only used scans[0] (latest), now uses all scans
-    // - Traceable: Maps to aggregates.wellbeing_summary.valence_distribution
-    // - Dynamic: Percentages change as scans are added/removed
-    // - Why primary: Core metric for understanding emotional impact of feed
-    isPrimary: true,
-    sortOrder: 'primary',
+    sortOrder: 'supporting',
+    collapsedByDefault: true,
+    whyExplanation: 'Estimated using keyword patterns associated with different emotional tones. This is a rough signal.',
     takeaway: (data) => data?.intensity
-      ? `Your feed feels ${data.intensity} emotionally.`
+      ? `The content you're shown tends to feel ${data.intensity} emotionally.`
       : null,
-    action: () => 'If heavy, reduce engagement with intense content for a few days.',
+    action: () => 'Reducing engagement with intense content may lighten emotional load over time.',
   },
+
+  // --- HIDDEN: Removed for cognitive load reduction ---
   {
     tab: 'patterns',
     id: 'patterns-sentiment-balance',
@@ -428,125 +504,146 @@ export const dashboardCatalog = [
     dataFn: 'getSentimentBalanceData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
+    hidden: true,
     takeaway: () => 'Content sentiment distribution in your feed.',
-    action: () => 'If negative is high, intentionally interact with uplifting accounts.',
-  },
-  {
-    tab: 'patterns',
-    id: 'patterns-stability',
-    title: 'Stability of Your Feed',
-    description: 'How much your feed content changes between scans.',
-    outputType: 'status',
-    dataFn: 'getFeedStabilityData',
-    emptyStateType: 'needs_more_scans',
-    sortOrder: 'supporting',
-    takeaway: (data) => data?.stability
-      ? `Your feed is ${data.stability} between scans (${data.overlapPercent}% topic overlap).`
-      : null,
-    action: () => 'Stable feeds can get repetitive. Follow 3 new creators to inject variety.',
+    action: () => 'Interact with uplifting accounts if negative is high.',
   },
   {
     tab: 'patterns',
     id: 'patterns-discovery',
     title: 'Discovery Rate',
-    description: 'Percentage of content from new creators you haven\'t seen before.',
+    description: 'Percentage of content from new creators.',
     outputType: 'number',
     dataFn: 'getDiscoveryRateData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
+    hidden: true,
     takeaway: (data) => data?.discoveryRate !== undefined
-      ? `${data.discoveryRate}% of creators in your latest scan were new.`
+      ? `${data.discoveryRate}% of creators were new.`
       : null,
-    action: () => 'To increase discovery, like and save content from new accounts.',
-  },
-  {
-    tab: 'patterns',
-    id: 'patterns-echo-risk',
-    title: 'Reinforcement Warning',
-    description: 'Assessment of whether your feed may be reinforcing the same ideas.',
-    outputType: 'status',
-    dataFn: 'getEchoRiskData',
-    emptyStateType: 'needs_more_scans',
-    isPrimary: true, // PRIMARY INSIGHT: Critical even if sparse
-    sortOrder: 'primary',
-    takeaway: (data) => data?.riskLevel
-      ? `Echo chamber risk: ${data.riskLevel}.`
-      : null,
-    action: () => 'Try one new topic search and follow 5 creators outside your usual themes.',
+    action: () => 'Like and save content from new accounts.',
   },
   {
     tab: 'patterns',
     id: 'patterns-rare-content',
     title: 'Topics That Rarely Show Up',
-    description: 'Topics that appear infrequently in your feed, based on observed content.',
+    description: 'Topics that appear infrequently in your feed.',
     outputType: 'list',
     dataFn: 'getRareContentData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
+    hidden: true,
     takeaway: (data) => data?.rareTopics?.length > 0
-      ? `These ${data.rareTopics.length} topics rarely appear in your feed.`
+      ? `These topics rarely appear.`
       : 'Your feed has fairly even topic distribution.',
-    action: () => 'If you want a broader feed, deliberately engage with missing topics.',
+    action: () => 'Engage with missing topics for a broader feed.',
   },
   {
     tab: 'patterns',
     id: 'patterns-intensity-spikes',
     title: 'Intensity Spikes',
-    description: 'Track when intense or negative content peaks in your feed.',
+    description: 'When intense or negative content peaks.',
     outputType: 'line',
     dataFn: 'getIntensitySpikesData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
+    hidden: true,
     takeaway: () => 'Some periods show spikes in intense content.',
-    action: () => 'When spikes happen, take a short break or reset engagement signals.',
+    action: () => 'Take a break or reset engagement signals during spikes.',
   },
+
+  // --- SUMMARY: What this means for you ---
   {
     tab: 'patterns',
     id: 'patterns-summary',
-    title: 'What Your Patterns Suggest',
-    description: 'Summary of variety, repetition, and emotional weight patterns.',
+    title: 'What These Patterns Suggest',
+    description: 'Summary of variety, repetition, and feed dynamics in what you\'re shown.',
     outputType: 'text',
     dataFn: 'getPatternSummaryData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'summary',
     isSummaryCard: true,
+    whyExplanation: 'Synthesized from topic distribution, repetition rates, and stability across your scans.',
     takeaway: (data) => data?.insights?.length > 0
       ? data.insights.join(' ')
       : null,
-    action: () => 'Small habit changes can shift this quickly.',
+    action: () => 'Small habit changes can shift patterns over time.',
   },
 
   // ==========================================
-  // TAB 4: CREATORS & VOICES (10 views)
+  // TAB 4: CREATORS & VOICES
+  // Core question: "Who dominates what I see?"
+  // Primary (2): Top creators (top 5), Creator concentration
+  // Secondary (2): Voice diversity, Cross-platform overlap
+  // Summary (1): Who shapes your feed
   // ==========================================
+
+  // --- PRIMARY: Core metrics about creator dominance ---
   {
     tab: 'creators',
     id: 'creators-top',
-    title: 'Creators You See Most',
-    description: 'The creators who appear most frequently in your feed.',
+    title: 'Creators Appearing Most Often',
+    description: 'The top 5 creators who appear most frequently in what you\'re shown.',
     outputType: 'table',
     dataFn: 'getTopCreatorsData',
     emptyStateType: 'needs_more_scans',
-    isPrimary: true, // PRIMARY INSIGHT: Core metric for this tab
+    isPrimary: true,
     sortOrder: 'primary',
-    takeaway: () => 'These creators appear most frequently in your feed.',
-    action: () => 'If one creator dominates, consider diversifying who you follow.',
+    maxItems: 5,
+    whyExplanation: 'Ranked by post count across all your scans. Reflects algorithmic surfacing, not just who you follow.',
+    counterfactual: 'If you recently changed who you follow, this may not reflect those changes yet.',
+    takeaway: () => 'These 5 creators appear most frequently in what you\'re shown.',
+    action: () => 'Diversifying your follows may shift which creators appear most.',
   },
   {
     tab: 'creators',
     id: 'creators-concentration',
-    title: 'Creator Concentration',
-    description: 'What percentage of your feed comes from the top 10 creators.',
+    title: 'How Concentrated Your Sources Are',
+    description: 'How much of what you\'re shown comes from a small number of creators.',
     outputType: 'number',
     dataFn: 'getCreatorConcentrationData',
     emptyStateType: 'needs_more_scans',
-    isPrimary: true, // PRIMARY INSIGHT: Key diversity metric
+    isPrimary: true,
     sortOrder: 'primary',
+    whyExplanation: 'Calculated by measuring what percentage of content comes from your top creators.',
+    counterfactual: 'High concentration may reflect following a small number of active creators, not necessarily a narrow feed.',
     takeaway: (data) => data?.concentration !== undefined
-      ? `${data.concentration}% of your feed comes from the top ${data.top10Count} creators.`
+      ? `${data.concentration}% of what you're shown comes from just ${data.top10Count} creators.`
       : null,
-    action: () => 'Follow 10 new creators to reduce concentration.',
+    action: () => 'Following more creators may reduce concentration.',
   },
+
+  // --- SECONDARY: Supporting details ---
+  {
+    tab: 'creators',
+    id: 'creators-voice-diversity',
+    title: 'Source Variety',
+    description: 'A rough assessment of how varied the sources in your feed are.',
+    outputType: 'status',
+    dataFn: 'getVoiceDiversityData',
+    emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
+    whyExplanation: 'Estimated by measuring creator count and distribution across topics.',
+    takeaway: (data) => data?.diversity
+      ? `Your feed shows ${data.diversity} source variety.`
+      : null,
+    action: () => 'Adding sources from different backgrounds may increase variety.',
+  },
+  {
+    tab: 'creators',
+    id: 'creators-cross-platform',
+    title: 'Creators Appearing Across Platforms',
+    description: 'Creators who appear in your feed on multiple platforms you scan.',
+    outputType: 'table',
+    dataFn: 'getCrossplatformCreatorData',
+    emptyStateType: 'needs_broader_behavior',
+    sortOrder: 'supporting',
+    whyExplanation: 'Identified by matching creator handles or names across different platform scans.',
+    takeaway: () => 'Some creators appear in your feed across multiple platforms.',
+    action: () => 'Diversifying intentionally may help if one voice appears everywhere.',
+  },
+
+  // --- HIDDEN: Removed for cognitive load reduction ---
   {
     tab: 'creators',
     id: 'creators-new-vs-familiar',
@@ -556,8 +653,9 @@ export const dashboardCatalog = [
     dataFn: 'getNewVsFamiliarData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
+    hidden: true,
     takeaway: () => 'Your feed mix of new and familiar creators.',
-    action: () => 'To discover more, interact with unfamiliar accounts.',
+    action: () => 'Interact with unfamiliar accounts to discover more.',
   },
   {
     tab: 'creators',
@@ -568,6 +666,7 @@ export const dashboardCatalog = [
     dataFn: 'getPromoCreatorsData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
+    hidden: true,
     takeaway: () => 'These creators contribute most promotional content.',
     action: () => 'Mute high-promo creators to reduce ads.',
   },
@@ -580,8 +679,9 @@ export const dashboardCatalog = [
     dataFn: 'getPoliticalCreatorsData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
+    hidden: true,
     takeaway: () => 'These creators drive most political exposure.',
-    action: () => 'Unfollow the top drivers if you want less politics.',
+    action: () => 'Unfollow top drivers if you want less politics.',
   },
   {
     tab: 'creators',
@@ -592,6 +692,7 @@ export const dashboardCatalog = [
     dataFn: 'getCreatorsByTopicData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
+    hidden: true,
     takeaway: (data) => data?.takeaway || 'Different creators dominate different topics.',
     action: () => 'Follow creators in topics you want more of.',
   },
@@ -599,193 +700,193 @@ export const dashboardCatalog = [
     tab: 'creators',
     id: 'creators-by-tone',
     title: 'Creators by Emotional Tone',
-    description: 'Which creators consistently post intense content. Requires per-item emotion data.',
+    description: 'Which creators consistently post intense content.',
     outputType: 'table',
     dataFn: 'getCreatorsByToneData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
+    hidden: true,
     takeaway: () => 'Some creators consistently post intense content.',
-    action: () => 'If intense content affects you, mute those accounts.',
+    action: () => 'Mute accounts if intense content affects you.',
   },
-  {
-    tab: 'creators',
-    id: 'creators-cross-platform',
-    title: 'Cross-Platform Creator Overlap',
-    description: 'Creators who appear across multiple platforms you scan.',
-    outputType: 'table',
-    dataFn: 'getCrossplatformCreatorData',
-    emptyStateType: 'needs_broader_behavior',
-    sortOrder: 'supporting',
-    takeaway: () => 'Some creators follow you across platforms.',
-    action: () => 'If one voice is everywhere, you can diversify intentionally.',
-  },
-  {
-    tab: 'creators',
-    id: 'creators-voice-diversity',
-    title: 'Voice Diversity',
-    description: 'Assessment of how diverse the voices in your feed are.',
-    outputType: 'status',
-    dataFn: 'getVoiceDiversityData',
-    emptyStateType: 'needs_more_scans',
-    isPrimary: true, // PRIMARY INSIGHT: Critical perspective metric
-    sortOrder: 'primary',
-    takeaway: (data) => data?.diversity
-      ? `Your feed shows ${data.diversity} voice diversity.`
-      : null,
-    action: () => 'Low diversity often means fewer perspectives. Add new voices.',
-  },
+
+  // --- SUMMARY: What this means for you ---
   {
     tab: 'creators',
     id: 'creators-influential',
-    title: 'Who Shapes Your Feed the Most',
-    description: 'Top creators and what they contribute (ads/politics/topics).',
+    title: 'Who Shapes What You\'re Shown',
+    description: 'Summary of the creators with the most presence in your feed.',
     outputType: 'text',
     dataFn: 'getInfluentialCreatorsData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'summary',
     isSummaryCard: true,
-    takeaway: () => 'These accounts have the biggest influence on what you see.',
-    action: () => 'Adjust who you follow to shift what the algorithm learns.',
+    whyExplanation: 'Based on frequency and consistency of appearance across your scans.',
+    takeaway: () => 'These accounts appear most consistently in what you\'re shown.',
+    action: () => 'Adjusting who you follow may shift what the algorithm surfaces.',
   },
 
   // ==========================================
-  // TAB 5: WHAT THE ALGORITHM THINKS (10 views)
+  // TAB 5: WHAT THE ALGORITHM THINKS
+  // Core question: "What does the algorithm believe about me?"
+  // Primary (2): Topics liked, Profile breadth
+  // Secondary (2): What it's confident about, Future recommendations
+  // Summary (1): How to change it
   // ==========================================
+
+  // --- PRIMARY: Core metrics about algorithmic profile ---
   {
     tab: 'algorithm',
     id: 'algo-topics-liked',
-    title: 'Topics the Algorithm Thinks You Like',
-    description: 'Topics most strongly associated with your profile.',
+    title: 'Topics You\'re Most Often Shown',
+    description: 'Topics most strongly associated with your feed patterns.',
     outputType: 'list',
     dataFn: 'getAlgoTopicsLikedData',
     emptyStateType: 'needs_more_scans',
-    isPrimary: true, // PRIMARY INSIGHT: Core algorithmic inference
+    isPrimary: true,
     sortOrder: 'primary',
-    takeaway: () => 'The algorithm strongly associates you with these topics.',
-    action: () => 'If it\'s inaccurate, engage with other topics to retrain it.',
-  },
-  {
-    tab: 'algorithm',
-    id: 'algo-topics-avoided',
-    title: 'Topics That Rarely Show Up For You',
-    description: 'Topics that rarely appear in your feed based on observed content.',
-    outputType: 'list',
-    dataFn: 'getAlgoTopicsAvoidedData',
-    emptyStateType: 'needs_more_scans',
-    sortOrder: 'supporting',
-    takeaway: (data) => data?.topics?.length > 0
-      ? 'These topics rarely appear in your feed.'
-      : 'No topics are significantly underrepresented.',
-    action: () => 'To see them more, search and follow accounts in those areas.',
-  },
-  {
-    tab: 'algorithm',
-    id: 'algo-products',
-    title: 'Products the Algorithm Thinks You\'re Receptive To',
-    description: 'Product categories that appear repeatedly in ads shown to you.',
-    outputType: 'bar',
-    dataFn: 'getAlgoProductsData',
-    emptyStateType: 'needs_more_scans',
-    isPrimary: true, // PRIMARY INSIGHT: Key commercial targeting metric
-    sortOrder: 'primary',
-    confidenceDisclaimer: true,
-    takeaway: () => 'Your feed suggests interest in these product categories.',
-    action: () => 'If you don\'t want targeted selling, reduce engagement with product content.',
-  },
-  {
-    tab: 'algorithm',
-    id: 'algo-political-themes',
-    title: 'Political Themes the Algorithm Thinks Matter to You',
-    description: 'Political themes that appear prioritized in your feed.',
-    outputType: 'list',
-    dataFn: 'getAlgoPoliticalThemesData',
-    emptyStateType: 'future_feature',
-    sortOrder: 'future',
-    takeaway: () => 'These political themes appear prioritized in your feed.',
-    action: () => 'If it feels unbalanced, diversify what you watch and follow.',
-  },
-  {
-    tab: 'algorithm',
-    id: 'algo-emotional-triggers',
-    title: 'Emotional Triggers the Algorithm Responds To',
-    description: 'Emotional content types that appear most often.',
-    outputType: 'bar',
-    dataFn: 'getAlgoEmotionalTriggersData',
-    emptyStateType: 'needs_more_scans',
-    sortOrder: 'supporting',
-    takeaway: () => 'Content with these emotions appears more often.',
-    action: () => 'If a trigger is unhelpful, stop lingering on that content.',
-  },
-  {
-    tab: 'algorithm',
-    id: 'algo-confident',
-    title: 'What the Algorithm is Confident About',
-    description: 'Patterns that remain consistent across your scans.',
-    outputType: 'text',
-    dataFn: 'getAlgoConfidentData',
-    emptyStateType: 'needs_more_scans',
-    sortOrder: 'supporting',
-    takeaway: (data) => data?.insights?.length > 0
-      ? data.insights.join(' ')
-      : null,
-    action: () => 'Changing these takes repeated behavior changes.',
-  },
-  {
-    tab: 'algorithm',
-    id: 'algo-uncertain',
-    title: 'What the Algorithm is Uncertain About',
-    description: 'Areas with high variance across your scans.',
-    outputType: 'text',
-    dataFn: 'getAlgoUncertainData',
-    emptyStateType: 'needs_more_scans',
-    sortOrder: 'supporting',
-    takeaway: (data) => data?.insights?.length > 0
-      ? data.insights.join(' ')
-      : null,
-    action: () => 'If you want to shape this, engage consistently with what you want.',
+    whyExplanation: 'Identified by which topics appear most frequently and consistently in your scans.',
+    counterfactual: 'This reflects what the algorithm surfaces, which may differ from your actual interests.',
+    takeaway: () => 'The algorithm frequently shows you content in these topics. This reflects exposure, not preference.',
+    action: () => 'Engaging with different topics may gradually retrain what you\'re shown.',
   },
   {
     tab: 'algorithm',
     id: 'algo-profile-breadth',
-    title: 'How Narrow or Broad Your Inferred Profile Is',
-    description: 'Assessment of your algorithmic profile breadth.',
+    title: 'How Varied Your Feed Profile Is',
+    description: 'Whether your algorithmic profile appears diverse or narrowly focused.',
     outputType: 'status',
     dataFn: 'getProfileBreadthData',
     emptyStateType: 'needs_more_scans',
-    isPrimary: true, // PRIMARY INSIGHT: Critical overall profile assessment
+    isPrimary: true,
     sortOrder: 'primary',
+    whyExplanation: 'Estimated by measuring topic distribution and concentration across your scans.',
+    counterfactual: 'A narrow profile isn\'t inherently bad. It may reflect deep interest in specific areas.',
     takeaway: (data) => data?.breadth
-      ? `Your inferred profile is ${data.breadth.toLowerCase()}.`
+      ? `Your inferred profile appears ${data.breadth.toLowerCase()}. This reflects content patterns, not who you are.`
       : null,
-    action: () => 'Broader profiles usually come from exploring new topics.',
+    action: () => 'Exploring new topics may broaden what you\'re shown.',
+  },
+
+  // --- SECONDARY: Supporting details ---
+  {
+    tab: 'algorithm',
+    id: 'algo-confident',
+    title: 'Consistent Patterns in Your Feed',
+    description: 'Patterns that appear consistently across your scans.',
+    outputType: 'text',
+    dataFn: 'getAlgoConfidentData',
+    emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
+    whyExplanation: 'Identified by measuring which signals remain stable across multiple scans.',
+    takeaway: (data) => data?.insights?.length > 0
+      ? data.insights.join(' ')
+      : null,
+    action: () => 'Changing established patterns typically requires repeated, different engagement.',
   },
   {
     tab: 'algorithm',
     id: 'algo-future',
-    title: 'How This Profile May Shape Future Recommendations',
-    description: 'Predictions about what content you\'ll likely see more of.',
+    title: 'What You May See More Of',
+    description: 'Content types you\'ll likely be shown more of based on current patterns.',
     outputType: 'text',
     dataFn: 'getFutureRecommendationsData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     confidenceDisclaimer: true,
+    whyExplanation: 'Projected from trending topics and growing categories in your recent scans. This is speculative.',
     takeaway: (data) => data?.predictions?.length > 0
       ? data.predictions.join(' ')
       : null,
-    action: () => 'Change signals now to change recommendations later.',
+    action: () => 'Changing your engagement now may shift what you\'re shown in the future.',
+  },
+
+  // --- HIDDEN: Removed for cognitive load reduction ---
+  {
+    tab: 'algorithm',
+    id: 'algo-topics-avoided',
+    title: 'Topics That Rarely Show Up For You',
+    description: 'Topics that rarely appear in your feed.',
+    outputType: 'list',
+    dataFn: 'getAlgoTopicsAvoidedData',
+    emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
+    hidden: true,
+    takeaway: (data) => data?.topics?.length > 0
+      ? 'These topics rarely appear.'
+      : 'No topics are significantly underrepresented.',
+    action: () => 'Search and follow accounts in those areas.',
   },
   {
     tab: 'algorithm',
+    id: 'algo-products',
+    title: 'Product Categories You\'re Shown',
+    description: 'Product categories that appear repeatedly in ads you\'re shown.',
+    outputType: 'bar',
+    dataFn: 'getAlgoProductsData',
+    emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
+    hidden: true,
+    confidenceDisclaimer: true,
+    takeaway: () => 'These product categories appear frequently in ads you\'re shown.',
+    action: () => 'Reducing engagement with product content may shift targeting.',
+  },
+  {
+    tab: 'algorithm',
+    id: 'algo-political-themes',
+    title: 'Political Themes You\'re Shown',
+    description: 'Political themes that appear frequently in your feed.',
+    outputType: 'list',
+    dataFn: 'getAlgoPoliticalThemesData',
+    emptyStateType: 'future_feature',
+    sortOrder: 'future',
+    hidden: true,
+    takeaway: () => 'These political themes appear frequently in what you\'re shown.',
+    action: () => 'Diversify what you watch and follow.',
+  },
+  {
+    tab: 'algorithm',
+    id: 'algo-emotional-triggers',
+    title: 'Emotional Content Patterns',
+    description: 'Emotional content types that appear most often in your feed.',
+    outputType: 'bar',
+    dataFn: 'getAlgoEmotionalTriggersData',
+    emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
+    hidden: true,
+    takeaway: () => 'Content with these emotional tones appears more often in your feed.',
+    action: () => 'Reducing engagement with certain emotional content may shift what you\'re shown.',
+  },
+  {
+    tab: 'algorithm',
+    id: 'algo-uncertain',
+    title: 'Variable Patterns',
+    description: 'Areas with high variance across your scans.',
+    outputType: 'text',
+    dataFn: 'getAlgoUncertainData',
+    emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
+    hidden: true,
+    takeaway: (data) => data?.insights?.length > 0
+      ? data.insights.join(' ')
+      : null,
+    action: () => 'Engage consistently with what you want to see more of.',
+  },
+
+  // --- SUMMARY: What this means for you ---
+  {
+    tab: 'algorithm',
     id: 'algo-change-advice',
-    title: 'How to Change What the Algorithm Thinks About You',
-    description: 'Concrete actions you can take to shift your algorithmic profile.',
+    title: 'Shifting What You\'re Shown',
+    description: 'Actions that may help shift your algorithmic profile over time.',
     outputType: 'list',
     dataFn: 'getAlgoChangeAdviceData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'summary',
     isSummaryCard: true,
-    takeaway: () => 'Small behavior changes can shift these assumptions.',
-    action: null, // Action is embedded in the tips
+    whyExplanation: 'Suggestions based on common patterns. Results vary and are not guaranteed.',
+    takeaway: () => 'Small, repeated behavior changes may gradually shift what you\'re shown.',
+    action: null,
   },
 ];
 
@@ -797,15 +898,39 @@ const SORT_ORDER_PRIORITY = {
   summary: 4,
 };
 
-// Helper function to get views for a specific tab (sorted by narrative order)
-export const getViewsForTab = (tabId) => {
+/**
+ * Get views for a specific tab, filtering out hidden views
+ * PHASE 6B: Hidden views are completely excluded from rendering
+ * @param {string} tabId - The tab ID
+ * @param {Object} options - Options for filtering
+ * @param {boolean} options.includeHidden - Include hidden views (for debugging)
+ * @returns {Array} Sorted array of views
+ */
+export const getViewsForTab = (tabId, options = {}) => {
+  const { includeHidden = false } = options;
+
   return dashboardCatalog
-    .filter((view) => view.tab === tabId)
+    .filter((view) => {
+      // Must match tab
+      if (view.tab !== tabId) return false;
+      // Filter out hidden views unless explicitly requested
+      if (!includeHidden && view.hidden) return false;
+      return true;
+    })
     .sort((a, b) => {
       const orderA = SORT_ORDER_PRIORITY[a.sortOrder] || 2;
       const orderB = SORT_ORDER_PRIORITY[b.sortOrder] || 2;
       return orderA - orderB;
     });
+};
+
+/**
+ * Get count of visible views for a tab (excludes hidden)
+ * @param {string} tabId - The tab ID
+ * @returns {number} Count of visible views
+ */
+export const getVisibleViewCount = (tabId) => {
+  return getViewsForTab(tabId).length;
 };
 
 // Helper function to get a specific view by ID

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Loader2, RefreshCw, BarChart3, Clock, Globe, Database, Info, ToggleLeft, ToggleRight } from 'lucide-react';
-import { TABS, getViewsForTab, EMPTY_STATE_TYPES } from './dashboardCatalog';
+import { TABS, getViewsForTab, getVisibleViewCount, EMPTY_STATE_TYPES, TAB_TRUST_SENTENCES } from './dashboardCatalog';
 import ViewCard from '../../components/dashboard/ViewCard';
 import { useDashboardData } from '../../lib/dashboard/useDashboardData';
 import * as dataHelpers from '../../lib/dashboard/dataHelpers';
@@ -59,6 +59,23 @@ const CollapsedEmptyStateCard = ({ emptyStateType, count, tabName }) => {
           )}
         </div>
       </div>
+    </div>
+  );
+};
+
+/**
+ * TabTrustSentence - PHASE 7: Tab-level trust sentence
+ * Shows at the top of each tab to set expectations and normalize imperfection
+ */
+const TabTrustSentence = ({ tabId }) => {
+  const sentence = TAB_TRUST_SENTENCES[tabId];
+  if (!sentence) return null;
+
+  return (
+    <div className="mb-6 px-4 py-3 bg-slate-50/80 rounded-lg border border-slate-100">
+      <p className="text-sm text-slate-600 leading-relaxed">
+        {sentence}
+      </p>
     </div>
   );
 };
@@ -206,16 +223,59 @@ const HowToUnlockBox = ({ tabId }) => {
 };
 
 /**
+ * CollapsedByDefaultCard - A collapsed view that can be expanded
+ * PHASE 6B: Views with collapsedByDefault show a compact preview
+ */
+const CollapsedByDefaultCard = ({ view, dataResult, onExpand }) => {
+  const hasData = dataResult?.hasData;
+
+  return (
+    <div className="bg-slate-50/50 border border-slate-100 rounded-xl p-4">
+      <div className="flex items-center justify-between">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-sm font-medium text-slate-600 truncate">
+            {view.title}
+          </h3>
+          {hasData && (
+            <p className="text-xs text-slate-500 mt-0.5 truncate">
+              {typeof view.takeaway === 'function'
+                ? view.takeaway(dataResult?.data)
+                : 'Data available'}
+            </p>
+          )}
+        </div>
+        <button
+          onClick={onExpand}
+          className="ml-3 px-3 py-1.5 text-xs font-medium text-primary-blue hover:bg-blue-50 rounded-lg transition-colors flex-shrink-0"
+        >
+          See details
+        </button>
+      </div>
+    </div>
+  );
+};
+
+/**
  * ViewsGridWithCollapsing - Renders views grid with collapsed empty states and narrative sections
- * When 3+ cards share the same empty state reason, they're collapsed into one placeholder
+ * PHASE 6B Updates:
+ * - Hidden views are already filtered out by getViewsForTab
+ * - collapsedByDefault views show compact preview with "See details" button
+ * - When 3+ cards share the same empty state reason, they're collapsed into one placeholder
  */
 const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCount, tabName }) => {
+  // Track which collapsedByDefault views have been expanded
+  const [expandedViews, setExpandedViews] = useState(new Set());
+
+  const handleExpand = (viewId) => {
+    setExpandedViews((prev) => new Set([...prev, viewId]));
+  };
+
   // Group views by sortOrder AND data availability
   const groupedViews = {
-    primary: { withData: [], empty: [] },
-    supporting: { withData: [], empty: [] },
-    future: { withData: [], empty: [] },
-    summary: { withData: [], empty: [] },
+    primary: { withData: [], empty: [], collapsed: [] },
+    supporting: { withData: [], empty: [], collapsed: [] },
+    future: { withData: [], empty: [], collapsed: [] },
+    summary: { withData: [], empty: [], collapsed: [] },
   };
 
   const emptyByType = {
@@ -227,20 +287,20 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
   views.forEach((view) => {
     const result = viewDataResults[view.id] || { hasData: false };
     const group = view.sortOrder || 'supporting';
+    const targetGroup = groupedViews[group] || groupedViews.supporting;
+
+    // Check if this view should be collapsed by default (and hasn't been expanded)
+    const isCollapsedByDefault = view.collapsedByDefault && !expandedViews.has(view.id);
 
     if (result.hasData) {
-      if (groupedViews[group]) {
-        groupedViews[group].withData.push(view);
+      if (isCollapsedByDefault) {
+        targetGroup.collapsed.push(view);
       } else {
-        groupedViews.supporting.withData.push(view);
+        targetGroup.withData.push(view);
       }
     } else {
-      if (groupedViews[group]) {
-        groupedViews[group].empty.push(view);
-      } else {
-        groupedViews.supporting.empty.push(view);
-      }
-      // Also track by empty state type for collapsing
+      targetGroup.empty.push(view);
+      // Track by empty state type for collapsing
       const type = view.emptyStateType || EMPTY_STATE_TYPES.NEEDS_MORE_SCANS;
       if (emptyByType[type]) {
         emptyByType[type].push(view);
@@ -256,8 +316,8 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
     }
   });
 
-  // Helper to check if view should be hidden (collapsed)
-  const isCollapsed = (view) => {
+  // Helper to check if view should be hidden (collapsed into placeholder)
+  const isEmptyCollapsed = (view) => {
     const result = viewDataResults[view.id] || { hasData: false };
     if (result.hasData) return false;
     const type = view.emptyStateType || EMPTY_STATE_TYPES.NEEDS_MORE_SCANS;
@@ -275,15 +335,27 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
     />
   );
 
-  // Count total views with data and total empty
+  // Render a collapsed-by-default card
+  const renderCollapsedCard = (view) => (
+    <CollapsedByDefaultCard
+      key={view.id}
+      view={view}
+      dataResult={viewDataResults[view.id] || { hasData: false, data: null }}
+      onExpand={() => handleExpand(view.id)}
+    />
+  );
+
+  // Get views for each section
   const primaryWithData = groupedViews.primary.withData;
+  const primaryCollapsed = groupedViews.primary.collapsed;
   const supportingWithData = groupedViews.supporting.withData;
+  const supportingCollapsed = groupedViews.supporting.collapsed;
   const futureWithData = groupedViews.future.withData;
   const summaryWithData = groupedViews.summary.withData;
 
-  // Individual empty views (not collapsed)
-  const individualEmptyPrimary = groupedViews.primary.empty.filter(v => !isCollapsed(v));
-  const individualEmptySupporting = groupedViews.supporting.empty.filter(v => !isCollapsed(v));
+  // Individual empty views (not collapsed into placeholder)
+  const individualEmptyPrimary = groupedViews.primary.empty.filter(v => !isEmptyCollapsed(v));
+  const individualEmptySupporting = groupedViews.supporting.empty.filter(v => !isEmptyCollapsed(v));
 
   // Collapsed placeholder cards to show at the end
   const collapsedPlaceholders = [];
@@ -292,10 +364,15 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
     collapsedPlaceholders.push({ type, count });
   });
 
+  // Check if sections have content
+  const hasPrimaryContent = primaryWithData.length > 0 || individualEmptyPrimary.length > 0;
+  const hasSupportingContent = supportingWithData.length > 0 || supportingCollapsed.length > 0 || individualEmptySupporting.length > 0;
+  const hasCollapsedContent = primaryCollapsed.length > 0;
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {/* PRIMARY INSIGHTS - What is happening */}
-      {(primaryWithData.length > 0 || individualEmptyPrimary.length > 0) && (
+      {hasPrimaryContent && (
         <>
           <SectionHeader title="Key Insights" subtitle="What is happening in your feed" />
           {primaryWithData.map(renderViewCard)}
@@ -304,11 +381,20 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
       )}
 
       {/* SUPPORTING DETAILS - Why / how this shows up */}
-      {(supportingWithData.length > 0 || individualEmptySupporting.length > 0) && (
+      {hasSupportingContent && (
         <>
           <SectionHeader title="Supporting Details" subtitle="Why and how this shows up" />
           {supportingWithData.map(renderViewCard)}
+          {supportingCollapsed.map(renderCollapsedCard)}
           {individualEmptySupporting.map(renderViewCard)}
+        </>
+      )}
+
+      {/* COLLAPSED BY DEFAULT CARDS (from primary section) */}
+      {hasCollapsedContent && (
+        <>
+          <SectionHeader title="Additional Details" subtitle="Expand to see more" />
+          {primaryCollapsed.map(renderCollapsedCard)}
         </>
       )}
 
@@ -347,7 +433,13 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
 
 /**
  * DashboardPage - Main dashboard with 5 tabs and catalog-driven views.
- * Phase 4: Hierarchy, density reduction, and narrative flow.
+ * Phase 6B: UX, narrative clarity, and insight pruning.
+ *
+ * Key features:
+ * - Hidden views filtered out by getViewsForTab
+ * - collapsedByDefault views show compact preview with "See details"
+ * - Max 4 primary cards, max 6 total visible cards per tab
+ * - Each tab answers one core question
  */
 const DashboardPage = () => {
   const [activeTab, setActiveTab] = useState(TABS[0].id);
@@ -555,9 +647,12 @@ const DashboardPage = () => {
               {TABS.find((t) => t.id === activeTab)?.label}
             </h2>
             <span className="text-sm text-text-muted">
-              {currentViews.length} views
+              {currentViews.length} insight{currentViews.length !== 1 ? 's' : ''}
             </span>
           </div>
+
+          {/* PHASE 7: Tab-level trust sentence */}
+          <TabTrustSentence tabId={activeTab} />
 
           {/* PHASE 6A: Data Coverage Bar */}
           <div className="mb-4">
@@ -588,15 +683,15 @@ const DashboardPage = () => {
           />
         </div>
 
-        {/* Global explanation - shows once per dashboard */}
+        {/* PHASE 7: Global explanation - shows once per dashboard */}
         <div className="text-center py-8 border-t border-border-card">
           <div className="max-w-2xl mx-auto">
             <p className="text-sm text-slate-500 mb-2">
-              <span className="font-medium">About these insights:</span> AlgorithmLens shows patterns, not truths.
+              <span className="font-medium">About these insights:</span> AlgorithmLens shows patterns in what you're shown, not facts about who you are.
             </p>
             <p className="text-xs text-slate-400">
-              Confidence grows as you run more scans across platforms and over time.
-              Views will show more data as you scan different platforms.
+              These insights reflect content exposure and algorithmic patterns. They become more reliable as you run more scans.
+              If something feels off, your behavior may be changing faster than these patterns can reflect.
             </p>
           </div>
         </div>
