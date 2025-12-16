@@ -64,16 +64,16 @@ const CollapsedEmptyStateCard = ({ emptyStateType, count, tabName }) => {
 };
 
 /**
- * TabTrustSentence - PHASE 7: Tab-level trust sentence
- * Shows at the top of each tab to set expectations and normalize imperfection
+ * TabTrustSentence - Phase 8: Simplified, less prominent
+ * A subtle trust note that doesn't dominate the tab
  */
 const TabTrustSentence = ({ tabId }) => {
   const sentence = TAB_TRUST_SENTENCES[tabId];
   if (!sentence) return null;
 
   return (
-    <div className="mb-6 px-4 py-3 bg-slate-50/80 rounded-lg border border-slate-100">
-      <p className="text-sm text-slate-600 leading-relaxed">
+    <div className="mb-4">
+      <p className="text-xs text-slate-400 leading-relaxed">
         {sentence}
       </p>
     </div>
@@ -81,15 +81,15 @@ const TabTrustSentence = ({ tabId }) => {
 };
 
 /**
- * SectionHeader - Subtle divider between view groups
+ * SectionHeader - Phase 8: Very subtle divider, more whitespace
  */
 const SectionHeader = ({ title, subtitle }) => (
-  <div className="col-span-full pt-6 pb-2 first:pt-0">
+  <div className="col-span-full pt-8 pb-3 first:pt-0">
     <div className="flex items-center gap-3">
-      <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wider">
+      <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wider">
         {title}
       </h3>
-      <div className="flex-1 h-px bg-slate-200" />
+      <div className="flex-1 h-px bg-slate-100" />
     </div>
     {subtitle && (
       <p className="text-xs text-slate-400 mt-1">{subtitle}</p>
@@ -370,38 +370,38 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
   const hasCollapsedContent = primaryCollapsed.length > 0;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {/* PRIMARY INSIGHTS - What is happening */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {/* PRIMARY INSIGHTS - The key insight */}
       {hasPrimaryContent && (
         <>
-          <SectionHeader title="Key Insights" subtitle="What is happening in your feed" />
+          <SectionHeader title="Key Insight" />
           {primaryWithData.map(renderViewCard)}
           {individualEmptyPrimary.map(renderViewCard)}
         </>
       )}
 
-      {/* SUPPORTING DETAILS - Why / how this shows up */}
+      {/* SUPPORTING DETAILS - Additional context */}
       {hasSupportingContent && (
         <>
-          <SectionHeader title="Supporting Details" subtitle="Why and how this shows up" />
+          <SectionHeader title="Details" />
           {supportingWithData.map(renderViewCard)}
           {supportingCollapsed.map(renderCollapsedCard)}
           {individualEmptySupporting.map(renderViewCard)}
         </>
       )}
 
-      {/* COLLAPSED BY DEFAULT CARDS (from primary section) */}
+      {/* COLLAPSED BY DEFAULT CARDS */}
       {hasCollapsedContent && (
         <>
-          <SectionHeader title="Additional Details" subtitle="Expand to see more" />
+          <SectionHeader title="More" />
           {primaryCollapsed.map(renderCollapsedCard)}
         </>
       )}
 
-      {/* FUTURE FEATURES - Coming soon views */}
+      {/* FUTURE FEATURES */}
       {futureWithData.length > 0 && (
         <>
-          <SectionHeader title="Additional Insights" />
+          <SectionHeader title="Coming Soon" />
           {futureWithData.map(renderViewCard)}
         </>
       )}
@@ -420,10 +420,10 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
         </>
       )}
 
-      {/* SUMMARY CARD - What this means for you */}
+      {/* SUMMARY CARD */}
       {summaryWithData.length > 0 && (
         <>
-          <SectionHeader title="What This Means" subtitle="Summary and actions you can take" />
+          <SectionHeader title="Summary" />
           {summaryWithData.map(renderViewCard)}
         </>
       )}
@@ -433,13 +433,14 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
 
 /**
  * DashboardPage - Main dashboard with 5 tabs and catalog-driven views.
- * Phase 6B: UX, narrative clarity, and insight pruning.
+ * Phase 8: UX Simplification and Product Judgment
  *
  * Key features:
- * - Hidden views filtered out by getViewsForTab
- * - collapsedByDefault views show compact preview with "See details"
- * - Max 4 primary cards, max 6 total visible cards per tab
- * - Each tab answers one core question
+ * - ONE primary card per tab - the clearest, calmest answer
+ * - At most 2 secondary cards
+ * - Everything else collapsed behind "See details"
+ * - Increased whitespace for visual breathing room
+ * - Simplified language throughout
  */
 const DashboardPage = () => {
   const [activeTab, setActiveTab] = useState(TABS[0].id);
@@ -630,15 +631,7 @@ const DashboardPage = () => {
           </div>
         )}
 
-        {/* Global orientation cue (Phase 4F) */}
-        {!detailsLoading && (
-          <div className="mb-6 px-4 py-3 bg-slate-50 rounded-lg border border-slate-100">
-            <p className="text-sm text-slate-600 text-center">
-              <span className="font-medium">Start with the highlighted insights.</span>
-              {' '}Other views unlock as you scan more content.
-            </p>
-          </div>
-        )}
+        {/* Global orientation - Phase 8: Removed, less clutter */}
 
         {/* Tab Content */}
         <div className="mb-8">
@@ -683,17 +676,11 @@ const DashboardPage = () => {
           />
         </div>
 
-        {/* PHASE 7: Global explanation - shows once per dashboard */}
-        <div className="text-center py-8 border-t border-border-card">
-          <div className="max-w-2xl mx-auto">
-            <p className="text-sm text-slate-500 mb-2">
-              <span className="font-medium">About these insights:</span> AlgorithmLens shows patterns in what you're shown, not facts about who you are.
-            </p>
-            <p className="text-xs text-slate-400">
-              These insights reflect content exposure and algorithmic patterns. They become more reliable as you run more scans.
-              If something feels off, your behavior may be changing faster than these patterns can reflect.
-            </p>
-          </div>
+        {/* Phase 8: Minimal footer */}
+        <div className="text-center py-6 mt-8 border-t border-slate-100">
+          <p className="text-xs text-slate-400">
+            These insights show patterns in what you're shown, not who you are.
+          </p>
         </div>
       </div>
     </div>

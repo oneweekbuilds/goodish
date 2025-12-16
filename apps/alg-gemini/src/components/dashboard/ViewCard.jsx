@@ -12,38 +12,36 @@ import {
 } from './charts';
 
 /**
- * FeedbackAffordance - PHASE 7: Non-functional self-correction prompt
- * Displays "Does this feel accurate?" with Yes/Somewhat/Not really options
- * These are trust affordances, not functional inputs - no state or handlers needed
+ * FeedbackAffordance - Phase 8: Simplified, less intrusive
+ * A subtle trust affordance that invites reflection without demanding interaction
  */
 const FeedbackAffordance = () => {
   const [selected, setSelected] = useState(null);
 
+  if (selected) {
+    return (
+      <div className="pt-3">
+        <p className="text-xs text-slate-400 italic">
+          Thanks for reflecting.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="pt-3 border-t border-slate-100">
-      <p className="text-xs text-slate-500 mb-2">Does this feel accurate?</p>
+    <div className="pt-4 border-t border-slate-50">
+      <p className="text-xs text-slate-400 mb-2">Does this match your experience?</p>
       <div className="flex gap-2">
-        {['Yes', 'Somewhat', 'Not really'].map((option) => (
+        {['Yes', 'Somewhat', 'No'].map((option) => (
           <button
             key={option}
             onClick={() => setSelected(option)}
-            className={`
-              px-3 py-1 text-xs rounded-full transition-colors
-              ${selected === option
-                ? 'bg-slate-200 text-slate-700'
-                : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
-              }
-            `}
+            className="px-3 py-1 text-xs rounded-full bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
           >
             {option}
           </button>
         ))}
       </div>
-      {selected && (
-        <p className="text-xs text-slate-400 mt-2 italic">
-          Thanks for reflecting. Your input helps calibrate your own understanding.
-        </p>
-      )}
     </div>
   );
 };
@@ -74,13 +72,11 @@ const CounterfactualNote = ({ text }) => {
 
 /**
  * ViewCard component - renders a single dashboard view card.
- * Supports multiple output types with takeaways and actions.
- * Phase 4: Added visual hierarchy for primary vs secondary cards.
- * Phase 5: Now uses ACTUAL scansUsed from dataResult for accurate labeling.
- * Phase 7: Added belief calibration and trust framing elements:
- *   - whyExplanation: micro-explanation of how insight was inferred
- *   - counterfactual: legitimizes disagreement (primary cards only)
- *   - FeedbackAffordance: non-functional self-correction prompt (primary cards only)
+ * Phase 8: UX Simplification
+ *   - Increased whitespace for visual breathing room
+ *   - Takeaways visually dominant over data/charts
+ *   - Reduced emphasis on charts
+ *   - Simplified feedback affordance
  *
  * @param {Object} view - View configuration from dashboardCatalog
  * @param {Object} dataResult - Result from data helper function (includes scansUsed, scansWithData)
@@ -428,48 +424,48 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
     return 'neutral';
   };
 
-  // Card container styles based on hierarchy
+  // Card container styles based on hierarchy - Phase 8: more whitespace
   const getCardClasses = () => {
     const baseClasses = 'bg-surface-card border rounded-2xl overflow-hidden flex flex-col transition-all';
 
     if (isSummaryCard) {
-      return `${baseClasses} border-primary-blue/30 ring-1 ring-primary-blue/10`;
+      return `${baseClasses} border-primary-blue/20 ring-1 ring-primary-blue/5`;
     }
 
     if (isPrimary && hasData) {
-      // Primary cards with data: stronger visual presence
-      return `${baseClasses} border-slate-300 ring-1 ring-slate-200/50 shadow-sm`;
+      // Primary cards with data: calm, clear presence
+      return `${baseClasses} border-slate-200 shadow-sm`;
     }
 
     if (isPrimary && !hasData) {
-      // Primary cards without data: subtle emphasis
-      return `${baseClasses} border-slate-200 bg-slate-50/30`;
+      // Primary cards without data: subtle
+      return `${baseClasses} border-slate-100 bg-slate-50/20`;
     }
 
     if (isFutureCard) {
       // Future feature cards: visually muted
-      return `${baseClasses} border-slate-100 bg-slate-50/50 opacity-75`;
+      return `${baseClasses} border-slate-100 bg-slate-50/30 opacity-60`;
     }
 
-    // Secondary/supporting cards: lighter borders
+    // Secondary/supporting cards: very light
     return `${baseClasses} border-slate-100`;
   };
 
-  // Header styles based on hierarchy
+  // Header styles based on hierarchy - Phase 8: increased padding
   const getHeaderClasses = () => {
     if (isSummaryCard) {
-      return 'px-5 py-4 border-b border-primary-blue/20 bg-primary-blue/5';
+      return 'px-6 py-5 border-b border-primary-blue/10 bg-primary-blue/5';
     }
 
     if (isPrimary && hasData) {
-      return 'px-5 py-4 border-b border-slate-200 bg-slate-50/50';
+      return 'px-6 py-5 border-b border-slate-100 bg-white';
     }
 
     if (isFutureCard) {
       return 'px-5 py-3 border-b border-slate-100';
     }
 
-    return 'px-5 py-4 border-b border-border-card';
+    return 'px-6 py-4 border-b border-slate-50';
   };
 
   return (
@@ -494,24 +490,35 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
         </p>
       </div>
 
-      {/* Card Content */}
-      <div className="flex-1 p-5">
+      {/* Card Content - Phase 8: more whitespace, takeaway-dominant */}
+      <div className="flex-1 p-6">
         {hasData ? (
-          <div className="space-y-4">
-            {/* Main visualization */}
-            {renderContent()}
+          <div className="space-y-5">
+            {/* Takeaway FIRST for primary cards - makes it visually dominant */}
+            {isPrimary && takeawayText && (
+              <div className="pb-4 mb-2">
+                <p className="text-lg text-slate-800 font-medium leading-relaxed">
+                  {takeawayText}
+                </p>
+              </div>
+            )}
 
-            {/* PHASE 7: Why explanation - how insight was inferred */}
+            {/* Main visualization - reduced emphasis for primary cards */}
+            <div className={isPrimary ? 'opacity-90' : ''}>
+              {renderContent()}
+            </div>
+
+            {/* Why explanation - how insight was inferred */}
             {whyExplanation && (
               <WhyExplanation text={whyExplanation} />
             )}
 
-            {/* Takeaway - styled differently for summary cards */}
-            {takeawayText && (
-              <div className="pt-4 border-t border-border-card">
+            {/* Takeaway for non-primary cards */}
+            {!isPrimary && takeawayText && (
+              <div className="pt-4 border-t border-slate-100">
                 {isSummaryCard && (
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
-                    What does this say about my feed?
+                  <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">
+                    Summary
                   </p>
                 )}
                 <p className="text-sm text-slate-700 font-medium">
@@ -520,20 +527,20 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0 }) => {
               </div>
             )}
 
-            {/* PHASE 7: Counterfactual framing for PRIMARY cards only */}
+            {/* Counterfactual framing for PRIMARY cards only */}
             {isPrimary && counterfactual && (
               <CounterfactualNote text={counterfactual} />
             )}
 
-            {/* Action - styled differently for summary cards */}
+            {/* Action - gentle, optional tone */}
             {actionText && (
-              <div>
+              <div className="pt-3">
                 {isSummaryCard && (
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
-                    What can I do if I want this to change?
+                  <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">
+                    Something you could try
                   </p>
                 )}
-                <p className={`text-sm ${isSummaryCard ? 'text-slate-600' : 'text-slate-500 italic'}`}>
+                <p className={`text-sm ${isSummaryCard ? 'text-slate-600' : 'text-slate-500'}`}>
                   {actionText}
                 </p>
               </div>
