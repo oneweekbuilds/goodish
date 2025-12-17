@@ -81,7 +81,8 @@
       "Bash(echo:*)",
       "Bash(grep:*)",
       "Bash(pnpm --filter @goodish/alg-gemini dev:*)",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Bash(ping:*)"
     ],
     "deny": [],
     "ask": [],

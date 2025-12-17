@@ -21,3 +21,7 @@ build/
 
 # Chrome extension build output (if you ever build it)
 apps/alg-gemini-extension/dist/
+
+# Windows device-name artifact
+nul
+

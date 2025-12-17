@@ -110,24 +110,51 @@ const TabTrustSentence = ({ tabId }) => {
  * SectionHeader - Part 3: Editorial section headers
  * More magazine-like, less dashboard-like
  * Always uses blue accent (Part 1 Rule A)
+ *
+ * Enhanced for story-driven headers with:
+ * - Small uppercase label
+ * - Larger title
+ * - Muted subtext
+ * - Blue vertical accent bar
  */
-const SectionHeader = ({ title, subtitle }) => (
-  <div className="flex items-center gap-3 mb-3">
+const SectionHeader = ({ title, subtitle, label, subtext }) => (
+  <div className="flex items-start gap-4 mb-4 mt-10 first:mt-0">
+    {/* Blue vertical accent bar */}
     <div
-      className="w-1 h-4 rounded-full"
+      className="w-1 rounded-full flex-shrink-0"
       style={{
-        background: 'linear-gradient(180deg, rgba(37, 99, 235, 0.5), rgba(37, 99, 235, 0.2))',
+        background: 'linear-gradient(180deg, #2563EB, rgba(37, 99, 235, 0.4))',
+        height: label ? '48px' : '24px',
+        marginTop: '2px',
       }}
     />
-    <h3
-      className="text-xs font-semibold uppercase tracking-wider"
-      style={{ color: 'rgba(37, 99, 235, 0.7)' }}
-    >
-      {title}
-    </h3>
-    {subtitle && (
-      <span className="text-xs text-slate-400 ml-auto">{subtitle}</span>
-    )}
+    <div className="flex-1">
+      {/* Uppercase label */}
+      {label && (
+        <p
+          className="text-[11px] font-semibold uppercase tracking-widest mb-1.5"
+          style={{ color: 'rgba(37, 99, 235, 0.65)' }}
+        >
+          {label}
+        </p>
+      )}
+      {/* Main title */}
+      <h3
+        className={label ? "text-lg font-semibold text-slate-800 mb-1" : "text-xs font-semibold uppercase tracking-wider"}
+        style={!label ? { color: 'rgba(37, 99, 235, 0.7)' } : undefined}
+      >
+        {title}
+      </h3>
+      {/* Subtext */}
+      {subtext && (
+        <p className="text-sm text-slate-500 leading-relaxed">
+          {subtext}
+        </p>
+      )}
+      {subtitle && !subtext && (
+        <span className="text-xs text-slate-400">{subtitle}</span>
+      )}
+    </div>
   </div>
 );
 
@@ -312,6 +339,33 @@ const ExpandableDetailRow = ({ view, dataResult, isExpanded, onToggle, accentCol
 };
 
 /**
+ * Story-driven section header config for Algorithm tab
+ * These headers guide the reader through a narrative
+ */
+const ALGORITHM_TAB_HEADERS = {
+  keyInsight: {
+    label: 'The pattern',
+    title: 'What keeps showing up',
+    subtext: 'The topic cluster your feed returns to most often.',
+  },
+  details: {
+    label: 'Why it happens',
+    title: 'How the pattern takes hold',
+    subtext: 'Signals that reinforce the loop, even when you are not trying to.',
+  },
+  moreDetails: {
+    label: 'What it leads to',
+    title: 'Where this is heading',
+    subtext: 'What you are likely to see more of if nothing changes.',
+  },
+  summary: {
+    label: 'Shift it gently',
+    title: 'What you could try',
+    subtext: 'Small actions that nudge the system without turning your life upside down.',
+  },
+};
+
+/**
  * ViewsGridWithCollapsing - Part 3: Editorial Stack Redesign
  *
  * Structure per tab (magazine-style, not dashboard):
@@ -321,14 +375,31 @@ const ExpandableDetailRow = ({ view, dataResult, isExpanded, onToggle, accentCol
  * - SUMMARY: Paragraph + 3 "Try this" actions max
  *
  * Part 1 Rule A: ALL tabs use BLUE accent
+ *
+ * Change 1: Stronger borders on all non-feature cards
+ * Change 2: Story-driven headers for Algorithm tab
+ * Change 3: "Where this is heading" uncollapsed by default
  */
 const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCount, tabName, tabId }) => {
+  // Check if we're on the Algorithm tab for story-driven headers
+  const isAlgorithmTab = tabId === 'algorithm';
+
   // Track which sections are expanded
+  // Change 3: moreDetails expanded by default on Algorithm tab
   const [expandedSections, setExpandedSections] = useState({
     keyInsightEvidence: false,
     moreDetails: false,
     summaryMore: false,
   });
+
+  // Reset expanded state when tab changes
+  useEffect(() => {
+    setExpandedSections({
+      keyInsightEvidence: false,
+      moreDetails: false, // On Algorithm tab, content is always visible, not dependent on this state
+      summaryMore: false,
+    });
+  }, [tabId]);
 
   const toggleSection = (section) => {
     setExpandedSections(prev => ({
@@ -381,8 +452,16 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
       {/* KEY INSIGHT - Part 3 Module Type 1: Declarative + Collapsible Evidence */}
       {hasPrimaryContent && (
         <section>
-          <SectionHeader title="Key Insight" />
-          <div className="mt-4">
+          {isAlgorithmTab ? (
+            <SectionHeader
+              label={ALGORITHM_TAB_HEADERS.keyInsight.label}
+              title={ALGORITHM_TAB_HEADERS.keyInsight.title}
+              subtext={ALGORITHM_TAB_HEADERS.keyInsight.subtext}
+            />
+          ) : (
+            <SectionHeader title="Key Insight" />
+          )}
+          <div className="mt-5">
             {primaryCards.map((view) => {
               const dataResult = viewDataResults[view.id];
               const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
@@ -392,10 +471,10 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
               return (
                 <div
                   key={view.id}
-                  className="rounded-2xl overflow-hidden"
+                  className="rounded-2xl overflow-hidden transition-colors"
                   style={{
-                    background: 'linear-gradient(180deg, rgba(37, 99, 235, 0.04) 0%, rgba(37, 99, 235, 0.02) 100%)',
-                    border: '1px solid rgba(37, 99, 235, 0.1)',
+                    background: 'white',
+                    border: '1px solid #CBD5E1', // Change 1: Stronger border (slate-300)
                   }}
                 >
                   {/* Declarative insight header */}
@@ -461,8 +540,16 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
       {/* DETAILS - Part 3: Softer backgrounds, headline + takeaway */}
       {hasSecondaryContent && (
         <section>
-          <SectionHeader title="Details" />
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+          {isAlgorithmTab ? (
+            <SectionHeader
+              label={ALGORITHM_TAB_HEADERS.details.label}
+              title={ALGORITHM_TAB_HEADERS.details.title}
+              subtext={ALGORITHM_TAB_HEADERS.details.subtext}
+            />
+          ) : (
+            <SectionHeader title="Details" />
+          )}
+          <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-6">
             {secondaryCards.map((view) => {
               const dataResult = viewDataResults[view.id];
               const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
@@ -472,17 +559,18 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
               return (
                 <div
                   key={view.id}
-                  className="rounded-xl p-5"
+                  className="rounded-xl p-5 hover:border-slate-300 transition-colors"
                   style={{
-                    background: 'linear-gradient(180deg, rgba(37, 99, 235, 0.025) 0%, rgba(248, 250, 252, 0.8) 100%)',
-                    border: '1px solid rgba(226, 232, 240, 0.7)',
+                    background: 'white',
+                    border: '1px solid #E2E8F0', // Change 1: Stronger border (slate-200)
                   }}
                 >
                   <h4 className="text-base font-semibold text-slate-700 mb-2">{view.title}</h4>
                   {takeawayText && (
                     <p className="text-sm text-slate-600 mb-3">{takeawayText}</p>
                   )}
-                  <div className="opacity-80">
+                  {/* Change 1: Removed opacity-80 to prevent faded look */}
+                  <div>
                     <ViewCard
                       view={view}
                       dataResult={dataResult}
@@ -500,48 +588,69 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
       )}
 
       {/* MORE DETAILS - Part 3 Module Type 2: Editorial Drawer */}
+      {/* Change 3: On Algorithm tab, content is visible by default (not collapsed) */}
       {hasCollapsedContent && (
         <section>
+          {/* Story-driven header for Algorithm tab */}
+          {isAlgorithmTab && (
+            <SectionHeader
+              label={ALGORITHM_TAB_HEADERS.moreDetails.label}
+              title={ALGORITHM_TAB_HEADERS.moreDetails.title}
+              subtext={ALGORITHM_TAB_HEADERS.moreDetails.subtext}
+            />
+          )}
+
           <div
-            className="rounded-xl overflow-hidden"
+            className="rounded-xl overflow-hidden mt-5"
             style={{
-              background: 'rgba(248, 250, 252, 0.6)',
-              border: '1px solid rgba(226, 232, 240, 0.6)',
+              background: 'white',
+              border: '1px solid #E2E8F0', // Change 1: Stronger border (slate-200)
             }}
           >
-            <button
-              onClick={() => toggleSection('moreDetails')}
-              className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-50/50 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-1 h-4 rounded-full"
-                  style={{
-                    background: 'linear-gradient(180deg, rgba(37, 99, 235, 0.4), rgba(37, 99, 235, 0.15))',
-                  }}
-                />
-                <span className="text-sm font-semibold text-slate-600">
-                  Where this is heading
-                </span>
-                <span className="text-xs text-slate-400">
-                  ({collapsedCards.length} more {collapsedCards.length === 1 ? 'insight' : 'insights'})
-                </span>
-              </div>
-              {expandedSections.moreDetails ? (
-                <ChevronUp size={18} className="text-slate-400" />
-              ) : (
-                <ChevronDown size={18} className="text-slate-400" />
-              )}
-            </button>
+            {/* Non-algorithm tabs: Show collapsible header */}
+            {!isAlgorithmTab && (
+              <button
+                onClick={() => toggleSection('moreDetails')}
+                className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-50/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-1 h-4 rounded-full"
+                    style={{
+                      background: 'linear-gradient(180deg, #2563EB, rgba(37, 99, 235, 0.4))',
+                    }}
+                  />
+                  <span className="text-sm font-semibold text-slate-600">
+                    Where this is heading
+                  </span>
+                  <span className="text-xs text-slate-400">
+                    ({collapsedCards.length} more {collapsedCards.length === 1 ? 'insight' : 'insights'})
+                  </span>
+                </div>
+                {expandedSections.moreDetails ? (
+                  <ChevronUp size={18} className="text-slate-400" />
+                ) : (
+                  <ChevronDown size={18} className="text-slate-400" />
+                )}
+              </button>
+            )}
 
-            {expandedSections.moreDetails && (
+            {/* Content: Always visible on Algorithm tab, collapsible on others */}
+            {(isAlgorithmTab || expandedSections.moreDetails) && (
               <div
                 className="px-6 pb-6 space-y-4"
-                style={{ borderTop: '1px solid rgba(226, 232, 240, 0.5)' }}
+                style={!isAlgorithmTab ? { borderTop: '1px solid #E2E8F0' } : { paddingTop: '1.5rem' }}
               >
-                {collapsedCards.map((view) => (
-                  <div key={view.id} className="pt-4">
-                    <h5 className="text-sm font-medium text-slate-600 mb-2">{view.title}</h5>
+                {/* On Algorithm tab, show top 1-2 insights directly */}
+                {collapsedCards.slice(0, isAlgorithmTab ? 2 : collapsedCards.length).map((view) => (
+                  <div
+                    key={view.id}
+                    className="pt-4 first:pt-0"
+                    style={{
+                      borderTop: '1px solid #F1F5F9',
+                    }}
+                  >
+                    <h5 className="text-sm font-medium text-slate-700 mb-2">{view.title}</h5>
                     <ViewCard
                       view={view}
                       dataResult={viewDataResults[view.id]}
@@ -552,6 +661,50 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                     />
                   </div>
                 ))}
+
+                {/* On Algorithm tab, show "More" link if there are additional insights */}
+                {isAlgorithmTab && collapsedCards.length > 2 && (
+                  <button
+                    onClick={() => toggleSection('moreDetails')}
+                    className="text-sm font-medium flex items-center gap-1 mt-4 pt-4"
+                    style={{ color: '#2563EB', borderTop: '1px solid #F1F5F9' }}
+                  >
+                    {expandedSections.moreDetails ? (
+                      <>
+                        <ChevronUp size={14} />
+                        Show less
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown size={14} />
+                        {collapsedCards.length - 2} more {collapsedCards.length - 2 === 1 ? 'insight' : 'insights'}
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* Show additional insights when expanded on Algorithm tab */}
+                {isAlgorithmTab && expandedSections.moreDetails && collapsedCards.length > 2 && (
+                  <div className="space-y-4 pt-2">
+                    {collapsedCards.slice(2).map((view) => (
+                      <div
+                        key={view.id}
+                        className="pt-4"
+                        style={{ borderTop: '1px solid #F1F5F9' }}
+                      >
+                        <h5 className="text-sm font-medium text-slate-700 mb-2">{view.title}</h5>
+                        <ViewCard
+                          view={view}
+                          dataResult={viewDataResults[view.id]}
+                          scanCount={scanCount}
+                          platformCount={platformCount}
+                          accentColor="blue"
+                          isInline={true}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -561,8 +714,16 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
       {/* SUMMARY - Part 3 Module Type 3: Paragraph + Actions */}
       {hasSummaryContent && (
         <section>
-          <SectionHeader title="What You Could Try" />
-          <div className="mt-4">
+          {isAlgorithmTab ? (
+            <SectionHeader
+              label={ALGORITHM_TAB_HEADERS.summary.label}
+              title={ALGORITHM_TAB_HEADERS.summary.title}
+              subtext={ALGORITHM_TAB_HEADERS.summary.subtext}
+            />
+          ) : (
+            <SectionHeader title="What You Could Try" />
+          )}
+          <div className="mt-5">
             {summaryCards.map((view) => {
               const dataResult = viewDataResults[view.id];
               const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
@@ -580,10 +741,10 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
               return (
                 <div
                   key={view.id}
-                  className="rounded-xl p-6"
+                  className="rounded-xl p-6 hover:border-slate-300 transition-colors"
                   style={{
-                    background: 'linear-gradient(180deg, rgba(37, 99, 235, 0.03) 0%, rgba(248, 250, 252, 0.5) 100%)',
-                    border: '1px solid rgba(226, 232, 240, 0.6)',
+                    background: 'white',
+                    border: '1px solid #E2E8F0', // Change 1: Stronger border (slate-200)
                   }}
                 >
                   {/* Summary paragraph */}
