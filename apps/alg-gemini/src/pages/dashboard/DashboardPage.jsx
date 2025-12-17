@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, RefreshCw, BarChart3, Clock, Globe, Database, Info, ToggleLeft, ToggleRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, RefreshCw, BarChart3, Clock, Globe, Database, Info, ToggleLeft, ToggleRight, ChevronDown, ChevronUp, Compass, RefreshCcw, Lock, Sparkles, ExternalLink, ShieldCheck, MessageSquare, EyeOff } from 'lucide-react';
 import { TABS, getViewsForTab, getVisibleViewCount, EMPTY_STATE_TYPES, TAB_TRUST_SENTENCES } from './dashboardCatalog';
 import ViewCard from '../../components/dashboard/ViewCard';
 import TalkToAlgorithmSection from '../../components/dashboard/TalkToAlgorithmSection';
@@ -389,31 +389,172 @@ const ExpandableDetailRow = ({ view, dataResult, isExpanded, onToggle, accentCol
 };
 
 /**
- * Story-driven section header config for Algorithm tab
- * These headers guide the reader through a narrative
+ * ChapterContainer - Wraps each major story chapter in a designed container
+ * Creates visual rhythm and reduces "random header + card" feeling
+ *
+ * Features:
+ * - Subtle slate background tint
+ * - Border with rounded corners
+ * - Generous padding
+ * - Section header inside container
+ * - Subtle shadow lift effect
  */
-const ALGORITHM_TAB_HEADERS = {
-  keyInsight: {
-    label: 'The pattern',
-    title: 'What keeps showing up',
-    subtext: 'The topic cluster your feed returns to most often.',
+const ChapterContainer = ({ children, variant = 'default' }) => {
+  const variants = {
+    default: {
+      background: '#F8FAFC',
+      border: '1px solid #E2E8F0',
+      shadow: '0 2px 8px rgba(0, 0, 0, 0.03)',
+    },
+    primary: {
+      background: '#FAFBFC',
+      border: '1px solid #CBD5E1',
+      shadow: '0 4px 12px rgba(0, 0, 0, 0.04)',
+    },
+    accent: {
+      background: 'linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%)',
+      border: '1px solid #E2E8F0',
+      shadow: '0 2px 8px rgba(0, 0, 0, 0.03)',
+    },
+  };
+
+  const style = variants[variant] || variants.default;
+
+  return (
+    <div
+      className="rounded-2xl overflow-hidden transition-shadow duration-200 hover:shadow-md"
+      style={{
+        background: style.background,
+        border: style.border,
+        boxShadow: style.shadow,
+        padding: 'clamp(1.5rem, 4vw, 2.5rem)',
+      }}
+    >
+      {children}
+    </div>
+  );
+};
+
+/**
+ * Story-driven section header config for ALL tabs
+ * These headers guide the reader through a narrative
+ * Part 2: Apply to each tab using Algorithm tab as canonical reference
+ */
+const TAB_STORY_HEADERS = {
+  algorithm: {
+    keyInsight: {
+      label: 'The pattern',
+      title: 'What keeps showing up',
+      subtext: 'The topic cluster your feed returns to most often.',
+    },
+    details: {
+      label: 'Why it happens',
+      title: 'How the pattern takes hold',
+      subtext: 'Signals that reinforce the loop, even when you are not trying to.',
+    },
+    moreDetails: {
+      label: 'What it leads to',
+      title: 'Where this is heading',
+      subtext: 'What you are likely to see more of if nothing changes.',
+    },
+    summary: {
+      label: 'Shift it gently',
+      title: 'What you could try',
+      subtext: 'Small actions that nudge the system without turning your life upside down.',
+    },
   },
-  details: {
-    label: 'Why it happens',
-    title: 'How the pattern takes hold',
-    subtext: 'Signals that reinforce the loop, even when you are not trying to.',
+  ads: {
+    keyInsight: {
+      label: 'The pattern',
+      title: 'What\'s selling to you',
+      subtext: 'Promotional content showing up in your feed.',
+    },
+    details: {
+      label: 'Why it happens',
+      title: 'How ads find you',
+      subtext: 'Signals that make advertisers think you\'re interested.',
+    },
+    moreDetails: {
+      label: 'What it leads to',
+      title: 'Where this is heading',
+      subtext: 'What advertisers will likely show you more of.',
+    },
+    summary: {
+      label: 'Shift it gently',
+      title: 'What you could try',
+      subtext: 'Small actions that may reduce promotional noise.',
+    },
   },
-  moreDetails: {
-    label: 'What it leads to',
-    title: 'Where this is heading',
-    subtext: 'What you are likely to see more of if nothing changes.',
+  politics: {
+    keyInsight: {
+      label: 'The pattern',
+      title: 'Political content in your feed',
+      subtext: 'How much of your scrolling touches on politics.',
+    },
+    details: {
+      label: 'Why it happens',
+      title: 'Where it comes from',
+      subtext: 'The sources driving political content your way.',
+    },
+    moreDetails: {
+      label: 'What it leads to',
+      title: 'Where this is heading',
+      subtext: 'How your political exposure may evolve.',
+    },
+    summary: {
+      label: 'Shift it gently',
+      title: 'What you could try',
+      subtext: 'Small actions that may balance your exposure.',
+    },
   },
-  summary: {
-    label: 'Shift it gently',
-    title: 'What you could try',
-    subtext: 'Small actions that nudge the system without turning your life upside down.',
+  patterns: {
+    keyInsight: {
+      label: 'The pattern',
+      title: 'What your feed keeps showing',
+      subtext: 'Topics that appear most when you scroll.',
+    },
+    details: {
+      label: 'Why it happens',
+      title: 'How patterns form',
+      subtext: 'Signals that make certain topics stick.',
+    },
+    moreDetails: {
+      label: 'What it leads to',
+      title: 'Where this is heading',
+      subtext: 'What you\'re likely to see more of.',
+    },
+    summary: {
+      label: 'Shift it gently',
+      title: 'What you could try',
+      subtext: 'Small actions that may introduce variety.',
+    },
+  },
+  creators: {
+    keyInsight: {
+      label: 'The pattern',
+      title: 'Who shapes your feed',
+      subtext: 'The voices that show up most often.',
+    },
+    details: {
+      label: 'Why it happens',
+      title: 'How creators dominate',
+      subtext: 'Signals that make certain voices louder.',
+    },
+    moreDetails: {
+      label: 'What it leads to',
+      title: 'Where this is heading',
+      subtext: 'Whose voices will likely grow stronger.',
+    },
+    summary: {
+      label: 'Shift it gently',
+      title: 'What you could try',
+      subtext: 'Small actions that may diversify your sources.',
+    },
   },
 };
+
+// Legacy alias for backward compatibility
+const ALGORITHM_TAB_HEADERS = TAB_STORY_HEADERS.algorithm;
 
 /**
  * ViewsGridWithCollapsing - Part 3: Editorial Stack Redesign
@@ -431,8 +572,12 @@ const ALGORITHM_TAB_HEADERS = {
  * Change 3: "Where this is heading" uncollapsed by default
  */
 const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCount, tabName, tabId }) => {
-  // Check if we're on the Algorithm tab for story-driven headers
+  // Get story-driven headers for current tab (all tabs now use them)
+  const tabHeaders = TAB_STORY_HEADERS[tabId] || TAB_STORY_HEADERS.algorithm;
+  // Check if we're on the Algorithm tab for special two-column layout
   const isAlgorithmTab = tabId === 'algorithm';
+  // All tabs now use story-driven structure
+  const useStoryStructure = true;
 
   // Track which sections are expanded
   // Change 3: moreDetails expanded by default on Algorithm tab
@@ -497,517 +642,508 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
   const hasCollapsedContent = collapsedCards.length > 0;
   const hasSummaryContent = summaryCards.length > 0;
 
+  // Wrapper for chapter containers - NOW on ALL tabs (Part 2: Apply design system)
+  const MaybeChapter = ({ children, variant = 'default' }) => {
+    return <ChapterContainer variant={variant}>{children}</ChapterContainer>;
+  };
+
   return (
-    <div className="space-y-14">
+    <div className="space-y-10">
       {/* KEY INSIGHT - Part 3 Module Type 1: Declarative + Collapsible Evidence */}
-      {/* Improvements 6 & 7: Mini-lede area, "In plain terms" label, pill-style disclosure */}
       {hasPrimaryContent && (
         <section>
-          {isAlgorithmTab ? (
+          <MaybeChapter variant="primary">
+            {/* All tabs now use story-driven headers */}
             <SectionHeader
-              label={ALGORITHM_TAB_HEADERS.keyInsight.label}
-              title={ALGORITHM_TAB_HEADERS.keyInsight.title}
-              subtext={ALGORITHM_TAB_HEADERS.keyInsight.subtext}
+              label={tabHeaders.keyInsight.label}
+              title={tabHeaders.keyInsight.title}
+              subtext={tabHeaders.keyInsight.subtext}
             />
-          ) : (
-            <SectionHeader title="Key Insight" />
-          )}
-          <div className="mt-5">
-            {primaryCards.map((view) => {
-              const dataResult = viewDataResults[view.id];
-              const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
-                ? view.takeaway(dataResult?.data)
-                : null;
+            <div className="mt-5">
+              {primaryCards.map((view) => {
+                const dataResult = viewDataResults[view.id];
+                const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
+                  ? view.takeaway(dataResult?.data)
+                  : null;
 
-              return (
-                <div
-                  key={view.id}
-                  className="rounded-2xl overflow-hidden transition-colors"
-                  style={{
-                    background: 'white',
-                    border: '1px solid #CBD5E1',
-                  }}
-                >
-                  {/* Improvement 6: Mini-lede area */}
-                  <div className="p-6 md:p-8">
-                    {/* Improvement 6: "In plain terms" label */}
-                    {isAlgorithmTab && takeawayText && (
-                      <p
-                        className="mb-3"
-                        style={{
-                          fontSize: '11px',
-                          color: 'rgba(37, 99, 235, 0.55)',
-                          letterSpacing: '0.1em',
-                          fontWeight: 600,
-                          textTransform: 'uppercase',
-                        }}
-                      >
-                        In plain terms
-                      </p>
-                    )}
+                // Get top topics for two-column layout
+                const topicsData = viewDataResults?.['algo-topics-liked']?.data || [];
+                const hasTopics = topicsData.length > 0;
 
-                    {/* Improvement 6: Main takeaway in larger type */}
-                    {takeawayText && (
-                      <p
-                        className="text-xl md:text-2xl font-semibold text-text-main leading-snug mb-4"
-                        style={{ maxWidth: '600px' }} /* Narrower column */
-                      >
-                        {takeawayText}
-                      </p>
-                    )}
-
-                    {/* Improvement 6: Subtext in narrower column */}
-                    <p
-                      className="text-sm text-slate-500 leading-relaxed"
-                      style={{ maxWidth: '500px' }}
-                    >
-                      {view.description}
-                    </p>
-                  </div>
-
-                  {/* Improvement 7: "How we know this" at bottom, pill-style disclosure */}
+                return (
                   <div
-                    className="px-6 pb-6 md:px-8 md:pb-6 flex justify-end"
-                    style={{ borderTop: '1px solid rgba(226, 232, 240, 0.6)' }}
+                    key={view.id}
+                    className="rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-md"
+                    style={{
+                      background: 'white',
+                      border: '1px solid #CBD5E1',
+                    }}
                   >
-                    <button
-                      onClick={() => toggleSection('keyInsightEvidence')}
-                      className="mt-4 inline-flex items-center gap-2 text-sm font-medium transition-all rounded-full"
-                      style={{
-                        color: 'rgba(37, 99, 235, 0.8)',
-                        background: 'rgba(37, 99, 235, 0.06)',
-                        border: '1px solid rgba(37, 99, 235, 0.12)',
-                        padding: '0.5rem 1rem',
-                      }}
-                    >
-                      {/* Improvement 7: Chevron that rotates */}
-                      <ChevronDown
-                        size={16}
-                        className="transition-transform"
-                        style={{
-                          transform: expandedSections.keyInsightEvidence ? 'rotate(180deg)' : 'rotate(0deg)',
-                        }}
-                      />
-                      {expandedSections.keyInsightEvidence ? 'Hide evidence' : 'How we know this'}
-                    </button>
-                  </div>
+                    {/* Two-column layout for Algorithm tab */}
+                    <div className="p-6 md:p-8">
+                      <div className={isAlgorithmTab && hasTopics ? 'md:flex md:gap-8' : ''}>
+                        {/* Left column: Takeaway + explanation */}
+                        <div className={isAlgorithmTab && hasTopics ? 'md:flex-1' : ''}>
+                          {/* "In plain terms" label */}
+                          {isAlgorithmTab && takeawayText && (
+                            <p
+                              className="mb-3"
+                              style={{
+                                fontSize: '11px',
+                                color: 'rgba(37, 99, 235, 0.55)',
+                                letterSpacing: '0.1em',
+                                fontWeight: 600,
+                                textTransform: 'uppercase',
+                              }}
+                            >
+                              In plain terms
+                            </p>
+                          )}
 
-                  {/* Improvement 7: Evidence in tinted inset area */}
-                  {expandedSections.keyInsightEvidence && (
-                    <div
-                      className="px-6 pb-6 md:px-8 md:pb-8"
-                      style={{
-                        background: 'linear-gradient(180deg, rgba(37, 99, 235, 0.04) 0%, rgba(248, 250, 252, 0.8) 100%)',
-                        borderTop: '1px solid rgba(37, 99, 235, 0.08)',
-                      }}
-                    >
-                      <div className="pt-5">
-                        <p
-                          className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4"
-                        >
-                          Supporting evidence
-                        </p>
-                        <ViewCard
-                          view={view}
-                          dataResult={dataResult}
-                          scanCount={scanCount}
-                          platformCount={platformCount}
-                          accentColor="blue"
-                          isInline={true}
-                        />
+                          {/* Main takeaway */}
+                          {takeawayText && (
+                            <p
+                              className="text-xl md:text-2xl font-semibold text-text-main leading-snug mb-4"
+                              style={{ maxWidth: '600px' }}
+                            >
+                              {takeawayText}
+                            </p>
+                          )}
+
+                          {/* Description */}
+                          <p
+                            className="text-sm text-slate-500 leading-relaxed"
+                            style={{ maxWidth: '500px' }}
+                          >
+                            {view.description}
+                          </p>
+                        </div>
+
+                        {/* Right column: Top topics list (Algorithm tab only) */}
+                        {isAlgorithmTab && hasTopics && (
+                          <div
+                            className="mt-6 md:mt-0 md:w-64 flex-shrink-0 rounded-xl p-4"
+                            style={{
+                              background: '#F8FAFC',
+                              border: '1px solid #E2E8F0',
+                            }}
+                          >
+                            <p
+                              className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3"
+                            >
+                              Top topics
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {topicsData.slice(0, 5).map((topic, idx) => (
+                                <span
+                                  key={idx}
+                                  className="inline-flex items-center text-xs px-2.5 py-1 rounded-full"
+                                  style={{
+                                    background: idx === 0 ? '#EFF6FF' : '#FFFFFF',
+                                    border: `1px solid ${idx === 0 ? '#BFDBFE' : '#E2E8F0'}`,
+                                    color: idx === 0 ? '#1D4ED8' : '#64748B',
+                                    fontWeight: idx === 0 ? 600 : 500,
+                                  }}
+                                >
+                                  {topic.topic}
+                                  {topic.share && (
+                                    <span className="ml-1 text-slate-400">{topic.share}%</span>
+                                  )}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+
+                    {/* "How we know this" disclosure - moved to top-right */}
+                    <div
+                      className="px-6 pb-6 md:px-8 md:pb-6 flex justify-between items-center"
+                      style={{ borderTop: '1px solid rgba(226, 232, 240, 0.6)' }}
+                    >
+                      <span className="text-xs text-slate-400">
+                        Based on {scanCount} scan{scanCount !== 1 ? 's' : ''}
+                      </span>
+                      <button
+                        onClick={() => toggleSection('keyInsightEvidence')}
+                        className="inline-flex items-center gap-2 text-sm font-medium transition-all rounded-full hover:bg-blue-100"
+                        style={{
+                          color: 'rgba(37, 99, 235, 0.8)',
+                          background: 'rgba(37, 99, 235, 0.06)',
+                          border: '1px solid rgba(37, 99, 235, 0.12)',
+                          padding: '0.5rem 1rem',
+                        }}
+                      >
+                        <ChevronDown
+                          size={16}
+                          className="transition-transform"
+                          style={{
+                            transform: expandedSections.keyInsightEvidence ? 'rotate(180deg)' : 'rotate(0deg)',
+                          }}
+                        />
+                        {expandedSections.keyInsightEvidence ? 'Hide evidence' : 'How we know this'}
+                      </button>
+                    </div>
+
+                    {/* Evidence area */}
+                    {expandedSections.keyInsightEvidence && (
+                      <div
+                        className="px-6 pb-6 md:px-8 md:pb-8"
+                        style={{
+                          background: 'linear-gradient(180deg, rgba(37, 99, 235, 0.04) 0%, rgba(248, 250, 252, 0.8) 100%)',
+                          borderTop: '1px solid rgba(37, 99, 235, 0.08)',
+                        }}
+                      >
+                        <div className="pt-5">
+                          <p
+                            className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4"
+                          >
+                            Supporting evidence
+                          </p>
+                          <ViewCard
+                            view={view}
+                            dataResult={dataResult}
+                            scanCount={scanCount}
+                            platformCount={platformCount}
+                            accentColor="blue"
+                            isInline={true}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </MaybeChapter>
         </section>
       )}
 
       {/* DETAILS - Part 3: Softer backgrounds, headline + takeaway */}
-      {/* Improvement 8: Format takeaway prominently, reduce duplicate headings, proper spacing */}
       {hasSecondaryContent && (
         <section>
-          {isAlgorithmTab ? (
+          <MaybeChapter variant="default">
+            {/* All tabs now use story-driven headers */}
             <SectionHeader
-              label={ALGORITHM_TAB_HEADERS.details.label}
-              title={ALGORITHM_TAB_HEADERS.details.title}
-              subtext={ALGORITHM_TAB_HEADERS.details.subtext}
+              label={tabHeaders.details.label}
+              title={tabHeaders.details.title}
+              subtext={tabHeaders.details.subtext}
             />
-          ) : (
-            <SectionHeader title="Details" />
-          )}
-          <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-6">
-            {secondaryCards.map((view, idx) => {
-              const dataResult = viewDataResults[view.id];
-              const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
-                ? view.takeaway(dataResult?.data)
-                : null;
+            <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-6">
+              {secondaryCards.map((view, idx) => {
+                const dataResult = viewDataResults[view.id];
+                const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
+                  ? view.takeaway(dataResult?.data)
+                  : null;
 
-              return (
-                <div
-                  key={view.id}
-                  className="rounded-xl p-5 hover:border-slate-300 transition-colors"
-                  style={{
-                    background: 'white',
-                    border: '1px solid #E2E8F0',
-                  }}
-                >
-                  {/* Improvement 8: Card title - keep but don't duplicate inside */}
-                  <h4 className="text-base font-semibold text-slate-700 mb-3">{view.title}</h4>
+                return (
+                  <div
+                    key={view.id}
+                    className="rounded-xl p-5 transition-all duration-200 hover:shadow-md hover:border-slate-300"
+                    style={{
+                      background: 'white',
+                      border: '1px solid #E2E8F0',
+                    }}
+                  >
+                    {/* Card title */}
+                    <h4 className="text-base font-semibold text-slate-700 mb-3">{view.title}</h4>
 
-                  {/* Improvement 8: Bold one-line takeaway at top */}
-                  {takeawayText && (
-                    <p className="text-sm font-medium text-slate-700 mb-3 leading-relaxed">
-                      {takeawayText}
-                    </p>
-                  )}
+                    {/* Bold one-line takeaway */}
+                    {takeawayText && (
+                      <p className="text-sm font-medium text-slate-700 mb-3 leading-relaxed">
+                        {takeawayText}
+                      </p>
+                    )}
 
-                  {/* Improvement 8: Supporting explanation - hide duplicate title if present */}
-                  <div className="text-sm text-slate-500">
-                    <ViewCard
-                      view={view}
-                      dataResult={dataResult}
-                      scanCount={scanCount}
-                      platformCount={platformCount}
-                      accentColor="blue"
-                      isInline={true}
-                      hideTitle={true} /* Improvement 8: Hide duplicate title */
-                    />
+                    {/* Supporting content */}
+                    <div className="text-sm text-slate-500">
+                      <ViewCard
+                        view={view}
+                        dataResult={dataResult}
+                        scanCount={scanCount}
+                        platformCount={platformCount}
+                        accentColor="blue"
+                        isInline={true}
+                        hideTitle={true}
+                      />
+                    </div>
                   </div>
-
-                  {/* Improvement 8: Small "based on" line - only show once per section */}
-                  {idx === 0 && isAlgorithmTab && (
-                    <p className="text-[11px] text-slate-400 mt-4 pt-3 border-t border-slate-100">
-                      Based on {scanCount} scan{scanCount !== 1 ? 's' : ''}
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          </MaybeChapter>
         </section>
       )}
 
-      {/* MORE DETAILS - Part 3 Module Type 2: Editorial Drawer */}
-      {/* Improvement 9: Structured Forecast module with bullet-like lines and labels */}
+      {/* MORE DETAILS - Forecast section */}
       {hasCollapsedContent && (
         <section>
-          {/* Story-driven header for Algorithm tab */}
-          {isAlgorithmTab && (
+          <MaybeChapter variant="accent">
+            {/* All tabs now use story-driven headers */}
             <SectionHeader
-              label={ALGORITHM_TAB_HEADERS.moreDetails.label}
-              title={ALGORITHM_TAB_HEADERS.moreDetails.title}
-              subtext={ALGORITHM_TAB_HEADERS.moreDetails.subtext}
+              label={tabHeaders.moreDetails.label}
+              title={tabHeaders.moreDetails.title}
+              subtext={tabHeaders.moreDetails.subtext}
             />
-          )}
 
-          <div
-            className="rounded-xl overflow-hidden mt-5"
-            style={{
-              background: 'white',
-              border: '1px solid #E2E8F0',
-            }}
-          >
-            {/* Non-algorithm tabs: Show collapsible header */}
-            {!isAlgorithmTab && (
-              <button
-                onClick={() => toggleSection('moreDetails')}
-                className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-50/50 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-1 h-4 rounded-full"
-                    style={{
-                      background: 'linear-gradient(180deg, #2563EB, rgba(37, 99, 235, 0.4))',
-                    }}
-                  />
-                  <span className="text-sm font-semibold text-slate-600">
-                    Where this is heading
-                  </span>
-                  <span className="text-xs text-slate-400">
-                    ({collapsedCards.length} more {collapsedCards.length === 1 ? 'insight' : 'insights'})
-                  </span>
-                </div>
-                {expandedSections.moreDetails ? (
-                  <ChevronUp size={18} className="text-slate-400" />
-                ) : (
-                  <ChevronDown size={18} className="text-slate-400" />
-                )}
-              </button>
-            )}
-
-            {/* Content: Always visible on Algorithm tab, collapsible on others */}
-            {(isAlgorithmTab || expandedSections.moreDetails) && (
+            <div
+              className="rounded-xl overflow-hidden mt-5 transition-all duration-200 hover:shadow-md"
+              style={{
+                background: 'white',
+                border: '1px solid #E2E8F0',
+              }}
+            >
+              {/* Content: Always visible now that all tabs have proper headers */}
               <div
                 className="px-6 pb-6"
-                style={!isAlgorithmTab ? { borderTop: '1px solid #E2E8F0' } : { paddingTop: '1.5rem' }}
+                style={{ paddingTop: '1.5rem' }}
               >
-                {/* Structured Forecast module for Algorithm tab */}
-                {isAlgorithmTab ? (
+                  {/* Structured Forecast module - now applies to ALL tabs */}
                   <div className="space-y-0">
-                    {/* Show up to 3 insights as structured forecast lines with pill labels */}
-                    {collapsedCards.slice(0, 3).map((view, idx) => {
-                      const dataResult = viewDataResults[view.id];
-                      const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
-                        ? view.takeaway(dataResult?.data)
-                        : null;
+                      {/* Show up to 3 insights as structured forecast lines with pill labels */}
+                      {collapsedCards.slice(0, 3).map((view, idx) => {
+                        const dataResult = viewDataResults[view.id];
+                        const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
+                          ? view.takeaway(dataResult?.data)
+                          : null;
 
-                      // Forecast label pills
-                      const forecastLabels = [
-                        { text: 'Likely next', bg: '#EFF6FF', color: '#1D4ED8', border: '#BFDBFE' },
-                        { text: 'If this continues', bg: '#FEF3C7', color: '#92400E', border: '#FCD34D' },
-                        { text: 'What may shift it', bg: '#F0FDF4', color: '#166534', border: '#86EFAC' },
-                      ];
-                      const label = forecastLabels[idx] || { text: 'Also', bg: '#F1F5F9', color: '#64748B', border: '#E2E8F0' };
+                        // Forecast label pills with dividers
+                        const forecastLabels = [
+                          { text: 'Likely next', bg: '#EFF6FF', color: '#1D4ED8', border: '#BFDBFE' },
+                          { text: 'If this continues', bg: '#FEF3C7', color: '#92400E', border: '#FCD34D' },
+                          { text: 'What may shift it', bg: '#F0FDF4', color: '#166534', border: '#86EFAC' },
+                        ];
+                        const label = forecastLabels[idx] || { text: 'Also', bg: '#F1F5F9', color: '#64748B', border: '#E2E8F0' };
 
-                      return (
-                        <div
-                          key={view.id}
-                          className="py-5 flex items-start gap-4"
-                          style={{
-                            borderBottom: idx < Math.min(collapsedCards.length, 3) - 1 ? '1px solid #E2E8F0' : 'none',
-                          }}
-                        >
-                          {/* Pill label badge */}
+                        return (
                           <div
-                            className="flex-shrink-0 text-[11px] font-semibold rounded-full px-3 py-1"
+                            key={view.id}
+                            className="py-5 flex items-start gap-4 transition-colors hover:bg-slate-50/50 -mx-2 px-2 rounded-lg"
                             style={{
-                              background: label.bg,
-                              color: label.color,
-                              border: `1px solid ${label.border}`,
-                              whiteSpace: 'nowrap',
+                              borderBottom: idx < Math.min(collapsedCards.length, 3) - 1 ? '1px solid #E2E8F0' : 'none',
                             }}
                           >
-                            {label.text}
-                          </div>
-
-                          {/* Forecast line text */}
-                          <div className="flex-1 pt-0.5">
-                            <p className="text-sm text-slate-700 leading-relaxed">
-                              {takeawayText || view.title}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {/* "More" link if there are additional insights */}
-                    {collapsedCards.length > 3 && (
-                      <button
-                        onClick={() => toggleSection('moreDetails')}
-                        className="text-sm font-medium flex items-center gap-1 mt-3 pt-4"
-                        style={{ color: '#2563EB', borderTop: '1px solid #E2E8F0' }}
-                      >
-                        <ChevronDown
-                          size={14}
-                          className="transition-transform"
-                          style={{
-                            transform: expandedSections.moreDetails ? 'rotate(180deg)' : 'rotate(0deg)',
-                          }}
-                        />
-                        {expandedSections.moreDetails
-                          ? 'Show less'
-                          : `${collapsedCards.length - 3} more insight${collapsedCards.length - 3 === 1 ? '' : 's'}`
-                        }
-                      </button>
-                    )}
-
-                    {/* Show additional insights when expanded */}
-                    {expandedSections.moreDetails && collapsedCards.length > 3 && (
-                      <div className="pt-2">
-                        {collapsedCards.slice(3).map((view) => {
-                          const dataResult = viewDataResults[view.id];
-                          const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
-                            ? view.takeaway(dataResult?.data)
-                            : null;
-
-                          return (
+                            {/* Pill label badge */}
                             <div
-                              key={view.id}
-                              className="py-4 flex items-start gap-4"
+                              className="flex-shrink-0 text-[11px] font-semibold rounded-full px-3 py-1"
                               style={{
-                                borderTop: '1px solid #E2E8F0',
+                                background: label.bg,
+                                color: label.color,
+                                border: `1px solid ${label.border}`,
+                                whiteSpace: 'nowrap',
                               }}
                             >
+                              {label.text}
+                            </div>
+
+                            {/* Forecast line text */}
+                            <div className="flex-1 pt-0.5">
+                              <p className="text-sm text-slate-700 leading-relaxed">
+                                {takeawayText || view.title}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      {/* "More" link if there are additional insights */}
+                      {collapsedCards.length > 3 && (
+                        <button
+                          onClick={() => toggleSection('moreDetails')}
+                          className="text-sm font-medium flex items-center gap-1 mt-3 pt-4 hover:text-blue-700 transition-colors"
+                          style={{ color: '#2563EB', borderTop: '1px solid #E2E8F0' }}
+                        >
+                          <ChevronDown
+                            size={14}
+                            className="transition-transform"
+                            style={{
+                              transform: expandedSections.moreDetails ? 'rotate(180deg)' : 'rotate(0deg)',
+                            }}
+                          />
+                          {expandedSections.moreDetails
+                            ? 'Show less'
+                            : `${collapsedCards.length - 3} more insight${collapsedCards.length - 3 === 1 ? '' : 's'}`
+                          }
+                        </button>
+                      )}
+
+                      {/* Show additional insights when expanded */}
+                      {expandedSections.moreDetails && collapsedCards.length > 3 && (
+                        <div className="pt-2">
+                          {collapsedCards.slice(3).map((view) => {
+                            const dataResult = viewDataResults[view.id];
+                            const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
+                              ? view.takeaway(dataResult?.data)
+                              : null;
+
+                            return (
                               <div
-                                className="flex-shrink-0 text-[11px] font-semibold rounded-full px-3 py-1"
+                                key={view.id}
+                                className="py-4 flex items-start gap-4"
                                 style={{
-                                  background: '#F1F5F9',
-                                  color: '#64748B',
-                                  border: '1px solid #E2E8F0',
+                                  borderTop: '1px solid #E2E8F0',
                                 }}
                               >
-                                Also
+                                <div
+                                  className="flex-shrink-0 text-[11px] font-semibold rounded-full px-3 py-1"
+                                  style={{
+                                    background: '#F1F5F9',
+                                    color: '#64748B',
+                                    border: '1px solid #E2E8F0',
+                                  }}
+                                >
+                                  Also
+                                </div>
+                                <div className="flex-1 pt-0.5">
+                                  <p className="text-sm text-slate-700 leading-relaxed">
+                                    {takeawayText || view.title}
+                                  </p>
+                                </div>
                               </div>
-                              <div className="flex-1 pt-0.5">
-                                <p className="text-sm text-slate-700 leading-relaxed">
-                                  {takeawayText || view.title}
-                                </p>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  /* Non-algorithm tabs: Original layout */
-                  <div className="space-y-4 pt-4">
-                    {collapsedCards.map((view) => (
-                      <div
-                        key={view.id}
-                        className="pt-4 first:pt-0"
-                        style={{ borderTop: '1px solid #F1F5F9' }}
-                      >
-                        <h5 className="text-sm font-medium text-slate-700 mb-2">{view.title}</h5>
-                        <ViewCard
-                          view={view}
-                          dataResult={viewDataResults[view.id]}
-                          scanCount={scanCount}
-                          platformCount={platformCount}
-                          accentColor="blue"
-                          isInline={true}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                </div>
+            </div>
+          </MaybeChapter>
         </section>
       )}
 
       {/* SUMMARY - Calm Closing Chapter with Action Cards */}
       {hasSummaryContent && (
         <section>
-          {isAlgorithmTab ? (
+          <MaybeChapter variant="default">
+            {/* All tabs now use story-driven headers */}
             <SectionHeader
-              label={ALGORITHM_TAB_HEADERS.summary.label}
-              title={ALGORITHM_TAB_HEADERS.summary.title}
-              subtext={ALGORITHM_TAB_HEADERS.summary.subtext}
+              label={tabHeaders.summary.label}
+              title={tabHeaders.summary.title}
+              subtext={tabHeaders.summary.subtext}
             />
-          ) : (
-            <SectionHeader title="What You Could Try" />
-          )}
-          <div className="mt-5">
-            {summaryCards.map((view) => {
-              const dataResult = viewDataResults[view.id];
-              const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
-                ? view.takeaway(dataResult?.data)
-                : null;
-              const actionText = dataResult?.hasData && typeof view.action === 'function'
-                ? view.action(dataResult?.data)
-                : null;
+            <div className="mt-5">
+              {summaryCards.map((view) => {
+                const dataResult = viewDataResults[view.id];
+                const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
+                  ? view.takeaway(dataResult?.data)
+                  : null;
+                const actionText = dataResult?.hasData && typeof view.action === 'function'
+                  ? view.action(dataResult?.data)
+                  : null;
 
-              // For list data, show max 3 items as actions
-              const listData = Array.isArray(dataResult?.data)
-                ? dataResult.data.slice(0, 3)
-                : dataResult?.data?.tips?.slice(0, 3) || [];
+                // For list data, show max 3 items as actions
+                const listData = Array.isArray(dataResult?.data)
+                  ? dataResult.data.slice(0, 3)
+                  : dataResult?.data?.tips?.slice(0, 3) || [];
 
-              return (
-                <div
-                  key={view.id}
-                  className="rounded-2xl overflow-hidden"
-                  style={{
-                    background: SURFACES.SECTION_WHITE.background,
-                    border: SURFACES.SECTION_WHITE.border,
-                  }}
-                >
-                  <div className="p-6 md:p-8">
-                    {/* Summary paragraph */}
-                    {takeawayText && (
-                      <p className="text-base text-slate-700 leading-relaxed mb-6" style={{ maxWidth: '600px' }}>
-                        {takeawayText}
-                      </p>
-                    )}
-
-                    {/* Action Cards - max 3, styled as intentional steps */}
-                    {listData.length > 0 && (
-                      <div className="space-y-4">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
-                          Try this
+                return (
+                  <div
+                    key={view.id}
+                    className="rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-md"
+                    style={{
+                      background: SURFACES.SECTION_WHITE.background,
+                      border: SURFACES.SECTION_WHITE.border,
+                    }}
+                  >
+                    <div className="p-6 md:p-8">
+                      {/* Summary paragraph */}
+                      {takeawayText && (
+                        <p className="text-base text-slate-700 leading-relaxed mb-6" style={{ maxWidth: '600px' }}>
+                          {takeawayText}
                         </p>
-                        <div className="grid gap-3">
-                          {listData.map((item, idx) => (
-                            <div
-                              key={idx}
-                              className="flex items-start gap-4 p-4 rounded-xl transition-colors hover:bg-slate-50"
-                              style={{
-                                background: '#FAFBFC',
-                                border: '1px solid #E2E8F0',
-                              }}
-                            >
-                              {/* Numbered chip */}
-                              <span
-                                className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold"
+                      )}
+
+                      {/* Action tiles - numbered steps */}
+                      {listData.length > 0 && (
+                        <div className="space-y-4">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
+                            Try this
+                          </p>
+                          <div className="grid gap-3">
+                            {listData.map((item, idx) => (
+                              <div
+                                key={idx}
+                                className="flex items-start gap-4 p-4 rounded-xl transition-all duration-200 hover:bg-slate-50 hover:shadow-sm"
                                 style={{
-                                  background: '#EFF6FF',
-                                  color: '#2563EB',
-                                  border: '1px solid #BFDBFE',
+                                  background: '#FAFBFC',
+                                  border: '1px solid #E2E8F0',
                                 }}
                               >
-                                {idx + 1}
-                              </span>
-                              {/* Action text */}
-                              <p className="text-sm text-slate-700 leading-relaxed pt-1">
-                                {typeof item === 'string' ? item : item.text || item.topic || item}
-                              </p>
+                                {/* Numbered badge */}
+                                <span
+                                  className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold"
+                                  style={{
+                                    background: '#EFF6FF',
+                                    color: '#2563EB',
+                                    border: '1px solid #BFDBFE',
+                                  }}
+                                >
+                                  {idx + 1}
+                                </span>
+                                {/* Action text - with optional subtext */}
+                                <div className="flex-1 pt-1">
+                                  <p className="text-sm font-medium text-slate-700 leading-relaxed">
+                                    {typeof item === 'string' ? item : item.text || item.topic || item}
+                                  </p>
+                                  {/* Subtext for non-string items */}
+                                  {typeof item !== 'string' && item.description && (
+                                    <p className="text-xs text-slate-500 mt-1">{item.description}</p>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Fallback to action text if no list */}
+                      {listData.length === 0 && actionText && (
+                        <p className="text-sm text-slate-500 italic">{actionText}</p>
+                      )}
+
+                      {/* Show more collapse for additional items */}
+                      {Array.isArray(dataResult?.data) && dataResult.data.length > 3 && (
+                        <button
+                          onClick={() => toggleSection('summaryMore')}
+                          className="mt-5 text-sm font-medium flex items-center gap-1 hover:text-blue-700 transition-colors"
+                          style={{ color: '#2563EB' }}
+                        >
+                          <ChevronDown
+                            size={14}
+                            className="transition-transform"
+                            style={{
+                              transform: expandedSections.summaryMore ? 'rotate(180deg)' : 'rotate(0deg)',
+                            }}
+                          />
+                          {expandedSections.summaryMore
+                            ? 'Show less'
+                            : `More ideas (${dataResult.data.length - 3} more)`
+                          }
+                        </button>
+                      )}
+
+                      {expandedSections.summaryMore && Array.isArray(dataResult?.data) && (
+                        <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
+                          {dataResult.data.slice(3).map((item, idx) => (
+                            <div key={idx} className="flex items-start gap-3 text-sm text-slate-500">
+                              <span className="text-slate-300">•</span>
+                              <span>{typeof item === 'string' ? item : item.text || item.topic || item}</span>
                             </div>
                           ))}
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
 
-                    {/* Fallback to action text if no list */}
-                    {listData.length === 0 && actionText && (
-                      <p className="text-sm text-slate-500 italic">{actionText}</p>
-                    )}
-
-                    {/* Show more collapse for additional items */}
-                    {Array.isArray(dataResult?.data) && dataResult.data.length > 3 && (
-                      <button
-                        onClick={() => toggleSection('summaryMore')}
-                        className="mt-5 text-sm font-medium flex items-center gap-1"
-                        style={{ color: '#2563EB' }}
+                    {/* Closing card footer - designed, not tacked on */}
+                    {isAlgorithmTab && (
+                      <div
+                        className="px-6 py-5 md:px-8 text-center"
+                        style={{
+                          background: 'linear-gradient(180deg, #EFF6FF 0%, #DBEAFE 100%)',
+                          borderTop: '1px solid #BFDBFE',
+                        }}
                       >
-                        <ChevronDown
-                          size={14}
-                          className="transition-transform"
-                          style={{
-                            transform: expandedSections.summaryMore ? 'rotate(180deg)' : 'rotate(0deg)',
-                          }}
-                        />
-                        {expandedSections.summaryMore
-                          ? 'Show less'
-                          : `More ideas (${dataResult.data.length - 3} more)`
-                        }
-                      </button>
-                    )}
-
-                    {expandedSections.summaryMore && Array.isArray(dataResult?.data) && (
-                      <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
-                        {dataResult.data.slice(3).map((item, idx) => (
-                          <div key={idx} className="flex items-start gap-3 text-sm text-slate-500">
-                            <span className="text-slate-300">•</span>
-                            <span>{typeof item === 'string' ? item : item.text || item.topic || item}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Calm Closing Chapter - Light blue band with calming message */}
-                  {isAlgorithmTab && (
-                    <div
-                      className="px-6 py-6 md:px-8"
-                      style={{
-                        background: '#EFF6FF', /* Solid light blue */
-                        borderTop: '1px solid #BFDBFE',
-                      }}
-                    >
                       <p
                         className="text-sm text-slate-600 leading-relaxed"
                         style={{ maxWidth: '560px' }}
@@ -1019,7 +1155,8 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                 </div>
               );
             })}
-          </div>
+            </div>
+          </MaybeChapter>
         </section>
       )}
     </div>
@@ -1081,10 +1218,12 @@ const FeatureMomentWrapper = ({ children }) => (
 /**
  * AlgorithmTabHero - Editorial "spike" for "What the Algorithm Thinks" tab
  *
- * Solid Surfaces Strategy:
- * - Hero uses solid light blue background (not translucent)
- * - Full-width text layout (no narrow left column)
- * - Support cards use solid white with strong borders
+ * Premium polish:
+ * - Hero header row with label + meta data
+ * - Larger headline with tighter tracking
+ * - Highlighted emphasis words with subtle underline
+ * - Lede line as narrative promise
+ * - Subtle gradient surface with stronger border
  */
 const AlgorithmTabHero = ({ scans, viewDataResults }) => {
   // Get top topics from the primary view data
@@ -1096,45 +1235,455 @@ const AlgorithmTabHero = ({ scans, viewDataResults }) => {
   const breadthData = viewDataResults?.['algo-profile-breadth']?.data;
   const breadth = breadthData?.breadth?.toLowerCase() || 'moderate';
 
+  const scanCount = scans?.length || 0;
   const platformCount = scans?.length > 0
     ? [...new Set(scans.map(s => s.platform))].length
     : 0;
 
+  // Highlighted emphasis word component with subtle underline effect
+  const EmphasisWord = ({ children }) => (
+    <span
+      className="relative inline-block"
+      style={{
+        color: '#1D4ED8',
+        background: 'linear-gradient(180deg, transparent 60%, rgba(37, 99, 235, 0.12) 60%)',
+        paddingLeft: '0.125rem',
+        paddingRight: '0.125rem',
+      }}
+    >
+      {children}
+    </span>
+  );
+
   return (
-    <div className="mb-8">
-      {/* Hero Insight Card - SOLID SURFACE */}
+    <div className="mb-10">
+      {/* Hero Insight Card - PREMIUM SURFACE with gradient */}
       <div
-        className="w-full rounded-2xl mb-6"
+        className="w-full rounded-2xl mb-6 relative overflow-hidden transition-shadow duration-300 hover:shadow-lg"
         style={{
-          background: SURFACES.HERO_BLUE.background,
-          border: SURFACES.HERO_BLUE.border,
+          background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 50%, #EFF6FF 100%)',
+          border: '2px solid #93C5FD',
           padding: 'clamp(2.5rem, 6vw, 4rem) clamp(2rem, 5vw, 3.5rem)',
-          boxShadow: SURFACES.HERO_BLUE.shadow,
+          boxShadow: '0 8px 32px rgba(37, 99, 235, 0.12)',
         }}
       >
-        {/* Editorial kicker line */}
-        <p
-          className="mb-3"
+        {/* Subtle decorative gradient overlay at top-left */}
+        <div
+          className="absolute top-0 left-0 w-64 h-64 pointer-events-none"
           style={{
-            fontSize: '11px',
-            color: '#2563EB',
-            letterSpacing: '0.12em',
-            fontWeight: 600,
-            textTransform: 'uppercase',
+            background: 'radial-gradient(circle at top left, rgba(37, 99, 235, 0.08) 0%, transparent 60%)',
+          }}
+        />
+
+        {/* Hero Header Row - self-contained label + meta */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6 relative">
+          {/* Left: Editorial kicker label */}
+          <p
+            style={{
+              fontSize: '11px',
+              color: '#2563EB',
+              letterSpacing: '0.14em',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+            }}
+          >
+            Your algorithmic portrait
+          </p>
+
+          {/* Right: Meta data pill */}
+          <div
+            className="flex items-center gap-2 rounded-full"
+            style={{
+              background: 'rgba(255, 255, 255, 0.7)',
+              border: '1px solid rgba(37, 99, 235, 0.2)',
+              padding: '0.375rem 0.875rem',
+              fontSize: '11px',
+              color: '#64748B',
+              fontWeight: 500,
+            }}
+          >
+            <Database size={12} className="text-slate-400" />
+            <span>{scanCount} scan{scanCount !== 1 ? 's' : ''} · {platformCount} platform{platformCount !== 1 ? 's' : ''}</span>
+          </div>
+        </div>
+
+        {/* Main headline - LARGER with tighter tracking */}
+        <div
+          className="relative mb-6"
+          style={{
+            marginLeft: '-1rem',
+            paddingLeft: '1rem',
           }}
         >
-          Your algorithmic portrait
-        </p>
+          {/* Blue accent bar - slightly thicker */}
+          <div
+            className="absolute left-0 top-0 bottom-0 rounded-r-lg"
+            style={{
+              width: '6px',
+              background: 'linear-gradient(180deg, #2563EB 0%, #60A5FA 100%)',
+            }}
+          />
+          {/* Main interpretive headline - LARGER on desktop, tighter tracking */}
+          <h2
+            className="font-extrabold text-slate-900"
+            style={{
+              fontFamily: 'var(--font-headline, system-ui)',
+              letterSpacing: '-0.035em',
+              fontSize: 'clamp(2rem, 5.5vw, 3rem)',
+              lineHeight: 1.15,
+              maxWidth: '100%',
+            }}
+          >
+            Your feed keeps returning to{' '}
+            <EmphasisWord>{topTopic}</EmphasisWord>
+            {secondTopic && (
+              <>
+                {' '}and <EmphasisWord>{secondTopic}</EmphasisWord>
+              </>
+            )}
+            —even when you don't ask for it.
+          </h2>
+        </div>
 
-        {/* Provenance marker */}
+        {/* Supporting interpretation */}
         <p
-          className="mb-5"
-          style={{ fontSize: '13px', color: '#1D4ED8', letterSpacing: '0.04em', fontWeight: 500 }}
+          className="text-slate-600 mb-5"
+          style={{
+            fontSize: '17px',
+            lineHeight: 1.75,
+            maxWidth: '680px',
+          }}
         >
-          Based on patterns across {platformCount} platform{platformCount !== 1 ? 's' : ''}
+          This is our best interpretation based on what we've observed.
+          Algorithms don't explain themselves—we're reading between the lines.
         </p>
 
-        {/* Main headline - FULL WIDTH, not narrow column */}
+        {/* Lede line - narrative promise */}
+        <p
+          className="text-slate-500 italic"
+          style={{
+            fontSize: '14px',
+            lineHeight: 1.6,
+            maxWidth: '600px',
+          }}
+        >
+          Here's the pattern, what reinforces it, and what you can gently shift.
+        </p>
+      </div>
+
+      {/* Two supporting context cards - BRIDGE INSIGHTS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8">
+        {/* Narrowing focus card - with icon badge */}
+        <div
+          className="rounded-xl relative overflow-hidden transition-all duration-200 hover:border-slate-400 hover:shadow-md group"
+          style={{
+            background: SURFACES.SUPPORT_WHITE.background,
+            border: SURFACES.SUPPORT_WHITE.border,
+            boxShadow: SURFACES.SUPPORT_WHITE.shadow,
+            padding: 'clamp(1.75rem, 3vw, 2.25rem)',
+            minHeight: '140px',
+          }}
+        >
+          {/* Strong blue left accent bar */}
+          <div
+            className="absolute left-0 top-0 bottom-0 w-1 rounded-r"
+            style={{ background: 'linear-gradient(180deg, #2563EB 0%, #3B82F6 100%)' }}
+          />
+          <div className="pl-5">
+            {/* Icon badge + title row */}
+            <div className="flex items-center gap-3 mb-3">
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{
+                  background: 'rgba(37, 99, 235, 0.1)',
+                  border: '1px solid rgba(37, 99, 235, 0.2)',
+                }}
+              >
+                <Compass size={16} className="text-blue-600" />
+              </div>
+              <h4 className="text-base font-bold text-slate-800">Narrowing focus</h4>
+            </div>
+            {/* Takeaway line - stronger */}
+            <p className="text-sm font-medium text-slate-700 mb-2">
+              Your feed appears <span className="font-semibold text-blue-700">{breadth}</span>.
+            </p>
+            {/* Explanation - muted */}
+            <p className="text-sm text-slate-500 leading-relaxed">
+              {breadth === 'narrow'
+                ? 'A few topics dominate while others rarely appear.'
+                : breadth === 'broad'
+                ? 'You see a good variety of different topics.'
+                : 'Some topics get more attention than others.'}
+            </p>
+          </div>
+        </div>
+
+        {/* Sticky patterns card - with icon badge */}
+        <div
+          className="rounded-xl relative overflow-hidden transition-all duration-200 hover:border-slate-400 hover:shadow-md group"
+          style={{
+            background: SURFACES.SUPPORT_WHITE.background,
+            border: SURFACES.SUPPORT_WHITE.border,
+            boxShadow: SURFACES.SUPPORT_WHITE.shadow,
+            padding: 'clamp(1.75rem, 3vw, 2.25rem)',
+            minHeight: '140px',
+          }}
+        >
+          {/* Strong blue left accent bar */}
+          <div
+            className="absolute left-0 top-0 bottom-0 w-1 rounded-r"
+            style={{ background: 'linear-gradient(180deg, #2563EB 0%, #3B82F6 100%)' }}
+          />
+          <div className="pl-5">
+            {/* Icon badge + title row */}
+            <div className="flex items-center gap-3 mb-3">
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{
+                  background: 'rgba(37, 99, 235, 0.1)',
+                  border: '1px solid rgba(37, 99, 235, 0.2)',
+                }}
+              >
+                <RefreshCcw size={16} className="text-blue-600" />
+              </div>
+              <h4 className="text-base font-bold text-slate-800">Sticky patterns</h4>
+            </div>
+            {/* Takeaway line - stronger */}
+            <p className="text-sm font-medium text-slate-700 mb-2">
+              These themes have been <span className="font-semibold text-blue-700">persistent</span>.
+            </p>
+            {/* Explanation - muted */}
+            <p className="text-sm text-slate-500 leading-relaxed">
+              Once the algorithm identifies an interest, it reinforces it—changing direction takes sustained effort.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+/**
+ * TAB_HERO_CONFIG - Configuration for each tab's hero section
+ * Part 2: Apply Algorithm tab design system to all tabs
+ */
+const TAB_HERO_CONFIG = {
+  ads: {
+    kicker: 'Your ad profile',
+    getHeadline: (data) => {
+      const pct = data?.['ads-percentage']?.data?.currentPercent;
+      if (pct === undefined) return "Your feed is optimized to sell, not just inform.";
+      if (pct < 10) return "Most of your feed isn't trying to sell you anything—yet.";
+      if (pct < 25) return "A steady stream of ads flows through your feed.";
+      return "Your feed is heavily optimized to sell to you.";
+    },
+    interpretation: "This is what your feed looks like to advertisers—categories and behaviors they think will make you buy.",
+    lede: "Here's what's being promoted, why it's targeting you, and what you might do about it.",
+    supportCards: [
+      {
+        icon: 'target',
+        title: 'Targeting signals',
+        getContent: (data) => {
+          const concentration = data?.['ads-concentration']?.data?.qualitativeLabel;
+          return concentration
+            ? `Ad concentration appears ${concentration.toLowerCase()}.`
+            : 'Advertisers are watching your engagement patterns.';
+        },
+        explanation: 'Advertisers use your behavior to decide what to show you.',
+      },
+      {
+        icon: 'repeat',
+        title: 'Promotional patterns',
+        getContent: (data) => {
+          const products = data?.['ads-products']?.data;
+          if (products?.length > 0) return `${products[0].name} keeps appearing in your ads.`;
+          return 'Certain product categories show up repeatedly.';
+        },
+        explanation: 'Repetition means the algorithm thinks you\'re interested.',
+      },
+    ],
+  },
+  politics: {
+    kicker: 'Your political exposure',
+    getHeadline: (data) => {
+      const pct = data?.['politics-share']?.data?.currentPercent;
+      if (pct === undefined) return "Your feed shapes how you see the political world.";
+      if (pct < 10) return "Politics is a small part of what shows up for you.";
+      if (pct < 30) return "Political content is a steady presence in your feed.";
+      return "Politics dominates a lot of what you scroll through.";
+    },
+    interpretation: "This reflects what political content the algorithm thinks you'll engage with—not what you believe.",
+    lede: "Here's what political themes appear, where they come from, and how the balance looks.",
+    supportCards: [
+      {
+        icon: 'scale',
+        title: 'Perspective balance',
+        getContent: (data) => {
+          const balance = data?.['politics-balance']?.data?.message;
+          return balance || 'Your political exposure may lean in certain directions.';
+        },
+        explanation: 'Algorithms often reinforce familiar viewpoints.',
+      },
+      {
+        icon: 'users',
+        title: 'Source concentration',
+        getContent: (data) => {
+          const creators = data?.['politics-creators']?.data;
+          if (creators?.length > 0) return `Most politics comes from just ${Math.min(creators.length, 5)} accounts.`;
+          return 'A few accounts drive most of your political content.';
+        },
+        explanation: 'Unfollowing one or two can shift the balance significantly.',
+      },
+    ],
+  },
+  patterns: {
+    kicker: 'Your feed patterns',
+    getHeadline: (data) => {
+      const variety = data?.['patterns-topic-variety']?.data;
+      const top = variety?.topTopics?.[0]?.label;
+      if (top) return `Your feed rewards consistency—and keeps returning to ${top}.`;
+      return "Your feed rewards consistency more than curiosity.";
+    },
+    interpretation: "These are the topics the algorithm has learned you'll engage with. They become self-reinforcing over time.",
+    lede: "Here's what keeps appearing, why it sticks, and how varied your exposure really is.",
+    supportCards: [
+      {
+        icon: 'layers',
+        title: 'Topic concentration',
+        getContent: (data) => {
+          const echo = data?.['patterns-echo-risk']?.data?.riskLevel;
+          return echo || 'Some topics appear far more than others.';
+        },
+        explanation: 'High concentration means the same themes dominate.',
+      },
+      {
+        icon: 'activity',
+        title: 'Feed stability',
+        getContent: (data) => {
+          const stability = data?.['patterns-stability']?.data?.stability;
+          return stability
+            ? `Your feed is ${stability.toLowerCase()} between sessions.`
+            : 'Your feed may or may not change much day to day.';
+        },
+        explanation: 'Stable feeds are harder to shift.',
+      },
+    ],
+  },
+  creators: {
+    kicker: 'Your creator mix',
+    getHeadline: (data) => {
+      const top = data?.['creators-top']?.data?.[0]?.creator;
+      if (top) return `A small group of creators shapes most of what you see—especially ${top}.`;
+      return "A small group of creators shapes most of what you see.";
+    },
+    interpretation: "The voices you hear most aren't always the ones you chose. Algorithms amplify some over others.",
+    lede: "Here's who dominates your feed, how concentrated your sources are, and what that means.",
+    supportCards: [
+      {
+        icon: 'users',
+        title: 'Voice concentration',
+        getContent: (data) => {
+          const concentration = data?.['creators-concentration']?.data?.qualitativeLabel;
+          return concentration || 'A few voices may dominate your feed.';
+        },
+        explanation: 'High concentration means fewer perspectives reach you.',
+      },
+      {
+        icon: 'shuffle',
+        title: 'Source diversity',
+        getContent: (data) => {
+          const diversity = data?.['creators-voice-diversity']?.data?.diversity;
+          if (diversity === 'Low') return "You're hearing from a narrow set of voices.";
+          if (diversity === 'High') return "You're hearing from a wide range of voices.";
+          return 'Your source diversity is somewhere in the middle.';
+        },
+        explanation: 'More diverse sources mean more varied perspectives.',
+      },
+    ],
+  },
+};
+
+/**
+ * GenericTabHero - Hero component for non-algorithm tabs
+ * Follows the same structure as AlgorithmTabHero
+ * Part 2: Apply design system to all tabs
+ */
+const GenericTabHero = ({ tabId, scans, viewDataResults }) => {
+  const config = TAB_HERO_CONFIG[tabId];
+  if (!config) return null;
+
+  const scanCount = scans?.length || 0;
+  const platformCount = scans?.length > 0
+    ? [...new Set(scans.map(s => s.platform))].length
+    : 0;
+
+  const headline = config.getHeadline(viewDataResults);
+
+  // Icon mapping for support cards
+  const iconMap = {
+    target: <Compass size={16} className="text-blue-600" />,
+    repeat: <RefreshCcw size={16} className="text-blue-600" />,
+    scale: <Database size={16} className="text-blue-600" />,
+    users: <Globe size={16} className="text-blue-600" />,
+    layers: <BarChart3 size={16} className="text-blue-600" />,
+    activity: <Clock size={16} className="text-blue-600" />,
+    shuffle: <RefreshCw size={16} className="text-blue-600" />,
+  };
+
+  return (
+    <div className="mb-10">
+      {/* Hero Insight Card - PREMIUM SURFACE with gradient */}
+      <div
+        className="w-full rounded-2xl mb-6 relative overflow-hidden transition-shadow duration-300 hover:shadow-lg"
+        style={{
+          background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 50%, #EFF6FF 100%)',
+          border: '2px solid #93C5FD',
+          padding: 'clamp(2.5rem, 6vw, 4rem) clamp(2rem, 5vw, 3.5rem)',
+          boxShadow: '0 8px 32px rgba(37, 99, 235, 0.12)',
+        }}
+      >
+        {/* Subtle decorative gradient overlay */}
+        <div
+          className="absolute top-0 left-0 w-64 h-64 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle at top left, rgba(37, 99, 235, 0.08) 0%, transparent 60%)',
+          }}
+        />
+
+        {/* Hero Header Row */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6 relative">
+          {/* Left: Editorial kicker label */}
+          <p
+            style={{
+              fontSize: '11px',
+              color: '#2563EB',
+              letterSpacing: '0.14em',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+            }}
+          >
+            {config.kicker}
+          </p>
+
+          {/* Right: Meta data pill */}
+          <div
+            className="flex items-center gap-2 rounded-full"
+            style={{
+              background: 'rgba(255, 255, 255, 0.7)',
+              border: '1px solid rgba(37, 99, 235, 0.2)',
+              padding: '0.375rem 0.875rem',
+              fontSize: '11px',
+              color: '#64748B',
+              fontWeight: 500,
+            }}
+          >
+            <Database size={12} className="text-slate-400" />
+            <span>{scanCount} scan{scanCount !== 1 ? 's' : ''} · {platformCount} platform{platformCount !== 1 ? 's' : ''}</span>
+          </div>
+        </div>
+
+        {/* Main headline */}
         <div
           className="relative mb-6"
           style={{
@@ -1146,129 +1695,130 @@ const AlgorithmTabHero = ({ scans, viewDataResults }) => {
           <div
             className="absolute left-0 top-0 bottom-0 rounded-r-lg"
             style={{
-              width: '5px',
+              width: '6px',
               background: 'linear-gradient(180deg, #2563EB 0%, #60A5FA 100%)',
             }}
           />
-          {/* Main interpretive headline - EXPANDED WIDTH */}
           <h2
             className="font-extrabold text-slate-900"
             style={{
               fontFamily: 'var(--font-headline, system-ui)',
-              letterSpacing: '-0.03em',
-              fontSize: 'clamp(1.875rem, 5vw, 2.75rem)',
+              letterSpacing: '-0.035em',
+              fontSize: 'clamp(1.75rem, 5vw, 2.5rem)',
               lineHeight: 1.2,
-              maxWidth: '100%', /* Full width - no narrow constraint */
+              maxWidth: '100%',
             }}
           >
-            Your feed keeps returning to{' '}
-            <span style={{ color: '#2563EB' }}>{topTopic}</span>
-            {secondTopic && (
-              <>
-                {' '}and <span style={{ color: '#2563EB' }}>{secondTopic}</span>
-              </>
-            )}
-            —even when you don't ask for it.
+            {headline}
           </h2>
         </div>
 
-        {/* Supporting interpretation - comfortable reading width */}
+        {/* Supporting interpretation */}
         <p
-          className="text-slate-600"
+          className="text-slate-600 mb-5"
           style={{
             fontSize: '17px',
             lineHeight: 1.75,
-            maxWidth: '680px', /* Comfortable reading but not narrow */
+            maxWidth: '680px',
           }}
         >
-          This is our best interpretation based on what we've observed.
-          Algorithms don't explain themselves—we're reading between the lines.
+          {config.interpretation}
+        </p>
+
+        {/* Lede line */}
+        <p
+          className="text-slate-500 italic"
+          style={{
+            fontSize: '14px',
+            lineHeight: 1.6,
+            maxWidth: '600px',
+          }}
+        >
+          {config.lede}
         </p>
       </div>
 
-      {/* Two supporting context cards - SOLID WHITE SURFACES with strong borders */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {/* Narrowing focus card - promoted styling */}
-        <div
-          className="rounded-xl relative overflow-hidden"
-          style={{
-            background: SURFACES.SUPPORT_WHITE.background,
-            border: SURFACES.SUPPORT_WHITE.border,
-            boxShadow: SURFACES.SUPPORT_WHITE.shadow,
-            padding: 'clamp(1.5rem, 3vw, 2rem)',
-          }}
-        >
-          {/* Strong blue left accent bar */}
+      {/* Two supporting context cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8">
+        {config.supportCards.map((card, idx) => (
           <div
-            className="absolute left-0 top-0 bottom-0 w-1 rounded-r"
-            style={{ background: 'linear-gradient(180deg, #2563EB 0%, #3B82F6 100%)' }}
-          />
-          <div className="pl-4">
-            {/* Promoted typography - larger title */}
-            <h4 className="text-base font-bold text-slate-800 mb-2">Narrowing focus</h4>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Your feed appears <span className="font-semibold text-slate-700">{breadth}</span>—
-              {breadth === 'narrow'
-                ? ' a few topics dominate while others rarely appear.'
-                : breadth === 'broad'
-                ? ' you see a good variety of different topics.'
-                : ' some topics get more attention than others.'}
-            </p>
+            key={idx}
+            className="rounded-xl relative overflow-hidden transition-all duration-200 hover:border-slate-400 hover:shadow-md group"
+            style={{
+              background: SURFACES.SUPPORT_WHITE.background,
+              border: SURFACES.SUPPORT_WHITE.border,
+              boxShadow: SURFACES.SUPPORT_WHITE.shadow,
+              padding: 'clamp(1.75rem, 3vw, 2.25rem)',
+              minHeight: '140px',
+            }}
+          >
+            {/* Strong blue left accent bar */}
+            <div
+              className="absolute left-0 top-0 bottom-0 w-1 rounded-r"
+              style={{ background: 'linear-gradient(180deg, #2563EB 0%, #3B82F6 100%)' }}
+            />
+            <div className="pl-5">
+              {/* Icon badge + title row */}
+              <div className="flex items-center gap-3 mb-3">
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background: 'rgba(37, 99, 235, 0.1)',
+                    border: '1px solid rgba(37, 99, 235, 0.2)',
+                  }}
+                >
+                  {iconMap[card.icon] || <Info size={16} className="text-blue-600" />}
+                </div>
+                <h4 className="text-base font-bold text-slate-800">{card.title}</h4>
+              </div>
+              {/* Takeaway line */}
+              <p className="text-sm font-medium text-slate-700 mb-2">
+                {card.getContent(viewDataResults)}
+              </p>
+              {/* Explanation */}
+              <p className="text-sm text-slate-500 leading-relaxed">
+                {card.explanation}
+              </p>
+            </div>
           </div>
-        </div>
-
-        {/* Sticky patterns card - promoted styling */}
-        <div
-          className="rounded-xl relative overflow-hidden"
-          style={{
-            background: SURFACES.SUPPORT_WHITE.background,
-            border: SURFACES.SUPPORT_WHITE.border,
-            boxShadow: SURFACES.SUPPORT_WHITE.shadow,
-            padding: 'clamp(1.5rem, 3vw, 2rem)',
-          }}
-        >
-          {/* Strong blue left accent bar */}
-          <div
-            className="absolute left-0 top-0 bottom-0 w-1 rounded-r"
-            style={{ background: 'linear-gradient(180deg, #2563EB 0%, #3B82F6 100%)' }}
-          />
-          <div className="pl-4">
-            {/* Promoted typography - larger title */}
-            <h4 className="text-base font-bold text-slate-800 mb-2">Sticky patterns</h4>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              These themes have been <span className="font-semibold text-slate-700">persistent</span>.
-              Once the algorithm identifies an interest, it reinforces it—
-              changing direction typically requires sustained effort.
-            </p>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );
 };
-
 
 /**
  * SecondVisualAnchor - Chapter opener that transitions into the analysis
  * Appears after the Talk module to prevent "glaze over" effect
  * Provides a clear second anchor point in the story
  */
-const SecondVisualAnchor = () => (
-  <div
-    className="mb-10 mt-4"
-    style={{
-      paddingLeft: '1rem',
-      borderLeft: '4px solid #2563EB',
-    }}
-  >
-    <p
-      className="text-lg font-medium text-slate-700 leading-relaxed"
-      style={{ maxWidth: '600px' }}
+const SecondVisualAnchor = ({ tabId }) => {
+  // Tab-specific anchor messages
+  const anchorMessages = {
+    algorithm: "Now let's make the pattern concrete. This is what the feed keeps reinforcing, and why.",
+    ads: "Now let's look at the details. Here's what's being promoted and how it targets you.",
+    politics: "Now let's examine the specifics. Here's where the political content comes from.",
+    patterns: "Now let's dig into the data. Here's what keeps appearing and why it sticks.",
+    creators: "Now let's see who dominates. Here's how your sources break down.",
+  };
+
+  return (
+    <div
+      className="mb-10 mt-4"
+      style={{
+        paddingLeft: '1rem',
+        borderLeft: '4px solid #2563EB',
+      }}
     >
-      Now let's make the pattern concrete. This is what the feed keeps reinforcing, and why.
-    </p>
-  </div>
-);
+      <p
+        className="text-lg font-medium text-slate-700 leading-relaxed"
+        style={{ maxWidth: '600px' }}
+      >
+        {anchorMessages[tabId] || anchorMessages.algorithm}
+      </p>
+    </div>
+  );
+};
 
 /**
  * ReadingColumnWrapper - Constrains content to a comfortable reading width
@@ -1406,18 +1956,25 @@ const DashboardPage = () => {
     );
   }
 
+  // Check if on Algorithm tab for reduced header
+  const isOnAlgorithmTab = activeTab === 'algorithm';
+
   return (
     <div className="min-h-screen bg-bg-page pt-28 pb-16">
       <div className="max-w-7xl mx-auto px-6">
-        {/* Page Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        {/* Page Header - reduced on Algorithm tab to let hero be the star */}
+        <div className={`flex flex-col md:flex-row md:items-center md:justify-between gap-4 ${isOnAlgorithmTab ? 'mb-4' : 'mb-8'}`}>
           <div>
-            <h1 className="text-3xl font-bold text-text-main mb-2">
+            {/* Smaller title on Algorithm tab */}
+            <h1 className={`font-bold text-text-main ${isOnAlgorithmTab ? 'text-xl mb-1' : 'text-3xl mb-2'}`}>
               Dashboard
             </h1>
-            <p className="text-text-muted">
-              Explore insights from your {scans.length} scan{scans.length !== 1 ? 's' : ''} across {[...new Set(scans.map(s => s.platform))].length} platform{[...new Set(scans.map(s => s.platform))].length !== 1 ? 's' : ''}.
-            </p>
+            {/* Hide subtitle on Algorithm tab - hero has this info */}
+            {!isOnAlgorithmTab && (
+              <p className="text-text-muted">
+                Explore insights from your {scans.length} scan{scans.length !== 1 ? 's' : ''} across {[...new Set(scans.map(s => s.platform))].length} platform{[...new Set(scans.map(s => s.platform))].length !== 1 ? 's' : ''}.
+              </p>
+            )}
           </div>
           <div className="flex gap-3">
             <button
@@ -1426,14 +1983,14 @@ const DashboardPage = () => {
                 fetchScans();
               }}
               disabled={detailsLoading}
-              className="flex items-center gap-2 px-4 py-2 text-text-muted hover:text-text-main hover:bg-white rounded-lg transition-colors border border-slate-200"
+              className="flex items-center gap-2 px-3 py-1.5 text-text-muted hover:text-text-main hover:bg-white rounded-lg transition-colors border border-slate-200 text-sm"
             >
-              <RefreshCw size={18} className={detailsLoading ? 'animate-spin' : ''} />
+              <RefreshCw size={16} className={detailsLoading ? 'animate-spin' : ''} />
               <span>Refresh</span>
             </button>
             <Link
               to="/start"
-              className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 bg-primary-blue text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm"
             >
               New Scan
             </Link>
@@ -1441,7 +1998,7 @@ const DashboardPage = () => {
         </div>
 
         {/* Tab Navigation - Part 1 Rule A: All tabs use BLUE theme */}
-        <div className="mb-8 border-b border-border-card">
+        <div className={`border-b border-border-card ${isOnAlgorithmTab ? 'mb-6' : 'mb-8'}`}>
           <nav className="flex gap-1 overflow-x-auto pb-px" aria-label="Dashboard tabs">
             {TABS.map((tab) => (
               <button
@@ -1476,25 +2033,9 @@ const DashboardPage = () => {
 
         {/* Tab Content */}
         <div className="mb-8">
-          {/* Tab header with trust sentence integrated */}
-          <div className="mb-6">
-            <div className="flex items-baseline justify-between gap-4 mb-2">
-              <h2 className="text-xl font-semibold text-text-main">
-                {TABS.find((t) => t.id === activeTab)?.label}
-              </h2>
-              <DataCoverageBar
-                scans={scans}
-                scanDetails={scanDetails}
-                tabId={activeTab}
-              />
-            </div>
-            {/* PHASE 10: Trust sentence directly under title */}
-            <TabTrustSentence tabId={activeTab} />
-          </div>
-
-          {/* PHASE 6A: Political Leaning Toggle (only on politics tab) */}
+          {/* PHASE 6A: Political Leaning Toggle (only on politics tab) - shown above hero */}
           {activeTab === 'politics' && (
-            <div className="mb-4">
+            <div className="mb-6">
               <PoliticalLeaningToggle
                 enabled={politicalLeaningEnabled}
                 onToggle={() => setPoliticalLeaningEnabled(!politicalLeaningEnabled)}
@@ -1502,45 +2043,40 @@ const DashboardPage = () => {
             </div>
           )}
 
-          {/* Feature Moment - Editorial centerpiece for Algorithm Tab */}
-          {activeTab === 'algorithm' && (
-            <FeatureMomentWrapper>
-              {/* Editorial Hero */}
+          {/* Feature Moment - Editorial centerpiece for ALL tabs (Part 2: Design System Application) */}
+          <FeatureMomentWrapper>
+            {/* Editorial Hero - Algorithm tab uses special hero, others use GenericTabHero */}
+            {activeTab === 'algorithm' ? (
               <AlgorithmTabHero
                 scans={scans}
                 viewDataResults={viewDataResults}
               />
-
-              {/* Talk to Your Algorithm - Premium invitation (GREEN theme) */}
-              <div className="mt-10">
-                <TalkToAlgorithmSection
-                  feedData={{
-                    scans,
-                    scanDetails,
-                    viewDataResults,
-                  }}
-                />
-              </div>
-            </FeatureMomentWrapper>
-          )}
-
-          {/* Second Visual Anchor - Chapter opener after Talk (Algorithm tab only) */}
-          {activeTab === 'algorithm' && <SecondVisualAnchor />}
-
-          {/* Views Grid with enforced section structure */}
-          {/* Wrapped in ReadingColumnWrapper for Algorithm tab to constrain width */}
-          {activeTab === 'algorithm' ? (
-            <ReadingColumnWrapper>
-              <ViewsGridWithCollapsing
-                views={currentViews}
+            ) : (
+              <GenericTabHero
+                tabId={activeTab}
+                scans={scans}
                 viewDataResults={viewDataResults}
-                scanCount={scans.length}
-                platformCount={platforms.length}
-                tabName={TABS.find((t) => t.id === activeTab)?.label || 'insights'}
+              />
+            )}
+
+            {/* Talk to Your Algorithm - Premium invitation (GREEN theme) - SAME placement for ALL tabs */}
+            <div className="mt-10">
+              <TalkToAlgorithmSection
+                feedData={{
+                  scans,
+                  scanDetails,
+                  viewDataResults,
+                }}
                 tabId={activeTab}
               />
-            </ReadingColumnWrapper>
-          ) : (
+            </div>
+          </FeatureMomentWrapper>
+
+          {/* Second Visual Anchor - Chapter opener after Talk - NOW for ALL tabs */}
+          <SecondVisualAnchor tabId={activeTab} />
+
+          {/* Views Grid with enforced section structure - ReadingColumnWrapper for ALL tabs */}
+          <ReadingColumnWrapper>
             <ViewsGridWithCollapsing
               views={currentViews}
               viewDataResults={viewDataResults}
@@ -1549,20 +2085,7 @@ const DashboardPage = () => {
               tabName={TABS.find((t) => t.id === activeTab)?.label || 'insights'}
               tabId={activeTab}
             />
-          )}
-
-          {/* Part 4: Talk to Your Algorithm on ALL non-algorithm tabs (GREEN theme) */}
-          {activeTab !== 'algorithm' && (
-            <div className="mt-14">
-              <TalkToAlgorithmSection
-                feedData={{
-                  scans,
-                  scanDetails,
-                  viewDataResults,
-                }}
-              />
-            </div>
-          )}
+          </ReadingColumnWrapper>
         </div>
 
         {/* Phase 8: Minimal footer - Softer, less competing */}

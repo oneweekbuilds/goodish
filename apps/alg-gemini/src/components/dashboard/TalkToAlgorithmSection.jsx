@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageCircle, Send, Sparkles } from 'lucide-react';
+import { MessageCircle, Send, Sparkles, Lock, ShieldCheck, MessageSquare, EyeOff } from 'lucide-react';
 
 /**
  * TalkToAlgorithmSection - Premium invitation to reflect on your feed
@@ -32,109 +32,178 @@ const TALK_THEME = {
   shadowButton: '0 6px 24px rgba(16, 185, 129, 0.3)',
 };
 
-const EXAMPLE_PROMPTS = [
-  "Why do these topics keep showing up?",
-  "What reinforces this pattern?",
-  "How might this change over time?",
-];
+/**
+ * TAB_SPECIFIC_PROMPTS - Different prompt suggestions per tab
+ * Part 2: Customize prompts to match each tab's focus
+ */
+const TAB_SPECIFIC_PROMPTS = {
+  algorithm: [
+    "Why do these topics keep showing up?",
+    "What reinforces this pattern?",
+    "How might this change over time?",
+  ],
+  ads: [
+    "Why am I seeing these ads?",
+    "What do advertisers think I'm interested in?",
+    "How can I see fewer promotions?",
+  ],
+  politics: [
+    "Is my political exposure balanced?",
+    "Where does most political content come from?",
+    "How can I see more diverse perspectives?",
+  ],
+  patterns: [
+    "Why do the same topics keep appearing?",
+    "Is my feed getting more narrow over time?",
+    "How can I introduce more variety?",
+  ],
+  creators: [
+    "Why do I see the same creators so often?",
+    "Are my sources diverse enough?",
+    "How can I discover new voices?",
+  ],
+};
+
+// Default prompts (fallback)
+const EXAMPLE_PROMPTS = TAB_SPECIFIC_PROMPTS.algorithm;
 
 /**
  * PremiumInvitationCard - The main invitation to start a conversation
  * Feels like an invitation to reflect, not a chat widget
  * Part 1 Rule B: Uses GREEN theme for premium standout
  *
- * Improvement 4:
- * - Increased padding by 10-15%
- * - Larger CTA button (taller, more horizontal padding)
- * - Better prompt pill spacing and hover states
- * - Premium badge baseline alignment with title
+ * Premium polish:
+ * - Premium conversation badge with lock/sparkle icon
+ * - More button-like prompt pills with enhanced hover states
+ * - Larger, premium CTA with secondary "See example" link
+ * - "What you get" micro row with 3 benefits
+ * - Tab-specific prompts (Part 2)
  */
-const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt }) => {
+const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt, tabId }) => {
+  // Get tab-specific prompts
+  const prompts = TAB_SPECIFIC_PROMPTS[tabId] || EXAMPLE_PROMPTS;
   return (
     <div
-      className="rounded-3xl" /* Larger radius for premium feel */
+      className="rounded-3xl relative overflow-hidden transition-shadow duration-300 hover:shadow-xl"
       style={{
-        background: TALK_THEME.solidBackground, /* SOLID background */
-        border: TALK_THEME.solidBorder, /* Stronger border */
-        padding: 'clamp(3rem, 8vw, 5rem)', /* More internal padding */
-        boxShadow: TALK_THEME.solidShadow,
+        background: TALK_THEME.solidBackground,
+        border: '2px solid #6EE7B7',
+        padding: 'clamp(2.5rem, 7vw, 4rem)',
+        boxShadow: '0 8px 40px rgba(16, 185, 129, 0.15)',
       }}
     >
-      {/* Header row with Premium badge aligned to title baseline */}
-      <div className="flex flex-wrap items-baseline gap-4 mb-6">
-        {/* Main title - clear and inviting */}
-        <h3
-          className="font-bold text-text-main"
-          style={{
-            fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
-            letterSpacing: '-0.02em',
-            lineHeight: 1.25,
-          }}
-        >
-          Talk to Your Algorithm
-        </h3>
+      {/* Subtle decorative gradient at top-right */}
+      <div
+        className="absolute top-0 right-0 w-72 h-72 pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle at top right, rgba(16, 185, 129, 0.1) 0%, transparent 60%)',
+        }}
+      />
 
-        {/* Improvement 4: Premium badge baseline aligned with title */}
+      {/* Header row with Premium badge */}
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-6 relative">
+        {/* Left: Title + description */}
+        <div className="flex-1 min-w-0">
+          <h3
+            className="font-bold text-text-main mb-2"
+            style={{
+              fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
+              letterSpacing: '-0.02em',
+              lineHeight: 1.2,
+            }}
+          >
+            Talk to Your Algorithm
+          </h3>
+          {/* Subtitle */}
+          <p
+            className="text-slate-500"
+            style={{ fontSize: '14px', maxWidth: '400px' }}
+          >
+            A reflective space to explore what your feed reveals.
+          </p>
+        </div>
+
+        {/* Right: Premium conversation badge with icons */}
         <div
-          className="inline-flex items-center gap-2 rounded-full"
+          className="flex items-center gap-3 rounded-xl flex-shrink-0"
           style={{
-            background: `rgba(${TALK_THEME.accentRgb}, 0.12)`,
-            padding: '0.5rem 1rem',
-            border: `1px solid rgba(${TALK_THEME.accentRgb}, 0.2)`,
+            background: 'rgba(255, 255, 255, 0.85)',
+            padding: '0.75rem 1.25rem',
+            border: `1px solid rgba(${TALK_THEME.accentRgb}, 0.25)`,
+            boxShadow: '0 2px 8px rgba(16, 185, 129, 0.1)',
           }}
         >
-          <Sparkles size={14} style={{ color: TALK_THEME.accent }} />
+          <div className="flex items-center gap-2">
+            <div
+              className="w-6 h-6 rounded-md flex items-center justify-center"
+              style={{ background: `rgba(${TALK_THEME.accentRgb}, 0.15)` }}
+            >
+              <Lock size={12} style={{ color: TALK_THEME.accent }} />
+            </div>
+            <Sparkles size={14} style={{ color: TALK_THEME.accent }} />
+          </div>
           <p
             className="uppercase"
             style={{
               color: TALK_THEME.accent,
-              fontSize: '11px',
-              letterSpacing: '0.1em',
-              fontWeight: 600,
+              fontSize: '10px',
+              letterSpacing: '0.12em',
+              fontWeight: 700,
             }}
           >
-            Premium
+            Premium conversation
           </p>
         </div>
       </div>
 
-      {/* Explanatory paragraph - calm, reassuring, non-judgmental */}
+      {/* Explanatory paragraph */}
       <p
-        className="text-text-muted mb-10"
+        className="text-text-muted mb-8"
         style={{
           fontSize: '16px',
           lineHeight: 1.8,
-          maxWidth: '520px',
+          maxWidth: '540px',
         }}
       >
-        This is a space to explore what your feed reveals—and what it might mean.
-        Not a chatbot, not a diagnosis. Just a thoughtful way to reflect together.
+        Not a chatbot, not a diagnosis. Just a thoughtful way to explore what your feed says about your interests—and what it might mean.
       </p>
 
-      {/* Example prompts - Improvement 4: Better spacing and hover states */}
-      <div className="mb-12"> {/* Increased margin */}
+      {/* Example prompts - enhanced button-like appearance */}
+      <div className="mb-10">
         <p
           className="mb-4"
           style={{
-            color: `rgba(${TALK_THEME.accentRgb}, 0.7)`,
+            color: `rgba(${TALK_THEME.accentRgb}, 0.75)`,
             fontSize: '13px',
-            fontWeight: 500,
+            fontWeight: 600,
           }}
         >
           You might ask…
         </p>
-        <div className="flex flex-wrap gap-3"> {/* Increased gap */}
-          {EXAMPLE_PROMPTS.map((prompt, index) => (
+        <div className="flex flex-wrap gap-3">
+          {prompts.map((prompt, index) => (
             <button
               key={index}
               onClick={() => onSelectPrompt(prompt)}
-              className="rounded-full transition-all duration-200 hover:scale-[1.03] hover:shadow-md hover:border-emerald-300"
+              className="rounded-full transition-all duration-200 hover:scale-[1.02] hover:-translate-y-0.5"
               style={{
-                background: 'rgba(255, 255, 255, 0.95)',
-                border: `1px solid rgba(${TALK_THEME.accentRgb}, 0.18)`,
-                padding: '0.75rem 1.25rem', /* Increased padding */
+                background: 'rgba(255, 255, 255, 0.98)',
+                border: `1.5px solid rgba(${TALK_THEME.accentRgb}, 0.25)`,
+                padding: '0.75rem 1.5rem',
                 fontSize: '14px',
-                color: '#475569',
+                color: '#334155',
+                fontWeight: 500,
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.04)',
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.borderColor = '#10B981';
+                e.target.style.background = 'rgba(255, 255, 255, 1)';
+                e.target.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.borderColor = `rgba(${TALK_THEME.accentRgb}, 0.25)`;
+                e.target.style.background = 'rgba(255, 255, 255, 0.98)';
+                e.target.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.04)';
               }}
             >
               {prompt}
@@ -143,20 +212,62 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt }) => {
         </div>
       </div>
 
-      {/* Primary CTA - Improvement 4: Larger button */}
-      <button
-        onClick={onStartConversation}
-        className="inline-flex items-center gap-3 text-white rounded-full font-semibold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl"
+      {/* CTA row - button + secondary link */}
+      <div className="flex flex-wrap items-center gap-5 mb-8">
+        {/* Primary CTA - larger, more premium */}
+        <button
+          onClick={onStartConversation}
+          className="inline-flex items-center gap-3 text-white rounded-full font-semibold transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+          style={{
+            backgroundColor: TALK_THEME.accent,
+            padding: '1.25rem 2.75rem',
+            fontSize: '17px',
+            boxShadow: '0 8px 28px rgba(16, 185, 129, 0.35)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+          }}
+        >
+          <MessageCircle size={22} />
+          Start a conversation
+        </button>
+
+        {/* Secondary link - "See example" */}
+        <button
+          className="inline-flex items-center gap-2 text-slate-500 hover:text-emerald-600 transition-colors"
+          style={{
+            fontSize: '14px',
+            fontWeight: 500,
+            padding: '0.5rem 0',
+          }}
+          disabled
+          title="Coming soon"
+        >
+          <span style={{ textDecoration: 'underline', textUnderlineOffset: '3px' }}>See example</span>
+          <span className="text-slate-400 text-xs">(soon)</span>
+        </button>
+      </div>
+
+      {/* "What you get" micro row - 3 benefits with icons */}
+      <div
+        className="rounded-xl flex flex-wrap gap-6"
         style={{
-          backgroundColor: TALK_THEME.accent,
-          padding: '1.25rem 2.75rem', /* Increased padding */
-          fontSize: '17px', /* Slightly larger */
-          boxShadow: TALK_THEME.shadowButton,
+          background: 'rgba(255, 255, 255, 0.6)',
+          border: `1px solid rgba(${TALK_THEME.accentRgb}, 0.15)`,
+          padding: '1rem 1.5rem',
         }}
       >
-        <MessageCircle size={24} /> {/* Larger icon */}
-        Start a conversation
-      </button>
+        <div className="flex items-center gap-2.5">
+          <MessageSquare size={14} style={{ color: TALK_THEME.accent }} />
+          <span className="text-sm text-slate-600 font-medium">Reflective answers</span>
+        </div>
+        <div className="flex items-center gap-2.5">
+          <ShieldCheck size={14} style={{ color: TALK_THEME.accent }} />
+          <span className="text-sm text-slate-600 font-medium">No blame language</span>
+        </div>
+        <div className="flex items-center gap-2.5">
+          <EyeOff size={14} style={{ color: TALK_THEME.accent }} />
+          <span className="text-sm text-slate-600 font-medium">Private by default</span>
+        </div>
+      </div>
     </div>
   );
 };
@@ -409,8 +520,9 @@ const ReflectiveNote = ({ hasMessages }) => {
 /**
  * Main Component - TalkToAlgorithmSection
  * Positioned directly after hero insight, before evidence sections
+ * Part 2: Now accepts tabId for tab-specific prompts
  */
-const TalkToAlgorithmSection = ({ feedData }) => {
+const TalkToAlgorithmSection = ({ feedData, tabId }) => {
   const [hasStarted, setHasStarted] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
@@ -475,6 +587,7 @@ const TalkToAlgorithmSection = ({ feedData }) => {
         <PremiumInvitationCard
           onStartConversation={handleStartConversation}
           onSelectPrompt={handleSelectPrompt}
+          tabId={tabId}
         />
       ) : (
         <>
