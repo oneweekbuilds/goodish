@@ -34,6 +34,43 @@ export const THEME = {
 };
 
 /**
+ * SOLID SURFACE TOKENS - Solid Surfaces Strategy
+ * Replace translucent everywhere with solid, intentional surfaces
+ */
+export const SURFACES = {
+  // Hero chapter - solid light blue background
+  HERO_BLUE: {
+    background: '#EFF6FF', // solid light blue
+    border: '1px solid #BFDBFE',
+    shadow: '0 4px 24px rgba(37, 99, 235, 0.08)',
+  },
+  // Support cards in hero - solid white with clear border
+  SUPPORT_WHITE: {
+    background: '#FFFFFF',
+    border: '1px solid #CBD5E1',
+    shadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+  },
+  // Talk chapter - solid light green background
+  TALK_GREEN: {
+    background: '#ECFDF5', // solid light green
+    border: '1px solid #A7F3D0',
+    shadow: '0 4px 24px rgba(16, 185, 129, 0.1)',
+  },
+  // Content sections - solid white with border
+  SECTION_WHITE: {
+    background: '#FFFFFF',
+    border: '1px solid #E2E8F0',
+    shadow: 'none',
+  },
+  // Alternating tint for visual rhythm
+  SECTION_TINT: {
+    background: '#F8FAFC',
+    border: '1px solid #E2E8F0',
+    shadow: 'none',
+  },
+};
+
+/**
  * CollapsedEmptyStateCard - Shows a composite placeholder when 3+ cards share the same empty state
  */
 const CollapsedEmptyStateCard = ({ emptyStateType, count, tabName }) => {
@@ -111,50 +148,63 @@ const TabTrustSentence = ({ tabId }) => {
  * More magazine-like, less dashboard-like
  * Always uses blue accent (Part 1 Rule A)
  *
- * Enhanced for story-driven headers with:
- * - Small uppercase label
- * - Larger title
- * - Muted subtext
- * - Blue vertical accent bar
+ * Improvement 5:
+ * - Increased title size by one step
+ * - Taller, thicker accent bar
+ * - Faint horizontal divider line extending right
+ * - Enhanced visual prominence
  */
 const SectionHeader = ({ title, subtitle, label, subtext }) => (
-  <div className="flex items-start gap-4 mb-4 mt-10 first:mt-0">
-    {/* Blue vertical accent bar */}
-    <div
-      className="w-1 rounded-full flex-shrink-0"
-      style={{
-        background: 'linear-gradient(180deg, #2563EB, rgba(37, 99, 235, 0.4))',
-        height: label ? '48px' : '24px',
-        marginTop: '2px',
-      }}
-    />
-    <div className="flex-1">
-      {/* Uppercase label */}
-      {label && (
-        <p
-          className="text-[11px] font-semibold uppercase tracking-widest mb-1.5"
-          style={{ color: 'rgba(37, 99, 235, 0.65)' }}
+  <div className="mb-5 mt-12 first:mt-0"> {/* Increased top margin */}
+    <div className="flex items-start gap-4">
+      {/* Improvement 5: Taller, thicker blue vertical accent bar */}
+      <div
+        className="rounded-full flex-shrink-0"
+        style={{
+          background: 'linear-gradient(180deg, #2563EB, rgba(37, 99, 235, 0.35))',
+          width: label ? '5px' : '4px', /* Thicker */
+          height: label ? '56px' : '28px', /* Taller */
+          marginTop: '2px',
+        }}
+      />
+      <div className="flex-1 min-w-0">
+        {/* Uppercase label */}
+        {label && (
+          <p
+            className="text-[11px] font-semibold uppercase tracking-widest mb-1.5"
+            style={{ color: 'rgba(37, 99, 235, 0.65)' }}
+          >
+            {label}
+          </p>
+        )}
+        {/* Main title - Improvement 5: Increased size */}
+        <h3
+          className={label ? "text-xl font-semibold text-slate-800 mb-1.5" : "text-sm font-semibold uppercase tracking-wider"}
+          style={!label ? { color: 'rgba(37, 99, 235, 0.7)' } : undefined}
         >
-          {label}
-        </p>
-      )}
-      {/* Main title */}
-      <h3
-        className={label ? "text-lg font-semibold text-slate-800 mb-1" : "text-xs font-semibold uppercase tracking-wider"}
-        style={!label ? { color: 'rgba(37, 99, 235, 0.7)' } : undefined}
-      >
-        {title}
-      </h3>
-      {/* Subtext */}
-      {subtext && (
-        <p className="text-sm text-slate-500 leading-relaxed">
-          {subtext}
-        </p>
-      )}
-      {subtitle && !subtext && (
-        <span className="text-xs text-slate-400">{subtitle}</span>
-      )}
+          {title}
+        </h3>
+        {/* Subtext */}
+        {subtext && (
+          <p className="text-sm text-slate-500 leading-relaxed">
+            {subtext}
+          </p>
+        )}
+        {subtitle && !subtext && (
+          <span className="text-xs text-slate-400">{subtitle}</span>
+        )}
+      </div>
     </div>
+    {/* Improvement 5: Faint horizontal divider extending right */}
+    {label && (
+      <div
+        className="mt-4 ml-9"
+        style={{
+          height: '1px',
+          background: 'linear-gradient(90deg, rgba(37, 99, 235, 0.15) 0%, rgba(226, 232, 240, 0.4) 30%, transparent 100%)',
+        }}
+      />
+    )}
   </div>
 );
 
@@ -450,6 +500,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
   return (
     <div className="space-y-14">
       {/* KEY INSIGHT - Part 3 Module Type 1: Declarative + Collapsible Evidence */}
+      {/* Improvements 6 & 7: Mini-lede area, "In plain terms" label, pill-style disclosure */}
       {hasPrimaryContent && (
         <section>
           {isAlgorithmTab ? (
@@ -474,51 +525,88 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                   className="rounded-2xl overflow-hidden transition-colors"
                   style={{
                     background: 'white',
-                    border: '1px solid #CBD5E1', // Change 1: Stronger border (slate-300)
+                    border: '1px solid #CBD5E1',
                   }}
                 >
-                  {/* Declarative insight header */}
+                  {/* Improvement 6: Mini-lede area */}
                   <div className="p-6 md:p-8">
+                    {/* Improvement 6: "In plain terms" label */}
+                    {isAlgorithmTab && takeawayText && (
+                      <p
+                        className="mb-3"
+                        style={{
+                          fontSize: '11px',
+                          color: 'rgba(37, 99, 235, 0.55)',
+                          letterSpacing: '0.1em',
+                          fontWeight: 600,
+                          textTransform: 'uppercase',
+                        }}
+                      >
+                        In plain terms
+                      </p>
+                    )}
+
+                    {/* Improvement 6: Main takeaway in larger type */}
                     {takeawayText && (
                       <p
                         className="text-xl md:text-2xl font-semibold text-text-main leading-snug mb-4"
-                        style={{ maxWidth: '640px' }}
+                        style={{ maxWidth: '600px' }} /* Narrower column */
                       >
                         {takeawayText}
                       </p>
                     )}
-                    <p className="text-sm text-slate-500 mb-4">{view.description}</p>
 
-                    {/* Evidence toggle */}
+                    {/* Improvement 6: Subtext in narrower column */}
+                    <p
+                      className="text-sm text-slate-500 leading-relaxed"
+                      style={{ maxWidth: '500px' }}
+                    >
+                      {view.description}
+                    </p>
+                  </div>
+
+                  {/* Improvement 7: "How we know this" at bottom, pill-style disclosure */}
+                  <div
+                    className="px-6 pb-6 md:px-8 md:pb-6 flex justify-end"
+                    style={{ borderTop: '1px solid rgba(226, 232, 240, 0.6)' }}
+                  >
                     <button
                       onClick={() => toggleSection('keyInsightEvidence')}
-                      className="inline-flex items-center gap-2 text-sm font-medium transition-colors"
-                      style={{ color: 'rgba(37, 99, 235, 0.8)' }}
+                      className="mt-4 inline-flex items-center gap-2 text-sm font-medium transition-all rounded-full"
+                      style={{
+                        color: 'rgba(37, 99, 235, 0.8)',
+                        background: 'rgba(37, 99, 235, 0.06)',
+                        border: '1px solid rgba(37, 99, 235, 0.12)',
+                        padding: '0.5rem 1rem',
+                      }}
                     >
-                      {expandedSections.keyInsightEvidence ? (
-                        <>
-                          <ChevronUp size={16} />
-                          Hide evidence
-                        </>
-                      ) : (
-                        <>
-                          <ChevronDown size={16} />
-                          How we know this
-                        </>
-                      )}
+                      {/* Improvement 7: Chevron that rotates */}
+                      <ChevronDown
+                        size={16}
+                        className="transition-transform"
+                        style={{
+                          transform: expandedSections.keyInsightEvidence ? 'rotate(180deg)' : 'rotate(0deg)',
+                        }}
+                      />
+                      {expandedSections.keyInsightEvidence ? 'Hide evidence' : 'How we know this'}
                     </button>
                   </div>
 
-                  {/* Collapsible evidence section */}
+                  {/* Improvement 7: Evidence in tinted inset area */}
                   {expandedSections.keyInsightEvidence && (
                     <div
-                      className="px-6 pb-6 md:px-8 md:pb-8 pt-0"
+                      className="px-6 pb-6 md:px-8 md:pb-8"
                       style={{
+                        background: 'linear-gradient(180deg, rgba(37, 99, 235, 0.04) 0%, rgba(248, 250, 252, 0.8) 100%)',
                         borderTop: '1px solid rgba(37, 99, 235, 0.08)',
-                        background: 'rgba(248, 250, 252, 0.5)',
                       }}
                     >
                       <div className="pt-5">
+                        <p
+                          className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4"
+                        >
+                          Supporting evidence
+                        </p>
                         <ViewCard
                           view={view}
                           dataResult={dataResult}
@@ -538,6 +626,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
       )}
 
       {/* DETAILS - Part 3: Softer backgrounds, headline + takeaway */}
+      {/* Improvement 8: Format takeaway prominently, reduce duplicate headings, proper spacing */}
       {hasSecondaryContent && (
         <section>
           {isAlgorithmTab ? (
@@ -550,7 +639,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
             <SectionHeader title="Details" />
           )}
           <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-6">
-            {secondaryCards.map((view) => {
+            {secondaryCards.map((view, idx) => {
               const dataResult = viewDataResults[view.id];
               const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
                 ? view.takeaway(dataResult?.data)
@@ -562,15 +651,21 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                   className="rounded-xl p-5 hover:border-slate-300 transition-colors"
                   style={{
                     background: 'white',
-                    border: '1px solid #E2E8F0', // Change 1: Stronger border (slate-200)
+                    border: '1px solid #E2E8F0',
                   }}
                 >
-                  <h4 className="text-base font-semibold text-slate-700 mb-2">{view.title}</h4>
+                  {/* Improvement 8: Card title - keep but don't duplicate inside */}
+                  <h4 className="text-base font-semibold text-slate-700 mb-3">{view.title}</h4>
+
+                  {/* Improvement 8: Bold one-line takeaway at top */}
                   {takeawayText && (
-                    <p className="text-sm text-slate-600 mb-3">{takeawayText}</p>
+                    <p className="text-sm font-medium text-slate-700 mb-3 leading-relaxed">
+                      {takeawayText}
+                    </p>
                   )}
-                  {/* Change 1: Removed opacity-80 to prevent faded look */}
-                  <div>
+
+                  {/* Improvement 8: Supporting explanation - hide duplicate title if present */}
+                  <div className="text-sm text-slate-500">
                     <ViewCard
                       view={view}
                       dataResult={dataResult}
@@ -578,8 +673,16 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                       platformCount={platformCount}
                       accentColor="blue"
                       isInline={true}
+                      hideTitle={true} /* Improvement 8: Hide duplicate title */
                     />
                   </div>
+
+                  {/* Improvement 8: Small "based on" line - only show once per section */}
+                  {idx === 0 && isAlgorithmTab && (
+                    <p className="text-[11px] text-slate-400 mt-4 pt-3 border-t border-slate-100">
+                      Based on {scanCount} scan{scanCount !== 1 ? 's' : ''}
+                    </p>
+                  )}
                 </div>
               );
             })}
@@ -588,7 +691,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
       )}
 
       {/* MORE DETAILS - Part 3 Module Type 2: Editorial Drawer */}
-      {/* Change 3: On Algorithm tab, content is visible by default (not collapsed) */}
+      {/* Improvement 9: Structured Forecast module with bullet-like lines and labels */}
       {hasCollapsedContent && (
         <section>
           {/* Story-driven header for Algorithm tab */}
@@ -604,7 +707,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
             className="rounded-xl overflow-hidden mt-5"
             style={{
               background: 'white',
-              border: '1px solid #E2E8F0', // Change 1: Stronger border (slate-200)
+              border: '1px solid #E2E8F0',
             }}
           >
             {/* Non-algorithm tabs: Show collapsible header */}
@@ -638,58 +741,124 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
             {/* Content: Always visible on Algorithm tab, collapsible on others */}
             {(isAlgorithmTab || expandedSections.moreDetails) && (
               <div
-                className="px-6 pb-6 space-y-4"
+                className="px-6 pb-6"
                 style={!isAlgorithmTab ? { borderTop: '1px solid #E2E8F0' } : { paddingTop: '1.5rem' }}
               >
-                {/* On Algorithm tab, show top 1-2 insights directly */}
-                {collapsedCards.slice(0, isAlgorithmTab ? 2 : collapsedCards.length).map((view) => (
-                  <div
-                    key={view.id}
-                    className="pt-4 first:pt-0"
-                    style={{
-                      borderTop: '1px solid #F1F5F9',
-                    }}
-                  >
-                    <h5 className="text-sm font-medium text-slate-700 mb-2">{view.title}</h5>
-                    <ViewCard
-                      view={view}
-                      dataResult={viewDataResults[view.id]}
-                      scanCount={scanCount}
-                      platformCount={platformCount}
-                      accentColor="blue"
-                      isInline={true}
-                    />
-                  </div>
-                ))}
+                {/* Structured Forecast module for Algorithm tab */}
+                {isAlgorithmTab ? (
+                  <div className="space-y-0">
+                    {/* Show up to 3 insights as structured forecast lines with pill labels */}
+                    {collapsedCards.slice(0, 3).map((view, idx) => {
+                      const dataResult = viewDataResults[view.id];
+                      const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
+                        ? view.takeaway(dataResult?.data)
+                        : null;
 
-                {/* On Algorithm tab, show "More" link if there are additional insights */}
-                {isAlgorithmTab && collapsedCards.length > 2 && (
-                  <button
-                    onClick={() => toggleSection('moreDetails')}
-                    className="text-sm font-medium flex items-center gap-1 mt-4 pt-4"
-                    style={{ color: '#2563EB', borderTop: '1px solid #F1F5F9' }}
-                  >
-                    {expandedSections.moreDetails ? (
-                      <>
-                        <ChevronUp size={14} />
-                        Show less
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDown size={14} />
-                        {collapsedCards.length - 2} more {collapsedCards.length - 2 === 1 ? 'insight' : 'insights'}
-                      </>
+                      // Forecast label pills
+                      const forecastLabels = [
+                        { text: 'Likely next', bg: '#EFF6FF', color: '#1D4ED8', border: '#BFDBFE' },
+                        { text: 'If this continues', bg: '#FEF3C7', color: '#92400E', border: '#FCD34D' },
+                        { text: 'What may shift it', bg: '#F0FDF4', color: '#166534', border: '#86EFAC' },
+                      ];
+                      const label = forecastLabels[idx] || { text: 'Also', bg: '#F1F5F9', color: '#64748B', border: '#E2E8F0' };
+
+                      return (
+                        <div
+                          key={view.id}
+                          className="py-5 flex items-start gap-4"
+                          style={{
+                            borderBottom: idx < Math.min(collapsedCards.length, 3) - 1 ? '1px solid #E2E8F0' : 'none',
+                          }}
+                        >
+                          {/* Pill label badge */}
+                          <div
+                            className="flex-shrink-0 text-[11px] font-semibold rounded-full px-3 py-1"
+                            style={{
+                              background: label.bg,
+                              color: label.color,
+                              border: `1px solid ${label.border}`,
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {label.text}
+                          </div>
+
+                          {/* Forecast line text */}
+                          <div className="flex-1 pt-0.5">
+                            <p className="text-sm text-slate-700 leading-relaxed">
+                              {takeawayText || view.title}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* "More" link if there are additional insights */}
+                    {collapsedCards.length > 3 && (
+                      <button
+                        onClick={() => toggleSection('moreDetails')}
+                        className="text-sm font-medium flex items-center gap-1 mt-3 pt-4"
+                        style={{ color: '#2563EB', borderTop: '1px solid #E2E8F0' }}
+                      >
+                        <ChevronDown
+                          size={14}
+                          className="transition-transform"
+                          style={{
+                            transform: expandedSections.moreDetails ? 'rotate(180deg)' : 'rotate(0deg)',
+                          }}
+                        />
+                        {expandedSections.moreDetails
+                          ? 'Show less'
+                          : `${collapsedCards.length - 3} more insight${collapsedCards.length - 3 === 1 ? '' : 's'}`
+                        }
+                      </button>
                     )}
-                  </button>
-                )}
 
-                {/* Show additional insights when expanded on Algorithm tab */}
-                {isAlgorithmTab && expandedSections.moreDetails && collapsedCards.length > 2 && (
-                  <div className="space-y-4 pt-2">
-                    {collapsedCards.slice(2).map((view) => (
+                    {/* Show additional insights when expanded */}
+                    {expandedSections.moreDetails && collapsedCards.length > 3 && (
+                      <div className="pt-2">
+                        {collapsedCards.slice(3).map((view) => {
+                          const dataResult = viewDataResults[view.id];
+                          const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
+                            ? view.takeaway(dataResult?.data)
+                            : null;
+
+                          return (
+                            <div
+                              key={view.id}
+                              className="py-4 flex items-start gap-4"
+                              style={{
+                                borderTop: '1px solid #E2E8F0',
+                              }}
+                            >
+                              <div
+                                className="flex-shrink-0 text-[11px] font-semibold rounded-full px-3 py-1"
+                                style={{
+                                  background: '#F1F5F9',
+                                  color: '#64748B',
+                                  border: '1px solid #E2E8F0',
+                                }}
+                              >
+                                Also
+                              </div>
+                              <div className="flex-1 pt-0.5">
+                                <p className="text-sm text-slate-700 leading-relaxed">
+                                  {takeawayText || view.title}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Non-algorithm tabs: Original layout */
+                  <div className="space-y-4 pt-4">
+                    {collapsedCards.map((view) => (
                       <div
                         key={view.id}
-                        className="pt-4"
+                        className="pt-4 first:pt-0"
                         style={{ borderTop: '1px solid #F1F5F9' }}
                       >
                         <h5 className="text-sm font-medium text-slate-700 mb-2">{view.title}</h5>
@@ -711,7 +880,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
         </section>
       )}
 
-      {/* SUMMARY - Part 3 Module Type 3: Paragraph + Actions */}
+      {/* SUMMARY - Calm Closing Chapter with Action Cards */}
       {hasSummaryContent && (
         <section>
           {isAlgorithmTab ? (
@@ -741,79 +910,110 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
               return (
                 <div
                   key={view.id}
-                  className="rounded-xl p-6 hover:border-slate-300 transition-colors"
+                  className="rounded-2xl overflow-hidden"
                   style={{
-                    background: 'white',
-                    border: '1px solid #E2E8F0', // Change 1: Stronger border (slate-200)
+                    background: SURFACES.SECTION_WHITE.background,
+                    border: SURFACES.SECTION_WHITE.border,
                   }}
                 >
-                  {/* Summary paragraph */}
-                  {takeawayText && (
-                    <p className="text-base text-slate-700 leading-relaxed mb-5">
-                      {takeawayText}
-                    </p>
-                  )}
-
-                  {/* Action items - max 3 */}
-                  {listData.length > 0 && (
-                    <div className="space-y-3">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-                        Try this
+                  <div className="p-6 md:p-8">
+                    {/* Summary paragraph */}
+                    {takeawayText && (
+                      <p className="text-base text-slate-700 leading-relaxed mb-6" style={{ maxWidth: '600px' }}>
+                        {takeawayText}
                       </p>
-                      {listData.map((item, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-start gap-3 text-sm text-slate-600"
-                        >
-                          <span
-                            className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium"
-                            style={{
-                              background: 'rgba(37, 99, 235, 0.1)',
-                              color: 'rgba(37, 99, 235, 0.8)',
-                            }}
-                          >
-                            {idx + 1}
-                          </span>
-                          <span>{typeof item === 'string' ? item : item.text || item.topic || item}</span>
+                    )}
+
+                    {/* Action Cards - max 3, styled as intentional steps */}
+                    {listData.length > 0 && (
+                      <div className="space-y-4">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
+                          Try this
+                        </p>
+                        <div className="grid gap-3">
+                          {listData.map((item, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-start gap-4 p-4 rounded-xl transition-colors hover:bg-slate-50"
+                              style={{
+                                background: '#FAFBFC',
+                                border: '1px solid #E2E8F0',
+                              }}
+                            >
+                              {/* Numbered chip */}
+                              <span
+                                className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold"
+                                style={{
+                                  background: '#EFF6FF',
+                                  color: '#2563EB',
+                                  border: '1px solid #BFDBFE',
+                                }}
+                              >
+                                {idx + 1}
+                              </span>
+                              {/* Action text */}
+                              <p className="text-sm text-slate-700 leading-relaxed pt-1">
+                                {typeof item === 'string' ? item : item.text || item.topic || item}
+                              </p>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      </div>
+                    )}
 
-                  {/* Fallback to action text if no list */}
-                  {listData.length === 0 && actionText && (
-                    <p className="text-sm text-slate-500 italic">{actionText}</p>
-                  )}
+                    {/* Fallback to action text if no list */}
+                    {listData.length === 0 && actionText && (
+                      <p className="text-sm text-slate-500 italic">{actionText}</p>
+                    )}
 
-                  {/* Show more collapse for additional items */}
-                  {Array.isArray(dataResult?.data) && dataResult.data.length > 3 && (
-                    <button
-                      onClick={() => toggleSection('summaryMore')}
-                      className="mt-4 text-sm font-medium flex items-center gap-1"
-                      style={{ color: 'rgba(37, 99, 235, 0.7)' }}
+                    {/* Show more collapse for additional items */}
+                    {Array.isArray(dataResult?.data) && dataResult.data.length > 3 && (
+                      <button
+                        onClick={() => toggleSection('summaryMore')}
+                        className="mt-5 text-sm font-medium flex items-center gap-1"
+                        style={{ color: '#2563EB' }}
+                      >
+                        <ChevronDown
+                          size={14}
+                          className="transition-transform"
+                          style={{
+                            transform: expandedSections.summaryMore ? 'rotate(180deg)' : 'rotate(0deg)',
+                          }}
+                        />
+                        {expandedSections.summaryMore
+                          ? 'Show less'
+                          : `More ideas (${dataResult.data.length - 3} more)`
+                        }
+                      </button>
+                    )}
+
+                    {expandedSections.summaryMore && Array.isArray(dataResult?.data) && (
+                      <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
+                        {dataResult.data.slice(3).map((item, idx) => (
+                          <div key={idx} className="flex items-start gap-3 text-sm text-slate-500">
+                            <span className="text-slate-300">•</span>
+                            <span>{typeof item === 'string' ? item : item.text || item.topic || item}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Calm Closing Chapter - Light blue band with calming message */}
+                  {isAlgorithmTab && (
+                    <div
+                      className="px-6 py-6 md:px-8"
+                      style={{
+                        background: '#EFF6FF', /* Solid light blue */
+                        borderTop: '1px solid #BFDBFE',
+                      }}
                     >
-                      {expandedSections.summaryMore ? (
-                        <>
-                          <ChevronUp size={14} />
-                          Show less
-                        </>
-                      ) : (
-                        <>
-                          <ChevronDown size={14} />
-                          More ideas ({dataResult.data.length - 3} more)
-                        </>
-                      )}
-                    </button>
-                  )}
-
-                  {expandedSections.summaryMore && Array.isArray(dataResult?.data) && (
-                    <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
-                      {dataResult.data.slice(3).map((item, idx) => (
-                        <div key={idx} className="flex items-start gap-3 text-sm text-slate-500">
-                          <span className="text-slate-300">•</span>
-                          <span>{typeof item === 'string' ? item : item.text || item.topic || item}</span>
-                        </div>
-                      ))}
+                      <p
+                        className="text-sm text-slate-600 leading-relaxed"
+                        style={{ maxWidth: '560px' }}
+                      >
+                        <span className="font-medium text-slate-700">Remember:</span> small shifts matter. This is about awareness, not blame—your feed is shaped by invisible systems, and even gentle changes can make a difference over time.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -880,13 +1080,11 @@ const FeatureMomentWrapper = ({ children }) => (
 
 /**
  * AlgorithmTabHero - Editorial "spike" for "What the Algorithm Thinks" tab
- * Part 2: Enhanced hero dominance with:
- * - Increased vertical padding (15-25%)
- * - Larger headline (text-4xl equivalent)
- * - Constrained max-width for better wrap
- * - Improved line height
- * - More spacing between hero and supporting cards
- * - Quieter supporting cards (reduced contrast)
+ *
+ * Solid Surfaces Strategy:
+ * - Hero uses solid light blue background (not translucent)
+ * - Full-width text layout (no narrow left column)
+ * - Support cards use solid white with strong borders
  */
 const AlgorithmTabHero = ({ scans, viewDataResults }) => {
   // Get top topics from the primary view data
@@ -903,53 +1101,84 @@ const AlgorithmTabHero = ({ scans, viewDataResults }) => {
     : 0;
 
   return (
-    <div className="mb-10">
-      {/* Hero Insight Card - Enhanced dominance with more padding and larger headline */}
+    <div className="mb-8">
+      {/* Hero Insight Card - SOLID SURFACE */}
       <div
-        className="w-full rounded-2xl mb-8"
+        className="w-full rounded-2xl mb-6"
         style={{
-          background: 'linear-gradient(160deg, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0.15) 35%, rgba(37, 99, 235, 0.1) 100%)',
-          border: '1px solid rgba(37, 99, 235, 0.18)',
+          background: SURFACES.HERO_BLUE.background,
+          border: SURFACES.HERO_BLUE.border,
           padding: 'clamp(2.5rem, 6vw, 4rem) clamp(2rem, 5vw, 3.5rem)',
-          boxShadow: '0 6px 32px rgba(37, 99, 235, 0.08)',
+          boxShadow: SURFACES.HERO_BLUE.shadow,
         }}
       >
+        {/* Editorial kicker line */}
+        <p
+          className="mb-3"
+          style={{
+            fontSize: '11px',
+            color: '#2563EB',
+            letterSpacing: '0.12em',
+            fontWeight: 600,
+            textTransform: 'uppercase',
+          }}
+        >
+          Your algorithmic portrait
+        </p>
+
         {/* Provenance marker */}
         <p
-          className="mb-6"
-          style={{ fontSize: '13px', color: '#2563EB', opacity: 0.8, letterSpacing: '0.04em', fontWeight: 500 }}
+          className="mb-5"
+          style={{ fontSize: '13px', color: '#1D4ED8', letterSpacing: '0.04em', fontWeight: 500 }}
         >
           Based on patterns across {platformCount} platform{platformCount !== 1 ? 's' : ''}
         </p>
 
-        {/* Main interpretive headline - Increased size (text-4xl equivalent) and constrained width */}
-        <h2
-          className="font-bold text-text-main mb-6"
+        {/* Main headline - FULL WIDTH, not narrow column */}
+        <div
+          className="relative mb-6"
           style={{
-            fontFamily: 'var(--font-headline, system-ui)',
-            letterSpacing: '-0.03em',
-            fontSize: 'clamp(1.875rem, 5vw, 2.75rem)',
-            lineHeight: 1.3,
-            maxWidth: '680px',
+            marginLeft: '-1rem',
+            paddingLeft: '1rem',
           }}
         >
-          Your feed keeps returning to{' '}
-          <span style={{ color: '#2563EB' }}>{topTopic}</span>
-          {secondTopic && (
-            <>
-              {' '}and <span style={{ color: '#2563EB' }}>{secondTopic}</span>
-            </>
-          )}
-          —even when you don't ask for it.
-        </h2>
+          {/* Blue accent bar */}
+          <div
+            className="absolute left-0 top-0 bottom-0 rounded-r-lg"
+            style={{
+              width: '5px',
+              background: 'linear-gradient(180deg, #2563EB 0%, #60A5FA 100%)',
+            }}
+          />
+          {/* Main interpretive headline - EXPANDED WIDTH */}
+          <h2
+            className="font-extrabold text-slate-900"
+            style={{
+              fontFamily: 'var(--font-headline, system-ui)',
+              letterSpacing: '-0.03em',
+              fontSize: 'clamp(1.875rem, 5vw, 2.75rem)',
+              lineHeight: 1.2,
+              maxWidth: '100%', /* Full width - no narrow constraint */
+            }}
+          >
+            Your feed keeps returning to{' '}
+            <span style={{ color: '#2563EB' }}>{topTopic}</span>
+            {secondTopic && (
+              <>
+                {' '}and <span style={{ color: '#2563EB' }}>{secondTopic}</span>
+              </>
+            )}
+            —even when you don't ask for it.
+          </h2>
+        </div>
 
-        {/* Supporting interpretation - Enhanced readability with increased line height */}
+        {/* Supporting interpretation - comfortable reading width */}
         <p
-          className="text-text-muted"
+          className="text-slate-600"
           style={{
             fontSize: '17px',
-            lineHeight: 1.85,
-            maxWidth: '560px',
+            lineHeight: 1.75,
+            maxWidth: '680px', /* Comfortable reading but not narrow */
           }}
         >
           This is our best interpretation based on what we've observed.
@@ -957,71 +1186,100 @@ const AlgorithmTabHero = ({ scans, viewDataResults }) => {
         </p>
       </div>
 
-      {/* Two supporting context cards - Quieter, more secondary appearance */}
+      {/* Two supporting context cards - SOLID WHITE SURFACES with strong borders */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {/* Feed narrowness card - reduced contrast */}
+        {/* Narrowing focus card - promoted styling */}
         <div
-          className="rounded-xl"
+          className="rounded-xl relative overflow-hidden"
           style={{
-            background: 'rgba(37, 99, 235, 0.025)',
-            border: '1px solid rgba(37, 99, 235, 0.08)',
-            padding: 'clamp(1.25rem, 3vw, 1.5rem)',
+            background: SURFACES.SUPPORT_WHITE.background,
+            border: SURFACES.SUPPORT_WHITE.border,
+            boxShadow: SURFACES.SUPPORT_WHITE.shadow,
+            padding: 'clamp(1.5rem, 3vw, 2rem)',
           }}
         >
-          <h4 className="text-sm font-medium text-slate-600 mb-2">Narrowing focus</h4>
-          <p className="text-sm text-slate-500 leading-relaxed">
-            Your feed appears <span className="font-medium text-slate-600">{breadth}</span>—
-            {breadth === 'narrow'
-              ? ' a few topics dominate while others rarely appear.'
-              : breadth === 'broad'
-              ? ' you see a good variety of different topics.'
-              : ' some topics get more attention than others.'}
-          </p>
+          {/* Strong blue left accent bar */}
+          <div
+            className="absolute left-0 top-0 bottom-0 w-1 rounded-r"
+            style={{ background: 'linear-gradient(180deg, #2563EB 0%, #3B82F6 100%)' }}
+          />
+          <div className="pl-4">
+            {/* Promoted typography - larger title */}
+            <h4 className="text-base font-bold text-slate-800 mb-2">Narrowing focus</h4>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              Your feed appears <span className="font-semibold text-slate-700">{breadth}</span>—
+              {breadth === 'narrow'
+                ? ' a few topics dominate while others rarely appear.'
+                : breadth === 'broad'
+                ? ' you see a good variety of different topics.'
+                : ' some topics get more attention than others.'}
+            </p>
+          </div>
         </div>
 
-        {/* Pattern persistence card - reduced contrast */}
+        {/* Sticky patterns card - promoted styling */}
         <div
-          className="rounded-xl"
+          className="rounded-xl relative overflow-hidden"
           style={{
-            background: 'rgba(37, 99, 235, 0.025)',
-            border: '1px solid rgba(37, 99, 235, 0.08)',
-            padding: 'clamp(1.25rem, 3vw, 1.5rem)',
+            background: SURFACES.SUPPORT_WHITE.background,
+            border: SURFACES.SUPPORT_WHITE.border,
+            boxShadow: SURFACES.SUPPORT_WHITE.shadow,
+            padding: 'clamp(1.5rem, 3vw, 2rem)',
           }}
         >
-          <h4 className="text-sm font-medium text-slate-600 mb-2">Sticky patterns</h4>
-          <p className="text-sm text-slate-500 leading-relaxed">
-            These themes have been <span className="font-medium text-slate-600">persistent</span>.
-            Once the algorithm identifies an interest, it reinforces it—
-            changing direction typically requires sustained effort.
-          </p>
+          {/* Strong blue left accent bar */}
+          <div
+            className="absolute left-0 top-0 bottom-0 w-1 rounded-r"
+            style={{ background: 'linear-gradient(180deg, #2563EB 0%, #3B82F6 100%)' }}
+          />
+          <div className="pl-4">
+            {/* Promoted typography - larger title */}
+            <h4 className="text-base font-bold text-slate-800 mb-2">Sticky patterns</h4>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              These themes have been <span className="font-semibold text-slate-700">persistent</span>.
+              Once the algorithm identifies an interest, it reinforces it—
+              changing direction typically requires sustained effort.
+            </p>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-// DEV WATERMARK - Visible banner to prove which app is running
-const DevWatermark = () => (
+
+/**
+ * SecondVisualAnchor - Chapter opener that transitions into the analysis
+ * Appears after the Talk module to prevent "glaze over" effect
+ * Provides a clear second anchor point in the story
+ */
+const SecondVisualAnchor = () => (
   <div
+    className="mb-10 mt-4"
     style={{
-      position: 'fixed',
-      bottom: '10px',
-      right: '10px',
-      background: 'rgba(37, 99, 235, 0.95)',
-      color: 'white',
-      padding: '8px 16px',
-      borderRadius: '8px',
-      fontSize: '12px',
-      fontWeight: 'bold',
-      zIndex: 9999,
-      fontFamily: 'monospace',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      paddingLeft: '1rem',
+      borderLeft: '4px solid #2563EB',
     }}
   >
-    <div>ALG-GEMINI RUNNING</div>
-    <div style={{ fontSize: '10px', opacity: 0.8, marginTop: '2px' }}>
-      {import.meta.url.split('/').slice(-3).join('/')}
-    </div>
+    <p
+      className="text-lg font-medium text-slate-700 leading-relaxed"
+      style={{ maxWidth: '600px' }}
+    >
+      Now let's make the pattern concrete. This is what the feed keeps reinforcing, and why.
+    </p>
+  </div>
+);
+
+/**
+ * ReadingColumnWrapper - Constrains content to a comfortable reading width
+ * Used for sections after the Talk module to prevent "huge empty slabs"
+ */
+const ReadingColumnWrapper = ({ children }) => (
+  <div
+    className="mx-auto"
+    style={{ maxWidth: '1024px' }} /* max-w-5xl equivalent */
+  >
+    {children}
   </div>
 );
 
@@ -1254,25 +1512,44 @@ const DashboardPage = () => {
               />
 
               {/* Talk to Your Algorithm - Premium invitation (GREEN theme) */}
-              <TalkToAlgorithmSection
-                feedData={{
-                  scans,
-                  scanDetails,
-                  viewDataResults,
-                }}
-              />
+              <div className="mt-10">
+                <TalkToAlgorithmSection
+                  feedData={{
+                    scans,
+                    scanDetails,
+                    viewDataResults,
+                  }}
+                />
+              </div>
             </FeatureMomentWrapper>
           )}
 
+          {/* Second Visual Anchor - Chapter opener after Talk (Algorithm tab only) */}
+          {activeTab === 'algorithm' && <SecondVisualAnchor />}
+
           {/* Views Grid with enforced section structure */}
-          <ViewsGridWithCollapsing
-            views={currentViews}
-            viewDataResults={viewDataResults}
-            scanCount={scans.length}
-            platformCount={platforms.length}
-            tabName={TABS.find((t) => t.id === activeTab)?.label || 'insights'}
-            tabId={activeTab}
-          />
+          {/* Wrapped in ReadingColumnWrapper for Algorithm tab to constrain width */}
+          {activeTab === 'algorithm' ? (
+            <ReadingColumnWrapper>
+              <ViewsGridWithCollapsing
+                views={currentViews}
+                viewDataResults={viewDataResults}
+                scanCount={scans.length}
+                platformCount={platforms.length}
+                tabName={TABS.find((t) => t.id === activeTab)?.label || 'insights'}
+                tabId={activeTab}
+              />
+            </ReadingColumnWrapper>
+          ) : (
+            <ViewsGridWithCollapsing
+              views={currentViews}
+              viewDataResults={viewDataResults}
+              scanCount={scans.length}
+              platformCount={platforms.length}
+              tabName={TABS.find((t) => t.id === activeTab)?.label || 'insights'}
+              tabId={activeTab}
+            />
+          )}
 
           {/* Part 4: Talk to Your Algorithm on ALL non-algorithm tabs (GREEN theme) */}
           {activeTab !== 'algorithm' && (
@@ -1298,9 +1575,6 @@ const DashboardPage = () => {
           </p>
         </div>
       </div>
-
-      {/* DEV WATERMARK - Remove before production */}
-      <DevWatermark />
     </div>
   );
 };
