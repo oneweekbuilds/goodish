@@ -1,6 +1,6 @@
 # AlgorithmLens Accuracy Contract
 
-> **Version:** 1.0
+> **Version:** 2.0
 > **Last Updated:** 2025-12-17
 > **Scope:** All dashboard analysis text, all charts/metrics, and the "Talk to Your Algorithm" feature
 
@@ -8,15 +8,51 @@
 
 ## Core Principle
 
-**"These insights show patterns in what you're shown, not who you are."**
+**"These insights show patterns in what you're shown — not who you are."**
 
 AlgorithmLens analyzes what content appears in a user's social feed. It does NOT:
 - Know what the user believes, thinks, or feels
 - Know why the algorithm chose specific content
 - Have access to the platform's internal ranking signals
 - Represent the user's full digital experience
+- Know user intent, preferences, or desires
+- Know platform motivations or goals
 
 All analysis must operate within these epistemic boundaries.
+
+---
+
+## Single-Scan vs Multi-Scan Constraints
+
+### Single-Scan Reality
+
+**Most users have only ONE scan.** All language must assume single-scan data unless explicitly aggregated.
+
+| Data Type | Single Scan | Multiple Scans |
+|-----------|-------------|----------------|
+| Percentages | Must be labeled "approximate" or "~" | May show without qualifier if N≥30 items |
+| Trends | FORBIDDEN - cannot show | Allowed with ≥3 data points |
+| "Your feed is..." | FORBIDDEN | Use "Across your scans..." |
+| Predictions | FORBIDDEN | Labeled as speculation only |
+| Pattern claims | "In this scan..." only | "Across your [N] scans..." |
+
+### Single-Scan Required Language
+
+When data comes from a single scan:
+- "In this scan, approximately X% of items..."
+- "This snapshot shows..."
+- "From this scroll session..."
+- "~X out of Y items in this scan..."
+
+### Single-Scan Forbidden Language
+
+Never use with single-scan data:
+- "Your feed is..." (implies permanence)
+- "The algorithm thinks..." (implies knowledge of internal state)
+- "You're interested in..." (infers user preference from exposure)
+- "This pattern..." (implies repetition not yet observed)
+- "Consistently..." or "always..." (requires multiple observations)
+- "Will continue to..." (prediction from single sample)
 
 ---
 
@@ -140,12 +176,31 @@ Before generating any claim, ask:
 
 | Use Counts When | Use Percentages When |
 |-----------------|---------------------|
-| Total sample is small (< 30 items) | Sample is large enough (>= 30 items) |
+| Total sample is small (< 30 items) | Sample is large enough (≥30 items) |
 | Showing absolute magnitude matters | Showing proportion matters |
-| Comparing across scans of different sizes | Comparing within a single scan |
+| Single scan with any N | Multiple scans aggregated, N≥30 |
 | Raw data transparency is priority | Relative comparison is priority |
 
-**Rule:** Always display the total N alongside any percentage. Example: "45% (18 of 40 posts)"
+**Rules:**
+1. Always display the total N alongside any percentage. Example: "~45% (18 of 40 posts)"
+2. Single-scan percentages MUST use "~" or "approximately"
+3. When N < 10, show only counts, never percentages
+4. When N < 20, add "limited sample" qualifier
+
+### 3.2 When to Show "Insufficient Signal"
+
+Display "Insufficient signal from this scan" instead of data when:
+
+| Metric Type | Threshold | Reason |
+|-------------|-----------|--------|
+| Percentages | N < 10 | Single item = 10%+ swing |
+| Topic distribution | N < 20 | Random variation dominates |
+| Political content | N < 15 | Classification uncertainty |
+| Sentiment | N < 15 | Keyword matching is noisy |
+| Creator concentration | N < 10 | Cannot measure concentration |
+| Trends | < 3 scans | Cannot establish direction |
+
+**Always prefer showing "Insufficient signal" over presenting noisy data with false precision.**
 
 ### 3.2 Normalization Requirements
 
@@ -213,24 +268,41 @@ A **reflective interface** that helps users understand patterns in their observe
 
 ### 4.3 Response Structure
 
-Every "Talk" response MUST follow this five-part structure:
+Every "Talk" response MUST follow this **four-part structure** (NOT five - interpretation and speculation are combined):
 
 ```
-## Observation
+## What We Observed
 [What the data directly shows - cite evidence bundle fields]
+- Must cite 2-4 specific fields from the Evidence Bundle
+- Use exact numbers where available
+- Anchor to "In this scan..." or "In this sample..."
 
-## Interpretation
-[What patterns might mean - always with uncertainty language]
+## What It Might Mean
+[Hypotheses only - 2-3 labeled possibilities]
+- Always use "may", "might", "could"
+- Label each hypothesis explicitly (H1, H2, H3 or descriptive labels)
+- Never present as fact
 
-## Speculation
-[Possible explanations - clearly labeled as speculation]
-
-## Limits
-[What we cannot know from this data]
+## What We Cannot Know
+[Explicit epistemic boundaries]
+- Cite the limits section of the Evidence Bundle
+- Always include at least 2 specific unknowns
+- Example: "We cannot know why this content appeared or how you interacted with it."
 
 ## What You Can Try
-[Actionable experiments the user could run]
+[User experiments, not corrections]
+- Frame as experiments: "You could try..." not "You should..."
+- 2-4 optional actions
+- Non-judgmental, non-prescriptive
+- Acknowledge results may vary
 ```
+
+**CRITICAL:** Talk responses are NOT:
+- A chatbot conversation
+- A therapist or counselor
+- A diagnostic tool
+- An explainer of platform internals
+- An oracle predicting future behavior
 
 ### 4.4 Evidence Citation Requirements
 

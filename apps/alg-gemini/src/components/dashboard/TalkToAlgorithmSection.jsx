@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MessageCircle, Send, Sparkles, Lock, ShieldCheck, MessageSquare, EyeOff } from 'lucide-react';
+import AdsTalkToAlgorithm from './AdsTalkToAlgorithm';
 
 /**
  * TalkToAlgorithmSection - Premium invitation to reflect on your feed
@@ -34,33 +35,33 @@ const TALK_THEME = {
 
 /**
  * TAB_SPECIFIC_PROMPTS - Different prompt suggestions per tab
- * Part 2: Customize prompts to match each tab's focus
+ * ACCURACY CONTRACT COMPLIANT: Questions grounded in observation, not intent
  */
 const TAB_SPECIFIC_PROMPTS = {
   algorithm: [
-    "Why do these topics keep showing up?",
-    "What reinforces this pattern?",
-    "How might this change over time?",
+    "What topics appeared most in this scan?",
+    "How concentrated were topics in this scan?",
+    "What experiments could I try?",
   ],
   ads: [
-    "Why am I seeing these ads?",
-    "What do advertisers think I'm interested in?",
-    "How can I see fewer promotions?",
+    "What ads appeared in this scan?",
+    "What product categories showed up?",
+    "What could I try to shift ad patterns?",
   ],
   politics: [
-    "Is my political exposure balanced?",
-    "Where does most political content come from?",
-    "How can I see more diverse perspectives?",
+    "How much political content appeared in this scan?",
+    "Where did political content come from?",
+    "What could I try to diversify perspectives?",
   ],
   patterns: [
-    "Why do the same topics keep appearing?",
-    "Is my feed getting more narrow over time?",
-    "How can I introduce more variety?",
+    "What topics appeared in this scan?",
+    "How varied were topics in this scan?",
+    "What could I try to introduce variety?",
   ],
   creators: [
-    "Why do I see the same creators so often?",
-    "Are my sources diverse enough?",
-    "How can I discover new voices?",
+    "What accounts appeared most in this scan?",
+    "How concentrated were sources?",
+    "What could I try to discover new sources?",
   ],
 };
 
@@ -156,7 +157,7 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt, tabId }) =
         </div>
       </div>
 
-      {/* Explanatory paragraph */}
+      {/* Explanatory paragraph - ACCURACY CONTRACT COMPLIANT */}
       <p
         className="text-text-muted mb-8"
         style={{
@@ -165,7 +166,7 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt, tabId }) =
           maxWidth: '540px',
         }}
       >
-        Not a chatbot, not a diagnosis. Just a thoughtful way to explore what your feed says about your interests—and what it might mean.
+        A reflective interface over observed patterns. Not a chatbot, not a diagnosis. We cannot know why content appeared — only what showed up in this scan.
       </p>
 
       {/* Example prompts - enhanced button-like appearance */}
@@ -359,7 +360,7 @@ const ConversationArea = ({ messages, inputValue, setInputValue, onSendMessage, 
               key={index}
               className={message.role === 'user' ? 'text-right' : 'text-left'}
             >
-              {/* Role label - small, muted */}
+              {/* Role label - small, muted - ACCURACY CONTRACT COMPLIANT */}
               <p
                 className="mb-2.5 font-medium"
                 style={{
@@ -368,7 +369,7 @@ const ConversationArea = ({ messages, inputValue, setInputValue, onSendMessage, 
                   letterSpacing: '0.02em',
                 }}
               >
-                {message.role === 'user' ? 'You asked' : 'Your feed reflects'}
+                {message.role === 'user' ? 'You asked' : 'Based on this scan'}
               </p>
 
               {/* Message content - NOT in a bubble, generous line height */}
@@ -391,7 +392,7 @@ const ConversationArea = ({ messages, inputValue, setInputValue, onSendMessage, 
           ))}
         </div>
 
-        {/* Typing indicator */}
+        {/* Typing indicator - ACCURACY CONTRACT COMPLIANT */}
         {isTyping && (
           <div className="text-left mt-10">
             <p
@@ -402,7 +403,7 @@ const ConversationArea = ({ messages, inputValue, setInputValue, onSendMessage, 
                 letterSpacing: '0.02em',
               }}
             >
-              Your feed reflects
+              Based on this scan
             </p>
             <div className="flex items-center gap-2">
               <span
@@ -488,8 +489,8 @@ const ConversationArea = ({ messages, inputValue, setInputValue, onSendMessage, 
 };
 
 /**
- * ReflectiveNote - Subtle grounding note below conversation
- * Provides emotional completion to the experience
+ * ReflectiveNote - Explicit epistemic grounding below conversation
+ * ACCURACY CONTRACT COMPLIANT: States limits clearly
  */
 const ReflectiveNote = ({ hasMessages }) => {
   if (!hasMessages) return null;
@@ -510,8 +511,8 @@ const ReflectiveNote = ({ hasMessages }) => {
           opacity: 0.7,
         }}
       >
-        These reflections are based on patterns we've observed—
-        meant to spark awareness, not define you.
+        These responses are based on what we observed in this scan.
+        We cannot know why content appeared or what you prefer.
       </p>
     </div>
   );
@@ -521,6 +522,11 @@ const ReflectiveNote = ({ hasMessages }) => {
  * Main Component - TalkToAlgorithmSection
  * Positioned directly after hero insight, before evidence sections
  * Part 2: Now accepts tabId for tab-specific prompts
+ *
+ * Evidence Bundle Integration (Ads tab):
+ * - When tabId === 'ads', uses AdsTalkToAlgorithm with strict 4-part structure
+ * - Responses are generated ONLY from the Evidence Bundle
+ * - Other tabs continue to use the generic implementation
  */
 const TalkToAlgorithmSection = ({ feedData, tabId }) => {
   const [hasStarted, setHasStarted] = useState(false);
@@ -528,27 +534,36 @@ const TalkToAlgorithmSection = ({ feedData, tabId }) => {
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
-  // Simulated response generation (placeholder for actual AI integration)
+  // Extract scanId for Evidence Bundle (use most recent scan)
+  const scanId = feedData?.scans?.[0]?.id || null;
+
+  // For Ads tab, use the evidence-bound Talk component
+  if (tabId === 'ads' && scanId) {
+    return <AdsTalkToAlgorithm scanId={scanId} />;
+  }
+
+  // Simulated response generation - ACCURACY CONTRACT COMPLIANT
+  // All responses use 4-part structure: observed, might mean, cannot know, could try
   const generateResponse = (question) => {
-    // This would be replaced with actual AI/data-driven responses
+    // Placeholder responses grounded in observation, not intent
     const responses = {
-      default: "Based on your recent scans, your feed seems to favor content that keeps you engaged through familiar topics. This is common—algorithms optimize for what you've already shown interest in.",
-      topics: "The topics that keep showing up are likely tied to your engagement patterns—what you've clicked, watched, or lingered on. Even passive behavior signals interest to the algorithm.",
-      reinforce: "Algorithms reinforce patterns by showing you more of what you've engaged with before. Each interaction—even a pause—strengthens that signal. Breaking the cycle requires sustained new behavior.",
-      change: "Change happens slowly. Algorithms are designed to resist sudden shifts. Consistently engaging with different content over days or weeks gradually introduces new signals.",
-      fitness: "Your feed has shown a consistent pattern of fitness and wellness content. This likely started from a few interactions, and the algorithm has reinforced it over time.",
-      political: "The political content in your feed appears somewhat balanced, though there are subtle leanings based on the creators you engage with most.",
-      diverse: "To see more diverse content, you might try actively seeking out new topics and engaging with content outside your usual patterns. Algorithms respond to new signals, though it takes time.",
-      interests: "Your feed suggests interests in technology, personal growth, and current events. These patterns have been consistent across your recent scans.",
+      default: "In this scan, we observed certain topics appearing more frequently than others. We cannot know why these appeared — platform algorithms are opaque. You could try engaging with different content to see if patterns shift over time.",
+      topics: "In this scan, we detected specific topics that appeared multiple times. This may indicate topic clustering, but we cannot know why. You could try searching for different topics to see if variety increases.",
+      reinforce: "We observed certain topics recurring in this scan. We cannot know whether the platform deliberately reinforces patterns — only what appeared. You could try sustained engagement with different content to see if topics shift.",
+      change: "We can only observe what appeared in this scan. Changes across scans may indicate shifts, but we cannot predict future content. You could try changing engagement patterns to see if content responds.",
+      fitness: "In this scan, fitness and wellness content appeared frequently. We cannot know why this content was shown — only that it appeared. You could try engaging with other topics to see if the mix changes.",
+      political: "In this scan, political content showed a certain distribution. We cannot determine actual balance or bias from keyword matching alone — this is a rough estimate. You could try following diverse sources.",
+      diverse: "You could try actively engaging with new topics to see if content variety changes over time. We cannot predict whether this will work — only observe what currently appears.",
+      interests: "In this scan, certain topics appeared frequently. This does not indicate what you are interested in — only what showed up. We cannot infer your preferences from what platforms display.",
     };
 
     const lowerQuestion = question.toLowerCase();
-    if (lowerQuestion.includes('topics') || lowerQuestion.includes('showing up') || lowerQuestion.includes('keep seeing')) return responses.topics;
-    if (lowerQuestion.includes('reinforce') || lowerQuestion.includes('pattern')) return responses.reinforce;
-    if (lowerQuestion.includes('change') || lowerQuestion.includes('over time')) return responses.change;
+    if (lowerQuestion.includes('topics') || lowerQuestion.includes('showing up') || lowerQuestion.includes('appeared')) return responses.topics;
+    if (lowerQuestion.includes('reinforce') || lowerQuestion.includes('pattern') || lowerQuestion.includes('concentrated')) return responses.reinforce;
+    if (lowerQuestion.includes('change') || lowerQuestion.includes('over time') || lowerQuestion.includes('experiment')) return responses.change;
     if (lowerQuestion.includes('fitness')) return responses.fitness;
-    if (lowerQuestion.includes('political') || lowerQuestion.includes('bubble')) return responses.political;
-    if (lowerQuestion.includes('diverse') || lowerQuestion.includes('different')) return responses.diverse;
+    if (lowerQuestion.includes('political') || lowerQuestion.includes('balance')) return responses.political;
+    if (lowerQuestion.includes('diverse') || lowerQuestion.includes('different') || lowerQuestion.includes('variety')) return responses.diverse;
     if (lowerQuestion.includes('interests') || lowerQuestion.includes('about me')) return responses.interests;
     return responses.default;
   };

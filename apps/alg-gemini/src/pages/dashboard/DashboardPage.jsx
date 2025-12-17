@@ -437,118 +437,118 @@ const ChapterContainer = ({ children, variant = 'default' }) => {
 
 /**
  * Story-driven section header config for ALL tabs
- * These headers guide the reader through a narrative
- * Part 2: Apply to each tab using Algorithm tab as canonical reference
+ * These headers guide the reader through observations, NOT predictions
+ * All language grounded in "this scan" and observation, not identity or intent
  */
 const TAB_STORY_HEADERS = {
   algorithm: {
     keyInsight: {
-      label: 'The pattern',
-      title: 'What keeps showing up',
-      subtext: 'The topic cluster your feed returns to most often.',
+      label: 'Observed',
+      title: 'What appeared in this scan',
+      subtext: 'Topics that showed up most often in this scroll session.',
     },
     details: {
-      label: 'Why it happens',
-      title: 'How the pattern takes hold',
-      subtext: 'Signals that reinforce the loop, even when you are not trying to.',
+      label: 'Context',
+      title: 'How content clustered',
+      subtext: 'We cannot know why — only what appeared together.',
     },
     moreDetails: {
-      label: 'What it leads to',
-      title: 'Where this is heading',
-      subtext: 'What you are likely to see more of if nothing changes.',
+      label: 'Speculation',
+      title: 'What might continue (uncertain)',
+      subtext: 'If these topics recur, you may see more of them. We cannot predict.',
     },
     summary: {
-      label: 'Shift it gently',
+      label: 'Experiments',
       title: 'What you could try',
-      subtext: 'Small actions that nudge the system without turning your life upside down.',
+      subtext: 'Optional actions to see if content shifts. Results may vary.',
     },
   },
   ads: {
     keyInsight: {
-      label: 'The pattern',
-      title: 'What\'s selling to you',
-      subtext: 'Promotional content showing up in your feed.',
+      label: 'Observed',
+      title: 'Promotional content in this scan',
+      subtext: 'Posts labeled as ads or sponsored by the platform.',
     },
     details: {
-      label: 'Why it happens',
-      title: 'How ads find you',
-      subtext: 'Signals that make advertisers think you\'re interested.',
+      label: 'Context',
+      title: 'Ad sources and categories',
+      subtext: 'We cannot know why these ads appeared — only what showed up.',
     },
     moreDetails: {
-      label: 'What it leads to',
-      title: 'Where this is heading',
-      subtext: 'What advertisers will likely show you more of.',
+      label: 'Speculation',
+      title: 'What might continue (uncertain)',
+      subtext: 'If similar ads recur, they may continue. We cannot predict.',
     },
     summary: {
-      label: 'Shift it gently',
+      label: 'Experiments',
       title: 'What you could try',
-      subtext: 'Small actions that may reduce promotional noise.',
+      subtext: 'Optional actions to see if ad patterns shift. Results may vary.',
     },
   },
   politics: {
     keyInsight: {
-      label: 'The pattern',
-      title: 'Political content in your feed',
-      subtext: 'How much of your scrolling touches on politics.',
+      label: 'Observed',
+      title: 'Political keywords in this scan',
+      subtext: 'Content that matched political keyword patterns.',
     },
     details: {
-      label: 'Why it happens',
-      title: 'Where it comes from',
-      subtext: 'The sources driving political content your way.',
+      label: 'Context',
+      title: 'Sources of political content',
+      subtext: 'Accounts that posted political content in this scan.',
     },
     moreDetails: {
-      label: 'What it leads to',
-      title: 'Where this is heading',
-      subtext: 'How your political exposure may evolve.',
+      label: 'Speculation',
+      title: 'What might continue (uncertain)',
+      subtext: 'If these sources recur, political content may persist. We cannot predict.',
     },
     summary: {
-      label: 'Shift it gently',
+      label: 'Experiments',
       title: 'What you could try',
-      subtext: 'Small actions that may balance your exposure.',
+      subtext: 'Optional actions to see if political balance shifts. Results may vary.',
     },
   },
   patterns: {
     keyInsight: {
-      label: 'The pattern',
-      title: 'What your feed keeps showing',
-      subtext: 'Topics that appear most when you scroll.',
+      label: 'Observed',
+      title: 'Topics in this scan',
+      subtext: 'Topics detected in this scroll session.',
     },
     details: {
-      label: 'Why it happens',
-      title: 'How patterns form',
-      subtext: 'Signals that make certain topics stick.',
+      label: 'Context',
+      title: 'How topics distributed',
+      subtext: 'We cannot know why — only what appeared.',
     },
     moreDetails: {
-      label: 'What it leads to',
-      title: 'Where this is heading',
-      subtext: 'What you\'re likely to see more of.',
+      label: 'Speculation',
+      title: 'What might continue (uncertain)',
+      subtext: 'If topics recur across scans, they may persist. We cannot predict.',
     },
     summary: {
-      label: 'Shift it gently',
+      label: 'Experiments',
       title: 'What you could try',
-      subtext: 'Small actions that may introduce variety.',
+      subtext: 'Optional actions to see if variety changes. Results may vary.',
     },
   },
   creators: {
     keyInsight: {
-      label: 'The pattern',
-      title: 'Who shapes your feed',
-      subtext: 'The voices that show up most often.',
+      label: 'Observed',
+      title: 'Accounts that appeared',
+      subtext: 'Sources that showed up most often in this scan.',
     },
     details: {
-      label: 'Why it happens',
-      title: 'How creators dominate',
-      subtext: 'Signals that make certain voices louder.',
+      label: 'Context',
+      title: 'Source concentration',
+      subtext: 'How content was distributed across accounts.',
     },
     moreDetails: {
-      label: 'What it leads to',
-      title: 'Where this is heading',
-      subtext: 'Whose voices will likely grow stronger.',
+      label: 'Speculation',
+      title: 'What might continue (uncertain)',
+      subtext: 'If these sources recur, they may dominate. We cannot predict.',
     },
     summary: {
-      label: 'Shift it gently',
+      label: 'Experiments',
       title: 'What you could try',
-      subtext: 'Small actions that may diversify your sources.',
+      subtext: 'Optional actions to see if source diversity changes. Results may vary.',
     },
   },
 };
@@ -1216,20 +1216,20 @@ const FeatureMomentWrapper = ({ children }) => (
 );
 
 /**
- * AlgorithmTabHero - Editorial "spike" for "What the Algorithm Thinks" tab
+ * AlgorithmTabHero - Summary for "Observed Patterns" tab
  *
- * Premium polish:
- * - Hero header row with label + meta data
- * - Larger headline with tighter tracking
- * - Highlighted emphasis words with subtle underline
- * - Lede line as narrative promise
- * - Subtle gradient surface with stronger border
+ * ACCURACY CONTRACT COMPLIANT:
+ * - No claims about what algorithm "thinks"
+ * - All language anchored to "this scan"
+ * - No identity claims or preference inference
+ * - Explicit uncertainty where appropriate
  */
 const AlgorithmTabHero = ({ scans, viewDataResults }) => {
   // Get top topics from the primary view data
   const topicsData = viewDataResults?.['algo-topics-liked']?.data || [];
-  const topTopic = topicsData[0]?.topic || 'certain themes';
+  const topTopic = topicsData[0]?.topic || 'certain topics';
   const secondTopic = topicsData[1]?.topic || '';
+  const topicCount = topicsData.length || 0;
 
   // Get profile breadth
   const breadthData = viewDataResults?.['algo-profile-breadth']?.data;
@@ -1277,7 +1277,7 @@ const AlgorithmTabHero = ({ scans, viewDataResults }) => {
 
         {/* Hero Header Row - self-contained label + meta */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6 relative">
-          {/* Left: Editorial kicker label */}
+          {/* Left: Editorial kicker label - grounded in observation */}
           <p
             style={{
               fontSize: '11px',
@@ -1287,7 +1287,7 @@ const AlgorithmTabHero = ({ scans, viewDataResults }) => {
               textTransform: 'uppercase',
             }}
           >
-            Your algorithmic portrait
+            Observed patterns in this scan
           </p>
 
           {/* Right: Meta data pill */}
@@ -1307,7 +1307,7 @@ const AlgorithmTabHero = ({ scans, viewDataResults }) => {
           </div>
         </div>
 
-        {/* Main headline - LARGER with tighter tracking */}
+        {/* Main headline - grounded in observation, not identity */}
         <div
           className="relative mb-6"
           style={{
@@ -1323,7 +1323,7 @@ const AlgorithmTabHero = ({ scans, viewDataResults }) => {
               background: 'linear-gradient(180deg, #2563EB 0%, #60A5FA 100%)',
             }}
           />
-          {/* Main interpretive headline - LARGER on desktop, tighter tracking */}
+          {/* Main headline - observation-based */}
           <h2
             className="font-extrabold text-slate-900"
             style={{
@@ -1334,18 +1334,17 @@ const AlgorithmTabHero = ({ scans, viewDataResults }) => {
               maxWidth: '100%',
             }}
           >
-            Your feed keeps returning to{' '}
-            <EmphasisWord>{topTopic}</EmphasisWord>
+            In this scan, <EmphasisWord>{topTopic}</EmphasisWord>
             {secondTopic && (
               <>
                 {' '}and <EmphasisWord>{secondTopic}</EmphasisWord>
               </>
             )}
-            —even when you don't ask for it.
+            {' '}appeared most often.
           </h2>
         </div>
 
-        {/* Supporting interpretation */}
+        {/* Supporting context - explicit epistemic limits */}
         <p
           className="text-slate-600 mb-5"
           style={{
@@ -1354,11 +1353,11 @@ const AlgorithmTabHero = ({ scans, viewDataResults }) => {
             maxWidth: '680px',
           }}
         >
-          This is our best interpretation based on what we've observed.
-          Algorithms don't explain themselves—we're reading between the lines.
+          This is what showed up when we captured this scroll session.
+          We cannot know why these topics appeared or how platforms categorize you.
         </p>
 
-        {/* Lede line - narrative promise */}
+        {/* Lede line - grounded */}
         <p
           className="text-slate-500 italic"
           style={{
@@ -1367,13 +1366,13 @@ const AlgorithmTabHero = ({ scans, viewDataResults }) => {
             maxWidth: '600px',
           }}
         >
-          Here's the pattern, what reinforces it, and what you can gently shift.
+          Below: what we observed, possible context, and experiments you could try.
         </p>
       </div>
 
-      {/* Two supporting context cards - BRIDGE INSIGHTS */}
+      {/* Two supporting context cards - OBSERVATION-BASED */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8">
-        {/* Narrowing focus card - with icon badge */}
+        {/* Topic breadth card */}
         <div
           className="rounded-xl relative overflow-hidden transition-all duration-200 hover:border-slate-400 hover:shadow-md group"
           style={{
@@ -1401,24 +1400,24 @@ const AlgorithmTabHero = ({ scans, viewDataResults }) => {
               >
                 <Compass size={16} className="text-blue-600" />
               </div>
-              <h4 className="text-base font-bold text-slate-800">Narrowing focus</h4>
+              <h4 className="text-base font-bold text-slate-800">Topic breadth</h4>
             </div>
-            {/* Takeaway line - stronger */}
+            {/* Takeaway line - observation-based */}
             <p className="text-sm font-medium text-slate-700 mb-2">
-              Your feed appears <span className="font-semibold text-blue-700">{breadth}</span>.
+              In this scan, topic variety appeared <span className="font-semibold text-blue-700">{breadth}</span>.
             </p>
             {/* Explanation - muted */}
             <p className="text-sm text-slate-500 leading-relaxed">
               {breadth === 'narrow'
-                ? 'A few topics dominate while others rarely appear.'
+                ? 'A few topics dominated this scan. Other scans may differ.'
                 : breadth === 'broad'
-                ? 'You see a good variety of different topics.'
-                : 'Some topics get more attention than others.'}
+                ? 'A wide range of topics appeared in this scan.'
+                : 'Topics were moderately distributed in this scan.'}
             </p>
           </div>
         </div>
 
-        {/* Sticky patterns card - with icon badge */}
+        {/* What we cannot know card */}
         <div
           className="rounded-xl relative overflow-hidden transition-all duration-200 hover:border-slate-400 hover:shadow-md group"
           style={{
@@ -1444,17 +1443,17 @@ const AlgorithmTabHero = ({ scans, viewDataResults }) => {
                   border: '1px solid rgba(37, 99, 235, 0.2)',
                 }}
               >
-                <RefreshCcw size={16} className="text-blue-600" />
+                <ShieldCheck size={16} className="text-blue-600" />
               </div>
-              <h4 className="text-base font-bold text-slate-800">Sticky patterns</h4>
+              <h4 className="text-base font-bold text-slate-800">What we cannot know</h4>
             </div>
-            {/* Takeaway line - stronger */}
+            {/* Explicit limits */}
             <p className="text-sm font-medium text-slate-700 mb-2">
-              These themes have been <span className="font-semibold text-blue-700">persistent</span>.
+              Why this content appeared, or how you interacted with it.
             </p>
             {/* Explanation - muted */}
             <p className="text-sm text-slate-500 leading-relaxed">
-              Once the algorithm identifies an interest, it reinforces it—changing direction takes sustained effort.
+              We see what showed up, not why. Platform algorithms are opaque. This scan is one snapshot.
             </p>
           </div>
         </div>
@@ -1466,139 +1465,140 @@ const AlgorithmTabHero = ({ scans, viewDataResults }) => {
 
 /**
  * TAB_HERO_CONFIG - Configuration for each tab's hero section
- * Part 2: Apply Algorithm tab design system to all tabs
+ * ACCURACY CONTRACT COMPLIANT:
+ * - All language anchored to "this scan"
+ * - No claims about platform intent or user identity
+ * - Explicit epistemic limits
  */
 const TAB_HERO_CONFIG = {
   ads: {
-    kicker: 'Your ad profile',
+    kicker: 'Promotional content observed',
     getHeadline: (data) => {
       const pct = data?.['ads-percentage']?.data?.currentPercent;
-      if (pct === undefined) return "Your feed is optimized to sell, not just inform.";
-      if (pct < 10) return "Most of your feed isn't trying to sell you anything—yet.";
-      if (pct < 25) return "A steady stream of ads flows through your feed.";
-      return "Your feed is heavily optimized to sell to you.";
+      const total = data?.['ads-percentage']?.data?.totalPosts || 0;
+      if (pct === undefined) return "In this scan, we detected promotional content.";
+      if (pct < 10) return `In this scan, approximately ${pct}% of posts were labeled as ads.`;
+      if (pct < 25) return `In this scan, roughly 1 in ${Math.round(100/pct)} posts was labeled as an ad.`;
+      return `In this scan, a substantial portion (~${pct}%) was labeled as ads.`;
     },
-    interpretation: "This is what your feed looks like to advertisers—categories and behaviors they think will make you buy.",
-    lede: "Here's what's being promoted, why it's targeting you, and what you might do about it.",
+    interpretation: "These are posts the platform explicitly labeled as ads or sponsored. We cannot know why these ads were shown to you.",
+    lede: "Below: what promotional content appeared, the categories observed, and experiments you could try.",
     supportCards: [
       {
         icon: 'target',
-        title: 'Targeting signals',
+        title: 'Ad source diversity',
         getContent: (data) => {
           const concentration = data?.['ads-concentration']?.data?.qualitativeLabel;
           return concentration
-            ? `Ad concentration appears ${concentration.toLowerCase()}.`
-            : 'Advertisers are watching your engagement patterns.';
+            ? `In this scan, ad source diversity: ${concentration.toLowerCase()}.`
+            : 'We counted unique advertisers in this scan.';
         },
-        explanation: 'Advertisers use your behavior to decide what to show you.',
+        explanation: 'We cannot know why specific advertisers appeared.',
       },
       {
         icon: 'repeat',
-        title: 'Promotional patterns',
+        title: 'Product categories',
         getContent: (data) => {
           const products = data?.['ads-products']?.data;
-          if (products?.length > 0) return `${products[0].name} keeps appearing in your ads.`;
-          return 'Certain product categories show up repeatedly.';
+          if (products?.length > 0) return `${products[0].name} appeared frequently in ads in this scan.`;
+          return 'We detected product categories in labeled ads.';
         },
-        explanation: 'Repetition means the algorithm thinks you\'re interested.',
+        explanation: 'Categories observed in ads — does not indicate your interests.',
       },
     ],
   },
   politics: {
-    kicker: 'Your political exposure',
+    kicker: 'Political content observed',
     getHeadline: (data) => {
       const pct = data?.['politics-share']?.data?.currentPercent;
-      if (pct === undefined) return "Your feed shapes how you see the political world.";
-      if (pct < 10) return "Politics is a small part of what shows up for you.";
-      if (pct < 30) return "Political content is a steady presence in your feed.";
-      return "Politics dominates a lot of what you scroll through.";
+      if (pct === undefined) return "In this scan, we detected content matching political keywords.";
+      if (pct < 10) return `In this scan, approximately ${pct}% matched political keywords.`;
+      if (pct < 30) return `In this scan, roughly 1 in ${Math.round(100/pct)} posts matched political keywords.`;
+      return `In this scan, a substantial portion (~${pct}%) matched political keywords.`;
     },
-    interpretation: "This reflects what political content the algorithm thinks you'll engage with—not what you believe.",
-    lede: "Here's what political themes appear, where they come from, and how the balance looks.",
+    interpretation: "Political classification uses keyword matching. We cannot know what you believe or support — only what appeared.",
+    lede: "Below: political keywords detected, sources observed, and experiments you could try.",
     supportCards: [
       {
         icon: 'scale',
-        title: 'Perspective balance',
+        title: 'Keyword balance (low confidence)',
         getContent: (data) => {
           const balance = data?.['politics-balance']?.data?.message;
-          return balance || 'Your political exposure may lean in certain directions.';
+          return balance ? `${balance} (Low confidence estimate.)` : 'Keyword balance was measured using simple matching.';
         },
-        explanation: 'Algorithms often reinforce familiar viewpoints.',
+        explanation: 'Simple keyword matching — cannot detect nuance or irony.',
       },
       {
         icon: 'users',
-        title: 'Source concentration',
+        title: 'Political content sources',
         getContent: (data) => {
           const creators = data?.['politics-creators']?.data;
-          if (creators?.length > 0) return `Most politics comes from just ${Math.min(creators.length, 5)} accounts.`;
-          return 'A few accounts drive most of your political content.';
+          if (creators?.length > 0) return `In this scan, political content came from ${Math.min(creators.length, 5)} accounts.`;
+          return 'We counted accounts that posted political content in this scan.';
         },
-        explanation: 'Unfollowing one or two can shift the balance significantly.',
+        explanation: 'Accounts that posted political keywords in this scan.',
       },
     ],
   },
   patterns: {
-    kicker: 'Your feed patterns',
+    kicker: 'Topic distribution observed',
     getHeadline: (data) => {
       const variety = data?.['patterns-topic-variety']?.data;
       const top = variety?.topTopics?.[0]?.label;
-      if (top) return `Your feed rewards consistency—and keeps returning to ${top}.`;
-      return "Your feed rewards consistency more than curiosity.";
+      if (top) return `In this scan, ${top} appeared most often.`;
+      return "In this scan, we observed topic distribution.";
     },
-    interpretation: "These are the topics the algorithm has learned you'll engage with. They become self-reinforcing over time.",
-    lede: "Here's what keeps appearing, why it sticks, and how varied your exposure really is.",
+    interpretation: "These are topics detected in this scroll session. We cannot know why they appeared or what you prefer.",
+    lede: "Below: topics observed, concentration levels, and experiments you could try.",
     supportCards: [
       {
         icon: 'layers',
         title: 'Topic concentration',
         getContent: (data) => {
           const echo = data?.['patterns-echo-risk']?.data?.riskLevel;
-          return echo || 'Some topics appear far more than others.';
+          return echo ? `In this scan: ${echo}` : 'We measured how topics were distributed in this scan.';
         },
-        explanation: 'High concentration means the same themes dominate.',
+        explanation: 'Measures topic spread in this scan only.',
       },
       {
         icon: 'activity',
-        title: 'Feed stability',
+        title: 'What we cannot know',
         getContent: (data) => {
-          const stability = data?.['patterns-stability']?.data?.stability;
-          return stability
-            ? `Your feed is ${stability.toLowerCase()} between sessions.`
-            : 'Your feed may or may not change much day to day.';
+          return 'Why these topics appeared, or how they compare to other sessions.';
         },
-        explanation: 'Stable feeds are harder to shift.',
+        explanation: 'One scan is one snapshot. Other sessions may differ.',
       },
     ],
   },
   creators: {
-    kicker: 'Your creator mix',
+    kicker: 'Sources observed',
     getHeadline: (data) => {
       const top = data?.['creators-top']?.data?.[0]?.creator;
-      if (top) return `A small group of creators shapes most of what you see—especially ${top}.`;
-      return "A small group of creators shapes most of what you see.";
+      if (top) return `In this scan, ${top} appeared most often.`;
+      return "In this scan, we observed account distribution.";
     },
-    interpretation: "The voices you hear most aren't always the ones you chose. Algorithms amplify some over others.",
-    lede: "Here's who dominates your feed, how concentrated your sources are, and what that means.",
+    interpretation: "These are accounts that appeared in this scroll session. We cannot know why they were shown.",
+    lede: "Below: sources observed, concentration levels, and experiments you could try.",
     supportCards: [
       {
         icon: 'users',
-        title: 'Voice concentration',
+        title: 'Source concentration',
         getContent: (data) => {
           const concentration = data?.['creators-concentration']?.data?.qualitativeLabel;
-          return concentration || 'A few voices may dominate your feed.';
+          return concentration ? `In this scan: ${concentration}` : 'We measured source distribution in this scan.';
         },
-        explanation: 'High concentration means fewer perspectives reach you.',
+        explanation: 'How content was distributed across accounts.',
       },
       {
         icon: 'shuffle',
         title: 'Source diversity',
         getContent: (data) => {
           const diversity = data?.['creators-voice-diversity']?.data?.diversity;
-          if (diversity === 'Low') return "You're hearing from a narrow set of voices.";
-          if (diversity === 'High') return "You're hearing from a wide range of voices.";
-          return 'Your source diversity is somewhere in the middle.';
+          if (diversity === 'Low') return "In this scan, a narrow set of accounts appeared.";
+          if (diversity === 'High') return "In this scan, a wide range of accounts appeared.";
+          return 'Source diversity was moderate in this scan.';
         },
-        explanation: 'More diverse sources mean more varied perspectives.',
+        explanation: 'Counted unique accounts in this scan.',
       },
     ],
   },
@@ -1789,17 +1789,16 @@ const GenericTabHero = ({ tabId, scans, viewDataResults }) => {
 
 /**
  * SecondVisualAnchor - Chapter opener that transitions into the analysis
- * Appears after the Talk module to prevent "glaze over" effect
- * Provides a clear second anchor point in the story
+ * ACCURACY CONTRACT COMPLIANT: All language grounded in observation
  */
 const SecondVisualAnchor = ({ tabId }) => {
-  // Tab-specific anchor messages
+  // Tab-specific anchor messages - grounded in observation, not intent
   const anchorMessages = {
-    algorithm: "Now let's make the pattern concrete. This is what the feed keeps reinforcing, and why.",
-    ads: "Now let's look at the details. Here's what's being promoted and how it targets you.",
-    politics: "Now let's examine the specifics. Here's where the political content comes from.",
-    patterns: "Now let's dig into the data. Here's what keeps appearing and why it sticks.",
-    creators: "Now let's see who dominates. Here's how your sources break down.",
+    algorithm: "Below: the details of what we observed in this scan, with context and possible experiments.",
+    ads: "Below: the promotional content we detected, categories observed, and experiments you could try.",
+    politics: "Below: political keywords detected, sources observed, and experiments you could try.",
+    patterns: "Below: topics detected in this scan, concentration levels, and experiments you could try.",
+    creators: "Below: sources observed in this scan, concentration levels, and experiments you could try.",
   };
 
   return (
