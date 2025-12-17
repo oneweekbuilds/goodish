@@ -29,6 +29,16 @@
   --brand-green: #10B981;
   /* Emerald Green */
 
+  /* Dashboard Semantic Colors */
+  --dashboard-blue: #2563EB;
+  --dashboard-blue-tint: rgba(37, 99, 235, 0.06);
+  --dashboard-blue-light: rgba(37, 99, 235, 0.12);
+  --dashboard-blue-border: rgba(37, 99, 235, 0.2);
+  --dashboard-green: #10B981;
+  --dashboard-green-tint: rgba(16, 185, 129, 0.06);
+  --dashboard-green-light: rgba(16, 185, 129, 0.12);
+  --dashboard-green-border: rgba(16, 185, 129, 0.2);
+
   /* Semantic Colors */
   --success: #10B981;
   --error: #EF4444;

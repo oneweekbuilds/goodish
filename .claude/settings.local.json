@@ -75,7 +75,10 @@
       "Bash(cat:*)",
       "Bash(findstr:*)",
       "Bash(netstat:*)",
-      "Bash(do cp icon.svg icon$size.png)"
+      "Bash(do cp icon.svg icon$size.png)",
+      "Bash(python -m uvicorn:*)",
+      "Bash(wmic process:*)",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": [],
