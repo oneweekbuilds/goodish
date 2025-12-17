@@ -470,72 +470,110 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0, accentCo
   const accentBg = accentColor === 'green' ? 'bg-emerald-50/50' : 'bg-primary-blue/5';
   const accentText = accentColor === 'green' ? 'text-emerald-600' : 'text-primary-blue';
 
-  // Card container styles - UI Refoundation: Enforced padding contract
+  // Card container styles - UI Refoundation: Lighter borders, quieter than hero
   const getCardClasses = () => {
     // Inline cards (inside expandable) have no container styling
     if (isInline) {
       return '';
     }
 
-    const baseClasses = 'bg-white border rounded-2xl overflow-hidden flex flex-col transition-all';
+    const baseClasses = 'bg-white rounded-2xl overflow-hidden flex flex-col transition-all';
 
     if (isSummaryCard) {
-      // Summary: muted, full-width, subtle accent
-      return `${baseClasses} ${accentBorder} ring-1 ${accentRing} shadow-sm`;
+      // Summary: muted, full-width, very subtle
+      return baseClasses;
     }
 
     if (isPrimary && hasData) {
-      // Primary: strong presence, shadow-md
-      return `${baseClasses} border-slate-200 shadow-md ring-1 ring-slate-100`;
+      // Primary: lighter presence than before
+      return baseClasses;
     }
 
     if (isPrimary && !hasData) {
-      return `${baseClasses} border-slate-100 bg-slate-50/30`;
+      return `${baseClasses} bg-slate-50/30`;
     }
 
     if (isFutureCard) {
-      return `${baseClasses} border-slate-100 bg-slate-50/30 opacity-50`;
+      return `${baseClasses} bg-slate-50/30 opacity-50`;
     }
 
-    // Secondary: muted background
-    return `${baseClasses} border-slate-100 bg-slate-50/30`;
+    // Secondary: muted background, light border
+    return `${baseClasses} bg-slate-50/20`;
   };
 
-  // Header styles - UI Refoundation: Padding contract
-  // Primary: p-7, Secondary: p-5, Summary: p-6
+  // Card container inline styles for lighter borders
+  const getCardStyles = () => {
+    if (isInline) return {};
+
+    if (isSummaryCard) {
+      return {
+        border: '1px solid rgba(226, 232, 240, 0.5)',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)',
+      };
+    }
+
+    if (isPrimary && hasData) {
+      return {
+        border: '1px solid rgba(226, 232, 240, 0.6)',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+      };
+    }
+
+    if (isFutureCard) {
+      return {
+        border: '1px solid rgba(226, 232, 240, 0.4)',
+      };
+    }
+
+    // Secondary cards
+    return {
+      border: '1px solid rgba(226, 232, 240, 0.5)',
+      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.02)',
+    };
+  };
+
+  // Header styles - UI Refoundation: Increased padding for readability
   const getHeaderClasses = () => {
     if (isInline) {
       return 'pb-4';
     }
 
     if (isSummaryCard) {
-      return `px-6 py-5 border-b border-slate-100 ${accentBg}`;
+      return `px-7 py-6 ${accentBg}`;
     }
 
     if (isPrimary && hasData) {
-      return 'px-7 py-6 border-b border-slate-100 bg-white';
+      return 'px-8 py-7 bg-white';
     }
 
     if (isFutureCard) {
-      return 'px-5 py-3 border-b border-slate-100';
+      return 'px-6 py-4';
     }
 
-    // Secondary: p-5
-    return 'px-5 py-4 border-b border-slate-50';
+    // Secondary: increased padding
+    return 'px-6 py-5';
   };
 
-  // Content padding based on card type
+  // Header bottom border styles (lighter)
+  const getHeaderBorderStyles = () => {
+    if (isInline) return {};
+    return {
+      borderBottom: '1px solid rgba(226, 232, 240, 0.4)',
+    };
+  };
+
+  // Content padding based on card type - increased for readability
   const getContentPadding = () => {
     if (isInline) return '';
-    if (isPrimary && hasData) return 'p-7';
-    if (isSummaryCard) return 'p-6';
-    return 'p-5';
+    if (isPrimary && hasData) return 'p-8';
+    if (isSummaryCard) return 'p-7';
+    return 'p-6';
   };
 
   return (
-    <div className={getCardClasses()}>
+    <div className={getCardClasses()} style={getCardStyles()}>
       {/* Card Header - Anatomy: Eyebrow → Title → Description */}
-      <div className={getHeaderClasses()}>
+      <div className={getHeaderClasses()} style={getHeaderBorderStyles()}>
         {/* Eyebrow label with semantic accent */}
         {isSummaryCard && (
           <span className={`inline-block text-[10px] font-semibold uppercase tracking-widest mb-2 ${accentText}`}>

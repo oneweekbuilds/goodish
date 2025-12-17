@@ -1,11 +1,37 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, RefreshCw, BarChart3, Clock, Globe, Database, Info, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Loader2, RefreshCw, BarChart3, Clock, Globe, Database, Info, ToggleLeft, ToggleRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { TABS, getViewsForTab, getVisibleViewCount, EMPTY_STATE_TYPES, TAB_TRUST_SENTENCES } from './dashboardCatalog';
 import ViewCard from '../../components/dashboard/ViewCard';
 import TalkToAlgorithmSection from '../../components/dashboard/TalkToAlgorithmSection';
 import { useDashboardData } from '../../lib/dashboard/useDashboardData';
 import * as dataHelpers from '../../lib/dashboard/dataHelpers';
+
+/**
+ * THEME CONSTANTS - Part 1 Color System
+ * Rule A: All 5 dashboard tabs use BLUE theme
+ * Rule B: Talk to Your Algorithm module uses GREEN theme everywhere
+ */
+export const THEME = {
+  // Blue theme for all tabs (consistent, calm editorial product)
+  blue: {
+    accent: '#2563EB',
+    accentLight: 'rgba(37, 99, 235, 0.1)',
+    accentMedium: 'rgba(37, 99, 235, 0.15)',
+    gradient: 'linear-gradient(180deg, rgba(37, 99, 235, 0.03) 0%, rgba(37, 99, 235, 0.06) 50%, rgba(37, 99, 235, 0.02) 100%)',
+    border: 'rgba(37, 99, 235, 0.12)',
+    shadow: '0 4px 24px rgba(37, 99, 235, 0.06)',
+  },
+  // Green theme ONLY for Talk to Your Algorithm module (premium standout)
+  green: {
+    accent: '#10B981',
+    accentLight: 'rgba(16, 185, 129, 0.1)',
+    accentMedium: 'rgba(16, 185, 129, 0.15)',
+    gradient: 'linear-gradient(165deg, rgba(16, 185, 129, 0.06) 0%, rgba(16, 185, 129, 0.12) 50%, rgba(16, 185, 129, 0.07) 100%)',
+    border: 'rgba(16, 185, 129, 0.15)',
+    shadow: '0 4px 32px rgba(16, 185, 129, 0.1)',
+  },
+};
 
 /**
  * CollapsedEmptyStateCard - Shows a composite placeholder when 3+ cards share the same empty state
@@ -81,17 +107,26 @@ const TabTrustSentence = ({ tabId }) => {
 };
 
 /**
- * SectionHeader - UI Refoundation: Subtle accent from semantic color lane
+ * SectionHeader - Part 3: Editorial section headers
+ * More magazine-like, less dashboard-like
+ * Always uses blue accent (Part 1 Rule A)
  */
-const SectionHeader = ({ title, subtitle, accentColor = 'blue' }) => (
-  <div className="flex items-center gap-4">
-    <div className={`w-1 h-4 rounded-full ${accentColor === 'green' ? 'bg-emerald-400' : 'bg-primary-blue'}`} />
-    <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest">
+const SectionHeader = ({ title, subtitle }) => (
+  <div className="flex items-center gap-3 mb-3">
+    <div
+      className="w-1 h-4 rounded-full"
+      style={{
+        background: 'linear-gradient(180deg, rgba(37, 99, 235, 0.5), rgba(37, 99, 235, 0.2))',
+      }}
+    />
+    <h3
+      className="text-xs font-semibold uppercase tracking-wider"
+      style={{ color: 'rgba(37, 99, 235, 0.7)' }}
+    >
       {title}
     </h3>
-    <div className="flex-1 h-px bg-slate-100" />
     {subtitle && (
-      <span className="text-xs text-slate-400">{subtitle}</span>
+      <span className="text-xs text-slate-400 ml-auto">{subtitle}</span>
     )}
   </div>
 );
@@ -231,27 +266,37 @@ const ExpandableDetailRow = ({ view, dataResult, isExpanded, onToggle, accentCol
     : null;
 
   return (
-    <div className="border-t border-slate-100 first:border-t-0">
+    <div
+      className="first:border-t-0"
+      style={{ borderTop: '1px solid rgba(226, 232, 240, 0.4)' }}
+    >
       <button
         onClick={onToggle}
-        className="w-full px-5 py-4 flex items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors text-left"
+        className="w-full px-6 py-5 flex items-center justify-between gap-4 hover:bg-slate-50/30 transition-colors text-left"
       >
         <div className="flex-1 min-w-0">
           <h4 className="text-sm font-medium text-slate-600">
             {view.title}
           </h4>
           {!isExpanded && takeawayText && (
-            <p className="text-xs text-slate-400 mt-0.5 truncate">
+            <p className="text-xs text-slate-400 mt-1 truncate">
               {takeawayText}
             </p>
           )}
         </div>
-        <span className={`text-xs font-medium transition-colors ${accentColor === 'green' ? 'text-emerald-600' : 'text-primary-blue'}`}>
+        <span
+          className="text-xs font-medium transition-colors"
+          style={{
+            color: accentColor === 'green'
+              ? 'rgba(16, 185, 129, 0.75)'
+              : 'rgba(37, 99, 235, 0.7)',
+          }}
+        >
           {isExpanded ? 'Show less' : 'Show more'}
         </span>
       </button>
       {isExpanded && (
-        <div className="px-5 pb-5 pt-1">
+        <div className="px-6 pb-6 pt-2">
           <ViewCard
             view={view}
             dataResult={dataResult}
@@ -267,38 +312,29 @@ const ExpandableDetailRow = ({ view, dataResult, isExpanded, onToggle, accentCol
 };
 
 /**
- * ViewsGridWithCollapsing - UI Refoundation: Enforced section structure
+ * ViewsGridWithCollapsing - Part 3: Editorial Stack Redesign
  *
- * Structure per tab:
- * - PRIMARY CARD: Full width
- * - SECONDARY ROW: 2 cards, equal width
- * - EXPANDABLE SECTION: Inline collapsed details
- * - SUMMARY CARD: Full width, muted
+ * Structure per tab (magazine-style, not dashboard):
+ * - KEY INSIGHT: Declarative statement + collapsible evidence
+ * - DETAILS: Softer backgrounds, headline + takeaway, 2 columns
+ * - MORE DETAILS: Editorial drawer "Where this is heading"
+ * - SUMMARY: Paragraph + 3 "Try this" actions max
  *
- * Semantic color lanes (logo consistent):
- * - Ads & Influence → blue
- * - Politics & Worldview → green
- * - Patterns → blue
- * - Creators → green
- * - Algorithm → blue
+ * Part 1 Rule A: ALL tabs use BLUE accent
  */
 const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCount, tabName, tabId }) => {
-  // Track which collapsedByDefault views have been expanded
-  const [expandedViews, setExpandedViews] = useState(new Set());
+  // Track which sections are expanded
+  const [expandedSections, setExpandedSections] = useState({
+    keyInsightEvidence: false,
+    moreDetails: false,
+    summaryMore: false,
+  });
 
-  // Semantic color lanes - alternating blue/green by tab
-  const accentColor = ['politics', 'creators'].includes(tabId) ? 'green' : 'blue';
-
-  const handleToggle = (viewId) => {
-    setExpandedViews((prev) => {
-      const next = new Set(prev);
-      if (next.has(viewId)) {
-        next.delete(viewId);
-      } else {
-        next.add(viewId);
-      }
-      return next;
-    });
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
   };
 
   // Group views by sortOrder AND data availability
@@ -317,7 +353,6 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
 
     const targetGroup = groupedViews[group] || groupedViews.supporting;
 
-    // Check if this view should be collapsed by default
     if (view.collapsedByDefault) {
       targetGroup.collapsed.push(view);
     } else {
@@ -327,11 +362,11 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
 
   // Get views for each section
   const primaryCards = groupedViews.primary.withData;
-  const secondaryCards = groupedViews.supporting.withData.slice(0, 2); // Max 2
+  const secondaryCards = groupedViews.supporting.withData.slice(0, 2);
   const collapsedCards = [
     ...groupedViews.primary.collapsed,
     ...groupedViews.supporting.collapsed,
-    ...groupedViews.supporting.withData.slice(2), // Overflow goes to collapsed
+    ...groupedViews.supporting.withData.slice(2),
   ];
   const summaryCards = groupedViews.summary.withData;
 
@@ -342,81 +377,287 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
   const hasSummaryContent = summaryCards.length > 0;
 
   return (
-    <div className="space-y-8">
-      {/* PRIMARY CARD - Full width */}
+    <div className="space-y-14">
+      {/* KEY INSIGHT - Part 3 Module Type 1: Declarative + Collapsible Evidence */}
       {hasPrimaryContent && (
         <section>
-          <SectionHeader title="Key Insight" accentColor={accentColor} />
+          <SectionHeader title="Key Insight" />
           <div className="mt-4">
-            {primaryCards.map((view) => (
-              <ViewCard
-                key={view.id}
-                view={view}
-                dataResult={viewDataResults[view.id]}
-                scanCount={scanCount}
-                platformCount={platformCount}
-                accentColor={accentColor}
-                isFullWidth={true}
-              />
-            ))}
+            {primaryCards.map((view) => {
+              const dataResult = viewDataResults[view.id];
+              const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
+                ? view.takeaway(dataResult?.data)
+                : null;
+
+              return (
+                <div
+                  key={view.id}
+                  className="rounded-2xl overflow-hidden"
+                  style={{
+                    background: 'linear-gradient(180deg, rgba(37, 99, 235, 0.04) 0%, rgba(37, 99, 235, 0.02) 100%)',
+                    border: '1px solid rgba(37, 99, 235, 0.1)',
+                  }}
+                >
+                  {/* Declarative insight header */}
+                  <div className="p-6 md:p-8">
+                    {takeawayText && (
+                      <p
+                        className="text-xl md:text-2xl font-semibold text-text-main leading-snug mb-4"
+                        style={{ maxWidth: '640px' }}
+                      >
+                        {takeawayText}
+                      </p>
+                    )}
+                    <p className="text-sm text-slate-500 mb-4">{view.description}</p>
+
+                    {/* Evidence toggle */}
+                    <button
+                      onClick={() => toggleSection('keyInsightEvidence')}
+                      className="inline-flex items-center gap-2 text-sm font-medium transition-colors"
+                      style={{ color: 'rgba(37, 99, 235, 0.8)' }}
+                    >
+                      {expandedSections.keyInsightEvidence ? (
+                        <>
+                          <ChevronUp size={16} />
+                          Hide evidence
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown size={16} />
+                          How we know this
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Collapsible evidence section */}
+                  {expandedSections.keyInsightEvidence && (
+                    <div
+                      className="px-6 pb-6 md:px-8 md:pb-8 pt-0"
+                      style={{
+                        borderTop: '1px solid rgba(37, 99, 235, 0.08)',
+                        background: 'rgba(248, 250, 252, 0.5)',
+                      }}
+                    >
+                      <div className="pt-5">
+                        <ViewCard
+                          view={view}
+                          dataResult={dataResult}
+                          scanCount={scanCount}
+                          platformCount={platformCount}
+                          accentColor="blue"
+                          isInline={true}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </section>
       )}
 
-      {/* SECONDARY ROW - Exactly 2 cards, equal width */}
+      {/* DETAILS - Part 3: Softer backgrounds, headline + takeaway */}
       {hasSecondaryContent && (
         <section>
-          <SectionHeader title="Details" accentColor={accentColor} />
+          <SectionHeader title="Details" />
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
-            {secondaryCards.map((view) => (
-              <ViewCard
-                key={view.id}
-                view={view}
-                dataResult={viewDataResults[view.id]}
-                scanCount={scanCount}
-                platformCount={platformCount}
-                accentColor={accentColor}
-              />
-            ))}
+            {secondaryCards.map((view) => {
+              const dataResult = viewDataResults[view.id];
+              const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
+                ? view.takeaway(dataResult?.data)
+                : null;
+
+              return (
+                <div
+                  key={view.id}
+                  className="rounded-xl p-5"
+                  style={{
+                    background: 'linear-gradient(180deg, rgba(37, 99, 235, 0.025) 0%, rgba(248, 250, 252, 0.8) 100%)',
+                    border: '1px solid rgba(226, 232, 240, 0.7)',
+                  }}
+                >
+                  <h4 className="text-base font-semibold text-slate-700 mb-2">{view.title}</h4>
+                  {takeawayText && (
+                    <p className="text-sm text-slate-600 mb-3">{takeawayText}</p>
+                  )}
+                  <div className="opacity-80">
+                    <ViewCard
+                      view={view}
+                      dataResult={dataResult}
+                      scanCount={scanCount}
+                      platformCount={platformCount}
+                      accentColor="blue"
+                      isInline={true}
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
       )}
 
-      {/* EXPANDABLE SECTION - Inline collapsed */}
+      {/* MORE DETAILS - Part 3 Module Type 2: Editorial Drawer */}
       {hasCollapsedContent && (
         <section>
-          <SectionHeader title="More Details" accentColor={accentColor} />
-          <div className="mt-4 bg-slate-50/50 border border-slate-100 rounded-xl overflow-hidden">
-            {collapsedCards.map((view) => (
-              <ExpandableDetailRow
-                key={view.id}
-                view={view}
-                dataResult={viewDataResults[view.id]}
-                isExpanded={expandedViews.has(view.id)}
-                onToggle={() => handleToggle(view.id)}
-                accentColor={accentColor}
-              />
-            ))}
+          <div
+            className="rounded-xl overflow-hidden"
+            style={{
+              background: 'rgba(248, 250, 252, 0.6)',
+              border: '1px solid rgba(226, 232, 240, 0.6)',
+            }}
+          >
+            <button
+              onClick={() => toggleSection('moreDetails')}
+              className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-50/50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-1 h-4 rounded-full"
+                  style={{
+                    background: 'linear-gradient(180deg, rgba(37, 99, 235, 0.4), rgba(37, 99, 235, 0.15))',
+                  }}
+                />
+                <span className="text-sm font-semibold text-slate-600">
+                  Where this is heading
+                </span>
+                <span className="text-xs text-slate-400">
+                  ({collapsedCards.length} more {collapsedCards.length === 1 ? 'insight' : 'insights'})
+                </span>
+              </div>
+              {expandedSections.moreDetails ? (
+                <ChevronUp size={18} className="text-slate-400" />
+              ) : (
+                <ChevronDown size={18} className="text-slate-400" />
+              )}
+            </button>
+
+            {expandedSections.moreDetails && (
+              <div
+                className="px-6 pb-6 space-y-4"
+                style={{ borderTop: '1px solid rgba(226, 232, 240, 0.5)' }}
+              >
+                {collapsedCards.map((view) => (
+                  <div key={view.id} className="pt-4">
+                    <h5 className="text-sm font-medium text-slate-600 mb-2">{view.title}</h5>
+                    <ViewCard
+                      view={view}
+                      dataResult={viewDataResults[view.id]}
+                      scanCount={scanCount}
+                      platformCount={platformCount}
+                      accentColor="blue"
+                      isInline={true}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
       )}
 
-      {/* SUMMARY CARD - Full width, muted */}
+      {/* SUMMARY - Part 3 Module Type 3: Paragraph + Actions */}
       {hasSummaryContent && (
         <section>
-          <SectionHeader title="Summary" accentColor={accentColor} />
+          <SectionHeader title="What You Could Try" />
           <div className="mt-4">
-            {summaryCards.map((view) => (
-              <ViewCard
-                key={view.id}
-                view={view}
-                dataResult={viewDataResults[view.id]}
-                scanCount={scanCount}
-                platformCount={platformCount}
-                accentColor={accentColor}
-                isFullWidth={true}
-              />
-            ))}
+            {summaryCards.map((view) => {
+              const dataResult = viewDataResults[view.id];
+              const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
+                ? view.takeaway(dataResult?.data)
+                : null;
+              const actionText = dataResult?.hasData && typeof view.action === 'function'
+                ? view.action(dataResult?.data)
+                : null;
+
+              // For list data, show max 3 items as actions
+              const listData = Array.isArray(dataResult?.data)
+                ? dataResult.data.slice(0, 3)
+                : dataResult?.data?.tips?.slice(0, 3) || [];
+
+              return (
+                <div
+                  key={view.id}
+                  className="rounded-xl p-6"
+                  style={{
+                    background: 'linear-gradient(180deg, rgba(37, 99, 235, 0.03) 0%, rgba(248, 250, 252, 0.5) 100%)',
+                    border: '1px solid rgba(226, 232, 240, 0.6)',
+                  }}
+                >
+                  {/* Summary paragraph */}
+                  {takeawayText && (
+                    <p className="text-base text-slate-700 leading-relaxed mb-5">
+                      {takeawayText}
+                    </p>
+                  )}
+
+                  {/* Action items - max 3 */}
+                  {listData.length > 0 && (
+                    <div className="space-y-3">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                        Try this
+                      </p>
+                      {listData.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-start gap-3 text-sm text-slate-600"
+                        >
+                          <span
+                            className="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-medium"
+                            style={{
+                              background: 'rgba(37, 99, 235, 0.1)',
+                              color: 'rgba(37, 99, 235, 0.8)',
+                            }}
+                          >
+                            {idx + 1}
+                          </span>
+                          <span>{typeof item === 'string' ? item : item.text || item.topic || item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Fallback to action text if no list */}
+                  {listData.length === 0 && actionText && (
+                    <p className="text-sm text-slate-500 italic">{actionText}</p>
+                  )}
+
+                  {/* Show more collapse for additional items */}
+                  {Array.isArray(dataResult?.data) && dataResult.data.length > 3 && (
+                    <button
+                      onClick={() => toggleSection('summaryMore')}
+                      className="mt-4 text-sm font-medium flex items-center gap-1"
+                      style={{ color: 'rgba(37, 99, 235, 0.7)' }}
+                    >
+                      {expandedSections.summaryMore ? (
+                        <>
+                          <ChevronUp size={14} />
+                          Show less
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown size={14} />
+                          More ideas ({dataResult.data.length - 3} more)
+                        </>
+                      )}
+                    </button>
+                  )}
+
+                  {expandedSections.summaryMore && Array.isArray(dataResult?.data) && (
+                    <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
+                      {dataResult.data.slice(3).map((item, idx) => (
+                        <div key={idx} className="flex items-start gap-3 text-sm text-slate-500">
+                          <span className="text-slate-300">•</span>
+                          <span>{typeof item === 'string' ? item : item.text || item.topic || item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </section>
       )}
@@ -439,9 +680,52 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
  */
 
 /**
+ * FeatureMomentWrapper - Premium editorial wrapper for Algorithm tab centerpiece
+ * Part 2: Enhanced to feel more premium with subtle gradient, increased border radius,
+ * soft shadow, and increased visual breathing room
+ */
+const FeatureMomentWrapper = ({ children }) => (
+  <div
+    className="relative mb-20 -mx-6 md:-mx-8"
+    style={{
+      background: 'linear-gradient(180deg, rgba(37, 99, 235, 0.025) 0%, rgba(37, 99, 235, 0.055) 40%, rgba(37, 99, 235, 0.035) 70%, rgba(37, 99, 235, 0.015) 100%)',
+      borderRadius: '20px',
+      border: '1px solid rgba(37, 99, 235, 0.1)',
+      boxShadow: '0 8px 40px rgba(37, 99, 235, 0.06), 0 2px 12px rgba(0, 0, 0, 0.02)',
+      marginTop: '2rem',
+      padding: 'clamp(2rem, 5vw, 3.5rem) clamp(2rem, 5vw, 3rem)',
+    }}
+  >
+    {/* Subtle decorative element at top */}
+    <div
+      className="absolute top-0 left-1/2 -translate-x-1/2"
+      style={{
+        width: '60px',
+        height: '4px',
+        background: 'linear-gradient(90deg, rgba(37, 99, 235, 0.15), rgba(37, 99, 235, 0.4), rgba(37, 99, 235, 0.15))',
+        borderRadius: '0 0 4px 4px',
+      }}
+    />
+    {/* Premium inner glow effect */}
+    <div
+      className="absolute inset-0 rounded-[20px] pointer-events-none"
+      style={{
+        background: 'radial-gradient(ellipse at top center, rgba(37, 99, 235, 0.04) 0%, transparent 60%)',
+      }}
+    />
+    <div className="relative">{children}</div>
+  </div>
+);
+
+/**
  * AlgorithmTabHero - Editorial "spike" for "What the Algorithm Thinks" tab
- * Displays a hero insight with interpretation before the catalog views
- * Uses only logo blue for semantic color per design constraints
+ * Part 2: Enhanced hero dominance with:
+ * - Increased vertical padding (15-25%)
+ * - Larger headline (text-4xl equivalent)
+ * - Constrained max-width for better wrap
+ * - Improved line height
+ * - More spacing between hero and supporting cards
+ * - Quieter supporting cards (reduced contrast)
  */
 const AlgorithmTabHero = ({ scans, viewDataResults }) => {
   // Get top topics from the primary view data
@@ -459,26 +743,34 @@ const AlgorithmTabHero = ({ scans, viewDataResults }) => {
 
   return (
     <div className="mb-10">
-      {/* Hero Insight Card */}
+      {/* Hero Insight Card - Enhanced dominance with more padding and larger headline */}
       <div
-        className="w-full rounded-2xl p-8 md:p-10 mb-6"
+        className="w-full rounded-2xl mb-8"
         style={{
-          background: 'linear-gradient(160deg, rgba(37, 99, 235, 0.06) 0%, rgba(37, 99, 235, 0.12) 35%, rgba(37, 99, 235, 0.08) 100%)',
-          border: '1px solid rgba(37, 99, 235, 0.15)',
+          background: 'linear-gradient(160deg, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0.15) 35%, rgba(37, 99, 235, 0.1) 100%)',
+          border: '1px solid rgba(37, 99, 235, 0.18)',
+          padding: 'clamp(2.5rem, 6vw, 4rem) clamp(2rem, 5vw, 3.5rem)',
+          boxShadow: '0 6px 32px rgba(37, 99, 235, 0.08)',
         }}
       >
         {/* Provenance marker */}
         <p
-          className="mb-4"
-          style={{ fontSize: '12px', color: '#2563EB', opacity: 0.7, letterSpacing: '0.02em' }}
+          className="mb-6"
+          style={{ fontSize: '13px', color: '#2563EB', opacity: 0.8, letterSpacing: '0.04em', fontWeight: 500 }}
         >
           Based on patterns across {platformCount} platform{platformCount !== 1 ? 's' : ''}
         </p>
 
-        {/* Main interpretive headline */}
+        {/* Main interpretive headline - Increased size (text-4xl equivalent) and constrained width */}
         <h2
-          className="text-2xl md:text-3xl font-bold text-text-main leading-tight mb-4"
-          style={{ fontFamily: 'var(--font-headline, system-ui)', letterSpacing: '-0.02em' }}
+          className="font-bold text-text-main mb-6"
+          style={{
+            fontFamily: 'var(--font-headline, system-ui)',
+            letterSpacing: '-0.03em',
+            fontSize: 'clamp(1.875rem, 5vw, 2.75rem)',
+            lineHeight: 1.3,
+            maxWidth: '680px',
+          }}
         >
           Your feed keeps returning to{' '}
           <span style={{ color: '#2563EB' }}>{topTopic}</span>
@@ -490,23 +782,34 @@ const AlgorithmTabHero = ({ scans, viewDataResults }) => {
           —even when you don't ask for it.
         </h2>
 
-        {/* Supporting interpretation */}
-        <p className="text-text-muted" style={{ fontSize: '15px', lineHeight: 1.7, maxWidth: '600px' }}>
+        {/* Supporting interpretation - Enhanced readability with increased line height */}
+        <p
+          className="text-text-muted"
+          style={{
+            fontSize: '17px',
+            lineHeight: 1.85,
+            maxWidth: '560px',
+          }}
+        >
           This is our best interpretation based on what we've observed.
           Algorithms don't explain themselves—we're reading between the lines.
         </p>
       </div>
 
-      {/* Two supporting context cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Feed narrowness card */}
+      {/* Two supporting context cards - Quieter, more secondary appearance */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* Feed narrowness card - reduced contrast */}
         <div
-          className="p-6 rounded-xl"
-          style={{ background: 'rgba(37, 99, 235, 0.03)', border: '1px solid rgba(37, 99, 235, 0.08)' }}
+          className="rounded-xl"
+          style={{
+            background: 'rgba(37, 99, 235, 0.025)',
+            border: '1px solid rgba(37, 99, 235, 0.08)',
+            padding: 'clamp(1.25rem, 3vw, 1.5rem)',
+          }}
         >
-          <h4 className="text-sm font-semibold text-text-main mb-2">Narrowing focus</h4>
-          <p className="text-sm text-text-muted leading-relaxed">
-            Your feed appears <strong className="text-text-main">{breadth}</strong>—
+          <h4 className="text-sm font-medium text-slate-600 mb-2">Narrowing focus</h4>
+          <p className="text-sm text-slate-500 leading-relaxed">
+            Your feed appears <span className="font-medium text-slate-600">{breadth}</span>—
             {breadth === 'narrow'
               ? ' a few topics dominate while others rarely appear.'
               : breadth === 'broad'
@@ -515,14 +818,18 @@ const AlgorithmTabHero = ({ scans, viewDataResults }) => {
           </p>
         </div>
 
-        {/* Pattern persistence card */}
+        {/* Pattern persistence card - reduced contrast */}
         <div
-          className="p-6 rounded-xl"
-          style={{ background: 'rgba(37, 99, 235, 0.03)', border: '1px solid rgba(37, 99, 235, 0.08)' }}
+          className="rounded-xl"
+          style={{
+            background: 'rgba(37, 99, 235, 0.025)',
+            border: '1px solid rgba(37, 99, 235, 0.08)',
+            padding: 'clamp(1.25rem, 3vw, 1.5rem)',
+          }}
         >
-          <h4 className="text-sm font-semibold text-text-main mb-2">Sticky patterns</h4>
-          <p className="text-sm text-text-muted leading-relaxed">
-            These themes have been <strong className="text-text-main">persistent</strong>.
+          <h4 className="text-sm font-medium text-slate-600 mb-2">Sticky patterns</h4>
+          <p className="text-sm text-slate-500 leading-relaxed">
+            These themes have been <span className="font-medium text-slate-600">persistent</span>.
             Once the algorithm identifies an interest, it reinforces it—
             changing direction typically requires sustained effort.
           </p>
@@ -714,33 +1021,27 @@ const DashboardPage = () => {
           </div>
         </div>
 
-        {/* Tab Navigation - UI Refoundation: Semantic color lanes */}
+        {/* Tab Navigation - Part 1 Rule A: All tabs use BLUE theme */}
         <div className="mb-8 border-b border-border-card">
           <nav className="flex gap-1 overflow-x-auto pb-px" aria-label="Dashboard tabs">
-            {TABS.map((tab) => {
-              // Semantic color lanes: green for politics/creators, blue for others
-              const isGreenTab = ['politics', 'creators'].includes(tab.id);
-              const activeColor = isGreenTab ? 'border-emerald-500 text-emerald-600' : 'border-primary-blue text-primary-blue';
-
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`
-                    px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors
-                    border-b-2 -mb-px
-                    ${activeTab === tab.id
-                      ? activeColor
-                      : 'border-transparent text-text-muted hover:text-text-main hover:border-border-card'
-                    }
-                  `}
-                  aria-selected={activeTab === tab.id}
-                  role="tab"
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`
+                  px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors
+                  border-b-2 -mb-px
+                  ${activeTab === tab.id
+                    ? 'border-primary-blue text-primary-blue'
+                    : 'border-transparent text-text-muted hover:text-text-main hover:border-border-card'
+                  }
+                `}
+                aria-selected={activeTab === tab.id}
+                role="tab"
+              >
+                {tab.label}
+              </button>
+            ))}
           </nav>
         </div>
 
@@ -782,23 +1083,24 @@ const DashboardPage = () => {
             </div>
           )}
 
-          {/* Editorial Hero for Algorithm Tab */}
+          {/* Feature Moment - Editorial centerpiece for Algorithm Tab */}
           {activeTab === 'algorithm' && (
-            <AlgorithmTabHero
-              scans={scans}
-              viewDataResults={viewDataResults}
-            />
-          )}
+            <FeatureMomentWrapper>
+              {/* Editorial Hero */}
+              <AlgorithmTabHero
+                scans={scans}
+                viewDataResults={viewDataResults}
+              />
 
-          {/* Talk to Your Algorithm - Premium invitation (positioned after hero, before evidence) */}
-          {activeTab === 'algorithm' && (
-            <TalkToAlgorithmSection
-              feedData={{
-                scans,
-                scanDetails,
-                viewDataResults,
-              }}
-            />
+              {/* Talk to Your Algorithm - Premium invitation (GREEN theme) */}
+              <TalkToAlgorithmSection
+                feedData={{
+                  scans,
+                  scanDetails,
+                  viewDataResults,
+                }}
+              />
+            </FeatureMomentWrapper>
           )}
 
           {/* Views Grid with enforced section structure */}
@@ -810,11 +1112,27 @@ const DashboardPage = () => {
             tabName={TABS.find((t) => t.id === activeTab)?.label || 'insights'}
             tabId={activeTab}
           />
+
+          {/* Part 4: Talk to Your Algorithm on ALL non-algorithm tabs (GREEN theme) */}
+          {activeTab !== 'algorithm' && (
+            <div className="mt-14">
+              <TalkToAlgorithmSection
+                feedData={{
+                  scans,
+                  scanDetails,
+                  viewDataResults,
+                }}
+              />
+            </div>
+          )}
         </div>
 
-        {/* Phase 8: Minimal footer */}
-        <div className="text-center py-6 mt-8 border-t border-slate-100">
-          <p className="text-xs text-slate-400">
+        {/* Phase 8: Minimal footer - Softer, less competing */}
+        <div className="text-center py-8 mt-12">
+          <p
+            className="text-[11px] italic"
+            style={{ color: 'rgba(148, 163, 184, 0.7)' }}
+          >
             These insights show patterns in what you're shown, not who you are.
           </p>
         </div>

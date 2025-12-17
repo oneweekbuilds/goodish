@@ -8,9 +8,23 @@ import { MessageCircle, Send, Sparkles } from 'lucide-react';
  * - Single-column editorial layout (constrained width, centered)
  * - Premium invitation card that feels intentional and calm
  * - Generous whitespace and typography (slow the reader down)
- * - Uses only blue accent (algorithm tab semantic color)
+ * - Part 1 Rule B: Uses GREEN accent (premium feature standout across all tabs)
  * - Positioned directly after hero insight for prominence
+ *
+ * GREEN THEME: This is the ONE consistent green element across all 5 tabs,
+ * making the premium feature feel consistent and stand out from the blue editorial UI.
  */
+
+// Green theme constants for Talk to Algorithm module
+const TALK_THEME = {
+  accent: '#10B981',
+  accentRgb: '16, 185, 129',
+  gradient: 'linear-gradient(165deg, rgba(16, 185, 129, 0.06) 0%, rgba(16, 185, 129, 0.12) 50%, rgba(16, 185, 129, 0.07) 100%)',
+  gradientLight: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.08))',
+  border: 'rgba(16, 185, 129, 0.15)',
+  shadow: '0 4px 32px rgba(16, 185, 129, 0.1)',
+  shadowButton: '0 6px 24px rgba(16, 185, 129, 0.3)',
+};
 
 const EXAMPLE_PROMPTS = [
   "Why do these topics keep showing up?",
@@ -21,40 +35,49 @@ const EXAMPLE_PROMPTS = [
 /**
  * PremiumInvitationCard - The main invitation to start a conversation
  * Feels like an invitation to reflect, not a chat widget
+ * Part 1 Rule B: Uses GREEN theme for premium standout
  */
 const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt }) => {
   return (
     <div
       className="rounded-2xl"
       style={{
-        background: 'linear-gradient(165deg, rgba(37, 99, 235, 0.05) 0%, rgba(37, 99, 235, 0.10) 50%, rgba(37, 99, 235, 0.06) 100%)',
-        border: '1px solid rgba(37, 99, 235, 0.12)',
-        padding: 'clamp(2rem, 5vw, 3rem)',
+        background: TALK_THEME.gradient,
+        border: `1px solid ${TALK_THEME.border}`,
+        padding: 'clamp(2.5rem, 6vw, 4rem)',
+        boxShadow: TALK_THEME.shadow,
       }}
     >
-      {/* Premium label - subtle, positioned top */}
-      <div className="flex items-center gap-2 mb-6">
-        <Sparkles size={14} style={{ color: 'rgba(37, 99, 235, 0.5)' }} />
+      {/* Premium label - more visible, positioned top */}
+      <div
+        className="inline-flex items-center gap-2 mb-7 rounded-full"
+        style={{
+          background: `rgba(${TALK_THEME.accentRgb}, 0.12)`,
+          padding: '0.625rem 1.25rem',
+          border: `1px solid rgba(${TALK_THEME.accentRgb}, 0.2)`,
+        }}
+      >
+        <Sparkles size={15} style={{ color: TALK_THEME.accent }} />
         <p
           className="uppercase"
           style={{
-            color: 'rgba(37, 99, 235, 0.55)',
-            fontSize: '10px',
-            letterSpacing: '0.12em',
+            color: TALK_THEME.accent,
+            fontSize: '12px',
+            letterSpacing: '0.1em',
             fontWeight: 600,
           }}
         >
-          Premium reflection
+          Premium Feature
         </p>
       </div>
 
       {/* Main title - clear and inviting */}
       <h3
-        className="font-bold text-text-main mb-4"
+        className="font-bold text-text-main mb-5"
         style={{
-          fontSize: 'clamp(1.5rem, 3vw, 1.875rem)',
+          fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
           letterSpacing: '-0.02em',
-          lineHeight: 1.2,
+          lineHeight: 1.25,
         }}
       >
         Talk to Your Algorithm
@@ -62,11 +85,11 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt }) => {
 
       {/* Explanatory paragraph - calm, reassuring, non-judgmental */}
       <p
-        className="text-text-muted mb-8"
+        className="text-text-muted mb-10"
         style={{
-          fontSize: '15px',
+          fontSize: '16px',
           lineHeight: 1.8,
-          maxWidth: '480px',
+          maxWidth: '520px',
         }}
       >
         This is a space to explore what your feed reveals—and what it might mean.
@@ -74,28 +97,28 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt }) => {
       </p>
 
       {/* Example prompts - soft pills, not buttons */}
-      <div className="mb-8">
+      <div className="mb-10">
         <p
           className="mb-4"
           style={{
-            color: 'rgba(37, 99, 235, 0.5)',
-            fontSize: '12px',
+            color: `rgba(${TALK_THEME.accentRgb}, 0.7)`,
+            fontSize: '13px',
             fontWeight: 500,
           }}
         >
           You might ask…
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2.5">
           {EXAMPLE_PROMPTS.map((prompt, index) => (
             <button
               key={index}
               onClick={() => onSelectPrompt(prompt)}
-              className="rounded-full transition-all duration-200 hover:scale-[1.02]"
+              className="rounded-full transition-all duration-200 hover:scale-[1.02] hover:shadow-sm"
               style={{
-                background: 'rgba(255, 255, 255, 0.7)',
-                border: '1px solid rgba(37, 99, 235, 0.1)',
-                padding: '0.5rem 1rem',
-                fontSize: '13px',
+                background: 'rgba(255, 255, 255, 0.9)',
+                border: `1px solid rgba(${TALK_THEME.accentRgb}, 0.15)`,
+                padding: '0.625rem 1.125rem',
+                fontSize: '14px',
                 color: '#475569',
               }}
             >
@@ -105,28 +128,31 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt }) => {
         </div>
       </div>
 
-      {/* Primary CTA - with Premium indicator */}
-      <div className="flex items-center gap-4">
+      {/* Primary CTA - larger, with Premium indicator */}
+      <div className="flex items-center gap-4 flex-wrap">
         <button
           onClick={onStartConversation}
-          className="inline-flex items-center gap-2.5 bg-primary-blue text-white rounded-full font-semibold transition-all duration-300 hover:-translate-y-0.5"
+          className="inline-flex items-center gap-3 text-white rounded-full font-semibold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl"
           style={{
-            padding: '0.875rem 1.75rem',
-            fontSize: '14px',
-            boxShadow: '0 4px 20px rgba(37, 99, 235, 0.25)',
+            backgroundColor: TALK_THEME.accent,
+            padding: '1.125rem 2.25rem',
+            fontSize: '16px',
+            boxShadow: TALK_THEME.shadowButton,
           }}
         >
-          <MessageCircle size={18} />
+          <MessageCircle size={22} />
           Start a conversation
         </button>
         <span
-          className="rounded-full px-2.5 py-1"
+          className="rounded-full"
           style={{
-            background: 'rgba(37, 99, 235, 0.08)',
-            color: 'rgba(37, 99, 235, 0.65)',
-            fontSize: '11px',
+            background: TALK_THEME.gradientLight,
+            border: `1px solid ${TALK_THEME.border}`,
+            color: TALK_THEME.accent,
+            fontSize: '12px',
             fontWeight: 600,
-            letterSpacing: '0.02em',
+            letterSpacing: '0.03em',
+            padding: '0.5rem 0.875rem',
           }}
         >
           Premium
@@ -140,6 +166,7 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt }) => {
  * ConversationArea - Where the actual conversation happens
  * Designed to feel gentle, like a written conversation
  * Replaces the invitation card when conversation starts
+ * Part 1 Rule B: Uses GREEN theme for premium standout
  */
 const ConversationArea = ({ messages, inputValue, setInputValue, onSendMessage, isTyping }) => {
   const handleSubmit = (e) => {
@@ -154,57 +181,61 @@ const ConversationArea = ({ messages, inputValue, setInputValue, onSendMessage, 
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: 'linear-gradient(165deg, rgba(37, 99, 235, 0.04) 0%, rgba(37, 99, 235, 0.08) 50%, rgba(37, 99, 235, 0.05) 100%)',
-        border: '1px solid rgba(37, 99, 235, 0.12)',
+        background: TALK_THEME.gradient,
+        border: `1px solid ${TALK_THEME.border}`,
+        boxShadow: TALK_THEME.shadow,
       }}
     >
-      {/* Conversation header - minimal, with premium label */}
+      {/* Conversation header - enhanced, with premium label */}
       <div
         className="flex items-center justify-between border-b"
         style={{
-          borderColor: 'rgba(37, 99, 235, 0.08)',
-          padding: '1rem 1.5rem',
+          borderColor: `rgba(${TALK_THEME.accentRgb}, 0.1)`,
+          padding: '1.25rem 1.75rem',
+          background: 'rgba(255, 255, 255, 0.3)',
         }}
       >
-        <div className="flex items-center gap-2">
-          <MessageCircle size={16} style={{ color: 'rgba(37, 99, 235, 0.5)' }} />
+        <div className="flex items-center gap-2.5">
+          <MessageCircle size={18} style={{ color: TALK_THEME.accent }} />
           <p
-            className="font-medium"
+            className="font-semibold"
             style={{
-              color: 'rgba(37, 99, 235, 0.7)',
-              fontSize: '13px',
+              color: TALK_THEME.accent,
+              fontSize: '14px',
             }}
           >
             Talk to Your Algorithm
           </p>
         </div>
         <span
-          className="rounded-full px-2 py-0.5"
+          className="rounded-full"
           style={{
-            background: 'rgba(37, 99, 235, 0.08)',
-            color: 'rgba(37, 99, 235, 0.55)',
-            fontSize: '10px',
+            background: `rgba(${TALK_THEME.accentRgb}, 0.1)`,
+            border: `1px solid rgba(${TALK_THEME.accentRgb}, 0.12)`,
+            color: TALK_THEME.accent,
+            fontSize: '11px',
             fontWeight: 600,
+            padding: '0.375rem 0.75rem',
           }}
         >
           Premium
         </span>
       </div>
 
-      {/* Messages area - generous spacing */}
+      {/* Messages area - generous spacing, calm conversation panel feel */}
       <div
         style={{
-          padding: 'clamp(1.5rem, 4vw, 2rem)',
-          minHeight: '280px',
-          maxHeight: '450px',
+          padding: 'clamp(2rem, 5vw, 2.5rem)',
+          minHeight: '320px',
+          maxHeight: '480px',
           overflowY: 'auto',
         }}
       >
         {messages.length === 0 && (
-          <div className="text-center" style={{ padding: '2.5rem 0' }}>
+          <div className="text-center" style={{ padding: '3rem 0' }}>
             <p
               className="text-text-muted italic"
-              style={{ fontSize: '14px', lineHeight: 1.7 }}
+              style={{ fontSize: '15px', lineHeight: 1.7 }}
             >
               Type a question below to begin…
             </p>
@@ -212,7 +243,7 @@ const ConversationArea = ({ messages, inputValue, setInputValue, onSendMessage, 
         )}
 
         {/* Messages with generous vertical rhythm */}
-        <div className="space-y-8">
+        <div className="space-y-10">
           {messages.map((message, index) => (
             <div
               key={index}
@@ -220,10 +251,10 @@ const ConversationArea = ({ messages, inputValue, setInputValue, onSendMessage, 
             >
               {/* Role label - small, muted */}
               <p
-                className="mb-2 font-medium"
+                className="mb-2.5 font-medium"
                 style={{
-                  color: message.role === 'user' ? '#94A3B8' : 'rgba(37, 99, 235, 0.55)',
-                  fontSize: '11px',
+                  color: message.role === 'user' ? '#94A3B8' : TALK_THEME.accent,
+                  fontSize: '12px',
                   letterSpacing: '0.02em',
                 }}
               >
@@ -238,8 +269,8 @@ const ConversationArea = ({ messages, inputValue, setInputValue, onSendMessage, 
                 <p
                   className="text-text-main"
                   style={{
-                    fontSize: message.role === 'user' ? '14px' : '15px',
-                    lineHeight: 1.85,
+                    fontSize: message.role === 'user' ? '15px' : '16px',
+                    lineHeight: 1.9,
                     fontStyle: message.role === 'user' ? 'italic' : 'normal',
                   }}
                 >
@@ -252,41 +283,41 @@ const ConversationArea = ({ messages, inputValue, setInputValue, onSendMessage, 
 
         {/* Typing indicator */}
         {isTyping && (
-          <div className="text-left mt-8">
+          <div className="text-left mt-10">
             <p
-              className="mb-2 font-medium"
+              className="mb-2.5 font-medium"
               style={{
-                color: 'rgba(37, 99, 235, 0.55)',
-                fontSize: '11px',
+                color: TALK_THEME.accent,
+                fontSize: '12px',
                 letterSpacing: '0.02em',
               }}
             >
               Your feed reflects
             </p>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <span
                 className="rounded-full animate-pulse"
                 style={{
-                  width: '6px',
-                  height: '6px',
-                  background: 'rgba(37, 99, 235, 0.35)',
+                  width: '7px',
+                  height: '7px',
+                  background: `rgba(${TALK_THEME.accentRgb}, 0.4)`,
                 }}
               />
               <span
                 className="rounded-full animate-pulse"
                 style={{
-                  width: '6px',
-                  height: '6px',
-                  background: 'rgba(37, 99, 235, 0.35)',
+                  width: '7px',
+                  height: '7px',
+                  background: `rgba(${TALK_THEME.accentRgb}, 0.4)`,
                   animationDelay: '0.2s',
                 }}
               />
               <span
                 className="rounded-full animate-pulse"
                 style={{
-                  width: '6px',
-                  height: '6px',
-                  background: 'rgba(37, 99, 235, 0.35)',
+                  width: '7px',
+                  height: '7px',
+                  background: `rgba(${TALK_THEME.accentRgb}, 0.4)`,
                   animationDelay: '0.4s',
                 }}
               />
@@ -295,28 +326,35 @@ const ConversationArea = ({ messages, inputValue, setInputValue, onSendMessage, 
         )}
       </div>
 
-      {/* Input area - clean, uncluttered */}
+      {/* Input area - improved spacing and height */}
       <form
         onSubmit={handleSubmit}
         className="border-t"
         style={{
-          borderColor: 'rgba(37, 99, 235, 0.08)',
-          background: 'rgba(255, 255, 255, 0.5)',
-          padding: '1rem 1.5rem',
+          borderColor: `rgba(${TALK_THEME.accentRgb}, 0.1)`,
+          background: 'rgba(255, 255, 255, 0.6)',
+          padding: '1.25rem 1.75rem',
         }}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <input
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Ask about your feed…"
-            className="flex-1 rounded-xl text-text-main placeholder:text-text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary-blue/15 transition-all"
+            className="flex-1 rounded-xl text-text-main placeholder:text-text-muted/50 focus:outline-none transition-all"
             style={{
-              padding: '0.75rem 1rem',
-              fontSize: '14px',
-              background: 'rgba(255, 255, 255, 0.9)',
-              border: '1px solid rgba(37, 99, 235, 0.1)',
+              padding: '1rem 1.25rem',
+              fontSize: '15px',
+              background: 'rgba(255, 255, 255, 0.95)',
+              border: `1px solid rgba(${TALK_THEME.accentRgb}, 0.12)`,
+              boxShadow: `0 0 0 0 rgba(${TALK_THEME.accentRgb}, 0)`,
+            }}
+            onFocus={(e) => {
+              e.target.style.boxShadow = `0 0 0 3px rgba(${TALK_THEME.accentRgb}, 0.15)`;
+            }}
+            onBlur={(e) => {
+              e.target.style.boxShadow = `0 0 0 0 rgba(${TALK_THEME.accentRgb}, 0)`;
             }}
           />
           <button
@@ -324,12 +362,12 @@ const ConversationArea = ({ messages, inputValue, setInputValue, onSendMessage, 
             disabled={!inputValue.trim()}
             className="rounded-xl transition-all duration-200 disabled:opacity-35"
             style={{
-              padding: '0.75rem',
-              background: inputValue.trim() ? '#2563EB' : 'rgba(37, 99, 235, 0.08)',
-              color: inputValue.trim() ? 'white' : 'rgba(37, 99, 235, 0.35)',
+              padding: '1rem 1.125rem',
+              background: inputValue.trim() ? TALK_THEME.accent : `rgba(${TALK_THEME.accentRgb}, 0.08)`,
+              color: inputValue.trim() ? 'white' : `rgba(${TALK_THEME.accentRgb}, 0.35)`,
             }}
           >
-            <Send size={18} />
+            <Send size={20} />
           </button>
         </div>
       </form>

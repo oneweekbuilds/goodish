@@ -79,7 +79,9 @@
       "Bash(python -m uvicorn:*)",
       "Bash(wmic process:*)",
       "Bash(echo:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(pnpm --filter @goodish/alg-gemini dev:*)",
+      "Bash(pnpm build:*)"
     ],
     "deny": [],
     "ask": [],
