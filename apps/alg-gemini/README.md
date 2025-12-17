@@ -1,3 +1,24 @@
+# AlgorithmLens - PRIMARY APP
+
+> **This is the primary AlgorithmLens frontend. All new development should happen here.**
+
+## Quick Start
+
+```powershell
+cd apps/alg-gemini
+npm run dev
+```
+
+**Dashboard URL:** http://localhost:5173/dashboard
+
+## Important Notes
+
+- **DO NOT** edit `apps/algorithm-lens` - that is the legacy app kept for reference
+- This app runs on port 5173 by default
+- Backend API is in `apps/alg-gemini/backend`
+
+---
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

@@ -424,6 +424,8 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
 };
 
 /**
+ * PRIMARY APP - alg-gemini
+ *
  * DashboardPage - Main dashboard with 5 tabs and catalog-driven views.
  * Phase 8: UX Simplification and Product Judgment
  *
@@ -434,6 +436,126 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
  * - Increased whitespace for visual breathing room
  * - Simplified language throughout
  */
+
+/**
+ * AlgorithmTabHero - Editorial "spike" for "What the Algorithm Thinks" tab
+ * Displays a hero insight with interpretation before the catalog views
+ * Uses only logo blue for semantic color per design constraints
+ */
+const AlgorithmTabHero = ({ scans, viewDataResults }) => {
+  // Get top topics from the primary view data
+  const topicsData = viewDataResults?.['algo-topics-liked']?.data || [];
+  const topTopic = topicsData[0]?.topic || 'certain themes';
+  const secondTopic = topicsData[1]?.topic || '';
+
+  // Get profile breadth
+  const breadthData = viewDataResults?.['algo-profile-breadth']?.data;
+  const breadth = breadthData?.breadth?.toLowerCase() || 'moderate';
+
+  const platformCount = scans?.length > 0
+    ? [...new Set(scans.map(s => s.platform))].length
+    : 0;
+
+  return (
+    <div className="mb-10">
+      {/* Hero Insight Card */}
+      <div
+        className="w-full rounded-2xl p-8 md:p-10 mb-6"
+        style={{
+          background: 'linear-gradient(160deg, rgba(37, 99, 235, 0.06) 0%, rgba(37, 99, 235, 0.12) 35%, rgba(37, 99, 235, 0.08) 100%)',
+          border: '1px solid rgba(37, 99, 235, 0.15)',
+        }}
+      >
+        {/* Provenance marker */}
+        <p
+          className="mb-4"
+          style={{ fontSize: '12px', color: '#2563EB', opacity: 0.7, letterSpacing: '0.02em' }}
+        >
+          Based on patterns across {platformCount} platform{platformCount !== 1 ? 's' : ''}
+        </p>
+
+        {/* Main interpretive headline */}
+        <h2
+          className="text-2xl md:text-3xl font-bold text-text-main leading-tight mb-4"
+          style={{ fontFamily: 'var(--font-headline, system-ui)', letterSpacing: '-0.02em' }}
+        >
+          Your feed keeps returning to{' '}
+          <span style={{ color: '#2563EB' }}>{topTopic}</span>
+          {secondTopic && (
+            <>
+              {' '}and <span style={{ color: '#2563EB' }}>{secondTopic}</span>
+            </>
+          )}
+          —even when you don't ask for it.
+        </h2>
+
+        {/* Supporting interpretation */}
+        <p className="text-text-muted" style={{ fontSize: '15px', lineHeight: 1.7, maxWidth: '600px' }}>
+          This is our best interpretation based on what we've observed.
+          Algorithms don't explain themselves—we're reading between the lines.
+        </p>
+      </div>
+
+      {/* Two supporting context cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Feed narrowness card */}
+        <div
+          className="p-6 rounded-xl"
+          style={{ background: 'rgba(37, 99, 235, 0.03)', border: '1px solid rgba(37, 99, 235, 0.08)' }}
+        >
+          <h4 className="text-sm font-semibold text-text-main mb-2">Narrowing focus</h4>
+          <p className="text-sm text-text-muted leading-relaxed">
+            Your feed appears <strong className="text-text-main">{breadth}</strong>—
+            {breadth === 'narrow'
+              ? ' a few topics dominate while others rarely appear.'
+              : breadth === 'broad'
+              ? ' you see a good variety of different topics.'
+              : ' some topics get more attention than others.'}
+          </p>
+        </div>
+
+        {/* Pattern persistence card */}
+        <div
+          className="p-6 rounded-xl"
+          style={{ background: 'rgba(37, 99, 235, 0.03)', border: '1px solid rgba(37, 99, 235, 0.08)' }}
+        >
+          <h4 className="text-sm font-semibold text-text-main mb-2">Sticky patterns</h4>
+          <p className="text-sm text-text-muted leading-relaxed">
+            These themes have been <strong className="text-text-main">persistent</strong>.
+            Once the algorithm identifies an interest, it reinforces it—
+            changing direction typically requires sustained effort.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// DEV WATERMARK - Visible banner to prove which app is running
+const DevWatermark = () => (
+  <div
+    style={{
+      position: 'fixed',
+      bottom: '10px',
+      right: '10px',
+      background: 'rgba(37, 99, 235, 0.95)',
+      color: 'white',
+      padding: '8px 16px',
+      borderRadius: '8px',
+      fontSize: '12px',
+      fontWeight: 'bold',
+      zIndex: 9999,
+      fontFamily: 'monospace',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+    }}
+  >
+    <div>ALG-GEMINI RUNNING</div>
+    <div style={{ fontSize: '10px', opacity: 0.8, marginTop: '2px' }}>
+      {import.meta.url.split('/').slice(-3).join('/')}
+    </div>
+  </div>
+);
+
 const DashboardPage = () => {
   const [activeTab, setActiveTab] = useState(TABS[0].id);
   // PHASE 6A: Political leaning toggle state (default OFF)
@@ -659,6 +781,14 @@ const DashboardPage = () => {
             </div>
           )}
 
+          {/* Editorial Hero for Algorithm Tab */}
+          {activeTab === 'algorithm' && (
+            <AlgorithmTabHero
+              scans={scans}
+              viewDataResults={viewDataResults}
+            />
+          )}
+
           {/* Views Grid with enforced section structure */}
           <ViewsGridWithCollapsing
             views={currentViews}
@@ -677,6 +807,9 @@ const DashboardPage = () => {
           </p>
         </div>
       </div>
+
+      {/* DEV WATERMARK - Remove before production */}
+      <DevWatermark />
     </div>
   );
 };

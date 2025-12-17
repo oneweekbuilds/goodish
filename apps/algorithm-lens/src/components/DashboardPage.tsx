@@ -1,3 +1,18 @@
+/**
+ * ============================================================
+ * LEGACY APP - DO NOT EDIT
+ * ============================================================
+ *
+ * This is the OLD algorithm-lens app. All new development
+ * should happen in apps/alg-gemini instead.
+ *
+ * The primary app is: apps/alg-gemini
+ * Run with: cd apps/alg-gemini && npm run dev
+ *
+ * This file is kept for reference only.
+ * ============================================================
+ */
+
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, Sparkles } from 'lucide-react';
