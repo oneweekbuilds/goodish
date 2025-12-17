@@ -78,7 +78,8 @@
       "Bash(do cp icon.svg icon$size.png)",
       "Bash(python -m uvicorn:*)",
       "Bash(wmic process:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": [],

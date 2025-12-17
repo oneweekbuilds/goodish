@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Loader2, RefreshCw, BarChart3, Clock, Globe, Database, Info, ToggleLeft, ToggleRight } from 'lucide-react';
 import { TABS, getViewsForTab, getVisibleViewCount, EMPTY_STATE_TYPES, TAB_TRUST_SENTENCES } from './dashboardCatalog';
 import ViewCard from '../../components/dashboard/ViewCard';
+import TalkToAlgorithmSection from '../../components/dashboard/TalkToAlgorithmSection';
 import { useDashboardData } from '../../lib/dashboard/useDashboardData';
 import * as dataHelpers from '../../lib/dashboard/dataHelpers';
 
@@ -786,6 +787,17 @@ const DashboardPage = () => {
             <AlgorithmTabHero
               scans={scans}
               viewDataResults={viewDataResults}
+            />
+          )}
+
+          {/* Talk to Your Algorithm - Premium invitation (positioned after hero, before evidence) */}
+          {activeTab === 'algorithm' && (
+            <TalkToAlgorithmSection
+              feedData={{
+                scans,
+                scanDetails,
+                viewDataResults,
+              }}
             />
           )}
 
