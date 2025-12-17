@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { AlertTriangle } from 'lucide-react';
 
 /**
  * Empty state types:
@@ -7,21 +8,29 @@ import { Link } from 'react-router-dom';
  * Type 1: NEEDS_MORE_SCANS - User needs to run more scans to unlock this insight
  * Type 2: NEEDS_BROADER_BEHAVIOR - User needs to scan across more platforms or creators
  * Type 3: FUTURE_FEATURE - This feature isn't available yet
+ * Type 4: INSUFFICIENT_DATA - Quality gating triggered (low sample, missing fields, etc.)
+ *
+ * PHASE 11: Added INSUFFICIENT_DATA for chart quality gating.
+ * @see apps/alg-gemini/docs/chart_quality_system.md
  */
 export const EMPTY_STATE_TYPES = {
   NEEDS_MORE_SCANS: 'needs_more_scans',
   NEEDS_BROADER_BEHAVIOR: 'needs_broader_behavior',
   FUTURE_FEATURE: 'future_feature',
+  INSUFFICIENT_DATA: 'insufficient_data',
 };
 
 /**
  * EmptyState component for dashboard views that don't have data yet.
  * Shows contextual messages based on why data is missing.
  *
+ * PHASE 11: Enhanced to support chart quality gating with specific quality reasons.
+ *
  * @param {string} emptyStateType - One of EMPTY_STATE_TYPES
  * @param {string} missing - Optional specific message about what data is missing
+ * @param {Object} chartQuality - Optional chart quality metadata (from dataHelpers)
  */
-const EmptyState = ({ emptyStateType, missing }) => {
+const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
   // Get configuration based on empty state type
   const getConfig = () => {
     switch (emptyStateType) {
@@ -50,6 +59,17 @@ const EmptyState = ({ emptyStateType, missing }) => {
           footer: 'Coming later.',
         };
 
+      case EMPTY_STATE_TYPES.INSUFFICIENT_DATA:
+        return {
+          icon: 'quality',
+          title: 'Insufficient Data',
+          message: chartQuality?.quality_reason || missing || 'Not enough data for a reliable analysis.',
+          cta: { label: 'Run More Scans', to: '/start' },
+          footer: chartQuality?.n_items > 0
+            ? `Based on ${chartQuality.n_items} item${chartQuality.n_items !== 1 ? 's' : ''}`
+            : null,
+        };
+
       default:
         // Fallback: try to infer from missing text
         return inferFromMissing(missing);
@@ -68,6 +88,20 @@ const EmptyState = ({ emptyStateType, missing }) => {
     }
 
     const lower = msg.toLowerCase();
+
+    // Quality gating indicators
+    if (lower.includes('insufficient') ||
+        lower.includes('low sample') ||
+        lower.includes('reliable') ||
+        lower.includes('threshold') ||
+        lower.includes('at least') && lower.includes('posts')) {
+      return {
+        icon: 'quality',
+        title: 'Insufficient Data',
+        message: msg,
+        cta: { label: 'Run More Scans', to: '/start' },
+      };
+    }
 
     // Future feature indicators
     if (lower.includes('not available yet') ||
@@ -125,6 +159,12 @@ const EmptyState = ({ emptyStateType, missing }) => {
       );
     }
 
+    if (config.icon === 'quality') {
+      return (
+        <AlertTriangle className="w-6 h-6 text-amber-500" />
+      );
+    }
+
     // Default: scan icon
     return (
       <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -136,12 +176,16 @@ const EmptyState = ({ emptyStateType, missing }) => {
   return (
     <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
       {/* Icon */}
-      <div className="w-12 h-12 mb-4 rounded-full bg-slate-100 flex items-center justify-center">
+      <div className={`w-12 h-12 mb-4 rounded-full flex items-center justify-center ${
+        config.icon === 'quality' ? 'bg-amber-50' : 'bg-slate-100'
+      }`}>
         {renderIcon()}
       </div>
 
       {/* Title */}
-      <h4 className="text-sm font-semibold text-slate-600 mb-2">
+      <h4 className={`text-sm font-semibold mb-2 ${
+        config.icon === 'quality' ? 'text-amber-700' : 'text-slate-600'
+      }`}>
         {config.title}
       </h4>
 
@@ -163,7 +207,7 @@ const EmptyState = ({ emptyStateType, missing }) => {
         </Link>
       )}
 
-      {/* Footer text for future features */}
+      {/* Footer text for metadata */}
       {config.footer && (
         <p className="text-xs text-slate-400 mt-2 italic">
           {config.footer}

@@ -39,18 +39,99 @@ import {
   formatDateLabel,
 } from './scanAggregator';
 
+import {
+  QUALITY_FLAGS,
+  createChartQuality,
+  computeChartQuality,
+  getChartTypeForView,
+  CHART_THRESHOLDS,
+} from './chartQuality';
+
 // Re-export formatDateLabel for backward compatibility
 export { formatDateLabel };
+
+// Re-export quality constants for use by ViewCard
+export { QUALITY_FLAGS, CHART_THRESHOLDS };
 
 // =====================================================
 // INTERNAL HELPERS
 // =====================================================
 
 /**
- * Create a standardized response with metadata
+ * Extract time window from scans
+ * @param {Array} scans - List of scan objects
+ * @param {Object} scanDetails - Map of scanId -> scan detail
+ * @returns {Object} { windowStart, windowEnd }
  */
-function createResponse(hasData, data, missing = null, scansUsed = 0, scansWithData = []) {
-  return { hasData, data, missing, scansUsed, scansWithData };
+function extractTimeWindow(scans, scanDetails) {
+  let windowStart = null;
+  let windowEnd = null;
+
+  for (const scan of scans || []) {
+    const detail = scanDetails?.[scan.id];
+    if (!detail) continue;
+
+    const data = detail.result || detail.scan || detail;
+    const meta = data?.scan_metadata;
+    const timestamp = meta?.created_at || scan.created_at;
+
+    if (timestamp) {
+      const date = new Date(timestamp);
+      if (!windowStart || date < windowStart) windowStart = date;
+      if (!windowEnd || date > windowEnd) windowEnd = date;
+    }
+  }
+
+  return {
+    windowStart: windowStart ? windowStart.toISOString() : null,
+    windowEnd: windowEnd ? windowEnd.toISOString() : null,
+  };
+}
+
+/**
+ * Create a standardized response with metadata and quality gating.
+ *
+ * @param {boolean} hasData - Whether data is available
+ * @param {any} data - The chart data
+ * @param {string|null} missing - Reason for missing data
+ * @param {number} scansUsed - Number of scans used
+ * @param {string[]} scansWithData - IDs of scans with data
+ * @param {Object} qualityOverride - Optional quality override { n_items, windowStart, windowEnd, quality, quality_reason }
+ * @returns {Object} Standardized response with chartQuality
+ */
+function createResponse(hasData, data, missing = null, scansUsed = 0, scansWithData = [], qualityOverride = null) {
+  // Build chart quality metadata
+  let chartQuality;
+
+  if (qualityOverride) {
+    chartQuality = createChartQuality(
+      qualityOverride.n_items || 0,
+      qualityOverride.windowStart || null,
+      qualityOverride.windowEnd || null,
+      qualityOverride.quality || QUALITY_FLAGS.OK,
+      qualityOverride.quality_reason || null
+    );
+  } else if (!hasData) {
+    // No data means low sample by default
+    chartQuality = createChartQuality(
+      0,
+      null,
+      null,
+      QUALITY_FLAGS.LOW_SAMPLE,
+      missing || 'Insufficient data for analysis.'
+    );
+  } else {
+    // Default to OK when hasData is true and no override
+    chartQuality = createChartQuality(
+      0, // Will be overridden by caller
+      null,
+      null,
+      QUALITY_FLAGS.OK,
+      null
+    );
+  }
+
+  return { hasData, data, missing, scansUsed, scansWithData, chartQuality };
 }
 
 /**
@@ -79,13 +160,33 @@ function getFeedItems(scanDetail) {
 /**
  * View 1: How much of your feed is advertising
  * PHASE 5 FIX: Now aggregates across ALL scans, not just latest
+ * PHASE 11: Includes chart quality gating
  * PRIMARY INSIGHT: Uses aggregated ad data across all scans
  */
 export function getAdPercentageData(scans, scanDetails) {
   const adsData = aggregateAds(scans, scanDetails);
+  const { windowStart, windowEnd } = extractTimeWindow(scans, scanDetails);
+
+  // Compute quality based on sample size
+  const qualityResult = computeChartQuality('AD_SHARE', {
+    totalItems: adsData.totalPosts,
+  });
 
   if (adsData.scansUsed === 0) {
-    return createResponse(false, null, 'Run at least 1 scan with post-level data.');
+    return createResponse(
+      false,
+      null,
+      'Run at least 1 scan with post-level data.',
+      0,
+      [],
+      {
+        n_items: 0,
+        windowStart,
+        windowEnd,
+        quality: QUALITY_FLAGS.LOW_SAMPLE,
+        quality_reason: 'No scan data available.',
+      }
+    );
   }
 
   return createResponse(
@@ -100,7 +201,14 @@ export function getAdPercentageData(scans, scanDetails) {
     },
     null,
     adsData.scansUsed,
-    adsData.scansWithData
+    adsData.scansWithData,
+    {
+      n_items: adsData.totalPosts,
+      windowStart,
+      windowEnd,
+      quality: qualityResult.quality,
+      quality_reason: qualityResult.reason,
+    }
   );
 }
 
@@ -449,14 +557,23 @@ export function getAdvertiserInsightsData(scans, scanDetails) {
 // =====================================================
 // TAB 2: POLITICS & WORLDVIEW
 // Phase 5: Uses aggregatePolitics for all political views
+// Phase 11: Includes chart quality gating
 // =====================================================
 
 /**
  * View 11: Political content share
  * PHASE 5 FIX: Uses aggregated political data
+ * PHASE 11: Includes chart quality gating
  */
 export function getPoliticalShareData(scans, scanDetails) {
   const politicsData = aggregatePolitics(scans, scanDetails);
+  const { windowStart, windowEnd } = extractTimeWindow(scans, scanDetails);
+
+  // Compute quality - political classification needs higher threshold due to inherent uncertainty
+  const qualityResult = computeChartQuality('POLITICAL_MIX', {
+    totalItems: politicsData.totalPosts,
+    classifiedItems: politicsData.totalPosts, // Political field is always present
+  });
 
   if (politicsData.scansUsed === 0) {
     return createResponse(
@@ -464,7 +581,14 @@ export function getPoliticalShareData(scans, scanDetails) {
       null,
       'Political classification is not available for your scans.',
       0,
-      []
+      [],
+      {
+        n_items: 0,
+        windowStart,
+        windowEnd,
+        quality: QUALITY_FLAGS.LOW_SAMPLE,
+        quality_reason: 'No scan data available for political analysis.',
+      }
     );
   }
 
@@ -478,7 +602,14 @@ export function getPoliticalShareData(scans, scanDetails) {
     },
     null,
     politicsData.scansUsed,
-    politicsData.scansWithData
+    politicsData.scansWithData,
+    {
+      n_items: politicsData.totalPosts,
+      windowStart,
+      windowEnd,
+      quality: qualityResult.quality,
+      quality_reason: qualityResult.reason,
+    }
   );
 }
 
@@ -804,9 +935,22 @@ export function getPoliticalProfileData(scans, scanDetails) {
  * View 21: Topic variety
  * PHASE 5 CRITICAL FIX: Now aggregates topics across ALL scans
  * PHASE 9 (Trust): Threshold of 25 posts with topics
+ * PHASE 11: Includes chart quality gating
  */
 export function getTopicVarietyData(scans, scanDetails) {
   const topicsData = aggregateTopics(scans, scanDetails);
+  const { windowStart, windowEnd } = extractTimeWindow(scans, scanDetails);
+
+  // Compute quality based on sample size and classification rate
+  // Note: topicsData.totalItems gives us the total items analyzed
+  const totalItems = topicsData.totalItems || 0;
+  const classifiedItems = totalItems - (topicsData.unclassifiedCount || 0);
+
+  const qualityResult = computeChartQuality('TOPIC_DISTRIBUTION', {
+    totalItems,
+    classifiedItems,
+    lowConfidenceCount: 0, // We don't have confidence scores per item
+  });
 
   if (topicsData.scansUsed === 0) {
     return createResponse(
@@ -814,7 +958,14 @@ export function getTopicVarietyData(scans, scanDetails) {
       null,
       'No topic classification data available.',
       0,
-      []
+      [],
+      {
+        n_items: 0,
+        windowStart,
+        windowEnd,
+        quality: QUALITY_FLAGS.LOW_SAMPLE,
+        quality_reason: 'No scan data available for topic analysis.',
+      }
     );
   }
 
@@ -826,7 +977,14 @@ export function getTopicVarietyData(scans, scanDetails) {
       null,
       'Not enough topics detected yet.',
       topicsData.scansUsed,
-      topicsData.scansWithData
+      topicsData.scansWithData,
+      {
+        n_items: totalItems,
+        windowStart,
+        windowEnd,
+        quality: QUALITY_FLAGS.LOW_SAMPLE,
+        quality_reason: 'Need more topic variety to show meaningful distribution.',
+      }
     );
   }
 
@@ -853,7 +1011,14 @@ export function getTopicVarietyData(scans, scanDetails) {
     },
     null,
     topicsData.scansUsed,
-    topicsData.scansWithData
+    topicsData.scansWithData,
+    {
+      n_items: totalItems,
+      windowStart,
+      windowEnd,
+      quality: qualityResult.quality,
+      quality_reason: qualityResult.reason,
+    }
   );
 }
 

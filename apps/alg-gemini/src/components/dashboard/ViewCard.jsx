@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import EmptyState from './EmptyState';
+import EmptyState, { EMPTY_STATE_TYPES } from './EmptyState';
 import { DataQualityFooter } from './ConfidenceBadge';
 import {
   BarChartSimple,
@@ -10,6 +10,7 @@ import {
   StatusCard,
   InsightCard,
 } from './charts';
+import { QUALITY_FLAGS } from '../../lib/dashboard/dataHelpers';
 
 /**
  * FeedbackAffordance - Phase 10: Very minimal, almost invisible
@@ -116,6 +117,12 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0, accentCo
   const hasData = dataResult?.hasData === true;
   const data = dataResult?.data;
   const missing = dataResult?.missing;
+  const chartQuality = dataResult?.chartQuality;
+
+  // PHASE 11: Quality gating - check if data quality passes threshold
+  // Even if hasData is true, we may need to show insufficient data state
+  const qualityOk = !chartQuality || chartQuality.quality === QUALITY_FLAGS.OK;
+  const showChart = hasData && qualityOk;
 
   // PHASE 5: Use the ACTUAL scans used for this metric, not total scan count
   // This ensures "Based on X scans" labels are accurate for each view
@@ -123,6 +130,11 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0, accentCo
 
   // Determine if this is a future/coming soon card
   const isFutureCard = sortOrder === 'future' || emptyStateType === 'future_feature';
+
+  // Determine the empty state type based on quality flag
+  const effectiveEmptyStateType = chartQuality?.quality && chartQuality.quality !== QUALITY_FLAGS.OK
+    ? EMPTY_STATE_TYPES.INSUFFICIENT_DATA
+    : emptyStateType;
 
   // Compute takeaway text
   const takeawayText = hasData && typeof takeaway === 'function'
@@ -605,8 +617,9 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0, accentCo
       </div>
 
       {/* Card Content - Anatomy: Takeaway (largest) → Chart (de-emphasized) → Why */}
+      {/* PHASE 11: Use showChart (hasData AND quality OK) instead of just hasData */}
       <div className={`flex-1 ${getContentPadding()}`}>
-        {hasData ? (
+        {showChart ? (
           <div className="space-y-5">
             {/* Takeaway FIRST for primary cards - makes it visually dominant */}
             {isPrimary && takeawayText && (
@@ -662,7 +675,7 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0, accentCo
 
             {/* Confidence disclaimer for influence-related cards */}
             {/* PHASE 6A: Show actual disclaimer from data if available */}
-            {confidenceDisclaimer && hasData && (
+            {confidenceDisclaimer && showChart && (
               <div className="pt-2 border-t border-slate-100">
                 {data?.confidence && (
                   <span className={`inline-block text-xs px-2 py-0.5 rounded mb-1 ${
@@ -680,21 +693,27 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0, accentCo
             )}
 
             {/* PHASE 7: Non-functional feedback affordance for PRIMARY cards only */}
-            {isPrimary && hasData && (
+            {isPrimary && showChart && (
               <FeedbackAffordance />
             )}
 
             {/* Data quality footer - shows ACTUAL scan count used for this metric */}
             {/* PHASE 5: Using actualScansUsed for accurate labeling */}
-            {hasData && actualScansUsed > 0 && (
+            {/* PHASE 11: Also shows n_items from chartQuality when available */}
+            {showChart && actualScansUsed > 0 && (
               <DataQualityFooter
                 scanCount={actualScansUsed}
                 platformCount={platformCount}
+                nItems={chartQuality?.n_items}
               />
             )}
           </div>
         ) : (
-          <EmptyState emptyStateType={emptyStateType} missing={missing} />
+          <EmptyState
+            emptyStateType={effectiveEmptyStateType}
+            missing={chartQuality?.quality_reason || missing}
+            chartQuality={chartQuality}
+          />
         )}
       </div>
     </div>
