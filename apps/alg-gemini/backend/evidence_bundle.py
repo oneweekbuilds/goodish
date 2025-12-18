@@ -817,15 +817,18 @@ def _build_limits(
         n_absent = audio_coverage.get("n_absent", 0)
         n_unknown = audio_coverage.get("n_unknown", 0)
 
+        # Get error code from first item for specific error messaging
+        error_code = None
+        items = feature_collection.get("items", [])
+        if items:
+            first_item = items[0]
+            audio_features = first_item.get("audio_features", {})
+            error_code = audio_features.get("error_reason_code")
+
         if audio_analyzed and n_processed > 0:
             # Audio was analyzed - check for quality issues
-            # Get scan-level audio analysis for quality info
-            items = feature_collection.get("items", [])
             if items:
-                first_item = items[0]
-                audio_features = first_item.get("audio_features", {})
                 asr_quality = audio_features.get("asr_quality")
-                error_code = audio_features.get("error_reason_code")
 
                 if asr_quality == "PARTIAL":
                     audio_limitations.append(
@@ -844,16 +847,39 @@ def _build_limits(
                         "Audio was analyzed successfully. Transcript reflects words spoken, not tone or intent."
                     )
 
-                if error_code:
+                if error_code and error_code not in ("SKIPPED_NO_SPEECH",):
                     audio_limitations.append(f"Audio processing note: {error_code}")
+
+        elif error_code == "FFMPEG_NOT_FOUND":
+            # Specific message for missing ffmpeg/ffprobe
+            audio_limitations.append(
+                "Audio not analyzed: ffmpeg/ffprobe not installed on this system."
+            )
+            audio_limitations.append(
+                "Political content, promo language, and creator mentions in audio could not be detected."
+            )
+        elif error_code == "WHISPER_NOT_AVAILABLE":
+            # Specific message for missing Whisper
+            audio_limitations.append(
+                "Audio not analyzed: speech recognition library not available."
+            )
+            audio_limitations.append(
+                "Political content, promo language, and creator mentions in audio could not be detected."
+            )
         elif n_unprocessed > 0:
             audio_limitations.append(
                 "This video contains audio that has not yet been analyzed. Audio-based signals are unavailable."
             )
         elif n_unknown > 0:
-            audio_limitations.append(
-                "Audio analysis failed. Audio-based signals are unavailable."
-            )
+            # Check for specific error codes
+            if error_code:
+                audio_limitations.append(
+                    f"Audio analysis failed: {error_code}. Audio-based signals are unavailable."
+                )
+            else:
+                audio_limitations.append(
+                    "Audio analysis failed. Audio-based signals are unavailable."
+                )
         elif n_absent > 0 and source_type == "MOBILE_VIDEO":
             audio_limitations.append(
                 "This video has no audio track."
@@ -873,11 +899,20 @@ def _build_limits(
                 "Desktop captures do not include audio."
             )
 
-    # Add epistemic boundary for audio
+    # Add epistemic boundary for audio (only if audio was actually analyzed)
     if audio_analyzed:
         audio_limitations.append(
             "Transcript-based signals cannot detect sarcasm, tone, or speaker identity."
         )
+
+    # Ensure audio_analyzed is False when we have explicit failures
+    if feature_collection:
+        items = feature_collection.get("items", [])
+        if items:
+            first_item = items[0]
+            error_code = first_item.get("audio_features", {}).get("error_reason_code")
+            if error_code in ("FFMPEG_NOT_FOUND", "WHISPER_NOT_AVAILABLE"):
+                audio_analyzed = False
 
     limits["audio_analysis_limitations"] = audio_limitations
     limits["audio_analyzed"] = audio_analyzed

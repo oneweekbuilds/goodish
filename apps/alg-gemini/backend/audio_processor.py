@@ -14,6 +14,7 @@ Pipeline stages:
     4. Error reason code reporting
 
 Error reason codes:
+    - FFMPEG_NOT_FOUND: ffmpeg/ffprobe binaries not found in PATH
     - PROBE_FAILED: ffprobe could not read video
     - NO_AUDIO_STREAM: Video confirmed to have no audio track
     - EXTRACTION_FAILED: ffmpeg failed to extract audio
@@ -27,7 +28,7 @@ Error reason codes:
 import os
 import subprocess
 import json
-import tempfile
+import shutil
 from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime
 
@@ -80,6 +81,48 @@ ASR_QUALITY_PARTIAL_THRESHOLD = -1.0
 
 
 # =============================================================================
+# Binary Detection (robust PATH checking)
+# =============================================================================
+
+def _binary_available(name: str) -> bool:
+    """
+    Check if a binary is available in PATH using shutil.which.
+
+    This is more reliable than attempting subprocess calls, as it
+    doesn't require actually executing the binary.
+
+    Args:
+        name: Binary name (e.g., "ffmpeg", "ffprobe")
+
+    Returns:
+        True if binary is found in PATH, False otherwise
+    """
+    return shutil.which(name) is not None
+
+
+def ffmpeg_available() -> bool:
+    """Check if ffmpeg binary is available in PATH."""
+    return _binary_available("ffmpeg")
+
+
+def ffprobe_available() -> bool:
+    """Check if ffprobe binary is available in PATH."""
+    return _binary_available("ffprobe")
+
+
+def ffmpeg_binaries_available() -> bool:
+    """
+    Check if both ffmpeg AND ffprobe are available.
+
+    Both are required for audio extraction pipeline.
+
+    Returns:
+        True only if both binaries are found in PATH
+    """
+    return ffmpeg_available() and ffprobe_available()
+
+
+# =============================================================================
 # Version Detection
 # =============================================================================
 
@@ -90,6 +133,10 @@ def _get_binary_version(binary_name: str) -> Optional[str]:
     Returns:
         Version string or None if binary not found/failed
     """
+    # First check if binary exists to avoid subprocess errors
+    if not _binary_available(binary_name):
+        return None
+
     try:
         result = subprocess.run(
             [binary_name, "-version"],
@@ -116,6 +163,19 @@ def get_ffprobe_version() -> Optional[str]:
     return _get_binary_version("ffprobe")
 
 
+def get_ffmpeg_versions() -> Dict[str, Optional[str]]:
+    """
+    Get version strings for both ffmpeg and ffprobe.
+
+    Returns:
+        Dict with ffmpeg_version and ffprobe_version (None if not found)
+    """
+    return {
+        "ffmpeg_version": get_ffmpeg_version(),
+        "ffprobe_version": get_ffprobe_version(),
+    }
+
+
 def check_dependencies() -> Dict[str, Any]:
     """
     Check availability of required dependencies.
@@ -123,12 +183,13 @@ def check_dependencies() -> Dict[str, Any]:
     Returns:
         Dict with availability status for each dependency
     """
+    versions = get_ffmpeg_versions()
     return {
-        "ffmpeg_available": get_ffmpeg_version() is not None,
-        "ffprobe_available": get_ffprobe_version() is not None,
+        "ffmpeg_available": versions["ffmpeg_version"] is not None,
+        "ffprobe_available": versions["ffprobe_version"] is not None,
         "whisper_available": WHISPER_AVAILABLE,
-        "ffmpeg_version": get_ffmpeg_version(),
-        "ffprobe_version": get_ffprobe_version(),
+        "ffmpeg_version": versions["ffmpeg_version"],
+        "ffprobe_version": versions["ffprobe_version"],
     }
 
 
@@ -466,6 +527,42 @@ def transcribe_audio(
 # Main Pipeline
 # =============================================================================
 
+def _build_ffmpeg_not_found_result() -> Dict[str, Any]:
+    """
+    Build a deterministic failure result when ffmpeg/ffprobe are not found.
+
+    Returns a properly structured result with FFMPEG_NOT_FOUND error code
+    and appropriate asr_settings for audit trail.
+    """
+    versions = get_ffmpeg_versions()
+    return {
+        "processed_at": datetime.now().isoformat(),
+        "availability": "unknown",  # Cannot confirm audio presence/absence without ffprobe
+        "speech_detected": None,
+        "vad_coverage_percent": None,
+        "transcript": None,
+        "segments": None,
+        "asr_quality": None,
+        "asr_model_id": None,
+        "asr_settings": {
+            **ASR_SETTINGS,
+            **COMPUTE_SETTINGS,
+            "ffmpeg_version": versions["ffmpeg_version"],  # Will be None
+            "ffprobe_version": versions["ffprobe_version"],  # Will be None
+            "ffmpeg_available": ffmpeg_available(),
+            "ffprobe_available": ffprobe_available(),
+        },
+        "excerpts": None,
+        "error_reason_code": "FFMPEG_NOT_FOUND",
+        "probe_audit": {
+            "error": "ffmpeg and/or ffprobe not found in PATH. Install ffmpeg to enable audio analysis.",
+            "ffmpeg_in_path": ffmpeg_available(),
+            "ffprobe_in_path": ffprobe_available(),
+        },
+        "extraction_audit": None,
+    }
+
+
 def process_audio_from_video(
     video_path: str,
     scan_id: str,
@@ -476,6 +573,7 @@ def process_audio_from_video(
     Complete audio processing pipeline for a video file.
 
     Stages:
+        0. Check for ffmpeg/ffprobe availability (MUST pass before proceeding)
         1. Probe video for audio stream
         2. Extract audio to temporary WAV
         3. Transcribe with VAD gating
@@ -490,6 +588,13 @@ def process_audio_from_video(
     Returns:
         AudioAnalysis dict ready for storage in scan_result
     """
+    # ==========================================================================
+    # Stage 0: Check for ffmpeg/ffprobe BEFORE attempting any subprocess calls
+    # ==========================================================================
+    if not ffmpeg_binaries_available():
+        print("[audio_processor] ffmpeg/ffprobe not found in PATH - returning FFMPEG_NOT_FOUND")
+        return _build_ffmpeg_not_found_result()
+
     audio_path = os.path.join(tmp_dir, f"{scan_id}_audio.wav")
 
     result = {
@@ -566,9 +671,38 @@ def is_audio_processing_available() -> bool:
     Returns:
         True if ffmpeg, ffprobe, and faster-whisper are available
     """
-    deps = check_dependencies()
-    return (
-        deps["ffmpeg_available"] and
-        deps["ffprobe_available"] and
-        deps["whisper_available"]
-    )
+    return ffmpeg_binaries_available() and WHISPER_AVAILABLE
+
+
+def get_audio_dependencies_status() -> Dict[str, Any]:
+    """
+    Get detailed status of audio processing dependencies.
+
+    Useful for diagnostics and user-facing error messages.
+
+    Returns:
+        Dict with availability status and version info for each dependency
+    """
+    versions = get_ffmpeg_versions()
+    return {
+        "ffmpeg_available": ffmpeg_available(),
+        "ffprobe_available": ffprobe_available(),
+        "ffmpeg_binaries_available": ffmpeg_binaries_available(),
+        "whisper_available": WHISPER_AVAILABLE,
+        "all_available": is_audio_processing_available(),
+        "ffmpeg_version": versions["ffmpeg_version"],
+        "ffprobe_version": versions["ffprobe_version"],
+        "missing_components": _get_missing_components(),
+    }
+
+
+def _get_missing_components() -> List[str]:
+    """Get list of missing audio processing components."""
+    missing = []
+    if not ffmpeg_available():
+        missing.append("ffmpeg")
+    if not ffprobe_available():
+        missing.append("ffprobe")
+    if not WHISPER_AVAILABLE:
+        missing.append("faster-whisper")
+    return missing
