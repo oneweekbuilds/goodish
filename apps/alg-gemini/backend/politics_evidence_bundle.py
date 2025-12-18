@@ -16,8 +16,25 @@ Evidence Bundle Structure:
     "meta": { ... },           # Scan metadata
     "observations": { ... },   # Hard facts from data (content categories, hashtags)
     "measurements": { ... },   # Classifier-based estimates
-    "limits": { ... }          # What is missing or uncertain
+    "limits": { ... },         # What is missing or uncertain
+    "public_figure_signals": { ... }  # Prompt 5: Public figure detection
 }
+
+PUBLIC FIGURE SIGNALS REUSE NOTE (Prompt 5):
+---------------------------------------------------------------------------
+The public_figure_signals field comes from public_figure_signals.py which is
+a DOMAIN-AGNOSTIC detector. It is currently surfaced in Politics by choice,
+but the signals themselves are not inherently political.
+
+Public figure signals may be consumed by other tabs in future:
+  - Creators tab (verified accounts, public figures)
+  - Patterns tab (public figure concentration)
+  - Inferences tab (audience inference)
+
+This integration should NOT be replicated manually in other bundles.
+Instead, Prompt 6 (Signal Fusion Engine) will handle cross-bundle signal
+routing when needed.
+---------------------------------------------------------------------------
 """
 
 from datetime import datetime

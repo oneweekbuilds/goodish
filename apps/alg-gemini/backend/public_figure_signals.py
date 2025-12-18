@@ -20,15 +20,49 @@ Signal categories (NO IDENTITY):
 - Visual: OCR text for institutional cues
 - Metadata: Verified badge (weak signal only)
 
+ARCHITECTURAL BOUNDARY (Prompt 5 vs Prompt 6):
+---------------------------------------------------------------------------
+This module (Prompt 5) is responsible for:
+  - Detecting per-modality signals (text, audio, visual, metadata)
+  - Tracking coverage per modality
+  - Emitting candidate confidence drivers
+  - Producing CONSERVATIVE pre-fusion estimates
+
+The "present" and "confidence" fields in the output are PRE-FUSION ESTIMATES.
+They use simple count-based thresholds:
+  - 3+ signals fired → high (pre-fusion)
+  - 2 signals fired → medium (pre-fusion)
+  - 1 signal fired → low (pre-fusion)
+  - Insufficient coverage → unknown
+
+Prompt 6 (Signal Fusion Engine) is responsible for:
+  - Cross-modal arbitration
+  - Applying final weighting and conflict resolution
+  - Producing unified confidence synthesis
+  - MAY OVERRIDE the pre-fusion estimates from this module
+
+The per-modality data (signals_fired, signals_not_evaluated, signals_not_found,
+modality_coverage) is preserved so Prompt 6 can recompute fusion independently.
+---------------------------------------------------------------------------
+
+REUSE INTENT:
+This module is DOMAIN-AGNOSTIC. Public figure signals may be relevant to:
+  - Politics tab (current primary consumer)
+  - Creators tab (verified accounts, public figures)
+  - Patterns tab (public figure concentration)
+  - Inferences tab (audience inference)
+Other bundles may consume these signals in future via Prompt 6 integration.
+
 Output structure:
 {
-    "present": "yes" | "no" | "unknown",
-    "confidence": "low" | "medium" | "high",
-    "signals_fired": [...],
-    "signals_not_evaluated": [...],
-    "signals_not_found": [...],
-    "confidence_drivers": [...],
-    "what_this_does_not_mean": [...]
+    "present": "yes" | "no" | "unknown",       # PRE-FUSION estimate
+    "confidence": "low" | "medium" | "high",   # PRE-FUSION estimate
+    "signals_fired": [...],                     # Per-modality, tagged
+    "signals_not_evaluated": [...],             # Missing modalities
+    "signals_not_found": [...],                 # Checked but absent
+    "confidence_drivers": [...],                # Candidate drivers
+    "what_this_does_not_mean": [...],          # Epistemic boundaries
+    "modality_coverage": {...}                  # What was available
 }
 """
 
@@ -641,12 +675,17 @@ def detect_public_figure_signals(
         })
 
     # ---------------------------------------------------------------------
-    # Compute Overall Result
+    # Compute Overall Result (PRE-FUSION ESTIMATES)
+    # ---------------------------------------------------------------------
+    # NOTE: These are conservative pre-fusion estimates using simple count-based
+    # thresholds. Prompt 6 (Signal Fusion Engine) may override these values
+    # using cross-modal arbitration and weighted fusion logic.
+    # The per-modality data above is preserved for Prompt 6 to recompute.
     # ---------------------------------------------------------------------
     n_signals_fired = len(signals_fired)
     n_not_evaluated = len(signals_not_evaluated)
 
-    # Determine presence
+    # Determine presence (PRE-FUSION: simple threshold)
     if n_signals_fired > 0:
         present = "yes"
     elif n_not_evaluated >= 2:
@@ -655,7 +694,8 @@ def detect_public_figure_signals(
     else:
         present = "no"
 
-    # Determine confidence
+    # Determine confidence (PRE-FUSION: count-based, no weighting)
+    # Prompt 6 may apply modality-specific weights to override this
     if n_signals_fired >= 3:
         confidence = "high"
     elif n_signals_fired >= 2:
@@ -707,8 +747,11 @@ def detect_public_figure_signals(
         )
 
     return {
+        # PRE-FUSION ESTIMATES: Prompt 6 may override these
         "present": present,
         "confidence": confidence,
+        "_pre_fusion": True,  # Flag indicating these are pre-fusion estimates
+        # Per-modality data for Prompt 6 fusion
         "signals_fired": signals_fired,
         "signals_not_evaluated": signals_not_evaluated,
         "signals_not_found": signals_not_found,
