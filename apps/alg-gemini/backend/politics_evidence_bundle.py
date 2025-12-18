@@ -17,7 +17,8 @@ Evidence Bundle Structure:
     "observations": { ... },   # Hard facts from data (content categories, hashtags)
     "measurements": { ... },   # Classifier-based estimates
     "limits": { ... },         # What is missing or uncertain
-    "public_figure_signals": { ... }  # Prompt 5: Public figure detection
+    "public_figure_signals": { ... },        # Prompt 5: Pre-fusion public figure detection
+    "fused_public_figure_signals": { ... }   # Prompt 6: Fused multimodal signals
 }
 
 PUBLIC FIGURE SIGNALS REUSE NOTE (Prompt 5):
@@ -43,6 +44,7 @@ from collections import Counter
 from text_signals import extract_text_signals, has_analyzable_text
 from feature_bundle import build_feature_bundle_collection, get_text_content_from_features
 from public_figure_signals import detect_public_figure_signals_for_scan
+from signal_fusion_engine import fuse_public_figure_signals
 
 
 def build_politics_evidence_bundle(
@@ -82,12 +84,21 @@ def build_politics_evidence_bundle(
         feature_collection, feed_items
     )
 
+    # Apply Signal Fusion Engine (Prompt 6)
+    # The fusion engine combines multimodal signals, resolves conflicts,
+    # and produces a unified confidence assessment.
+    # Raw signals are preserved alongside fused output.
+    fused_public_figure_signals = fuse_public_figure_signals(public_figure_signals)
+
     return {
         "meta": meta,
         "observations": observations,
         "measurements": measurements,
         "limits": limits,
+        # Raw Prompt 5 output preserved for transparency
         "public_figure_signals": public_figure_signals,
+        # Fused Prompt 6 output for unified confidence
+        "fused_public_figure_signals": fused_public_figure_signals,
     }
 
 

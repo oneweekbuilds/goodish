@@ -35,6 +35,7 @@ Wording Rules:
 """
 
 from typing import Dict, Any, List, Optional, Literal
+from signal_fusion_engine import get_fusion_summary_for_explanations
 
 
 # Coverage thresholds (consistent with claims_generator.py)
@@ -533,12 +534,25 @@ def build_politics_explanations(
 ) -> Dict[str, Any]:
     """
     Build explanations object for the Politics & Worldview tab.
+
+    Prompt 6 Integration:
+    - Uses fused_public_figure_signals if available for unified confidence
+    - Falls back to raw public_figure_signals for backward compatibility
+    - Surfaces conflict resolution notes from fusion engine
     """
     meta = bundle.get("meta", {})
     observations = bundle.get("observations", {})
     measurements = bundle.get("measurements", {})
     limits = bundle.get("limits", {})
-    public_figure_signals = bundle.get("public_figure_signals", {})
+
+    # Prompt 6: Prefer fused signals over raw signals
+    # fused_public_figure_signals contains cross-modal arbitration and conflict resolution
+    fused_pf_signals = bundle.get("fused_public_figure_signals", {})
+    raw_pf_signals = bundle.get("public_figure_signals", {})
+
+    # Use fused if available and marked as fused, otherwise fall back to raw
+    use_fused = fused_pf_signals and fused_pf_signals.get("_fused", False)
+    public_figure_signals = fused_pf_signals if use_fused else raw_pf_signals
 
     n_items = meta.get("n_items", 0)
     coverage_status = _get_coverage_status(feature_collection, n_items)
@@ -596,13 +610,12 @@ def build_politics_explanations(
         _build_not_evaluated_signals(coverage_status, ["audio"], "politics")
     )
 
-    # Merge public figure signals (Prompt 5)
+    # Merge public figure signals (Prompt 5/6)
     if public_figure_signals:
+        # Get signals from fused or raw result (structure is preserved)
         pf_fired = public_figure_signals.get("signals_fired", [])
         pf_not_evaluated = public_figure_signals.get("signals_not_evaluated", [])
         pf_not_found = public_figure_signals.get("signals_not_found", [])
-        pf_confidence = public_figure_signals.get("confidence_drivers", [])
-        pf_boundaries = public_figure_signals.get("what_this_does_not_mean", [])
 
         # Add public figure signals to our lists
         signals_fired.extend(pf_fired)
@@ -614,10 +627,30 @@ def build_politics_explanations(
         coverage_status, signals_fired, signals_not_found, signals_not_evaluated
     )
 
-    # Add public figure confidence drivers
+    # Add public figure confidence drivers (includes fusion notes if fused)
     if public_figure_signals:
         pf_confidence = public_figure_signals.get("confidence_drivers", [])
         confidence_drivers.extend(pf_confidence)
+
+    # Prompt 6: Add conflict resolution notes from fusion as confidence drivers
+    if use_fused:
+        conflict_notes = fused_pf_signals.get("conflict_resolution_notes", [])
+        for conflict in conflict_notes[:2]:  # Cap at 2
+            confidence_drivers.append({
+                "direction": "down",
+                "label": "Cross-modal conflict detected",
+                "detail": conflict.get("description", "Signals disagreed across modalities."),
+            })
+
+        # Add fusion summary to explanations if there are key signals
+        fusion_summary = get_fusion_summary_for_explanations(fused_pf_signals)
+        if fusion_summary.get("conflicts"):
+            for conflict_desc in fusion_summary["conflicts"][:1]:
+                confidence_drivers.append({
+                    "direction": "note",
+                    "label": "Fusion resolution",
+                    "detail": conflict_desc,
+                })
 
     # Build summary
     if political_items > 0:
@@ -638,7 +671,7 @@ def build_politics_explanations(
         "Absence of political keywords doesn't mean content has no political implications.",
     ]
 
-    # Add public figure epistemic boundaries (Prompt 5)
+    # Add public figure epistemic boundaries (Prompt 5/6 - preserved through fusion)
     if public_figure_signals:
         pf_boundaries = public_figure_signals.get("what_this_does_not_mean", [])
         # Add unique boundaries (avoid duplicates)
