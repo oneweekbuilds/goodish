@@ -2,6 +2,11 @@
 
 Evidence Bundles are the **single source of truth** for all plain-English analysis copy and Talk-to-Algorithm responses in Algorithm Lens. All generated text MUST derive from Evidence Bundle fields—never from raw feed text, generic explanations, or LLM hallucinations.
 
+**See also:**
+- [Accuracy Architecture Contract](./accuracy_architecture.md) - Classifier-level rules all detection modules must obey
+- [Classifier Checklist](./classifier_checklist.md) - Compliance checklist for new classifiers
+- [Classifier Guidance](./classifier_guidance.md) - How to build compliant classifiers
+
 ## Purpose
 
 Evidence Bundles solve the accuracy problem by enforcing a strict contract between data and display:

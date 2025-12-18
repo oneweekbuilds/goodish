@@ -4,6 +4,8 @@
 > **Last Updated:** 2025-12-17
 > **Scope:** All dashboard analysis text, all charts/metrics, and the "Talk to Your Algorithm" feature
 
+**See also:** [Accuracy Architecture Contract](./accuracy_architecture.md) for classifier-level rules that all detection modules must obey.
+
 ---
 
 ## Core Principle
