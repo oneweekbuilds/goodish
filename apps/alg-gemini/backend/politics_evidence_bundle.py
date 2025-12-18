@@ -25,6 +25,7 @@ from typing import Dict, Any, List, Optional
 from collections import Counter
 from text_signals import extract_text_signals, has_analyzable_text
 from feature_bundle import build_feature_bundle_collection, get_text_content_from_features
+from public_figure_signals import detect_public_figure_signals_for_scan
 
 
 def build_politics_evidence_bundle(
@@ -59,11 +60,17 @@ def build_politics_evidence_bundle(
     measurements = _build_measurements(aggregates, feed_items)
     limits = _build_limits(scan_metadata, aggregates, feed_items, feature_collection)
 
+    # Detect public figure signals (Prompt 5)
+    public_figure_signals = detect_public_figure_signals_for_scan(
+        feature_collection, feed_items
+    )
+
     return {
         "meta": meta,
         "observations": observations,
         "measurements": measurements,
         "limits": limits,
+        "public_figure_signals": public_figure_signals,
     }
 
 

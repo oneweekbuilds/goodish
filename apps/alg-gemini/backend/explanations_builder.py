@@ -142,6 +142,27 @@ INFERENCES_SIGNALS = {
     },
 }
 
+# Public Figure Signals (Prompt 5)
+# NOTE: These detect TITLES and INSTITUTIONAL CUES, not identities.
+PUBLIC_FIGURE_SIGNALS = {
+    "public_figure_text": {
+        "label": "Public office title in text",
+        "category": "text",
+    },
+    "public_figure_audio": {
+        "label": "Public office title in audio",
+        "category": "audio",
+    },
+    "public_figure_ocr": {
+        "label": "Institutional visual cues",
+        "category": "visual",
+    },
+    "public_figure_verified": {
+        "label": "Verified account badge",
+        "category": "metadata",
+    },
+}
+
 
 def _get_coverage_status(
     feature_collection: Optional[Dict[str, Any]],
@@ -517,6 +538,7 @@ def build_politics_explanations(
     observations = bundle.get("observations", {})
     measurements = bundle.get("measurements", {})
     limits = bundle.get("limits", {})
+    public_figure_signals = bundle.get("public_figure_signals", {})
 
     n_items = meta.get("n_items", 0)
     coverage_status = _get_coverage_status(feature_collection, n_items)
@@ -574,10 +596,28 @@ def build_politics_explanations(
         _build_not_evaluated_signals(coverage_status, ["audio"], "politics")
     )
 
+    # Merge public figure signals (Prompt 5)
+    if public_figure_signals:
+        pf_fired = public_figure_signals.get("signals_fired", [])
+        pf_not_evaluated = public_figure_signals.get("signals_not_evaluated", [])
+        pf_not_found = public_figure_signals.get("signals_not_found", [])
+        pf_confidence = public_figure_signals.get("confidence_drivers", [])
+        pf_boundaries = public_figure_signals.get("what_this_does_not_mean", [])
+
+        # Add public figure signals to our lists
+        signals_fired.extend(pf_fired)
+        signals_not_evaluated.extend(pf_not_evaluated)
+        signals_not_found.extend(pf_not_found)
+
     # Build confidence drivers
     confidence_drivers = _build_confidence_drivers(
         coverage_status, signals_fired, signals_not_found, signals_not_evaluated
     )
+
+    # Add public figure confidence drivers
+    if public_figure_signals:
+        pf_confidence = public_figure_signals.get("confidence_drivers", [])
+        confidence_drivers.extend(pf_confidence)
 
     # Build summary
     if political_items > 0:
@@ -597,6 +637,14 @@ def build_politics_explanations(
         "Keyword detection cannot assess the actual political stance or bias of content.",
         "Absence of political keywords doesn't mean content has no political implications.",
     ]
+
+    # Add public figure epistemic boundaries (Prompt 5)
+    if public_figure_signals:
+        pf_boundaries = public_figure_signals.get("what_this_does_not_mean", [])
+        # Add unique boundaries (avoid duplicates)
+        for boundary in pf_boundaries[:4]:  # Cap at 4 to avoid UI overflow
+            if boundary not in what_this_does_not_mean:
+                what_this_does_not_mean.append(boundary)
 
     # Next best actions
     next_best_actions = [
