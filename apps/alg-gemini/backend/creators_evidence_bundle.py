@@ -23,6 +23,7 @@ Evidence Bundle Structure:
 from datetime import datetime
 from typing import Dict, Any, List
 from collections import Counter
+from creator_extraction import extract_creators_from_feed_items
 
 
 def build_creators_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
@@ -38,11 +39,15 @@ def build_creators_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any
     scan_metadata = scan_result.get("scan_metadata", {})
     aggregates = scan_result.get("aggregates", {})
     feed_items = scan_result.get("feed_items", [])
+    source_type = scan_metadata.get("source_type", "UNKNOWN")
 
-    meta = _build_meta(scan_metadata, aggregates, feed_items)
-    observations = _build_observations(aggregates, feed_items)
-    measurements = _build_measurements(aggregates, feed_items)
-    limits = _build_limits(scan_metadata, aggregates, feed_items)
+    # Extract creators from feed items (handles MOBILE_VIDEO vs DESKTOP)
+    extraction_result = extract_creators_from_feed_items(feed_items, source_type)
+
+    meta = _build_meta(scan_metadata, aggregates, feed_items, extraction_result)
+    observations = _build_observations(aggregates, feed_items, extraction_result)
+    measurements = _build_measurements(aggregates, feed_items, extraction_result)
+    limits = _build_limits(scan_metadata, aggregates, feed_items, extraction_result)
 
     return {
         "meta": meta,
@@ -55,14 +60,15 @@ def build_creators_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any
 def _build_meta(
     scan_metadata: Dict[str, Any],
     aggregates: Dict[str, Any],
-    feed_items: List[Dict[str, Any]]
+    feed_items: List[Dict[str, Any]],
+    extraction_result: Dict[str, Any]
 ) -> Dict[str, Any]:
     """Build the meta section with scan context."""
     n_items = len(feed_items)
     created_at = scan_metadata.get("created_at")
 
-    # Build coverage accounting
-    coverage = _compute_coverage(feed_items)
+    # Build coverage accounting using extraction results
+    coverage = _compute_coverage(feed_items, extraction_result)
 
     return {
         "scan_id": scan_metadata.get("scan_id"),
@@ -75,7 +81,10 @@ def _build_meta(
     }
 
 
-def _compute_coverage(feed_items: List[Dict[str, Any]]) -> Dict[str, Any]:
+def _compute_coverage(
+    feed_items: List[Dict[str, Any]],
+    extraction_result: Dict[str, Any]
+) -> Dict[str, Any]:
     """
     Compute coverage metadata for the creators evidence bundle.
 
@@ -84,9 +93,10 @@ def _compute_coverage(feed_items: List[Dict[str, Any]]) -> Dict[str, Any]:
     - exclusion_reasons counts ONLY truly excluded items (sum == n_items_excluded)
     - quality_flags counts issues among INCLUDED items (does not affect coverage counts)
 
-    For Creators bundle: Items WITHOUT account info (handle or display_name) are
-    EXCLUDED because creator analysis requires attribution. These items are tracked
-    in exclusion_reasons.
+    For Creators bundle: Items where a creator could NOT be identified are EXCLUDED.
+    This includes:
+    - DESKTOP items without account metadata
+    - MOBILE_VIDEO items where OCR extraction failed
 
     Returns:
         Coverage dict with standardized fields
@@ -95,27 +105,23 @@ def _compute_coverage(feed_items: List[Dict[str, Any]]) -> Dict[str, Any]:
     exclusion_reasons: Dict[str, int] = {}
     quality_flags: Dict[str, int] = {}
 
-    # Track items excluded for mechanical reasons
-    n_missing_account = 0
+    # Use extraction results for coverage accounting
+    n_extracted = extraction_result.get("summary", {}).get("n_extracted", 0)
+    n_med_confidence = extraction_result.get("summary", {}).get("n_med_confidence", 0)
 
-    for item in feed_items:
-        # Creators analysis requires account information
-        account = item.get("account") or {}
-        has_account = bool(
-            account.get("account_handle") or
-            account.get("display_name")
-        )
+    # Get exclusion counts from extraction
+    exc_counts = extraction_result.get("exclusion_counts", {})
+    for reason, count in exc_counts.items():
+        if count > 0:
+            exclusion_reasons[reason] = count
 
-        if not has_account:
-            n_missing_account += 1
+    # Items included = items where creator was extracted
+    n_items_included = n_extracted
+    n_items_excluded = n_items_total - n_items_included
 
-    # Items without account info are EXCLUDED (cannot attribute to a creator)
-    # Contract: sum(exclusion_reasons.values()) == n_items_excluded
-    n_items_excluded = n_missing_account
-    n_items_included = n_items_total - n_items_excluded
-
-    if n_missing_account > 0:
-        exclusion_reasons["missing_account"] = n_missing_account
+    # Track MED confidence extractions as a quality flag (not exclusion)
+    if n_med_confidence > 0:
+        quality_flags["med_confidence_extraction"] = n_med_confidence
 
     return {
         "n_items_total": n_items_total,
@@ -128,48 +134,65 @@ def _compute_coverage(feed_items: List[Dict[str, Any]]) -> Dict[str, Any]:
 
 def _build_observations(
     aggregates: Dict[str, Any],
-    feed_items: List[Dict[str, Any]]
+    feed_items: List[Dict[str, Any]],
+    extraction_result: Dict[str, Any]
 ) -> Dict[str, Any]:
     """
     Build the observations section with hard facts only.
 
     Creators tab focuses on: unique creators, verification status,
     follower counts (if available), posting frequency in scan.
+
+    Uses extraction_result to build creator profiles for both DESKTOP (account metadata)
+    and MOBILE_VIDEO (OCR-extracted handles).
     """
     observations = {}
     n_items = len(feed_items)
     observations["total_posts_seen"] = n_items
 
-    # Build creator profile map
+    # Build creator profile map from extraction results
     creator_profiles = {}
     creator_post_counts = Counter()
 
-    for item in feed_items:
-        account = item.get("account") or {}
-        handle = account.get("account_handle") or account.get("display_name") or "unknown"
+    extractions = extraction_result.get("extractions", [])
 
-        creator_post_counts[handle] += 1
+    for i, item in enumerate(feed_items):
+        # Get extraction result for this item
+        extraction = extractions[i] if i < len(extractions) else {}
 
-        if handle not in creator_profiles:
-            creator_profiles[handle] = {
-                "handle": handle,
+        if not extraction.get("extracted"):
+            continue  # Skip items without extracted creator
+
+        creator_id = extraction.get("creator_id")
+        if not creator_id:
+            continue
+
+        creator_post_counts[creator_id] += 1
+
+        if creator_id not in creator_profiles:
+            # For DESKTOP with account metadata, use account info
+            account = item.get("account") or {}
+            creator_profiles[creator_id] = {
+                "handle": creator_id,
                 "display_name": account.get("display_name"),
                 "is_verified": account.get("is_verified", False),
                 "follower_count": account.get("follower_count"),
                 "post_count_in_scan": 0,
                 "is_ad_account": False,
+                "extraction_source": extraction.get("source", "unknown"),
+                "extraction_confidence": extraction.get("confidence"),
             }
 
-        creator_profiles[handle]["post_count_in_scan"] += 1
+        creator_profiles[creator_id]["post_count_in_scan"] += 1
 
         # Check if this creator is associated with ads
         if item.get("is_ad", False):
-            creator_profiles[handle]["is_ad_account"] = True
+            creator_profiles[creator_id]["is_ad_account"] = True
 
-    # Populate creator stats
+    # Populate creator stats (only for extracted creators)
     observations["unique_creators_count"] = len(creator_profiles)
 
-    # Verification breakdown
+    # Verification breakdown (only meaningful for DESKTOP where we have this data)
     verified_count = sum(1 for p in creator_profiles.values() if p["is_verified"])
     observations["verified_creators_count"] = verified_count
     observations["unverified_creators_count"] = len(creator_profiles) - verified_count
@@ -192,6 +215,7 @@ def _build_observations(
             "is_verified": c["is_verified"],
             "post_count": c["post_count_in_scan"],
             "is_ad_account": c["is_ad_account"],
+            "extraction_source": c.get("extraction_source"),
         }
         for c in top_creators
     ]
@@ -200,38 +224,45 @@ def _build_observations(
     ad_creators = [h for h, p in creator_profiles.items() if p["is_ad_account"]]
     observations["creators_in_ads_count"] = len(ad_creators)
 
-    # Handle missing info
-    handles_missing = sum(
-        1 for p in creator_profiles.values()
-        if p["handle"] == "unknown" or not p["handle"]
-    )
-    observations["creators_with_missing_handle"] = handles_missing
+    # Track extraction stats
+    summary = extraction_result.get("summary", {})
+    observations["extraction_summary"] = {
+        "total_items": summary.get("total_items", n_items),
+        "items_with_creator": summary.get("n_extracted", 0),
+        "high_confidence_extractions": summary.get("n_high_confidence", 0),
+        "med_confidence_extractions": summary.get("n_med_confidence", 0),
+    }
 
     return observations
 
 
 def _build_measurements(
     aggregates: Dict[str, Any],
-    feed_items: List[Dict[str, Any]]
+    feed_items: List[Dict[str, Any]],
+    extraction_result: Dict[str, Any]
 ) -> Dict[str, Any]:
     """Build the measurements section with derived metrics."""
     measurements = {}
     n_items = len(feed_items)
 
-    # Creator concentration metric
-    account_counts = Counter()
-    for item in feed_items:
-        account = item.get("account") or {}
-        handle = account.get("account_handle") or "unknown"
-        account_counts[handle] += 1
+    # Creator concentration metric - use extraction results
+    extractions = extraction_result.get("extractions", [])
+    creator_counts = Counter()
 
-    unique_creators = len(account_counts)
+    for extraction in extractions:
+        if extraction.get("extracted"):
+            creator_id = extraction.get("creator_id")
+            if creator_id:
+                creator_counts[creator_id] += 1
 
-    if unique_creators > 0 and n_items > 0:
+    unique_creators = len(creator_counts)
+    n_items_with_creator = sum(creator_counts.values())
+
+    if unique_creators > 0 and n_items_with_creator > 0:
         # Concentration: how much content comes from top creators
-        sorted_counts = sorted(account_counts.values(), reverse=True)
-        top1_share = sorted_counts[0] / n_items if sorted_counts else 0
-        top5_share = sum(sorted_counts[:5]) / n_items if len(sorted_counts) >= 5 else 1.0
+        sorted_counts = sorted(creator_counts.values(), reverse=True)
+        top1_share = sorted_counts[0] / n_items_with_creator if sorted_counts else 0
+        top5_share = sum(sorted_counts[:5]) / n_items_with_creator if len(sorted_counts) >= 5 else 1.0
 
         measurements["creator_concentration"] = {
             "value": {
@@ -240,17 +271,17 @@ def _build_measurements(
                 "unique_count": unique_creators,
             },
             "method": "post_count_per_creator",
-            "quality": "ok" if n_items >= 10 else "low_sample",
-            "notes": f"Top creator has {sorted_counts[0]} posts ({round(top1_share*100)}% of feed)."
+            "quality": "ok" if n_items_with_creator >= 10 else "low_sample",
+            "notes": f"Top creator has {sorted_counts[0]} posts ({round(top1_share*100)}% of identified content)."
         }
 
-    # Voice diversity (simple metric)
-    if n_items > 0:
-        diversity_ratio = unique_creators / n_items
+    # Voice diversity (simple metric) - based on items with identified creators
+    if n_items_with_creator > 0:
+        diversity_ratio = unique_creators / n_items_with_creator
         measurements["voice_diversity"] = {
             "value": round(diversity_ratio, 2),
-            "method": "unique_creators / total_posts",
-            "quality": "ok" if n_items >= 10 else "low_sample",
+            "method": "unique_creators / items_with_creator",
+            "quality": "ok" if n_items_with_creator >= 10 else "low_sample",
             "notes": "1.0 = all unique creators, lower = more repetition."
         }
 
@@ -260,11 +291,13 @@ def _build_measurements(
 def _build_limits(
     scan_metadata: Dict[str, Any],
     aggregates: Dict[str, Any],
-    feed_items: List[Dict[str, Any]]
+    feed_items: List[Dict[str, Any]],
+    extraction_result: Dict[str, Any]
 ) -> Dict[str, Any]:
     """Build the limits section."""
     limits = {}
     n_items = len(feed_items)
+    source_type = scan_metadata.get("source_type", "UNKNOWN")
 
     # Sample size limitations
     if n_items < 10:
@@ -290,12 +323,25 @@ def _build_limits(
         "We cannot determine your relationship or engagement with any creator.",
     ]
 
-    # Detection limitations
-    limits["detection_limitations"] = [
-        "Creator identification relies on account metadata which may be incomplete.",
-        "Verification status depends on platform data availability.",
-        "Some creators may use multiple accounts not detected here.",
-    ]
+    # Detection limitations - vary by source type
+    if source_type == "MOBILE_VIDEO":
+        # Get extraction stats
+        summary = extraction_result.get("summary", {})
+        extraction_rate = summary.get("extraction_rate_percent", 0)
+
+        limits["detection_limitations"] = [
+            "Creator identification uses OCR-based @handle extraction from video frames.",
+            "OCR accuracy varies with video quality, font size, and screen contrast.",
+            f"Creators were identified for {extraction_rate}% of items in this scan.",
+            "Some creators may not be identified if @handles are not visible in frames.",
+            "Verification status is not available for OCR-extracted creators.",
+        ]
+    else:
+        limits["detection_limitations"] = [
+            "Creator identification relies on account metadata which may be incomplete.",
+            "Verification status depends on platform data availability.",
+            "Some creators may use multiple accounts not detected here.",
+        ]
 
     return limits
 
@@ -313,18 +359,35 @@ def generate_creators_analysis_copy(bundle: Dict[str, Any]) -> Dict[str, Any]:
     limits = bundle.get("limits", {})
 
     n_items = meta.get("n_items", 0)
+    coverage = meta.get("coverage", {})
+    n_included = coverage.get("n_items_included", 0)
     analysis = {}
 
     unique_creators = observations.get("unique_creators_count", 0)
     verified_count = observations.get("verified_creators_count", 0)
     verified_rate = observations.get("verified_rate_percent", 0)
     top_creators = observations.get("top_creators", [])
+    extraction_summary = observations.get("extraction_summary", {})
 
     if n_items < 10:
         analysis["primary_insight"] = {
             "text": f"In this scan, we captured {n_items} posts. More data is needed to analyze creator patterns.",
             "cited_fields": ["meta.n_items"],
             "quality": "insufficient_data"
+        }
+    elif n_included == 0:
+        # No creators could be identified
+        analysis["primary_insight"] = {
+            "text": f"In this scan of {n_items} posts, no creator handles could be identified.",
+            "cited_fields": ["meta.n_items", "meta.coverage.n_items_included"],
+            "quality": "no_data"
+        }
+    elif n_included < n_items:
+        # Partial coverage
+        analysis["primary_insight"] = {
+            "text": f"In this scan of {n_items} posts, we identified {unique_creators} unique creators from {n_included} items with extractable handles.",
+            "cited_fields": ["meta.n_items", "meta.coverage.n_items_included", "observations.unique_creators_count"],
+            "quality": "partial_coverage"
         }
     else:
         analysis["primary_insight"] = {
