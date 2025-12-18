@@ -25,3 +25,6 @@ apps/alg-gemini-extension/dist/
 # Windows device-name artifact
 nul
 
+
+# Local Claude settings (do not commit)
+.claude/settings.local.json
