@@ -88,7 +88,7 @@ def build_ads_evidence_bundle(
     measurements = _build_measurements(aggregates, feed_items, commercial_analysis)
 
     # Build limits section (what we don't know)
-    limits = _build_limits(scan_metadata, aggregates, feed_items, commercial_analysis)
+    limits = _build_limits(scan_metadata, aggregates, feed_items, commercial_analysis, feature_collection)
 
     # ==========================================================================
     # SANITY CHECK: Verify stacked_bar totals match high_confidence_items
@@ -604,7 +604,8 @@ def _build_limits(
     scan_metadata: Dict[str, Any],
     aggregates: Dict[str, Any],
     feed_items: List[Dict[str, Any]],
-    commercial_analysis: CommercialAnalysisResult
+    commercial_analysis: CommercialAnalysisResult,
+    feature_collection: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """
     Build the limits section describing what is missing or uncertain.
@@ -801,6 +802,85 @@ def _build_limits(
             ocr_limitations.append("No significant OCR issues detected.")
 
     limits["ocr_extraction_limitations"] = ocr_limitations
+
+    # ==========================================================================
+    # Audio Analysis Limitations (Prompt 3)
+    # ==========================================================================
+    audio_limitations = []
+    audio_analyzed = False
+
+    if feature_collection:
+        audio_coverage = feature_collection.get("coverage", {}).get("audio", {})
+        audio_analyzed = audio_coverage.get("audio_analyzed", False)
+        n_processed = audio_coverage.get("n_present_processed", 0)
+        n_unprocessed = audio_coverage.get("n_present_unprocessed", 0)
+        n_absent = audio_coverage.get("n_absent", 0)
+        n_unknown = audio_coverage.get("n_unknown", 0)
+
+        if audio_analyzed and n_processed > 0:
+            # Audio was analyzed - check for quality issues
+            # Get scan-level audio analysis for quality info
+            items = feature_collection.get("items", [])
+            if items:
+                first_item = items[0]
+                audio_features = first_item.get("audio_features", {})
+                asr_quality = audio_features.get("asr_quality")
+                error_code = audio_features.get("error_reason_code")
+
+                if asr_quality == "PARTIAL":
+                    audio_limitations.append(
+                        "Transcription quality was partial; some audio content may not be captured."
+                    )
+                elif asr_quality == "FAILED":
+                    audio_limitations.append(
+                        "Speech was detected but transcription quality was too low for reliable analysis."
+                    )
+                elif asr_quality == "SKIPPED_NO_SPEECH":
+                    audio_limitations.append(
+                        "No speech detected (music or ambient audio only). Audio-based text signals are unavailable."
+                    )
+                else:
+                    audio_limitations.append(
+                        "Audio was analyzed successfully. Transcript reflects words spoken, not tone or intent."
+                    )
+
+                if error_code:
+                    audio_limitations.append(f"Audio processing note: {error_code}")
+        elif n_unprocessed > 0:
+            audio_limitations.append(
+                "This video contains audio that has not yet been analyzed. Audio-based signals are unavailable."
+            )
+        elif n_unknown > 0:
+            audio_limitations.append(
+                "Audio analysis failed. Audio-based signals are unavailable."
+            )
+        elif n_absent > 0 and source_type == "MOBILE_VIDEO":
+            audio_limitations.append(
+                "This video has no audio track."
+            )
+        elif source_type == "DESKTOP_EXTENSION":
+            audio_limitations.append(
+                "Desktop captures do not include audio. Audio-based signals are not applicable."
+            )
+    else:
+        # No feature collection - check source type for basic messaging
+        if source_type == "MOBILE_VIDEO":
+            audio_limitations.append(
+                "Audio analysis status unknown. Audio-based signals may be unavailable."
+            )
+        elif source_type == "DESKTOP_EXTENSION":
+            audio_limitations.append(
+                "Desktop captures do not include audio."
+            )
+
+    # Add epistemic boundary for audio
+    if audio_analyzed:
+        audio_limitations.append(
+            "Transcript-based signals cannot detect sarcasm, tone, or speaker identity."
+        )
+
+    limits["audio_analysis_limitations"] = audio_limitations
+    limits["audio_analyzed"] = audio_analyzed
 
     # What we cannot know
     limits["epistemic_boundaries"] = [

@@ -10,11 +10,68 @@ class ScreenResolution(BaseModel):
     height: int
 
 
+class AudioSegment(BaseModel):
+    """A single transcribed audio segment with timestamps."""
+    start_ms: int
+    end_ms: int
+    text: str
+    avg_logprob: Optional[float] = None  # Raw confidence metric from ASR
+
+
+class AudioExcerpt(BaseModel):
+    """An evidence excerpt from audio transcript."""
+    start_ms: int
+    end_ms: int
+    text: str  # Max 200 chars
+    signal_type: str  # "political" | "promo" | "creator_mention"
+    matched_term: str
+
+
+class AudioAnalysis(BaseModel):
+    """
+    Scan-level audio analysis results.
+
+    Stored in environment.video_capture.audio_analysis for MOBILE_VIDEO scans.
+    All fields are optional to support backward compatibility with existing scans.
+    """
+    processed_at: Optional[str] = None  # ISO timestamp
+
+    # Availability states: present_processed | present_unprocessed | absent | unknown
+    availability: str = "present_unprocessed"
+
+    # Speech detection
+    speech_detected: Optional[bool] = None
+    vad_coverage_percent: Optional[float] = None
+
+    # Transcript
+    transcript: Optional[str] = None
+    segments: Optional[List[AudioSegment]] = None
+
+    # Quality: GOOD | PARTIAL | FAILED | SKIPPED_NO_SPEECH
+    asr_quality: Optional[str] = None
+
+    # Audit fields
+    asr_model_id: Optional[str] = None
+    asr_settings: Optional[Dict] = None
+
+    # Evidence excerpts (max 10)
+    excerpts: Optional[List[AudioExcerpt]] = None
+
+    # Error handling
+    error_reason_code: Optional[str] = None
+
+    # Audit trails (optional, may be omitted to reduce storage)
+    probe_audit: Optional[Dict] = None
+    extraction_audit: Optional[Dict] = None
+
+
 class VideoCaptureInfo(BaseModel):
     is_video_based: bool = Field(True)
     duration_seconds: Optional[float] = None
     frame_rate_fps: Optional[float] = None
     approx_feed_items_visible: Optional[int] = None
+    sample_interval_ms: Optional[int] = None  # Frame sampling interval (default 400)
+    audio_analysis: Optional[AudioAnalysis] = None  # Scan-level audio analysis
 
 
 class ExtensionCaptureInfo(BaseModel):

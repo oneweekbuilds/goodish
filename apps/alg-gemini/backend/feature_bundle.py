@@ -117,28 +117,44 @@ def _generate_item_id(
 
 def _determine_audio_availability(
     item: Dict[str, Any],
-    source_type: str
+    source_type: str,
+    scan_audio_analysis: Optional[Dict[str, Any]] = None
 ) -> str:
     """
-    Determine audio availability using 3-state logic.
+    Determine audio availability using 4-state logic.
+
+    States:
+        "present_processed": Audio existed AND was successfully transcribed
+        "present_unprocessed": Audio likely exists but not yet processed
+        "absent": Confirmed no audio stream via ffprobe
+        "unknown": Processing attempted but failed before confirming presence
+
+    Args:
+        item: The feed item dict
+        source_type: Source type (e.g., "DESKTOP_EXTENSION", "MOBILE_VIDEO")
+        scan_audio_analysis: Scan-level audio analysis from environment.video_capture.audio_analysis
 
     Returns:
-        "present_unprocessed": If deterministic indicator shows audio exists but not transcribed
-        "absent": If deterministically known there is no audio (e.g., desktop DOM capture)
-        "unknown": Default when we cannot determine
+        Audio availability state string
     """
     # For DESKTOP_EXTENSION, audio is definitively absent (DOM capture has no audio)
     if source_type == "DESKTOP_EXTENSION":
         return "absent"
 
-    # For MOBILE_VIDEO, check for deterministic indicators
+    # For MOBILE_VIDEO, check scan-level audio analysis first
     if source_type == "MOBILE_VIDEO":
+        if scan_audio_analysis is not None:
+            # Use the scan-level availability directly
+            availability = scan_audio_analysis.get("availability")
+            if availability in ("present_processed", "present_unprocessed", "absent", "unknown"):
+                return availability
+
+        # Legacy fallback: check item-level source_details
         source_details = item.get("source_details", {}) or {}
 
         # Check if there's explicit audio metadata
         audio_meta = source_details.get("audio_metadata")
         if audio_meta is not None:
-            # If we have audio metadata, audio was present
             has_audio = audio_meta.get("has_audio")
             if has_audio is True:
                 return "present_unprocessed"
@@ -149,7 +165,8 @@ def _determine_audio_availability(
         capture_source = source_details.get("capture_source_type")
         if capture_source == "MOBILE_VIDEO_FRAME":
             # Video frames might have audio, but we can't confirm without processing
-            return "unknown"
+            # Default to present_unprocessed for MOBILE_VIDEO without audio analysis
+            return "present_unprocessed"
 
     # Default: we don't know
     return "unknown"
@@ -278,11 +295,54 @@ def _compute_quality_flags(
     return flags
 
 
+def _map_transcript_to_item(
+    item_timestamp_sec: Optional[float],
+    audio_segments: Optional[List[Dict[str, Any]]],
+    sample_interval_ms: int = 400
+) -> Optional[str]:
+    """
+    Map transcript segments to a specific item using timestamp proximity.
+
+    Uses symmetric window around item timestamp based on sampling interval.
+
+    Args:
+        item_timestamp_sec: Item's approx_timestamp_offset_sec
+        audio_segments: List of segment dicts with start_ms, end_ms, text
+        sample_interval_ms: Frame sampling interval (default 400)
+
+    Returns:
+        Transcript text for segments overlapping item's window, or None
+    """
+    if item_timestamp_sec is None or not audio_segments:
+        return None
+
+    half_window_ms = sample_interval_ms // 2
+    item_timestamp_ms = int(item_timestamp_sec * 1000)
+
+    window_start_ms = max(0, item_timestamp_ms - half_window_ms)
+    window_end_ms = item_timestamp_ms + half_window_ms
+
+    overlapping_text = []
+    for seg in audio_segments:
+        seg_start = seg.get("start_ms", 0)
+        seg_end = seg.get("end_ms", 0)
+
+        # Check for overlap
+        if seg_end >= window_start_ms and seg_start <= window_end_ms:
+            text = seg.get("text", "")
+            if text:
+                overlapping_text.append(text)
+
+    return " ".join(overlapping_text) if overlapping_text else None
+
+
 def build_feature_bundle_for_item(
     item: Dict[str, Any],
     platform: str,
     source_type: str,
-    item_position: int
+    item_position: int,
+    scan_audio_analysis: Optional[Dict[str, Any]] = None,
+    sample_interval_ms: int = 400
 ) -> Dict[str, Any]:
     """
     Build a FeatureBundle for a single feed item.
@@ -295,6 +355,8 @@ def build_feature_bundle_for_item(
         platform: Platform name (e.g., "tiktok", "instagram")
         source_type: Source type (e.g., "DESKTOP_EXTENSION", "MOBILE_VIDEO")
         item_position: Position in feed (0-indexed)
+        scan_audio_analysis: Scan-level audio analysis from environment.video_capture.audio_analysis
+        sample_interval_ms: Frame sampling interval for transcript mapping
 
     Returns:
         FeatureBundle dict with schema_version, item_id, features, quality_flags
@@ -313,7 +375,7 @@ def build_feature_bundle_for_item(
     )
 
     # Determine audio availability
-    audio_availability = _determine_audio_availability(item, source_type)
+    audio_availability = _determine_audio_availability(item, source_type, scan_audio_analysis)
 
     # Extract vision features (from existing OCR, no new work)
     vision_features = _extract_vision_features(item, text_signals_result)
@@ -326,11 +388,39 @@ def build_feature_bundle_for_item(
         text_signals_result, vision_features, audio_availability
     )
 
+    # Build audio features from scan-level analysis
+    audio_transcript = None
+    audio_speech_detected = None
+    audio_asr_quality = None
+    audio_error_reason_code = None
+
+    if scan_audio_analysis:
+        audio_speech_detected = scan_audio_analysis.get("speech_detected")
+        audio_asr_quality = scan_audio_analysis.get("asr_quality")
+        audio_error_reason_code = scan_audio_analysis.get("error_reason_code")
+
+        # Map transcript to this item using timestamp proximity
+        item_timestamp = item.get("approx_timestamp_offset_sec")
+        segments = scan_audio_analysis.get("segments")
+        if segments:
+            # Convert segment dicts if they're Pydantic models
+            segment_dicts = []
+            for seg in segments:
+                if hasattr(seg, "dict"):
+                    segment_dicts.append(seg.dict())
+                elif isinstance(seg, dict):
+                    segment_dicts.append(seg)
+            audio_transcript = _map_transcript_to_item(
+                item_timestamp,
+                segment_dicts,
+                sample_interval_ms
+            )
+
     # Determine modality availability
     modality_availability = {
         "text": bool(content_text),
         "vision": vision_features.get("has_thumbnail", False) or vision_features.get("ocr_text_available", False),
-        "audio": audio_availability != "absent",  # True if present_unprocessed or unknown
+        "audio": audio_availability not in ("absent", "unknown"),  # True if present_processed or present_unprocessed
         "metadata": bool(metadata_features.get("account") or metadata_features.get("ad_metadata")),
     }
 
@@ -348,9 +438,11 @@ def build_feature_bundle_for_item(
         },
         "vision_features": vision_features,
         "audio_features": {
-            "transcript": None,  # Not yet implemented (Prompt 3)
-            "speech_detected": None,  # Not yet implemented (Prompt 3)
+            "transcript": audio_transcript,  # Per-item approximate transcript
+            "speech_detected": audio_speech_detected,
             "availability": audio_availability,
+            "asr_quality": audio_asr_quality,
+            "error_reason_code": audio_error_reason_code,
         },
         "metadata_features": metadata_features,
 
@@ -381,10 +473,22 @@ def build_feature_bundle_collection(
     """
     scan_metadata = scan_result.get("scan_metadata", {}) or {}
     feed_items = scan_result.get("feed_items", []) or []
+    environment = scan_result.get("environment", {}) or {}
 
     scan_id = scan_metadata.get("scan_id")
     platform = scan_metadata.get("platform", "unknown")
     source_type = scan_metadata.get("source_type", "UNKNOWN")
+
+    # Extract scan-level audio analysis if present
+    video_capture = environment.get("video_capture", {}) or {}
+    scan_audio_analysis = video_capture.get("audio_analysis")
+
+    # Convert Pydantic model to dict if needed
+    if scan_audio_analysis is not None and hasattr(scan_audio_analysis, "dict"):
+        scan_audio_analysis = scan_audio_analysis.dict()
+
+    # Get sample_interval_ms (default 400 for backward compatibility)
+    sample_interval_ms = video_capture.get("sample_interval_ms", 400) or 400
 
     # Build FeatureBundle for each item
     items = []
@@ -393,7 +497,9 @@ def build_feature_bundle_collection(
             item=item,
             platform=platform,
             source_type=source_type,
-            item_position=i
+            item_position=i,
+            scan_audio_analysis=scan_audio_analysis,
+            sample_interval_ms=sample_interval_ms
         )
         items.append(feature_bundle)
 
@@ -404,8 +510,9 @@ def build_feature_bundle_collection(
     n_with_audio_possible = sum(1 for fb in items if fb["modality_availability"]["audio"])
     n_with_metadata = sum(1 for fb in items if fb["modality_availability"]["metadata"])
 
-    # Audio breakdown
-    n_audio_present = sum(1 for fb in items if fb["audio_features"]["availability"] == "present_unprocessed")
+    # Audio breakdown (updated for 4-state model)
+    n_audio_processed = sum(1 for fb in items if fb["audio_features"]["availability"] == "present_processed")
+    n_audio_unprocessed = sum(1 for fb in items if fb["audio_features"]["availability"] == "present_unprocessed")
     n_audio_absent = sum(1 for fb in items if fb["audio_features"]["availability"] == "absent")
     n_audio_unknown = sum(1 for fb in items if fb["audio_features"]["availability"] == "unknown")
 
@@ -425,9 +532,11 @@ def build_feature_bundle_collection(
         },
         "audio": {
             "n_items_with_audio_possible": n_with_audio_possible,
-            "n_present_unprocessed": n_audio_present,
+            "n_present_processed": n_audio_processed,
+            "n_present_unprocessed": n_audio_unprocessed,
             "n_absent": n_audio_absent,
             "n_unknown": n_audio_unknown,
+            "audio_analyzed": n_audio_processed > 0,  # Flag for evidence bundle limits
         },
         "metadata": {
             "n_items_with_metadata": n_with_metadata,

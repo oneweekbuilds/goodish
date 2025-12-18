@@ -12,7 +12,8 @@ from unified_scan_models import (
     WellbeingInfo, EngagementDrivers, RepetitionInfo, SourceDetails,
     Aggregates, TopicDistributionEntry, WellbeingSummary, ValenceDistribution,
     PoliticalContentSummary, RepetitionSummary, EngagementPatternSummary, HookCount,
-    PrivacyInfo, DebugInfo, ScreenResolution, OcrMetadata
+    PrivacyInfo, DebugInfo, ScreenResolution, OcrMetadata,
+    AudioAnalysis, AudioSegment, AudioExcerpt
 )
 from ocr_utils import (
     extract_text_with_preprocessing,
@@ -22,6 +23,11 @@ from ocr_utils import (
     OCRDebugger,
     get_ocr_debug_enabled
 )
+from audio_processor import (
+    process_audio_from_video,
+    is_audio_processing_available
+)
+from audio_signals import extract_audio_excerpts
 
 # Ensure Tesseract is available.
 # On Windows, you might need to set the path explicitly if it's not in PATH.
@@ -271,6 +277,91 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
     # Finalize OCR debugger (saves frames and logs summary if ALGO_OCR_DEBUG=1)
     ocr_summary = ocr_debugger.finalize()
 
+    # ==========================================================================
+    # Audio Processing (MUST happen BEFORE video deletion)
+    # ==========================================================================
+    audio_analysis = None
+    if is_audio_processing_available():
+        try:
+            tmp_dir = os.path.dirname(file_path)
+            audio_result = process_audio_from_video(
+                video_path=file_path,
+                scan_id=scan_id,
+                tmp_dir=tmp_dir
+            )
+
+            # Extract excerpts if we have a transcript
+            excerpts_result = None
+            if audio_result.get("transcript") and audio_result.get("segments"):
+                excerpts_result = extract_audio_excerpts(
+                    transcript=audio_result["transcript"],
+                    segments=audio_result["segments"],
+                    max_excerpts=10
+                )
+
+            # Build AudioAnalysis model
+            segments_models = None
+            if audio_result.get("segments"):
+                segments_models = [
+                    AudioSegment(
+                        start_ms=seg["start_ms"],
+                        end_ms=seg["end_ms"],
+                        text=seg["text"],
+                        avg_logprob=seg.get("avg_logprob")
+                    )
+                    for seg in audio_result["segments"]
+                ]
+
+            excerpts_models = None
+            if excerpts_result and excerpts_result.get("excerpts"):
+                excerpts_models = [
+                    AudioExcerpt(
+                        start_ms=exc["start_ms"],
+                        end_ms=exc["end_ms"],
+                        text=exc["text"],
+                        signal_type=exc["signal_type"],
+                        matched_term=exc["matched_term"]
+                    )
+                    for exc in excerpts_result["excerpts"]
+                ]
+
+            audio_analysis = AudioAnalysis(
+                processed_at=audio_result.get("processed_at"),
+                availability=audio_result.get("availability", "unknown"),
+                speech_detected=audio_result.get("speech_detected"),
+                vad_coverage_percent=audio_result.get("vad_coverage_percent"),
+                transcript=audio_result.get("transcript"),
+                segments=segments_models,
+                asr_quality=audio_result.get("asr_quality"),
+                asr_model_id=audio_result.get("asr_model_id"),
+                asr_settings=audio_result.get("asr_settings"),
+                excerpts=excerpts_models,
+                error_reason_code=audio_result.get("error_reason_code"),
+                # Omit audit trails to reduce storage (uncomment for debugging)
+                # probe_audit=audio_result.get("probe_audit"),
+                # extraction_audit=audio_result.get("extraction_audit"),
+            )
+
+            print(f"[video_processor] Audio analysis: availability={audio_analysis.availability}, "
+                  f"speech_detected={audio_analysis.speech_detected}, "
+                  f"quality={audio_analysis.asr_quality}, "
+                  f"transcript_len={len(audio_analysis.transcript) if audio_analysis.transcript else 0}")
+
+        except Exception as e:
+            print(f"[video_processor] Audio processing failed: {e}")
+            audio_analysis = AudioAnalysis(
+                availability="unknown",
+                error_reason_code="ASR_FAILED",
+                asr_settings={"error": str(e)}
+            )
+    else:
+        # Audio processing not available (missing dependencies)
+        print("[video_processor] Audio processing skipped (dependencies not available)")
+        audio_analysis = AudioAnalysis(
+            availability="present_unprocessed",
+            error_reason_code="WHISPER_NOT_AVAILABLE"
+        )
+
     # Delete file
     try:
         os.remove(file_path)
@@ -318,7 +409,9 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
                 is_video_based=True,
                 duration_seconds=duration,
                 frame_rate_fps=fps,
-                approx_feed_items_visible=frames_analyzed # Treating samples as items for MVP
+                approx_feed_items_visible=frames_analyzed,  # Treating samples as items for MVP
+                sample_interval_ms=sample_rate_ms,  # Store sampling interval explicitly
+                audio_analysis=audio_analysis  # Scan-level audio analysis
             )
         ),
         feed_items=feed_items,
