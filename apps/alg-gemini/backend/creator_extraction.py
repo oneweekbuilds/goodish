@@ -22,6 +22,7 @@ Only HIGH confidence extractions are surfaced as creators.
 import re
 from typing import Dict, Any, List, Optional, Tuple
 from enum import Enum
+from text_signals import extract_text_signals
 
 
 class ExtractionConfidence(Enum):
@@ -87,12 +88,10 @@ def extract_creator_from_item(item: Dict[str, Any]) -> Dict[str, Any]:
         "exclusion_reason": None,
     }
 
-    # Get OCR text from content_text.on_screen_labels
-    content_text = item.get("content_text", {})
-    on_screen_labels = content_text.get("on_screen_labels", [])
-
-    # Join all labels into single text for analysis
-    ocr_text = " ".join(label for label in on_screen_labels if label).strip()
+    # Use canonical text_signals utility for normalized OCR text extraction
+    # This provides de-duplicated, noise-filtered text from all sources
+    text_result = extract_text_signals(item)
+    ocr_text = text_result["content_text"]  # Already normalized lowercase
 
     # Check if we have OCR text
     if not ocr_text:

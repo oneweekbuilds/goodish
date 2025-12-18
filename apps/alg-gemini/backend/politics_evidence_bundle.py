@@ -23,6 +23,7 @@ Evidence Bundle Structure:
 from datetime import datetime
 from typing import Dict, Any, List
 from collections import Counter
+from text_signals import extract_text_signals, has_analyzable_text
 
 
 def build_politics_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
@@ -88,7 +89,7 @@ def _compute_coverage(feed_items: List[Dict[str, Any]]) -> Dict[str, Any]:
     - quality_flags counts issues among INCLUDED items (does not affect coverage counts)
 
     For Politics bundle: Items WITHOUT text are EXCLUDED because keyword matching
-    requires text content. These items are tracked in exclusion_reasons.
+    requires text content. Uses text_signals.py for canonical text access.
 
     Returns:
         Coverage dict with standardized fields
@@ -101,16 +102,18 @@ def _compute_coverage(feed_items: List[Dict[str, Any]]) -> Dict[str, Any]:
     n_missing_text = 0
 
     for item in feed_items:
-        content_text = item.get("content_text", {})
-
-        # Politics analysis requires text content for keyword matching
-        has_text = bool(
-            content_text.get("caption") or
-            content_text.get("post_text")
-        )
+        # Use canonical text_signals utility for text extraction
+        # This handles MOBILE_VIDEO OCR text (on_screen_labels) properly
+        text_result = extract_text_signals(item)
+        has_text = bool(text_result["content_text"])
 
         if not has_text:
             n_missing_text += 1
+        else:
+            # Track quality flags for included items
+            for flag, count in text_result["quality_flags"].items():
+                if flag not in ["missing_text_fields"]:  # Don't count missing as quality flag
+                    quality_flags[flag] = quality_flags.get(flag, 0) + count
 
     # Items without text are EXCLUDED (cannot analyze for political keywords)
     # Contract: sum(exclusion_reasons.values()) == n_items_excluded
@@ -138,6 +141,7 @@ def _build_observations(
 
     Observations are deterministic counts - no inference or interpretation.
     Politics tab focuses on hashtags, content categories, and topic mentions.
+    Uses text_signals.py for canonical text access (including MOBILE_VIDEO OCR).
     """
     observations = {}
     n_items = len(feed_items)
@@ -194,12 +198,10 @@ def _build_observations(
     news_signal_count = 0
 
     for item in feed_items:
-        content_text = item.get("content_text", {})
-        text_content = (
-            content_text.get("caption", "") or
-            content_text.get("post_text", "") or
-            ""
-        ).lower()
+        # Use canonical text_signals utility for text extraction
+        # This properly handles MOBILE_VIDEO OCR text (on_screen_labels)
+        text_result = extract_text_signals(item)
+        text_content = text_result["content_text"]  # Already normalized/lowercased
 
         if any(kw in text_content for kw in political_keywords):
             political_signal_count += 1
