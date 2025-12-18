@@ -21,12 +21,16 @@ Evidence Bundle Structure:
 """
 
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from collections import Counter
 from text_signals import extract_text_signals, has_analyzable_text
+from feature_bundle import build_feature_bundle_collection, get_text_content_from_features
 
 
-def build_politics_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
+def build_politics_evidence_bundle(
+    scan_result: Dict[str, Any],
+    feature_collection: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
     """
     Build an Evidence Bundle for the Politics & Worldview tab from a scan result.
 
@@ -35,6 +39,9 @@ def build_politics_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any
 
     Args:
         scan_result: The full UnifiedScanResult dict from the database
+        feature_collection: Optional pre-computed FeatureBundleCollection.
+            If None, will be computed internally (backward compatibility).
+            If provided, MUST be used and MUST NOT be recomputed.
 
     Returns:
         Evidence Bundle dict with keys: meta, observations, measurements, limits
@@ -42,6 +49,10 @@ def build_politics_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any
     scan_metadata = scan_result.get("scan_metadata", {})
     aggregates = scan_result.get("aggregates", {})
     feed_items = scan_result.get("feed_items", [])
+
+    # Compute or use provided feature_collection
+    if feature_collection is None:
+        feature_collection = build_feature_bundle_collection(scan_result)
 
     meta = _build_meta(scan_metadata, aggregates, feed_items)
     observations = _build_observations(aggregates, feed_items)

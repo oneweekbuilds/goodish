@@ -39,9 +39,13 @@ from promo_signals import (
     get_promo_evidence_summary,
     PromoConfidence,
 )
+from feature_bundle import build_feature_bundle_collection
 
 
-def build_ads_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
+def build_ads_evidence_bundle(
+    scan_result: Dict[str, Any],
+    feature_collection: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
     """
     Build an Evidence Bundle for the Ads & Influence tab from a scan result.
 
@@ -50,6 +54,9 @@ def build_ads_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
 
     Args:
         scan_result: The full UnifiedScanResult dict from the database
+        feature_collection: Optional pre-computed FeatureBundleCollection.
+            If None, will be computed internally (backward compatibility).
+            If provided, MUST be used and MUST NOT be recomputed.
 
     Returns:
         Evidence Bundle dict with keys: meta, observations, measurements, limits
@@ -58,6 +65,12 @@ def build_ads_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
     scan_metadata = scan_result.get("scan_metadata", {})
     aggregates = scan_result.get("aggregates", {})
     feed_items = scan_result.get("feed_items", [])
+
+    # Compute or use provided feature_collection
+    # Note: Currently not directly used in ads bundle logic to avoid output drift,
+    # but threaded through for consistency and potential future optimizations
+    if feature_collection is None:
+        feature_collection = build_feature_bundle_collection(scan_result)
 
     # Get source_type for MOBILE_VIDEO-specific handling
     source_type = scan_metadata.get("source_type")

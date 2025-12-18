@@ -21,17 +21,24 @@ Evidence Bundle Structure:
 """
 
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from collections import Counter
 from creator_extraction import extract_creators_from_feed_items
+from feature_bundle import build_feature_bundle_collection
 
 
-def build_creators_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
+def build_creators_evidence_bundle(
+    scan_result: Dict[str, Any],
+    feature_collection: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
     """
     Build an Evidence Bundle for the Creators & Voices tab.
 
     Args:
         scan_result: The full UnifiedScanResult dict from the database
+        feature_collection: Optional pre-computed FeatureBundleCollection.
+            If None, will be computed internally (backward compatibility).
+            If provided, MUST be used and MUST NOT be recomputed.
 
     Returns:
         Evidence Bundle dict with keys: meta, observations, measurements, limits
@@ -40,6 +47,10 @@ def build_creators_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any
     aggregates = scan_result.get("aggregates", {})
     feed_items = scan_result.get("feed_items", [])
     source_type = scan_metadata.get("source_type", "UNKNOWN")
+
+    # Compute or use provided feature_collection
+    if feature_collection is None:
+        feature_collection = build_feature_bundle_collection(scan_result)
 
     # Extract creators from feed items (handles MOBILE_VIDEO vs DESKTOP)
     extraction_result = extract_creators_from_feed_items(feed_items, source_type)

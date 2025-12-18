@@ -43,6 +43,7 @@ from inferences_evidence_bundle import (
     generate_inferences_talk_response,
     format_inferences_talk_response_as_text,
 )
+from feature_bundle import build_feature_bundle_collection
 from ocr_utils import get_ocr_debug_enabled
 
 app = FastAPI(title="AlgorithmLens Backend")
@@ -426,8 +427,11 @@ def get_ads_evidence_bundle(
 
     scan_result = scan.get("result", {})
 
-    # Build the Evidence Bundle
-    bundle = build_ads_evidence_bundle(scan_result)
+    # Compute feature_collection once for this request
+    feature_collection = build_feature_bundle_collection(scan_result)
+
+    # Build the Evidence Bundle (pass feature_collection to avoid recomputation)
+    bundle = build_ads_evidence_bundle(scan_result, feature_collection=feature_collection)
 
     # Generate analysis copy from the bundle
     analysis = generate_ads_analysis_copy(bundle)
@@ -481,8 +485,11 @@ def talk_to_algorithm_ads(
 
     scan_result = scan.get("result", {})
 
+    # Compute feature_collection once for this request
+    feature_collection = build_feature_bundle_collection(scan_result)
+
     # Build the Evidence Bundle
-    bundle = build_ads_evidence_bundle(scan_result)
+    bundle = build_ads_evidence_bundle(scan_result, feature_collection=feature_collection)
 
     # Generate the Talk response from the bundle
     structured_response = generate_talk_response(bundle, question)
@@ -537,8 +544,11 @@ def get_politics_evidence_bundle(
 
     scan_result = scan.get("result", {})
 
+    # Compute feature_collection once for this request
+    feature_collection = build_feature_bundle_collection(scan_result)
+
     # Build the Evidence Bundle
-    bundle = build_politics_evidence_bundle(scan_result)
+    bundle = build_politics_evidence_bundle(scan_result, feature_collection=feature_collection)
 
     # Generate analysis copy from the bundle
     analysis = generate_politics_analysis_copy(bundle)
@@ -592,8 +602,11 @@ def talk_to_algorithm_politics(
 
     scan_result = scan.get("result", {})
 
+    # Compute feature_collection once for this request
+    feature_collection = build_feature_bundle_collection(scan_result)
+
     # Build the Evidence Bundle
-    bundle = build_politics_evidence_bundle(scan_result)
+    bundle = build_politics_evidence_bundle(scan_result, feature_collection=feature_collection)
 
     # Generate the Talk response from the bundle
     structured_response = generate_politics_talk_response(bundle, question)
@@ -648,8 +661,11 @@ def get_patterns_evidence_bundle(
 
     scan_result = scan.get("result", {})
 
+    # Compute feature_collection once for this request
+    feature_collection = build_feature_bundle_collection(scan_result)
+
     # Build the Evidence Bundle
-    bundle = build_patterns_evidence_bundle(scan_result)
+    bundle = build_patterns_evidence_bundle(scan_result, feature_collection=feature_collection)
 
     # Generate analysis copy from the bundle
     analysis = generate_patterns_analysis_copy(bundle)
@@ -703,8 +719,11 @@ def talk_to_algorithm_patterns(
 
     scan_result = scan.get("result", {})
 
+    # Compute feature_collection once for this request
+    feature_collection = build_feature_bundle_collection(scan_result)
+
     # Build the Evidence Bundle
-    bundle = build_patterns_evidence_bundle(scan_result)
+    bundle = build_patterns_evidence_bundle(scan_result, feature_collection=feature_collection)
 
     # Generate the Talk response from the bundle
     structured_response = generate_patterns_talk_response(bundle, question)
@@ -759,8 +778,11 @@ def get_creators_evidence_bundle(
 
     scan_result = scan.get("result", {})
 
+    # Compute feature_collection once for this request
+    feature_collection = build_feature_bundle_collection(scan_result)
+
     # Build the Evidence Bundle
-    bundle = build_creators_evidence_bundle(scan_result)
+    bundle = build_creators_evidence_bundle(scan_result, feature_collection=feature_collection)
 
     # Generate analysis copy from the bundle
     analysis = generate_creators_analysis_copy(bundle)
@@ -814,8 +836,11 @@ def talk_to_algorithm_creators(
 
     scan_result = scan.get("result", {})
 
+    # Compute feature_collection once for this request
+    feature_collection = build_feature_bundle_collection(scan_result)
+
     # Build the Evidence Bundle
-    bundle = build_creators_evidence_bundle(scan_result)
+    bundle = build_creators_evidence_bundle(scan_result, feature_collection=feature_collection)
 
     # Generate the Talk response from the bundle
     structured_response = generate_creators_talk_response(bundle, question)
@@ -874,19 +899,23 @@ def get_inferences_evidence_bundle(
 
     scan_result = scan.get("result", {})
 
-    # Build source bundles first (for cross-referencing)
-    ads_bundle = build_ads_evidence_bundle(scan_result)
-    politics_bundle = build_politics_evidence_bundle(scan_result)
-    patterns_bundle = build_patterns_evidence_bundle(scan_result)
-    creators_bundle = build_creators_evidence_bundle(scan_result)
+    # Compute feature_collection ONCE for this request
+    feature_collection = build_feature_bundle_collection(scan_result)
 
-    # Build the Inferences Evidence Bundle
+    # Build source bundles (pass shared feature_collection to avoid recomputation)
+    ads_bundle = build_ads_evidence_bundle(scan_result, feature_collection=feature_collection)
+    politics_bundle = build_politics_evidence_bundle(scan_result, feature_collection=feature_collection)
+    patterns_bundle = build_patterns_evidence_bundle(scan_result, feature_collection=feature_collection)
+    creators_bundle = build_creators_evidence_bundle(scan_result, feature_collection=feature_collection)
+
+    # Build the Inferences Evidence Bundle (pass same feature_collection)
     bundle = build_inferences_evidence_bundle(
         scan_result,
         ads_bundle=ads_bundle,
         politics_bundle=politics_bundle,
         patterns_bundle=patterns_bundle,
         creators_bundle=creators_bundle,
+        feature_collection=feature_collection,
     )
 
     # Generate analysis copy from the bundle
@@ -953,19 +982,23 @@ def talk_to_algorithm_inferences(
 
     scan_result = scan.get("result", {})
 
-    # Build source bundles
-    ads_bundle = build_ads_evidence_bundle(scan_result)
-    politics_bundle = build_politics_evidence_bundle(scan_result)
-    patterns_bundle = build_patterns_evidence_bundle(scan_result)
-    creators_bundle = build_creators_evidence_bundle(scan_result)
+    # Compute feature_collection ONCE for this request
+    feature_collection = build_feature_bundle_collection(scan_result)
 
-    # Build the Inferences Evidence Bundle
+    # Build source bundles (pass shared feature_collection to avoid recomputation)
+    ads_bundle = build_ads_evidence_bundle(scan_result, feature_collection=feature_collection)
+    politics_bundle = build_politics_evidence_bundle(scan_result, feature_collection=feature_collection)
+    patterns_bundle = build_patterns_evidence_bundle(scan_result, feature_collection=feature_collection)
+    creators_bundle = build_creators_evidence_bundle(scan_result, feature_collection=feature_collection)
+
+    # Build the Inferences Evidence Bundle (pass same feature_collection)
     bundle = build_inferences_evidence_bundle(
         scan_result,
         ads_bundle=ads_bundle,
         politics_bundle=politics_bundle,
         patterns_bundle=patterns_bundle,
         creators_bundle=creators_bundle,
+        feature_collection=feature_collection,
     )
 
     # Generate the Talk response from the bundle

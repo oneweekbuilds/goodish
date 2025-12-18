@@ -24,6 +24,7 @@ Evidence Bundle Structure:
 
 from datetime import datetime
 from typing import Dict, Any, List, Optional
+from feature_bundle import build_feature_bundle_collection
 
 
 def build_inferences_evidence_bundle(
@@ -32,6 +33,7 @@ def build_inferences_evidence_bundle(
     politics_bundle: Optional[Dict[str, Any]] = None,
     patterns_bundle: Optional[Dict[str, Any]] = None,
     creators_bundle: Optional[Dict[str, Any]] = None,
+    feature_collection: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
     Build an Evidence Bundle for the "What the Algorithm Thinks" tab.
@@ -45,12 +47,19 @@ def build_inferences_evidence_bundle(
         politics_bundle: Pre-built politics evidence bundle
         patterns_bundle: Pre-built patterns evidence bundle
         creators_bundle: Pre-built creators evidence bundle
+        feature_collection: Optional pre-computed FeatureBundleCollection.
+            If None, will be computed internally (backward compatibility).
+            If provided, MUST be used and MUST NOT be recomputed.
 
     Returns:
         Evidence Bundle dict with keys: meta, observations, measurements, limits
     """
     scan_metadata = scan_result.get("scan_metadata", {})
     feed_items = scan_result.get("feed_items", [])
+
+    # Compute or use provided feature_collection
+    if feature_collection is None:
+        feature_collection = build_feature_bundle_collection(scan_result)
 
     meta = _build_meta(scan_metadata, feed_items, ads_bundle, politics_bundle, patterns_bundle, creators_bundle)
     observations = _build_observations(scan_result, ads_bundle, politics_bundle, patterns_bundle, creators_bundle)
