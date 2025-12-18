@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { MessageCircle, Send, Sparkles, Lock, ShieldCheck, MessageSquare, EyeOff } from 'lucide-react';
 import AdsTalkToAlgorithm from './AdsTalkToAlgorithm';
+import PoliticsTalkToAlgorithm from './PoliticsTalkToAlgorithm';
+import PatternsTalkToAlgorithm from './PatternsTalkToAlgorithm';
+import CreatorsTalkToAlgorithm from './CreatorsTalkToAlgorithm';
+import InferencesTalkToAlgorithm from './InferencesTalkToAlgorithm';
 
 /**
  * TalkToAlgorithmSection - Premium invitation to reflect on your feed
@@ -36,32 +40,33 @@ const TALK_THEME = {
 /**
  * TAB_SPECIFIC_PROMPTS - Different prompt suggestions per tab
  * ACCURACY CONTRACT COMPLIANT: Questions grounded in observation, not intent
+ * Updated per spec: more specific and bounded to available fields
  */
 const TAB_SPECIFIC_PROMPTS = {
   algorithm: [
-    "What topics appeared most in this scan?",
-    "How concentrated were topics in this scan?",
-    "What experiments could I try?",
+    "What high-confidence signals were detected?",
+    "How does the topic coverage affect signal quality?",
+    "What would a desktop scan capture differently?",
   ],
   ads: [
-    "What ads appeared in this scan?",
-    "What product categories showed up?",
-    "What could I try to shift ad patterns?",
+    "What is the unlabeled promotion rate?",
+    "Which companies appeared in promotional content?",
+    "What would a desktop scan capture for ads?",
   ],
   politics: [
-    "How much political content appeared in this scan?",
-    "Where did political content come from?",
-    "What could I try to diversify perspectives?",
+    "What is the political content rate in this scan?",
+    "Which political topics were detected?",
+    "What would improve political coverage?",
   ],
   patterns: [
-    "What topics appeared in this scan?",
-    "How varied were topics in this scan?",
-    "What could I try to introduce variety?",
+    "What is the topic diversity in this scan?",
+    "Are there repetition clusters detected?",
+    "What is the Simpson diversity index?",
   ],
   creators: [
-    "What accounts appeared most in this scan?",
-    "How concentrated were sources?",
-    "What could I try to discover new sources?",
+    "What is the creator coverage percent?",
+    "How concentrated is the top creator?",
+    "What would capture better creator data?",
   ],
 };
 
@@ -103,7 +108,7 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt, tabId }) =
 
       {/* Header row with Premium badge */}
       <div className="flex flex-wrap items-start justify-between gap-4 mb-6 relative">
-        {/* Left: Title + description */}
+        {/* Left: Title + description - Updated per spec */}
         <div className="flex-1 min-w-0">
           <h3
             className="font-bold text-text-main mb-2"
@@ -113,14 +118,14 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt, tabId }) =
               lineHeight: 1.2,
             }}
           >
-            Talk to Your Algorithm
+            Ask About This Scan
           </h3>
           {/* Subtitle */}
           <p
             className="text-slate-500"
             style={{ fontSize: '14px', maxWidth: '400px' }}
           >
-            A reflective space to explore what your feed reveals.
+            Explore what we observed in this scan's evidence bundle.
           </p>
         </div>
 
@@ -157,7 +162,7 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt, tabId }) =
         </div>
       </div>
 
-      {/* Explanatory paragraph - ACCURACY CONTRACT COMPLIANT */}
+      {/* Explanatory paragraph - ACCURACY CONTRACT COMPLIANT - Updated per spec */}
       <p
         className="text-text-muted mb-8"
         style={{
@@ -166,7 +171,7 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt, tabId }) =
           maxWidth: '540px',
         }}
       >
-        A reflective interface over observed patterns. Not a chatbot, not a diagnosis. We cannot know why content appeared — only what showed up in this scan.
+        Ask questions about the evidence bundle fields: ad density, promotions, topic mix, creator concentration, and more. Answers are based only on this scan's evidence.
       </p>
 
       {/* Example prompts - enhanced button-like appearance */}
@@ -315,7 +320,7 @@ const ConversationArea = ({ messages, inputValue, setInputValue, onSendMessage, 
               fontSize: '14px',
             }}
           >
-            Talk to Your Algorithm
+            Ask About This Scan
           </p>
         </div>
         <span
@@ -348,7 +353,7 @@ const ConversationArea = ({ messages, inputValue, setInputValue, onSendMessage, 
               className="text-text-muted italic"
               style={{ fontSize: '15px', lineHeight: 1.7 }}
             >
-              Type a question below to begin…
+              Ask about this scan's evidence bundle…
             </p>
           </div>
         )}
@@ -452,7 +457,7 @@ const ConversationArea = ({ messages, inputValue, setInputValue, onSendMessage, 
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Ask about your feed…"
+            placeholder="Ask about this scan's evidence…"
             className="flex-1 rounded-xl text-text-main placeholder:text-slate-400 focus:outline-none transition-all"
             style={{
               padding: '1rem 1.25rem',
@@ -491,6 +496,7 @@ const ConversationArea = ({ messages, inputValue, setInputValue, onSendMessage, 
 /**
  * ReflectiveNote - Explicit epistemic grounding below conversation
  * ACCURACY CONTRACT COMPLIANT: States limits clearly
+ * Updated per spec: includes "Next best scan" suggestion
  */
 const ReflectiveNote = ({ hasMessages }) => {
   if (!hasMessages) return null;
@@ -499,20 +505,29 @@ const ReflectiveNote = ({ hasMessages }) => {
     <div
       className="text-center"
       style={{
-        maxWidth: '400px',
+        maxWidth: '450px',
         margin: '1.5rem auto 0',
       }}
     >
       <p
-        className="text-text-muted italic"
+        className="text-text-muted"
         style={{
           fontSize: '12px',
           lineHeight: 1.7,
           opacity: 0.7,
         }}
       >
-        These responses are based on what we observed in this scan.
-        We cannot know why content appeared or what you prefer.
+        <span className="font-medium">Answers are based only on this scan's evidence.</span>
+        {' '}We cannot know why content appeared or what you prefer.
+      </p>
+      <p
+        className="text-emerald-600 mt-2"
+        style={{
+          fontSize: '11px',
+          lineHeight: 1.5,
+        }}
+      >
+        For more complete data, try a desktop extension scan.
       </p>
     </div>
   );
@@ -540,6 +555,26 @@ const TalkToAlgorithmSection = ({ feedData, tabId }) => {
   // For Ads tab, use the evidence-bound Talk component
   if (tabId === 'ads' && scanId) {
     return <AdsTalkToAlgorithm scanId={scanId} />;
+  }
+
+  // For Politics tab, use the politics evidence-bound Talk component
+  if (tabId === 'politics' && scanId) {
+    return <PoliticsTalkToAlgorithm scanId={scanId} />;
+  }
+
+  // For Patterns tab, use the patterns evidence-bound Talk component
+  if (tabId === 'patterns' && scanId) {
+    return <PatternsTalkToAlgorithm scanId={scanId} />;
+  }
+
+  // For Creators tab, use the creators evidence-bound Talk component
+  if (tabId === 'creators' && scanId) {
+    return <CreatorsTalkToAlgorithm scanId={scanId} />;
+  }
+
+  // For Algorithm tab ("What the Algorithm Thinks"), use the inferences evidence-bound Talk component
+  if (tabId === 'algorithm' && scanId) {
+    return <InferencesTalkToAlgorithm scanId={scanId} />;
   }
 
   // Simulated response generation - ACCURACY CONTRACT COMPLIANT

@@ -88,13 +88,15 @@ const InsightCard = ({ title, analysis, citedFields }) => {
 };
 
 // Commercial Exposure Spectrum - 100% stacked bar with 3 categories
-const CommercialExposureSpectrum = ({ observations }) => {
+// PRIMARY VISUALIZATION for Ads tab per spec
+const CommercialExposureSpectrum = ({ observations, meta }) => {
   const spectrum = observations?.commercial_exposure_spectrum;
   if (!spectrum?.stacked_bar) return null;
 
   const { stacked_bar, excluded, coverage_percent, high_confidence_items, total_items } = spectrum;
+  const sourceType = meta?.source_type;
 
-  // Build segments for StackedBar100
+  // Build segments for StackedBar100 - exactly 3 buckets per spec
   const segments = [
     {
       label: 'Non-Commercial',
@@ -113,6 +115,9 @@ const CommercialExposureSpectrum = ({ observations }) => {
     },
   ].filter(s => s.value > 0);
 
+  // Calculate excluded count
+  const excludedCount = (excluded?.ambiguous || 0) + (excluded?.unlabeled_promotion_medium_confidence || 0);
+
   // If no data, show empty state
   if (segments.length === 0 || stacked_bar.total === 0) {
     return (
@@ -122,6 +127,11 @@ const CommercialExposureSpectrum = ({ observations }) => {
           <h4 className="text-sm font-semibold text-slate-700">Commercial Exposure</h4>
         </div>
         <p className="text-sm text-slate-500 italic">No high-confidence classifications available.</p>
+        {sourceType === 'MOBILE_VIDEO' && (
+          <p className="text-xs text-amber-600 mt-2">
+            Mobile video scans may miss ad labels. Use desktop extension for more complete detection.
+          </p>
+        )}
       </div>
     );
   }
@@ -133,32 +143,36 @@ const CommercialExposureSpectrum = ({ observations }) => {
           <TrendingUp size={18} className="text-emerald-600" />
           <h4 className="text-sm font-semibold text-slate-700">Commercial Exposure Spectrum</h4>
         </div>
-        <span className="text-xs text-slate-400">
-          {high_confidence_items} of {total_items} posts ({coverage_percent}% coverage)
-        </span>
       </div>
 
       <StackedBar100 segments={segments} showLegend={true} />
 
-      {/* Excluded items note */}
-      {(excluded?.ambiguous > 0 || excluded?.unlabeled_promotion_medium_confidence > 0) && (
-        <div className="mt-3 pt-3 border-t border-slate-100">
-          <p className="text-xs text-slate-400">
-            Excluded from chart: {excluded.ambiguous || 0} ambiguous,{' '}
-            {excluded.unlabeled_promotion_medium_confidence || 0} medium-confidence
-          </p>
-        </div>
+      {/* Coverage line - REQUIRED directly under chart per spec */}
+      <div className="mt-3 pt-3 border-t border-slate-100">
+        <p className="text-xs text-slate-600">
+          <span className="font-medium">Coverage:</span> {coverage_percent}% of posts confidently classified ({high_confidence_items} of {total_items}).
+          {excludedCount > 0 && (
+            <span className="text-slate-400"> {excludedCount} posts excluded as ambiguous.</span>
+          )}
+        </p>
+      </div>
+
+      {/* Source-specific note */}
+      {sourceType === 'MOBILE_VIDEO' && coverage_percent < 80 && (
+        <p className="text-xs text-amber-600 mt-2">
+          Mobile video scan: ad detection relies on OCR of visible disclosure labels. Some ads may be missed.
+        </p>
       )}
     </div>
   );
 };
 
-// Promotion Topics section
+// Promotion Topics section - derived ONLY from promotional content per spec
 const PromotionTopics = ({ measurements }) => {
   const topicsData = measurements?.promotion_topics;
   if (!topicsData) return null;
 
-  const { value, quality, threshold_rule, detected_but_excluded_count, notes } = topicsData;
+  const { value, quality, threshold_rule, detected_but_excluded_count, notes, _full_breakdown } = topicsData;
   const topics = Array.isArray(value) ? value : [];
 
   // Format topic names for display
@@ -176,48 +190,58 @@ const PromotionTopics = ({ measurements }) => {
           quality === 'not_applicable' ? 'bg-slate-100 text-slate-600' :
           'bg-amber-100 text-amber-700'
         }`}>
-          {quality === 'ok' ? 'Data available' :
+          {quality === 'ok' ? 'Surfaced' :
            quality === 'not_applicable' ? 'N/A' :
-           'Insufficient signal'}
+           'Below threshold'}
         </span>
       </div>
 
       {topics.length > 0 ? (
-        <div className="flex flex-wrap gap-2">
-          {topics.map((topic, i) => (
-            <span
-              key={i}
-              className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium"
-            >
-              {formatTopic(topic)}
-            </span>
-          ))}
-        </div>
+        <>
+          <div className="flex flex-wrap gap-2">
+            {topics.map((topic, i) => (
+              <span
+                key={i}
+                className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium"
+              >
+                {formatTopic(topic)}
+              </span>
+            ))}
+          </div>
+          {/* Threshold shown per spec */}
+          <p className="mt-3 text-xs text-slate-500">
+            <span className="font-medium">Threshold:</span> {threshold_rule || 'count ≥ 2 AND high_confidence ≥ 1'}
+            {detected_but_excluded_count > 0 && (
+              <span className="text-slate-400"> · {detected_but_excluded_count} topics excluded</span>
+            )}
+          </p>
+        </>
       ) : (
-        <p className="text-sm text-slate-500 italic">
-          {quality === 'not_applicable'
-            ? 'No promotional content detected.'
-            : detected_but_excluded_count > 0
-            ? `${detected_but_excluded_count} topics detected but did not meet threshold (${threshold_rule}).`
-            : 'No topics could be determined.'}
-        </p>
-      )}
-
-      {threshold_rule && topics.length > 0 && (
-        <p className="mt-3 text-xs text-slate-400">
-          Threshold: {threshold_rule}
-          {detected_but_excluded_count > 0 && `, ${detected_but_excluded_count} excluded`}
-        </p>
+        <div>
+          <p className="text-sm text-slate-500 italic">
+            {quality === 'not_applicable'
+              ? 'No promotional content detected in this scan.'
+              : detected_but_excluded_count > 0
+              ? `${detected_but_excluded_count} topic${detected_but_excluded_count > 1 ? 's' : ''} detected but did not meet surfacing threshold.`
+              : 'No topic keywords matched in promotional content.'}
+          </p>
+          {threshold_rule && quality !== 'not_applicable' && (
+            <p className="mt-2 text-xs text-slate-400">
+              Threshold: {threshold_rule}
+            </p>
+          )}
+        </div>
       )}
     </div>
   );
 };
 
-// Top Companies section
-const TopCompanies = ({ observations }) => {
+// Top Companies section - strict surfacing rules per spec
+const TopCompanies = ({ observations, meta }) => {
   const companies = observations?.top_companies || [];
   const note = observations?.top_companies_note;
   const uniqueCount = observations?.unique_companies_surfaced || 0;
+  const sourceType = meta?.source_type;
 
   return (
     <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
@@ -227,28 +251,42 @@ const TopCompanies = ({ observations }) => {
           <h4 className="text-sm font-semibold text-slate-700">Top Companies</h4>
         </div>
         {uniqueCount > 0 && (
-          <span className="text-xs text-slate-400">{uniqueCount} surfaced</span>
+          <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+            {uniqueCount} surfaced
+          </span>
         )}
       </div>
 
       {companies.length > 0 ? (
-        <div className="space-y-2">
-          {companies.map((company, i) => (
-            <div
-              key={i}
-              className="flex items-center justify-between px-3 py-2 bg-blue-50 rounded-lg"
-            >
-              <span className="text-sm font-medium text-blue-800">{company.name}</span>
-              <span className="text-xs text-blue-600">
-                {company.count}× ({company.high_confidence} verified)
-              </span>
-            </div>
-          ))}
-        </div>
+        <>
+          <div className="space-y-2">
+            {companies.map((company, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between px-3 py-2 bg-blue-50 rounded-lg"
+              >
+                <span className="text-sm font-medium text-blue-800">{company.name}</span>
+                <span className="text-xs text-blue-600">
+                  {company.count}× ({company.high_confidence} high-conf)
+                </span>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-slate-500">
+            <span className="font-medium">Threshold:</span> count ≥ 2 AND high_confidence ≥ 1
+          </p>
+        </>
       ) : (
-        <p className="text-sm text-slate-500 italic">
-          {note || 'No companies met the surfacing threshold.'}
-        </p>
+        <div>
+          <p className="text-sm text-slate-500 italic">
+            {note || 'No companies met the surfacing threshold (count ≥ 2 AND high_confidence ≥ 1).'}
+          </p>
+          {sourceType === 'MOBILE_VIDEO' && (
+            <p className="text-xs text-amber-600 mt-2">
+              Mobile video scans lack advertiser metadata. Use desktop extension for company data.
+            </p>
+          )}
+        </div>
       )}
     </div>
   );
@@ -333,12 +371,12 @@ const AdsEvidenceAnalysis = ({ scanId }) => {
       )}
 
       {/* Commercial Exposure Spectrum - Primary visualization */}
-      <CommercialExposureSpectrum observations={bundle.observations} />
+      <CommercialExposureSpectrum observations={bundle.observations} meta={bundle.meta} />
 
       {/* Two-column grid for Topics and Companies */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
         <PromotionTopics measurements={bundle.measurements} />
-        <TopCompanies observations={bundle.observations} />
+        <TopCompanies observations={bundle.observations} meta={bundle.meta} />
       </div>
 
       {/* Analysis insights */}
