@@ -1,10 +1,10 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { MessageCircle, Send, Sparkles, Lock, ShieldCheck, MessageSquare, EyeOff, AlertCircle, ChevronDown, Database } from 'lucide-react';
-import { useAdsTalkToAlgorithm, useAdsEvidenceBundle } from '../../hooks/useEvidenceBundle';
+import { usePatternsTalkToAlgorithm, usePatternsEvidenceBundle } from '../../hooks/useEvidenceBundle';
 import EvidenceSummaryBadge, { computeEvidenceSummary, getEvidenceAwarePrompts } from './EvidenceSummaryBadge';
 
 /**
- * AdsTalkToAlgorithm - Evidence-bound Talk to Your Algorithm for Ads & Influence tab
+ * PatternsTalkToAlgorithm - Evidence-bound Talk to Your Algorithm for Patterns in Your Feed tab
  *
  * Response structure (per accuracy_contract.md):
  * 1. What we observed (must cite 2-4 specific Evidence Bundle fields)
@@ -12,8 +12,7 @@ import EvidenceSummaryBadge, { computeEvidenceSummary, getEvidenceAwarePrompts }
  * 3. What we cannot know (must cite limits)
  * 4. What you can try (2-4 non-judgmental, optional actions)
  *
- * The Talk responses are deterministic templates filled from evidence,
- * not generic AI chat. No external providers are used in this step.
+ * CRITICAL: Cannot know why algorithm chose items, cannot infer user preferences
  */
 
 // Green theme constants (matching TalkToAlgorithmSection)
@@ -25,11 +24,11 @@ const TALK_THEME = {
   solidShadow: '0 4px 32px rgba(16, 185, 129, 0.12)',
 };
 
-// Default prompts for Ads & Influence (used when coverage is good)
-const DEFAULT_ADS_PROMPTS = [
-  "What is the unlabeled promotion rate?",
-  "Which companies appeared in promotional content?",
-  "What would a desktop scan capture for ads?",
+// Default prompts for Patterns in Your Feed (used when coverage is good)
+const DEFAULT_PATTERNS_PROMPTS = [
+  "What is the topic diversity in this scan?",
+  "Are there repetition clusters detected?",
+  "What is the Simpson diversity index?",
 ];
 
 /**
@@ -42,7 +41,6 @@ const ResponseSection = ({ title, icon, items, type = 'bullets', citedFields }) 
 
   return (
     <div className="mb-6 last:mb-0">
-      {/* Section header */}
       <div className="flex items-center gap-2 mb-3">
         <span
           className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
@@ -58,7 +56,6 @@ const ResponseSection = ({ title, icon, items, type = 'bullets', citedFields }) 
         </h4>
       </div>
 
-      {/* Section content */}
       <div className="pl-8">
         {type === 'bullets' && (
           <ul className="space-y-2">
@@ -113,7 +110,6 @@ const ResponseSection = ({ title, icon, items, type = 'bullets', citedFields }) 
           </div>
         )}
 
-        {/* Citations */}
         {citedFields && citedFields.length > 0 && (
           <div className="mt-3">
             <button
@@ -149,7 +145,6 @@ const StructuredResponse = ({ response }) => {
 
   return (
     <div className="space-y-1">
-      {/* What we observed */}
       <ResponseSection
         title="What we observed"
         icon={<Database size={12} style={{ color: TALK_THEME.accent }} />}
@@ -157,16 +152,12 @@ const StructuredResponse = ({ response }) => {
         type="bullets"
         citedFields={what_we_observed?.cited_fields}
       />
-
-      {/* What it might mean */}
       <ResponseSection
         title="What it might mean"
         icon={<AlertCircle size={12} style={{ color: TALK_THEME.accent }} />}
         items={what_it_might_mean?.hypotheses}
         type="hypotheses"
       />
-
-      {/* What we cannot know */}
       <ResponseSection
         title="What we cannot know"
         icon={<ShieldCheck size={12} style={{ color: TALK_THEME.accent }} />}
@@ -174,8 +165,6 @@ const StructuredResponse = ({ response }) => {
         type="bullets"
         citedFields={what_we_cannot_know?.cited_fields}
       />
-
-      {/* What you can try */}
       <ResponseSection
         title="What you can try"
         icon={<Sparkles size={12} style={{ color: TALK_THEME.accent }} />}
@@ -194,7 +183,7 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt, bundle }) 
   // Compute evidence summary and get appropriate prompts
   const evidenceSummary = useMemo(() => computeEvidenceSummary(bundle), [bundle]);
   const prompts = useMemo(
-    () => getEvidenceAwarePrompts('ads', evidenceSummary, DEFAULT_ADS_PROMPTS),
+    () => getEvidenceAwarePrompts('patterns', evidenceSummary, DEFAULT_PATTERNS_PROMPTS),
     [evidenceSummary]
   );
 
@@ -208,7 +197,6 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt, bundle }) 
         boxShadow: '0 8px 40px rgba(16, 185, 129, 0.15)',
       }}
     >
-      {/* Subtle decorative gradient at top-right */}
       <div
         className="absolute top-0 right-0 w-72 h-72 pointer-events-none"
         style={{
@@ -216,9 +204,7 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt, bundle }) 
         }}
       />
 
-      {/* Header row with Premium badge */}
       <div className="flex flex-wrap items-start justify-between gap-4 mb-6 relative">
-        {/* Left: Title + description */}
         <div className="flex-1 min-w-0">
           <h3
             className="font-bold text-text-main mb-2"
@@ -230,16 +216,14 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt, bundle }) 
           >
             Talk to Your Algorithm
           </h3>
-          {/* Subtitle */}
           <p
             className="text-slate-500"
             style={{ fontSize: '14px', maxWidth: '400px' }}
           >
-            Explore what your ad data reveals about how you're being targeted.
+            Explore the content patterns and topic diversity in your feed.
           </p>
         </div>
 
-        {/* Right: Premium conversation badge */}
         <div
           className="flex items-center gap-3 rounded-xl flex-shrink-0"
           style={{
@@ -277,7 +261,6 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt, bundle }) 
         <EvidenceSummaryBadge bundle={bundle} showDetails={false} />
       </div>
 
-      {/* Explanatory paragraph */}
       <p
         className="text-text-muted mb-8"
         style={{
@@ -286,10 +269,9 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt, bundle }) 
           maxWidth: '540px',
         }}
       >
-        Ask questions about your ad exposure. Responses are generated strictly from your scan data—no guessing, no generic explanations.
+        Ask questions about content patterns in your feed. Responses are generated strictly from your scan data—no guessing, no generic explanations.
       </p>
 
-      {/* Example prompts - now evidence-aware */}
       <div className="mb-10">
         <p
           className="mb-4"
@@ -333,9 +315,7 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt, bundle }) 
         </div>
       </div>
 
-      {/* CTA row */}
       <div className="flex flex-wrap items-center gap-5 mb-8">
-        {/* Primary CTA */}
         <button
           onClick={onStartConversation}
           className="inline-flex items-center gap-3 text-white rounded-full font-semibold transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
@@ -352,7 +332,6 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt, bundle }) 
         </button>
       </div>
 
-      {/* "What you get" micro row */}
       <div
         className="rounded-xl flex flex-wrap gap-6"
         style={{
@@ -387,7 +366,6 @@ const ConversationArea = ({
   setInputValue,
   onSendMessage,
   isTyping,
-  lastStructuredResponse,
 }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -406,7 +384,6 @@ const ConversationArea = ({
         boxShadow: TALK_THEME.solidShadow,
       }}
     >
-      {/* Conversation header */}
       <div
         className="flex items-center justify-between border-b"
         style={{
@@ -424,7 +401,7 @@ const ConversationArea = ({
               fontSize: '14px',
             }}
           >
-            Talk to Your Algorithm · Ads & Influence
+            Talk to Your Algorithm - Patterns in Your Feed
           </p>
         </div>
         <span
@@ -442,7 +419,6 @@ const ConversationArea = ({
         </span>
       </div>
 
-      {/* Messages area */}
       <div
         style={{
           padding: 'clamp(2rem, 5vw, 2.5rem)',
@@ -457,16 +433,14 @@ const ConversationArea = ({
               className="text-text-muted italic"
               style={{ fontSize: '15px', lineHeight: 1.7 }}
             >
-              Type a question below to begin…
+              Type a question below to begin...
             </p>
           </div>
         )}
 
-        {/* Messages with generous vertical rhythm */}
         <div className="space-y-8">
           {messages.map((message, index) => (
             <div key={index}>
-              {/* User message */}
               {message.role === 'user' && (
                 <div className="text-right mb-6">
                   <p
@@ -490,7 +464,6 @@ const ConversationArea = ({
                 </div>
               )}
 
-              {/* Assistant response - structured 4-part */}
               {message.role === 'assistant' && (
                 <div className="text-left">
                   <p
@@ -514,7 +487,6 @@ const ConversationArea = ({
           ))}
         </div>
 
-        {/* Typing indicator */}
         {isTyping && (
           <div className="text-left mt-10">
             <p
@@ -559,7 +531,6 @@ const ConversationArea = ({
         )}
       </div>
 
-      {/* Input area */}
       <form
         onSubmit={handleSubmit}
         className="border-t"
@@ -574,7 +545,7 @@ const ConversationArea = ({
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Ask about your ad exposure…"
+            placeholder="Ask about content patterns in your feed..."
             className="flex-1 rounded-xl text-text-main placeholder:text-slate-400 focus:outline-none transition-all"
             style={{
               padding: '1rem 1.25rem',
@@ -640,15 +611,15 @@ const ReflectiveNote = ({ hasMessages }) => {
 };
 
 /**
- * Main Component - AdsTalkToAlgorithm
+ * Main Component - PatternsTalkToAlgorithm
  */
-const AdsTalkToAlgorithm = ({ scanId }) => {
+const PatternsTalkToAlgorithm = ({ scanId }) => {
   const [hasStarted, setHasStarted] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
 
-  const { sendQuestion, loading: talkLoading, error: talkError } = useAdsTalkToAlgorithm(scanId);
-  const { bundle } = useAdsEvidenceBundle(scanId);
+  const { sendQuestion, loading: talkLoading, error: talkError } = usePatternsTalkToAlgorithm(scanId);
+  const { bundle } = usePatternsEvidenceBundle(scanId);
 
   const handleStartConversation = useCallback(() => {
     setHasStarted(true);
@@ -660,21 +631,17 @@ const AdsTalkToAlgorithm = ({ scanId }) => {
   }, [scanId]);
 
   const handleSendMessage = useCallback(async (content) => {
-    // Add user message
     setMessages(prev => [...prev, { role: 'user', content }]);
 
-    // Send to backend
     const response = await sendQuestion(content);
 
     if (response) {
-      // Add assistant response with structured data
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: response.response.formatted_text,
         structured: response.response.structured,
       }]);
     } else if (talkError) {
-      // Add error message
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: `Unable to generate response: ${talkError}`,
@@ -683,7 +650,6 @@ const AdsTalkToAlgorithm = ({ scanId }) => {
     }
   }, [sendQuestion, talkError]);
 
-  // Don't render if no scanId
   if (!scanId) {
     return null;
   }
@@ -712,4 +678,4 @@ const AdsTalkToAlgorithm = ({ scanId }) => {
   );
 };
 
-export default AdsTalkToAlgorithm;
+export default PatternsTalkToAlgorithm;
