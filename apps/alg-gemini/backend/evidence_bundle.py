@@ -119,6 +119,9 @@ def _build_meta(
             # Window spans the scan duration
             pass
 
+    # Build coverage accounting
+    coverage = _compute_coverage(feed_items)
+
     return {
         "scan_id": scan_metadata.get("scan_id"),
         "platform": scan_metadata.get("platform"),
@@ -126,6 +129,77 @@ def _build_meta(
         "window_start": window_start,
         "window_end": window_end,
         "generated_at": datetime.now().isoformat(),
+        "coverage": coverage,
+    }
+
+
+def _compute_coverage(feed_items: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Compute coverage metadata for the ads evidence bundle.
+
+    Coverage Contract (enforced):
+    - n_items_total = n_items_included + n_items_excluded
+    - exclusion_reasons counts ONLY truly excluded items (sum == n_items_excluded)
+    - quality_flags counts issues among INCLUDED items (does not affect coverage counts)
+
+    For Ads bundle: All items are INCLUDED for commercial analysis.
+    Items with missing text are still analyzed (lower confidence), so they are
+    tracked in quality_flags, NOT exclusion_reasons.
+
+    Returns:
+        Coverage dict with standardized fields
+    """
+    n_items_total = len(feed_items)
+
+    # Track quality issues among INCLUDED items
+    # (these items are still analyzed, just with potential quality degradation)
+    quality_flags: Dict[str, int] = {}
+
+    n_missing_text = 0
+    n_missing_metadata = 0
+
+    for item in feed_items:
+        content_text = item.get("content_text", {})
+
+        # Check for missing text content
+        has_text = bool(
+            content_text.get("caption") or
+            content_text.get("post_text") or
+            content_text.get("on_screen_labels")
+        )
+
+        if not has_text:
+            # Check if ad metadata is also missing (completely empty item)
+            has_ad_metadata = bool(item.get("ad_metadata"))
+            has_account = bool(item.get("account"))
+
+            if not has_ad_metadata and not has_account:
+                n_missing_metadata += 1
+            else:
+                n_missing_text += 1
+
+    # Populate quality_flags for issues among INCLUDED items
+    # (commercial classifier runs on all items, even those with missing text)
+    if n_missing_text > 0:
+        quality_flags["missing_text"] = n_missing_text
+    if n_missing_metadata > 0:
+        quality_flags["missing_metadata"] = n_missing_metadata
+
+    # For ads bundle, all items are included for evaluation
+    # Items with missing data are still processed but may produce lower confidence
+    n_items_included = n_items_total
+    n_items_excluded = 0
+
+    # exclusion_reasons is empty because no items are excluded
+    # Contract: sum(exclusion_reasons.values()) == n_items_excluded == 0
+    exclusion_reasons: Dict[str, int] = {}
+
+    return {
+        "n_items_total": n_items_total,
+        "n_items_included": n_items_included,
+        "n_items_excluded": n_items_excluded,
+        "exclusion_reasons": exclusion_reasons,
+        "quality_flags": quality_flags,
     }
 
 

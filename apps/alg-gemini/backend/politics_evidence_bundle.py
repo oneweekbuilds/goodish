@@ -64,6 +64,9 @@ def _build_meta(
     n_items = len(feed_items)
     created_at = scan_metadata.get("created_at")
 
+    # Build coverage accounting
+    coverage = _compute_coverage(feed_items)
+
     return {
         "scan_id": scan_metadata.get("scan_id"),
         "platform": scan_metadata.get("platform"),
@@ -71,6 +74,58 @@ def _build_meta(
         "window_start": created_at,
         "window_end": created_at,
         "generated_at": datetime.now().isoformat(),
+        "coverage": coverage,
+    }
+
+
+def _compute_coverage(feed_items: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Compute coverage metadata for the politics evidence bundle.
+
+    Coverage Contract (enforced):
+    - n_items_total = n_items_included + n_items_excluded
+    - exclusion_reasons counts ONLY truly excluded items (sum == n_items_excluded)
+    - quality_flags counts issues among INCLUDED items (does not affect coverage counts)
+
+    For Politics bundle: Items WITHOUT text are EXCLUDED because keyword matching
+    requires text content. These items are tracked in exclusion_reasons.
+
+    Returns:
+        Coverage dict with standardized fields
+    """
+    n_items_total = len(feed_items)
+    exclusion_reasons: Dict[str, int] = {}
+    quality_flags: Dict[str, int] = {}
+
+    # Track items excluded for mechanical reasons
+    n_missing_text = 0
+
+    for item in feed_items:
+        content_text = item.get("content_text", {})
+
+        # Politics analysis requires text content for keyword matching
+        has_text = bool(
+            content_text.get("caption") or
+            content_text.get("post_text")
+        )
+
+        if not has_text:
+            n_missing_text += 1
+
+    # Items without text are EXCLUDED (cannot analyze for political keywords)
+    # Contract: sum(exclusion_reasons.values()) == n_items_excluded
+    n_items_excluded = n_missing_text
+    n_items_included = n_items_total - n_items_excluded
+
+    if n_missing_text > 0:
+        exclusion_reasons["missing_text"] = n_missing_text
+
+    return {
+        "n_items_total": n_items_total,
+        "n_items_included": n_items_included,
+        "n_items_excluded": n_items_excluded,
+        "exclusion_reasons": exclusion_reasons,
+        "quality_flags": quality_flags,
     }
 
 

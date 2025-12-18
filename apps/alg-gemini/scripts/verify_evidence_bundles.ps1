@@ -94,6 +94,113 @@ function Get-BundleStats {
     return $stats
 }
 
+function Test-CoverageMetadata {
+    param([PSCustomObject]$Response, [string]$TabName)
+
+    $result = @{
+        Valid = $true
+        Coverage = $null
+        QualityFlags = $null
+        Errors = @()
+    }
+
+    # Check if coverage exists
+    if (-not $Response.bundle -or -not $Response.bundle.meta -or -not $Response.bundle.meta.coverage) {
+        $result.Valid = $false
+        $result.Errors += "meta.coverage is missing"
+        return $result
+    }
+
+    $coverage = $Response.bundle.meta.coverage
+    $result.Coverage = $coverage
+    $result.QualityFlags = $coverage.quality_flags
+
+    # Validate required fields
+    $requiredFields = @("n_items_total", "n_items_included", "n_items_excluded", "exclusion_reasons")
+    foreach ($field in $requiredFields) {
+        if ($null -eq $coverage.$field) {
+            $result.Valid = $false
+            $result.Errors += "coverage.$field is missing"
+        }
+    }
+
+    # Validate numeric fields are integers
+    if ($null -ne $coverage.n_items_total -and $coverage.n_items_total -isnot [int]) {
+        if (-not ($coverage.n_items_total -is [long] -or $coverage.n_items_total -is [double])) {
+            $result.Valid = $false
+            $result.Errors += "n_items_total is not a number"
+        }
+    }
+
+    # Validate consistency: total = included + excluded
+    if ($null -ne $coverage.n_items_total -and $null -ne $coverage.n_items_included -and $null -ne $coverage.n_items_excluded) {
+        $expectedTotal = [int]$coverage.n_items_included + [int]$coverage.n_items_excluded
+        if ([int]$coverage.n_items_total -ne $expectedTotal) {
+            $result.Valid = $false
+            $result.Errors += "Inconsistent counts: total($($coverage.n_items_total)) != included($($coverage.n_items_included)) + excluded($($coverage.n_items_excluded))"
+        }
+    }
+
+    # Validate exclusion_reasons is an object (not null, array, or primitive)
+    if ($null -ne $coverage.exclusion_reasons) {
+        if ($coverage.exclusion_reasons -is [Array]) {
+            $result.Valid = $false
+            $result.Errors += "exclusion_reasons should be an object, not an array"
+        }
+    }
+
+    # NEW: Validate that sum(exclusion_reasons) == n_items_excluded (Coverage Contract)
+    if ($null -ne $coverage.exclusion_reasons -and $null -ne $coverage.n_items_excluded) {
+        $exclusionSum = 0
+        if ($coverage.exclusion_reasons.PSObject.Properties.Count -gt 0) {
+            foreach ($prop in $coverage.exclusion_reasons.PSObject.Properties) {
+                $exclusionSum += [int]$prop.Value
+            }
+        }
+        if ($exclusionSum -ne [int]$coverage.n_items_excluded) {
+            $result.Valid = $false
+            $result.Errors += "Coverage contract violation: sum(exclusion_reasons)=$exclusionSum != n_items_excluded=$($coverage.n_items_excluded)"
+        }
+    }
+
+    return $result
+}
+
+function Format-CoverageString {
+    param([PSCustomObject]$Coverage)
+
+    if ($null -eq $Coverage) {
+        return "N/A"
+    }
+
+    $included = $Coverage.n_items_included
+    $total = $Coverage.n_items_total
+    $excluded = $Coverage.n_items_excluded
+
+    $pct = if ($total -gt 0) { [math]::Round(($included / $total) * 100) } else { 100 }
+
+    $excReasons = ""
+    if ($Coverage.exclusion_reasons -and $Coverage.exclusion_reasons.PSObject.Properties.Count -gt 0) {
+        $reasons = @()
+        foreach ($prop in $Coverage.exclusion_reasons.PSObject.Properties) {
+            $reasons += "exc:$($prop.Name):$($prop.Value)"
+        }
+        $excReasons = " [$($reasons -join ', ')]"
+    }
+
+    # Show quality_flags if present
+    $qualityStr = ""
+    if ($Coverage.quality_flags -and $Coverage.quality_flags.PSObject.Properties.Count -gt 0) {
+        $flags = @()
+        foreach ($prop in $Coverage.quality_flags.PSObject.Properties) {
+            $flags += "qf:$($prop.Name):$($prop.Value)"
+        }
+        $qualityStr = " [$($flags -join ', ')]"
+    }
+
+    return "$included/$total (${pct}%)$excReasons$qualityStr"
+}
+
 function Format-StatsString {
     param([hashtable]$Stats)
     $parts = @()
@@ -130,12 +237,14 @@ function Test-SingleScan {
     Write-Host "  ${Yellow}Evidence Bundles:${Reset}"
 
     $EvidenceTabs = @(
-        @{ Name = "Ads"; Endpoint = "ads"; RequiredFields = @("scan_id", "tab", "bundle", "bundle.meta", "bundle.observations", "bundle.measurements", "bundle.limits", "analysis") },
-        @{ Name = "Politics"; Endpoint = "politics"; RequiredFields = @("scan_id", "tab", "bundle", "bundle.meta", "bundle.observations", "bundle.measurements", "bundle.limits", "analysis") },
-        @{ Name = "Patterns"; Endpoint = "patterns"; RequiredFields = @("scan_id", "tab", "bundle", "bundle.meta", "bundle.observations", "bundle.measurements", "bundle.limits", "analysis") },
-        @{ Name = "Creators"; Endpoint = "creators"; RequiredFields = @("scan_id", "tab", "bundle", "bundle.meta", "bundle.observations", "bundle.measurements", "bundle.limits", "analysis") },
-        @{ Name = "Inferences"; Endpoint = "inferences"; RequiredFields = @("scan_id", "tab", "bundle", "bundle.meta", "bundle.observations", "bundle.measurements", "bundle.limits", "analysis") }
+        @{ Name = "Ads"; Endpoint = "ads"; RequiredFields = @("scan_id", "tab", "bundle", "bundle.meta", "bundle.meta.coverage", "bundle.observations", "bundle.measurements", "bundle.limits", "analysis") },
+        @{ Name = "Politics"; Endpoint = "politics"; RequiredFields = @("scan_id", "tab", "bundle", "bundle.meta", "bundle.meta.coverage", "bundle.observations", "bundle.measurements", "bundle.limits", "analysis") },
+        @{ Name = "Patterns"; Endpoint = "patterns"; RequiredFields = @("scan_id", "tab", "bundle", "bundle.meta", "bundle.meta.coverage", "bundle.observations", "bundle.measurements", "bundle.limits", "analysis") },
+        @{ Name = "Creators"; Endpoint = "creators"; RequiredFields = @("scan_id", "tab", "bundle", "bundle.meta", "bundle.meta.coverage", "bundle.observations", "bundle.measurements", "bundle.limits", "analysis") },
+        @{ Name = "Inferences"; Endpoint = "inferences"; RequiredFields = @("scan_id", "tab", "bundle", "bundle.meta", "bundle.meta.coverage", "bundle.observations", "bundle.measurements", "bundle.limits", "analysis") }
     )
+
+    $coverageSummary = @()
 
     foreach ($tab in $EvidenceTabs) {
         $url = "$BaseUrl/api/scans/$ScanId/evidence-bundle/$($tab.Endpoint)"
@@ -145,19 +254,38 @@ function Test-SingleScan {
             $stats = Get-BundleStats -Response $response
             $statsStr = Format-StatsString -Stats $stats
 
-            if ($missing.Count -eq 0) {
-                Write-Status -Tab $tab.Name -Endpoint $tab.Endpoint -Passed $true -Details $statsStr
+            # Validate coverage metadata
+            $coverageResult = Test-CoverageMetadata -Response $response -TabName $tab.Name
+
+            if ($missing.Count -eq 0 -and $coverageResult.Valid) {
+                $covStr = Format-CoverageString -Coverage $coverageResult.Coverage
+                Write-Status -Tab $tab.Name -Endpoint $tab.Endpoint -Passed $true -Details "cov:$covStr $statsStr"
                 $scanPass++
-                $tabSummary += @{ Tab = $tab.Name; Type = "evidence"; Passed = $true; Stats = $stats }
-            } else {
+                $tabSummary += @{ Tab = $tab.Name; Type = "evidence"; Passed = $true; Stats = $stats; Coverage = $coverageResult.Coverage }
+                $coverageSummary += @{ Tab = $tab.Name; Coverage = $coverageResult.Coverage }
+            } elseif ($missing.Count -gt 0) {
                 Write-Status -Tab $tab.Name -Endpoint $tab.Endpoint -Passed $false -Details "Missing: $($missing -join ', ')"
                 $scanFail++
                 $tabSummary += @{ Tab = $tab.Name; Type = "evidence"; Passed = $false; Missing = $missing }
+            } else {
+                Write-Status -Tab $tab.Name -Endpoint $tab.Endpoint -Passed $false -Details "Coverage errors: $($coverageResult.Errors -join '; ')"
+                $scanFail++
+                $tabSummary += @{ Tab = $tab.Name; Type = "evidence"; Passed = $false; CoverageErrors = $coverageResult.Errors }
             }
         } catch {
             Write-Status -Tab $tab.Name -Endpoint $tab.Endpoint -Passed $false -Details $_.Exception.Message
             $scanFail++
             $tabSummary += @{ Tab = $tab.Name; Type = "evidence"; Passed = $false; Error = $_.Exception.Message }
+        }
+    }
+
+    # Print coverage summary for this scan
+    if ($coverageSummary.Count -gt 0) {
+        Write-Host ""
+        Write-Host "  ${Dim}Coverage Summary:${Reset}"
+        foreach ($cs in $coverageSummary) {
+            $covStr = Format-CoverageString -Coverage $cs.Coverage
+            Write-Host "    ${Dim}$($cs.Tab): $covStr${Reset}"
         }
     }
 

@@ -61,6 +61,9 @@ def _build_meta(
     n_items = len(feed_items)
     created_at = scan_metadata.get("created_at")
 
+    # Build coverage accounting
+    coverage = _compute_coverage(feed_items)
+
     return {
         "scan_id": scan_metadata.get("scan_id"),
         "platform": scan_metadata.get("platform"),
@@ -68,6 +71,55 @@ def _build_meta(
         "window_start": created_at,
         "window_end": created_at,
         "generated_at": datetime.now().isoformat(),
+        "coverage": coverage,
+    }
+
+
+def _compute_coverage(feed_items: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Compute coverage metadata for the patterns evidence bundle.
+
+    Coverage Contract (enforced):
+    - n_items_total = n_items_included + n_items_excluded
+    - exclusion_reasons counts ONLY truly excluded items (sum == n_items_excluded)
+    - quality_flags counts issues among INCLUDED items (does not affect coverage counts)
+
+    For Patterns bundle: Items WITHOUT both content_type AND account info are EXCLUDED
+    because pattern analysis requires at least one of these. These items are tracked
+    in exclusion_reasons.
+
+    Returns:
+        Coverage dict with standardized fields
+    """
+    n_items_total = len(feed_items)
+    exclusion_reasons: Dict[str, int] = {}
+    quality_flags: Dict[str, int] = {}
+
+    # Track items excluded for mechanical reasons
+    n_missing_metadata = 0
+
+    for item in feed_items:
+        # Patterns analysis requires at minimum content_type or account info
+        has_content_type = bool(item.get("content_type"))
+        has_account = bool(item.get("account"))
+
+        if not has_content_type and not has_account:
+            n_missing_metadata += 1
+
+    # Items without any metadata are EXCLUDED (cannot contribute to pattern analysis)
+    # Contract: sum(exclusion_reasons.values()) == n_items_excluded
+    n_items_excluded = n_missing_metadata
+    n_items_included = n_items_total - n_items_excluded
+
+    if n_missing_metadata > 0:
+        exclusion_reasons["missing_metadata"] = n_missing_metadata
+
+    return {
+        "n_items_total": n_items_total,
+        "n_items_included": n_items_included,
+        "n_items_excluded": n_items_excluded,
+        "exclusion_reasons": exclusion_reasons,
+        "quality_flags": quality_flags,
     }
 
 

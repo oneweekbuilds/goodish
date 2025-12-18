@@ -85,6 +85,9 @@ def _build_meta(
         "creators": creators_bundle is not None,
     }
 
+    # Build coverage accounting
+    coverage = _compute_coverage(feed_items, sources_available)
+
     return {
         "scan_id": scan_metadata.get("scan_id"),
         "platform": scan_metadata.get("platform"),
@@ -93,6 +96,53 @@ def _build_meta(
         "window_end": created_at,
         "generated_at": datetime.now().isoformat(),
         "source_bundles": sources_available,
+        "coverage": coverage,
+    }
+
+
+def _compute_coverage(
+    feed_items: List[Dict[str, Any]],
+    sources_available: Dict[str, bool]
+) -> Dict[str, Any]:
+    """
+    Compute coverage metadata for the inferences evidence bundle.
+
+    Coverage Contract (enforced):
+    - n_items_total = n_items_included + n_items_excluded
+    - exclusion_reasons counts ONLY truly excluded items (sum == n_items_excluded)
+    - quality_flags counts issues among INCLUDED items (does not affect coverage counts)
+
+    For inferences bundle: All items are INCLUDED because this bundle aggregates
+    signals from other bundles. Missing source bundles affect signal availability,
+    not item inclusion, so they are tracked in quality_flags.
+
+    Returns:
+        Coverage dict with standardized fields
+    """
+    n_items_total = len(feed_items)
+
+    # Track quality issues (source bundle availability affects signal quality, not item inclusion)
+    quality_flags: Dict[str, int] = {}
+
+    n_unavailable_sources = sum(1 for avail in sources_available.values() if not avail)
+    if n_unavailable_sources > 0:
+        # This is informational - items are still included, just fewer signals available
+        quality_flags["missing_source_bundles"] = n_unavailable_sources
+
+    # For inferences, all items are included - the bundle aggregates from other bundles
+    n_items_included = n_items_total
+    n_items_excluded = 0
+
+    # exclusion_reasons is empty because no items are excluded
+    # Contract: sum(exclusion_reasons.values()) == n_items_excluded == 0
+    exclusion_reasons: Dict[str, int] = {}
+
+    return {
+        "n_items_total": n_items_total,
+        "n_items_included": n_items_included,
+        "n_items_excluded": n_items_excluded,
+        "exclusion_reasons": exclusion_reasons,
+        "quality_flags": quality_flags,
     }
 
 
