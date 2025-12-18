@@ -16,6 +16,8 @@ from unified_scan_models import (
 )
 from ocr_utils import (
     extract_text_with_preprocessing,
+    extract_text_multi_pass,
+    compute_average_ocr_confidence_v2,
     detect_ad_from_ocr,
     OCRDebugger,
     get_ocr_debug_enabled
@@ -84,29 +86,43 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
         if current_frame % frame_interval == 0:
             frames_analyzed += 1
 
-            # OCR with preprocessing for better accuracy on mobile video frames
-            # Uses grayscale, CLAHE contrast enhancement, adaptive thresholding, and 2x upscale
+            # Multi-pass OCR with ROI extraction for better accuracy on mobile video frames
+            # Uses multiple Tesseract configs + platform-specific ROI crops
             try:
-                text, preprocessed_frame = extract_text_with_preprocessing(frame)
+                ocr_result = extract_text_multi_pass(frame, platform)
+                text = ocr_result.get("full_text", "")
+                roi_texts = ocr_result.get("roi_texts", {})
+                ad_disclosure_snippet = ocr_result.get("ad_disclosure_snippet")
+                handles_detected = ocr_result.get("handles_detected", [])
+                ocr_quality_flags = ocr_result.get("quality_flags", {})
+                best_text_source = ocr_result.get("best_text_source", "none")
             except Exception as e:
                 text = ""
-                preprocessed_frame = None
+                roi_texts = {}
+                ad_disclosure_snippet = None
+                handles_detected = []
+                ocr_quality_flags = {"extraction_failed": 1}
+                best_text_source = "none"
+                ocr_result = {}
 
             # Track OCR metrics
             if text:
                 ocr_total_chars += len(text)
                 ocr_non_empty_frames += 1
 
+            # Also get preprocessed frame for debug recording (using sparse config)
+            preprocessed_frame = None
+            try:
+                _, preprocessed_frame = extract_text_with_preprocessing(frame)
+            except Exception:
+                pass
+
             # Record frame for debug output (if ALGO_OCR_DEBUG=1)
             if preprocessed_frame is not None:
                 ocr_debugger.record_frame(preprocessed_frame, text, current_frame)
 
-            # Calculate OCR confidence estimate based on text quality
-            # Simple heuristic: ratio of alphanumeric chars to total chars
-            ocr_confidence = 0.0
-            if text:
-                alpha_ratio = sum(c.isalnum() or c.isspace() for c in text) / len(text)
-                ocr_confidence = min(alpha_ratio, 1.0)
+            # Calculate OCR confidence using improved v2 method
+            ocr_confidence = compute_average_ocr_confidence_v2(ocr_result) if ocr_result else 0.0
 
             # Create FeedItem for this frame/segment
             item = FeedItem(
@@ -122,8 +138,30 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
                 )
             )
 
-            # Store OCR text (truncated for storage efficiency)
-            item.content_text.on_screen_labels.append(text[:200] if text else "")
+            # Store OCR text (Task B: persist more useful data)
+            # Store best combined text (truncated for storage efficiency)
+            if text:
+                item.content_text.on_screen_labels.append(text[:200])
+
+            # Store best ROI text if different and useful (for downstream analysis)
+            if roi_texts:
+                # Get the most valuable ROI text (longest with useful content)
+                best_roi_text = ""
+                for roi_name, roi_text in roi_texts.items():
+                    if len(roi_text) > len(best_roi_text):
+                        best_roi_text = roi_text
+                if best_roi_text and best_roi_text.lower() != text[:200].lower():
+                    item.content_text.on_screen_labels.append(f"[roi]{best_roi_text[:150]}")
+
+            # Store ad disclosure snippet if detected (helps downstream analysis)
+            if ad_disclosure_snippet:
+                item.content_text.on_screen_labels.append(f"[disclosure]{ad_disclosure_snippet}")
+
+            # Store detected handles (useful for creator identification)
+            if handles_detected:
+                handles_str = " ".join(f"@{h}" for h in handles_detected[:3])  # Max 3 handles
+                if handles_str not in (text or ""):  # Avoid duplication
+                    item.content_text.on_screen_labels.append(f"[handles]{handles_str[:100]}")
 
             # Ad detection: First check for OCR-based disclosure tokens
             # This is the PRIMARY method for mobile video since platform labels aren't available
@@ -131,17 +169,29 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
             ad_detected_reason = None
             ad_disclosure_match = None
 
-            # Check for ad disclosure tokens in OCR text (e.g., "Ad", "Sponsored", "Promoted")
-            ocr_ad_detected, matched_token = detect_ad_from_ocr(text)
-            if ocr_ad_detected:
+            # Check for ad disclosure from multi-pass OCR (already detected)
+            if ad_disclosure_snippet:
                 is_ad = True
                 ad_detected_reason = "ocr_disclosure_token"
-                ad_disclosure_match = matched_token
+                ad_disclosure_match = ad_disclosure_snippet
                 ocr_ad_detections += 1
+            else:
+                # Fallback: check full text + ROI texts
+                all_ocr_text = text
+                for roi_text in roi_texts.values():
+                    all_ocr_text += " " + roi_text
+
+                ocr_ad_detected, matched_token = detect_ad_from_ocr(all_ocr_text)
+                if ocr_ad_detected:
+                    is_ad = True
+                    ad_detected_reason = "ocr_disclosure_token"
+                    ad_disclosure_match = matched_token
+                    ocr_ad_detections += 1
 
             # Fallback: legacy keyword heuristics (less reliable)
             if not is_ad:
-                if "shop now" in text or "link in bio" in text or "swipe up" in text:
+                all_text_lower = (text + " " + " ".join(roi_texts.values())).lower()
+                if "shop now" in all_text_lower or "link in bio" in all_text_lower or "swipe up" in all_text_lower:
                     is_ad = True
                     ad_detected_reason = "keyword_match"
 
@@ -153,56 +203,57 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
                 )
                 ad_items_count += 1
             
-            # Topics
+            # Topics (use combined text for better detection)
+            combined_text_for_analysis = (text + " " + " ".join(roi_texts.values())).lower()
             detected_topic = None
-            if "workout" in text or "gym" in text or "fitness" in text:
+            if "workout" in combined_text_for_analysis or "gym" in combined_text_for_analysis or "fitness" in combined_text_for_analysis:
                 detected_topic = "fitness"
-            elif "makeup" in text or "skin" in text or "beauty" in text or "haul" in text:
+            elif "makeup" in combined_text_for_analysis or "skin" in combined_text_for_analysis or "beauty" in combined_text_for_analysis or "haul" in combined_text_for_analysis:
                 detected_topic = "shopping/beauty"
-            elif "lol" in text or "funny" in text or "meme" in text:
+            elif "lol" in combined_text_for_analysis or "funny" in combined_text_for_analysis or "meme" in combined_text_for_analysis:
                 detected_topic = "funny/memes"
-            elif "vote" in text or "election" in text or "policy" in text:
+            elif "vote" in combined_text_for_analysis or "election" in combined_text_for_analysis or "policy" in combined_text_for_analysis:
                 detected_topic = "politics"
             
             if detected_topic:
                 topic_counts[detected_topic] += 1
                 item.topics.secondary_categories.append(detected_topic)
 
-            # Products (very simple extraction)
-            if "drink" in text:
+            # Products (very simple extraction - using combined text)
+            if "drink" in combined_text_for_analysis:
                 if item.ad_metadata is None: item.ad_metadata = AdMetadata()
                 item.ad_metadata.product_or_service = "Brand A Energy Drink"
-            if "leggings" in text:
+            if "leggings" in combined_text_for_analysis:
                 if item.ad_metadata is None: item.ad_metadata = AdMetadata()
                 item.ad_metadata.product_or_service = "Brand B Leggings"
-                
-            # Engagement Drivers
-            if "challenge" in text:
+
+            # Engagement Drivers (using combined text)
+            if "challenge" in combined_text_for_analysis:
                 hook = "fitness challenges"
                 item.engagement_drivers.hooks_detected.append(hook)
                 hook_counts[hook] = hook_counts.get(hook, 0) + 1
-            if "routine" in text:
+            if "routine" in combined_text_for_analysis:
                 hook = "beauty routines"
                 item.engagement_drivers.hooks_detected.append(hook)
                 hook_counts[hook] = hook_counts.get(hook, 0) + 1
-            
-            # Tone
-            if "good" in text or "love" in text:
+
+            # Tone (using combined text)
+            if "good" in combined_text_for_analysis or "love" in combined_text_for_analysis:
                 positive_score += 1
                 item.wellbeing.valence = "POSITIVE"
-            elif "bad" in text or "hate" in text:
+            elif "bad" in combined_text_for_analysis or "hate" in combined_text_for_analysis:
                 negative_score += 1
                 item.wellbeing.valence = "NEGATIVE"
             else:
                 neutral_score += 1
                 item.wellbeing.valence = "NEUTRAL"
 
-            # Wellbeing Themes
-            if "body" in text or "weight" in text:
+            # Wellbeing Themes (using combined text)
+            if "body" in combined_text_for_analysis or "weight" in combined_text_for_analysis:
                 item.wellbeing.themes.append("body_image")
-            if "diet" in text:
+            if "diet" in combined_text_for_analysis:
                 item.wellbeing.themes.append("diet_weight_loss")
-            if "conflict" in text or "drama" in text:
+            if "conflict" in combined_text_for_analysis or "drama" in combined_text_for_analysis:
                 item.wellbeing.themes.append("conflict")
 
             # Political
@@ -308,6 +359,12 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
                     "max_text_length": ocr_summary.get("max_text_length", 0),
                     "non_empty_rate_percent": ocr_summary.get("non_empty_rate", 0),
                     "debug_enabled": get_ocr_debug_enabled(),
+                },
+                "multi_pass_ocr": {
+                    "enabled": True,
+                    "passes_configured": ["sparse", "block", "single_line"],
+                    "roi_extraction_enabled": True,
+                    "platform_roi_config": platform.lower() if platform else "default",
                 }
             }
         )
