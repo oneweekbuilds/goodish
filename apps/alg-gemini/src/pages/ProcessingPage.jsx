@@ -77,8 +77,9 @@ const ProcessingPage = () => {
 
     const pollStatus = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/scans/${scanId}`);
-        
+        // Use lightweight status endpoint for efficient polling
+        const response = await fetch(`http://127.0.0.1:8000/api/scans/${scanId}/status`);
+
         if (!response.ok) {
           if (response.status === 404) {
             // Scan not found yet, keep polling
@@ -89,25 +90,28 @@ const ProcessingPage = () => {
         }
 
         const data = await response.json();
-        
-        // Check if scan is complete
-        if (data.status === 'completed' || data.result) {
+        console.log('[ProcessingPage] Poll response:', data);
+
+        // Check if scan is complete (status field is authoritative)
+        if (data.status === 'completed') {
+          console.log('[ProcessingPage] Scan completed, navigating to results');
           navigate(`/scan/results/${scanId}`);
           return;
         }
 
         // Check for error status
         if (data.status === 'error' || data.status === 'failed') {
-          setError(data.error || 'Scan processing failed');
+          setError(data.error_message || 'Scan processing failed');
           return;
         }
 
+        // Still processing, continue polling
         setPollCount((prev) => prev + 1);
       } catch (err) {
         console.error('Error polling scan status:', err);
         // Don't set error immediately, just log and continue
-        if (pollCount > 30) {
-          // After 60 seconds (30 polls * 2s), show error
+        if (pollCount > 60) {
+          // After 120 seconds (60 polls * 2s), show error
           setError('Scan is taking longer than expected. Please try again.');
         }
       }

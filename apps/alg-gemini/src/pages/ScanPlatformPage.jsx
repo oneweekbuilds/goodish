@@ -152,16 +152,18 @@ const ScanPlatformPage = () => {
       }
 
       const data = await response.json();
-      
-      // Get the scan ID from response
-      const resultScanId = data.id || data.scan_id || data.scan_metadata?.scan_id;
-      
+      console.log('[ScanPlatformPage] Upload response:', data);
+
+      // Get the scan ID from response (new format: {scan_id, status})
+      const resultScanId = data.scan_id || data.id || data.scan_metadata?.scan_id;
+
       if (resultScanId) {
-        // Navigate to processing page (it will redirect to results when complete)
+        // Navigate to processing page (it will poll and redirect to results when complete)
+        console.log('[ScanPlatformPage] Navigating to processing page:', resultScanId);
         navigate(`/scan/processing?scanId=${resultScanId}`);
       } else {
         // If no scan ID but we have result data, go to results with the data
-        // This handles cases where backend returns immediate result
+        // This handles cases where backend returns immediate result (legacy)
         navigate('/scan/results/latest');
       }
     } catch (err) {

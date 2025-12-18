@@ -12,17 +12,23 @@ from unified_scan_models import (
     WellbeingInfo, EngagementDrivers, RepetitionInfo, SourceDetails,
     Aggregates, TopicDistributionEntry, WellbeingSummary, ValenceDistribution,
     PoliticalContentSummary, RepetitionSummary, EngagementPatternSummary, HookCount,
-    PrivacyInfo, DebugInfo, ScreenResolution
+    PrivacyInfo, DebugInfo, ScreenResolution, OcrMetadata
+)
+from ocr_utils import (
+    extract_text_with_preprocessing,
+    detect_ad_from_ocr,
+    OCRDebugger,
+    get_ocr_debug_enabled
 )
 
-# Ensure Tesseract is available. 
+# Ensure Tesseract is available.
 # On Windows, you might need to set the path explicitly if it's not in PATH.
 # pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 def process_video(file_path: str, user_id: str = "demo-user", platform: str = "tiktok") -> UnifiedScanResult:
     start_time = time.time()
     scan_id = str(uuid.uuid4())
-    
+
     cap = cv2.VideoCapture(file_path)
     if not cap.isOpened():
         raise ValueError("Could not open video file")
@@ -32,7 +38,7 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     duration = frame_count / fps if fps > 0 else 0
-    
+
     # Sample every ~400ms
     sample_rate_ms = 400
     frame_interval = int(fps * (sample_rate_ms / 1000)) if fps > 0 else 10
@@ -41,7 +47,15 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
 
     frames_analyzed = 0
     feed_items = []
-    
+
+    # Initialize OCR debugger for tracking OCR quality
+    ocr_debugger = OCRDebugger(scan_id)
+
+    # Track OCR metrics for aggregates
+    ocr_total_chars = 0
+    ocr_non_empty_frames = 0
+    ocr_ad_detections = 0  # Ads detected via OCR disclosure tokens
+
     # Accumulators for aggregates
     topic_counts = {
         "fitness": 0,
@@ -51,14 +65,14 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
         "gaming": 0,
         "educational": 0
     }
-    
+
     positive_score = 0
     neutral_score = 0
     negative_score = 0
-    
+
     political_items_count = 0
     ad_items_count = 0
-    
+
     hook_counts = {}
 
     current_frame = 0
@@ -69,17 +83,31 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
             
         if current_frame % frame_interval == 0:
             frames_analyzed += 1
-            
-            # Convert to RGB for Pillow
-            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            pil_image = Image.fromarray(rgb_frame)
-            
-            # OCR
+
+            # OCR with preprocessing for better accuracy on mobile video frames
+            # Uses grayscale, CLAHE contrast enhancement, adaptive thresholding, and 2x upscale
             try:
-                text = pytesseract.image_to_string(pil_image).lower()
-            except Exception:
-                text = "" # Tesseract might fail or not be installed
-            
+                text, preprocessed_frame = extract_text_with_preprocessing(frame)
+            except Exception as e:
+                text = ""
+                preprocessed_frame = None
+
+            # Track OCR metrics
+            if text:
+                ocr_total_chars += len(text)
+                ocr_non_empty_frames += 1
+
+            # Record frame for debug output (if ALGO_OCR_DEBUG=1)
+            if preprocessed_frame is not None:
+                ocr_debugger.record_frame(preprocessed_frame, text, current_frame)
+
+            # Calculate OCR confidence estimate based on text quality
+            # Simple heuristic: ratio of alphanumeric chars to total chars
+            ocr_confidence = 0.0
+            if text:
+                alpha_ratio = sum(c.isalnum() or c.isspace() for c in text) / len(text)
+                ocr_confidence = min(alpha_ratio, 1.0)
+
             # Create FeedItem for this frame/segment
             item = FeedItem(
                 position_in_feed=frames_analyzed,
@@ -87,18 +115,42 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
                 content_type="VIDEO",
                 source_details=SourceDetails(
                     capture_source_type="MOBILE_VIDEO_FRAME",
-                    ocr_metadata={"frames_sampled": 1}
+                    ocr_metadata=OcrMetadata(
+                        frames_sampled=1,
+                        average_ocr_confidence=round(ocr_confidence, 2) if ocr_confidence > 0 else None
+                    )
                 )
             )
-            
-            item.content_text.on_screen_labels.append(text[:100]) # Store snippet
 
-            # Heuristics
+            # Store OCR text (truncated for storage efficiency)
+            item.content_text.on_screen_labels.append(text[:200] if text else "")
+
+            # Ad detection: First check for OCR-based disclosure tokens
+            # This is the PRIMARY method for mobile video since platform labels aren't available
             is_ad = False
-            if "sponsored" in text or "ad" in text or "shop now" in text or "link in bio" in text:
+            ad_detected_reason = None
+            ad_disclosure_match = None
+
+            # Check for ad disclosure tokens in OCR text (e.g., "Ad", "Sponsored", "Promoted")
+            ocr_ad_detected, matched_token = detect_ad_from_ocr(text)
+            if ocr_ad_detected:
                 is_ad = True
+                ad_detected_reason = "ocr_disclosure_token"
+                ad_disclosure_match = matched_token
+                ocr_ad_detections += 1
+
+            # Fallback: legacy keyword heuristics (less reliable)
+            if not is_ad:
+                if "shop now" in text or "link in bio" in text or "swipe up" in text:
+                    is_ad = True
+                    ad_detected_reason = "keyword_match"
+
+            if is_ad:
                 item.is_ad = True
-                item.ad_metadata = AdMetadata(ad_detected_reason="keyword_match")
+                item.ad_metadata = AdMetadata(
+                    ad_detected_reason=ad_detected_reason,
+                    sponsored_label_text=ad_disclosure_match
+                )
                 ad_items_count += 1
             
             # Topics
@@ -164,7 +216,10 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
         current_frame += 1
         
     cap.release()
-    
+
+    # Finalize OCR debugger (saves frames and logs summary if ALGO_OCR_DEBUG=1)
+    ocr_summary = ocr_debugger.finalize()
+
     # Delete file
     try:
         os.remove(file_path)
@@ -174,8 +229,13 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
 
     # Aggregate results
     total_samples = frames_analyzed if frames_analyzed > 0 else 1
-    
+
     ad_percentage = ad_items_count / total_samples
+
+    # Log OCR summary even when not in debug mode (helps diagnose issues)
+    print(f"[video_processor] OCR Summary: {ocr_non_empty_frames}/{frames_analyzed} frames with text, "
+          f"{ocr_ad_detections} ads detected via OCR, "
+          f"avg chars: {ocr_total_chars / max(ocr_non_empty_frames, 1):.0f}")
     
     # Normalize topics
     sorted_topics = sorted(topic_counts.items(), key=lambda x: x[1], reverse=True)
@@ -238,6 +298,17 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
         ),
         debug=DebugInfo(
             processing_time_seconds=processing_time,
-            frames_extracted=frames_analyzed
+            frames_extracted=frames_analyzed,
+            frames_sampled_for_ocr=frames_analyzed,
+            raw_backend_payload={
+                "ocr_summary": {
+                    "frames_with_text": ocr_non_empty_frames,
+                    "ocr_ad_detections": ocr_ad_detections,
+                    "avg_text_length": ocr_summary.get("avg_text_length", 0),
+                    "max_text_length": ocr_summary.get("max_text_length", 0),
+                    "non_empty_rate_percent": ocr_summary.get("non_empty_rate", 0),
+                    "debug_enabled": get_ocr_debug_enabled(),
+                }
+            }
         )
     )

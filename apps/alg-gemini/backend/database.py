@@ -13,7 +13,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "scans.db")
 
 def get_connection() -> sqlite3.Connection:
     """Get a database connection."""
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row  # Enable dict-like access
     return conn
 
@@ -22,8 +22,8 @@ def init_database():
     """Initialize the database with required tables."""
     conn = get_connection()
     cursor = conn.cursor()
-    
-    # Create scans table
+
+    # Create scans table with status support
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS scans (
             id TEXT PRIMARY KEY,
@@ -34,15 +34,30 @@ def init_database():
             total_items INTEGER DEFAULT 0,
             total_ads INTEGER DEFAULT 0,
             ad_percentage REAL DEFAULT 0.0,
+            status TEXT DEFAULT 'completed',
+            error_message TEXT,
             result_json TEXT NOT NULL
         )
     """)
-    
+
+    # Add status column if it doesn't exist (migration for existing DBs)
+    try:
+        cursor.execute("ALTER TABLE scans ADD COLUMN status TEXT DEFAULT 'completed'")
+        print("[database] Added status column to scans table")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
+    try:
+        cursor.execute("ALTER TABLE scans ADD COLUMN error_message TEXT")
+        print("[database] Added error_message column to scans table")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
     # Create index on created_at for faster sorting
     cursor.execute("""
         CREATE INDEX IF NOT EXISTS idx_scans_created_at ON scans(created_at DESC)
     """)
-    
+
     conn.commit()
     conn.close()
     print(f"[database] Initialized database at {DB_PATH}")
@@ -166,23 +181,23 @@ def get_all_scans() -> List[Dict[str, Any]]:
 
 def get_scan_by_id(scan_id: str) -> Optional[Dict[str, Any]]:
     """
-    Get a single scan by ID, including the full result JSON.
+    Get a single scan by ID, including the full result JSON and status.
     """
     conn = get_connection()
     cursor = conn.cursor()
-    
+
     cursor.execute("""
-        SELECT id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, result_json
+        SELECT id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, status, error_message, result_json
         FROM scans
         WHERE id = ?
     """, (scan_id,))
-    
+
     row = cursor.fetchone()
     conn.close()
-    
+
     if row is None:
         return None
-    
+
     return {
         "id": row["id"],
         "created_at": row["created_at"],
@@ -192,6 +207,8 @@ def get_scan_by_id(scan_id: str) -> Optional[Dict[str, Any]]:
         "total_items": row["total_items"],
         "total_ads": row["total_ads"],
         "ad_percentage": row["ad_percentage"],
+        "status": row["status"] or "completed",
+        "error_message": row["error_message"],
         "result": json.loads(row["result_json"])
     }
 
@@ -200,12 +217,138 @@ def delete_scan(scan_id: str) -> bool:
     """Delete a scan by ID. Returns True if deleted, False if not found."""
     conn = get_connection()
     cursor = conn.cursor()
-    
+
     cursor.execute("DELETE FROM scans WHERE id = ?", (scan_id,))
     deleted = cursor.rowcount > 0
-    
+
     conn.commit()
     conn.close()
-    
+
     return deleted
+
+
+def create_pending_scan(scan_id: str, platform: str, user_id: str = "demo-user") -> str:
+    """
+    Create a placeholder scan record with status='processing'.
+    Used for async video processing - returns scan_id immediately to frontend.
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    created_at = datetime.now().isoformat()
+
+    # Create minimal placeholder result
+    placeholder_result = {
+        "scan_metadata": {
+            "scan_id": scan_id,
+            "created_at": created_at,
+            "platform": platform.upper(),
+            "user_identifier": user_id,
+            "source_type": "MOBILE_VIDEO"
+        },
+        "aggregates": {
+            "total_feed_items": 0,
+            "total_ads": 0,
+            "ad_percentage": 0.0
+        },
+        "feed_items": []
+    }
+
+    cursor.execute("""
+        INSERT OR REPLACE INTO scans
+        (id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, status, result_json)
+        VALUES (?, ?, ?, ?, 0, 0, 0, 0.0, 'processing', ?)
+    """, (scan_id, created_at, platform.upper(), user_id, json.dumps(placeholder_result)))
+
+    conn.commit()
+    conn.close()
+
+    print(f"[database] Created pending scan {scan_id} with status='processing'")
+    return scan_id
+
+
+def update_scan_result(scan_id: str, scan_result: Dict[str, Any], status: str = "completed") -> bool:
+    """
+    Update a scan with the full result after processing completes.
+    Returns True if updated, False if scan not found.
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    # Extract fields from the unified scan result
+    aggregates = scan_result.get("aggregates", {})
+    total_items = aggregates.get("total_feed_items", 0)
+    total_ads = aggregates.get("total_ads", 0)
+    ad_percentage = aggregates.get("ad_percentage", 0.0)
+
+    # Get duration from environment
+    environment = scan_result.get("environment", {}) or {}
+    video_capture = environment.get("video_capture", {}) or {}
+    duration_seconds = video_capture.get("duration_seconds", 0) or 0
+
+    result_json = json.dumps(scan_result)
+
+    cursor.execute("""
+        UPDATE scans
+        SET total_items = ?, total_ads = ?, ad_percentage = ?,
+            duration_seconds = ?, status = ?, result_json = ?, error_message = NULL
+        WHERE id = ?
+    """, (total_items, total_ads, ad_percentage, duration_seconds, status, result_json, scan_id))
+
+    updated = cursor.rowcount > 0
+    conn.commit()
+    conn.close()
+
+    print(f"[database] Updated scan {scan_id} with status='{status}', {total_items} items, {total_ads} ads")
+    return updated
+
+
+def update_scan_error(scan_id: str, error_message: str) -> bool:
+    """
+    Update a scan with an error status after processing fails.
+    Returns True if updated, False if scan not found.
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE scans
+        SET status = 'failed', error_message = ?
+        WHERE id = ?
+    """, (error_message, scan_id))
+
+    updated = cursor.rowcount > 0
+    conn.commit()
+    conn.close()
+
+    print(f"[database] Updated scan {scan_id} with status='failed': {error_message}")
+    return updated
+
+
+def get_scan_status(scan_id: str) -> Optional[Dict[str, Any]]:
+    """
+    Get just the status of a scan (lightweight check for polling).
+    Returns dict with status, error_message, or None if not found.
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, status, error_message, total_items, total_ads
+        FROM scans WHERE id = ?
+    """, (scan_id,))
+
+    row = cursor.fetchone()
+    conn.close()
+
+    if row is None:
+        return None
+
+    return {
+        "scan_id": row["id"],
+        "status": row["status"] or "completed",
+        "error_message": row["error_message"],
+        "total_items": row["total_items"],
+        "total_ads": row["total_ads"]
+    }
 

@@ -1,0 +1,24 @@
+# OCR debug output (generated when ALGO_OCR_DEBUG=1)
+ocr_debug/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+ENV/
+
+# Database
+*.db
+*.db-journal
+
+# Temp files
+tmp/
+*.tmp
+
+# IDE
+.vscode/
+.idea/
