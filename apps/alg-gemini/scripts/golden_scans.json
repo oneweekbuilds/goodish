@@ -1,0 +1,55 @@
+{
+  "description": "Golden Scan Pack for regression testing - real scan IDs from local database",
+  "version": "1.0.0",
+  "generated": "2024-12-18",
+  "scans": [
+    {
+      "scan_id": "desktop-1764543645374-b801c1j",
+      "source_type": "DESKTOP",
+      "platform": "FACEBOOK",
+      "total_items": 90,
+      "total_ads": 12,
+      "note": "Desktop Facebook scan with 12 detected ads"
+    },
+    {
+      "scan_id": "desktop-1764543221023-qmro3dm",
+      "source_type": "DESKTOP",
+      "platform": "TWITTER",
+      "total_items": 17,
+      "total_ads": 5,
+      "note": "Desktop Twitter scan with ads present"
+    },
+    {
+      "scan_id": "11bee9a8-417d-434b-aec0-d7fcd28c952f",
+      "source_type": "MOBILE_VIDEO",
+      "platform": "X",
+      "total_items": 103,
+      "total_ads": 38,
+      "note": "Mobile video X scan with high ad percentage (37%)"
+    },
+    {
+      "scan_id": "e6815472-239e-465b-98f3-122b7f824ed0",
+      "source_type": "MOBILE_VIDEO",
+      "platform": "INSTAGRAM",
+      "total_items": 68,
+      "total_ads": 0,
+      "note": "Mobile video Instagram scan without detected ads"
+    },
+    {
+      "scan_id": "desktop-1764523078650-9go57xd",
+      "source_type": "DESKTOP",
+      "platform": "FACEBOOK",
+      "total_items": 2,
+      "total_ads": 0,
+      "note": "Edge case: minimal item count (2 items)"
+    },
+    {
+      "scan_id": "b36ea3fa-729c-4a4b-877c-23bf98dbb5f1",
+      "source_type": "MOBILE_VIDEO",
+      "platform": "FACEBOOK",
+      "total_items": 77,
+      "total_ads": 0,
+      "note": "Mobile video Facebook scan for platform coverage"
+    }
+  ]
+}
