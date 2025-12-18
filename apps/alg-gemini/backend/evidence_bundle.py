@@ -215,53 +215,56 @@ def _build_observations(
         observations["promotional_rate_percent"] = None
 
     # ==========================================================================
-    # Brand/Entity Presence (View C) - "Top Companies" / "Top Brands"
+    # Top Companies (View C) - PROMO-ONLY per spec
     # Uses strict surfacing rule: count >= 2 AND high_confidence >= 1
     # ==========================================================================
-    brand_data = commercial_analysis.brand_aggregation.to_dict()
+    company_data = commercial_analysis.company_aggregation.to_dict()
     spectrum = commercial_analysis.exposure_spectrum
     total_promotional = spectrum.labeled_ads + spectrum.unlabeled_promotion_high
 
-    if brand_data["surfaced_brands"]:
-        # Only surface brands that meet strict threshold
+    # Use surfaced_companies (or surfaced_brands for backward compat)
+    surfaced_companies = company_data.get("surfaced_companies", company_data.get("surfaced_brands", []))
+
+    if surfaced_companies:
+        # Only surface companies that meet strict threshold
         observations["top_companies"] = [
-            {"name": b["name"], "count": b["count"], "high_confidence": b["high_confidence_count"]}
-            for b in brand_data["surfaced_brands"][:5]
+            {"name": c["name"], "count": c["count"], "high_confidence": c["high_confidence_count"]}
+            for c in surfaced_companies[:5]
         ]
-        observations["unique_companies_surfaced"] = len(brand_data["surfaced_brands"])
+        observations["unique_companies_surfaced"] = len(surfaced_companies)
     else:
-        # No brands surfaced - provide empty list with clear reason
+        # No companies surfaced - provide empty list with clear reason per spec
         observations["top_companies"] = []
         observations["unique_companies_surfaced"] = 0
 
         # Build detailed explanation of why no companies are shown
-        exclusion_reasons = brand_data.get("exclusion_reasons", {})
+        exclusion_reasons = company_data.get("exclusion_reasons", {})
         below_count = exclusion_reasons.get("below_count_threshold", 0)
         no_high_conf = exclusion_reasons.get("no_high_confidence_evidence", 0)
-        total_unique = brand_data.get("total_unique_brands", 0)
+        total_unique = company_data.get("total_unique_companies", company_data.get("total_unique_brands", 0))
 
         if total_promotional == 0:
-            observations["top_companies_note"] = "No promotional content detected, so no company/brand data available."
+            observations["top_companies_note"] = "No promotional content detected, so no company data available."
         elif total_unique == 0:
             observations["top_companies_note"] = "No company or brand names could be extracted from this scan."
         elif no_high_conf > 0 and below_count == 0:
             observations["top_companies_note"] = (
-                f"{no_high_conf} potential brands detected but none had high-confidence evidence. "
+                f"{no_high_conf} potential companies detected but none had high-confidence evidence. "
                 "Surfacing requires advertiser metadata or verified disclosure labels."
             )
         elif source_type == "MOBILE_VIDEO":
             observations["top_companies_note"] = (
-                f"MOBILE_VIDEO scan: {total_unique} brand mentions detected but none met surfacing threshold "
+                f"MOBILE_VIDEO scan: {total_unique} company mentions detected but none met surfacing threshold "
                 f"(count >= 2 AND high_confidence >= 1). Advertiser metadata unavailable in video frames."
             )
         else:
             observations["top_companies_note"] = (
-                f"{total_unique} brand mentions detected but none met surfacing threshold "
+                f"{total_unique} company mentions detected but none met surfacing threshold "
                 f"(count >= 2 AND high_confidence >= 1)."
             )
 
     # Track exclusion stats for limits section
-    observations["_brand_exclusion_stats"] = brand_data.get("exclusion_reasons", {})
+    observations["_company_exclusion_stats"] = company_data.get("exclusion_reasons", {})
 
     # Legacy: Top advertisers from ad_metadata (for backward compatibility)
     advertiser_counts = Counter()
@@ -361,7 +364,8 @@ def _build_measurements(
         }
 
     # ==========================================================================
-    # Promotion Topics (View B) - with confidence thresholds
+    # Promotion Topics (View B) - PROMO-ONLY per spec
+    # Quality: "ok" | "not_applicable" | "insufficient_signal"
     # ==========================================================================
     topic_data = commercial_analysis.topic_aggregation.to_dict()
     surfaced_topics = topic_data["surfaced_topics"]
@@ -372,7 +376,17 @@ def _build_measurements(
 
     if surfaced_topics:
         measurements["promotion_topics"] = {
-            "value": [
+            "value": [t["topic"] for t in surfaced_topics],  # Just topic names per spec
+            "method": "classifier:topic_keyword_matching",
+            "quality": "ok",
+            "notes": (
+                f"Topics derived from promotional content only ({total_promotional} promotional items). "
+                f"Threshold: {topic_data['threshold_rule']}."
+            ),
+            "threshold_rule": topic_data["threshold_rule"],
+            "detected_but_excluded_count": len(below_threshold),
+            # Also include full breakdown for debug
+            "_full_breakdown": [
                 {
                     "topic": t["topic"],
                     "count": t["count"],
@@ -380,25 +394,16 @@ def _build_measurements(
                 }
                 for t in surfaced_topics
             ],
-            "method": "classifier:topic_keyword_matching",
-            "quality": "ok" if len(surfaced_topics) >= 2 else "low_sample",
-            "notes": (
-                f"Topics derived from promotional content only ({total_promotional} promotional items). "
-                f"Threshold: {topic_data['threshold_rule']}. "
-                f"{len(below_threshold)} topics excluded as below threshold."
-            ),
-            "threshold_rule": topic_data["threshold_rule"],
         }
     elif below_threshold:
-        # Topics were detected but none met the threshold - this is NOT missing_fields
+        # Topics were detected but none met the threshold
         measurements["promotion_topics"] = {
             "value": [],
             "method": "classifier:topic_keyword_matching",
             "quality": "ok",  # Analysis succeeded, just nothing surfaced
             "notes": (
                 f"{len(below_threshold)} topics detected from {total_promotional} promotional items "
-                f"but none met surfacing threshold ({topic_data['threshold_rule']}). "
-                "Detected topics are listed in threshold_exclusions."
+                f"but none met surfacing threshold ({topic_data['threshold_rule']})."
             ),
             "threshold_rule": topic_data["threshold_rule"],
             "detected_but_excluded_count": len(below_threshold),
@@ -526,10 +531,10 @@ def _build_limits(
     limits["commercial_analysis_exclusions"] = commercial_exclusions
 
     # ==========================================================================
-    # Topic/Brand Threshold Exclusions
+    # Topic/Company Threshold Exclusions
     # ==========================================================================
     topic_data = commercial_analysis.topic_aggregation.to_dict()
-    brand_data = commercial_analysis.brand_aggregation.to_dict()
+    company_data = commercial_analysis.company_aggregation.to_dict()
 
     threshold_exclusions = []
 
@@ -540,18 +545,18 @@ def _build_limits(
             + (f" and {len(excluded_topics) - 5} more" if len(excluded_topics) > 5 else "")
         )
 
-    # Brand/company exclusion reasons
-    exclusion_reasons = brand_data.get("exclusion_reasons", {})
+    # Company exclusion reasons
+    exclusion_reasons = company_data.get("exclusion_reasons", {})
     below_count = exclusion_reasons.get("below_count_threshold", 0)
     no_high_conf = exclusion_reasons.get("no_high_confidence_evidence", 0)
 
     if below_count > 0:
         threshold_exclusions.append(
-            f"{below_count} brands appeared only once and are not shown individually."
+            f"{below_count} companies appeared only once and are not shown individually."
         )
     if no_high_conf > 0:
         threshold_exclusions.append(
-            f"{no_high_conf} brands had count >= 2 but no high-confidence evidence (advertiser metadata or disclosure label)."
+            f"{no_high_conf} companies had count >= 2 but no high-confidence evidence (advertiser metadata or disclosure label)."
         )
 
     if threshold_exclusions:

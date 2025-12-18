@@ -8,7 +8,8 @@
  */
 
 // Quality enum matching backend
-export type QualityFlag = 'ok' | 'low_sample' | 'missing_fields' | 'model_low_confidence';
+// v3.0: Added 'not_applicable' and 'insufficient_signal' for promotion_topics
+export type QualityFlag = 'ok' | 'low_sample' | 'missing_fields' | 'model_low_confidence' | 'not_applicable' | 'insufficient_signal';
 
 // Commercial confidence levels
 export type CommercialConfidence = 'high' | 'medium' | 'low';
@@ -48,14 +49,17 @@ export interface CommercialExposureSpectrum {
 }
 
 // =============================================================================
-// Brand/Entity info (View C)
+// Company/Brand info (View C) - renamed from Brand to Company per spec
 // =============================================================================
 
-export interface BrandInfo {
+export interface CompanyInfo {
   name: string;
   count: number;
   high_confidence: number;
 }
+
+// Backward compatibility alias
+export type BrandInfo = CompanyInfo;
 
 // Advertiser info (legacy, backward compatible)
 export interface AdvertiserInfo {
@@ -72,13 +76,18 @@ export interface EvidenceBundleObservations {
   total_ads_detected: number;
   ad_rate_percent: number | null;
 
-  // Commercial Exposure Spectrum (v2.0)
+  // Commercial Exposure Spectrum (v3.0)
   commercial_exposure_spectrum?: CommercialExposureSpectrum;
   unlabeled_promotions_high_confidence?: number;
   total_promotional_content?: number;
   promotional_rate_percent?: number | null;
 
-  // Brands (v2.0)
+  // Companies (v3.0 - renamed from brands)
+  top_companies?: CompanyInfo[];
+  unique_companies_surfaced?: number;
+  top_companies_note?: string;
+
+  // Legacy brands (backward compat)
   top_brands?: BrandInfo[];
   unique_brands_count?: number;
   long_tail_brands_count?: number;
@@ -117,11 +126,12 @@ export interface UnlabeledPromotionsValue {
 // =============================================================================
 
 export interface MeasurementValue {
-  value: number | Array<{ category: string; count: number }> | PromotionTopic[] | UnlabeledPromotionsValue;
+  value: number | string[] | Array<{ category: string; count: number }> | PromotionTopic[] | UnlabeledPromotionsValue;
   method: string;
   quality: QualityFlag;
   notes: string | null;
   threshold_rule?: string;
+  detected_but_excluded_count?: number;
 }
 
 export interface EvidenceBundleMeasurements {

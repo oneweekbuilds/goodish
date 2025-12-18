@@ -1,5 +1,5 @@
 """
-Commercial Intent Classification Pipeline
+Commercial Intent Classification Pipeline (Gold Standard v3.0)
 
 This module classifies each feed item's commercial intent with defensible,
 evidence-based categorization. No speculation about user identity, platform
@@ -8,7 +8,29 @@ intent, or advertiser goals.
 Classification Output:
     commercial_class: "non_commercial" | "labeled_ad" | "unlabeled_promotion" | "ambiguous"
     commercial_confidence: "high" | "medium" | "low"
-    commercial_detection_method: "platform_label" | "ocr_disclosure" | "cta_pattern" | "entity_reference" | "keyword_heuristic" | "none"
+    commercial_detection_methods: List of detection methods that fired
+
+Key Definitions:
+
+LABELED_AD (High-confidence only):
+    - Platform ad label detected via OCR: "ad", "sponsored", "promoted", "advertisement"
+    - Platform DOM metadata (desktop only)
+    - Example: Nike official account promoting shoes with "Sponsored" label
+
+UNLABELED_PROMOTION (High-confidence only):
+    - Creator or third-party commercial persuasion WITHOUT formal ad label
+    - Must include direct evidence:
+        * Discount/referral codes: "use code", "my code", "promo code"
+        * Explicit CTAs: "link in bio", "shop now", "get yours", "free trial"
+        * Partnership language: "partnered with", "working with", "thanks to [brand]"
+        * Purchase intent: price mentions, "best deal", "on sale"
+    - Example: Influencer praising Nike shoes saying "use my code for 20% off"
+
+NON_COMMERCIAL:
+    - Everything else with no promotional signals
+
+AMBIGUOUS:
+    - Weak or single signals that don't meet high-confidence threshold
 
 Accuracy Philosophy:
     - Only HIGH confidence items are counted in primary metrics
@@ -40,6 +62,8 @@ class CommercialConfidence(str, Enum):
 class DetectionMethod(str, Enum):
     PLATFORM_LABEL = "platform_label"
     OCR_DISCLOSURE = "ocr_disclosure"
+    DISCOUNT_CODE = "discount_code"
+    PARTNERSHIP_LANGUAGE = "partnership_language"
     CTA_PATTERN = "cta_pattern"
     ENTITY_REFERENCE = "entity_reference"
     KEYWORD_HEURISTIC = "keyword_heuristic"
@@ -51,7 +75,7 @@ class CommercialClassification:
     """Classification result for a single feed item."""
     commercial_class: CommercialClass
     confidence: CommercialConfidence
-    detection_method: DetectionMethod
+    detection_methods: List[DetectionMethod] = field(default_factory=list)
     evidence: List[str] = field(default_factory=list)
     matched_patterns: List[str] = field(default_factory=list)
 
@@ -59,18 +83,18 @@ class CommercialClassification:
         return {
             "commercial_class": self.commercial_class.value,
             "commercial_confidence": self.confidence.value,
-            "commercial_detection_method": self.detection_method.value,
+            "commercial_detection_methods": [m.value for m in self.detection_methods],
             "evidence": self.evidence,
             "matched_patterns": self.matched_patterns,
         }
 
 
 # =============================================================================
-# Detection Patterns
+# Detection Patterns (Gold Standard v3.0)
 # =============================================================================
 
 # High-confidence ad disclosure tokens (case-insensitive)
-# These are regulatory disclosure terms that strongly indicate paid content
+# These are regulatory disclosure terms that strongly indicate LABELED ads
 HIGH_CONFIDENCE_AD_TOKENS = [
     r"\bad\b",                    # "Ad" standalone
     r"sponsored",                 # "Sponsored"
@@ -83,21 +107,61 @@ HIGH_CONFIDENCE_AD_TOKENS = [
     r"#paidpartnership\b",        # "#paidpartnership"
 ]
 
-# Medium-confidence promotional patterns
-# These suggest promotional intent but aren't definitive disclosures
-MEDIUM_PROMO_PATTERNS = [
-    r"#partner\b",                # Partner hashtag
-    r"#collab\b",                 # Collaboration
-    r"#gifted\b",                 # Gifted product
-    r"use\s+code\b",              # "Use code" + discount code
-    r"discount\s+code\b",         # Discount code
-    r"link\s+in\s+bio\b",         # Link in bio (common CTA)
-    r"swipe\s+up\b",              # Swipe up CTA
-    r"tap\s+to\s+shop\b",         # Shop CTA
-    r"shop\s+now\b",              # Shop now CTA
-    r"limited\s+time\b",          # Urgency signal
-    r"while\s+supplies\s+last\b", # Scarcity signal
-    r"exclusive\s+offer\b",       # Exclusive offer
+# =============================================================================
+# UNLABELED PROMOTION PATTERNS (High Confidence)
+# These indicate commercial intent WITHOUT platform disclosure labels
+# =============================================================================
+
+# Discount/referral code patterns - HIGH confidence for unlabeled promotion
+HIGH_CONFIDENCE_DISCOUNT_CODES = [
+    r"use\s+(my\s+)?code\b",           # "use code", "use my code"
+    r"my\s+code\b",                    # "my code"
+    r"promo\s+code\b",                 # "promo code"
+    r"discount\s+code\b",              # "discount code"
+    r"coupon\s+code\b",                # "coupon code"
+    r"code\s*[:\-]?\s*[A-Z0-9]{3,15}\b",  # "code: SAVE20" or "code SUMMER"
+    r"\d+%?\s*off\s+with\s+(code|my)",  # "20% off with code" / "20% off with my"
+    r"(save|get)\s+\d+%?\s+(with|using)\s+(code|my)",  # "save 20% with code"
+]
+
+# Partnership/sponsorship language - HIGH confidence
+HIGH_CONFIDENCE_PARTNERSHIP = [
+    r"partnered\s+with\b",             # "partnered with"
+    r"in\s+partnership\s+with\b",      # "in partnership with"
+    r"working\s+with\b",               # "working with [brand]"
+    r"thanks\s+to\b",                  # "thanks to [brand]"
+    r"sponsored\s+content\b",          # "sponsored content" (without platform label)
+    r"brand\s+partner\b",              # "brand partner"
+    r"affiliate\s+link\b",             # "affiliate link"
+    r"#partner\b",                     # "#partner"
+    r"#gifted\b",                      # "#gifted"
+    r"#collab\b",                      # "#collab"
+]
+
+# Explicit CTA patterns - HIGH confidence when combined with commerce signals
+HIGH_CONFIDENCE_CTA = [
+    r"link\s+in\s+(my\s+)?bio\b",      # "link in bio", "link in my bio"
+    r"shop\s+now\b",                   # "shop now"
+    r"get\s+yours\b",                  # "get yours"
+    r"free\s+trial\b",                 # "free trial"
+    r"sign\s+up\b",                    # "sign up"
+    r"tap\s+(the\s+)?(link|to\s+shop)\b",  # "tap the link", "tap to shop"
+    r"swipe\s+up\b",                   # "swipe up"
+    r"click\s+(the\s+)?link\b",        # "click the link"
+    r"check\s+(it\s+)?out\s+at\b",     # "check it out at"
+    r"order\s+(now|yours|today)\b",    # "order now", "order yours"
+]
+
+# Purchase intent signals - MEDIUM confidence alone, HIGH with other signals
+PURCHASE_INTENT_SIGNALS = [
+    r"\$\d+",                          # Price mentions "$19.99"
+    r"\d+%\s*off\b",                   # "20% off"
+    r"on\s+sale\b",                    # "on sale"
+    r"best\s+deal\b",                  # "best deal"
+    r"limited\s+time\b",               # "limited time"
+    r"while\s+supplies\s+last\b",      # "while supplies last"
+    r"exclusive\s+offer\b",            # "exclusive offer"
+    r"flash\s+sale\b",                 # "flash sale"
 ]
 
 # Low-confidence promotional keywords
@@ -107,15 +171,13 @@ LOW_PROMO_KEYWORDS = [
     r"purchase\b",
     r"sale\b",
     r"deal\b",
-    r"off\b",                     # "X% off"
     r"save\b",
     r"free\b",
     r"giveaway\b",
     r"checkout\b",
 ]
 
-# Known brand/company patterns (high-confidence entity references)
-# These are clearly commercial entity mentions
+# Known brand/company patterns (for entity extraction, not classification)
 BRAND_REFERENCE_PATTERNS = [
     r"@\w+\.com\b",               # @brand.com mentions
     r"\.com\b",                   # Domain references
@@ -126,31 +188,37 @@ BRAND_REFERENCE_PATTERNS = [
 
 # Compile all patterns
 AD_PATTERNS_HIGH = [re.compile(p, re.IGNORECASE) for p in HIGH_CONFIDENCE_AD_TOKENS]
-PROMO_PATTERNS_MEDIUM = [re.compile(p, re.IGNORECASE) for p in MEDIUM_PROMO_PATTERNS]
+DISCOUNT_PATTERNS_HIGH = [re.compile(p, re.IGNORECASE) for p in HIGH_CONFIDENCE_DISCOUNT_CODES]
+PARTNERSHIP_PATTERNS_HIGH = [re.compile(p, re.IGNORECASE) for p in HIGH_CONFIDENCE_PARTNERSHIP]
+CTA_PATTERNS_HIGH = [re.compile(p, re.IGNORECASE) for p in HIGH_CONFIDENCE_CTA]
+PURCHASE_PATTERNS_MEDIUM = [re.compile(p, re.IGNORECASE) for p in PURCHASE_INTENT_SIGNALS]
 PROMO_PATTERNS_LOW = [re.compile(p, re.IGNORECASE) for p in LOW_PROMO_KEYWORDS]
 BRAND_PATTERNS = [re.compile(p, re.IGNORECASE) for p in BRAND_REFERENCE_PATTERNS]
 
 
 # =============================================================================
-# Core Classification Logic
+# Core Classification Logic (Gold Standard v3.0)
 # =============================================================================
 
 def classify_feed_item(feed_item: Dict[str, Any]) -> CommercialClassification:
     """
-    Classify a single feed item's commercial intent.
+    Classify a single feed item's commercial intent with high accuracy.
 
-    Classification hierarchy (checked in order):
-    1. Platform-labeled ads (is_ad=True from platform metadata)
-    2. OCR-detected disclosures (high-confidence regulatory tokens)
-    3. CTA patterns (medium-confidence promotional signals)
-    4. Entity references (brand/company mentions)
-    5. Keyword heuristics (low-confidence promotional words)
+    Classification hierarchy:
+    1. Platform-labeled ads (is_ad=True) -> LABELED_AD, HIGH
+    2. OCR disclosure tokens (ad, sponsored, etc.) -> LABELED_AD, HIGH
+    3. Discount codes -> UNLABELED_PROMOTION, HIGH
+    4. Partnership language -> UNLABELED_PROMOTION, HIGH
+    5. CTA + purchase signals (combined) -> UNLABELED_PROMOTION, HIGH/MEDIUM
+    6. Single CTA or weak signals -> AMBIGUOUS
+    7. No signals -> NON_COMMERCIAL, HIGH
 
     Returns:
-        CommercialClassification with class, confidence, method, and evidence
+        CommercialClassification with class, confidence, methods, and evidence
     """
     evidence = []
     matched_patterns = []
+    detection_methods = []
 
     # Extract relevant data from feed item
     is_ad = feed_item.get("is_ad", False)
@@ -161,9 +229,9 @@ def classify_feed_item(feed_item: Dict[str, Any]) -> CommercialClassification:
     # Combine all text content for pattern matching
     all_text = _extract_all_text(content_text)
 
-    # -----------------------------------------------------
-    # 1. Check for platform-labeled ads
-    # -----------------------------------------------------
+    # =========================================================================
+    # 1. LABELED AD: Platform metadata or disclosure tokens
+    # =========================================================================
     if is_ad:
         reason = ad_metadata.get("ad_detected_reason", "platform_label")
         evidence.append(f"is_ad=True (reason: {reason})")
@@ -174,126 +242,180 @@ def classify_feed_item(feed_item: Dict[str, Any]) -> CommercialClassification:
         if ad_metadata.get("advertiser_name"):
             evidence.append(f"advertiser: '{ad_metadata['advertiser_name']}'")
 
-        # Platform labels are HIGH confidence for LABELED_AD
+        detection_methods.append(
+            DetectionMethod.OCR_DISCLOSURE
+            if reason == "ocr_disclosure_token"
+            else DetectionMethod.PLATFORM_LABEL
+        )
+
         return CommercialClassification(
             commercial_class=CommercialClass.LABELED_AD,
             confidence=CommercialConfidence.HIGH,
-            detection_method=(
-                DetectionMethod.OCR_DISCLOSURE
-                if reason == "ocr_disclosure_token"
-                else DetectionMethod.PLATFORM_LABEL
-            ),
+            detection_methods=detection_methods,
             evidence=evidence,
             matched_patterns=matched_patterns,
         )
 
-    # -----------------------------------------------------
-    # 2. Check for high-confidence disclosure tokens (not already flagged as ad)
-    # -----------------------------------------------------
-    high_matches = _find_pattern_matches(all_text, AD_PATTERNS_HIGH)
-    if high_matches:
-        matched_patterns.extend(high_matches)
-        evidence.append(f"High-confidence disclosure tokens found: {high_matches}")
+    # Check for OCR disclosure tokens (ad, sponsored, etc.) not caught by is_ad
+    ad_disclosure_matches = _find_pattern_matches(all_text, AD_PATTERNS_HIGH)
+    if ad_disclosure_matches:
+        matched_patterns.extend(ad_disclosure_matches)
+        evidence.append(f"Disclosure tokens found: {ad_disclosure_matches}")
+        detection_methods.append(DetectionMethod.OCR_DISCLOSURE)
 
+        # This should be LABELED_AD since it has explicit disclosure
+        return CommercialClassification(
+            commercial_class=CommercialClass.LABELED_AD,
+            confidence=CommercialConfidence.HIGH,
+            detection_methods=detection_methods,
+            evidence=evidence,
+            matched_patterns=matched_patterns,
+        )
+
+    # =========================================================================
+    # 2. UNLABELED PROMOTION: Strong signals without disclosure
+    # =========================================================================
+
+    # Check for discount codes - HIGH confidence for unlabeled promotion
+    discount_matches = _find_pattern_matches(all_text, DISCOUNT_PATTERNS_HIGH)
+    if discount_matches:
+        matched_patterns.extend(discount_matches)
+        evidence.append(f"Discount/referral codes: {discount_matches}")
+        detection_methods.append(DetectionMethod.DISCOUNT_CODE)
+
+    # Check for partnership language - HIGH confidence for unlabeled promotion
+    partnership_matches = _find_pattern_matches(all_text, PARTNERSHIP_PATTERNS_HIGH)
+    if partnership_matches:
+        matched_patterns.extend(partnership_matches)
+        evidence.append(f"Partnership language: {partnership_matches}")
+        detection_methods.append(DetectionMethod.PARTNERSHIP_LANGUAGE)
+
+    # Check for CTA patterns
+    cta_matches = _find_pattern_matches(all_text, CTA_PATTERNS_HIGH)
+    if cta_matches:
+        matched_patterns.extend(cta_matches)
+        evidence.append(f"CTA patterns: {cta_matches}")
+        detection_methods.append(DetectionMethod.CTA_PATTERN)
+
+    # Check for purchase intent signals
+    purchase_matches = _find_pattern_matches(all_text, PURCHASE_PATTERNS_MEDIUM)
+    if purchase_matches:
+        matched_patterns.extend(purchase_matches)
+        evidence.append(f"Purchase signals: {purchase_matches}")
+
+    # Also include engagement_drivers if present
+    cta_from_drivers = engagement_drivers.get("call_to_action_patterns", [])
+    urgency_from_drivers = engagement_drivers.get("urgency_or_scarcity_signals", [])
+    if cta_from_drivers:
+        evidence.append(f"CTA from analysis: {cta_from_drivers}")
+    if urgency_from_drivers:
+        evidence.append(f"Urgency signals: {urgency_from_drivers}")
+
+    # =========================================================================
+    # DECISION: Determine classification based on signal strength
+    # =========================================================================
+
+    # Count strong signals
+    has_discount_code = len(discount_matches) > 0
+    has_partnership = len(partnership_matches) > 0
+    has_cta = len(cta_matches) > 0 or len(cta_from_drivers) > 0
+    has_purchase_signal = len(purchase_matches) > 0 or len(urgency_from_drivers) > 0
+
+    # Discount codes ALONE are HIGH confidence unlabeled promotion
+    if has_discount_code:
         return CommercialClassification(
             commercial_class=CommercialClass.UNLABELED_PROMOTION,
             confidence=CommercialConfidence.HIGH,
-            detection_method=DetectionMethod.OCR_DISCLOSURE,
+            detection_methods=detection_methods,
             evidence=evidence,
             matched_patterns=matched_patterns,
         )
 
-    # -----------------------------------------------------
-    # 3. Check for medium-confidence promotional patterns
-    # -----------------------------------------------------
-    medium_matches = _find_pattern_matches(all_text, PROMO_PATTERNS_MEDIUM)
-    cta_patterns = engagement_drivers.get("call_to_action_patterns", [])
-    urgency_signals = engagement_drivers.get("urgency_or_scarcity_signals", [])
-
-    # Combine evidence from multiple sources
-    promo_signal_count = 0
-
-    if medium_matches:
-        matched_patterns.extend(medium_matches)
-        evidence.append(f"Promotional patterns found: {medium_matches}")
-        promo_signal_count += len(medium_matches)
-
-    if cta_patterns:
-        evidence.append(f"CTA patterns: {cta_patterns}")
-        promo_signal_count += len(cta_patterns)
-
-    if urgency_signals:
-        evidence.append(f"Urgency/scarcity signals: {urgency_signals}")
-        promo_signal_count += len(urgency_signals)
-
-    # Multiple medium signals = higher confidence
-    if promo_signal_count >= 3:
+    # Partnership language ALONE is HIGH confidence unlabeled promotion
+    if has_partnership:
         return CommercialClassification(
             commercial_class=CommercialClass.UNLABELED_PROMOTION,
             confidence=CommercialConfidence.HIGH,
-            detection_method=DetectionMethod.CTA_PATTERN,
+            detection_methods=detection_methods,
             evidence=evidence,
             matched_patterns=matched_patterns,
         )
-    elif promo_signal_count >= 2:
+
+    # CTA + purchase signal = HIGH confidence
+    if has_cta and has_purchase_signal:
+        return CommercialClassification(
+            commercial_class=CommercialClass.UNLABELED_PROMOTION,
+            confidence=CommercialConfidence.HIGH,
+            detection_methods=detection_methods,
+            evidence=evidence,
+            matched_patterns=matched_patterns,
+        )
+
+    # Multiple CTAs = MEDIUM confidence
+    cta_count = len(cta_matches) + len(cta_from_drivers)
+    if cta_count >= 2:
         return CommercialClassification(
             commercial_class=CommercialClass.UNLABELED_PROMOTION,
             confidence=CommercialConfidence.MEDIUM,
-            detection_method=DetectionMethod.CTA_PATTERN,
-            evidence=evidence,
-            matched_patterns=matched_patterns,
-        )
-    elif promo_signal_count == 1:
-        # Single medium signal -> ambiguous
-        return CommercialClassification(
-            commercial_class=CommercialClass.AMBIGUOUS,
-            confidence=CommercialConfidence.LOW,
-            detection_method=DetectionMethod.CTA_PATTERN,
+            detection_methods=detection_methods,
             evidence=evidence,
             matched_patterns=matched_patterns,
         )
 
-    # -----------------------------------------------------
-    # 4. Check for brand/entity references
-    # -----------------------------------------------------
+    # Single CTA = AMBIGUOUS (not enough evidence)
+    if has_cta:
+        return CommercialClassification(
+            commercial_class=CommercialClass.AMBIGUOUS,
+            confidence=CommercialConfidence.LOW,
+            detection_methods=detection_methods,
+            evidence=evidence,
+            matched_patterns=matched_patterns,
+        )
+
+    # =========================================================================
+    # 3. Check for weak signals (low confidence)
+    # =========================================================================
+
+    # Brand/entity references alone
     brand_matches = _find_pattern_matches(all_text, BRAND_PATTERNS)
     if brand_matches:
         matched_patterns.extend(brand_matches)
         evidence.append(f"Brand/entity references: {brand_matches}")
+        detection_methods.append(DetectionMethod.ENTITY_REFERENCE)
 
-        # Brand references alone are low confidence
         return CommercialClassification(
             commercial_class=CommercialClass.AMBIGUOUS,
             confidence=CommercialConfidence.LOW,
-            detection_method=DetectionMethod.ENTITY_REFERENCE,
+            detection_methods=detection_methods,
             evidence=evidence,
             matched_patterns=matched_patterns,
         )
 
-    # -----------------------------------------------------
-    # 5. Check for low-confidence promotional keywords
-    # -----------------------------------------------------
+    # Low-confidence promotional keywords
     low_matches = _find_pattern_matches(all_text, PROMO_PATTERNS_LOW)
     if len(low_matches) >= 2:
         matched_patterns.extend(low_matches)
-        evidence.append(f"Promotional keywords found: {low_matches}")
+        evidence.append(f"Promotional keywords: {low_matches}")
+        detection_methods.append(DetectionMethod.KEYWORD_HEURISTIC)
 
         return CommercialClassification(
             commercial_class=CommercialClass.AMBIGUOUS,
             confidence=CommercialConfidence.LOW,
-            detection_method=DetectionMethod.KEYWORD_HEURISTIC,
+            detection_methods=detection_methods,
             evidence=evidence,
             matched_patterns=matched_patterns,
         )
 
-    # -----------------------------------------------------
-    # 6. No promotional signals detected -> non-commercial
-    # -----------------------------------------------------
+    # =========================================================================
+    # 4. No promotional signals -> NON_COMMERCIAL
+    # =========================================================================
     evidence.append("No commercial signals detected")
+    detection_methods.append(DetectionMethod.NONE)
+
     return CommercialClassification(
         commercial_class=CommercialClass.NON_COMMERCIAL,
         confidence=CommercialConfidence.HIGH,
-        detection_method=DetectionMethod.NONE,
+        detection_methods=detection_methods,
         evidence=evidence,
         matched_patterns=matched_patterns,
     )
@@ -469,42 +591,66 @@ def classify_promo_topic(feed_item: Dict[str, Any]) -> Optional[TopicClassificat
 # Brand/Entity Extraction
 # =============================================================================
 
-# Common words and UI elements to filter out of brand extraction
+# =============================================================================
+# HARD EXCLUSIONS (Critical for accuracy)
+# Never treat these as companies or brands
+# =============================================================================
+
 BRAND_EXCLUSION_LIST = {
+    # Platform UI text from OCR (CRITICAL - these appear in every scan)
+    'HOME', 'SEARCH', 'FOLLOWING', 'FOR YOU', 'FORYOU', 'FOR_YOU',
+    'POSTS', 'PROFILE', 'EXPLORE', 'DISCOVER', 'INBOX', 'ACTIVITY',
+    'MENU', 'SETTINGS', 'MORE', 'CREATE', 'UPLOAD', 'CAMERA',
+
+    # Social media UI elements
+    'SHARE', 'LIKE', 'COMMENT', 'FOLLOW', 'FOLLOWERS', 'SUBSCRIBE',
+    'REPOST', 'QUOTE', 'REPLY', 'SEND', 'POST', 'TWEET', 'TWEETS',
+    'BOOKMARK', 'BOOKMARKS', 'MESSAGES', 'NOTIFICATIONS', 'VIEWS', 'VIEW',
+    'LIKES', 'COMMENTS', 'SHARES', 'REPOSTS', 'REPLIES', 'TRENDING',
+    'LIVE', 'STORIES', 'REELS', 'SHORTS', 'DUET', 'STITCH',
+
+    # Common video/content words
+    'VIDEO', 'PHOTO', 'IMAGE', 'NEWS', 'WATCH', 'READ', 'SHOW',
+    'CLICK', 'TAP', 'SWIPE', 'SCROLL', 'SEE', 'LINK', 'BIO', 'ABOUT',
+    'PLAY', 'PAUSE', 'MUTE', 'UNMUTE', 'VOLUME', 'FULL', 'SCREEN',
+
+    # Time-related
+    'TODAY', 'NOW', 'MINUTES', 'HOURS', 'DAYS', 'AGO', 'YESTERDAY',
+    'WEEK', 'MONTH', 'YEAR', 'JUST', 'RECENTLY',
+
+    # Generic nouns that aren't brands
+    'VIDEO', 'APP', 'SITE', 'POST', 'PAGE', 'ACCOUNT', 'USER', 'CONTENT',
+    'CREATOR', 'CHANNEL', 'STREAM', 'FEED', 'STORY', 'REEL',
+
     # Common English words
     'THE', 'AND', 'FOR', 'YOU', 'ARE', 'THIS', 'THAT', 'WITH', 'YOUR', 'HAVE',
     'WILL', 'FROM', 'THEY', 'BEEN', 'SOME', 'WHAT', 'WHEN', 'MAKE', 'LIKE',
-    'TIME', 'VERY', 'JUST', 'KNOW', 'TAKE', 'COME', 'MADE', 'LIVE', 'BACK',
-    'ONLY', 'OVER', 'SUCH', 'MORE', 'ALSO', 'INTO', 'YEAR', 'GOOD', 'NEW',
-    'NOW', 'WAY', 'MAY', 'DAY', 'TOO', 'ANY', 'GET', 'HAS', 'HIM', 'HIS',
+    'TIME', 'VERY', 'JUST', 'KNOW', 'TAKE', 'COME', 'MADE', 'BACK',
+    'ONLY', 'OVER', 'SUCH', 'MORE', 'ALSO', 'INTO', 'GOOD', 'NEW',
+    'WAY', 'MAY', 'DAY', 'TOO', 'ANY', 'GET', 'HAS', 'HIM', 'HIS',
     'HOW', 'MAN', 'OUT', 'NOT', 'BUT', 'ALL', 'CAN', 'HAD', 'HER', 'WAS',
     'ONE', 'OUR', 'SAY', 'SHE', 'USE', 'SHOP', 'FREE', 'SALE', 'BEST',
-    # Social media UI elements
-    'HOME', 'SEARCH', 'EXPLORE', 'PROFILE', 'MENU', 'SETTINGS', 'MORE',
-    'SHARE', 'LIKE', 'COMMENT', 'FOLLOW', 'FOLLOWING', 'FOLLOWERS',
-    'REPOST', 'QUOTE', 'REPLY', 'SEND', 'POST', 'POSTS', 'TWEET', 'TWEETS',
-    'BOOKMARK', 'BOOKMARKS', 'MESSAGES', 'NOTIFICATIONS', 'VIEWS', 'VIEW',
-    'LIKES', 'COMMENTS', 'SHARES', 'REPOSTS', 'REPLIES', 'TRENDING',
-    # Common content words
-    'VIDEO', 'PHOTO', 'IMAGE', 'NEWS', 'LIVE', 'WATCH', 'READ', 'SHOW',
-    'CLICK', 'TAP', 'SWIPE', 'SCROLL', 'SEE', 'LINK', 'BIO', 'ABOUT',
-    # Time-related
-    'TODAY', 'NOW', 'MINUTES', 'HOURS', 'DAYS', 'AGO', 'YESTERDAY',
-    # Numbers and short words
-    'FOR', 'THE', 'WAR', 'TOP', 'HOT', 'NEW', 'OLD', 'BIG', 'FYP',
+    'TOP', 'HOT', 'OLD', 'BIG', 'FYP',
+
+    # Promotional words (not brands)
+    'SPONSORED', 'AD', 'PROMOTED', 'ADVERTISEMENT', 'PROMO', 'DEAL',
 }
 
-# Platform domains to exclude from brand detection (not actual advertisers)
+# Platform names to exclude (NEVER treat as companies/advertisers)
 PLATFORM_DOMAIN_EXCLUSIONS = {
-    # Social media platforms
+    # Social media platforms (CRITICAL exclusions)
     'twitter', 'x', 'tiktok', 'instagram', 'youtube', 'facebook', 'meta',
     'reddit', 'snapchat', 'pinterest', 'linkedin', 'threads', 'mastodon',
-    'tumblr', 'whatsapp', 'telegram', 'discord', 'twitch',
-    # URL shorteners and link services
+    'tumblr', 'whatsapp', 'telegram', 'discord', 'twitch', 'vine',
+    'periscope', 'clubhouse', 'tiktok', 'ig', 'fb', 'yt',
+
+    # URL shorteners and link services (not actual advertisers)
     'bit', 'bitly', 'linktr', 'linktree', 'tinyurl', 'goo', 'ow', 't',
-    'lnkd', 'buff', 'rebrand', 'short', 'tiny', 'cutt',
-    # Generic/tech domains
-    'google', 'apple', 'microsoft', 'amazon', 'aws',  # only exclude if no clear product
+    'lnkd', 'buff', 'rebrand', 'short', 'tiny', 'cutt', 'is', 'ly',
+    'adf', 'shorte', 'shrinkme', 'adfly', 'linkbucks', 'ouo',
+
+    # Tech giants (exclude unless clear product context)
+    'google', 'apple', 'microsoft', 'amazon', 'aws', 'azure',
 }
 
 
@@ -565,39 +711,71 @@ def normalize_brand_name(name: str) -> str:
     return normalized
 
 
-def extract_brands(
+def _is_all_caps(text: str) -> bool:
+    """Check if text is ALL-CAPS (excluding numbers and symbols)."""
+    letters = [c for c in text if c.isalpha()]
+    if not letters:
+        return False
+    return all(c.isupper() for c in letters)
+
+
+def _has_commerce_language(text: str) -> bool:
+    """Check if text contains explicit commerce language (required for @handles)."""
+    commerce_patterns = [
+        r"use\s+(my\s+)?code",
+        r"link\s+in\s+bio",
+        r"shop\s+now",
+        r"partnered\s+with",
+        r"thanks\s+to",
+        r"\$\d+",
+        r"\d+%\s*off",
+        r"promo",
+        r"discount",
+        r"affiliate",
+    ]
+    text_lower = text.lower()
+    return any(re.search(p, text_lower) for p in commerce_patterns)
+
+
+def extract_companies(
     feed_item: Dict[str, Any],
     source_type: Optional[str] = None
 ) -> List[BrandEntity]:
     """
-    Extract brand/company entities from a feed item.
+    Extract company/brand entities from a feed item.
+
+    Gold Standard v3.0 Rules:
+    - EXCLUDE ALL-CAPS tokens (OCR noise)
+    - EXCLUDE platform names and UI words
+    - EXCLUDE URL shorteners
+    - @handles require paired commerce language
 
     Sources (in order of confidence):
     1. ad_metadata.advertiser_name (HIGH confidence)
     2. ad_metadata.advertiser_domain (HIGH confidence)
-    3. account.account_handle if promotional (MEDIUM confidence)
-    4. OCR text patterns - domains, @handles (MEDIUM for MOBILE_VIDEO, LOW otherwise)
-    5. Capitalized brand tokens from OCR (LOW confidence, conservative)
-
-    For MOBILE_VIDEO scans, advertiser metadata is often missing, so OCR-based
-    extraction is given higher confidence when patterns are clear.
+    3. OCR domain patterns with commerce context (MEDIUM for MOBILE_VIDEO)
+    4. @handles ONLY when paired with commerce language (MEDIUM confidence)
 
     Returns:
         List of BrandEntity objects, deduplicated by normalized_name
     """
-    brands = []
+    companies = []
     seen_normalized = set()
 
     ad_metadata = feed_item.get("ad_metadata") or {}
-    account = feed_item.get("account") or {}
     content_text = feed_item.get("content_text") or {}
 
-    # 1. Advertiser name from ad metadata
+    # Get all text for commerce language check
+    all_text = _extract_all_text(content_text)
+    has_commerce = _has_commerce_language(all_text)
+
+    # 1. Advertiser name from ad metadata (HIGH confidence - always trust)
     advertiser_name = ad_metadata.get("advertiser_name")
     if advertiser_name:
+        # Don't filter advertiser metadata - it's from the platform
         normalized = normalize_brand_name(advertiser_name)
         if normalized and normalized not in seen_normalized:
-            brands.append(BrandEntity(
+            companies.append(BrandEntity(
                 name=advertiser_name,
                 normalized_name=normalized,
                 source="ad_metadata",
@@ -605,12 +783,12 @@ def extract_brands(
             ))
             seen_normalized.add(normalized)
 
-    # 2. Advertiser domain
+    # 2. Advertiser domain (HIGH confidence)
     advertiser_domain = ad_metadata.get("advertiser_domain")
     if advertiser_domain:
         normalized = normalize_brand_name(advertiser_domain)
         if normalized and normalized not in seen_normalized:
-            brands.append(BrandEntity(
+            companies.append(BrandEntity(
                 name=advertiser_domain,
                 normalized_name=normalized,
                 source="ad_metadata",
@@ -618,73 +796,77 @@ def extract_brands(
             ))
             seen_normalized.add(normalized)
 
-    # 3. Account handle (only if this is a promotional item)
-    is_promotional = feed_item.get("is_ad", False)
-    account_handle = account.get("account_handle")
-    if is_promotional and account_handle:
-        normalized = normalize_brand_name(account_handle)
-        if normalized and normalized not in seen_normalized:
-            brands.append(BrandEntity(
-                name=account_handle,
-                normalized_name=normalized,
-                source="handle",
-                confidence=CommercialConfidence.MEDIUM,
-            ))
-            seen_normalized.add(normalized)
-
-    # 4. Extract from text patterns (enhanced for MOBILE_VIDEO)
-    all_text = _extract_all_text(content_text)
+    # 3. Extract from OCR text patterns (stricter for accuracy)
     is_mobile_video = source_type == "MOBILE_VIDEO"
+    ocr_confidence = CommercialConfidence.MEDIUM if is_mobile_video else CommercialConfidence.LOW
 
-    # For MOBILE_VIDEO, OCR-derived brands are MEDIUM confidence when clear patterns match
-    ocr_brand_confidence = CommercialConfidence.MEDIUM if is_mobile_video else CommercialConfidence.LOW
-
-    # 4a. Find domain patterns (brand.com, brand.co, brand.io)
+    # 3a. Find domain patterns (brand.com, brand.co, brand.io)
     domain_pattern = re.compile(r'\b([a-zA-Z][a-zA-Z0-9-]{2,20})\.(com|co|io|net|org|app|shop)\b', re.IGNORECASE)
     domain_matches = domain_pattern.findall(all_text)
+
     for match in domain_matches:
-        brand_name = match[0]  # Just the brand part, not the TLD
+        brand_name = match[0]
         brand_lower = brand_name.lower()
+
+        # HARD EXCLUSION: ALL-CAPS tokens
+        if _is_all_caps(brand_name) and len(brand_name) > 2:
+            continue
+
         # Filter out common UI words
         if brand_name.upper() in BRAND_EXCLUSION_LIST:
             continue
-        # Filter out platform domains (twitter.com, tiktok.com, bit.ly, etc.)
+
+        # Filter out platform domains
         if brand_lower in PLATFORM_DOMAIN_EXCLUSIONS:
             continue
+
         normalized = normalize_brand_name(brand_name)
         if normalized and len(normalized) >= 3 and normalized not in seen_normalized:
-            brands.append(BrandEntity(
+            companies.append(BrandEntity(
                 name=f"{brand_name}.{match[1]}",
                 normalized_name=normalized,
                 source="ocr_text",
-                confidence=ocr_brand_confidence,
+                confidence=ocr_confidence,
             ))
             seen_normalized.add(normalized)
 
-    # 4b. Find @mentions that look like brands
-    at_mentions = re.findall(r"@([a-zA-Z][a-zA-Z0-9_]{2,20})", all_text)
-    for mention in at_mentions:
-        # Filter out common UI words
-        if mention.upper() in BRAND_EXCLUSION_LIST:
-            continue
-        normalized = normalize_brand_name(mention)
-        if normalized and normalized not in seen_normalized:
-            brands.append(BrandEntity(
-                name=f"@{mention}",
-                normalized_name=normalized,
-                source="ocr_text",
-                confidence=ocr_brand_confidence,
-            ))
-            seen_normalized.add(normalized)
+    # 3b. @handles ONLY when paired with explicit commerce language
+    # Per spec: "Handles alone (@username) unless paired with explicit commerce language"
+    if has_commerce:
+        at_mentions = re.findall(r"@([a-zA-Z][a-zA-Z0-9_]{2,20})", all_text)
+        for mention in at_mentions:
+            # HARD EXCLUSION: ALL-CAPS handles
+            if _is_all_caps(mention):
+                continue
 
-    # 4c. For MOBILE_VIDEO with promotional content, extract capitalized brand tokens
-    # This is VERY conservative: only clear brand patterns, filter out UI elements
-    # DISABLED for now - too many false positives from UI elements
-    # The advertiser metadata is the primary source; OCR-based brand extraction is unreliable
-    # if is_mobile_video and is_promotional:
-    #     pass  # Disabled - UI elements like HOME, SEARCH, EXPLORE are not brands
+            # Filter out common UI words
+            if mention.upper() in BRAND_EXCLUSION_LIST:
+                continue
 
-    return brands
+            # Filter out platform names
+            if mention.lower() in PLATFORM_DOMAIN_EXCLUSIONS:
+                continue
+
+            normalized = normalize_brand_name(mention)
+            if normalized and len(normalized) >= 3 and normalized not in seen_normalized:
+                companies.append(BrandEntity(
+                    name=f"@{mention}",
+                    normalized_name=normalized,
+                    source="ocr_text",
+                    confidence=ocr_confidence,
+                ))
+                seen_normalized.add(normalized)
+
+    return companies
+
+
+# Keep old function name as alias for backward compatibility
+def extract_brands(
+    feed_item: Dict[str, Any],
+    source_type: Optional[str] = None
+) -> List[BrandEntity]:
+    """Alias for extract_companies (backward compatibility)."""
+    return extract_companies(feed_item, source_type)
 
 
 # =============================================================================
@@ -787,41 +969,46 @@ class TopicAggregation:
 
 
 @dataclass
-class BrandAggregation:
-    """Aggregated brand/entity presence data."""
-    brands: Dict[str, int] = field(default_factory=dict)
-    brand_confidences: Dict[str, Dict[str, int]] = field(default_factory=dict)
-    brand_original_names: Dict[str, str] = field(default_factory=dict)
+class CompanyAggregation:
+    """Aggregated company/brand entity presence data (renamed from BrandAggregation)."""
+    companies: Dict[str, int] = field(default_factory=dict)
+    company_confidences: Dict[str, Dict[str, int]] = field(default_factory=dict)
+    company_original_names: Dict[str, str] = field(default_factory=dict)
 
-    # Thresholds
+    # Thresholds per spec: count >= 2 AND high_confidence >= 1
     MIN_COUNT_TO_SURFACE: int = 2
 
-    def add_brand(self, brand: BrandEntity):
-        """Add a brand to aggregation."""
-        key = brand.normalized_name
-        self.brands[key] = self.brands.get(key, 0) + 1
+    def add_company(self, entity: BrandEntity):
+        """Add a company/brand entity to aggregation."""
+        key = entity.normalized_name
+        self.companies[key] = self.companies.get(key, 0) + 1
 
         # Store the best (highest confidence) original name
-        if key not in self.brand_original_names:
-            self.brand_original_names[key] = brand.name
-        elif brand.confidence == CommercialConfidence.HIGH:
-            self.brand_original_names[key] = brand.name
+        if key not in self.company_original_names:
+            self.company_original_names[key] = entity.name
+        elif entity.confidence == CommercialConfidence.HIGH:
+            self.company_original_names[key] = entity.name
 
-        if key not in self.brand_confidences:
-            self.brand_confidences[key] = {"high": 0, "medium": 0, "low": 0}
-        self.brand_confidences[key][brand.confidence.value] += 1
+        if key not in self.company_confidences:
+            self.company_confidences[key] = {"high": 0, "medium": 0, "low": 0}
+        self.company_confidences[key][entity.confidence.value] += 1
+
+    # Backward compatibility alias
+    def add_brand(self, brand: BrandEntity):
+        """Alias for add_company (backward compatibility)."""
+        self.add_company(brand)
 
     def to_dict(self) -> Dict[str, Any]:
-        # Only surface brands that meet STRICT threshold:
+        # Only surface companies that meet STRICT threshold:
         # count >= 2 AND high_confidence >= 1
         surfaced = []
         below_threshold = []
         no_high_confidence = []
 
-        for normalized, count in sorted(self.brands.items(), key=lambda x: -x[1]):
-            conf = self.brand_confidences.get(normalized, {})
+        for normalized, count in sorted(self.companies.items(), key=lambda x: -x[1]):
+            conf = self.company_confidences.get(normalized, {})
             high_count = conf.get("high", 0)
-            display_name = self.brand_original_names.get(normalized, normalized)
+            display_name = self.company_original_names.get(normalized, normalized)
 
             entry = {
                 "name": display_name,
@@ -841,10 +1028,14 @@ class BrandAggregation:
                 no_high_confidence.append(entry)
 
         return {
+            # Use "companies" terminology per spec
+            "surfaced_companies": surfaced,
+            # Also include as "surfaced_brands" for backward compatibility
             "surfaced_brands": surfaced,
             "below_threshold_count": len(below_threshold),
             "no_high_confidence_count": len(no_high_confidence),
-            "total_unique_brands": len(self.brands),
+            "total_unique_companies": len(self.companies),
+            "total_unique_brands": len(self.companies),  # backward compat
             "threshold_rule": f"count >= {self.MIN_COUNT_TO_SURFACE} AND high_confidence >= 1",
             "exclusion_reasons": {
                 "below_count_threshold": len(below_threshold),
@@ -853,23 +1044,35 @@ class BrandAggregation:
         }
 
 
+# Backward compatibility alias
+BrandAggregation = CompanyAggregation
+
+
 @dataclass
 class CommercialAnalysisResult:
     """Complete commercial analysis result for a scan."""
     exposure_spectrum: CommercialExposureSpectrum
     topic_aggregation: TopicAggregation
-    brand_aggregation: BrandAggregation
+    company_aggregation: CompanyAggregation
     item_classifications: List[Dict[str, Any]]
 
     # Validity
     is_valid_for_display: bool = True
     validity_reason: Optional[str] = None
 
+    # Backward compatibility property
+    @property
+    def brand_aggregation(self) -> CompanyAggregation:
+        """Backward compatibility alias for company_aggregation."""
+        return self.company_aggregation
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "exposure_spectrum": self.exposure_spectrum.to_dict(),
             "topic_aggregation": self.topic_aggregation.to_dict(),
-            "brand_aggregation": self.brand_aggregation.to_dict(),
+            # Output both for backward compat
+            "company_aggregation": self.company_aggregation.to_dict(),
+            "brand_aggregation": self.company_aggregation.to_dict(),
             "validity": {
                 "is_valid": self.is_valid_for_display,
                 "reason": self.validity_reason,
@@ -884,7 +1087,7 @@ def analyze_commercial_content(
     """
     Perform complete commercial content analysis on feed items.
 
-    This is the main entry point for commercial classification.
+    This is the main entry point for commercial classification (Gold Standard v3.0).
 
     Args:
         feed_items: List of FeedItem dicts from a scan
@@ -896,7 +1099,7 @@ def analyze_commercial_content(
     """
     exposure = CommercialExposureSpectrum()
     topics = TopicAggregation()
-    brands = BrandAggregation()
+    companies = CompanyAggregation()
     classifications = []
 
     exposure.total_items = len(feed_items)
@@ -925,7 +1128,7 @@ def analyze_commercial_content(
         else:
             exposure.ambiguous += 1
 
-        # Topic classification (only for promotional content)
+        # Topic classification (only for promotional content - PROMO ONLY per spec)
         if classification.commercial_class in [
             CommercialClass.LABELED_AD,
             CommercialClass.UNLABELED_PROMOTION
@@ -934,10 +1137,10 @@ def analyze_commercial_content(
             if topic:
                 topics.add_topic(topic.topic, topic.confidence)
 
-            # Brand extraction (pass source_type for MOBILE_VIDEO awareness)
-            item_brands = extract_brands(item, source_type=source_type)
-            for brand in item_brands:
-                brands.add_brand(brand)
+            # Company extraction (PROMO ONLY per spec)
+            item_companies = extract_companies(item, source_type=source_type)
+            for company in item_companies:
+                companies.add_company(company)
 
     # ==========================================================================
     # SANITY CHECK: stacked_bar.total must equal high_confidence_items
@@ -962,7 +1165,7 @@ def analyze_commercial_content(
     return CommercialAnalysisResult(
         exposure_spectrum=exposure,
         topic_aggregation=topics,
-        brand_aggregation=brands,
+        company_aggregation=companies,
         item_classifications=classifications,
         is_valid_for_display=is_valid,
         validity_reason=validity_reason,

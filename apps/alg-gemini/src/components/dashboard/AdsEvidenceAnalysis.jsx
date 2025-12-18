@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, CheckCircle2, Info, ChevronDown, Bug, Database, Shield } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Info, ChevronDown, Bug, Database, Shield, TrendingUp, Tag, Building2 } from 'lucide-react';
 import { useAdsEvidenceBundle, checkEvidenceBundleQuality } from '../../hooks/useEvidenceBundle';
+import StackedBar100 from './charts/StackedBar100';
 
 /**
  * AdsEvidenceAnalysis - Renders analysis copy for the Ads & Influence tab
@@ -86,6 +87,173 @@ const InsightCard = ({ title, analysis, citedFields }) => {
   );
 };
 
+// Commercial Exposure Spectrum - 100% stacked bar with 3 categories
+const CommercialExposureSpectrum = ({ observations }) => {
+  const spectrum = observations?.commercial_exposure_spectrum;
+  if (!spectrum?.stacked_bar) return null;
+
+  const { stacked_bar, excluded, coverage_percent, high_confidence_items, total_items } = spectrum;
+
+  // Build segments for StackedBar100
+  const segments = [
+    {
+      label: 'Non-Commercial',
+      value: stacked_bar.non_commercial,
+      color: '#10B981', // green
+    },
+    {
+      label: 'Labeled Ads',
+      value: stacked_bar.labeled_ads,
+      color: '#F59E0B', // amber
+    },
+    {
+      label: 'Unlabeled Promotion',
+      value: stacked_bar.unlabeled_promotion,
+      color: '#EF4444', // red
+    },
+  ].filter(s => s.value > 0);
+
+  // If no data, show empty state
+  if (segments.length === 0 || stacked_bar.total === 0) {
+    return (
+      <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
+        <div className="flex items-center gap-2 mb-3">
+          <TrendingUp size={18} className="text-slate-500" />
+          <h4 className="text-sm font-semibold text-slate-700">Commercial Exposure</h4>
+        </div>
+        <p className="text-sm text-slate-500 italic">No high-confidence classifications available.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="flex items-center gap-2">
+          <TrendingUp size={18} className="text-emerald-600" />
+          <h4 className="text-sm font-semibold text-slate-700">Commercial Exposure Spectrum</h4>
+        </div>
+        <span className="text-xs text-slate-400">
+          {high_confidence_items} of {total_items} posts ({coverage_percent}% coverage)
+        </span>
+      </div>
+
+      <StackedBar100 segments={segments} showLegend={true} />
+
+      {/* Excluded items note */}
+      {(excluded?.ambiguous > 0 || excluded?.unlabeled_promotion_medium_confidence > 0) && (
+        <div className="mt-3 pt-3 border-t border-slate-100">
+          <p className="text-xs text-slate-400">
+            Excluded from chart: {excluded.ambiguous || 0} ambiguous,{' '}
+            {excluded.unlabeled_promotion_medium_confidence || 0} medium-confidence
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Promotion Topics section
+const PromotionTopics = ({ measurements }) => {
+  const topicsData = measurements?.promotion_topics;
+  if (!topicsData) return null;
+
+  const { value, quality, threshold_rule, detected_but_excluded_count, notes } = topicsData;
+  const topics = Array.isArray(value) ? value : [];
+
+  // Format topic names for display
+  const formatTopic = (topic) => topic.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+  return (
+    <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="flex items-center gap-2">
+          <Tag size={18} className="text-purple-600" />
+          <h4 className="text-sm font-semibold text-slate-700">Promotion Topics</h4>
+        </div>
+        <span className={`text-xs px-2 py-0.5 rounded-full ${
+          quality === 'ok' ? 'bg-green-100 text-green-700' :
+          quality === 'not_applicable' ? 'bg-slate-100 text-slate-600' :
+          'bg-amber-100 text-amber-700'
+        }`}>
+          {quality === 'ok' ? 'Data available' :
+           quality === 'not_applicable' ? 'N/A' :
+           'Insufficient signal'}
+        </span>
+      </div>
+
+      {topics.length > 0 ? (
+        <div className="flex flex-wrap gap-2">
+          {topics.map((topic, i) => (
+            <span
+              key={i}
+              className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium"
+            >
+              {formatTopic(topic)}
+            </span>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-slate-500 italic">
+          {quality === 'not_applicable'
+            ? 'No promotional content detected.'
+            : detected_but_excluded_count > 0
+            ? `${detected_but_excluded_count} topics detected but did not meet threshold (${threshold_rule}).`
+            : 'No topics could be determined.'}
+        </p>
+      )}
+
+      {threshold_rule && topics.length > 0 && (
+        <p className="mt-3 text-xs text-slate-400">
+          Threshold: {threshold_rule}
+          {detected_but_excluded_count > 0 && `, ${detected_but_excluded_count} excluded`}
+        </p>
+      )}
+    </div>
+  );
+};
+
+// Top Companies section
+const TopCompanies = ({ observations }) => {
+  const companies = observations?.top_companies || [];
+  const note = observations?.top_companies_note;
+  const uniqueCount = observations?.unique_companies_surfaced || 0;
+
+  return (
+    <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="flex items-center gap-2">
+          <Building2 size={18} className="text-blue-600" />
+          <h4 className="text-sm font-semibold text-slate-700">Top Companies</h4>
+        </div>
+        {uniqueCount > 0 && (
+          <span className="text-xs text-slate-400">{uniqueCount} surfaced</span>
+        )}
+      </div>
+
+      {companies.length > 0 ? (
+        <div className="space-y-2">
+          {companies.map((company, i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between px-3 py-2 bg-blue-50 rounded-lg"
+            >
+              <span className="text-sm font-medium text-blue-800">{company.name}</span>
+              <span className="text-xs text-blue-600">
+                {company.count}× ({company.high_confidence} verified)
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-slate-500 italic">
+          {note || 'No companies met the surfacing threshold.'}
+        </p>
+      )}
+    </div>
+  );
+};
+
 // Main component
 const AdsEvidenceAnalysis = ({ scanId }) => {
   const { bundle, analysis, loading, error, debugInfo } = useAdsEvidenceBundle(scanId);
@@ -164,9 +332,18 @@ const AdsEvidenceAnalysis = ({ scanId }) => {
         </div>
       )}
 
+      {/* Commercial Exposure Spectrum - Primary visualization */}
+      <CommercialExposureSpectrum observations={bundle.observations} />
+
+      {/* Two-column grid for Topics and Companies */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <PromotionTopics measurements={bundle.measurements} />
+        <TopCompanies observations={bundle.observations} />
+      </div>
+
       {/* Analysis insights */}
-      <div className="grid gap-4">
-        {/* Primary insight - Commercial Exposure Spectrum */}
+      <div className="grid gap-4 mt-4">
+        {/* Primary insight - Summary text */}
         {analysis.primary_insight && (
           <InsightCard
             title="Commercial exposure in your feed"
@@ -175,25 +352,7 @@ const AdsEvidenceAnalysis = ({ scanId }) => {
           />
         )}
 
-        {/* Topic insight - What kinds of things are being promoted */}
-        {analysis.topic_insight && (
-          <InsightCard
-            title="Promotion topics"
-            analysis={analysis.topic_insight}
-            citedFields={analysis.topic_insight.cited_fields}
-          />
-        )}
-
-        {/* Concentration insight - Brand/Advertiser presence */}
-        {analysis.concentration_insight && (
-          <InsightCard
-            title="Brand presence"
-            analysis={analysis.concentration_insight}
-            citedFields={analysis.concentration_insight.cited_fields}
-          />
-        )}
-
-        {/* Unlabeled promo insight */}
+        {/* Unlabeled promo insight - Important for disclosure compliance */}
         {analysis.unlabeled_promo_insight && (
           <InsightCard
             title="Unlabeled promotions"
