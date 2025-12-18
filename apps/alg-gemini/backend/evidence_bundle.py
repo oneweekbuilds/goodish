@@ -33,6 +33,12 @@ from commercial_classifier import (
     CommercialConfidence,
     CommercialAnalysisResult,
 )
+from promo_signals import (
+    extract_promo_signals,
+    batch_extract_promo_signals,
+    get_promo_evidence_summary,
+    PromoConfidence,
+)
 
 
 def build_ads_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
@@ -252,6 +258,48 @@ def _build_observations(
     # Total promotional content (labeled + unlabeled high confidence)
     total_promotional = spectrum.labeled_ads + spectrum.unlabeled_promotion_high
     observations["total_promotional_content"] = total_promotional
+
+    # ==========================================================================
+    # Promo Signals with Evidence (NEW: deterministic signal extraction)
+    # Uses promo_signals.py for explicit evidence snippets
+    # ==========================================================================
+    promo_analysis = batch_extract_promo_signals(feed_items)
+    promo_summary = promo_analysis["summary"]
+
+    # Store promo signals summary
+    observations["promo_signals"] = {
+        "n_high_confidence": promo_summary["n_high_confidence"],
+        "n_medium_confidence": promo_summary["n_medium_confidence"],
+        "n_low_confidence": promo_summary["n_low_confidence"],
+        "n_unlabeled_promo": promo_summary["n_unlabeled_promo"],
+        "signal_types_detected": list(promo_summary["signal_type_counts"].keys()),
+        "signal_type_counts": promo_summary["signal_type_counts"],
+    }
+
+    # Build evidence list for unlabeled promo items (HIGH confidence only)
+    unlabeled_promo_evidence = []
+    for i, item in enumerate(feed_items):
+        # Skip labeled ads - we only want unlabeled promos
+        if item.get("is_ad", False):
+            continue
+
+        promo_result = promo_analysis["extractions"][i]
+        if promo_result["is_unlabeled_promo"] and promo_result["signals"]:
+            evidence_item = {
+                "item_position": item.get("position_in_feed", i),
+                "confidence": promo_result["confidence"],
+                "signal_types": promo_result["signal_types"],
+                "evidence_snippets": [
+                    {"type": s["type"], "evidence": s["evidence"]}
+                    for s in promo_result["signals"][:3]  # Max 3 snippets per item
+                ],
+            }
+            unlabeled_promo_evidence.append(evidence_item)
+
+    # Store evidence for unlabeled promos (limit to first 10 for brevity)
+    if unlabeled_promo_evidence:
+        observations["unlabeled_promo_evidence"] = unlabeled_promo_evidence[:10]
+        observations["unlabeled_promo_evidence_count"] = len(unlabeled_promo_evidence)
 
     # OCR extraction metrics (for MOBILE_VIDEO scans)
     # Count items with non-empty OCR text
