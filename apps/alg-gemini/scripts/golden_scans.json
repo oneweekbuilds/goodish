@@ -1,15 +1,17 @@
 {
-  "description": "Golden Scan Pack for regression testing - real scan IDs from local database",
-  "version": "1.0.0",
+  "description": "Golden Scan Pack for AlgorithmLens Evidence Bundle verification. Contains only supported platforms (Instagram, X/Twitter, YouTube, TikTok). Facebook NOT supported yet.",
+  "version": "2.0.0",
   "generated": "2024-12-18",
+  "platforms_supported": ["INSTAGRAM", "TWITTER", "X", "YOUTUBE", "TIKTOK"],
+  "platforms_not_supported": ["FACEBOOK"],
   "scans": [
     {
-      "scan_id": "desktop-1764543645374-b801c1j",
+      "scan_id": "desktop-1764455612626-3o417ax",
       "source_type": "DESKTOP",
-      "platform": "FACEBOOK",
-      "total_items": 90,
-      "total_ads": 12,
-      "note": "Desktop Facebook scan with 12 detected ads"
+      "platform": "TWITTER",
+      "total_items": 30,
+      "total_ads": 0,
+      "note": "Desktop Twitter scan with good item count"
     },
     {
       "scan_id": "desktop-1764543221023-qmro3dm",
@@ -25,7 +27,7 @@
       "platform": "X",
       "total_items": 103,
       "total_ads": 38,
-      "note": "Mobile video X scan with high ad percentage (37%)"
+      "note": "Mobile video X scan with high ad percentage (37%) and OCR text"
     },
     {
       "scan_id": "e6815472-239e-465b-98f3-122b7f824ed0",
@@ -36,20 +38,20 @@
       "note": "Mobile video Instagram scan without detected ads"
     },
     {
-      "scan_id": "desktop-1764523078650-9go57xd",
-      "source_type": "DESKTOP",
-      "platform": "FACEBOOK",
-      "total_items": 2,
+      "scan_id": "d0592cab-2e4a-4080-a4d0-bf494c653888",
+      "source_type": "MOBILE_VIDEO",
+      "platform": "X",
+      "total_items": 103,
       "total_ads": 0,
-      "note": "Edge case: minimal item count (2 items)"
+      "note": "Mobile video X scan (additional coverage)"
     },
     {
-      "scan_id": "b36ea3fa-729c-4a4b-877c-23bf98dbb5f1",
-      "source_type": "MOBILE_VIDEO",
-      "platform": "FACEBOOK",
-      "total_items": 77,
+      "scan_id": "desktop-1764434417031-vlysfj4",
+      "source_type": "DESKTOP",
+      "platform": "INSTAGRAM",
+      "total_items": 5,
       "total_ads": 0,
-      "note": "Mobile video Facebook scan for platform coverage"
+      "note": "Edge case: minimal item count (5 items) for low-sample testing"
     }
   ]
 }
