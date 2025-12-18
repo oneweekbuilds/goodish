@@ -58,7 +58,7 @@ def build_creators_evidence_bundle(
     meta = _build_meta(scan_metadata, aggregates, feed_items, extraction_result)
     observations = _build_observations(aggregates, feed_items, extraction_result)
     measurements = _build_measurements(aggregates, feed_items, extraction_result)
-    limits = _build_limits(scan_metadata, aggregates, feed_items, extraction_result)
+    limits = _build_limits(scan_metadata, aggregates, feed_items, extraction_result, feature_collection)
 
     return {
         "meta": meta,
@@ -303,7 +303,8 @@ def _build_limits(
     scan_metadata: Dict[str, Any],
     aggregates: Dict[str, Any],
     feed_items: List[Dict[str, Any]],
-    extraction_result: Dict[str, Any]
+    extraction_result: Dict[str, Any],
+    feature_collection: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """Build the limits section."""
     limits = {}
@@ -340,13 +341,35 @@ def _build_limits(
         summary = extraction_result.get("summary", {})
         extraction_rate = summary.get("extraction_rate_percent", 0)
 
-        limits["detection_limitations"] = [
+        detection_limits = [
             "Creator identification uses OCR-based @handle extraction from video frames.",
             "OCR accuracy varies with video quality, font size, and screen contrast.",
             f"Creators were identified for {extraction_rate}% of items in this scan.",
             "Some creators may not be identified if @handles are not visible in frames.",
             "Verification status is not available for OCR-extracted creators.",
         ]
+
+        # Vision cue detection for creator handles (Prompt 4)
+        if feature_collection:
+            vision_coverage = feature_collection.get("coverage", {}).get("vision", {})
+            vision_cue_counts = vision_coverage.get("vision_cue_type_counts", {})
+            creator_handle_count = vision_cue_counts.get("creator_handle_visual", 0)
+            ocr_coverage_pct = vision_coverage.get("ocr_coverage_percent", 0)
+
+            if creator_handle_count > 0:
+                detection_limits.append(
+                    f"Detected {creator_handle_count} @handle mention(s) in on-screen text."
+                )
+            elif ocr_coverage_pct > 0:
+                detection_limits.append(
+                    "No @handles detected in on-screen text (handles may not be visible in captured frames)."
+                )
+            elif ocr_coverage_pct == 0:
+                detection_limits.append(
+                    "On-screen text not available. @handles in video overlays could not be analyzed."
+                )
+
+        limits["detection_limitations"] = detection_limits
     else:
         limits["detection_limitations"] = [
             "Creator identification relies on account metadata which may be incomplete.",

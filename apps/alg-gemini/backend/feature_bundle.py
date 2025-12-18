@@ -30,6 +30,7 @@ from typing import Dict, Any, List, Optional
 from urllib.parse import urlparse, urlunparse
 
 from text_signals import extract_text_signals
+from vision_signals import detect_vision_cues, get_vision_cue_summary
 
 
 # Schema version for FeatureBundle format
@@ -180,13 +181,14 @@ def _extract_vision_features(
     Extract vision features from available OCR/metadata.
 
     This does NOT run new OCR - only uses existing stored OCR fields.
+    Now includes vision cue detection from OCR text.
 
     Args:
         item: The feed item dict
         text_signals_result: Result from extract_text_signals()
 
     Returns:
-        Vision features dict
+        Vision features dict with ocr_text, vision_cues, and metadata
     """
     content_text = item.get("content_text", {}) or {}
     source_details = item.get("source_details", {}) or {}
@@ -205,6 +207,24 @@ def _extract_vision_features(
     # Get on_screen_labels directly for raw access
     on_screen_labels = content_text.get("on_screen_labels", [])
 
+    # Build ROI texts dict if available (for location hints)
+    roi_texts = None
+    roi_info = ocr_metadata.get("roi_texts")
+    if roi_info and isinstance(roi_info, dict):
+        roi_texts = roi_info
+
+    # Detect vision cues from OCR text
+    vision_cues = []
+    vision_cue_summary = None
+    if ocr_text:
+        vision_cues = detect_vision_cues(ocr_text, roi_texts)
+        if vision_cues:
+            # Build summary for quick access
+            vision_cue_summary = get_vision_cue_summary([
+                {"cue_type": c["cue_type"], "matched_term": c["matched_term"]}
+                for c in vision_cues
+            ])
+
     return {
         "ocr_text": ocr_text,
         "ocr_text_available": ocr_text is not None and len(ocr_text) > 0,
@@ -214,6 +234,10 @@ def _extract_vision_features(
         "ocr_method": ocr_metadata.get("ocr_method"),
         "thumbnail_url": item.get("thumbnail_url"),
         "has_thumbnail": bool(item.get("thumbnail_url")),
+        # Vision cue detection (Prompt 4)
+        "vision_cues": vision_cues,
+        "vision_cue_summary": vision_cue_summary,
+        "has_vision_cues": len(vision_cues) > 0,
     }
 
 
@@ -519,6 +543,22 @@ def build_feature_bundle_collection(
     # OCR coverage
     n_with_ocr = sum(1 for fb in items if fb["vision_features"].get("ocr_text_available", False))
 
+    # Vision cue detection summary (Prompt 4)
+    n_with_vision_cues = sum(1 for fb in items if fb["vision_features"].get("has_vision_cues", False))
+    vision_cue_type_counts = {
+        "disclosure_ad": 0,
+        "promo_cta": 0,
+        "political_visual": 0,
+        "creator_handle_visual": 0,
+        "commerce_brand_hint": 0,
+    }
+    for fb in items:
+        vision_cues = fb.get("vision_features", {}).get("vision_cues", [])
+        for cue in vision_cues:
+            cue_type = cue.get("cue_type")
+            if cue_type in vision_cue_type_counts:
+                vision_cue_type_counts[cue_type] += 1
+
     coverage = {
         "text": {
             "n_items_with_text": n_with_text,
@@ -529,6 +569,10 @@ def build_feature_bundle_collection(
             "n_items_with_ocr": n_with_ocr,
             "coverage_percent": round(n_with_vision / n_items * 100, 1) if n_items > 0 else 0,
             "ocr_coverage_percent": round(n_with_ocr / n_items * 100, 1) if n_items > 0 else 0,
+            # Vision cue detection (Prompt 4)
+            "n_items_with_vision_cues": n_with_vision_cues,
+            "vision_cue_type_counts": vision_cue_type_counts,
+            "vision_cues_detected": n_with_vision_cues > 0,
         },
         "audio": {
             "n_items_with_audio_possible": n_with_audio_possible,

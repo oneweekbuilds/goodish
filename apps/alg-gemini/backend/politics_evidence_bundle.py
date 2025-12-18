@@ -57,7 +57,7 @@ def build_politics_evidence_bundle(
     meta = _build_meta(scan_metadata, aggregates, feed_items)
     observations = _build_observations(aggregates, feed_items)
     measurements = _build_measurements(aggregates, feed_items)
-    limits = _build_limits(scan_metadata, aggregates, feed_items)
+    limits = _build_limits(scan_metadata, aggregates, feed_items, feature_collection)
 
     return {
         "meta": meta,
@@ -263,7 +263,8 @@ def _build_measurements(
 def _build_limits(
     scan_metadata: Dict[str, Any],
     aggregates: Dict[str, Any],
-    feed_items: List[Dict[str, Any]]
+    feed_items: List[Dict[str, Any]],
+    feature_collection: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """
     Build the limits section describing what is missing or uncertain.
@@ -272,6 +273,7 @@ def _build_limits(
     """
     limits = {}
     n_items = len(feed_items)
+    source_type = scan_metadata.get("source_type")
 
     # Sample size limitations
     if n_items < 10:
@@ -298,17 +300,58 @@ def _build_limits(
     ]
 
     # Detection limitations
-    limits["detection_limitations"] = [
+    detection_limits = [
         "Keyword matching may miss nuanced political content.",
         "Content categorization is based on explicit signals, not interpretation.",
         "Hashtag analysis reflects creator labeling, not content substance.",
     ]
 
+    # Vision cue detection for political signals (Prompt 4)
+    if feature_collection:
+        vision_coverage = feature_collection.get("coverage", {}).get("vision", {})
+        vision_cue_counts = vision_coverage.get("vision_cue_type_counts", {})
+        political_visual_count = vision_cue_counts.get("political_visual", 0)
+        ocr_coverage_pct = vision_coverage.get("ocr_coverage_percent", 0)
+
+        if source_type == "MOBILE_VIDEO":
+            if ocr_coverage_pct > 0 and political_visual_count > 0:
+                detection_limits.append(
+                    f"Detected {political_visual_count} political keyword(s) in on-screen text."
+                )
+            elif ocr_coverage_pct == 0:
+                detection_limits.append(
+                    "On-screen text not available. Political keywords in video overlays could not be analyzed."
+                )
+            elif ocr_coverage_pct < 50:
+                detection_limits.append(
+                    f"On-screen text available for only {ocr_coverage_pct:.0f}% of items. "
+                    "Political visual cues may be incomplete."
+                )
+
+    limits["detection_limitations"] = detection_limits
+
     # Coverage/exclusions
-    limits["coverage_notes"] = [
+    coverage_notes = [
         "Analysis covers only content captured in this scan.",
-        "Visual political content (images, video) is not analyzed for political signals.",
     ]
+
+    if source_type == "MOBILE_VIDEO" and feature_collection:
+        vision_coverage = feature_collection.get("coverage", {}).get("vision", {})
+        ocr_coverage_pct = vision_coverage.get("ocr_coverage_percent", 0)
+        if ocr_coverage_pct > 0:
+            coverage_notes.append(
+                f"Political signals from on-screen text analyzed for {ocr_coverage_pct:.0f}% of items."
+            )
+        else:
+            coverage_notes.append(
+                "Visual political content in video overlays was not analyzed (no OCR text extracted)."
+            )
+    else:
+        coverage_notes.append(
+            "Visual political content (images, video overlays) is not analyzed for political signals."
+        )
+
+    limits["coverage_notes"] = coverage_notes
 
     return limits
 

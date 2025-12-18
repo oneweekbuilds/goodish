@@ -804,6 +804,61 @@ def _build_limits(
     limits["ocr_extraction_limitations"] = ocr_limitations
 
     # ==========================================================================
+    # Vision Cue Analysis Limitations (Prompt 4)
+    # ==========================================================================
+    vision_limitations = []
+    vision_cues_detected = False
+
+    if feature_collection:
+        vision_coverage = feature_collection.get("coverage", {}).get("vision", {})
+        n_with_ocr = vision_coverage.get("n_items_with_ocr", 0)
+        n_with_vision_cues = vision_coverage.get("n_items_with_vision_cues", 0)
+        vision_cues_detected = vision_coverage.get("vision_cues_detected", False)
+        vision_cue_counts = vision_coverage.get("vision_cue_type_counts", {})
+
+        if source_type == "MOBILE_VIDEO":
+            ocr_coverage_pct = vision_coverage.get("ocr_coverage_percent", 0)
+
+            if ocr_coverage_pct == 0:
+                vision_limitations.append(
+                    "On-screen text could not be extracted for any items. "
+                    "Visual disclosure cues (Ad, Sponsored) could not be analyzed."
+                )
+            elif ocr_coverage_pct < 50:
+                vision_limitations.append(
+                    f"On-screen text available for only {ocr_coverage_pct:.0f}% of items. "
+                    "Visual cue detection may be incomplete."
+                )
+
+            if vision_cues_detected:
+                disclosure_count = vision_cue_counts.get("disclosure_ad", 0)
+                promo_count = vision_cue_counts.get("promo_cta", 0)
+                if disclosure_count > 0:
+                    vision_limitations.append(
+                        f"Detected {disclosure_count} disclosure cue(s) in on-screen text."
+                    )
+                if promo_count > 0:
+                    vision_limitations.append(
+                        f"Detected {promo_count} promotional CTA(s) in on-screen text."
+                    )
+            else:
+                if n_with_ocr > 0:
+                    vision_limitations.append(
+                        "No visual disclosure or promo cues detected in on-screen text."
+                    )
+        else:
+            # DESKTOP - no OCR-based vision cues
+            vision_limitations.append(
+                "Desktop captures use text metadata, not OCR. Visual disclosure cue detection not applicable."
+            )
+
+    if not vision_limitations:
+        vision_limitations.append("Vision cue analysis status unknown.")
+
+    limits["vision_analysis_limitations"] = vision_limitations
+    limits["vision_cues_detected"] = vision_cues_detected
+
+    # ==========================================================================
     # Audio Analysis Limitations (Prompt 3)
     # ==========================================================================
     audio_limitations = []
