@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AlertCircle, CheckCircle2, Info, ChevronDown, Bug, Database, Shield, TrendingUp, Tag, Building2 } from 'lucide-react';
 import { useAdsEvidenceBundle, checkEvidenceBundleQuality } from '../../hooks/useEvidenceBundle';
 import StackedBar100 from './charts/StackedBar100';
+import ClaimsSection from './ClaimsSection';
 
 /**
  * AdsEvidenceAnalysis - Renders analysis copy for the Ads & Influence tab
@@ -294,7 +295,7 @@ const TopCompanies = ({ observations, meta }) => {
 
 // Main component
 const AdsEvidenceAnalysis = ({ scanId }) => {
-  const { bundle, analysis, loading, error, debugInfo } = useAdsEvidenceBundle(scanId);
+  const { bundle, analysis, claims, loading, error, debugInfo } = useAdsEvidenceBundle(scanId);
   const [showDebug, setShowDebug] = useState(false);
 
   // Check if we have enough data
@@ -372,6 +373,13 @@ const AdsEvidenceAnalysis = ({ scanId }) => {
 
       {/* Commercial Exposure Spectrum - Primary visualization */}
       <CommercialExposureSpectrum observations={bundle.observations} meta={bundle.meta} />
+
+      {/* Evidence-Backed Claims (Prompt 6) */}
+      {claims && claims.length > 0 && (
+        <div className="mt-4">
+          <ClaimsSection claims={claims} tabName="Ads & Influence" />
+        </div>
+      )}
 
       {/* Two-column grid for Topics and Companies */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">

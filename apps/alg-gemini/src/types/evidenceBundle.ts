@@ -856,3 +856,56 @@ export interface InferencesTalkResponse {
   };
   cited_fields: string[];
 }
+
+// =============================================================================
+// Evidence-Backed Claims (Prompt 6)
+// =============================================================================
+
+export type ClaimConfidence = 'high' | 'medium' | 'low';
+
+export interface ClaimCoverageRequired {
+  ocr_coverage_percent: number;
+  ocr_coverage_sufficient: boolean;
+  audio_analyzed: boolean;
+  sample_size_sufficient: boolean;
+}
+
+export interface EvidenceBackedClaim {
+  id: string;
+  claim_text: string;
+  confidence: ClaimConfidence;
+  coverage_required: ClaimCoverageRequired;
+  evidence: string[];
+  limitations: string[];
+  why_it_matters: string;
+  next_best_action: string;
+}
+
+// Updated response types to include claims
+export interface AdsEvidenceBundleResponseWithClaims extends AdsEvidenceBundleResponse {
+  claims?: EvidenceBackedClaim[];
+}
+
+export interface PoliticsEvidenceBundleResponseWithClaims extends PoliticsEvidenceBundleResponse {
+  claims?: EvidenceBackedClaim[];
+}
+
+export interface PatternsEvidenceBundleResponseWithClaims extends PatternsEvidenceBundleResponse {
+  claims?: EvidenceBackedClaim[];
+}
+
+export interface CreatorsEvidenceBundleResponseWithClaims extends CreatorsEvidenceBundleResponse {
+  claims?: EvidenceBackedClaim[];
+}
+
+export interface InferencesEvidenceBundleResponseWithClaims extends InferencesEvidenceBundleResponse {
+  claims?: EvidenceBackedClaim[];
+}
+
+// Union type for all evidence bundle responses with claims
+export type EvidenceBundleResponseWithClaims =
+  | AdsEvidenceBundleResponseWithClaims
+  | PoliticsEvidenceBundleResponseWithClaims
+  | PatternsEvidenceBundleResponseWithClaims
+  | CreatorsEvidenceBundleResponseWithClaims
+  | InferencesEvidenceBundleResponseWithClaims;

@@ -45,6 +45,7 @@ from inferences_evidence_bundle import (
 )
 from feature_bundle import build_feature_bundle_collection
 from ocr_utils import get_ocr_debug_enabled
+from claims_generator import generate_claims_for_tab
 
 app = FastAPI(title="AlgorithmLens Backend")
 
@@ -436,11 +437,15 @@ def get_ads_evidence_bundle(
     # Generate analysis copy from the bundle
     analysis = generate_ads_analysis_copy(bundle)
 
+    # Generate evidence-backed claims (Prompt 6)
+    claims = generate_claims_for_tab("ads", bundle, feature_collection)
+
     response = {
         "scan_id": scan_id,
         "tab": "ads",
         "bundle": bundle,
         "analysis": analysis,
+        "claims": claims,  # Prompt 6: Evidence-backed claims layer
     }
 
     # Include debug info if requested
@@ -553,11 +558,15 @@ def get_politics_evidence_bundle(
     # Generate analysis copy from the bundle
     analysis = generate_politics_analysis_copy(bundle)
 
+    # Generate evidence-backed claims (Prompt 6)
+    claims = generate_claims_for_tab("politics", bundle, feature_collection)
+
     response = {
         "scan_id": scan_id,
         "tab": "politics",
         "bundle": bundle,
         "analysis": analysis,
+        "claims": claims,  # Prompt 6: Evidence-backed claims layer
     }
 
     # Include debug info if requested
@@ -670,11 +679,15 @@ def get_patterns_evidence_bundle(
     # Generate analysis copy from the bundle
     analysis = generate_patterns_analysis_copy(bundle)
 
+    # Generate evidence-backed claims (Prompt 6)
+    claims = generate_claims_for_tab("patterns", bundle, feature_collection)
+
     response = {
         "scan_id": scan_id,
         "tab": "patterns",
         "bundle": bundle,
         "analysis": analysis,
+        "claims": claims,  # Prompt 6: Evidence-backed claims layer
     }
 
     # Include debug info if requested
@@ -787,11 +800,15 @@ def get_creators_evidence_bundle(
     # Generate analysis copy from the bundle
     analysis = generate_creators_analysis_copy(bundle)
 
+    # Generate evidence-backed claims (Prompt 6)
+    claims = generate_claims_for_tab("creators", bundle, feature_collection)
+
     response = {
         "scan_id": scan_id,
         "tab": "creators",
         "bundle": bundle,
         "analysis": analysis,
+        "claims": claims,  # Prompt 6: Evidence-backed claims layer
     }
 
     # Include debug info if requested
@@ -921,11 +938,15 @@ def get_inferences_evidence_bundle(
     # Generate analysis copy from the bundle
     analysis = generate_inferences_analysis_copy(bundle)
 
+    # Generate evidence-backed claims (Prompt 6)
+    claims = generate_claims_for_tab("inferences", bundle, feature_collection)
+
     response = {
         "scan_id": scan_id,
         "tab": "inferences",
         "bundle": bundle,
         "analysis": analysis,
+        "claims": claims,  # Prompt 6: Evidence-backed claims layer
     }
 
     # Include debug info if requested

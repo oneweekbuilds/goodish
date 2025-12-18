@@ -28,6 +28,7 @@ import type {
   InferencesAnalysisCopy,
   InferencesEvidenceBundleResponse,
   InferencesTalkResponse,
+  EvidenceBackedClaim,
 } from '../types/evidenceBundle';
 
 // Base URL for API - matches dev server proxy
@@ -39,6 +40,7 @@ const IS_DEV = import.meta.env?.DEV || process.env.NODE_ENV === 'development';
 export interface UseEvidenceBundleResult {
   bundle: AdsEvidenceBundle | null;
   analysis: AdsAnalysisCopy | null;
+  claims: EvidenceBackedClaim[];
   loading: boolean;
   error: string | null;
   refetch: () => void;
@@ -57,6 +59,7 @@ export function useAdsEvidenceBundle(
 ): UseEvidenceBundleResult {
   const [bundle, setBundle] = useState<AdsEvidenceBundle | null>(null);
   const [analysis, setAnalysis] = useState<AdsAnalysisCopy | null>(null);
+  const [claims, setClaims] = useState<EvidenceBackedClaim[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<AdsEvidenceBundleResponse['_debug'] | null>(null);
@@ -78,10 +81,11 @@ export function useAdsEvidenceBundle(
         throw new Error(`Failed to fetch evidence bundle: ${response.status}`);
       }
 
-      const data: AdsEvidenceBundleResponse = await response.json();
+      const data = await response.json();
 
       setBundle(data.bundle);
       setAnalysis(data.analysis);
+      setClaims(data.claims || []);  // Prompt 6: Evidence-backed claims
 
       if (IS_DEV && data._debug) {
         setDebugInfo(data._debug);
@@ -104,6 +108,7 @@ export function useAdsEvidenceBundle(
   return {
     bundle,
     analysis,
+    claims,
     loading,
     error,
     refetch: fetchBundle,
@@ -222,6 +227,7 @@ export function checkEvidenceBundleQuality(bundle: AdsEvidenceBundle | null): {
 export interface UsePoliticsEvidenceBundleResult {
   bundle: PoliticsEvidenceBundle | null;
   analysis: PoliticsAnalysisCopy | null;
+  claims: EvidenceBackedClaim[];
   loading: boolean;
   error: string | null;
   refetch: () => void;
@@ -240,6 +246,7 @@ export function usePoliticsEvidenceBundle(
 ): UsePoliticsEvidenceBundleResult {
   const [bundle, setBundle] = useState<PoliticsEvidenceBundle | null>(null);
   const [analysis, setAnalysis] = useState<PoliticsAnalysisCopy | null>(null);
+  const [claims, setClaims] = useState<EvidenceBackedClaim[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<PoliticsEvidenceBundleResponse['_debug'] | null>(null);
@@ -261,10 +268,11 @@ export function usePoliticsEvidenceBundle(
         throw new Error(`Failed to fetch politics evidence bundle: ${response.status}`);
       }
 
-      const data: PoliticsEvidenceBundleResponse = await response.json();
+      const data = await response.json();
 
       setBundle(data.bundle);
       setAnalysis(data.analysis);
+      setClaims(data.claims || []);  // Prompt 6: Evidence-backed claims
 
       if (IS_DEV && data._debug) {
         setDebugInfo(data._debug);
@@ -287,6 +295,7 @@ export function usePoliticsEvidenceBundle(
   return {
     bundle,
     analysis,
+    claims,
     loading,
     error,
     refetch: fetchBundle,
@@ -414,6 +423,7 @@ export function checkPoliticsEvidenceBundleQuality(bundle: PoliticsEvidenceBundl
 export interface UsePatternsEvidenceBundleResult {
   bundle: PatternsEvidenceBundle | null;
   analysis: PatternsAnalysisCopy | null;
+  claims: EvidenceBackedClaim[];
   loading: boolean;
   error: string | null;
   refetch: () => void;
@@ -432,6 +442,7 @@ export function usePatternsEvidenceBundle(
 ): UsePatternsEvidenceBundleResult {
   const [bundle, setBundle] = useState<PatternsEvidenceBundle | null>(null);
   const [analysis, setAnalysis] = useState<PatternsAnalysisCopy | null>(null);
+  const [claims, setClaims] = useState<EvidenceBackedClaim[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<PatternsEvidenceBundleResponse['_debug'] | null>(null);
@@ -453,10 +464,11 @@ export function usePatternsEvidenceBundle(
         throw new Error(`Failed to fetch patterns evidence bundle: ${response.status}`);
       }
 
-      const data: PatternsEvidenceBundleResponse = await response.json();
+      const data = await response.json();
 
       setBundle(data.bundle);
       setAnalysis(data.analysis);
+      setClaims(data.claims || []);  // Prompt 6: Evidence-backed claims
 
       if (IS_DEV && data._debug) {
         setDebugInfo(data._debug);
@@ -479,6 +491,7 @@ export function usePatternsEvidenceBundle(
   return {
     bundle,
     analysis,
+    claims,
     loading,
     error,
     refetch: fetchBundle,
@@ -606,6 +619,7 @@ export function checkPatternsEvidenceBundleQuality(bundle: PatternsEvidenceBundl
 export interface UseCreatorsEvidenceBundleResult {
   bundle: CreatorsEvidenceBundle | null;
   analysis: CreatorsAnalysisCopy | null;
+  claims: EvidenceBackedClaim[];
   loading: boolean;
   error: string | null;
   refetch: () => void;
@@ -624,6 +638,7 @@ export function useCreatorsEvidenceBundle(
 ): UseCreatorsEvidenceBundleResult {
   const [bundle, setBundle] = useState<CreatorsEvidenceBundle | null>(null);
   const [analysis, setAnalysis] = useState<CreatorsAnalysisCopy | null>(null);
+  const [claims, setClaims] = useState<EvidenceBackedClaim[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<CreatorsEvidenceBundleResponse['_debug'] | null>(null);
@@ -645,10 +660,11 @@ export function useCreatorsEvidenceBundle(
         throw new Error(`Failed to fetch creators evidence bundle: ${response.status}`);
       }
 
-      const data: CreatorsEvidenceBundleResponse = await response.json();
+      const data = await response.json();
 
       setBundle(data.bundle);
       setAnalysis(data.analysis);
+      setClaims(data.claims || []);  // Prompt 6: Evidence-backed claims
 
       if (IS_DEV && data._debug) {
         setDebugInfo(data._debug);
@@ -671,6 +687,7 @@ export function useCreatorsEvidenceBundle(
   return {
     bundle,
     analysis,
+    claims,
     loading,
     error,
     refetch: fetchBundle,
@@ -808,6 +825,7 @@ export function checkCreatorsEvidenceBundleQuality(bundle: CreatorsEvidenceBundl
 export interface UseInferencesEvidenceBundleResult {
   bundle: InferencesEvidenceBundle | null;
   analysis: InferencesAnalysisCopy | null;
+  claims: EvidenceBackedClaim[];
   loading: boolean;
   error: string | null;
   refetch: () => void;
@@ -832,6 +850,7 @@ export function useInferencesEvidenceBundle(
 ): UseInferencesEvidenceBundleResult {
   const [bundle, setBundle] = useState<InferencesEvidenceBundle | null>(null);
   const [analysis, setAnalysis] = useState<InferencesAnalysisCopy | null>(null);
+  const [claims, setClaims] = useState<EvidenceBackedClaim[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<InferencesEvidenceBundleResponse['_debug'] | null>(null);
@@ -853,10 +872,11 @@ export function useInferencesEvidenceBundle(
         throw new Error(`Failed to fetch inferences evidence bundle: ${response.status}`);
       }
 
-      const data: InferencesEvidenceBundleResponse = await response.json();
+      const data = await response.json();
 
       setBundle(data.bundle);
       setAnalysis(data.analysis);
+      setClaims(data.claims || []);  // Prompt 6: Evidence-backed claims
 
       if (IS_DEV && data._debug) {
         setDebugInfo(data._debug);
@@ -879,6 +899,7 @@ export function useInferencesEvidenceBundle(
   return {
     bundle,
     analysis,
+    claims,
     loading,
     error,
     refetch: fetchBundle,
