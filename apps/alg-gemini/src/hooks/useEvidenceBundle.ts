@@ -29,6 +29,7 @@ import type {
   InferencesEvidenceBundleResponse,
   InferencesTalkResponse,
   EvidenceBackedClaim,
+  Explanations,
 } from '../types/evidenceBundle';
 
 // Base URL for API - matches dev server proxy
@@ -41,6 +42,7 @@ export interface UseEvidenceBundleResult {
   bundle: AdsEvidenceBundle | null;
   analysis: AdsAnalysisCopy | null;
   claims: EvidenceBackedClaim[];
+  explanations: Explanations | null;
   loading: boolean;
   error: string | null;
   refetch: () => void;
@@ -60,6 +62,7 @@ export function useAdsEvidenceBundle(
   const [bundle, setBundle] = useState<AdsEvidenceBundle | null>(null);
   const [analysis, setAnalysis] = useState<AdsAnalysisCopy | null>(null);
   const [claims, setClaims] = useState<EvidenceBackedClaim[]>([]);
+  const [explanations, setExplanations] = useState<Explanations | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<AdsEvidenceBundleResponse['_debug'] | null>(null);
@@ -86,6 +89,7 @@ export function useAdsEvidenceBundle(
       setBundle(data.bundle);
       setAnalysis(data.analysis);
       setClaims(data.claims || []);  // Prompt 6: Evidence-backed claims
+      setExplanations(data.explanations || null);  // Prompt 7: Evidence explanations
 
       if (IS_DEV && data._debug) {
         setDebugInfo(data._debug);
@@ -109,6 +113,7 @@ export function useAdsEvidenceBundle(
     bundle,
     analysis,
     claims,
+    explanations,
     loading,
     error,
     refetch: fetchBundle,
@@ -228,6 +233,7 @@ export interface UsePoliticsEvidenceBundleResult {
   bundle: PoliticsEvidenceBundle | null;
   analysis: PoliticsAnalysisCopy | null;
   claims: EvidenceBackedClaim[];
+  explanations: Explanations | null;
   loading: boolean;
   error: string | null;
   refetch: () => void;
@@ -247,6 +253,7 @@ export function usePoliticsEvidenceBundle(
   const [bundle, setBundle] = useState<PoliticsEvidenceBundle | null>(null);
   const [analysis, setAnalysis] = useState<PoliticsAnalysisCopy | null>(null);
   const [claims, setClaims] = useState<EvidenceBackedClaim[]>([]);
+  const [explanations, setExplanations] = useState<Explanations | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<PoliticsEvidenceBundleResponse['_debug'] | null>(null);
@@ -273,6 +280,7 @@ export function usePoliticsEvidenceBundle(
       setBundle(data.bundle);
       setAnalysis(data.analysis);
       setClaims(data.claims || []);  // Prompt 6: Evidence-backed claims
+      setExplanations(data.explanations || null);  // Prompt 7: Evidence explanations
 
       if (IS_DEV && data._debug) {
         setDebugInfo(data._debug);
@@ -296,6 +304,7 @@ export function usePoliticsEvidenceBundle(
     bundle,
     analysis,
     claims,
+    explanations,
     loading,
     error,
     refetch: fetchBundle,
@@ -424,6 +433,7 @@ export interface UsePatternsEvidenceBundleResult {
   bundle: PatternsEvidenceBundle | null;
   analysis: PatternsAnalysisCopy | null;
   claims: EvidenceBackedClaim[];
+  explanations: Explanations | null;
   loading: boolean;
   error: string | null;
   refetch: () => void;
@@ -443,6 +453,7 @@ export function usePatternsEvidenceBundle(
   const [bundle, setBundle] = useState<PatternsEvidenceBundle | null>(null);
   const [analysis, setAnalysis] = useState<PatternsAnalysisCopy | null>(null);
   const [claims, setClaims] = useState<EvidenceBackedClaim[]>([]);
+  const [explanations, setExplanations] = useState<Explanations | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<PatternsEvidenceBundleResponse['_debug'] | null>(null);
@@ -469,6 +480,7 @@ export function usePatternsEvidenceBundle(
       setBundle(data.bundle);
       setAnalysis(data.analysis);
       setClaims(data.claims || []);  // Prompt 6: Evidence-backed claims
+      setExplanations(data.explanations || null);  // Prompt 7: Evidence explanations
 
       if (IS_DEV && data._debug) {
         setDebugInfo(data._debug);
@@ -492,6 +504,7 @@ export function usePatternsEvidenceBundle(
     bundle,
     analysis,
     claims,
+    explanations,
     loading,
     error,
     refetch: fetchBundle,
@@ -620,6 +633,7 @@ export interface UseCreatorsEvidenceBundleResult {
   bundle: CreatorsEvidenceBundle | null;
   analysis: CreatorsAnalysisCopy | null;
   claims: EvidenceBackedClaim[];
+  explanations: Explanations | null;
   loading: boolean;
   error: string | null;
   refetch: () => void;
@@ -639,6 +653,7 @@ export function useCreatorsEvidenceBundle(
   const [bundle, setBundle] = useState<CreatorsEvidenceBundle | null>(null);
   const [analysis, setAnalysis] = useState<CreatorsAnalysisCopy | null>(null);
   const [claims, setClaims] = useState<EvidenceBackedClaim[]>([]);
+  const [explanations, setExplanations] = useState<Explanations | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<CreatorsEvidenceBundleResponse['_debug'] | null>(null);
@@ -665,6 +680,7 @@ export function useCreatorsEvidenceBundle(
       setBundle(data.bundle);
       setAnalysis(data.analysis);
       setClaims(data.claims || []);  // Prompt 6: Evidence-backed claims
+      setExplanations(data.explanations || null);  // Prompt 7: Evidence explanations
 
       if (IS_DEV && data._debug) {
         setDebugInfo(data._debug);
@@ -688,6 +704,7 @@ export function useCreatorsEvidenceBundle(
     bundle,
     analysis,
     claims,
+    explanations,
     loading,
     error,
     refetch: fetchBundle,
@@ -826,6 +843,7 @@ export interface UseInferencesEvidenceBundleResult {
   bundle: InferencesEvidenceBundle | null;
   analysis: InferencesAnalysisCopy | null;
   claims: EvidenceBackedClaim[];
+  explanations: Explanations | null;
   loading: boolean;
   error: string | null;
   refetch: () => void;
@@ -851,6 +869,7 @@ export function useInferencesEvidenceBundle(
   const [bundle, setBundle] = useState<InferencesEvidenceBundle | null>(null);
   const [analysis, setAnalysis] = useState<InferencesAnalysisCopy | null>(null);
   const [claims, setClaims] = useState<EvidenceBackedClaim[]>([]);
+  const [explanations, setExplanations] = useState<Explanations | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<InferencesEvidenceBundleResponse['_debug'] | null>(null);
@@ -877,6 +896,7 @@ export function useInferencesEvidenceBundle(
       setBundle(data.bundle);
       setAnalysis(data.analysis);
       setClaims(data.claims || []);  // Prompt 6: Evidence-backed claims
+      setExplanations(data.explanations || null);  // Prompt 7: Evidence explanations
 
       if (IS_DEV && data._debug) {
         setDebugInfo(data._debug);
@@ -900,6 +920,7 @@ export function useInferencesEvidenceBundle(
     bundle,
     analysis,
     claims,
+    explanations,
     loading,
     error,
     refetch: fetchBundle,

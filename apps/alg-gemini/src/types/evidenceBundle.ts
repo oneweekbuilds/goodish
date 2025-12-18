@@ -909,3 +909,61 @@ export type EvidenceBundleResponseWithClaims =
   | PatternsEvidenceBundleResponseWithClaims
   | CreatorsEvidenceBundleResponseWithClaims
   | InferencesEvidenceBundleResponseWithClaims;
+
+// =============================================================================
+// Evidence Explanations Trust Layer (Prompt 7)
+// =============================================================================
+
+export type ConfidenceDirection = 'up' | 'down';
+
+export interface SignalEntry {
+  id: string;
+  label: string;
+  why: string;
+  evidence_ref: string[];
+}
+
+export interface ConfidenceDriver {
+  direction: ConfidenceDirection;
+  label: string;
+  detail: string;
+}
+
+export interface Explanations {
+  summary: string;
+  signals_fired: SignalEntry[];
+  signals_not_evaluated: SignalEntry[];
+  signals_not_found: SignalEntry[];
+  confidence_drivers: ConfidenceDriver[];
+  what_this_does_not_mean: string[];
+  next_best_actions: string[];
+}
+
+// Updated response types to include explanations
+export interface AdsEvidenceBundleResponseWithExplanations extends AdsEvidenceBundleResponseWithClaims {
+  explanations?: Explanations;
+}
+
+export interface PoliticsEvidenceBundleResponseWithExplanations extends PoliticsEvidenceBundleResponseWithClaims {
+  explanations?: Explanations;
+}
+
+export interface PatternsEvidenceBundleResponseWithExplanations extends PatternsEvidenceBundleResponseWithClaims {
+  explanations?: Explanations;
+}
+
+export interface CreatorsEvidenceBundleResponseWithExplanations extends CreatorsEvidenceBundleResponseWithClaims {
+  explanations?: Explanations;
+}
+
+export interface InferencesEvidenceBundleResponseWithExplanations extends InferencesEvidenceBundleResponseWithClaims {
+  explanations?: Explanations;
+}
+
+// Union type for all evidence bundle responses with claims and explanations
+export type EvidenceBundleResponseWithExplanations =
+  | AdsEvidenceBundleResponseWithExplanations
+  | PoliticsEvidenceBundleResponseWithExplanations
+  | PatternsEvidenceBundleResponseWithExplanations
+  | CreatorsEvidenceBundleResponseWithExplanations
+  | InferencesEvidenceBundleResponseWithExplanations;

@@ -3,6 +3,7 @@ import { AlertCircle, CheckCircle2, Info, ChevronDown, Bug, Database, Shield, Tr
 import { useAdsEvidenceBundle, checkEvidenceBundleQuality } from '../../hooks/useEvidenceBundle';
 import StackedBar100 from './charts/StackedBar100';
 import ClaimsSection from './ClaimsSection';
+import ExplanationsPanel from './ExplanationsPanel';
 
 /**
  * AdsEvidenceAnalysis - Renders analysis copy for the Ads & Influence tab
@@ -295,7 +296,7 @@ const TopCompanies = ({ observations, meta }) => {
 
 // Main component
 const AdsEvidenceAnalysis = ({ scanId }) => {
-  const { bundle, analysis, claims, loading, error, debugInfo } = useAdsEvidenceBundle(scanId);
+  const { bundle, analysis, claims, explanations, loading, error, debugInfo } = useAdsEvidenceBundle(scanId);
   const [showDebug, setShowDebug] = useState(false);
 
   // Check if we have enough data
@@ -378,6 +379,13 @@ const AdsEvidenceAnalysis = ({ scanId }) => {
       {claims && claims.length > 0 && (
         <div className="mt-4">
           <ClaimsSection claims={claims} tabName="Ads & Influence" />
+        </div>
+      )}
+
+      {/* Signal Explanations (Prompt 7) */}
+      {explanations && (
+        <div className="mt-4">
+          <ExplanationsPanel explanations={explanations} tabName="Ads & Influence" />
         </div>
       )}
 
