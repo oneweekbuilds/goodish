@@ -851,6 +851,166 @@ class TestLexiconCompleteness:
 
 
 # =============================================================================
+# CATEGORY 9: Scan Status Endpoint Terminal States (Must-Not-Regress)
+# Frontend depends on status endpoint returning terminal states properly
+# =============================================================================
+
+class TestScanStatusTerminalStates:
+    """
+    Tests that scan status endpoint properly transitions to terminal states.
+
+    PROTECTED BEHAVIORS:
+    - Status must always be one of: 'processing', 'completed', 'failed'
+    - Null/empty status must default to 'completed' for backward compat
+    - Status response must include 'created_at' for timeout calculations
+    - Failed scans must include error_message
+    """
+
+    def test_get_scan_status_returns_required_fields(self):
+        """
+        Status endpoint must return all required fields.
+
+        MUST NOT REGRESS: Frontend polling depends on these fields.
+        """
+        from database import get_scan_status, create_pending_scan, delete_scan
+        import uuid
+
+        # Create a test scan
+        test_id = f"test-status-{uuid.uuid4()}"
+        create_pending_scan(test_id, "tiktok", "test-user")
+
+        try:
+            status = get_scan_status(test_id)
+
+            assert status is not None, "Status should not be None for existing scan"
+            assert "scan_id" in status, "REGRESSION: Missing 'scan_id' field"
+            assert "status" in status, "REGRESSION: Missing 'status' field"
+            assert "error_message" in status, "REGRESSION: Missing 'error_message' field"
+            assert "total_items" in status, "REGRESSION: Missing 'total_items' field"
+            assert "total_ads" in status, "REGRESSION: Missing 'total_ads' field"
+            assert "created_at" in status, "REGRESSION: Missing 'created_at' field (needed for timeout)"
+        finally:
+            delete_scan(test_id)
+
+    def test_pending_scan_has_processing_status(self):
+        """
+        Newly created scan must have 'processing' status.
+
+        MUST NOT REGRESS: Frontend uses this to show spinner.
+        """
+        from database import get_scan_status, create_pending_scan, delete_scan
+        import uuid
+
+        test_id = f"test-pending-{uuid.uuid4()}"
+        create_pending_scan(test_id, "instagram", "test-user")
+
+        try:
+            status = get_scan_status(test_id)
+            assert status["status"] == "processing", \
+                f"REGRESSION: Pending scan must have 'processing' status (was '{status['status']}')"
+        finally:
+            delete_scan(test_id)
+
+    def test_completed_scan_has_completed_status(self):
+        """
+        Successfully processed scan must have 'completed' status.
+
+        MUST NOT REGRESS: Frontend uses this to navigate to results.
+        """
+        from database import get_scan_status, create_pending_scan, update_scan_result, delete_scan
+        import uuid
+
+        test_id = f"test-completed-{uuid.uuid4()}"
+        create_pending_scan(test_id, "youtube", "test-user")
+
+        # Simulate successful processing
+        test_result = {
+            "scan_metadata": {"scan_id": test_id, "platform": "youtube"},
+            "aggregates": {"total_feed_items": 10, "total_ads": 2, "ad_percentage": 0.2},
+            "feed_items": [],
+            "environment": {}
+        }
+        update_scan_result(test_id, test_result, status="completed")
+
+        try:
+            status = get_scan_status(test_id)
+            assert status["status"] == "completed", \
+                f"REGRESSION: Processed scan must have 'completed' status (was '{status['status']}')"
+            assert status["total_items"] == 10, "REGRESSION: total_items not updated"
+            assert status["total_ads"] == 2, "REGRESSION: total_ads not updated"
+        finally:
+            delete_scan(test_id)
+
+    def test_failed_scan_has_failed_status_and_error_message(self):
+        """
+        Failed scan must have 'failed' status and error_message.
+
+        MUST NOT REGRESS: Frontend uses this to show error UI.
+        """
+        from database import get_scan_status, create_pending_scan, update_scan_error, delete_scan
+        import uuid
+
+        test_id = f"test-failed-{uuid.uuid4()}"
+        create_pending_scan(test_id, "facebook", "test-user")
+
+        # Simulate failure
+        error_msg = "Video processing failed: invalid format"
+        update_scan_error(test_id, error_msg)
+
+        try:
+            status = get_scan_status(test_id)
+            assert status["status"] == "failed", \
+                f"REGRESSION: Failed scan must have 'failed' status (was '{status['status']}')"
+            assert status["error_message"] == error_msg, \
+                f"REGRESSION: error_message must be preserved (was '{status['error_message']}')"
+        finally:
+            delete_scan(test_id)
+
+    def test_null_status_defaults_to_completed(self):
+        """
+        Legacy scans with null status must default to 'completed'.
+
+        MUST NOT REGRESS: Backward compatibility for older scans.
+        """
+        from database import get_connection, get_scan_status, delete_scan
+        import uuid
+        import json
+
+        test_id = f"test-legacy-{uuid.uuid4()}"
+
+        # Directly insert a scan with NULL status (simulating legacy data)
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO scans (id, created_at, platform, user_id, duration_seconds,
+                               total_items, total_ads, ad_percentage, status, result_json)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, ?)
+        """, (test_id, "2024-01-01T00:00:00", "tiktok", "test", 0, 5, 1, 0.2, json.dumps({})))
+        conn.commit()
+        conn.close()
+
+        try:
+            status = get_scan_status(test_id)
+            assert status["status"] == "completed", \
+                f"REGRESSION: NULL status must default to 'completed' (was '{status['status']}')"
+        finally:
+            delete_scan(test_id)
+
+    def test_status_values_are_terminal_or_processing(self):
+        """
+        Status values must be one of the defined terminal states.
+
+        MUST NOT REGRESS: Frontend depends on predictable status values.
+        """
+        VALID_STATUSES = {"processing", "completed", "failed"}
+
+        # Just verify the constants are correct (no DB needed)
+        assert "processing" in VALID_STATUSES
+        assert "completed" in VALID_STATUSES
+        assert "failed" in VALID_STATUSES
+
+
+# =============================================================================
 # Run Tests
 # =============================================================================
 

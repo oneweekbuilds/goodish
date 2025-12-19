@@ -328,13 +328,18 @@ def update_scan_error(scan_id: str, error_message: str) -> bool:
 def get_scan_status(scan_id: str) -> Optional[Dict[str, Any]]:
     """
     Get just the status of a scan (lightweight check for polling).
-    Returns dict with status, error_message, or None if not found.
+    Returns dict with status, error_message, created_at, or None if not found.
+
+    Status values:
+        - processing: Scan is being analyzed
+        - completed: Analysis finished successfully
+        - failed: Processing error occurred
     """
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT id, status, error_message, total_items, total_ads
+        SELECT id, status, error_message, total_items, total_ads, created_at
         FROM scans WHERE id = ?
     """, (scan_id,))
 
@@ -344,11 +349,17 @@ def get_scan_status(scan_id: str) -> Optional[Dict[str, Any]]:
     if row is None:
         return None
 
+    # Ensure status is never null/empty
+    status = row["status"]
+    if not status:
+        status = "completed"  # Legacy scans without status field
+
     return {
         "scan_id": row["id"],
-        "status": row["status"] or "completed",
+        "status": status,
         "error_message": row["error_message"],
         "total_items": row["total_items"],
-        "total_ads": row["total_ads"]
+        "total_ads": row["total_ads"],
+        "created_at": row["created_at"]
     }
 
