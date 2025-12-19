@@ -40,7 +40,7 @@ const SectionLoop = () => {
                         <LoopCard
                             number={2}
                             title="The algorithm's view"
-                            desc="You are categorized into hidden labels."
+                            desc="Platforms may assign hidden content labels."
                             delay={0.5}
                         />
                     </div>
@@ -107,7 +107,7 @@ const SectionLoop = () => {
                 {/* Mobile Layout - Vertical Stack */}
                 <div className="flex flex-col gap-6 md:hidden items-center">
                     <LoopCard number={1} title="Your behavior" desc="Every tap, scroll, and pause teaches the algorithm." delay={0.2} />
-                    <LoopCard number={2} title="The algorithm's view" desc="You are categorized into hidden labels." delay={0.4} />
+                    <LoopCard number={2} title="The algorithm's view" desc="Platforms may assign hidden content labels." delay={0.4} />
                     <LoopCard number={3} title="Tailored content" desc="Your feed shifts to reinforce your inferred identity." delay={0.6} />
                     <LoopCard number={4} title="Your worldview shifts" desc="Exposure shapes your beliefs, interests, and habits." delay={0.8} />
                 </div>

@@ -49,7 +49,7 @@ const SectionTracking = () => {
                             className="mb-6 text-center"
                         >
                             <h3 className="text-2xl md:text-3xl font-bold text-text-main mb-2">Your Feeds</h3>
-                            <p className="text-sm text-text-muted">Algorithms learn who you are from your actions</p>
+                            <p className="text-sm text-text-muted">Algorithms build profiles based on observed actions</p>
                         </motion.div>
 
                         {/* Phone Container */}

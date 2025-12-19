@@ -161,7 +161,7 @@ const ScanPage = () => {
                     <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200">
                         <h1 className="text-3xl font-bold text-slate-900 mb-2">Scan Your Feed</h1>
                         <p className="text-slate-600 mb-4">
-                            Choose the platform you want to analyze. We'll show you what the algorithm thinks about you.
+                            Choose the platform you want to analyze. We'll show you patterns in what the algorithm displays.
                         </p>
                         <p className="text-sm text-slate-500 mb-8">
                             Showing {PLATFORMS.length} platforms: {PLATFORMS.map(p => p.id).join(', ')}
