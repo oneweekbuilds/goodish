@@ -929,11 +929,29 @@ function getDisplayData(data) {
       const badges = [];
       if (item.is_ad) badges.push('Sponsored');
       if (item.political?.is_political) badges.push('Political');
-      
+
+      // Support both mobile (creator.handle) and desktop (account.account_handle) schemas
+      const creator = item.creator?.handle ||
+                      item.creator?.name ||
+                      item.account?.account_handle ||
+                      item.account?.account_display_name ||
+                      null;
+
+      // Support both mobile (text_content.caption) and desktop (content_text.captions) schemas
+      const captions = item.content_text?.captions || [];
+      const caption = item.text_content?.caption ||
+                      item.text_content?.ocr_text ||
+                      (captions.length > 0 ? captions[0] : null) ||
+                      'No caption';
+
+      // Get post URL from desktop schema
+      const postUrl = item.source_details?.dom_metadata?.post_url || null;
+
       return {
         thumbnail: item.thumbnail_url || null,
-        creator: item.creator?.handle || item.creator?.name || null,
-        caption: item.text_content?.caption || item.text_content?.ocr_text || 'No caption',
+        creator,
+        caption,
+        postUrl,
         badges,
         categories: item.topics || [],
         details: {
