@@ -18,8 +18,9 @@ const ScanHistoryPage = () => {
         setLoading(true);
         setError(null);
         
+        const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000';
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/scans");
+            const response = await fetch(`${API_BASE}/api/scans`);
             if (!response.ok) {
                 throw new Error(`Failed to fetch scans: ${response.status}`);
             }
@@ -37,8 +38,9 @@ const ScanHistoryPage = () => {
         setLoadingScan(true);
         setScanError(null);
         
+        const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000';
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/scans/${scanId}`);
+            const response = await fetch(`${API_BASE}/api/scans/${scanId}`);
             if (!response.ok) {
                 throw new Error(`Failed to fetch scan: ${response.status}`);
             }
@@ -59,8 +61,9 @@ const ScanHistoryPage = () => {
             return;
         }
         
+        const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000';
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/scans/${scanId}`, {
+            const response = await fetch(`${API_BASE}/api/scans/${scanId}`, {
                 method: "DELETE"
             });
             if (!response.ok) {
