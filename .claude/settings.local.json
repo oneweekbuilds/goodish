@@ -84,7 +84,9 @@
       "Bash(pnpm build:*)",
       "Bash(ping:*)",
       "Bash(git tag:*)",
-      "Bash(git stash pop:*)"
+      "Bash(git stash pop:*)",
+      "Bash(git config:*)",
+      "Bash(python -c:*)"
     ],
     "deny": [],
     "ask": [],

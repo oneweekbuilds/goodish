@@ -274,10 +274,11 @@ export function mapDesktopPostsToUnifiedResult(posts = [], platform = 'unknown')
       
       ad_metadata: post.isSponsored ? {
         ad_detected_reason: 'sponsored_label',
-        sponsored_label_text: 'Sponsored',
+        sponsored_label_text: post.sponsoredEvidence?.matchedText || 'Sponsored',
         advertiser_name: post.creator || null,
         advertiser_domain: extractDomain(post.link),
-        product_or_service: post.ctaText || null
+        product_or_service: post.ctaText || null,
+        detection_evidence: post.sponsoredEvidence || null
       } : null,
       
       account: {

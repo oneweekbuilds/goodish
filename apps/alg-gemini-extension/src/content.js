@@ -677,6 +677,7 @@ function extractTikTokPost(container, index) {
       caption: caption || null,
       hashtags,
       isSponsored: Boolean(isSponsored),
+      sponsoredEvidence: sponsoredEvidence || null,
       ctaText: ctaText || null,
       link: link || null
     };
@@ -991,6 +992,7 @@ function extractInstagramPost(container, index) {
       caption: caption || null,
       hashtags,
       isSponsored: Boolean(isSponsored),
+      sponsoredEvidence: sponsoredEvidence || null,
       ctaText: ctaText || null,
       link: link || null
     };
@@ -1255,6 +1257,7 @@ function extractYouTubePost(container, index, isShorts) {
       caption: caption || null,
       hashtags,
       isSponsored: Boolean(isSponsored),
+      sponsoredEvidence: sponsoredEvidence || null,
       ctaText: ctaText || null,
       link: link || null
     };
@@ -1982,6 +1985,7 @@ function extractFacebookPost(container, index) {
       caption: caption || "(No caption)",
       hashtags,
       isSponsored: Boolean(isSponsored),
+      sponsoredEvidence: sponsoredEvidence || null,
       ctaText: ctaText || null,
       link: link || null,
       uiLabel: isSponsored ? "Sponsored Ad" : "Post",
@@ -2022,6 +2026,7 @@ function extractFacebookPost(container, index) {
       caption: minimalCaption || "(No caption)",
       hashtags: extractHashtags(minimalCaption),
       isSponsored: Boolean(isSponsored),
+      sponsoredEvidence: sponsoredEvidence || null,
       ctaText: null,
       link: null,
       uiLabel: isSponsored ? "Sponsored Ad" : "Post",
@@ -2060,6 +2065,7 @@ function extractFacebookPost(container, index) {
       caption: trimmedTextOrNull || "(No caption)",
       hashtags: trimmedTextOrNull ? extractHashtags(trimmedTextOrNull) : [],
       isSponsored: Boolean(isSponsored),
+      sponsoredEvidence: sponsoredEvidence || null,
       ctaText: ctaText || null,
       link: link || null,
       uiLabel: isSponsored ? "Sponsored Ad" : "Post",
@@ -2510,63 +2516,76 @@ function extractTwitterCaption(container) {
 
 /**
  * Detect if a Twitter/X tweet is sponsored/promoted
- * @param {Element} container 
- * @returns {boolean}
+ * @param {Element} container
+ * @returns {{isSponsored: boolean, evidence: object|null}}
  */
 function isTwitterSponsored(container) {
-  // Strategy 1: Check for "Promoted" label in the tweet
-  const allText = (container.innerText || '').toLowerCase();
-  
-  // Check for exact "Promoted" word (Twitter's ad label)
-  if (/\bpromoted\b/.test(allText)) {
-    console.debug('[AlgorithmLens][Twitter][Sponsored] Detected via Promoted label');
-    return true;
-  }
-  
-  // Strategy 2: Check for placement tracking element (ad wrapper)
-  if (safeQuery(container, 'div[data-testid="placementTracking"]')) {
-    console.debug('[AlgorithmLens][Twitter][Sponsored] Detected via placementTracking element');
-    return true;
-  }
-  
-  // Strategy 3: Check aria-labels for promotion indicators
-  const ariaElements = safeQueryAll(container, '[aria-label]');
-  for (const el of ariaElements) {
-    const label = (el.getAttribute('aria-label') || '').toLowerCase();
-    if (label.includes('promoted') || label.includes('advertisement')) {
-      console.debug('[AlgorithmLens][Twitter][Sponsored] Detected via aria-label:', label);
-      return true;
-    }
-  }
-  
-  // Strategy 4: Check for ad-specific elements or classes
-  const adSelectors = [
-    '[class*="promoted"]',
-    '[class*="Promoted"]',
+  // Strategy 1: Check for ad-specific data-testid attributes (not placementTracking - now on all tweets)
+  const adTestIdSelectors = [
     '[data-testid*="promoted"]',
     '[data-testid*="Promoted"]'
   ];
-  
-  for (const sel of adSelectors) {
+
+  for (const sel of adTestIdSelectors) {
     if (safeQuery(container, sel)) {
       console.debug('[AlgorithmLens][Twitter][Sponsored] Detected via selector:', sel);
-      return true;
+      return {
+        isSponsored: true,
+        evidence: { strategy: 'adTestId', selector: sel }
+      };
     }
   }
-  
-  // Strategy 5: Look for small text that says "Promoted" near the header
-  const spans = safeQueryAll(container, 'span');
-  for (const span of spans) {
-    const text = (safeText(span) || '').toLowerCase().trim();
-    if (text === 'promoted' || text === 'ad') {
-      console.debug('[AlgorithmLens][Twitter][Sponsored] Detected via span text:', text);
-      return true;
-    }
-  }
-  
-  return false;
-}
 
+  // Strategy 2: Look for visible "Promoted" label in tweet HEADER area only
+  // Twitter's Promoted label appears near the username/timestamp, not in tweet body
+  const headerArea = safeQuery(container, 'div[data-testid="User-Name"]');
+  if (headerArea) {
+    const headerParent = headerArea.parentElement?.parentElement;
+    if (headerParent) {
+      const headerSpans = safeQueryAll(headerParent, 'span');
+      for (const span of headerSpans) {
+        // Skip hidden/sr-only elements
+        const style = window.getComputedStyle(span);
+        if (style.display === 'none' || style.visibility === 'hidden') continue;
+        if (span.offsetWidth === 0 && span.offsetHeight === 0) continue;
+
+        const text = (safeText(span) || '').trim();
+        if (text.toLowerCase() === 'promoted' || text.toLowerCase() === 'ad') {
+          console.debug('[AlgorithmLens][Twitter][Sponsored] Detected via header label:', text);
+          return {
+            isSponsored: true,
+            evidence: { strategy: 'headerLabel', matchedText: text, selector: 'header span' }
+          };
+        }
+      }
+    }
+  }
+
+  // Strategy 3: Fallback - check for Promoted label anywhere but ONLY if it's a dedicated small element
+  const allSpans = safeQueryAll(container, 'span');
+  for (const span of allSpans) {
+    // Skip if inside tweet text area (caption)
+    if (span.closest('[data-testid="tweetText"]')) continue;
+    if (span.closest('div[lang]')) continue;
+
+    // Skip hidden elements
+    const style = window.getComputedStyle(span);
+    if (style.display === 'none' || style.visibility === 'hidden') continue;
+    if (span.offsetWidth === 0 && span.offsetHeight === 0) continue;
+
+    const text = (safeText(span) || '').trim();
+    // Must be exactly "Promoted" or "Ad" - not part of longer text
+    if ((text.toLowerCase() === 'promoted' || text.toLowerCase() === 'ad') && text.length < 15) {
+      console.debug('[AlgorithmLens][Twitter][Sponsored] Detected via dedicated label span:', text);
+      return {
+        isSponsored: true,
+        evidence: { strategy: 'labelSpan', matchedText: text, selector: 'span' }
+      };
+    }
+  }
+
+  return { isSponsored: false, evidence: null };
+}
 /**
  * Extract a single Twitter/X post from its container element
  * @param {Element} container 
@@ -2578,7 +2597,9 @@ function extractTwitterPost(container, index) {
   
   const creator = extractTwitterCreator(container);
   const caption = extractTwitterCaption(container);
-  const isSponsored = isTwitterSponsored(container);
+  const sponsoredResult = isTwitterSponsored(container);
+  const isSponsored = sponsoredResult.isSponsored;
+  const sponsoredEvidence = sponsoredResult.evidence;
   
   // Extract hashtags from caption
   const hashtags = extractHashtags(caption);
@@ -2621,6 +2642,7 @@ function extractTwitterPost(container, index) {
       caption: caption || null,
       hashtags,
       isSponsored: Boolean(isSponsored),
+      sponsoredEvidence: sponsoredEvidence || null,
       ctaText: ctaText || null,
       link: link || null
     };
@@ -3170,6 +3192,7 @@ function extractRedditPost(container, index, issues = []) {
     caption: caption || null,
     hashtags,
     isSponsored: Boolean(isSponsored),
+      sponsoredEvidence: sponsoredEvidence || null,
     ctaText: ctaText || null,
     link: link || null
   };
