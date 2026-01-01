@@ -27,6 +27,8 @@ console.log('[AlgorithmLens] Popup opened');
 const statusEl = document.getElementById('status');
 const scanButton = document.getElementById('scanButton');
 const sessionTimerEl = document.getElementById('sessionTimer');
+const aiConsentToggle = document.getElementById('aiConsentToggle');
+const aiConsentSection = document.getElementById('aiConsentSection');
 
 // ============================================
 // State
@@ -434,9 +436,14 @@ async function startSession() {
   statusEl.textContent = 'Starting session...';
   
   try {
-    const response = await chrome.runtime.sendMessage({ action: 'START_SESSION_SCAN' });
-    
-    console.log('[AlgorithmLens] Start session response:', response);
+    // Include AI consent in session start message
+    const geminiConsent = getAiConsent();
+    const response = await chrome.runtime.sendMessage({
+      action: 'START_SESSION_SCAN',
+      geminiConsent: geminiConsent
+    });
+
+    console.log('[AlgorithmLens] Start session response:', response, '(geminiConsent:', geminiConsent, ')');
     
     if (!response.success) {
       // Check if this is specifically a "needs refresh" scenario
@@ -511,11 +518,18 @@ async function stopSessionAndAnalyze() {
     console.log('[AlgorithmLens] Stop session response:', response);
     
     if (!response.success) {
+      // Check if this is a double-submit (already processing or already processed)
+      if (response.alreadyProcessed) {
+        console.log('[AlgorithmLens] Ignoring duplicate stop request - already processed');
+        // Don't change UI state, just return (the first request is handling it)
+        return;
+      }
+
       // Check if this is specifically a "needs refresh" scenario
       if (response.needsRefresh) {
         sessionActive = false;
         sessionStartTime = null;
-        
+
         statusEl.className = 'status unsupported';
         statusEl.innerHTML = `
           <strong>⚠️ Connection Lost</strong><br>
@@ -639,3 +653,48 @@ document.addEventListener('DOMContentLoaded', () => {
 if (document.readyState !== 'loading') {
   checkCurrentTab();
 }
+
+// ============================================
+// AI Consent Toggle Persistence
+// ============================================
+
+// Load saved consent preference (default OFF)
+async function loadAiConsentPreference() {
+  try {
+    const result = await chrome.storage.local.get(['aiConsentEnabled']);
+    const enabled = result.aiConsentEnabled === true; // Default to false
+    if (aiConsentToggle) {
+      aiConsentToggle.checked = enabled;
+    }
+    console.log('[AlgorithmLens] AI consent preference loaded:', enabled);
+    return enabled;
+  } catch (e) {
+    console.error('[AlgorithmLens] Error loading AI consent preference:', e);
+    return false;
+  }
+}
+
+// Save consent preference
+async function saveAiConsentPreference(enabled) {
+  try {
+    await chrome.storage.local.set({ aiConsentEnabled: enabled });
+    console.log('[AlgorithmLens] AI consent preference saved:', enabled);
+  } catch (e) {
+    console.error('[AlgorithmLens] Error saving AI consent preference:', e);
+  }
+}
+
+// Get current consent state
+function getAiConsent() {
+  return aiConsentToggle ? aiConsentToggle.checked : false;
+}
+
+// Toggle change handler
+if (aiConsentToggle) {
+  aiConsentToggle.addEventListener('change', () => {
+    saveAiConsentPreference(aiConsentToggle.checked);
+  });
+}
+
+// Load preference on popup open
+loadAiConsentPreference();

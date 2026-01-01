@@ -462,6 +462,71 @@
       border-radius: 6px;
       border: 1px solid #e2e8f0;
     }
+
+    /* AI Consent Toggle Section */
+    .ai-consent-section {
+      margin-top: 12px;
+      padding: 10px;
+      background: #f8fafc;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .toggle-container input {
+      display: none;
+    }
+
+    .toggle-slider {
+      width: 36px;
+      height: 20px;
+      background: #cbd5e1;
+      border-radius: 10px;
+      position: relative;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .toggle-slider::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .toggle-container input:checked + .toggle-slider {
+      background: #10b981;
+    }
+
+    .toggle-container input:checked + .toggle-slider::after {
+      transform: translateX(16px);
+    }
+
+    .toggle-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .ai-consent-info {
+      margin-top: 8px;
+      font-size: 10px;
+      color: #64748b;
+      line-height: 1.4;
+    }
   </style>
 </head>
 <body>
@@ -485,9 +550,21 @@
     <button id="scanButton" class="scan-button" disabled>
       Start Session Scan
     </button>
-    
+
+    <!-- AI Analysis Consent Toggle -->
+    <div id="aiConsentSection" class="ai-consent-section">
+      <label class="toggle-container">
+        <input type="checkbox" id="aiConsentToggle">
+        <span class="toggle-slider"></span>
+        <span class="toggle-label">Use AI analysis on this scan</span>
+      </label>
+      <p class="ai-consent-info">
+        When enabled, AlgorithmLens uses AI to analyze post tone, political signals, and wellbeing themes. Only limited post data is sent. This scan will use one of your available scans.
+      </p>
+    </div>
+
     <p class="session-hint">
-      🎬 AlgorithmLens records which posts appear in your feed during this session. Currently supports TikTok, Instagram, YouTube, and X/Twitter. Facebook support is coming soon.
+      🎬 AlgorithmLens records which posts appear in your feed during this session. Currently supports TikTok, Instagram, YouTube, and X/Twitter. Only scan feeds you have permission to analyze.
     </p>
     
     <div class="footer">

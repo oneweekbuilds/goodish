@@ -14,6 +14,13 @@ import { mapDesktopPostsToUnifiedResult } from './desktop_mapper.js';
 
 console.log('[AlgorithmLens] Background service worker active');
 
+// ============================================
+// Utility: Generate unique scan ID
+// ============================================
+function generateScanId() {
+  return `desktop-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
+
 // Backend API configuration
 const BACKEND_URL = 'http://127.0.0.1:8000';
 const DASHBOARD_URL = 'http://localhost:5173';
@@ -30,43 +37,86 @@ const SUPPORTED_SCAN_PLATFORMS = ['tiktok', 'instagram', 'youtube', 'facebook', 
 const AUTO_CLEAR_ON_NAVIGATION = false;
 
 // ============================================
-// Per-Tab Session State
+// Per-Tab Session State (persisted via chrome.storage.session)
 // ============================================
 
-// Map of tabId -> { startTime: number, platform: string }
+// In-memory cache for quick access (synced with chrome.storage.session)
 const sessionStateByTab = new Map();
 
+// Storage key prefix for session state
+const SESSION_STATE_KEY_PREFIX = 'session_';
+
 /**
- * Get session state for a tab
- * @param {number} tabId 
- * @returns {{ startTime: number, platform: string } | null}
+ * Get session state for a tab (async - reads from storage)
+ * @param {number} tabId
+ * @returns {Promise<{ startTime: number, platform: string, scanId: string, isProcessing?: boolean } | null>}
  */
-function getSessionState(tabId) {
-  const state = sessionStateByTab.get(tabId);
-  console.log(`[AlgorithmLens] getSessionState(${tabId}):`, state || 'null');
-  return state || null;
+async function getSessionState(tabId) {
+  // Try in-memory cache first
+  const cachedState = sessionStateByTab.get(tabId);
+  if (cachedState) {
+    console.log(`[AlgorithmLens] getSessionState(${tabId}) from cache:`, cachedState);
+    return cachedState;
+  }
+
+  // Fall back to chrome.storage.session
+  const key = SESSION_STATE_KEY_PREFIX + tabId;
+  try {
+    const result = await chrome.storage.session.get(key);
+    const state = result[key] || null;
+    if (state) {
+      // Re-populate cache
+      sessionStateByTab.set(tabId, state);
+      console.log(`[AlgorithmLens] getSessionState(${tabId}) from storage:`, state);
+    } else {
+      console.log(`[AlgorithmLens] getSessionState(${tabId}): null (not found)`);
+    }
+    return state;
+  } catch (err) {
+    console.error(`[AlgorithmLens] Error reading session state for tab ${tabId}:`, err);
+    return null;
+  }
 }
 
 /**
- * Set session state for a tab
- * @param {number} tabId 
- * @param {{ startTime: number, platform: string }} state 
+ * Set session state for a tab (async - persists to storage)
+ * @param {number} tabId
+ * @param {{ startTime: number, platform: string, scanId: string, geminiConsent?: boolean, isProcessing?: boolean }} state
  */
-function setSessionState(tabId, state) {
+async function setSessionState(tabId, state) {
+  // Update in-memory cache
   sessionStateByTab.set(tabId, state);
-  console.log(`[AlgorithmLens] Session START for tab ${tabId} at ${state.startTime} (${new Date(state.startTime).toISOString()})`);
+
+  // Persist to chrome.storage.session
+  const key = SESSION_STATE_KEY_PREFIX + tabId;
+  try {
+    await chrome.storage.session.set({ [key]: state });
+    console.log(`[AlgorithmLens] Session START for tab ${tabId} at ${state.startTime} (${new Date(state.startTime).toISOString()}) - persisted`);
+  } catch (err) {
+    console.error(`[AlgorithmLens] Error persisting session state for tab ${tabId}:`, err);
+  }
 }
 
 /**
- * Clear session state for a tab
- * @param {number} tabId 
+ * Clear session state for a tab (async - removes from storage)
+ * @param {number} tabId
  */
-function clearSessionState(tabId) {
+async function clearSessionState(tabId) {
   const state = sessionStateByTab.get(tabId);
   if (state) {
     console.log(`[AlgorithmLens] Session END for tab ${tabId}. Was started at ${state.startTime}`);
   }
+
+  // Clear from cache
   sessionStateByTab.delete(tabId);
+
+  // Clear from storage
+  const key = SESSION_STATE_KEY_PREFIX + tabId;
+  try {
+    await chrome.storage.session.remove(key);
+  } catch (err) {
+    console.error(`[AlgorithmLens] Error clearing session state for tab ${tabId}:`, err);
+  }
 }
 
 /**
@@ -97,9 +147,9 @@ async function clearRecordingBadge(tabId) {
 }
 
 // Clean up session state and badge when tab is closed
-chrome.tabs.onRemoved.addListener((tabId) => {
+chrome.tabs.onRemoved.addListener(async (tabId) => {
   if (sessionStateByTab.has(tabId)) {
-    clearSessionState(tabId);
+    await clearSessionState(tabId);
     console.log(`[AlgorithmLens] Cleaned up session state for closed tab ${tabId}`);
   }
 });
@@ -143,7 +193,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // Check platform (includes session state)
   // ----------------------------------------
   if (message.type === 'CHECK_PLATFORM') {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
       const tab = tabs[0];
       if (!tab || !tab.url) {
         sendResponse({ supported: false, platform: null });
@@ -168,7 +218,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
       
       // Include session state
-      const sessionState = getSessionState(tab.id);
+      const sessionState = await getSessionState(tab.id);
       
       // Note: 'supported' now reflects if platform is in SUPPORTED_SCAN_PLATFORMS
       // Reddit is detected as a platform but marked as unsupported for now
@@ -191,14 +241,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // GET SESSION STATE (explicit check for popup)
   // ----------------------------------------
   if (message.action === 'GET_SESSION_STATE') {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
       const tab = tabs[0];
       if (!tab) {
         sendResponse({ success: false, error: 'No active tab', active: false });
         return;
       }
-      
-      const state = getSessionState(tab.id);
+
+      const state = await getSessionState(tab.id);
       
       sendResponse({
         success: true,
@@ -283,12 +333,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // ALWAYS CLEAR STALE STATE: Ensure Start always begins a fresh session
       // This fixes the "first click doesn't work" issue caused by stale state
       // ============================================================================
-      const existingSession = getSessionState(tabId);
+      const existingSession = await getSessionState(tabId);
       if (existingSession) {
         console.log(`[AlgorithmLens][Session] Clearing stale/existing session state for tab ${tabId} before starting fresh`);
         console.debug(`[AlgorithmLens][Session]   → Previous session startTime: ${existingSession.startTime}`);
         console.debug(`[AlgorithmLens][Session]   → Previous session platform: ${existingSession.platform}`);
-        clearSessionState(tabId);
+        await clearSessionState(tabId);
         await clearRecordingBadge(tabId);
         // Continue to create new session (don't return early)
       }
@@ -315,13 +365,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           return;
         }
         
-        // Store session state with current timestamp
+        // Generate NEW scanId at session start (critical for scan uniqueness)
+        const scanId = generateScanId();
         const startTime = Date.now();
-        setSessionState(tabId, {
+        const createdAt = new Date(startTime).toISOString();
+        const geminiConsent = message.geminiConsent === true; // Default to false
+
+        await setSessionState(tabId, {
+          scanId: scanId,
           startTime: startTime,
+          createdAt: createdAt,
           platform: contentResponse.platform,
-          initialPostCount: contentResponse.initialPostCount || 0
+          initialPostCount: contentResponse.initialPostCount || 0,
+          geminiConsent: geminiConsent,
+          isProcessing: false // Not yet processing
         });
+
+        console.debug(`[AlgorithmLens][Session] NEW scanId generated: ${scanId}`);
+        console.log(`[AlgorithmLens] Session state saved with scanId=${scanId}, geminiConsent=${geminiConsent}`);
         
         // Set the recording badge
         await setRecordingBadge(tabId);
@@ -373,29 +434,50 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'STOP_SESSION_SCAN_AND_PROCESS') {
     console.debug('[AlgorithmLens][Session] STOP_SESSION_SCAN_AND_PROCESS received (user-initiated stop)');
     console.log('[AlgorithmLens] === STOP_SESSION_SCAN_AND_PROCESS ===');
-    
+
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
       const tab = tabs[0];
       if (!tab) {
         sendResponse({ success: false, error: 'No active tab found' });
         return;
       }
-      
+
       const tabId = tab.id;
-      
-      // Get session state - THIS IS CRITICAL for duration calculation
-      const sessionState = getSessionState(tabId);
+
+      // Get session state - THIS IS CRITICAL for scanId and duration
+      const sessionState = await getSessionState(tabId);
       const startTime = sessionState?.startTime;
-      
+      const scanId = sessionState?.scanId;
+      const createdAt = sessionState?.createdAt;
+
       console.log(`[AlgorithmLens] Stopping session for tab ${tabId}`);
-      console.log(`[AlgorithmLens] Session state:`, sessionState);
+      console.debug(`[AlgorithmLens][Session] Session state:`, sessionState);
+      console.debug(`[AlgorithmLens][Session] scanId from session: ${scanId}`);
       console.log(`[AlgorithmLens] startTime:`, startTime, startTime ? `(${new Date(startTime).toISOString()})` : '(MISSING!)');
-      
+
+      // ===== DOUBLE-SUBMIT PROTECTION =====
+      // If no session or already processing, reject the request
+      if (!sessionState) {
+        console.warn('[AlgorithmLens][Session] No session state found - ignoring stop request (possible double-submit)');
+        sendResponse({ success: false, error: 'No active session to stop', alreadyProcessed: true });
+        return;
+      }
+
+      if (sessionState.isProcessing) {
+        console.warn(`[AlgorithmLens][Session] Session ${scanId} is already being processed - ignoring duplicate stop`);
+        sendResponse({ success: false, error: 'Session is already being processed', alreadyProcessed: true });
+        return;
+      }
+
+      // Mark session as processing IMMEDIATELY to prevent double-submits
+      await setSessionState(tabId, { ...sessionState, isProcessing: true });
+      console.debug(`[AlgorithmLens][Session] Marked session ${scanId} as processing`);
+
       // Warn if startTime is missing
       if (!startTime) {
         console.warn('[AlgorithmLens] WARNING: startTime is missing! Duration will default to 1s');
       }
-      
+
       try {
         // Stop session in content script and get posts
         console.log(`[AlgorithmLens] Sending STOP_SESSION_SCAN to tab ${tabId}...`);
@@ -405,7 +487,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         
         if (!contentResponse) {
           console.error('[AlgorithmLens] Content script returned null/undefined response on stop');
-          clearSessionState(tabId);
+          await clearSessionState(tabId);
           await clearRecordingBadge(tabId);
           sendResponse({ 
             success: false, 
@@ -416,7 +498,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
         
         if (!contentResponse.success) {
-          clearSessionState(tabId);
+          await clearSessionState(tabId);
           await clearRecordingBadge(tabId);
           sendResponse({ success: false, error: contentResponse.error || 'Failed to stop session' });
           return;
@@ -460,9 +542,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         console.log(`[AlgorithmLens]   rawDurationSeconds: ${rawDurationSeconds}`);
         console.log(`[AlgorithmLens]   durationSeconds (final): ${durationSeconds}`);
         console.log(`[AlgorithmLens]   posts collected: ${posts?.length || 0}`);
-        
-        // Map to UnifiedScanResult
-        const result = mapDesktopPostsToUnifiedResult(posts || [], platform);
+
+        // Map to UnifiedScanResult - pass scanId and createdAt from session state
+        console.debug(`[AlgorithmLens][Session] Mapping with scanId: ${scanId}`);
+        const result = mapDesktopPostsToUnifiedResult(posts || [], platform, {
+          scanId: scanId,
+          createdAt: createdAt
+        });
         
         // Inject duration into ALL the places the backend might look
         result.aggregates = result.aggregates || {};
@@ -525,13 +611,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           }
         );
         
-        // Send to backend
+        // Send to backend with gemini_consent flag from session state
+        const geminiConsent = sessionState?.geminiConsent === true;
+        const payloadWithConsent = {
+          ...result,
+          gemini_consent: geminiConsent
+        };
+        console.debug(`[AlgorithmLens][Session] Submitting scanId: ${result.scan_metadata?.scan_id}`);
+        console.log(`[AlgorithmLens] Sending to backend with gemini_consent=${geminiConsent}`);
+
         let backendResponse = null;
         try {
           const response = await fetch(`${BACKEND_URL}/api/scan/desktop`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(result)
+            body: JSON.stringify(payloadWithConsent)
           });
           
           if (!response.ok) {
@@ -553,10 +647,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           backendResponse = { success: false, error: backendError.message };
         }
         
-        // Clear session state and badge
-        clearSessionState(tabId);
+        // Clear session state and badge - CRITICAL: ensures next scan gets new scanId
+        console.debug(`[AlgorithmLens][Session] Clearing session for tab ${tabId} (scanId was: ${scanId})`);
+        await clearSessionState(tabId);
         await clearRecordingBadge(tabId);
-        
+        console.debug(`[AlgorithmLens][Session] Session cleared - next scan will generate new scanId`);
+
         // Return comprehensive response
         sendResponse({
           success: true,
@@ -575,7 +671,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         
       } catch (error) {
         console.error('[AlgorithmLens] Error stopping session:', error);
-        clearSessionState(tabId);
+        await clearSessionState(tabId);
         await clearRecordingBadge(tabId);
         
         // Check if this is a "content script not available" error
@@ -723,7 +819,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'loading' && sessionStateByTab.has(tabId)) {
     if (AUTO_CLEAR_ON_NAVIGATION) {
       console.log(`[AlgorithmLens][Session] Tab ${tabId} navigating, clearing session state and badge`);
-      clearSessionState(tabId);
+      await clearSessionState(tabId);
       await clearRecordingBadge(tabId);
       // Note: When AUTO_CLEAR_ON_NAVIGATION is true and we auto-clear here,
       // the popup won't know unless it re-checks session state on open.

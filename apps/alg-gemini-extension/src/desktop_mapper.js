@@ -26,37 +26,11 @@ const STOP_WORDS = new Set([
   'make', 'take', 'come', 'go', 'know', 'think', 'say', 'try', 'use', 'find'
 ]);
 
-// High energy / positive tone words
-const HIGH_ENERGY_WORDS = [
-  'amazing', 'incredible', 'insane', 'crazy', 'awesome', 'epic', 'fire',
-  'lit', 'best', 'perfect', 'love', 'beautiful', 'stunning', 'gorgeous',
-  'excited', 'happy', 'joy', 'celebrate', 'win', 'success', 'viral'
-];
-
-// Low mood / negative tone words
-const LOW_MOOD_WORDS = [
-  'sad', 'lonely', 'depressed', 'anxious', 'anxiety', 'stressed', 'tired',
-  'exhausted', 'hate', 'angry', 'frustrated', 'disappointed', 'worried',
-  'scared', 'afraid', 'hurt', 'pain', 'struggle', 'fail', 'lost', 'alone'
-];
-
-// Wellbeing-related hashtags/keywords
-const WELLBEING_KEYWORDS = {
-  fitness: ['fitness', 'gym', 'workout', 'exercise', 'training', 'lift', 'cardio', 'running', 'yoga', 'pilates'],
-  health: ['health', 'healthy', 'wellness', 'nutrition', 'diet', 'weightloss', 'cleaneating', 'organic'],
-  motivation: ['motivation', 'motivated', 'inspire', 'inspiration', 'goals', 'grind', 'hustle', 'success'],
-  selfcare: ['selfcare', 'mentalhealth', 'mindfulness', 'meditation', 'therapy', 'healing', 'selflove'],
-  body_image: ['body', 'weight', 'skinny', 'fat', 'thin', 'bodygoals', 'transformation', 'beforeafter'],
-  diet_weight_loss: ['diet', 'weightloss', 'calories', 'fasting', 'keto', 'vegan', 'detox', 'cleanse']
-};
-
-// Political keywords
-const POLITICAL_KEYWORDS = [
-  'election', 'president', 'vote', 'voting', 'congress', 'senate', 'democrat',
-  'republican', 'politics', 'political', 'government', 'policy', 'campaign',
-  'candidate', 'trump', 'biden', 'liberal', 'conservative', 'left', 'right',
-  'partisan', 'legislation', 'bill', 'law', 'rights', 'protest', 'activism'
-];
+// NOTE: Keyword-based heuristics for sentiment, wellbeing, and political detection
+// were removed because they produced inaccurate results (false positives from
+// partial word matches, lack of context understanding).
+// These fields now return null/empty to indicate "not analyzed" rather than
+// showing inaccurate guesses. Accurate analysis requires AI/LLM processing.
 
 // ============================================
 // Utility Functions
@@ -84,54 +58,10 @@ function extractKeywords(text) {
   return words;
 }
 
-/**
- * Analyze tone/valence of text
- */
-function analyzeTone(text) {
-  if (!text) return 'NEUTRAL';
-  
-  const lowerText = text.toLowerCase();
-  
-  let positiveScore = 0;
-  let negativeScore = 0;
-  
-  HIGH_ENERGY_WORDS.forEach(word => {
-    if (lowerText.includes(word)) positiveScore++;
-  });
-  
-  LOW_MOOD_WORDS.forEach(word => {
-    if (lowerText.includes(word)) negativeScore++;
-  });
-  
-  if (positiveScore > negativeScore && positiveScore > 0) return 'POSITIVE';
-  if (negativeScore > positiveScore && negativeScore > 0) return 'NEGATIVE';
-  if (positiveScore > 0 && negativeScore > 0) return 'MIXED';
-  return 'NEUTRAL';
-}
-
-/**
- * Detect wellbeing themes in text
- */
-function detectWellbeingThemes(text, hashtags) {
-  const themes = [];
-  const combined = (text || '').toLowerCase() + ' ' + hashtags.map(h => h.toLowerCase()).join(' ');
-  
-  for (const [theme, keywords] of Object.entries(WELLBEING_KEYWORDS)) {
-    if (keywords.some(kw => combined.includes(kw))) {
-      themes.push(theme);
-    }
-  }
-  
-  return themes;
-}
-
-/**
- * Check if content is political
- */
-function isPolitical(text, hashtags) {
-  const combined = (text || '').toLowerCase() + ' ' + hashtags.map(h => h.toLowerCase()).join(' ');
-  return POLITICAL_KEYWORDS.some(kw => combined.includes(kw));
-}
+// NOTE: analyzeTone, detectWellbeingThemes, and isPolitical functions removed.
+// Simple keyword matching produces too many false positives (e.g., "body" matching
+// body_image for an NFL post, "left/right" matching political for sports content).
+// Accurate sentiment/wellbeing/political detection requires LLM-based analysis.
 
 /**
  * Extract domain from URL
@@ -192,12 +122,16 @@ function classifyTopic(keywords, hashtags) {
  * Map DesktopPostItem[] to UnifiedScanResult
  * @param {Array} posts - Array of DesktopPostItem from DOM scanner
  * @param {string} platform - Platform name (tiktok, instagram, youtube, facebook, twitter, reddit)
+ * @param {Object} options - Optional configuration
+ * @param {string} options.scanId - Pre-generated scanId (from session start). If not provided, generates new one.
+ * @param {string} options.createdAt - ISO timestamp when scan started. If not provided, uses current time.
  * @returns {Object} UnifiedScanResult
  */
-export function mapDesktopPostsToUnifiedResult(posts = [], platform = 'unknown') {
+export function mapDesktopPostsToUnifiedResult(posts = [], platform = 'unknown', options = {}) {
   const startTime = Date.now();
-  const scanId = generateScanId();
-  const timestamp = new Date().toISOString();
+  // Use provided scanId from session state, or generate new one as fallback
+  const scanId = options.scanId || generateScanId();
+  const timestamp = options.createdAt || new Date().toISOString();
   
   // Ensure posts is an array
   if (!Array.isArray(posts)) {
@@ -225,53 +159,36 @@ export function mapDesktopPostsToUnifiedResult(posts = [], platform = 'unknown')
   const topicCounts = {};
   const hashtagCounts = {};
   const ctaCounts = {};
-  const valenceDistribution = { POSITIVE: 0, NEUTRAL: 0, NEGATIVE: 0, MIXED: 0 };
-  let politicalCount = 0;
-  let wellbeingRelevantCount = 0;
-  const allWellbeingThemes = [];
-  
+
   posts.forEach((post, index) => {
     // Extract keywords from caption
     const keywords = extractKeywords(post.caption);
-    
+
     // Classify topic
     const primaryTopic = classifyTopic(keywords, post.hashtags || []);
     topicCounts[primaryTopic] = (topicCounts[primaryTopic] || 0) + 1;
-    
+
     // Count hashtags
     (post.hashtags || []).forEach(tag => {
       const normalizedTag = tag.toLowerCase();
       hashtagCounts[normalizedTag] = (hashtagCounts[normalizedTag] || 0) + 1;
     });
-    
-    // Analyze tone
-    const valence = analyzeTone(post.caption);
-    valenceDistribution[valence]++;
-    
-    // Detect wellbeing themes
-    const wellbeingThemes = detectWellbeingThemes(post.caption, post.hashtags || []);
-    if (wellbeingThemes.length > 0) {
-      wellbeingRelevantCount++;
-      allWellbeingThemes.push(...wellbeingThemes);
-    }
-    
-    // Check for political content
-    const political = isPolitical(post.caption, post.hashtags || []);
-    if (political) politicalCount++;
-    
+
     // Count CTAs
     if (post.ctaText) {
       const normalizedCta = post.ctaText.toLowerCase();
       ctaCounts[normalizedCta] = (ctaCounts[normalizedCta] || 0) + 1;
     }
-    
+
     // Build FeedItem
+    // NOTE: political, wellbeing, and valence fields are set to null/NOT_ANALYZED
+    // because accurate detection requires AI/LLM analysis, not keyword matching.
     const feedItem = {
       position_in_feed: index + 1,
       approx_timestamp_offset_sec: null,
       content_type: platform === 'youtube' ? 'VIDEO' : 'POST',
       is_ad: post.isSponsored || false,
-      
+
       ad_metadata: post.isSponsored ? {
         ad_detected_reason: 'sponsored_label',
         sponsored_label_text: post.sponsoredEvidence?.matchedText || 'Sponsored',
@@ -280,40 +197,42 @@ export function mapDesktopPostsToUnifiedResult(posts = [], platform = 'unknown')
         product_or_service: post.ctaText || null,
         detection_evidence: post.sponsoredEvidence || null
       } : null,
-      
+
       account: {
         account_handle: post.creator || null,
         account_display_name: post.creator || null,
         account_category_guess: null
       },
-      
+
       content_text: {
         captions: post.caption ? [post.caption] : [],
         hashtags: post.hashtags || [],
         on_screen_labels: []
       },
-      
+
       topics: {
         primary_category: primaryTopic,
         secondary_categories: [],
         freeform_tags: keywords.slice(0, 10)
       },
-      
+
+      // Political detection requires AI analysis - keyword matching is too inaccurate
       political: {
-        is_political: political,
+        is_political: null, // null = not analyzed (requires AI)
         political_subtype: null,
         stance_or_alignment_guess: null,
         policy_area: null,
         geographic_focus: null
       },
-      
+
+      // Wellbeing detection requires AI analysis - keyword matching is too inaccurate
       wellbeing: {
-        wellbeing_relevance: wellbeingThemes.length > 0 ? 'MEDIUM' : 'NONE',
-        valence: valence,
-        themes: wellbeingThemes,
+        wellbeing_relevance: 'NOT_ANALYZED', // Indicates AI analysis needed
+        valence: null, // null = not analyzed (requires AI)
+        themes: [],
         potential_risk_flags: []
       },
-      
+
       engagement_drivers: {
         hooks_detected: [],
         call_to_action_patterns: post.ctaText ? [post.ctaText] : [],
@@ -420,14 +339,16 @@ export function mapDesktopPostsToUnifiedResult(posts = [], platform = 'unknown')
       total_ads: totalAds,
       ad_percentage: adPercentage,
       topic_distribution: topicDistribution,
+      // NOTE: Wellbeing and political summaries show null/NOT_ANALYZED
+      // because accurate detection requires AI/LLM analysis
       wellbeing_summary: {
-        high_relevance_items: wellbeingRelevantCount,
-        potential_risk_items: 0,
-        valence_distribution: valenceDistribution
+        high_relevance_items: null, // Not analyzed - requires AI
+        potential_risk_items: null, // Not analyzed - requires AI
+        valence_distribution: null  // Not analyzed - requires AI
       },
       political_content_summary: {
-        political_items: politicalCount,
-        political_percentage: totalItems > 0 ? politicalCount / totalItems : 0
+        political_items: null, // Not analyzed - requires AI
+        political_percentage: null // Not analyzed - requires AI
       },
       repetition_summary: {
         items_in_repetition_clusters: 0,
@@ -464,10 +385,10 @@ export function mapDesktopPostsToUnifiedResult(posts = [], platform = 'unknown')
       .map(([tag, count]) => ({ tag, count })),
     topTopics: topicDistribution.slice(0, 5),
     uniqueCreators: [...new Set(posts.map(p => p.creator).filter(Boolean))],
-    wellbeingThemes: [...new Set(allWellbeingThemes)],
+    wellbeingThemes: [], // Not analyzed - requires AI
     totalCTAs: Object.values(ctaCounts).reduce((a, b) => a + b, 0)
   };
-  
+
   console.log('[AlgorithmLens][Mapper] ----------------------------------------');
   console.log('[AlgorithmLens][Mapper] FINAL RESULT:');
   console.log('[AlgorithmLens][Mapper]   scan_id:', result.scan_metadata.scan_id);
@@ -475,7 +396,7 @@ export function mapDesktopPostsToUnifiedResult(posts = [], platform = 'unknown')
   console.log('[AlgorithmLens][Mapper]   total_feed_items:', result.aggregates.total_feed_items);
   console.log('[AlgorithmLens][Mapper]   total_ads:', result.aggregates.total_ads);
   console.log('[AlgorithmLens][Mapper]   ad_percentage:', (result.aggregates.ad_percentage * 100).toFixed(1) + '%');
-  console.log('[AlgorithmLens][Mapper]   political_items:', result.aggregates.political_content_summary.political_items);
+  console.log('[AlgorithmLens][Mapper]   political_items: (not analyzed - requires AI)');
   console.log('[AlgorithmLens][Mapper]   unique_creators:', result._computed.uniqueCreators.length);
   
   // Final platform summary for debugging (should match input summary)
