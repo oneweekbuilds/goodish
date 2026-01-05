@@ -659,7 +659,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
               title={tabHeaders.keyInsight.title}
               subtext={tabHeaders.keyInsight.subtext}
             />
-            <div className="mt-5">
+            <div className="mt-6 mb-2">
               {primaryCards.map((view) => {
                 const dataResult = viewDataResults[view.id];
                 const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
@@ -673,14 +673,15 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                 return (
                   <div
                     key={view.id}
-                    className="rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-md"
+                    className="rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-lg"
                     style={{
                       background: 'white',
-                      border: '1px solid #CBD5E1',
+                      border: '1px solid rgba(148, 163, 184, 0.8)',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)',
                     }}
                   >
                     {/* Two-column layout for Algorithm tab */}
-                    <div className="p-6 md:p-8">
+                    <div className="p-7 md:p-9">
                       <div className={isAlgorithmTab && hasTopics ? 'md:flex md:gap-8' : ''}>
                         {/* Left column: Takeaway + explanation */}
                         <div className={isAlgorithmTab && hasTopics ? 'md:flex-1' : ''}>
@@ -833,7 +834,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
               title={tabHeaders.details.title}
               subtext={tabHeaders.details.subtext}
             />
-            <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-5">
               {secondaryCards.map((view, idx) => {
                 const dataResult = viewDataResults[view.id];
                 const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
@@ -843,24 +844,24 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                 return (
                   <div
                     key={view.id}
-                    className="rounded-xl p-5 transition-all duration-200 hover:shadow-md hover:border-slate-300"
+                    className="rounded-xl p-4 transition-all duration-200 hover:shadow-sm hover:border-slate-200"
                     style={{
                       background: 'white',
-                      border: '1px solid #E2E8F0',
+                      border: '1px solid rgba(226, 232, 240, 0.6)',
                     }}
                   >
                     {/* Card title */}
-                    <h4 className="text-base font-semibold text-slate-700 mb-3">{view.title}</h4>
+                    <h4 className="text-sm font-semibold text-slate-600 mb-2.5">{view.title}</h4>
 
                     {/* Bold one-line takeaway */}
                     {takeawayText && (
-                      <p className="text-sm font-medium text-slate-700 mb-3 leading-relaxed">
+                      <p className="text-xs font-medium text-slate-600 mb-2.5 leading-relaxed">
                         {takeawayText}
                       </p>
                     )}
 
                     {/* Supporting content */}
-                    <div className="text-sm text-slate-500">
+                    <div className="text-xs text-slate-500">
                       <ViewCard
                         view={view}
                         dataResult={dataResult}

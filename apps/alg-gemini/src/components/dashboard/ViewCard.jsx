@@ -528,8 +528,8 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0, accentCo
 
     if (isPrimary && hasData) {
       return {
-        border: '1px solid rgba(226, 232, 240, 0.6)',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+        border: '1px solid rgba(148, 163, 184, 0.7)',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)',
       };
     }
 
@@ -557,7 +557,7 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0, accentCo
     }
 
     if (isPrimary && hasData) {
-      return 'px-8 py-7 bg-white';
+      return 'px-8 py-7 bg-white border-b border-slate-100';
     }
 
     if (isFutureCard) {
@@ -601,7 +601,7 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0, accentCo
         )}
         {/* Title */}
         <h3 className={`font-semibold text-text-main line-clamp-2 ${
-          isPrimary && hasData ? 'text-lg' :
+          isPrimary && hasData ? 'text-xl' :
           isFutureCard ? 'text-sm text-slate-500' :
           'text-base'
         }`}>
