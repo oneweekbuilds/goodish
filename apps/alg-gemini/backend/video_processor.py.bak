@@ -1,7 +1,4 @@
-try:
-    import cv2  # type: ignore
-except ModuleNotFoundError:
-    cv2 = None
+import cv2
 import pytesseract
 from PIL import Image
 import numpy as np
@@ -29,9 +26,6 @@ from ocr_utils import (
 # pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 def process_video(file_path: str, user_id: str = "demo-user", platform: str = "tiktok") -> UnifiedScanResult:
-    if cv2 is None:
-        raise RuntimeError("OpenCV (cv2) is not installed. Video processing is unavailable on this machine.")
-
     start_time = time.time()
     scan_id = str(uuid.uuid4())
 
@@ -318,3 +312,4 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
             }
         )
     )
+
