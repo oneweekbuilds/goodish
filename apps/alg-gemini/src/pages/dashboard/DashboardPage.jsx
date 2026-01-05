@@ -2086,14 +2086,42 @@ const DashboardPage = () => {
 
           {/* Views Grid with enforced section structure - ReadingColumnWrapper for ALL tabs */}
           <ReadingColumnWrapper>
-            <ViewsGridWithCollapsing
-              views={currentViews}
-              viewDataResults={viewDataResults}
-              scanCount={scans.length}
-              platformCount={platforms.length}
-              tabName={TABS.find((t) => t.id === activeTab)?.label || 'insights'}
-              tabId={activeTab}
-            />
+            {detailsLoading ? (
+              // Phase 4A: Skeleton loading states
+              <div className="space-y-10">
+                {/* Primary card skeleton */}
+                <section>
+                  <div className="rounded-2xl overflow-hidden" style={{ background: 'white', border: '1px solid rgba(148, 163, 184, 0.8)', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)' }}>
+                    <div className="p-7 md:p-9">
+                      <div className="h-8 bg-slate-200 rounded w-3/4 mb-4 animate-pulse" />
+                      <div className="h-4 bg-slate-200 rounded w-full mb-2 animate-pulse" />
+                      <div className="h-4 bg-slate-200 rounded w-5/6 animate-pulse" />
+                    </div>
+                  </div>
+                </section>
+                {/* Secondary cards skeleton */}
+                <section>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {[1, 2].map((i) => (
+                      <div key={i} className="rounded-xl p-4" style={{ background: 'white', border: '1px solid rgba(226, 232, 240, 0.6)' }}>
+                        <div className="h-5 bg-slate-200 rounded w-2/3 mb-3 animate-pulse" />
+                        <div className="h-4 bg-slate-200 rounded w-full mb-2 animate-pulse" />
+                        <div className="h-4 bg-slate-200 rounded w-4/5 animate-pulse" />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </div>
+            ) : (
+              <ViewsGridWithCollapsing
+                views={currentViews}
+                viewDataResults={viewDataResults}
+                scanCount={scans.length}
+                platformCount={platforms.length}
+                tabName={TABS.find((t) => t.id === activeTab)?.label || 'insights'}
+                tabId={activeTab}
+              />
+            )}
           </ReadingColumnWrapper>
         </div>
 
