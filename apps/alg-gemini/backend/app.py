@@ -44,6 +44,7 @@ from inferences_evidence_bundle import (
     format_inferences_talk_response_as_text,
 )
 from ocr_utils import get_ocr_debug_enabled
+from gemini_analyzer import analyze_scan
 
 app = FastAPI(title="AlgorithmLens Backend")
 
@@ -68,6 +69,28 @@ os.makedirs(TMP_DIR, exist_ok=True)
 @app.get("/api/health")
 def health_check():
     return {"status": "ok"}
+
+
+@app.get("/api/gemini-status")
+def gemini_status():
+    """
+    Check Gemini AI analysis configuration.
+
+    Note: Gemini is CORE to every scan - not a separate tier or limit.
+    AI analysis runs on every scan where the user gives consent.
+
+    Returns:
+        Model info and feature list (availability is always assumed in production)
+    """
+    return {
+        "model": "gemini-2.0-flash-exp",
+        "features": [
+            "sentiment_analysis",
+            "political_detection",
+            "wellbeing_themes"
+        ],
+        "policy": "AI analysis is included with every scan when user consents"
+    }
 
 
 @app.get("/api/ocr-status")
@@ -329,17 +352,25 @@ def remove_scan(scan_id: str):
 async def desktop_scan(scan_result: dict):
     """
     Receive a desktop extension scan result (UnifiedScanResult) and save it to the database.
-    
+
     The extension sends a fully-formed UnifiedScanResult JSON object.
     This endpoint validates it has the required fields and saves it.
-    
+
     Supports all platforms: tiktok, instagram, youtube, facebook, twitter
     (Reddit is temporarily disabled in the extension but would work here)
-    
+
+    Gemini AI Analysis:
+        - Only runs if extension sends gemini_consent=true in the payload
+        - Also requires GEMINI_API_KEY environment variable to be set
+        - If consent not given or key not set, fields remain NOT_ANALYZED/null
+
     Returns:
-        Summary with scan_id, created_at, platform, total_items, total_ads, ad_percentage
+        Summary with scan_id, created_at, platform, total_items, total_ads, ad_percentage, ai_analyzed
     """
     try:
+        # Extract consent flag from payload (default: False for safety)
+        gemini_consent = scan_result.pop("gemini_consent", False)
+
         # Validate required fields exist
         scan_metadata = scan_result.get("scan_metadata", {})
         aggregates = scan_result.get("aggregates", {})
@@ -374,12 +405,42 @@ async def desktop_scan(scan_result: dict):
         total_items = aggregates.get("total_feed_items", 0)
         total_ads = aggregates.get("total_ads", 0)
         ad_percentage = aggregates.get("ad_percentage", 0.0)
-        
+
+        # Run Gemini AI analysis if user consented
+        # Policy: Gemini is CORE to every scan, not a separate tier
+        # - If consent given, Gemini ALWAYS runs (unless runtime error)
+        # - gemini_reason may only be: "no_consent", "success", or "error:<message>"
+        ai_analyzed = False
+        gemini_reason = None
+
+        if not gemini_consent:
+            gemini_reason = "no_consent"
+            print(f"[desktop_scan] Gemini skipped: user did not consent to AI analysis")
+        else:
+            try:
+                print(f"[desktop_scan] Running Gemini AI analysis for {total_items} posts (consent=True)...")
+                scan_result = analyze_scan(scan_result)
+                ai_analyzed = True
+                gemini_reason = "success"
+                print(f"[desktop_scan] Gemini analysis complete")
+            except Exception as e:
+                gemini_reason = f"error:{str(e)}"
+                print(f"[desktop_scan] Gemini analysis failed (non-fatal): {e}")
+
+        # Add debug info about Gemini analysis to the scan result
+        # Debug fields: gemini_consent, gemini_attempted, gemini_used, gemini_reason
+        if "debug" not in scan_result:
+            scan_result["debug"] = {}
+        scan_result["debug"]["gemini_consent"] = gemini_consent
+        scan_result["debug"]["gemini_attempted"] = gemini_consent  # If consent given, we always attempt
+        scan_result["debug"]["gemini_used"] = ai_analyzed
+        scan_result["debug"]["gemini_reason"] = gemini_reason
+
         # Save to database (same function used by mobile scans)
         save_scan(scan_result)
-        
+
         print(f"[desktop_scan] Saved desktop scan {scan_id}: {total_items} items, {total_ads} ads")
-        
+
         return {
             "success": True,
             "scan_id": scan_id,
@@ -388,6 +449,7 @@ async def desktop_scan(scan_result: dict):
             "total_items": total_items,
             "total_ads": total_ads,
             "ad_percentage": ad_percentage,
+            "ai_analyzed": ai_analyzed,
             "message": "Desktop scan saved successfully"
         }
         

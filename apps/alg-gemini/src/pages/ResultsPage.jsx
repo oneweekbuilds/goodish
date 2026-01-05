@@ -227,6 +227,30 @@ const DebugPanel = ({ result, scanId }) => {
             <span className="text-slate-700">{framesExtracted}</span>
           </div>
         )}
+
+        {/* Gemini AI Analysis Debug Info */}
+        <div className="flex justify-between py-1 border-b border-slate-100">
+          <span className="text-slate-600">AI Consent Given</span>
+          <span className={`font-medium ${debugInfo.gemini_consent ? 'text-green-600' : 'text-slate-400'}`}>
+            {debugInfo.gemini_consent ? 'Yes' : 'No'}
+          </span>
+        </div>
+
+        <div className="flex justify-between py-1 border-b border-slate-100">
+          <span className="text-slate-600">AI Analysis Used</span>
+          <span className={`font-medium ${debugInfo.gemini_used ? 'text-green-600' : 'text-slate-400'}`}>
+            {debugInfo.gemini_used ? 'Yes' : 'No'}
+          </span>
+        </div>
+
+        {debugInfo.gemini_reason && (
+          <div className="flex justify-between py-1 border-b border-slate-100">
+            <span className="text-slate-600">AI Reason</span>
+            <span className="font-mono text-xs text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+              {debugInfo.gemini_reason}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Warnings & Errors */}
@@ -578,6 +602,15 @@ const ResultsPage = () => {
         {/* Scan Integrity Warnings */}
         <ScanWarnings scan={result} />
 
+        {/* AI Analysis Reinforcement - show when Gemini was used */}
+        {scanData?.debug?.gemini_used && (
+          <div className="mb-6 px-4 py-3 bg-blue-50 border border-blue-100 rounded-lg">
+            <p className="text-sm text-blue-700">
+              AI analysis provided to help summarize patterns across posts.
+            </p>
+          </div>
+        )}
+
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Topic Clusters */}
@@ -623,7 +656,12 @@ const ResultsPage = () => {
               </div>
               Content Tone
             </h2>
-            {displayData.toneBreakdown.hasData ? (
+            {displayData.toneBreakdown.isNotAnalyzed ? (
+              <div className="py-6 text-center">
+                <p className="text-slate-500 font-medium">AI analysis not used for this scan</p>
+                <p className="text-xs text-slate-400 mt-2">You can enable AI analysis before starting a scan to see tone, political, and wellbeing insights.</p>
+              </div>
+            ) : displayData.toneBreakdown.hasData ? (
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between text-sm mb-1">
@@ -678,18 +716,27 @@ const ResultsPage = () => {
               </div>
               Political Content
             </h2>
-            <div className="text-center py-4">
-              <div className="text-4xl font-bold text-text-main mb-2">
-                {Math.round(displayData.politicalPercentage * 100)}%
+            {displayData.politicalPercentage === null ? (
+              <div className="py-6 text-center">
+                <p className="text-slate-500 font-medium">AI analysis not used for this scan</p>
+                <p className="text-xs text-slate-400 mt-2">You can enable AI analysis before starting a scan to see tone, political, and wellbeing insights.</p>
               </div>
-              <p className="text-slate-500">of your feed contains political content</p>
-            </div>
-            {displayData.politicalPercentage > 0.2 && (
-              <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-100">
-                <p className="text-sm text-amber-800">
-                  Your feed has a higher than average amount of political content.
-                </p>
-              </div>
+            ) : (
+              <>
+                <div className="text-center py-4">
+                  <div className="text-4xl font-bold text-text-main mb-2">
+                    {Math.round(displayData.politicalPercentage * 100)}%
+                  </div>
+                  <p className="text-slate-500">of your feed contains political content</p>
+                </div>
+                {displayData.politicalPercentage > 0.2 && (
+                  <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-100">
+                    <p className="text-sm text-amber-800">
+                      Your feed has a higher than average amount of political content.
+                    </p>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
@@ -701,7 +748,12 @@ const ResultsPage = () => {
               </div>
               Wellbeing Signals
             </h2>
-            {displayData.wellbeing.hasData ? (
+            {displayData.wellbeing.isNotAnalyzed ? (
+              <div className="py-6 text-center">
+                <p className="text-slate-500 font-medium">AI analysis not used for this scan</p>
+                <p className="text-xs text-slate-400 mt-2">You can enable AI analysis before starting a scan to see tone, political, and wellbeing insights.</p>
+              </div>
+            ) : displayData.wellbeing.hasData ? (
               <div className="space-y-3">
                 <div className="flex items-center justify-between py-2 border-b border-slate-100">
                   <span className="text-slate-600">Body image focus</span>
@@ -891,6 +943,10 @@ function getDisplayData(data) {
     }));
     const categoriesCount = topTopics.length;
 
+    // Check if wellbeing/political analysis was done (null means NOT_ANALYZED for desktop scans)
+    const isNotAnalyzed = aggregates.wellbeing_summary?.valence_distribution === null ||
+                          aggregates.political_content_summary?.political_percentage === null;
+
     // Tone breakdown - show actual data only, no synthetic defaults
     const valence = aggregates.wellbeing_summary?.valence_distribution || {};
     const totalValence = (valence.POSITIVE || 0) + (valence.NEUTRAL || 0) + (valence.NEGATIVE || 0);
@@ -898,11 +954,12 @@ function getDisplayData(data) {
       positive: totalValence > 0 ? (valence.POSITIVE || 0) / totalValence : 0,
       neutral: totalValence > 0 ? (valence.NEUTRAL || 0) / totalValence : 0,
       negative: totalValence > 0 ? (valence.NEGATIVE || 0) / totalValence : 0,
-      hasData: totalValence > 0, // Flag to indicate if we have real data
+      hasData: totalValence > 0 && !isNotAnalyzed,
+      isNotAnalyzed, // Flag to show "AI analysis required" message
     };
 
-    // Political
-    const politicalPercentage = aggregates.political_content_summary?.political_percentage || 0;
+    // Political - null means not analyzed
+    const politicalPercentage = aggregates.political_content_summary?.political_percentage ?? null;
 
     // Wellbeing - calculated from actual feed items only
     const feedItems = scanData.feed_items || [];
@@ -910,18 +967,22 @@ function getDisplayData(data) {
     let dietCount = 0;
     let conflictCount = 0;
 
-    feedItems.forEach(item => {
-      const themes = item.wellbeing?.themes || [];
-      if (themes.includes('body_image')) bodyImageCount++;
-      if (themes.includes('diet_weight_loss')) dietCount++;
-      if (themes.includes('conflict')) conflictCount++;
-    });
+    // Only count themes if analysis was done
+    if (!isNotAnalyzed) {
+      feedItems.forEach(item => {
+        const themes = item.wellbeing?.themes || [];
+        if (themes.includes('body_image')) bodyImageCount++;
+        if (themes.includes('diet_weight_loss') || themes.includes('diet_weight')) dietCount++;
+        if (themes.includes('conflict')) conflictCount++;
+      });
+    }
 
     const wellbeing = {
-      bodyImage: feedItems.length > 0 ? bodyImageCount / feedItems.length : 0,
-      dietWeight: feedItems.length > 0 ? dietCount / feedItems.length : 0,
-      conflict: feedItems.length > 0 ? conflictCount / feedItems.length : 0,
-      hasData: feedItems.length > 0, // Flag to indicate if we have real data
+      bodyImage: feedItems.length > 0 && !isNotAnalyzed ? bodyImageCount / feedItems.length : 0,
+      dietWeight: feedItems.length > 0 && !isNotAnalyzed ? dietCount / feedItems.length : 0,
+      conflict: feedItems.length > 0 && !isNotAnalyzed ? conflictCount / feedItems.length : 0,
+      hasData: feedItems.length > 0 && !isNotAnalyzed,
+      isNotAnalyzed, // Flag to show "AI analysis required" message
     };
 
     // Feed items for post-by-post breakdown
