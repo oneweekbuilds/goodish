@@ -1874,8 +1874,8 @@ const DashboardPage = () => {
     loadDetails();
   }, [scans, detailsLoaded, detailsLoading, fetchAllScanDetails]);
 
-  // Get views for current tab
-  const currentViews = getViewsForTab(activeTab);
+  // Get views for current tab - Phase 4B: Memoized to prevent unnecessary re-renders
+  const currentViews = useMemo(() => getViewsForTab(activeTab), [activeTab]);
 
   // Compute data for all views in current tab
   // PHASE 6A: Pass options like politicalLeaningEnabled to relevant data functions
