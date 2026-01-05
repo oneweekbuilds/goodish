@@ -36,17 +36,19 @@ const FeedbackAffordance = () => {
         <button
           onClick={() => setShowOptions(true)}
           className="text-[11px] text-slate-400 hover:text-slate-500 transition-colors"
+          aria-label="Provide feedback on whether this insight matches your experience"
         >
           Does this match your experience?
         </button>
       ) : (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" role="group" aria-label="Feedback options">
           <span className="text-[11px] text-slate-400">Match?</span>
           {['Yes', 'Somewhat', 'No'].map((option) => (
             <button
               key={option}
               onClick={() => setSelected(option)}
               className="px-2 py-0.5 text-[11px] rounded bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+              aria-label={`Select ${option} for feedback`}
             >
               {option}
             </button>

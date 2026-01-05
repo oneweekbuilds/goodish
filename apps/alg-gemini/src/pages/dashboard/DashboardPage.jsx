@@ -774,6 +774,8 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                           border: '1px solid rgba(37, 99, 235, 0.12)',
                           padding: '0.5rem 1rem',
                         }}
+                        aria-expanded={expandedSections.keyInsightEvidence}
+                        aria-label={expandedSections.keyInsightEvidence ? 'Hide evidence for this insight' : 'Show evidence for this insight'}
                       >
                         <ChevronDown
                           size={16}
@@ -781,6 +783,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                           style={{
                             transform: expandedSections.keyInsightEvidence ? 'rotate(180deg)' : 'rotate(0deg)',
                           }}
+                          aria-hidden="true"
                         />
                         {expandedSections.keyInsightEvidence ? 'Hide evidence' : 'How we know this'}
                       </button>
@@ -953,6 +956,8 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                           onClick={() => toggleSection('moreDetails')}
                           className="text-sm font-medium flex items-center gap-1 mt-3 pt-4 hover:text-blue-700 transition-colors"
                           style={{ color: '#2563EB', borderTop: '1px solid #E2E8F0' }}
+                          aria-expanded={expandedSections.moreDetails}
+                          aria-label={expandedSections.moreDetails ? 'Collapse additional insights' : `Expand to show ${collapsedCards.length - 3} more insight${collapsedCards.length - 3 === 1 ? '' : 's'}`}
                         >
                           <ChevronDown
                             size={14}
@@ -960,6 +965,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                             style={{
                               transform: expandedSections.moreDetails ? 'rotate(180deg)' : 'rotate(0deg)',
                             }}
+                            aria-hidden="true"
                           />
                           {expandedSections.moreDetails
                             ? 'Show less'
@@ -1108,6 +1114,8 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                           onClick={() => toggleSection('summaryMore')}
                           className="mt-5 text-sm font-medium flex items-center gap-1 hover:text-blue-700 transition-colors"
                           style={{ color: '#2563EB' }}
+                          aria-expanded={expandedSections.summaryMore}
+                          aria-label={expandedSections.summaryMore ? 'Collapse additional ideas' : `Expand to show ${dataResult.data.length - 3} more ideas`}
                         >
                           <ChevronDown
                             size={14}
@@ -1115,6 +1123,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                             style={{
                               transform: expandedSections.summaryMore ? 'rotate(180deg)' : 'rotate(0deg)',
                             }}
+                            aria-hidden="true"
                           />
                           {expandedSections.summaryMore
                             ? 'Show less'
@@ -1998,7 +2007,7 @@ const DashboardPage = () => {
 
         {/* Tab Navigation - Part 1 Rule A: All tabs use BLUE theme */}
         <div className={`border-b border-border-card ${isOnAlgorithmTab ? 'mb-6' : 'mb-8'}`}>
-          <nav className="flex gap-1 overflow-x-auto pb-px" aria-label="Dashboard tabs">
+          <nav className="flex gap-1 overflow-x-auto pb-px" aria-label="Dashboard tabs" role="tablist">
             {TABS.map((tab) => (
               <button
                 key={tab.id}
@@ -2031,7 +2040,7 @@ const DashboardPage = () => {
         {/* Global orientation - Phase 8: Removed, less clutter */}
 
         {/* Tab Content */}
-        <div className="mb-8">
+        <div className="mb-8" role="tabpanel" id={`tabpanel-${activeTab}`} aria-labelledby={`tab-${activeTab}`}>
           {/* PHASE 6A: Political Leaning Toggle (only on politics tab) - shown above hero */}
           {activeTab === 'politics' && (
             <div className="mb-6">

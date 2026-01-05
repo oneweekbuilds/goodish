@@ -24,11 +24,27 @@ const PostItem = ({
     return 'bg-blue-50 text-blue-700 border-blue-100';
   };
 
+  const handleToggle = () => {
+    setExpanded(!expanded);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleToggle();
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
       <div 
         className="p-4 flex items-start gap-4 cursor-pointer hover:bg-slate-50 transition-colors"
-        onClick={() => setExpanded(!expanded)}
+        onClick={handleToggle}
+        onKeyDown={handleKeyDown}
+        role="button"
+        tabIndex={0}
+        aria-expanded={expanded}
+        aria-label={expanded ? `Collapse details for post by ${creator || 'creator'}` : `Expand details for post by ${creator || 'creator'}`}
       >
         {/* Thumbnail */}
         {thumbnail ? (
@@ -86,9 +102,9 @@ const PostItem = ({
         </div>
 
         {/* Expand indicator */}
-        <button className="flex-shrink-0 p-1 text-slate-400 hover:text-slate-600">
+        <div className="flex-shrink-0 p-1 text-slate-400" aria-hidden="true">
           {expanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-        </button>
+        </div>
       </div>
 
       {/* Expanded details */}

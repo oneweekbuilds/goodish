@@ -500,14 +500,15 @@ const ResultsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
+    <main className="min-h-screen bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
       <div className="max-w-5xl mx-auto">
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
           className="inline-flex items-center gap-2 text-text-muted hover:text-text-main mb-6 transition-colors"
+          aria-label="Go back to previous page"
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft size={20} aria-hidden="true" />
           <span>Back</span>
         </button>
 
@@ -765,6 +766,8 @@ const ResultsPage = () => {
               <button
                 onClick={() => setExpandedPosts(!expandedPosts)}
                 className="text-sm text-primary-blue hover:underline"
+                aria-expanded={expandedPosts}
+                aria-label={expandedPosts ? 'Collapse post list' : `Expand to show all ${displayData.feedItems.length} posts`}
               >
                 {expandedPosts ? 'Show Less' : `Show All (${displayData.feedItems.length})`}
               </button>
@@ -800,6 +803,7 @@ const ResultsPage = () => {
               <button
                 onClick={() => setExpandedPosts(true)}
                 className="w-full mt-4 py-3 border border-slate-200 rounded-lg text-slate-600 font-medium hover:bg-slate-50 transition-colors"
+                aria-label={`Show ${displayData.feedItems.length - 5} more posts`}
               >
                 Show {displayData.feedItems.length - 5} more posts
               </button>
@@ -843,8 +847,10 @@ const ResultsPage = () => {
           <button
             onClick={() => setShowDebugPanel(!showDebugPanel)}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+            aria-expanded={showDebugPanel}
+            aria-label={showDebugPanel ? 'Hide debug panel' : 'Show debug panel'}
           >
-            <Bug size={16} />
+            <Bug size={16} aria-hidden="true" />
             {showDebugPanel ? 'Hide Debug Panel' : 'Show Debug Panel'}
           </button>
 
@@ -858,6 +864,8 @@ const ResultsPage = () => {
             <button
               onClick={() => setShowRawJson(!showRawJson)}
               className="text-sm text-slate-500 hover:text-slate-700 underline"
+              aria-expanded={showRawJson}
+              aria-label={showRawJson ? 'Hide raw JSON data' : 'Show raw JSON data'}
             >
               {showRawJson ? 'Hide Raw JSON' : 'Show Raw JSON'}
             </button>
@@ -872,7 +880,7 @@ const ResultsPage = () => {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 
