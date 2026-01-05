@@ -14,7 +14,7 @@ const Navbar = () => {
                         className="h-8 md:h-10 w-auto max-w-[200px] md:max-w-[360px]"
                     />
                 </Link>
-                <div className="hidden md:flex items-center gap-6" role="list">
+                <div className="hidden md:flex items-center gap-6">
                     <Link to="/" className="text-sm font-medium text-text-main hover:text-primary-blue transition-colors" aria-label="Navigate to home page">
                         Home
                     </Link>
