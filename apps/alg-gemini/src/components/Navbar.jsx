@@ -11,7 +11,7 @@ const Navbar = () => {
                     <img
                         src="/logo-full.png"
                         alt="AlgorithmLens"
-                        className="h-8 md:h-10 w-auto max-w-[200px] md:max-w-[360px]"
+                        className="h-10 md:h-12 w-auto max-w-none"
                     />
                 </Link>
                 <div className="hidden md:flex items-center gap-6">

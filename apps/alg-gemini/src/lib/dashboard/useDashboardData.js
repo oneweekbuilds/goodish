@@ -81,17 +81,6 @@ export function useDashboardData() {
       }
     }
 
-    // DEV-ONLY DEBUG: Print aggregation stats (remove in production)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Dashboard Debug] Scan aggregation stats:', {
-        totalScans: scanList.length,
-        scansWithDetails: Object.keys(details).length,
-        platforms: Array.from(platformSet),
-        platformCount: platformSet.size,
-        totalFeedItems,
-      });
-    }
-
     return details;
   }, [scanDetails, fetchScanDetail]);
 
