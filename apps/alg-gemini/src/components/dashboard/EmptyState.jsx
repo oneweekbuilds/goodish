@@ -32,41 +32,61 @@ export const EMPTY_STATE_TYPES = {
  */
 const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
   // Get configuration based on empty state type
+  // Phase 3A: Standardized structure - Title, Why, How to unlock
   const getConfig = () => {
     switch (emptyStateType) {
       case EMPTY_STATE_TYPES.NEEDS_MORE_SCANS:
         return {
           icon: 'scan',
-          title: 'Needs More Scans',
-          message: 'This insight unlocks after you run more scans.',
+          title: 'More scans needed',
+          why: 'This insight appears after you run multiple scans.',
+          howToUnlock: [
+            'Run 2-3 scans this week',
+            'Scan the same platform multiple times',
+          ],
           cta: { label: 'Start a Scan', to: '/start' },
         };
 
       case EMPTY_STATE_TYPES.NEEDS_BROADER_BEHAVIOR:
         return {
           icon: 'platforms',
-          title: 'Needs Broader Data',
-          message: 'This insight appears when you scan across more platforms or creators.',
+          title: 'Broader data needed',
+          why: 'This insight appears when you scan across multiple platforms.',
+          howToUnlock: [
+            'Scan at least 2 different platforms',
+            'Compare patterns across platforms',
+          ],
           cta: { label: 'Scan Another Platform', to: '/start' },
         };
 
       case EMPTY_STATE_TYPES.FUTURE_FEATURE:
         return {
           icon: 'future',
-          title: 'Coming Soon',
-          message: 'This insight requires a feature that isn\'t available yet.',
+          title: 'Coming soon',
+          why: 'This insight requires a feature that isn\'t available yet.',
+          howToUnlock: [],
           cta: null,
-          footer: 'Coming later.',
+          footer: 'Available in a future update.',
         };
 
       case EMPTY_STATE_TYPES.INSUFFICIENT_DATA:
+        // Phase 3A: Surface threshold information from quality_reason if available
+        const qualityReason = chartQuality?.quality_reason || missing || 'Not enough data for a reliable analysis.';
+        const hasThreshold = qualityReason.includes('at least') || qualityReason.includes('requires');
+        
         return {
           icon: 'quality',
-          title: 'Insufficient Data',
-          message: chartQuality?.quality_reason || missing || 'Not enough data for a reliable analysis.',
+          title: 'Insufficient data',
+          why: qualityReason,
+          howToUnlock: hasThreshold 
+            ? [] // Threshold already in why message
+            : [
+                'Run more scans to increase sample size',
+                'Ensure scans capture enough posts',
+              ],
           cta: { label: 'Run More Scans', to: '/start' },
           footer: chartQuality?.n_items > 0
-            ? `Based on ${chartQuality.n_items} item${chartQuality.n_items !== 1 ? 's' : ''}`
+            ? `Currently: ${chartQuality.n_items} item${chartQuality.n_items !== 1 ? 's' : ''} analyzed`
             : null,
         };
 
@@ -77,12 +97,17 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
   };
 
   // Infer empty state type from the missing message (backward compatibility)
+  // Phase 3A: Updated to use standardized structure
   const inferFromMissing = (msg) => {
     if (!msg) {
       return {
         icon: 'scan',
-        title: 'Needs More Data',
-        message: 'Run more scans to populate this view.',
+        title: 'More data needed',
+        why: 'Run more scans to populate this view.',
+        howToUnlock: [
+          'Run 2-3 scans this week',
+          'Scan the same platform multiple times',
+        ],
         cta: { label: 'Start a Scan', to: '/start' },
       };
     }
@@ -95,10 +120,17 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
         lower.includes('reliable') ||
         lower.includes('threshold') ||
         lower.includes('at least') && lower.includes('posts')) {
+      const hasThreshold = lower.includes('at least');
       return {
         icon: 'quality',
-        title: 'Insufficient Data',
-        message: msg,
+        title: 'Insufficient data',
+        why: msg,
+        howToUnlock: hasThreshold 
+          ? [] // Threshold already in why message
+          : [
+              'Run more scans to increase sample size',
+              'Ensure scans capture enough posts',
+            ],
         cta: { label: 'Run More Scans', to: '/start' },
       };
     }
@@ -110,10 +142,11 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
         lower.includes('not available')) {
       return {
         icon: 'future',
-        title: 'Coming Soon',
-        message: 'This insight requires a feature that isn\'t available yet.',
+        title: 'Coming soon',
+        why: 'This insight requires a feature that isn\'t available yet.',
+        howToUnlock: [],
         cta: null,
-        footer: 'Coming later.',
+        footer: 'Available in a future update.',
       };
     }
 
@@ -124,8 +157,12 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
         lower.includes('broader')) {
       return {
         icon: 'platforms',
-        title: 'Needs Broader Data',
-        message: 'This insight appears when you scan across more platforms or creators.',
+        title: 'Broader data needed',
+        why: 'This insight appears when you scan across multiple platforms.',
+        howToUnlock: [
+          'Scan at least 2 different platforms',
+          'Compare patterns across platforms',
+        ],
         cta: { label: 'Scan Another Platform', to: '/start' },
       };
     }
@@ -133,8 +170,12 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
     // Default to needs more scans
     return {
       icon: 'scan',
-      title: 'Needs More Scans',
-      message: 'This insight unlocks after you run more scans.',
+      title: 'More scans needed',
+      why: 'This insight appears after you run multiple scans.',
+      howToUnlock: [
+        'Run 2-3 scans this week',
+        'Scan the same platform multiple times',
+      ],
       cta: { label: 'Start a Scan', to: '/start' },
     };
   };
@@ -189,10 +230,22 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
         {config.title}
       </h4>
 
-      {/* Message */}
-      <p className="text-sm text-slate-500 max-w-xs mb-4">
-        {config.message}
+      {/* Why you're seeing this */}
+      <p className="text-sm text-slate-500 max-w-xs mb-3">
+        {config.why}
       </p>
+
+      {/* How to unlock - actionable bullet list */}
+      {config.howToUnlock && config.howToUnlock.length > 0 && (
+        <div className="text-xs text-slate-500 max-w-xs mb-4 text-left">
+          <p className="font-medium mb-1.5 text-slate-600">To unlock this:</p>
+          <ul className="list-disc list-inside space-y-1">
+            {config.howToUnlock.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* CTA link if available */}
       {config.cta && (
@@ -201,7 +254,7 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
           className="inline-flex items-center gap-1 text-sm font-medium text-primary-blue hover:underline"
         >
           {config.cta.label}
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </Link>
