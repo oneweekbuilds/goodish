@@ -144,7 +144,7 @@ const HistoryPage = () => {
   // Loading State
   if (loading) {
     return (
-      <div className="min-h-screen bg-bg-page py-24 px-6">
+      <div className="min-h-screen bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
         <div className="max-w-4xl mx-auto text-center">
           <Loader2 size={48} className="animate-spin text-primary-blue mx-auto mb-4" />
           <p className="text-text-muted">Loading history...</p>
@@ -156,7 +156,7 @@ const HistoryPage = () => {
   // Error State
   if (error) {
     return (
-      <div className="min-h-screen bg-bg-page py-24 px-6">
+      <div className="min-h-screen bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
         <div className="max-w-4xl mx-auto">
           <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
             <AlertCircle size={48} className="text-red-500 mx-auto mb-4" />
@@ -177,7 +177,7 @@ const HistoryPage = () => {
   // Empty State
   if (scans.length === 0) {
     return (
-      <div className="min-h-screen bg-bg-page py-24 px-6">
+      <div className="min-h-screen bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-text-main">Scan History</h1>
@@ -318,7 +318,7 @@ const HistoryPage = () => {
             <h3 className="text-sm font-semibold text-blue-800 uppercase tracking-wider mb-3">
               Quick Summary
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-center">
               <div>
                 <div className="text-2xl font-bold text-text-main">{scans.length}</div>
                 <div className="text-sm text-blue-700">Total Scans</div>

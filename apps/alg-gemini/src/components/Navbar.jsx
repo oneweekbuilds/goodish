@@ -5,13 +5,13 @@ const Navbar = () => {
     const { userProfile } = useUserProfile();
     
     return (
-        <nav className="fixed top-0 left-0 w-full z-50 h-24 px-6 md:px-12 flex items-center justify-between bg-bg-page/90 backdrop-blur-none border-b border-transparent">
-            <div className="flex items-center gap-8">
-                <Link to="/" className="flex items-center" style={{ padding: '0 12px' }}>
+        <nav className="fixed top-0 left-0 w-full z-50 h-20 md:h-24 px-4 md:px-6 lg:px-12 flex items-center justify-between bg-bg-page/90 backdrop-blur-none border-b border-transparent">
+            <div className="flex items-center gap-4 md:gap-8">
+                <Link to="/" className="flex items-center">
                     <img
                         src="/logo-full.png"
                         alt="AlgorithmLens"
-                        style={{ width: '360px', height: 'auto' }}
+                        className="h-8 md:h-10 w-auto max-w-[200px] md:max-w-[360px]"
                     />
                 </Link>
                 <div className="hidden md:flex items-center gap-6">
@@ -43,7 +43,7 @@ const Navbar = () => {
                         Hi there
                     </span>
                 )}
-                <button className="px-6 py-2.5 rounded-full text-sm font-semibold border border-primary-blue text-primary-blue hover:bg-primary-blue/5 transition-colors">
+                <button className="px-4 md:px-6 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-semibold border border-primary-blue text-primary-blue hover:bg-primary-blue/5 transition-colors">
                     Sign In
                 </button>
             </div>

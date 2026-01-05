@@ -500,7 +500,7 @@ const ResultsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-bg-page py-24 px-6">
+    <div className="min-h-screen bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
       <div className="max-w-5xl mx-auto">
         {/* Back Button */}
         <button
@@ -536,7 +536,7 @@ const ResultsPage = () => {
         </div>
 
         {/* Quick Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <MetricCard 
             title="Total Posts" 
             value={displayData.totalPosts}
@@ -575,7 +575,7 @@ const ResultsPage = () => {
         )}
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Topic Clusters */}
           <div className="bg-white rounded-xl shadow-md border border-slate-100 p-6">
             <h2 className="text-lg font-bold text-text-main mb-4 flex items-center gap-2">

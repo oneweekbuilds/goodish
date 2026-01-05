@@ -1909,7 +1909,7 @@ const DashboardPage = () => {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-bg-page pt-28 pb-16">
+      <div className="min-h-screen bg-bg-page pt-24 md:pt-28 pb-16 px-4 md:px-6">
         <div className="max-w-2xl mx-auto px-6">
           <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
             <h2 className="text-xl font-bold text-red-800 mb-2">Error Loading Dashboard</h2>
@@ -1932,7 +1932,7 @@ const DashboardPage = () => {
   // No scans state
   if (!hasScans) {
     return (
-      <div className="min-h-screen bg-bg-page pt-28 pb-16">
+      <div className="min-h-screen bg-bg-page pt-24 md:pt-28 pb-16 px-4 md:px-6">
         <div className="max-w-2xl mx-auto px-6">
           <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-12 text-center">
             <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -1959,7 +1959,7 @@ const DashboardPage = () => {
   const isOnAlgorithmTab = activeTab === 'algorithm';
 
   return (
-    <div className="min-h-screen bg-bg-page pt-28 pb-16">
+    <div className="min-h-screen bg-bg-page pt-24 md:pt-28 pb-16 px-4 md:px-6">
       <div className="max-w-7xl mx-auto px-6">
         {/* Page Header - reduced on Algorithm tab to let hero be the star */}
         <div className={`flex flex-col md:flex-row md:items-center md:justify-between gap-4 ${isOnAlgorithmTab ? 'mb-4' : 'mb-8'}`}>
