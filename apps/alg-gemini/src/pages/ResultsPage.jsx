@@ -24,56 +24,18 @@ import PostItem from '../components/PostItem';
 import ScanWarnings from '../components/ScanWarnings';
 import { getDisplayData } from '../lib/dataParsing';
 
-/**
- * Determine if a scan is from Desktop (Chrome extension) or Mobile (video upload).
- *
- * Detection logic (in order of priority):
- * 1. source_type === "DESKTOP_EXTENSION" → Desktop
- * 2. scan_metadata.source_type === "DESKTOP_EXTENSION" → Desktop
- * 3. scan.id starts with "desktop-" → Desktop (fallback heuristic)
- * 4. environment.extension_capture exists → Desktop
- * 5. Otherwise → Mobile upload
- *
- * TODO: If the backend adds an explicit `source` field, update this function.
- */
-const getScanSource = (result) => {
-  if (!result) return 'unknown';
-
-  // Check top-level source_type
-  if (result.source_type === 'DESKTOP_EXTENSION') {
-    return 'desktop';
-  }
-
-  // Check nested scan_metadata
-  const scanMeta = result.scan_metadata || result.result?.scan_metadata;
-  if (scanMeta?.source_type === 'DESKTOP_EXTENSION') {
-    return 'desktop';
-  }
-
-  // Check ID prefix
-  const scanId = result.id || scanMeta?.scan_id;
-  if (scanId?.startsWith('desktop-')) {
-    return 'desktop';
-  }
-
-  // Check environment for extension capture
-  const env = result.environment || result.result?.environment;
-  if (env?.extension_capture) {
-    return 'desktop';
-  }
-
-  // Default to mobile upload for video-based scans
-  return 'mobile';
-};
+// getScanSource is now provided by getDisplayData() in dataParsing.js
+// Use displayData.source instead
 
 /**
  * DebugPanel - Shows diagnostic information for QA testing
  * Visible when ?debug=1 query param is present or when toggle is clicked
  */
-const DebugPanel = ({ result, scanId }) => {
+const DebugPanel = ({ result, scanId, displayData }) => {
   if (!result) return null;
 
-  const source = getScanSource(result);
+  // Phase 1B: Use source from parsed data (single source of truth)
+  const source = displayData?.source || 'unknown';
   const scanData = result.result || result.scan || result;
   const scanMeta = scanData.scan_metadata || result.scan_metadata || {};
   const aggregates = scanData.aggregates || {};
@@ -497,8 +459,8 @@ const ResultsPage = () => {
 
   const platformConfig = getPlatformConfig(displayData.platform);
   
-  // Check if this is a desktop scan
-  const isDesktopScan = getScanSource(result) === 'desktop';
+  // Phase 1B: Use source from parsed data (single source of truth)
+  const isDesktopScan = displayData.source === 'desktop';
   const scanData = result?.result || result?.scan || result;
   const sourceType = scanData?.scan_metadata?.source_type || result?.source_type;
 
@@ -888,7 +850,7 @@ const ResultsPage = () => {
 
           {/* Debug Panel (visible when toggled or ?debug=1) */}
           {showDebugPanel && (
-            <DebugPanel result={result} scanId={scanId} />
+            <DebugPanel result={result} scanId={scanId} displayData={displayData} />
           )}
 
           {/* Raw JSON Toggle */}

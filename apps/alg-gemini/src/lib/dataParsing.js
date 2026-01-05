@@ -5,7 +5,49 @@
  * desktop extension and mobile video upload formats.
  * 
  * Phase 1A: Extracted from ResultsPage.jsx with no behavior changes.
+ * Phase 1B: Added explicit source detection and schema normalization.
  */
+
+/**
+ * Detect scan source (desktop extension vs mobile upload)
+ * 
+ * Detection logic (in order of priority):
+ * 1. source_type === "DESKTOP_EXTENSION" (top-level or in scan_metadata)
+ * 2. scan.id starts with "desktop-" (fallback heuristic)
+ * 3. environment.extension_capture exists
+ * 4. Otherwise → 'mobile' (video upload)
+ * 
+ * @param {Object} data - Raw scan result data (may be nested)
+ * @param {Object} scanData - Extracted scan data
+ * @returns {string} - 'desktop' | 'mobile'
+ */
+function detectScanSource(data, scanData) {
+  // Check top-level source_type
+  if (data.source_type === 'DESKTOP_EXTENSION') {
+    return 'desktop';
+  }
+
+  // Check nested scan_metadata
+  const scanMeta = scanData.scan_metadata || data.scan_metadata;
+  if (scanMeta?.source_type === 'DESKTOP_EXTENSION') {
+    return 'desktop';
+  }
+
+  // Check ID prefix (fallback heuristic)
+  const scanId = data.id || scanMeta?.scan_id || scanData.id;
+  if (scanId?.startsWith('desktop-')) {
+    return 'desktop';
+  }
+
+  // Check environment for extension capture
+  const env = scanData.environment || data.environment;
+  if (env?.extension_capture) {
+    return 'desktop';
+  }
+
+  // Default to mobile upload for video-based scans
+  return 'mobile';
+}
 
 /**
  * Extract display data from unified schema
@@ -24,6 +66,9 @@ export function getDisplayData(data) {
     // Handle both direct result and nested result
     const scanData = data.result || data.scan || data;
     console.log('getDisplayData: Extracted scanData:', scanData);
+    
+    // Phase 1B: Explicit source detection (single source of truth)
+    const source = detectScanSource(data, scanData);
     
     // Basic info
     const platform = scanData.scan_metadata?.platform || data.platform || 'Unknown';
@@ -126,6 +171,7 @@ export function getDisplayData(data) {
     return {
       platform,
       timestamp,
+      source, // Phase 1B: Explicit source detection
       totalPosts,
       adsCount,
       adPercentage,
