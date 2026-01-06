@@ -114,11 +114,10 @@ def test_ads_evidence_bundle_api_http():
             return True
             
     except (ImportError, RuntimeError) as e:
-        if "httpx" in str(e) or "testclient" in str(e).lower():
-            print(f"[SKIP] FastAPI TestClient dependencies not available: {e}")
-            print("  Install with: pip install httpx")
-            return True  # Skip if dependencies not available
-        raise
+        # httpx should be in requirements.txt, so this should not happen
+        print(f"[FAIL] FastAPI TestClient dependencies not available: {e}")
+        print("  Install with: pip install httpx")
+        raise  # Fail the test if dependencies are missing
     except AssertionError as e:
         print(f"[FAIL] Assertion failed: {e}")
         print(f"  Response data: {json.dumps(data, indent=2)[:500]}")
