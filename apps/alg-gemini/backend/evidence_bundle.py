@@ -32,6 +32,7 @@ from commercial_classifier import (
     CommercialClass,
     CommercialConfidence,
     CommercialAnalysisResult,
+    DetectionMethod,
 )
 from promo_signals import (
     extract_promo_signals,
@@ -39,6 +40,7 @@ from promo_signals import (
     get_promo_evidence_summary,
     PromoConfidence,
 )
+from accuracy.method_reliability import get_method_reliability
 
 
 def build_ads_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
@@ -252,6 +254,31 @@ def _build_observations(
     total_ads_detected = len(ads)
     observations["total_ads_detected"] = total_ads_detected
 
+    # Build evidence items for platform-labeled ads (Phase 5C1: attach method_reliability)
+    platform_labeled_ad_evidence = []
+    for i, item in enumerate(ads[:10]):  # Limit to first 10 for brevity
+        ad_meta = item.get("ad_metadata", {})
+        reason = ad_meta.get("ad_detected_reason", "platform_label")
+        method = "OCR_DISCLOSURE" if reason == "ocr_disclosure_token" else "PLATFORM_LABEL"
+        method_reliability = get_method_reliability(method)
+
+        evidence_item = {
+            "item_position": item.get("position_in_feed", i),
+            "method": method,
+            "method_reliability": method_reliability,
+            "confidence": "high",  # Platform-labeled ads are always HIGH confidence
+        }
+        if ad_meta.get("sponsored_label_text"):
+            evidence_item["sponsored_label_text"] = ad_meta["sponsored_label_text"]
+        if ad_meta.get("advertiser_name"):
+            evidence_item["advertiser_name"] = ad_meta["advertiser_name"]
+
+        platform_labeled_ad_evidence.append(evidence_item)
+
+    if platform_labeled_ad_evidence:
+        observations["platform_labeled_ad_evidence"] = platform_labeled_ad_evidence
+        observations["platform_labeled_ad_evidence_count"] = len(ads)
+
     # Unlabeled promotions (high confidence only)
     observations["unlabeled_promotions_high_confidence"] = spectrum.unlabeled_promotion_high
 
@@ -285,10 +312,17 @@ def _build_observations(
 
         promo_result = promo_analysis["extractions"][i]
         if promo_result["is_unlabeled_promo"] and promo_result["signals"]:
+            # Extract primary detection method from signal types (if available)
+            # For now, use a placeholder - future phases will map signal types to methods
+            primary_method = "KEYWORD_MATCH"  # Placeholder for Phase 5C1
+            method_reliability = get_method_reliability(primary_method)
+
             evidence_item = {
                 "item_position": item.get("position_in_feed", i),
                 "confidence": promo_result["confidence"],
                 "signal_types": promo_result["signal_types"],
+                "method": primary_method,  # Phase 5C1: attach method
+                "method_reliability": method_reliability,  # Phase 5C1: attach reliability
                 "evidence_snippets": [
                     {"type": s["type"], "evidence": s["evidence"]}
                     for s in promo_result["signals"][:3]  # Max 3 snippets per item

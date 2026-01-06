@@ -232,6 +232,9 @@ def classify_feed_item(feed_item: Dict[str, Any]) -> CommercialClassification:
     # =========================================================================
     # 1. LABELED AD: Platform metadata or disclosure tokens
     # =========================================================================
+    # Phase 5C1: Platform-labeled ads (PLATFORM_LABEL method) can yield HIGH
+    # confidence alone per accuracy-architecture-v3.1.md Section 4.1.
+    # This is because PLATFORM_LABEL has reliability 0.999 (authoritative).
     if is_ad:
         reason = ad_metadata.get("ad_detected_reason", "platform_label")
         evidence.append(f"is_ad=True (reason: {reason})")
@@ -250,7 +253,7 @@ def classify_feed_item(feed_item: Dict[str, Any]) -> CommercialClassification:
 
         return CommercialClassification(
             commercial_class=CommercialClass.LABELED_AD,
-            confidence=CommercialConfidence.HIGH,
+            confidence=CommercialConfidence.HIGH,  # Single PLATFORM_LABEL method yields HIGH
             detection_methods=detection_methods,
             evidence=evidence,
             matched_patterns=matched_patterns,
