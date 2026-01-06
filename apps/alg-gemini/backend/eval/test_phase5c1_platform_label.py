@@ -1,153 +1,117 @@
 """
-Minimal regression test for Phase 5C1: Method-aware HIGH confidence for platform-labeled ads.
+Phase 5C1 Regression Test: Platform-Labeled Ads → HIGH Confidence
 
-This test verifies that:
-1. Platform-labeled ads get HIGH confidence with PLATFORM_LABEL method
-2. Evidence items include method_reliability = 0.999 for PLATFORM_LABEL
-3. Single-method HIGH confidence is allowed for PLATFORM_LABEL
+This test verifies that platform-labeled ads (PLATFORM_LABEL method) yield
+HIGH confidence even with a single method, per accuracy-architecture-v3.1.md.
 
-Run from backend/ directory:
-    python -m eval.test_phase5c1_platform_label
+Test Input:
+- Synthetic scan with 1 platform-labeled ad (is_ad=True)
+
+Expected Output:
+- Evidence bundle includes platform_labeled_ad_evidence with:
+  - method = "PLATFORM_LABEL"
+  - method_reliability = 0.999
+  - confidence = "high"
+- Commercial classification assigns HIGH confidence
 """
 
 import sys
 import os
 
-# Add parent directory to path so we can import backend modules
+# Add backend to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from commercial_classifier import classify_feed_item, DetectionMethod, CommercialConfidence, CommercialClass
 from evidence_bundle import build_ads_evidence_bundle
+from commercial_classifier import classify_feed_item, CommercialClass, CommercialConfidence
 from accuracy.method_reliability import get_method_reliability, can_yield_high_alone
 
 
-def test_platform_labeled_ad_classification():
-    """Test that platform-labeled ads get HIGH confidence with PLATFORM_LABEL method."""
-    # Create a minimal feed item with platform label
+def test_platform_label_high_confidence():
+    """Test that platform-labeled ads yield HIGH confidence with single method."""
+    
+    # Create synthetic feed item with platform-labeled ad
     feed_item = {
-        "is_ad": True,
         "position_in_feed": 0,
+        "is_ad": True,
         "ad_metadata": {
             "ad_detected_reason": "platform_label",
             "sponsored_label_text": "Sponsored",
-            "advertiser_name": "TestBrand",
+            "advertiser_name": "TestBrand"
         },
         "content_text": {
             "captions": [],
             "hashtags": [],
-            "on_screen_labels": [],
+            "on_screen_labels": []
         },
+        "account": {
+            "account_handle": "@testbrand"
+        }
     }
-
-    # Classify the item
+    
+    # Test 1: Classification assigns HIGH confidence
     classification = classify_feed_item(feed_item)
-
-    # Verify HIGH confidence
-    assert classification.confidence == CommercialConfidence.HIGH, \
-        f"Expected HIGH confidence, got {classification.confidence}"
-
-    # Verify LABELED_AD class
+    
     assert classification.commercial_class == CommercialClass.LABELED_AD, \
         f"Expected LABELED_AD, got {classification.commercial_class}"
-
-    # Verify PLATFORM_LABEL method is present
-    assert DetectionMethod.PLATFORM_LABEL in classification.detection_methods, \
-        f"Expected PLATFORM_LABEL in methods, got {classification.detection_methods}"
-
-    # Verify single method can yield HIGH (Phase 5C1 requirement)
+    assert classification.confidence == CommercialConfidence.HIGH, \
+        f"Expected HIGH confidence, got {classification.confidence}"
     assert len(classification.detection_methods) == 1, \
-        f"Expected single method for platform label, got {len(classification.detection_methods)}"
-
-    print("[PASS] Platform-labeled ad classification")
-
-
-def test_method_reliability_constants():
-    """Test method reliability constants."""
-    reliability = get_method_reliability("PLATFORM_LABEL")
-    assert reliability == 0.999, f"Expected 0.999, got {reliability}"
-
-    can_high = can_yield_high_alone("PLATFORM_LABEL")
-    assert can_high is True, f"Expected PLATFORM_LABEL can yield HIGH alone"
-
-    print("[PASS] Method reliability constants")
-
-
-def test_evidence_bundle_method_reliability():
-    """Test that evidence bundle attaches method_reliability for platform-labeled ads."""
-    # Create minimal scan result with one platform-labeled ad
+        f"Expected single method, got {len(classification.detection_methods)}"
+    
+    # Test 2: Method reliability is correct
+    method_reliability = get_method_reliability("PLATFORM_LABEL")
+    assert method_reliability == 0.999, \
+        f"Expected PLATFORM_LABEL reliability 0.999, got {method_reliability}"
+    
+    # Test 3: Can yield HIGH alone
+    assert can_yield_high_alone("PLATFORM_LABEL"), \
+        "PLATFORM_LABEL should be able to yield HIGH confidence alone"
+    
+    # Test 4: Evidence bundle includes method_reliability
     scan_result = {
         "scan_metadata": {
             "scan_id": "test_scan_001",
             "platform": "TIKTOK",
-            "source_type": "DESKTOP_EXTENSION",
+            "source_type": "DESKTOP_EXTENSION"
         },
         "aggregates": {
             "total_feed_items": 1,
             "total_ads": 1,
-            "ad_percentage": 100.0,
+            "ad_percentage": 100.0
         },
-        "feed_items": [
-            {
-                "is_ad": True,
-                "position_in_feed": 0,
-                "ad_metadata": {
-                    "ad_detected_reason": "platform_label",
-                    "sponsored_label_text": "Sponsored",
-                    "advertiser_name": "TestBrand",
-                },
-                "content_text": {
-                    "captions": [],
-                    "hashtags": [],
-                    "on_screen_labels": [],
-                },
-            },
-        ],
+        "feed_items": [feed_item]
     }
-
-    # Build evidence bundle
+    
     bundle = build_ads_evidence_bundle(scan_result)
-
-    # Check that platform_labeled_ad_evidence exists
     observations = bundle.get("observations", {})
-    assert "platform_labeled_ad_evidence" in observations, \
-        "Expected platform_labeled_ad_evidence in observations"
-
-    evidence_list = observations["platform_labeled_ad_evidence"]
-    assert len(evidence_list) > 0, "Expected at least one evidence item"
-
-    # Check first evidence item has method_reliability
-    first_evidence = evidence_list[0]
-    assert "method" in first_evidence, "Expected 'method' in evidence item"
-    assert "method_reliability" in first_evidence, "Expected 'method_reliability' in evidence item"
-    assert first_evidence["method"] == "PLATFORM_LABEL", \
-        f"Expected PLATFORM_LABEL method, got {first_evidence['method']}"
-    assert first_evidence["method_reliability"] == 0.999, \
-        f"Expected 0.999 reliability, got {first_evidence['method_reliability']}"
-
-    print("[PASS] Evidence bundle method_reliability attachment")
-
-
-def main():
-    """Run all Phase 5C1 regression tests."""
-    print("Running Phase 5C1 regression tests...\n")
-
-    try:
-        test_method_reliability_constants()
-        test_platform_labeled_ad_classification()
-        test_evidence_bundle_method_reliability()
-
-        print("\n[SUCCESS] All Phase 5C1 tests PASSED")
-        return 0
-    except AssertionError as e:
-        print(f"\n[FAIL] Test FAILED: {e}")
-        return 1
-    except Exception as e:
-        print(f"\n[ERROR] Unexpected error: {e}")
-        import traceback
-        traceback.print_exc()
-        return 1
+    
+    # Check platform_labeled_ad_evidence exists
+    platform_evidence = observations.get("platform_labeled_ad_evidence", [])
+    assert len(platform_evidence) > 0, \
+        "Expected platform_labeled_ad_evidence in bundle"
+    
+    evidence_item = platform_evidence[0]
+    assert evidence_item.get("method") == "PLATFORM_LABEL", \
+        f"Expected method PLATFORM_LABEL, got {evidence_item.get('method')}"
+    assert evidence_item.get("method_reliability") == 0.999, \
+        f"Expected method_reliability 0.999, got {evidence_item.get('method_reliability')}"
+    assert evidence_item.get("confidence") == "high", \
+        f"Expected confidence 'high', got {evidence_item.get('confidence')}"
+    
+    print("PASS: Platform-labeled ads correctly yield HIGH confidence with single method")
+    return True
 
 
 if __name__ == "__main__":
-    sys.exit(main())
-
+    try:
+        test_platform_label_high_confidence()
+        print("\n[PASS] Phase 5C1 test PASSED")
+        sys.exit(0)
+    except AssertionError as e:
+        print(f"\n[FAIL] Phase 5C1 test FAILED: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"\n[ERROR] Phase 5C1 test ERROR: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
