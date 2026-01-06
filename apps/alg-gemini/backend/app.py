@@ -496,6 +496,24 @@ def get_ads_evidence_bundle(
     # Build the Evidence Bundle
     bundle = build_ads_evidence_bundle(scan_result)
 
+    # Phase 5C2.3: Assert CI fields are present before serialization (dev-only)
+    # This helps diagnose if the issue is in computation vs serialization
+    import os
+    if os.getenv("ENV", "").lower() in ("dev", "development", "local", ""):
+        observations = bundle.get("observations", {})
+        total_posts = observations.get("total_posts_seen", 0)
+        if total_posts > 0:
+            ad_rate_ci = observations.get("ad_rate_percent_ci")
+            ad_rate_estimate_type = observations.get("ad_rate_estimate_type")
+            if ad_rate_ci is None or ad_rate_estimate_type is None:
+                # This should not happen - CI fields should be set when n_items > 0
+                # If this assertion fails, the computation path is not setting fields
+                raise AssertionError(
+                    f"CI fields missing: ad_rate_percent_ci={ad_rate_ci}, "
+                    f"ad_rate_estimate_type={ad_rate_estimate_type}, "
+                    f"total_posts_seen={total_posts}"
+                )
+
     # Generate analysis copy from the bundle
     analysis = generate_ads_analysis_copy(bundle)
 
