@@ -41,6 +41,7 @@ from promo_signals import (
     PromoConfidence,
 )
 from accuracy.method_reliability import get_method_reliability
+from accuracy.stats import wilson_ci_percent
 
 
 def build_ads_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
@@ -363,12 +364,35 @@ def _build_observations(
         ad_rate = round((total_ads_detected / n_items) * 100, 1)
         observations["ad_rate_percent"] = ad_rate
 
+        # Phase 5C2: Add 95% confidence interval for ad rate
+        ci_lower, ci_upper = wilson_ci_percent(total_ads_detected, n_items, conf=0.95)
+        observations["ad_rate_percent_ci"] = {
+            "lower": round(ci_lower, 1),
+            "upper": round(ci_upper, 1),
+            "confidence_level": 0.95,
+            "method": "wilson"
+        }
+        observations["ad_rate_estimate_type"] = "INTERVAL"
+
         # Promotional rate (labeled + unlabeled high confidence)
         promo_rate = round((total_promotional / n_items) * 100, 1)
         observations["promotional_rate_percent"] = promo_rate
+
+        # Phase 5C2: Add 95% confidence interval for promotional rate
+        promo_ci_lower, promo_ci_upper = wilson_ci_percent(total_promotional, n_items, conf=0.95)
+        observations["promotional_rate_percent_ci"] = {
+            "lower": round(promo_ci_lower, 1),
+            "upper": round(promo_ci_upper, 1),
+            "confidence_level": 0.95,
+            "method": "wilson"
+        }
+        observations["promotional_rate_estimate_type"] = "INTERVAL"
     else:
         observations["ad_rate_percent"] = None
         observations["promotional_rate_percent"] = None
+        # No CI when n=0 (wilson_ci returns (0.0, 1.0) which is not meaningful)
+        observations["ad_rate_percent_ci"] = None
+        observations["promotional_rate_percent_ci"] = None
 
     # ==========================================================================
     # Top Companies (View C) - PROMO-ONLY per spec

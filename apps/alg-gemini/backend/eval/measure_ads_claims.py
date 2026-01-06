@@ -1,9 +1,11 @@
 """
-Phase 5C1 Measurement Helper: Count HIGH Claims and Missing Evidence IDs
+Phase 5C1 + 5C2 Measurement Helper: Count HIGH Claims, Missing Evidence IDs, and CI Fields
 
 This script analyzes Ads evidence bundle outputs to compute:
 - count of HIGH confidence claims/items
 - count of claims missing evidence_ids
+- presence of confidence interval fields (Phase 5C2)
+- CI width (high - low) if present
 
 Usage:
     python -m eval.measure_ads_claims <bundle_json_path>
@@ -20,7 +22,7 @@ from typing import Dict, Any, Optional
 
 def measure_ads_bundle(bundle: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Measure Phase 5C1 metrics from an Ads evidence bundle.
+    Measure Phase 5C1 + 5C2 metrics from an Ads evidence bundle.
     
     Args:
         bundle: Ads evidence bundle dict
@@ -31,12 +33,21 @@ def measure_ads_bundle(bundle: Dict[str, Any]) -> Dict[str, Any]:
         - platform_label_high_count: Number of platform-labeled ads with HIGH confidence
         - total_evidence_items: Total evidence items
         - missing_evidence_ids_count: Items missing evidence_ids (if applicable)
+        - ad_rate_ci_present: Whether ad_rate_percent_ci field exists (Phase 5C2)
+        - ad_rate_ci_width: CI width (upper - lower) if present (Phase 5C2)
+        - promo_rate_ci_present: Whether promotional_rate_percent_ci field exists (Phase 5C2)
+        - promo_rate_ci_width: CI width for promotional rate if present (Phase 5C2)
     """
     metrics = {
         "high_confidence_count": 0,
         "platform_label_high_count": 0,
         "total_evidence_items": 0,
         "missing_evidence_ids_count": 0,
+        # Phase 5C2: CI fields
+        "ad_rate_ci_present": False,
+        "ad_rate_ci_width": None,
+        "promo_rate_ci_present": False,
+        "promo_rate_ci_width": None,
     }
     
     observations = bundle.get("observations", {})
@@ -64,6 +75,19 @@ def measure_ads_bundle(bundle: Dict[str, Any]) -> Dict[str, Any]:
     high_conf_items = spectrum.get("high_confidence_items", 0)
     metrics["high_confidence_count"] = max(metrics["high_confidence_count"], high_conf_items)
     
+    # Phase 5C2: Check for CI fields
+    ad_rate_ci = observations.get("ad_rate_percent_ci")
+    if ad_rate_ci is not None:
+        metrics["ad_rate_ci_present"] = True
+        if isinstance(ad_rate_ci, dict) and "lower" in ad_rate_ci and "upper" in ad_rate_ci:
+            metrics["ad_rate_ci_width"] = ad_rate_ci["upper"] - ad_rate_ci["lower"]
+    
+    promo_rate_ci = observations.get("promotional_rate_percent_ci")
+    if promo_rate_ci is not None:
+        metrics["promo_rate_ci_present"] = True
+        if isinstance(promo_rate_ci, dict) and "lower" in promo_rate_ci and "upper" in promo_rate_ci:
+            metrics["promo_rate_ci_width"] = promo_rate_ci["upper"] - promo_rate_ci["lower"]
+    
     return metrics
 
 
@@ -81,11 +105,17 @@ def main():
         
         metrics = measure_ads_bundle(bundle)
         
-        print("Phase 5C1 Metrics:")
+        print("Phase 5C1 + 5C2 Metrics:")
         print(f"  HIGH confidence items: {metrics['high_confidence_count']}")
         print(f"  Platform-label HIGH items: {metrics['platform_label_high_count']}")
         print(f"  Total evidence items: {metrics['total_evidence_items']}")
         print(f"  Missing evidence_ids: {metrics['missing_evidence_ids_count']}")
+        print(f"  Ad rate CI present: {metrics['ad_rate_ci_present']}")
+        if metrics['ad_rate_ci_width'] is not None:
+            print(f"  Ad rate CI width: {metrics['ad_rate_ci_width']:.1f}%")
+        print(f"  Promo rate CI present: {metrics['promo_rate_ci_present']}")
+        if metrics['promo_rate_ci_width'] is not None:
+            print(f"  Promo rate CI width: {metrics['promo_rate_ci_width']:.1f}%")
         
     except FileNotFoundError:
         print(f"Error: File not found: {json_path}")
