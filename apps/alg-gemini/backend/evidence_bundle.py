@@ -72,13 +72,13 @@ def build_ads_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
     meta = _build_meta(scan_metadata, aggregates, feed_items)
 
     # Build observations section (hard facts only)
-    observations = _build_observations(aggregates, feed_items, commercial_analysis, source_type)
+    observations = _build_observations(aggregates, feed_items, commercial_analysis, source_type, scan_metadata)
 
     # Build measurements section (classifier-based estimates)
     measurements = _build_measurements(aggregates, feed_items, commercial_analysis)
 
     # Build limits section (what we don't know)
-    limits = _build_limits(scan_metadata, aggregates, feed_items, commercial_analysis)
+    limits = _build_limits(scan_metadata, aggregates, feed_items, commercial_analysis, observations)
 
     # ==========================================================================
     # SANITY CHECK: Verify stacked_bar totals match high_confidence_items
@@ -216,7 +216,8 @@ def _build_observations(
     aggregates: Dict[str, Any],
     feed_items: List[Dict[str, Any]],
     commercial_analysis: CommercialAnalysisResult,
-    source_type: Optional[str] = None
+    source_type: Optional[str] = None,
+    scan_metadata: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """
     Build the observations section with hard facts only.
@@ -364,8 +365,9 @@ def _build_observations(
         ad_rate = round((total_ads_detected / n_items) * 100, 1)
         observations["ad_rate_percent"] = ad_rate
 
-        # Phase 5C2: Add 95% confidence interval for ad rate
+        # Phase 5C2: Add 95% confidence interval for ad rate (Wilson CI)
         ci_lower, ci_upper = wilson_ci_percent(total_ads_detected, n_items, conf=0.95)
+        wilson_width = ci_upper - ci_lower
         observations["ad_rate_percent_ci"] = {
             "lower": round(ci_lower, 1),
             "upper": round(ci_upper, 1),
@@ -373,6 +375,48 @@ def _build_observations(
             "method": "wilson"
         }
         observations["ad_rate_estimate_type"] = "INTERVAL"
+
+        # Phase 5C3: Add Bayesian credible interval with platform-specific priors
+        platform = (scan_metadata.get("platform", "") if scan_metadata else "").lower()
+        alpha0, beta0, prior_source = get_ads_rate_prior(platform)
+        prior_used = should_use_prior(n_items, wilson_width)
+        
+        if prior_used:
+            # Compute Bayesian credible interval
+            bayes_lower, bayes_upper = safe_bayesian_ci(
+                total_ads_detected, n_items, alpha0, beta0, conf=0.95, min_width_percent=5.0
+            )
+            bayes_lower_pct = round(bayes_lower * 100, 1)
+            bayes_upper_pct = round(bayes_upper * 100, 1)
+            
+            # Compute posterior mean (Bayesian point estimate)
+            alpha_post, beta_post = beta_posterior_params(alpha0, beta0, total_ads_detected, n_items)
+            bayes_point_estimate = bayesian_point_estimate(alpha_post, beta_post)
+            bayes_point_pct = round(bayes_point_estimate * 100, 1)
+            
+            observations["ad_rate_percent_ci_bayesian"] = {
+                "lower": bayes_lower_pct,
+                "upper": bayes_upper_pct,
+                "confidence_level": 0.95,
+                "method": "bayesian_beta",
+                "point_estimate": bayes_point_pct,
+                "prior_used": True,
+                "prior_info": {
+                    "platform": platform or "unknown",
+                    "source": prior_source,
+                    "alpha": alpha0,
+                    "beta": beta0,
+                    "effective_prior_n": alpha0 + beta0
+                }
+            }
+            observations["ad_rate_percent_bayesian"] = bayes_point_pct
+            observations["ad_rate_estimate_method"] = "bayesian_beta"
+        else:
+            observations["ad_rate_percent_ci_bayesian"] = None
+            observations["ad_rate_percent_bayesian"] = None
+            observations["ad_rate_estimate_method"] = "wilson"
+        
+        observations["prior_used"] = prior_used
 
         # Promotional rate (labeled + unlabeled high confidence)
         promo_rate = round((total_promotional / n_items) * 100, 1)
@@ -393,6 +437,11 @@ def _build_observations(
         # No CI when n=0 (wilson_ci returns (0.0, 1.0) which is not meaningful)
         observations["ad_rate_percent_ci"] = None
         observations["promotional_rate_percent_ci"] = None
+        # Phase 5C3: No Bayesian CI when n=0
+        observations["ad_rate_percent_ci_bayesian"] = None
+        observations["ad_rate_percent_bayesian"] = None
+        observations["ad_rate_estimate_method"] = "wilson"
+        observations["prior_used"] = False
 
     # ==========================================================================
     # Top Companies (View C) - PROMO-ONLY per spec
@@ -854,6 +903,27 @@ def _build_limits(
         "We cannot predict future ad targeting based on this single scan.",
         "Advertiser intent and targeting criteria are not visible to us.",
     ]
+
+    # Phase 5C3: Add Bayesian prior limitations if prior was used
+    if observations:
+        prior_used = observations.get("prior_used", False)
+        if prior_used:
+            platform = scan_metadata.get("platform", "unknown").lower()
+            alpha0, beta0, prior_source = get_ads_rate_prior(platform)
+            prior_n = alpha0 + beta0
+            n_items = len(feed_items)
+            prior_influence_pct = (prior_n / (prior_n + n_items)) * 100 if n_items > 0 else 0.0
+            
+            limits["bayesian_prior_limitations"] = {
+                "applies": True,
+                "explanation": (
+                    f"The ad rate estimate uses a statistical prior based on typical {platform} ad patterns. "
+                    "This helps provide more stable estimates for small samples, but assumes your feed is "
+                    "broadly similar to typical feeds. The prior has minimal influence on estimates from larger scans (50+ items)."
+                ),
+                "prior_source": prior_source,
+                "prior_influence_percent": round(prior_influence_pct, 1)
+            }
 
     return limits
 
