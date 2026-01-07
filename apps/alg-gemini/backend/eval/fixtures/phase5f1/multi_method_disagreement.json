@@ -1,0 +1,97 @@
+{
+  "fixture_id": "multi_method_disagreement",
+  "phase": "5F1",
+  "description": "Four detection methods with conflicting signals and no platform ad label",
+  "conflict_type": "MULTI_METHOD_CONFLICT",
+  "items": [
+    {
+      "item_index": 0,
+      "platform": "youtube",
+      "signals": {
+        "platform_label": {
+          "is_ad": false,
+          "detection_method": "PLATFORM_LABEL",
+          "reliability": 0.999,
+          "note": "No ad label present"
+        },
+        "ocr_disclosure": {
+          "found": false,
+          "detection_method": "OCR_DISCLOSURE",
+          "reliability": 0.85
+        },
+        "keyword_match": {
+          "found": true,
+          "keywords": ["buy", "shop", "deal", "sale"],
+          "classification": "promotional",
+          "detection_method": "KEYWORD_MATCH",
+          "reliability": 0.70
+        },
+        "cta_pattern": {
+          "found": true,
+          "cta_text": "get yours now",
+          "classification": "promotional",
+          "detection_method": "HEURISTIC_RULE",
+          "reliability": 0.65
+        },
+        "classifier_output": {
+          "classification": "ambiguous",
+          "confidence": 0.55,
+          "detection_method": "CLASSIFIER_OUTPUT",
+          "reliability": 0.80
+        }
+      },
+      "evidence_items": [
+        {
+          "evidence_id": "ev-ads-platform-001",
+          "signal_type": "platform_no_label",
+          "detection_method": "PLATFORM_LABEL",
+          "classification": "non_commercial",
+          "method_reliability": {"method": "PLATFORM_LABEL", "value": 0.999}
+        },
+        {
+          "evidence_id": "ev-ads-ocr-001",
+          "signal_type": "ocr_no_disclosure",
+          "detection_method": "OCR_DISCLOSURE",
+          "classification": "non_commercial",
+          "method_reliability": {"method": "OCR_DISCLOSURE", "value": 0.85}
+        },
+        {
+          "evidence_id": "ev-ads-keyword-001",
+          "signal_type": "commercial_keywords",
+          "detection_method": "KEYWORD_MATCH",
+          "classification": "promotional",
+          "method_reliability": {"method": "KEYWORD_MATCH", "value": 0.70}
+        },
+        {
+          "evidence_id": "ev-ads-cta-001",
+          "signal_type": "call_to_action",
+          "detection_method": "HEURISTIC_RULE",
+          "classification": "promotional",
+          "method_reliability": {"method": "HEURISTIC_RULE", "value": 0.65}
+        },
+        {
+          "evidence_id": "ev-ads-classifier-001",
+          "signal_type": "classifier_ambiguous",
+          "detection_method": "CLASSIFIER_OUTPUT",
+          "classification": "ambiguous",
+          "method_reliability": {"method": "CLASSIFIER_OUTPUT", "value": 0.80}
+        }
+      ]
+    }
+  ],
+  "expected": {
+    "conflict_detected": true,
+    "conflict_type": "MULTI_METHOD_CONFLICT",
+    "conflict_severity": "MODERATE",
+    "resolution_type": "MAJORITY",
+    "winning_method": "MAJORITY",
+    "winning_evidence_id": null,
+    "losing_methods": ["HEURISTIC_RULE", "CLASSIFIER_OUTPUT"],
+    "losing_evidence_ids": ["ev-ads-cta-001", "ev-ads-classifier-001"],
+    "classification": "UNLABELED_PROMOTION",
+    "claim_status": "FINAL",
+    "confidence_penalty": 0.10,
+    "rationale_contains": "Majority"
+  },
+  "notes": "When platform label says no-ad but multiple lower-reliability methods detect promotional signals, we use majority vote among methods with reliability >= 0.70. Keywords (0.70) and CTAs (via pattern) suggest promotion, while platform says non-commercial. Majority indicates promotional content."
+}

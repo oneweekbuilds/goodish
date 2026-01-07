@@ -1,0 +1,31 @@
+{
+  "name": "zero_ads",
+  "description": "30 items, 0 ads on YouTube - prior provides non-zero estimate",
+  "platform": "youtube",
+  "n_total": 30,
+  "n_ads": 0,
+  "observed_rate": 0.0,
+  "prior": {
+    "alpha": 1.5,
+    "beta": 18.5,
+    "mean": 0.075,
+    "effective_n": 20
+  },
+  "expected": {
+    "wilson_ci": {
+      "lower": 0.0,
+      "upper": 0.116,
+      "width": 0.116
+    },
+    "bayesian_ci": {
+      "lower": 0.002,
+      "upper": 0.108,
+      "width": 0.106
+    },
+    "bayesian_point_estimate": 0.030,
+    "prior_used": true,
+    "prior_influence_percent": 40.0,
+    "interval_width_reduction": 0.09
+  },
+  "notes": "Zero observed ads. Wilson CI includes 0, Bayesian posterior mean is 3% (pulled toward prior). The Bayesian estimate acknowledges that true zero ad rate is implausible given platform economics."
+}

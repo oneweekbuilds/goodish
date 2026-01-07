@@ -1,0 +1,27 @@
+{
+  "name": "large_n_no_prior",
+  "description": "150 items, 15 ads (10%) on TikTok - prior not used due to large sample",
+  "platform": "tiktok",
+  "n_total": 150,
+  "n_ads": 15,
+  "observed_rate": 0.10,
+  "prior": {
+    "alpha": 2.0,
+    "beta": 18.0,
+    "mean": 0.10,
+    "effective_n": 20
+  },
+  "expected": {
+    "wilson_ci": {
+      "lower": 0.058,
+      "upper": 0.161,
+      "width": 0.103
+    },
+    "bayesian_ci": null,
+    "bayesian_point_estimate": null,
+    "prior_used": false,
+    "prior_influence_percent": null,
+    "estimate_method": "wilson"
+  },
+  "notes": "With n >= 100, prior is not activated. Wilson CI is narrow enough that prior adds minimal value, and we prefer data-driven estimates at this sample size."
+}

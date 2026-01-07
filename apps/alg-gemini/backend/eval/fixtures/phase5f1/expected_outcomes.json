@@ -1,0 +1,99 @@
+{
+  "phase": "5F1",
+  "title": "Ads Conflict Resolution Engine - Expected Outcomes",
+  "version": "1.0.0",
+  "created": "2026-01-06",
+  "fixtures": [
+    {
+      "fixture_id": "platform_vs_ocr_denial",
+      "file": "platform_vs_ocr_denial.json",
+      "conflict_type": "PLATFORM_OCR_MISMATCH",
+      "expected_resolution": "PRECEDENCE",
+      "expected_winner": "PLATFORM_LABEL",
+      "expected_classification": "LABELED_AD",
+      "expected_status": "FINAL",
+      "expected_penalty": 0.0,
+      "must_pass": true
+    },
+    {
+      "fixture_id": "creator_notanad_hashtag",
+      "file": "creator_notanad_hashtag.json",
+      "conflict_type": "CREATOR_DENIAL",
+      "expected_resolution": "PRECEDENCE",
+      "expected_winner": "PLATFORM_LABEL",
+      "expected_classification": "LABELED_AD",
+      "expected_status": "FINAL",
+      "expected_penalty": 0.0,
+      "must_pass": true
+    },
+    {
+      "fixture_id": "unlabeled_promo_codes",
+      "file": "unlabeled_promo_codes.json",
+      "conflict_type": "LABEL_PROMO_MISMATCH",
+      "expected_resolution": "PRECEDENCE",
+      "expected_winner": "AGGREGATE_PROMO_SIGNALS",
+      "expected_classification": "UNLABELED_PROMOTION",
+      "expected_status": "FINAL",
+      "expected_penalty": 0.05,
+      "must_pass": true
+    },
+    {
+      "fixture_id": "multi_method_disagreement",
+      "file": "multi_method_disagreement.json",
+      "conflict_type": "MULTI_METHOD_CONFLICT",
+      "expected_resolution": "MAJORITY",
+      "expected_winner": "MAJORITY",
+      "expected_classification": "UNLABELED_PROMOTION",
+      "expected_status": "FINAL",
+      "expected_penalty": 0.10,
+      "must_pass": true
+    },
+    {
+      "fixture_id": "duplicate_different_signals",
+      "file": "duplicate_different_signals.json",
+      "conflict_type": "DUPLICATE_ITEM",
+      "expected_resolution": "PRECEDENCE",
+      "expected_winner": "PLATFORM_LABEL",
+      "expected_classification": "LABELED_AD",
+      "expected_status": "FINAL",
+      "expected_penalty": 0.02,
+      "must_pass": true
+    },
+    {
+      "fixture_id": "adversarial_sponsored_denial",
+      "file": "adversarial_sponsored_denial.json",
+      "conflict_type": "CREATOR_DENIAL",
+      "expected_resolution": "PRECEDENCE",
+      "expected_winner": "PLATFORM_LABEL",
+      "expected_classification": "LABELED_AD",
+      "expected_status": "FINAL",
+      "expected_penalty": 0.0,
+      "must_pass": true,
+      "notes": "Adversarial case - must correctly classify despite strong creator denial"
+    }
+  ],
+  "acceptance_criteria": {
+    "all_fixtures_pass": true,
+    "conflict_resolution_rate": {"min": 0.90, "target": 0.95},
+    "unresolved_conflict_rate": {"max": 0.10, "target": 0.05},
+    "platform_label_override_rate": {"min": 0.95, "target": 0.99},
+    "avg_confidence_penalty": {"max": 0.10, "target": 0.05}
+  },
+  "non_regression": {
+    "platform_label_correctness": "Must match Phase 5D1 baseline",
+    "evidence_linking_rate": 1.0,
+    "missing_evidence_rate": 0.0,
+    "orphan_evidence_rate": {"max": 0.20}
+  },
+  "summary_table": {
+    "headers": ["Fixture", "Classification", "Status", "Penalty", "Resolution"],
+    "rows": [
+      ["platform_vs_ocr_denial", "LABELED_AD", "FINAL", "0.0", "PRECEDENCE"],
+      ["creator_notanad_hashtag", "LABELED_AD", "FINAL", "0.0", "PRECEDENCE"],
+      ["unlabeled_promo_codes", "UNLABELED_PROMOTION", "FINAL", "0.05", "PRECEDENCE"],
+      ["multi_method_disagreement", "UNLABELED_PROMOTION", "FINAL", "0.10", "MAJORITY"],
+      ["duplicate_different_signals", "LABELED_AD", "FINAL", "0.02", "PRECEDENCE"],
+      ["adversarial_sponsored_denial", "LABELED_AD", "FINAL", "0.0", "PRECEDENCE"]
+    ]
+  }
+}

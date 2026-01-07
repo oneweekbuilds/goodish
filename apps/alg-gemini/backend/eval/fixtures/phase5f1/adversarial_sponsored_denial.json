@@ -1,0 +1,96 @@
+{
+  "fixture_id": "adversarial_sponsored_denial",
+  "phase": "5F1",
+  "description": "Creator explicitly writes 'This is definitely NOT a sponsored post' immediately after platform-labeled sponsored content - adversarial deception attempt",
+  "conflict_type": "CREATOR_DENIAL",
+  "items": [
+    {
+      "item_index": 0,
+      "platform": "instagram",
+      "signals": {
+        "platform_label": {
+          "is_ad": true,
+          "label_text": "Sponsored",
+          "detection_method": "PLATFORM_LABEL",
+          "reliability": 0.999
+        },
+        "ocr_text": "This is definitely NOT a sponsored post. I genuinely love @BrandName and bought this with my own money! No partnership here, just authentic love for this product. NOT AN AD.",
+        "denial_signals": [
+          {
+            "type": "explicit_denial",
+            "text": "This is definitely NOT a sponsored post",
+            "confidence": 0.95,
+            "detection_method": "REGEX_PATTERN",
+            "reliability": 0.75
+          },
+          {
+            "type": "hashtag_denial",
+            "text": "NOT AN AD",
+            "confidence": 0.99,
+            "detection_method": "KEYWORD_MATCH",
+            "reliability": 0.70
+          },
+          {
+            "type": "authenticity_claim",
+            "text": "bought this with my own money",
+            "confidence": 0.90,
+            "detection_method": "NER_EXTRACTION",
+            "reliability": 0.75
+          }
+        ],
+        "brand_mention": {
+          "brand": "BrandName",
+          "detection_method": "NER_EXTRACTION",
+          "reliability": 0.75
+        }
+      },
+      "evidence_items": [
+        {
+          "evidence_id": "ev-ads-platform-001",
+          "signal_type": "platform_labeled_ad",
+          "detection_method": "PLATFORM_LABEL",
+          "method_reliability": {"method": "PLATFORM_LABEL", "value": 0.999}
+        },
+        {
+          "evidence_id": "ev-ads-denial-explicit-001",
+          "signal_type": "explicit_denial",
+          "detection_method": "REGEX_PATTERN",
+          "method_reliability": {"method": "REGEX_PATTERN", "value": 0.75}
+        },
+        {
+          "evidence_id": "ev-ads-denial-hashtag-001",
+          "signal_type": "hashtag_denial",
+          "detection_method": "KEYWORD_MATCH",
+          "method_reliability": {"method": "KEYWORD_MATCH", "value": 0.70}
+        },
+        {
+          "evidence_id": "ev-ads-denial-auth-001",
+          "signal_type": "authenticity_claim",
+          "detection_method": "NER_EXTRACTION",
+          "method_reliability": {"method": "NER_EXTRACTION", "value": 0.75}
+        }
+      ]
+    }
+  ],
+  "expected": {
+    "conflict_detected": true,
+    "conflict_type": "CREATOR_DENIAL",
+    "conflict_severity": "CRITICAL",
+    "resolution_type": "PRECEDENCE",
+    "winning_method": "PLATFORM_LABEL",
+    "winning_evidence_id": "ev-ads-platform-001",
+    "losing_methods": ["REGEX_PATTERN", "KEYWORD_MATCH", "NER_EXTRACTION"],
+    "losing_evidence_ids": ["ev-ads-denial-explicit-001", "ev-ads-denial-hashtag-001", "ev-ads-denial-auth-001"],
+    "classification": "LABELED_AD",
+    "claim_status": "FINAL",
+    "confidence_penalty": 0.0,
+    "metadata": {
+      "creator_denial_noted": true,
+      "denial_count": 3,
+      "denial_strength": "strong",
+      "adversarial_pattern_detected": true
+    },
+    "rationale_contains": "Platform ad label (reliability=0.999) overrides explicit creator denial"
+  },
+  "notes": "This is an adversarial case: the creator is actively trying to deceive viewers by claiming content is not sponsored when it clearly is (per platform label). The platform disclosure is legally binding and MUST override any creator claims. We note the denial for audit purposes but do not let it affect classification. This pattern may indicate FTC compliance issues worth flagging."
+}

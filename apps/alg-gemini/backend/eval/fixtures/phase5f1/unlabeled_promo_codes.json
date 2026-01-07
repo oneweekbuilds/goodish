@@ -1,0 +1,81 @@
+{
+  "fixture_id": "unlabeled_promo_codes",
+  "phase": "5F1",
+  "description": "No platform ad label but strong promotional signals: discount codes and CTAs",
+  "conflict_type": "LABEL_PROMO_MISMATCH",
+  "items": [
+    {
+      "item_index": 0,
+      "platform": "tiktok",
+      "signals": {
+        "platform_label": {
+          "is_ad": false,
+          "detection_method": "PLATFORM_LABEL",
+          "reliability": 0.999
+        },
+        "ocr_text": "OMG you guys need to try this! Use code SAVE20 for 20% off! Link in bio for the best deal ever!",
+        "promo_signals": {
+          "discount_code": {
+            "found": true,
+            "code": "SAVE20",
+            "detection_method": "REGEX_PATTERN",
+            "reliability": 0.75
+          },
+          "cta": {
+            "found": true,
+            "text": "link in bio",
+            "detection_method": "KEYWORD_MATCH",
+            "reliability": 0.70
+          },
+          "purchase_intent": {
+            "found": true,
+            "indicators": ["best deal", "20% off"],
+            "detection_method": "KEYWORD_MATCH",
+            "reliability": 0.70
+          }
+        }
+      },
+      "evidence_items": [
+        {
+          "evidence_id": "ev-ads-platform-001",
+          "signal_type": "platform_no_label",
+          "detection_method": "PLATFORM_LABEL",
+          "method_reliability": {"method": "PLATFORM_LABEL", "value": 0.999}
+        },
+        {
+          "evidence_id": "ev-ads-promo-discount-001",
+          "signal_type": "discount_code",
+          "detection_method": "REGEX_PATTERN",
+          "method_reliability": {"method": "REGEX_PATTERN", "value": 0.75}
+        },
+        {
+          "evidence_id": "ev-ads-promo-cta-001",
+          "signal_type": "call_to_action",
+          "detection_method": "KEYWORD_MATCH",
+          "method_reliability": {"method": "KEYWORD_MATCH", "value": 0.70}
+        },
+        {
+          "evidence_id": "ev-ads-promo-purchase-001",
+          "signal_type": "purchase_intent",
+          "detection_method": "KEYWORD_MATCH",
+          "method_reliability": {"method": "KEYWORD_MATCH", "value": 0.70}
+        }
+      ]
+    }
+  ],
+  "expected": {
+    "conflict_detected": true,
+    "conflict_type": "LABEL_PROMO_MISMATCH",
+    "conflict_severity": "MODERATE",
+    "resolution_type": "PRECEDENCE",
+    "winning_method": "AGGREGATE_PROMO_SIGNALS",
+    "winning_evidence_id": "ev-ads-promo-discount-001",
+    "losing_methods": [],
+    "losing_evidence_ids": [],
+    "classification": "UNLABELED_PROMOTION",
+    "claim_status": "FINAL",
+    "confidence_penalty": 0.05,
+    "rationale_contains": "Promotional signals detected"
+  },
+  "notes": "This is classified as UNLABELED_PROMOTION, not LABELED_AD. The platform explicitly says it's NOT an ad, so we honor that for ad/not-ad classification. But we detect it as promotional content based on commercial signals."
+}
