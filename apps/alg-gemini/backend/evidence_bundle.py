@@ -1458,7 +1458,14 @@ def _build_evidence_items(
         ad_meta = item.get("ad_metadata", {})
         reason = ad_meta.get("ad_detected_reason", "platform_label")
         method = "OCR_DISCLOSURE" if reason == "ocr_disclosure_token" else "PLATFORM_LABEL"
-        method_reliability_obj = get_method_reliability(method)
+        reliability_score = get_method_reliability(method)
+        # get_method_reliability returns a float, create MethodReliability object
+        from accuracy.schema import MethodReliability
+        method_reliability_obj = MethodReliability(
+            method=method,
+            base_reliability=reliability_score,
+            effective_reliability=reliability_score
+        ) if reliability_score is not None else None
         
         evidence_id = f"ev-ads-platform-{idx:03d}"
         

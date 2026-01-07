@@ -95,6 +95,21 @@ class TestAdsBundleLinking:
             assert "source" in ev_item, f"Evidence item {ev_id} missing source"
             assert ev_item["evidence_id"] == ev_id, f"Evidence item ID mismatch"
     
+    def test_evidence_items_method_reliability_type(self):
+        """Evidence items should have method_reliability as None or proper object/dict."""
+        bundle = build_ads_evidence_bundle(MOCK_SCAN_TWITTER)
+        evidence_items = bundle.get("evidence_items", {})
+        
+        for ev_id, ev_item in evidence_items.items():
+            method_reliability = ev_item.get("method_reliability")
+            if method_reliability is not None:
+                # Should be a dict (from Pydantic model_dump) with expected fields
+                assert isinstance(method_reliability, dict), \
+                    f"Evidence item {ev_id} method_reliability should be dict, got {type(method_reliability)}"
+                # Should have at least base_reliability or effective_reliability
+                assert "base_reliability" in method_reliability or "effective_reliability" in method_reliability, \
+                    f"Evidence item {ev_id} method_reliability missing reliability fields"
+    
     def test_aggregate_insight_has_evidence(self):
         """Aggregate ad rate insight should have evidence_ids."""
         bundle = build_ads_evidence_bundle(MOCK_SCAN_TWITTER)
