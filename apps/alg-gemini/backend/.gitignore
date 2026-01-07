@@ -23,3 +23,5 @@ tmp/
 .vscode/
 .idea/
 scans.db.backup
+eval/baselines/*.json
+eval/baselines/*.jsonl
