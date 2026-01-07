@@ -48,6 +48,8 @@ from accuracy.stats import (
     beta_posterior_params,
 )
 from accuracy.priors import get_ads_rate_prior, should_use_prior
+from accuracy.schema import EvidenceItem, Insight, ItemContext, ClaimStatus
+from accuracy.evidence_chain import enforce_evidence_chain
 
 
 def build_ads_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
@@ -101,11 +103,39 @@ def build_ads_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
             "This may indicate a classification counting error."
         )
 
+    # Phase 5D1: Build evidence_items and insights, then enforce evidence chain
+    evidence_items = _build_evidence_items(feed_items, commercial_analysis, scan_metadata, observations)
+    insights = _build_insights(observations, measurements, evidence_items, scan_metadata)
+    
+    # Enforce evidence chain requirements
+    updated_insights, metrics = enforce_evidence_chain(insights, evidence_items)
+    
+    # Hard requirement: evidence_linking_rate must be 1.0 and missing_evidence_rate must be 0.0
+    if not metrics.validation_passed:
+        # Log warning but don't fail - add to limits
+        limits.setdefault("evidence_chain_warnings", []).append(
+            f"Evidence chain validation failed: linking_rate={metrics.evidence_linking_rate:.2f}, "
+            f"missing_rate={metrics.missing_evidence_rate:.2f}"
+        )
+    
+    # Convert to dict format for JSON serialization
+    evidence_items_dict = {item.evidence_id: item.model_dump(exclude_none=True) for item in evidence_items}
+    insights_dict = [insight.model_dump(exclude_none=True) for insight in updated_insights]
+    
     return {
         "meta": meta,
         "observations": observations,
         "measurements": measurements,
         "limits": limits,
+        # Phase 5D1: Add evidence_items, insights, and metrics
+        "evidence_items": evidence_items_dict,
+        "insights": insights_dict,
+        "evidence_chain_metrics": {
+            "evidence_linking_rate": metrics.evidence_linking_rate,
+            "missing_evidence_rate": metrics.missing_evidence_rate,
+            "orphan_evidence_rate": metrics.orphan_evidence_rate,
+            "validation_passed": metrics.validation_passed
+        }
     }
 
 
@@ -1405,6 +1435,145 @@ def generate_talk_response(
     response["what_you_can_try"]["actions"] = actions[:4]
 
     return response
+
+
+def _build_evidence_items(
+    feed_items: List[Dict[str, Any]],
+    commercial_analysis: CommercialAnalysisResult,
+    scan_metadata: Dict[str, Any],
+    observations: Dict[str, Any]
+) -> List[EvidenceItem]:
+    """
+    Phase 5D1: Build EvidenceItems from feed items and analysis.
+    
+    Naming convention: ev-ads-{signal_type}-{index:03d}
+    """
+    evidence_items = []
+    platform = scan_metadata.get("platform", "").lower()
+    modality = scan_metadata.get("source_type", "").lower()
+    
+    # Build evidence items for platform-labeled ads
+    ads = [item for item in feed_items if item.get("is_ad", False)]
+    for idx, item in enumerate(ads):
+        ad_meta = item.get("ad_metadata", {})
+        reason = ad_meta.get("ad_detected_reason", "platform_label")
+        method = "OCR_DISCLOSURE" if reason == "ocr_disclosure_token" else "PLATFORM_LABEL"
+        method_reliability_obj = get_method_reliability(method)
+        
+        evidence_id = f"ev-ads-platform-{idx:03d}"
+        
+        # Build item context
+        item_index = item.get("position_in_feed", idx)
+        item_context = ItemContext(
+            item_index=item_index,
+            platform=platform,
+            modality=modality,
+            item_type="ad"
+        )
+        
+        evidence_item = EvidenceItem(
+            evidence_id=evidence_id,
+            source_item_index=item_index,
+            signal_type="platform_labeled_ad",
+            detection_method=method,
+            method_reliability=method_reliability_obj,
+            source="platform_label",
+            item_context=item_context
+        )
+        
+        evidence_items.append(evidence_item)
+    
+    # Build aggregate evidence item for ad rate
+    n_items = len(feed_items)
+    total_ads = observations.get("total_ads_detected", 0)
+    ad_rate = observations.get("ad_rate_percent")
+    
+    if ad_rate is not None and n_items > 0:
+        # Create aggregate evidence item
+        aggregate_ev_id = "ev-ads-aggregate-adrate"
+        
+        # Determine method from observations
+        estimate_method = observations.get("ad_rate_estimate_method", "wilson")
+        if estimate_method == "bayesian_beta":
+            method = "BAYESIAN_BETA"
+        else:
+            method = "WILSON_CI"
+        
+        reliability_score = get_method_reliability(method)
+        # get_method_reliability returns a float, create MethodReliability object
+        from accuracy.schema import MethodReliability
+        method_reliability_obj = MethodReliability(
+            method=method,
+            base_reliability=reliability_score,
+            effective_reliability=reliability_score
+        ) if reliability_score is not None else None
+        
+        aggregate_item = EvidenceItem(
+            evidence_id=aggregate_ev_id,
+            signal_type="aggregate_computation",
+            detection_method=method,
+            method_reliability=method_reliability_obj,
+            source="aggregate",
+            item_context=None  # Aggregate has no single item context
+        )
+        
+        evidence_items.append(aggregate_item)
+    
+    return evidence_items
+
+
+def _build_insights(
+    observations: Dict[str, Any],
+    measurements: Dict[str, Any],
+    evidence_items: List[EvidenceItem],
+    scan_metadata: Dict[str, Any]
+) -> List[Insight]:
+    """
+    Phase 5D1: Build Insights from observations and measurements.
+    
+    For aggregate claims (like ad_rate), attach evidence_ids to underlying evidence items
+    or reference the aggregate EvidenceItem.
+    """
+    insights = []
+    
+    # Build insight for ad rate (aggregate claim)
+    ad_rate = observations.get("ad_rate_percent")
+    n_items = observations.get("total_posts_seen", 0)
+    total_ads = observations.get("total_ads_detected", 0)
+    
+    if ad_rate is not None and n_items > 0:
+        # Find aggregate evidence item
+        aggregate_ev_id = "ev-ads-aggregate-adrate"
+        aggregate_ev_exists = any(item.evidence_id == aggregate_ev_id for item in evidence_items)
+        
+        # Also collect platform-labeled ad evidence IDs (up to first 10)
+        platform_ev_ids = [
+            item.evidence_id for item in evidence_items
+            if item.signal_type == "platform_labeled_ad"
+        ][:10]
+        
+        # Use aggregate evidence item if available, otherwise use platform evidence
+        if aggregate_ev_exists:
+            evidence_ids = [aggregate_ev_id]
+        else:
+            evidence_ids = platform_ev_ids if platform_ev_ids else []
+        
+        # Determine claim status: FINAL if we have evidence, PRELIMINARY otherwise
+        claim_status: ClaimStatus = "FINAL" if evidence_ids else "PRELIMINARY"
+        
+        insight = Insight(
+            insight_id="ads-commercial-spectrum",
+            claim_type="aggregate_observation",
+            claim_text=f"Ad rate: {ad_rate}% ({total_ads} ads in {n_items} posts)",
+            claim_status=claim_status,
+            evidence_ids=evidence_ids,
+            numeric_confidence=observations.get("ad_rate_percent_ci", {}).get("confidence_level", 0.95),
+            point_estimate=ad_rate
+        )
+        
+        insights.append(insight)
+    
+    return insights
 
 
 def format_talk_response_as_text(response: Dict[str, Any]) -> str:

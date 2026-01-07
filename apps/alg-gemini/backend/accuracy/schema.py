@@ -188,11 +188,27 @@ class AuditTrail(BaseModel):
 # ---------------------------------------------------------------------------
 
 
+class ItemContext(BaseModel):
+    """
+    Pointer to source item without storing raw content.
+    
+    Phase 5D1: Contextual information about the item that produced evidence.
+    """
+    item_index: Optional[int] = None
+    platform: Optional[str] = None
+    modality: Optional[str] = None
+    item_type: Optional[str] = None  # "post", "ad", "story", etc.
+    platform_id: Optional[str] = None  # Platform's ID for the item (if available)
+    timestamp_relative: Optional[str] = None  # "early", "middle", "late" in feed
+
+
 class EvidenceItem(BaseModel):
     """
     Evidence item backing one or more insights.
 
     Includes v3.1 method_reliability and conflict tracking fields.
+    
+    Phase 5D1: Extended with source and item_context for evidence chain enforcement.
     """
 
     evidence_id: str
@@ -218,6 +234,10 @@ class EvidenceItem(BaseModel):
     # Conflict tracking
     conflicts_with: List[str] = Field(default_factory=list)
     conflict_resolution: Optional[ConflictResolution] = None
+    
+    # Phase 5D1: Evidence source and context
+    source: Optional[str] = None  # e.g., "platform_label", "ocr", "keyword", "model", "aggregate"
+    item_context: Optional[ItemContext] = None
 
 
 class Insight(BaseModel):
