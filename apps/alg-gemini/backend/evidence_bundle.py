@@ -41,7 +41,13 @@ from promo_signals import (
     PromoConfidence,
 )
 from accuracy.method_reliability import get_method_reliability
-from accuracy.stats import wilson_ci_percent
+from accuracy.stats import (
+    wilson_ci_percent,
+    safe_bayesian_ci,
+    bayesian_point_estimate,
+    beta_posterior_params,
+)
+from accuracy.priors import get_ads_rate_prior, should_use_prior
 
 
 def build_ads_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
@@ -698,7 +704,8 @@ def _build_limits(
     scan_metadata: Dict[str, Any],
     aggregates: Dict[str, Any],
     feed_items: List[Dict[str, Any]],
-    commercial_analysis: CommercialAnalysisResult
+    commercial_analysis: CommercialAnalysisResult,
+    observations: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """
     Build the limits section describing what is missing or uncertain.
