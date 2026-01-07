@@ -74,6 +74,149 @@ class MethodReliability(BaseModel):
     reliability_source: Optional[str] = None
 
 
+# ---------------------------------------------------------------------------
+# Tab-specific accuracy contracts (Phase 5E bridge)
+# ---------------------------------------------------------------------------
+
+
+class TabAccuracyContract(BaseModel):
+    """
+    Lightweight, code-level contracts describing per-tab accuracy expectations.
+
+    These are additive and backward compatible; callers may ignore if not needed.
+    """
+
+    tab: str
+    final_definition: str
+    preliminary_definition: str
+    abstain_definition: str
+    min_evidence_for_final: int = 1
+    allowed_evidence_types: List[str] = Field(default_factory=list)
+    abstention_triggers: List[str] = Field(default_factory=list)
+    uncertainty_width_threshold: Optional[float] = None
+    conflict_penalty_threshold: Optional[float] = None
+    notes: Optional[str] = None
+
+
+# Ads is the reference contract; other tabs extend parity without changing Ads.
+TAB_ACCURACY_CONTRACTS: Dict[str, TabAccuracyContract] = {
+    "ads": TabAccuracyContract(
+        tab="ads",
+        final_definition="Platform-labeled or corroborated promotional content with complete evidence chain.",
+        preliminary_definition="Promo indications with partial or lower-reliability support.",
+        abstain_definition="No defensible promotional signal or conflicting signals with no winner.",
+        min_evidence_for_final=1,
+        allowed_evidence_types=[
+            "platform_label",
+            "ocr_disclosure",
+            "promo_signal",
+            "duplicate_item",
+        ],
+        abstention_triggers=[
+            "no_evidence",
+            "unresolved_conflict",
+            "insufficient_sample",
+        ],
+        uncertainty_width_threshold=0.35,
+        conflict_penalty_threshold=0.50,
+    ),
+    "politics": TabAccuracyContract(
+        tab="politics",
+        final_definition="Direct political/news signals with corroborated keywords or platform labels.",
+        preliminary_definition="Weak or single-source political indicators without corroboration.",
+        abstain_definition="No political indicators or conflicting platform vs keyword evidence.",
+        min_evidence_for_final=2,
+        allowed_evidence_types=[
+            "platform_label",
+            "keyword_match",
+            "content_category",
+            "news_indicator",
+        ],
+        abstention_triggers=[
+            "low_sample",
+            "no_political_signals",
+            "platform_keyword_conflict",
+            "weak_reliability",
+        ],
+        uncertainty_width_threshold=0.40,
+        conflict_penalty_threshold=0.40,
+    ),
+    "patterns": TabAccuracyContract(
+        tab="patterns",
+        final_definition="Repeated patterns across feed items supported by multiple occurrences.",
+        preliminary_definition="Pattern detected but below repetition threshold or sample size.",
+        abstain_definition="No observable repetition or conflicting temporal signals.",
+        min_evidence_for_final=2,
+        allowed_evidence_types=[
+            "content_type_repetition",
+            "creator_repetition",
+            "temporal_pattern",
+            "duplicate_inference",
+        ],
+        abstention_triggers=[
+            "insufficient_repetition",
+            "temporal_conflict",
+            "low_sample",
+        ],
+        uncertainty_width_threshold=0.45,
+        conflict_penalty_threshold=0.45,
+    ),
+    "creators": TabAccuracyContract(
+        tab="creators",
+        final_definition="Creator-level findings backed by verified extraction and repeated occurrences.",
+        preliminary_definition="Single-observation creator signals or medium-confidence extraction.",
+        abstain_definition="No reliable creator extraction or creator denial conflicts.",
+        min_evidence_for_final=2,
+        allowed_evidence_types=[
+            "creator_handle",
+            "creator_self_description",
+            "observed_content",
+            "verification_status",
+        ],
+        abstention_triggers=[
+            "no_creator_extraction",
+            "conflicting_creator_claims",
+            "low_confidence_extraction",
+        ],
+        uncertainty_width_threshold=0.40,
+        conflict_penalty_threshold=0.40,
+    ),
+    "algorithm": TabAccuracyContract(
+        tab="algorithm",
+        final_definition="High-confidence signals aggregated from other tabs with consistent support.",
+        preliminary_definition="Signals present but with limited support or wide uncertainty.",
+        abstain_definition="No defensible signals or conflicting intent indicators.",
+        min_evidence_for_final=2,
+        allowed_evidence_types=[
+            "cross_tab_signal",
+            "aggregated_inference",
+            "content_cluster",
+        ],
+        abstention_triggers=[
+            "no_signals",
+            "conflicting_intents",
+            "insufficient_cross_tab_support",
+        ],
+        uncertainty_width_threshold=0.35,
+        conflict_penalty_threshold=0.50,
+    ),
+}
+
+
+def get_tab_accuracy_contract(tab_name: str) -> TabAccuracyContract:
+    """Return tab-specific accuracy contract with safe fallback."""
+    return TAB_ACCURACY_CONTRACTS.get(
+        tab_name,
+        TabAccuracyContract(
+            tab=tab_name,
+            final_definition="Tab-specific contract not defined; require explicit evidence.",
+            preliminary_definition="Weak or partial support.",
+            abstain_definition="No defensible claim.",
+            min_evidence_for_final=1,
+        ),
+    )
+
+
 class ConflictResolution(BaseModel):
     """
     How conflicting evidence was handled for a given EvidenceItem.
@@ -98,6 +241,10 @@ class ConflictType(str, Enum):
     DUPLICATE_ITEM = "DUPLICATE_ITEM"
     INCOMPLETE_METADATA = "INCOMPLETE_METADATA"
     TEMPORAL_CONFLICT = "TEMPORAL_CONFLICT"
+    POLITICS_SIGNAL_CONFLICT = "POLITICS_SIGNAL_CONFLICT"
+    CREATOR_PROFILE_CONFLICT = "CREATOR_PROFILE_CONFLICT"
+    PATTERN_INCONSISTENCY = "PATTERN_INCONSISTENCY"
+    ALGORITHM_INTENT_CONFLICT = "ALGORITHM_INTENT_CONFLICT"
 
 
 class ConflictSeverity(str, Enum):

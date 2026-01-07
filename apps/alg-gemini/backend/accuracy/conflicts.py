@@ -44,7 +44,9 @@ class ConflictResolver:
     """
 
     def process(
-        self, evidence_items: List[EvidenceItem]
+        self,
+        evidence_items: List[EvidenceItem],
+        tab_name: str = "ads",
     ) -> Tuple[Dict[str, ConflictResolutionRecord], ConflictMetrics]:
         """Detect and resolve conflicts, returning records and metrics."""
         from .conflict_handlers import (
@@ -53,11 +55,75 @@ class ConflictResolver:
             resolve_label_promo_mismatch,
             resolve_multi_method_conflict,
             resolve_duplicate_items,
+            resolve_politics_signal_conflict,
+            resolve_creator_profile_conflict,
+            resolve_pattern_inconsistency,
+            resolve_algorithm_intent_conflict,
         )
 
         from .conflict_metrics import compute_validation
 
         metrics = ConflictMetrics()
+        resolutions: Dict[str, ConflictResolutionRecord] = {}
+
+        # Dispatch per-tab detection while preserving Ads behavior.
+        if tab_name.lower() == "ads":
+            resolutions = self._process_ads_conflicts(
+                evidence_items,
+                metrics,
+                resolve_platform_ocr_mismatch,
+                resolve_creator_denial,
+                resolve_label_promo_mismatch,
+                resolve_multi_method_conflict,
+                resolve_duplicate_items,
+            )
+        elif tab_name.lower() == "politics":
+            resolutions = self._process_politics_conflicts(
+                evidence_items,
+                metrics,
+                resolve_politics_signal_conflict,
+            )
+        elif tab_name.lower() == "creators":
+            resolutions = self._process_creators_conflicts(
+                evidence_items,
+                metrics,
+                resolve_creator_profile_conflict,
+            )
+        elif tab_name.lower() == "patterns":
+            resolutions = self._process_patterns_conflicts(
+                evidence_items,
+                metrics,
+                resolve_pattern_inconsistency,
+            )
+        elif tab_name.lower() in {"algorithm", "inferences"}:
+            resolutions = self._process_algorithm_conflicts(
+                evidence_items,
+                metrics,
+                resolve_algorithm_intent_conflict,
+            )
+        else:
+            # Unknown tab: no-op but still validate empty metrics.
+            resolutions = {}
+
+        # Finalize metrics
+        self._finalize_metrics(metrics)
+        compute_validation(metrics)
+        return resolutions, metrics
+
+    # ------------------------------------------------------------------ #
+    # Tab-specific processors (Ads remains untouched)
+    # ------------------------------------------------------------------ #
+
+    def _process_ads_conflicts(
+        self,
+        evidence_items: List[EvidenceItem],
+        metrics: ConflictMetrics,
+        resolve_platform_ocr_mismatch,
+        resolve_creator_denial,
+        resolve_label_promo_mismatch,
+        resolve_multi_method_conflict,
+        resolve_duplicate_items,
+    ) -> Dict[str, ConflictResolutionRecord]:
         resolutions: Dict[str, ConflictResolutionRecord] = {}
 
         # Group evidence by item_index when available
@@ -157,10 +223,131 @@ class ConflictResolver:
             resolutions[conflict_id] = resolution
             self._update_metrics_for_resolution(metrics, resolution)
 
-        # Finalize metrics
-        self._finalize_metrics(metrics)
-        compute_validation(metrics)
-        return resolutions, metrics
+        return resolutions
+
+    def _process_politics_conflicts(
+        self,
+        evidence_items: List[EvidenceItem],
+        metrics: ConflictMetrics,
+        resolve_politics_signal_conflict,
+    ) -> Dict[str, ConflictResolutionRecord]:
+        resolutions: Dict[str, ConflictResolutionRecord] = {}
+        by_item: Dict[int, List[EvidenceItem]] = {}
+        for ev in evidence_items:
+            idx = ev.item_context.item_index if ev.item_context else None
+            if idx is None:
+                continue
+            by_item.setdefault(idx, []).append(ev)
+
+        for item_index, items in by_item.items():
+            platform_labels = [
+                ev for ev in items if (ev.detection_method or "").upper() == "PLATFORM_LABEL"
+            ]
+            keyword_signals = [
+                ev for ev in items if (ev.signal_type or "").startswith("political_keyword")
+                or (ev.signal_type or "").startswith("news_keyword")
+            ]
+            classifier_signals = [
+                ev for ev in items if (ev.detection_method or "").upper() == "CLASSIFIER_OUTPUT"
+            ]
+
+            if platform_labels and (keyword_signals or classifier_signals):
+                metrics.total_conflicts_detected += 1
+                conflict_id = f"conflict-{item_index}-politics-signal"
+                resolution = resolve_politics_signal_conflict(
+                    platform_labels[0],
+                    keyword_signals or classifier_signals,
+                )
+                resolution.conflict_id = conflict_id
+                resolutions[conflict_id] = resolution
+                self._update_metrics_for_resolution(metrics, resolution)
+
+        return resolutions
+
+    def _process_creators_conflicts(
+        self,
+        evidence_items: List[EvidenceItem],
+        metrics: ConflictMetrics,
+        resolve_creator_profile_conflict,
+    ) -> Dict[str, ConflictResolutionRecord]:
+        resolutions: Dict[str, ConflictResolutionRecord] = {}
+        by_creator: Dict[str, List[EvidenceItem]] = {}
+
+        for ev in evidence_items:
+            creator_id = None
+            if ev.item_context:
+                creator_id = getattr(ev.item_context, "platform_id", None)
+            if not creator_id and ev.signal_subtype:
+                creator_id = ev.signal_subtype
+            if creator_id:
+                by_creator.setdefault(creator_id, []).append(ev)
+
+        for creator_id, items in by_creator.items():
+            self_desc = [ev for ev in items if (ev.signal_type or "") == "creator_self_description"]
+            observed = [ev for ev in items if (ev.signal_type or "") == "observed_content"]
+            if self_desc and observed:
+                metrics.total_conflicts_detected += 1
+                conflict_id = f"conflict-creator-{creator_id}"
+                resolution = resolve_creator_profile_conflict(self_desc[0], observed)
+                resolution.conflict_id = conflict_id
+                resolutions[conflict_id] = resolution
+                self._update_metrics_for_resolution(metrics, resolution)
+
+        return resolutions
+
+    def _process_patterns_conflicts(
+        self,
+        evidence_items: List[EvidenceItem],
+        metrics: ConflictMetrics,
+        resolve_pattern_inconsistency,
+    ) -> Dict[str, ConflictResolutionRecord]:
+        resolutions: Dict[str, ConflictResolutionRecord] = {}
+        by_item: Dict[int, List[EvidenceItem]] = {}
+        for ev in evidence_items:
+            idx = ev.item_context.item_index if ev.item_context else None
+            if idx is None:
+                continue
+            by_item.setdefault(idx, []).append(ev)
+
+        for item_index, items in by_item.items():
+            temporal = [ev for ev in items if (ev.signal_type or "") == "temporal_pattern"]
+            duplication = [ev for ev in items if (ev.signal_type or "") == "duplicate_inference"]
+            if len(temporal) >= 2 or duplication:
+                metrics.total_conflicts_detected += 1
+                conflict_id = f"conflict-{item_index}-patterns"
+                resolution = resolve_pattern_inconsistency(temporal or duplication)
+                resolution.conflict_id = conflict_id
+                resolutions[conflict_id] = resolution
+                self._update_metrics_for_resolution(metrics, resolution)
+
+        return resolutions
+
+    def _process_algorithm_conflicts(
+        self,
+        evidence_items: List[EvidenceItem],
+        metrics: ConflictMetrics,
+        resolve_algorithm_intent_conflict,
+    ) -> Dict[str, ConflictResolutionRecord]:
+        resolutions: Dict[str, ConflictResolutionRecord] = {}
+        by_item: Dict[int, List[EvidenceItem]] = {}
+        for ev in evidence_items:
+            idx = ev.item_context.item_index if ev.item_context else None
+            if idx is None:
+                continue
+            by_item.setdefault(idx, []).append(ev)
+
+        for item_index, items in by_item.items():
+            intents = [ev for ev in items if (ev.signal_type or "") == "intent_signal"]
+            intent_labels = {ev.signal_subtype for ev in intents if ev.signal_subtype}
+            if len(intent_labels) >= 2:
+                metrics.total_conflicts_detected += 1
+                conflict_id = f"conflict-{item_index}-intent"
+                resolution = resolve_algorithm_intent_conflict(intents)
+                resolution.conflict_id = conflict_id
+                resolutions[conflict_id] = resolution
+                self._update_metrics_for_resolution(metrics, resolution)
+
+        return resolutions
 
     def _update_metrics_for_resolution(
         self, metrics: ConflictMetrics, resolution: ConflictResolutionRecord

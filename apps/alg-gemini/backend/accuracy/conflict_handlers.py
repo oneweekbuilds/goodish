@@ -320,3 +320,205 @@ def resolve_duplicate_items(evidence_items: List[EvidenceItem]) -> ConflictResol
         detected_at=now,
         resolved_at=now,
     )
+
+
+# --------------------------------------------------------------------------- #
+# Non-Ads tab conflict handlers (parity extensions)
+# --------------------------------------------------------------------------- #
+
+
+def resolve_politics_signal_conflict(
+    platform_ev: EvidenceItem, keyword_evs: List[EvidenceItem]
+) -> ConflictResolutionRecord:
+    """Platform/first-party label overrides weaker keyword/classifier signals."""
+    now = datetime.utcnow()
+    losing_methods = [ev.detection_method or "KEYWORD_MATCH" for ev in keyword_evs]
+    losing_ids = [ev.evidence_id for ev in keyword_evs]
+    return ConflictResolutionRecord(
+        conflict_id="",
+        conflict_type=ConflictType.POLITICS_SIGNAL_CONFLICT,
+        conflict_severity=ConflictSeverity.MODERATE,
+        resolution_type="PRECEDENCE",
+        winning_method=platform_ev.detection_method or "PLATFORM_LABEL",
+        winning_evidence_id=platform_ev.evidence_id,
+        losing_methods=losing_methods,
+        losing_evidence_ids=losing_ids,
+        rationale=(
+            "Platform label or first-party indicator takes precedence over ambiguous "
+            "keyword or classifier-only political signals."
+        ),
+        confidence_penalty=0.05,
+        claim_status="FINAL",
+        classification="POLITICAL_SIGNAL",
+        metadata=None,
+        detected_at=now,
+        resolved_at=now,
+    )
+
+
+def resolve_creator_profile_conflict(
+    self_description_ev: EvidenceItem, observed_evs: List[EvidenceItem]
+) -> ConflictResolutionRecord:
+    """Self-described identity wins unless multiple observed conflicts dominate."""
+    now = datetime.utcnow()
+    losing_methods = [ev.detection_method or "" for ev in observed_evs]
+    losing_ids = [ev.evidence_id for ev in observed_evs]
+    observed_reliabilities = [_get_reliability(ev) for ev in observed_evs] or [0.0]
+    observed_avg = sum(observed_reliabilities) / len(observed_reliabilities)
+
+    # If observed evidence is far stronger, fall back to majority.
+    if observed_avg - _get_reliability(self_description_ev) >= 0.15:
+        resolution_type = "MAJORITY"
+        winning_method = "OBSERVED_CONTENT"
+        winning_id = observed_evs[0].evidence_id if observed_evs else None
+        penalty = 0.15
+        claim_status = "PRELIMINARY"
+        rationale = "Observed content reliability outweighs self-description."
+    else:
+        resolution_type = "PRECEDENCE"
+        winning_method = self_description_ev.detection_method or "SELF_DESCRIPTION"
+        winning_id = self_description_ev.evidence_id
+        penalty = 0.05
+        claim_status = "FINAL"
+        rationale = "Creator self-description (first-party) dominates observed contradictions."
+
+    return ConflictResolutionRecord(
+        conflict_id="",
+        conflict_type=ConflictType.CREATOR_PROFILE_CONFLICT,
+        conflict_severity=ConflictSeverity.MODERATE,
+        resolution_type=resolution_type,
+        winning_method=winning_method,
+        winning_evidence_id=winning_id,
+        losing_methods=losing_methods,
+        losing_evidence_ids=losing_ids,
+        rationale=rationale,
+        confidence_penalty=penalty,
+        claim_status=claim_status,
+        classification="CREATOR_PROFILE",
+        metadata=None,
+        detected_at=now,
+        resolved_at=now,
+    )
+
+
+def resolve_pattern_inconsistency(
+    evidence_items: List[EvidenceItem],
+) -> ConflictResolutionRecord:
+    """Temporal or duplication inconsistency within pattern signals."""
+    now = datetime.utcnow()
+    if not evidence_items:
+        return ConflictResolutionRecord(
+            conflict_id="",
+            conflict_type=ConflictType.PATTERN_INCONSISTENCY,
+            conflict_severity=ConflictSeverity.MINOR,
+            resolution_type="ABSTAIN",
+            winning_method=None,
+            winning_evidence_id=None,
+            losing_methods=[],
+            losing_evidence_ids=[],
+            rationale="No pattern evidence available.",
+            confidence_penalty=0.25,
+            claim_status="ABSTAIN",
+            classification=None,
+            metadata=None,
+            detected_at=now,
+            resolved_at=now,
+        )
+
+    sorted_evs = sorted(
+        evidence_items, key=lambda ev: _get_reliability(ev), reverse=True
+    )
+    top_ev = sorted_evs[0]
+    losing_evs = sorted_evs[1:]
+    penalty = 0.10 if losing_evs else 0.0
+
+    return ConflictResolutionRecord(
+        conflict_id="",
+        conflict_type=ConflictType.PATTERN_INCONSISTENCY,
+        conflict_severity=ConflictSeverity.MODERATE,
+        resolution_type="PRECEDENCE",
+        winning_method=top_ev.detection_method or "PATTERN_SIGNAL",
+        winning_evidence_id=top_ev.evidence_id,
+        losing_methods=[ev.detection_method or "" for ev in losing_evs],
+        losing_evidence_ids=[ev.evidence_id for ev in losing_evs],
+        rationale="Highest reliability pattern signal selected; others penalized.",
+        confidence_penalty=penalty,
+        claim_status="PRELIMINARY" if penalty > 0 else "FINAL",
+        classification="PATTERN_SIGNAL",
+        metadata=None,
+        detected_at=now,
+        resolved_at=now,
+    )
+
+
+def resolve_algorithm_intent_conflict(
+    evidence_items: List[EvidenceItem],
+) -> ConflictResolutionRecord:
+    """Resolve conflicting inferred intents with majority weighting."""
+    now = datetime.utcnow()
+    if not evidence_items:
+        return ConflictResolutionRecord(
+            conflict_id="",
+            conflict_type=ConflictType.ALGORITHM_INTENT_CONFLICT,
+            conflict_severity=ConflictSeverity.MINOR,
+            resolution_type="ABSTAIN",
+            winning_method=None,
+            winning_evidence_id=None,
+            losing_methods=[],
+            losing_evidence_ids=[],
+            rationale="No intent evidence provided.",
+            confidence_penalty=0.50,
+            claim_status="ABSTAIN",
+            classification=None,
+            metadata=None,
+            detected_at=now,
+            resolved_at=now,
+        )
+
+    from collections import Counter
+
+    intents = [ev.signal_subtype or "" for ev in evidence_items]
+    counts = Counter(intents)
+    majority_intent, count = counts.most_common(1)[0]
+    majority_frac = count / len(evidence_items)
+
+    if majority_frac >= 0.6:
+        winning_evs = [
+            ev for ev in evidence_items if (ev.signal_subtype or "") == majority_intent
+        ]
+        losing_evs = [ev for ev in evidence_items if ev not in winning_evs]
+        return ConflictResolutionRecord(
+            conflict_id="",
+            conflict_type=ConflictType.ALGORITHM_INTENT_CONFLICT,
+            conflict_severity=ConflictSeverity.MODERATE,
+            resolution_type="MAJORITY",
+            winning_method="MAJORITY",
+            winning_evidence_id=winning_evs[0].evidence_id if winning_evs else None,
+            losing_methods=[ev.detection_method or "" for ev in losing_evs],
+            losing_evidence_ids=[ev.evidence_id for ev in losing_evs],
+            rationale="Majority of intent signals agree; minority penalized.",
+            confidence_penalty=0.15 if losing_evs else 0.05,
+            claim_status="PRELIMINARY" if losing_evs else "FINAL",
+            classification="INTENT_SIGNAL",
+            metadata=None,
+            detected_at=now,
+            resolved_at=now,
+        )
+
+    return ConflictResolutionRecord(
+        conflict_id="",
+        conflict_type=ConflictType.ALGORITHM_INTENT_CONFLICT,
+        conflict_severity=ConflictSeverity.MODERATE,
+        resolution_type="ABSTAIN",
+        winning_method=None,
+        winning_evidence_id=None,
+        losing_methods=[],
+        losing_evidence_ids=[],
+        rationale="Intent signals conflict without majority; abstaining.",
+        confidence_penalty=0.50,
+        claim_status="ABSTAIN",
+        classification=None,
+        metadata=None,
+        detected_at=now,
+        resolved_at=now,
+    )

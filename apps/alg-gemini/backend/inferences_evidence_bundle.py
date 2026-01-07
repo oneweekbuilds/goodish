@@ -24,6 +24,18 @@ Evidence Bundle Structure:
 
 from datetime import datetime
 from typing import Dict, Any, List, Optional
+from accuracy.schema import (
+    EvidenceItem,
+    Insight,
+    ItemContext,
+    MethodReliability,
+    ConflictResolution,
+)
+from accuracy.schema import get_tab_accuracy_contract
+from accuracy.method_reliability import get_method_reliability
+from accuracy.evidence_chain import enforce_evidence_chain
+from accuracy.conflicts import ConflictResolver
+from accuracy.critic import Critic
 
 
 def build_inferences_evidence_bundle(
@@ -57,12 +69,16 @@ def build_inferences_evidence_bundle(
     measurements = _build_measurements(observations)
     limits = _build_limits(scan_metadata, feed_items)
 
-    return {
+    bundle = {
         "meta": meta,
         "observations": observations,
         "measurements": measurements,
         "limits": limits,
     }
+
+    accuracy_payload = _build_accuracy_section(scan_metadata, observations, feed_items)
+    bundle.update(accuracy_payload)
+    return bundle
 
 
 def _build_meta(
@@ -417,6 +433,121 @@ def _build_limits(
     ]
 
     return limits
+
+
+def _build_accuracy_section(
+    scan_metadata: Dict[str, Any],
+    observations: Dict[str, Any],
+    feed_items: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """
+    Additive accuracy scaffolding for Algorithm/Inferences tab.
+    """
+    contract = get_tab_accuracy_contract("algorithm")
+    platform = scan_metadata.get("platform")
+    modality = scan_metadata.get("source_type", "UNKNOWN")
+
+    evidence_items: List[EvidenceItem] = []
+    evidence_ids: List[str] = []
+
+    def _make_reliability(method: str) -> MethodReliability:
+        score = get_method_reliability(method) or 0.0
+        return MethodReliability(
+            method=method,
+            base_reliability=score,
+            effective_reliability=score,
+        )
+
+    surfaced = observations.get("surfaced_inferences", [])
+    for idx, inf in enumerate(surfaced):
+        ev_id = f"alg-inf-{idx:03d}"
+        item_context = ItemContext(
+            item_index=idx,
+            platform=platform,
+            modality=modality,
+            item_type="inference",
+        )
+        evidence_items.append(
+            EvidenceItem(
+                evidence_id=ev_id,
+                source_item_index=item_context.item_index,
+                signal_type="intent_signal",
+                signal_subtype=inf.get("signal"),
+                detection_method="CLASSIFIER_OUTPUT",
+                method_reliability=_make_reliability("CLASSIFIER_OUTPUT"),
+                source=inf.get("source", "aggregate"),
+                detection_rationale=inf.get("detail"),
+                item_context=item_context,
+            )
+        )
+        evidence_ids.append(ev_id)
+
+    if len(evidence_ids) >= contract.min_evidence_for_final:
+        status = "FINAL"
+    elif evidence_ids:
+        status = "PRELIMINARY"
+    else:
+        status = "ABSTAIN"
+
+    insight = Insight(
+        insight_id="algorithm-surfaced-signals",
+        claim_type="algorithm_signals",
+        claim_text="High-confidence signals surfaced across tabs.",
+        claim_status=status,
+        evidence_ids=evidence_ids,
+        abstention_flag=status == "ABSTAIN",
+        abstention_reason=None if status != "ABSTAIN" else "No surfaced signals met threshold",
+        preliminary_upgrade_path="Surface additional high-confidence signals",
+    )
+
+    resolver = ConflictResolver()
+    conflict_resolutions, conflict_metrics = resolver.process(
+        evidence_items, tab_name="algorithm"
+    )
+
+    evidence_map = {ev.evidence_id: ev for ev in evidence_items}
+    for cid, resolution in conflict_resolutions.items():
+        if resolution.winning_evidence_id:
+            winner = evidence_map.get(resolution.winning_evidence_id)
+            if winner:
+                winner.conflict_resolution = ConflictResolution(
+                    resolution_type=resolution.resolution_type,
+                    winning_evidence_id=resolution.winning_evidence_id,
+                    resolution_rationale=resolution.rationale,
+                    confidence_penalty=resolution.confidence_penalty,
+                )
+        for losing_id in resolution.losing_evidence_ids:
+            loser = evidence_map.get(losing_id)
+            if loser and resolution.winning_evidence_id:
+                if resolution.winning_evidence_id not in loser.conflicts_with:
+                    loser.conflicts_with.append(resolution.winning_evidence_id)
+
+    enforced_insights, ec_metrics = enforce_evidence_chain(
+        [insight],
+        evidence_items,
+        tab_name="algorithm",
+        orphan_threshold=0.20,
+    )
+
+    critic = Critic()
+    critic_insights = critic.evaluate(
+        "algorithm",
+        enforced_insights,
+        evidence_items,
+        conflict_metrics=conflict_metrics,
+    )
+
+    return {
+        "evidence_items": {
+            ev.evidence_id: ev.model_dump(exclude_none=True) for ev in evidence_items
+        },
+        "insights": [ins.model_dump(exclude_none=True) for ins in critic_insights],
+        "evidence_chain_metrics": ec_metrics.model_dump(exclude_none=True),
+        "conflict_resolutions": {
+            cid: rec.model_dump(exclude_none=True) for cid, rec in conflict_resolutions.items()
+        },
+        "conflict_metrics": conflict_metrics.model_dump(exclude_none=True),
+    }
 
 
 def generate_inferences_analysis_copy(bundle: Dict[str, Any]) -> Dict[str, Any]:

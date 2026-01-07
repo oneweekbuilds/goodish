@@ -49,8 +49,9 @@ from accuracy.stats import (
 )
 from accuracy.priors import get_ads_rate_prior, should_use_prior
 from accuracy.conflicts import ConflictResolver
-from accuracy.schema import EvidenceItem, Insight, ItemContext, ClaimStatus
+from accuracy.schema import EvidenceItem, Insight, ItemContext, ClaimStatus, ConflictResolution
 from accuracy.evidence_chain import enforce_evidence_chain
+from accuracy.critic import Critic
 
 
 def build_ads_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
@@ -133,7 +134,14 @@ def build_ads_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
     insights = _build_insights(observations, measurements, evidence_items, scan_metadata)
     
     # Enforce evidence chain requirements (Phase 5D1)
-    updated_insights, ec_metrics = enforce_evidence_chain(insights, evidence_items)
+    updated_insights, ec_metrics = enforce_evidence_chain(
+        insights, evidence_items, tab_name="ads", orphan_threshold=0.20
+    )
+
+    critic = Critic()
+    reviewed_insights = critic.evaluate(
+        "ads", updated_insights, evidence_items, conflict_metrics=conflict_metrics
+    )
     
     # Hard requirement: evidence_linking_rate must be 1.0 and missing_evidence_rate must be 0.0
     if not ec_metrics.validation_passed:
@@ -145,7 +153,7 @@ def build_ads_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
     
     # Convert to dict format for JSON serialization
     evidence_items_dict = {item.evidence_id: item.model_dump(exclude_none=True) for item in evidence_items}
-    insights_dict = [insight.model_dump(exclude_none=True) for insight in updated_insights]
+    insights_dict = [insight.model_dump(exclude_none=True) for insight in reviewed_insights]
     
     return {
         "meta": meta,

@@ -24,6 +24,18 @@ from datetime import datetime
 from typing import Dict, Any, List
 from collections import Counter
 from creator_extraction import extract_creators_from_feed_items
+from accuracy.schema import (
+    EvidenceItem,
+    Insight,
+    ItemContext,
+    MethodReliability,
+    ConflictResolution,
+)
+from accuracy.schema import get_tab_accuracy_contract
+from accuracy.method_reliability import get_method_reliability
+from accuracy.evidence_chain import enforce_evidence_chain
+from accuracy.conflicts import ConflictResolver
+from accuracy.critic import Critic
 
 
 def build_creators_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
@@ -49,12 +61,18 @@ def build_creators_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any
     measurements = _build_measurements(aggregates, feed_items, extraction_result)
     limits = _build_limits(scan_metadata, aggregates, feed_items, extraction_result)
 
-    return {
+    bundle = {
         "meta": meta,
         "observations": observations,
         "measurements": measurements,
         "limits": limits,
     }
+
+    accuracy_payload = _build_accuracy_section(
+        scan_metadata, feed_items, extraction_result
+    )
+    bundle.update(accuracy_payload)
+    return bundle
 
 
 def _build_meta(
@@ -344,6 +362,162 @@ def _build_limits(
         ]
 
     return limits
+
+
+def _build_accuracy_section(
+    scan_metadata: Dict[str, Any],
+    feed_items: List[Dict[str, Any]],
+    extraction_result: Dict[str, Any],
+) -> Dict[str, Any]:
+    """
+    Additive accuracy scaffolding for Creators tab.
+    """
+    contract = get_tab_accuracy_contract("creators")
+    platform = scan_metadata.get("platform")
+    modality = scan_metadata.get("source_type", "UNKNOWN")
+
+    evidence_items: List[EvidenceItem] = []
+    evidence_ids: List[str] = []
+
+    def _make_reliability(method: str) -> MethodReliability:
+        score = get_method_reliability(method) or 0.0
+        return MethodReliability(
+            method=method,
+            base_reliability=score,
+            effective_reliability=score,
+        )
+
+    extractions = extraction_result.get("extractions", [])
+
+    for idx, item in enumerate(feed_items):
+        extraction = extractions[idx] if idx < len(extractions) else {}
+        if not extraction.get("extracted"):
+            continue
+
+        creator_id = extraction.get("creator_id") or f"creator-{idx}"
+        ev_id = f"creator-{creator_id}"
+        item_context = ItemContext(
+            item_index=item.get("position_in_feed", idx),
+            platform=platform,
+            modality=modality,
+            item_type=item.get("content_type"),
+            platform_id=creator_id,
+        )
+
+        evidence_items.append(
+            EvidenceItem(
+                evidence_id=ev_id,
+                source_item_index=item_context.item_index,
+                signal_type="creator_handle",
+                signal_subtype=creator_id,
+                detection_method=extraction.get("source", "CREATOR_EXTRACTION"),
+                method_reliability=_make_reliability("NER_EXTRACTION"),
+                source="creator_extraction",
+                item_context=item_context,
+            )
+        )
+        evidence_ids.append(ev_id)
+
+        # Optional self-description evidence when available
+        account = item.get("account") or {}
+        description = account.get("description") or extraction.get("description")
+        if description:
+            sd_id = f"{ev_id}-self"
+            evidence_items.append(
+                EvidenceItem(
+                    evidence_id=sd_id,
+                    source_item_index=item_context.item_index,
+                    signal_type="creator_self_description",
+                    signal_subtype=creator_id,
+                    detection_method="METADATA_FIELD",
+                    method_reliability=_make_reliability("METADATA_FIELD"),
+                    source="creator_extraction",
+                    text_snippet=description,
+                    item_context=item_context,
+                )
+            )
+            evidence_ids.append(sd_id)
+
+        # Observed content evidence (ads vs organic)
+        observed_id = f"{ev_id}-observed"
+        evidence_items.append(
+            EvidenceItem(
+                evidence_id=observed_id,
+                source_item_index=item_context.item_index,
+                signal_type="observed_content",
+                signal_subtype=creator_id,
+                detection_method="HEURISTIC_RULE",
+                method_reliability=_make_reliability("HEURISTIC_RULE"),
+                source="content_observation",
+                pattern_category="ad_account" if item.get("is_ad", False) else "organic",
+                item_context=item_context,
+            )
+        )
+        evidence_ids.append(observed_id)
+
+    if len(evidence_ids) >= contract.min_evidence_for_final:
+        status = "FINAL"
+    elif evidence_ids:
+        status = "PRELIMINARY"
+    else:
+        status = "ABSTAIN"
+
+    creator_insight = Insight(
+        insight_id="creators-extracted",
+        claim_type="creator_presence",
+        claim_text="Creators identified in this scan.",
+        claim_status=status,
+        evidence_ids=evidence_ids,
+        abstention_flag=status == "ABSTAIN",
+        abstention_reason=None if status != "ABSTAIN" else "No reliable creator extraction",
+        preliminary_upgrade_path="Extract more creators or increase reliability to upgrade",
+    )
+
+    resolver = ConflictResolver()
+    conflict_resolutions, conflict_metrics = resolver.process(
+        evidence_items, tab_name="creators"
+    )
+
+    evidence_map = {ev.evidence_id: ev for ev in evidence_items}
+    for cid, resolution in conflict_resolutions.items():
+        if resolution.winning_evidence_id:
+            winner = evidence_map.get(resolution.winning_evidence_id)
+            if winner:
+                winner.conflict_resolution = ConflictResolution(
+                    resolution_type=resolution.resolution_type,
+                    winning_evidence_id=resolution.winning_evidence_id,
+                    resolution_rationale=resolution.rationale,
+                    confidence_penalty=resolution.confidence_penalty,
+                )
+        for losing_id in resolution.losing_evidence_ids:
+            loser = evidence_map.get(losing_id)
+            if loser and resolution.winning_evidence_id:
+                if resolution.winning_evidence_id not in loser.conflicts_with:
+                    loser.conflicts_with.append(resolution.winning_evidence_id)
+
+    enforced_insights, ec_metrics = enforce_evidence_chain(
+        [creator_insight],
+        evidence_items,
+        tab_name="creators",
+        orphan_threshold=0.20,
+    )
+
+    critic = Critic()
+    critic_insights = critic.evaluate(
+        "creators", enforced_insights, evidence_items, conflict_metrics=conflict_metrics
+    )
+
+    return {
+        "evidence_items": {
+            ev.evidence_id: ev.model_dump(exclude_none=True) for ev in evidence_items
+        },
+        "insights": [ins.model_dump(exclude_none=True) for ins in critic_insights],
+        "evidence_chain_metrics": ec_metrics.model_dump(exclude_none=True),
+        "conflict_resolutions": {
+            cid: rec.model_dump(exclude_none=True) for cid, rec in conflict_resolutions.items()
+        },
+        "conflict_metrics": conflict_metrics.model_dump(exclude_none=True),
+    }
 
 
 def generate_creators_analysis_copy(bundle: Dict[str, Any]) -> Dict[str, Any]:
