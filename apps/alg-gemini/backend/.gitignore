@@ -25,3 +25,4 @@ tmp/
 scans.db.backup
 eval/baselines/*.json
 eval/baselines/*.jsonl
+apps/
