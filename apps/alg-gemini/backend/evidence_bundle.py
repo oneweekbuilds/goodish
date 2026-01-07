@@ -1553,17 +1553,18 @@ def _build_insights(
         aggregate_ev_id = "ev-ads-aggregate-adrate"
         aggregate_ev_exists = any(item.evidence_id == aggregate_ev_id for item in evidence_items)
         
-        # Also collect platform-labeled ad evidence IDs (up to first 10)
+        # Collect platform-labeled ad evidence IDs (up to first 10)
         platform_ev_ids = [
             item.evidence_id for item in evidence_items
             if item.signal_type == "platform_labeled_ad"
         ][:10]
         
-        # Use aggregate evidence item if available, otherwise use platform evidence
+        # Phase 5D1.2: Include both aggregate AND platform evidence to reduce orphan rate
+        evidence_ids = []
         if aggregate_ev_exists:
-            evidence_ids = [aggregate_ev_id]
-        else:
-            evidence_ids = platform_ev_ids if platform_ev_ids else []
+            evidence_ids.append(aggregate_ev_id)
+        # Add platform evidence IDs (up to 10) to link underlying items
+        evidence_ids.extend(platform_ev_ids)
         
         # Determine claim status: FINAL if we have evidence, PRELIMINARY otherwise
         claim_status: ClaimStatus = "FINAL" if evidence_ids else "PRELIMINARY"

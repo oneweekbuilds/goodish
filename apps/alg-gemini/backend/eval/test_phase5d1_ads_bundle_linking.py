@@ -85,6 +85,34 @@ class TestAdsBundleLinking:
         orphan_rate = metrics.get("orphan_evidence_rate", 1.0)
         assert orphan_rate <= 0.20, f"orphan_evidence_rate should be <= 0.20, got {orphan_rate}"
     
+    def test_aggregate_insight_links_to_platform_evidence(self):
+        """Aggregate insight should reference both aggregate and platform evidence items."""
+        bundle = build_ads_evidence_bundle(MOCK_SCAN_TWITTER)
+        insights = bundle.get("insights", [])
+        evidence_items = bundle.get("evidence_items", {})
+        
+        # Find aggregate insight
+        aggregate_insights = [
+            insight for insight in insights
+            if insight.get("insight_id") == "ads-commercial-spectrum" or
+               insight.get("claim_type") == "aggregate_observation"
+        ]
+        
+        if aggregate_insights:
+            insight = aggregate_insights[0]
+            evidence_ids = insight.get("evidence_ids", [])
+            
+            # Should include aggregate evidence item
+            assert "ev-ads-aggregate-adrate" in evidence_ids, \
+                "Aggregate insight should include ev-ads-aggregate-adrate"
+            
+            # Should also include at least one platform evidence item if ads exist
+            platform_ev_ids = [ev_id for ev_id in evidence_ids if ev_id.startswith("ev-ads-platform-")]
+            total_ads = MOCK_SCAN_TWITTER["aggregates"]["total_ads"]
+            if total_ads > 0:
+                assert len(platform_ev_ids) >= 1, \
+                    f"Aggregate insight should include platform evidence IDs when ads exist (found {len(platform_ev_ids)})"
+    
     def test_evidence_items_have_required_fields(self):
         """Evidence items should have required fields: evidence_id, source."""
         bundle = build_ads_evidence_bundle(MOCK_SCAN_TWITTER)
