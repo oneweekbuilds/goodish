@@ -48,6 +48,7 @@ from accuracy.stats import (
     beta_posterior_params,
 )
 from accuracy.priors import get_ads_rate_prior, should_use_prior
+from accuracy.conflicts import ConflictResolver
 from accuracy.schema import EvidenceItem, Insight, ItemContext, ClaimStatus
 from accuracy.evidence_chain import enforce_evidence_chain
 
@@ -103,19 +104,43 @@ def build_ads_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
             "This may indicate a classification counting error."
         )
 
-    # Phase 5D1: Build evidence_items and insights, then enforce evidence chain
+    # Phase 5D1: Build evidence_items
     evidence_items = _build_evidence_items(feed_items, commercial_analysis, scan_metadata, observations)
+
+    # Phase 5F1: Conflict detection and resolution (Ads-only)
+    resolver = ConflictResolver()
+    conflict_resolutions, conflict_metrics = resolver.process(evidence_items)
+
+    # Annotate evidence items with conflict info
+    evidence_items_by_id = {ev.evidence_id: ev for ev in evidence_items}
+    for conflict_id, resolution in conflict_resolutions.items():
+        if resolution.winning_evidence_id:
+            winner = evidence_items_by_id.get(resolution.winning_evidence_id)
+            if winner is not None:
+                winner.conflict_resolution = ConflictResolution(
+                    resolution_type=resolution.resolution_type,
+                    winning_evidence_id=resolution.winning_evidence_id,
+                    resolution_rationale=resolution.rationale,
+                    confidence_penalty=resolution.confidence_penalty,
+                )
+        for losing_id in resolution.losing_evidence_ids:
+            loser = evidence_items_by_id.get(losing_id)
+            if loser is not None and resolution.winning_evidence_id:
+                if resolution.winning_evidence_id not in loser.conflicts_with:
+                    loser.conflicts_with.append(resolution.winning_evidence_id)
+
+    # Build insights based on (potentially updated) evidence items
     insights = _build_insights(observations, measurements, evidence_items, scan_metadata)
     
-    # Enforce evidence chain requirements
-    updated_insights, metrics = enforce_evidence_chain(insights, evidence_items)
+    # Enforce evidence chain requirements (Phase 5D1)
+    updated_insights, ec_metrics = enforce_evidence_chain(insights, evidence_items)
     
     # Hard requirement: evidence_linking_rate must be 1.0 and missing_evidence_rate must be 0.0
-    if not metrics.validation_passed:
+    if not ec_metrics.validation_passed:
         # Log warning but don't fail - add to limits
         limits.setdefault("evidence_chain_warnings", []).append(
-            f"Evidence chain validation failed: linking_rate={metrics.evidence_linking_rate:.2f}, "
-            f"missing_rate={metrics.missing_evidence_rate:.2f}"
+            f"Evidence chain validation failed: linking_rate={ec_metrics.evidence_linking_rate:.2f}, "
+            f"missing_rate={ec_metrics.missing_evidence_rate:.2f}"
         )
     
     # Convert to dict format for JSON serialization
@@ -131,11 +156,17 @@ def build_ads_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
         "evidence_items": evidence_items_dict,
         "insights": insights_dict,
         "evidence_chain_metrics": {
-            "evidence_linking_rate": metrics.evidence_linking_rate,
-            "missing_evidence_rate": metrics.missing_evidence_rate,
-            "orphan_evidence_rate": metrics.orphan_evidence_rate,
-            "validation_passed": metrics.validation_passed
-        }
+            "evidence_linking_rate": ec_metrics.evidence_linking_rate,
+            "missing_evidence_rate": ec_metrics.missing_evidence_rate,
+            "orphan_evidence_rate": ec_metrics.orphan_evidence_rate,
+            "validation_passed": ec_metrics.validation_passed,
+        },
+        # Phase 5F1: Conflict engine outputs
+        "conflict_resolutions": {
+            cid: rec.model_dump(exclude_none=True)
+            for cid, rec in conflict_resolutions.items()
+        },
+        "conflict_metrics": conflict_metrics.model_dump(exclude_none=True),
     }
 
 
@@ -1448,7 +1479,7 @@ def _build_evidence_items(
     
     Naming convention: ev-ads-{signal_type}-{index:03d}
     """
-    evidence_items = []
+    evidence_items: List[EvidenceItem] = []
     platform = scan_metadata.get("platform", "").lower()
     modality = scan_metadata.get("source_type", "").lower()
     
@@ -1471,11 +1502,15 @@ def _build_evidence_items(
         
         # Build item context
         item_index = item.get("position_in_feed", idx)
+        # Include platform_id if present for duplicate detection in conflict engine
+        platform_id = item.get("platform_item_id") or item.get("post_id") or None
+
         item_context = ItemContext(
             item_index=item_index,
             platform=platform,
             modality=modality,
-            item_type="ad"
+            item_type="ad",
+            platform_id=platform_id,
         )
         
         evidence_item = EvidenceItem(
@@ -1525,7 +1560,158 @@ def _build_evidence_items(
         )
         
         evidence_items.append(aggregate_item)
-    
+
+    # ------------------------------------------------------------------
+    # Phase 5F2: Additional evidence from OCR / captions / promo signals
+    # ------------------------------------------------------------------
+    from accuracy.schema import MethodReliability  # local import to avoid cycles
+
+    DISCLOSURE_PHRASES = [
+        "sponsored",
+        "paid partnership",
+        "paid promotion",
+        "ad ",
+        " ad",
+        "#ad",
+        "promo",
+        "promotion",
+        "partner",
+        "affiliate",
+    ]
+    DENIAL_PHRASES = [
+        "not an ad",
+        "not sponsored",
+        "#notanad",
+        "no sponsor",
+        "not a sponsored post",
+        "not paid",
+    ]
+    PROMO_PHRASES = [
+        "use code",
+        "promo code",
+        "discount code",
+        "% off",
+        "off your order",
+        "link in bio",
+        "use my link",
+    ]
+
+    def _make_method_reliability(method_name: str) -> Optional[MethodReliability]:
+        score = get_method_reliability(method_name)
+        if score is None:
+            return None
+        return MethodReliability(
+            method=method_name,
+            base_reliability=score,
+            effective_reliability=score,
+        )
+
+    for idx, item in enumerate(feed_items):
+        item_index = item.get("position_in_feed", idx)
+        platform_id = item.get("platform_item_id") or item.get("post_id") or None
+        base_context = ItemContext(
+            item_index=item_index,
+            platform=platform,
+            modality=modality,
+            item_type="ad" if item.get("is_ad", False) else "post",
+            platform_id=platform_id,
+        )
+
+        # Extract text fields safely
+        content_text = item.get("content_text") or {}
+        caption = (
+            content_text.get("caption")
+            or content_text.get("post_text")
+            or ""
+        )
+        hashtags = content_text.get("hashtags") or []
+        hashtags_text = " ".join(hashtags)
+        caption_combined = f"{caption} {hashtags_text}".strip()
+
+        ocr_text = item.get("ocr_text") or ""
+
+        # A) OCR disclosure / denial evidence (OCR_DISCLOSURE)
+        if ocr_text:
+            text_lower = ocr_text.lower()
+            # Any denial phrase in OCR → creator_denial via OCR
+            if any(p in text_lower for p in DENIAL_PHRASES):
+                ev_id = f"ev-ads-ocr-denial-{item_index:03d}"
+                evidence_items.append(
+                    EvidenceItem(
+                        evidence_id=ev_id,
+                        source_item_index=item_index,
+                        signal_type="creator_denial_ocr",
+                        detection_method="OCR_DISCLOSURE",
+                        method_reliability=_make_method_reliability("OCR_DISCLOSURE"),
+                        source="ocr",
+                        item_context=base_context,
+                    )
+                )
+            # Any disclosure phrase in OCR → ocr_disclosure
+            elif any(p in text_lower for p in DISCLOSURE_PHRASES):
+                ev_id = f"ev-ads-ocr-disclosure-{item_index:03d}"
+                evidence_items.append(
+                    EvidenceItem(
+                        evidence_id=ev_id,
+                        source_item_index=item_index,
+                        signal_type="ocr_disclosure",
+                        detection_method="OCR_DISCLOSURE",
+                        method_reliability=_make_method_reliability("OCR_DISCLOSURE"),
+                        source="ocr",
+                        item_context=base_context,
+                    )
+                )
+
+        # B) Caption / hashtag denial evidence (KEYWORD_MATCH)
+        if caption_combined:
+            caption_lower = caption_combined.lower()
+            if any(p in caption_lower for p in DENIAL_PHRASES):
+                ev_id = f"ev-ads-caption-denial-{item_index:03d}"
+                evidence_items.append(
+                    EvidenceItem(
+                        evidence_id=ev_id,
+                        source_item_index=item_index,
+                        signal_type="creator_denial_hashtag",
+                        detection_method="KEYWORD_MATCH",
+                        method_reliability=_make_method_reliability("KEYWORD_MATCH"),
+                        source="caption",
+                        item_context=base_context,
+                    )
+                )
+
+        # C) Promo code / discount CTA signals (unlabeled promotions)
+        if caption_combined or ocr_text:
+            combined_text = f"{caption_combined} {ocr_text}".lower()
+            if any(p in combined_text for p in PROMO_PHRASES):
+                # Discount code signal
+                if "use code" in combined_text or "promo code" in combined_text or "discount code" in combined_text:
+                    ev_id = f"ev-ads-promo-discount-{item_index:03d}"
+                    evidence_items.append(
+                        EvidenceItem(
+                            evidence_id=ev_id,
+                            source_item_index=item_index,
+                            signal_type="discount_code",
+                            detection_method="REGEX_PATTERN",
+                            method_reliability=_make_method_reliability("REGEX_PATTERN"),
+                            source="caption",
+                            item_context=base_context,
+                        )
+                    )
+                # CTA signal
+                if "link in bio" in combined_text or "use my link" in combined_text:
+                    ev_id = f"ev-ads-promo-cta-{item_index:03d}"
+                    evidence_items.append(
+                        EvidenceItem(
+                            evidence_id=ev_id,
+                            source_item_index=item_index,
+                            signal_type="call_to_action",
+                            detection_method="HEURISTIC_RULE",
+                            method_reliability=_make_method_reliability("HEURISTIC_RULE"),
+                            source="caption",
+                            item_context=base_context,
+                        )
+                    )
+
     return evidence_items
 
 
@@ -1553,18 +1739,16 @@ def _build_insights(
         aggregate_ev_id = "ev-ads-aggregate-adrate"
         aggregate_ev_exists = any(item.evidence_id == aggregate_ev_id for item in evidence_items)
         
-        # Collect platform-labeled ad evidence IDs (up to first 10)
-        platform_ev_ids = [
+        # Collect all evidence IDs so that no evidence is orphaned in ads tab
+        # (Phase 5D1 invariants: orphan_evidence_rate <= 0.20).
+        other_ids = [
             item.evidence_id for item in evidence_items
-            if item.signal_type == "platform_labeled_ad"
-        ][:10]
-        
-        # Phase 5D1.2: Include both aggregate AND platform evidence to reduce orphan rate
+            if item.evidence_id != aggregate_ev_id
+        ]
         evidence_ids = []
         if aggregate_ev_exists:
             evidence_ids.append(aggregate_ev_id)
-        # Add platform evidence IDs (up to 10) to link underlying items
-        evidence_ids.extend(platform_ev_ids)
+        evidence_ids.extend(other_ids)
         
         # Determine claim status: FINAL if we have evidence, PRELIMINARY otherwise
         claim_status: ClaimStatus = "FINAL" if evidence_ids else "PRELIMINARY"
