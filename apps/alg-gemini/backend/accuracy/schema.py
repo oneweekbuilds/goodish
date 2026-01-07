@@ -11,7 +11,8 @@ Phase 5B NOTE:
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
+from enum import Enum
 
 from pydantic import BaseModel, Field
 
@@ -82,6 +83,94 @@ class ConflictResolution(BaseModel):
     winning_evidence_id: Optional[str] = None
     resolution_rationale: Optional[str] = None
     confidence_penalty: Optional[float] = None
+
+
+# ---------------------------------------------------------------------------
+# Conflict resolution engine (Phase 5F1)
+# ---------------------------------------------------------------------------
+
+
+class ConflictType(str, Enum):
+    PLATFORM_OCR_MISMATCH = "PLATFORM_OCR_MISMATCH"
+    CREATOR_DENIAL = "CREATOR_DENIAL"
+    LABEL_PROMO_MISMATCH = "LABEL_PROMO_MISMATCH"
+    MULTI_METHOD_CONFLICT = "MULTI_METHOD_CONFLICT"
+    DUPLICATE_ITEM = "DUPLICATE_ITEM"
+    INCOMPLETE_METADATA = "INCOMPLETE_METADATA"
+    TEMPORAL_CONFLICT = "TEMPORAL_CONFLICT"
+
+
+class ConflictSeverity(str, Enum):
+    CRITICAL = "critical"
+    MODERATE = "moderate"
+    MINOR = "minor"
+
+
+class ConflictResolutionRecord(BaseModel):
+    """
+    Complete audit record for a resolved conflict (Phase 5F1).
+
+    This is an additive structure and does not replace the simpler
+    ConflictResolution summary attached to EvidenceItem.
+    """
+
+    # Conflict identification
+    conflict_id: str
+    conflict_type: ConflictType
+    conflict_severity: ConflictSeverity
+
+    # Resolution outcome
+    resolution_type: Literal["PRECEDENCE", "MAJORITY", "ABSTAIN", "MANUAL"]
+    winning_method: Optional[str] = None  # Detection method or "MAJORITY"
+    winning_evidence_id: Optional[str] = None
+    losing_methods: List[str] = Field(default_factory=list)
+    losing_evidence_ids: List[str] = Field(default_factory=list)
+
+    # Rationale and impact
+    rationale: str
+    confidence_penalty: float = 0.0
+
+    # Outcome classification
+    claim_status: ClaimStatus
+    classification: Optional[str] = None  # e.g. "LABELED_AD", "UNLABELED_PROMOTION"
+
+    # Optional metadata
+    metadata: Optional[Dict[str, Any]] = None
+
+    # Timestamps
+    detected_at: datetime
+    resolved_at: datetime
+
+
+class ConflictMetrics(BaseModel):
+    """
+    Metrics for conflict detection and resolution (Phase 5F1).
+
+    All fields have safe defaults for backward compatibility.
+    """
+
+    # Detection metrics
+    total_conflicts_detected: int = 0
+    conflicts_by_type: Dict[str, int] = Field(default_factory=dict)
+    conflicts_by_severity: Dict[str, int] = Field(default_factory=dict)
+
+    # Resolution metrics
+    conflicts_resolved: int = 0
+    conflicts_abstained: int = 0
+    conflict_resolution_rate: float = 0.0  # resolved / detected
+
+    # Quality metrics
+    precedence_resolutions: int = 0
+    majority_resolutions: int = 0
+    avg_confidence_penalty: float = 0.0
+
+    # Platform label dominance
+    platform_label_override_count: int = 0
+    platform_label_override_rate: float = 0.0
+
+    # Invariant checks
+    validation_passed: bool = True
+    validation_errors: List[str] = Field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
