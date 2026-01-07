@@ -2,14 +2,15 @@
 Platform-specific Bayesian priors for ad rate estimation.
 
 Phase 5C3: Bootstrap priors based on industry reports.
-Phase 5C4 (future): Will update priors from anonymized aggregate data.
+Phase 5C4.1: Learned priors from opt-in aggregated data (when available).
 
 These priors are used ONLY for aggregate rate estimation, never for
 per-item classification. PLATFORM_LABEL evidence remains authoritative.
 """
 
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Tuple, Optional
+from database import get_connection
 
 
 @dataclass(frozen=True)
@@ -68,6 +69,8 @@ def get_ads_rate_prior(platform: str) -> Tuple[float, float, str]:
     """
     Get the Beta prior parameters for a platform.
     
+    Phase 5C4.1: Checks learned_priors table first, falls back to bootstrap.
+    
     Args:
         platform: Platform name (e.g., "tiktok", "instagram")
     
@@ -75,9 +78,29 @@ def get_ads_rate_prior(platform: str) -> Tuple[float, float, str]:
         Tuple of (alpha, beta, source) where:
         - alpha: Beta prior alpha parameter
         - beta: Beta prior beta parameter
-        - source: Prior source ("bootstrap" for Phase 5C3)
+        - source: Prior source ("learned" or "bootstrap")
     """
-    prior = PLATFORM_PRIORS.get(platform.lower() if platform else "", DEFAULT_PRIOR)
+    platform_lower = platform.lower() if platform else ""
+    
+    # Phase 5C4.1: Check learned_priors table first
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT alpha, beta, source, last_updated, version
+        FROM learned_priors
+        WHERE platform = ?
+    """, (platform_lower,))
+    
+    row = cursor.fetchone()
+    conn.close()
+    
+    if row:
+        # Return learned prior
+        return (row["alpha"], row["beta"], "learned")
+    
+    # Fallback to bootstrap prior
+    prior = PLATFORM_PRIORS.get(platform_lower, DEFAULT_PRIOR)
     return (prior.alpha, prior.beta, prior.source)
 
 

@@ -58,6 +58,54 @@ def init_database():
         CREATE INDEX IF NOT EXISTS idx_scans_created_at ON scans(created_at DESC)
     """)
 
+    # Phase 5C4.1: Create aggregate_buckets table for weekly platform aggregates
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS aggregate_buckets (
+            platform TEXT NOT NULL,
+            week_bucket TEXT NOT NULL,
+            n_scans INTEGER NOT NULL,
+            n_items_total INTEGER NOT NULL,
+            n_ads_total INTEGER NOT NULL,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            PRIMARY KEY (platform, week_bucket)
+        )
+    """)
+
+    # Phase 5C4.1: Create learned_priors table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS learned_priors (
+            platform TEXT PRIMARY KEY,
+            alpha REAL NOT NULL,
+            beta REAL NOT NULL,
+            effective_n REAL NOT NULL,
+            version TEXT NOT NULL,
+            last_updated TEXT NOT NULL,
+            source TEXT NOT NULL,
+            note TEXT
+        )
+    """)
+
+    # Phase 5C4.1: Create aggregation_config table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS aggregation_config (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        )
+    """)
+
+    # Seed aggregation_config with default (OFF)
+    cursor.execute("""
+        INSERT OR IGNORE INTO aggregation_config (key, value)
+        VALUES ('AGGREGATE_COLLECTION_ENABLED', 'false')
+    """)
+
+    # Create index on aggregate_buckets for faster queries
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_aggregate_buckets_platform_week 
+        ON aggregate_buckets(platform, week_bucket)
+    """)
+
     conn.commit()
     conn.close()
     print(f"[database] Initialized database at {DB_PATH}")
@@ -133,6 +181,16 @@ def save_scan(scan_result: Dict[str, Any]) -> str:
     conn.close()
     
     print(f"[database] Saved scan {scan_id} to database")
+    
+    # Phase 5C4.1: Contribute to aggregates if opt-in consent given
+    try:
+        from accuracy.aggregation import contribute_scan_to_aggregates
+        if contribute_scan_to_aggregates(scan_result):
+            print(f"[database] Contributed scan {scan_id} to aggregates")
+    except Exception as e:
+        # Don't fail scan save if aggregation fails
+        print(f"[database] Warning: Failed to contribute scan to aggregates: {e}")
+    
     return scan_id
 
 
