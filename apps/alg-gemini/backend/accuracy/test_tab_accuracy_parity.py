@@ -216,7 +216,7 @@ class TestCritic(unittest.TestCase):
         )
         critic = Critic()
         conflict_metrics = ConflictMetrics(avg_confidence_penalty=0.6)
-        reviewed = critic.evaluate(
+        reviewed, _ = critic.evaluate(
             "politics",
             [ins],
             [ev],

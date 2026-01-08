@@ -139,7 +139,7 @@ def build_ads_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
     )
 
     critic = Critic()
-    reviewed_insights = critic.evaluate(
+    reviewed_insights, critic_metrics = critic.evaluate(
         "ads", updated_insights, evidence_items, conflict_metrics=conflict_metrics
     )
     
@@ -175,6 +175,8 @@ def build_ads_evidence_bundle(scan_result: Dict[str, Any]) -> Dict[str, Any]:
             for cid, rec in conflict_resolutions.items()
         },
         "conflict_metrics": conflict_metrics.model_dump(exclude_none=True),
+        # Critic metrics (separate from evidence-chain validation)
+        "critic_metrics": critic_metrics.model_dump(exclude_none=True),
     }
 
 

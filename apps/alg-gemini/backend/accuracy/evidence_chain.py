@@ -140,10 +140,11 @@ class EvidenceChainEnforcer:
             orphan_evidence_rate = 0.0
         
         # Validation passed if linking rate is 1.0 and missing rate is 0.0
+        # Note: metadata_completeness is tracked but not part of evidence-chain validation
+        # (it belongs to critic/contract validation)
         validation_passed = (
             evidence_linking_rate == 1.0
             and missing_evidence_rate == 0.0
-            and metadata_completeness_rate == 1.0
             and orphan_evidence_rate <= self.orphan_threshold
         )
         

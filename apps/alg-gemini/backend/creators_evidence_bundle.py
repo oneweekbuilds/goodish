@@ -503,7 +503,7 @@ def _build_accuracy_section(
     )
 
     critic = Critic()
-    critic_insights = critic.evaluate(
+    critic_insights, critic_metrics = critic.evaluate(
         "creators", enforced_insights, evidence_items, conflict_metrics=conflict_metrics
     )
 
@@ -517,6 +517,7 @@ def _build_accuracy_section(
             cid: rec.model_dump(exclude_none=True) for cid, rec in conflict_resolutions.items()
         },
         "conflict_metrics": conflict_metrics.model_dump(exclude_none=True),
+        "critic_metrics": critic_metrics.model_dump(exclude_none=True),
     }
 
 

@@ -18,6 +18,9 @@ from typing import Dict, Optional
 # Higher = more reliable, can yield HIGH confidence alone
 METHOD_RELIABILITY: Dict[str, float] = {
     "PLATFORM_LABEL": 0.999,  # Platform labels are authoritative by definition
+    # Aggregate computation methods:
+    "BAYESIAN_BETA": 0.90,  # Bayesian estimation with priors (calibrated)
+    "WILSON_CI": 0.85,  # Wilson confidence intervals (statistically sound)
     # Placeholders for future methods (not yet used):
     "METADATA_FIELD": 0.95,  # Structured metadata is highly reliable
     "OCR_DISCLOSURE": 0.85,  # OCR accuracy varies by image quality

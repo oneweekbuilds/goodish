@@ -320,6 +320,22 @@ class ConflictMetrics(BaseModel):
     validation_errors: List[str] = Field(default_factory=list)
 
 
+class CriticMetrics(BaseModel):
+    """
+    Metrics for critic/contract validation (separate from evidence-chain validation).
+
+    Tracks downgrades and contract violations without mixing into evidence-chain metrics.
+    """
+
+    downgraded_final_to_preliminary: int = 0
+    downgraded_final_to_abstain: int = 0
+    downgraded_reasons: List[str] = Field(default_factory=list)  # Bounded list of reasons
+    metadata_incomplete_count: int = 0
+    contract_violations: List[str] = Field(default_factory=list)
+    validation_passed: bool = True
+    validation_errors: List[str] = Field(default_factory=list)
+
+
 # ---------------------------------------------------------------------------
 # Global metadata & audit trail
 # ---------------------------------------------------------------------------

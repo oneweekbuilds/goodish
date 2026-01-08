@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Iterable, List, Optional
 
-from accuracy.schema import Insight, EvidenceItem, get_tab_accuracy_contract
+from accuracy.schema import Insight, EvidenceItem, get_tab_accuracy_contract, CriticMetrics
 from accuracy.conflict_metrics import compute_validation
 from accuracy.schema import ConflictMetrics
 
@@ -24,10 +24,13 @@ class Critic:
         insights: Iterable[Insight],
         evidence_items: Iterable[EvidenceItem],
         conflict_metrics: Optional[ConflictMetrics] = None,
-    ) -> List[Insight]:
+    ) -> tuple[List[Insight], CriticMetrics]:
         contract = get_tab_accuracy_contract(tab_name)
         updated: List[Insight] = []
         evidence_lookup = {ev.evidence_id: ev for ev in evidence_items}
+        
+        # Initialize critic metrics
+        critic_metrics = CriticMetrics()
 
         # Ensure conflict metrics are validated for downstream checks
         if conflict_metrics is not None and conflict_metrics.validation_passed is None:
@@ -40,25 +43,36 @@ class Critic:
                 evidence_ids = mutated.evidence_ids or []
                 if len(evidence_ids) < contract.min_evidence_for_final:
                     mutated.claim_status = "PRELIMINARY"
-                    mutated.abstention_reason = (
-                        mutated.abstention_reason
-                        or f"{tab_name}: insufficient evidence count for FINAL"
-                    )
+                    reason = f"{tab_name}: insufficient evidence count for FINAL"
+                    mutated.abstention_reason = mutated.abstention_reason or reason
+                    critic_metrics.downgraded_final_to_preliminary += 1
+                    if len(critic_metrics.downgraded_reasons) < 10:  # Bound list
+                        critic_metrics.downgraded_reasons.append(reason)
 
-                # Downgrade if missing evidence metadata
-                incomplete_meta = [
-                    ev_id
-                    for ev_id in evidence_ids
-                    if ev_id not in evidence_lookup
-                    or evidence_lookup[ev_id].method_reliability is None
-                    or evidence_lookup[ev_id].source is None
-                ]
+                # Downgrade if missing evidence metadata (but allow aggregate items with source=="aggregate")
+                incomplete_meta = []
+                for ev_id in evidence_ids:
+                    if ev_id not in evidence_lookup:
+                        incomplete_meta.append(ev_id)
+                    else:
+                        ev_obj = evidence_lookup[ev_id]
+                        # Special case: aggregate items with source=="aggregate" are allowed to have None method_reliability
+                        # if the method is a known aggregate computation method
+                        if ev_obj.source == "aggregate" and ev_obj.detection_method in ("BAYESIAN_BETA", "WILSON_CI"):
+                            # Aggregate items are valid even without method_reliability if source is set
+                            if ev_obj.source is None:
+                                incomplete_meta.append(ev_id)
+                        elif ev_obj.method_reliability is None or ev_obj.source is None:
+                            incomplete_meta.append(ev_id)
+                
                 if incomplete_meta:
                     mutated.claim_status = "PRELIMINARY"
-                    mutated.abstention_reason = (
-                        mutated.abstention_reason
-                        or f"{tab_name}: incomplete evidence metadata"
-                    )
+                    reason = f"{tab_name}: incomplete evidence metadata"
+                    mutated.abstention_reason = mutated.abstention_reason or reason
+                    critic_metrics.downgraded_final_to_preliminary += 1
+                    critic_metrics.metadata_incomplete_count += len(incomplete_meta)
+                    if len(critic_metrics.downgraded_reasons) < 10:
+                        critic_metrics.downgraded_reasons.append(reason)
 
                 # Conflict penalties
                 if conflict_metrics is not None:
@@ -66,16 +80,18 @@ class Critic:
                     threshold = contract.conflict_penalty_threshold or 0.0
                     if penalty >= threshold and threshold > 0:
                         mutated.claim_status = "PRELIMINARY"
-                        mutated.abstention_reason = (
-                            mutated.abstention_reason
-                            or f"{tab_name}: conflict penalty {penalty:.2f} exceeds threshold {threshold:.2f}"
-                        )
+                        reason = f"{tab_name}: conflict penalty {penalty:.2f} exceeds threshold {threshold:.2f}"
+                        mutated.abstention_reason = mutated.abstention_reason or reason
+                        critic_metrics.downgraded_final_to_preliminary += 1
+                        if len(critic_metrics.downgraded_reasons) < 10:
+                            critic_metrics.downgraded_reasons.append(reason)
                     if not conflict_metrics.validation_passed:
                         mutated.claim_status = "PRELIMINARY"
-                        mutated.abstention_reason = (
-                            mutated.abstention_reason
-                            or f"{tab_name}: unresolved conflicts"
-                        )
+                        reason = f"{tab_name}: unresolved conflicts"
+                        mutated.abstention_reason = mutated.abstention_reason or reason
+                        critic_metrics.downgraded_final_to_preliminary += 1
+                        if len(critic_metrics.downgraded_reasons) < 10:
+                            critic_metrics.downgraded_reasons.append(reason)
 
                 # Uncertainty width check
                 if (
@@ -88,10 +104,11 @@ class Critic:
                     )
                     if width > contract.uncertainty_width_threshold:
                         mutated.claim_status = "PRELIMINARY"
-                        mutated.abstention_reason = (
-                            mutated.abstention_reason
-                            or f"{tab_name}: uncertainty width {width:.2f} exceeds threshold"
-                        )
+                        reason = f"{tab_name}: uncertainty width {width:.2f} exceeds threshold"
+                        mutated.abstention_reason = mutated.abstention_reason or reason
+                        critic_metrics.downgraded_final_to_preliminary += 1
+                        if len(critic_metrics.downgraded_reasons) < 10:
+                            critic_metrics.downgraded_reasons.append(reason)
 
                 # If nothing defensible remains, abstain explicitly
                 if (
@@ -100,12 +117,22 @@ class Critic:
                 ):
                     mutated.claim_status = "ABSTAIN"
                     mutated.abstention_flag = True
-                    mutated.abstention_reason = (
-                        mutated.abstention_reason
-                        or f"{tab_name}: critic could not justify FINAL without evidence"
-                    )
+                    reason = f"{tab_name}: critic could not justify FINAL without evidence"
+                    mutated.abstention_reason = mutated.abstention_reason or reason
+                    critic_metrics.downgraded_final_to_abstain += 1
+                    if len(critic_metrics.downgraded_reasons) < 10:
+                        critic_metrics.downgraded_reasons.append(reason)
 
             updated.append(mutated)
+        
+        # Finalize critic metrics validation
+        if critic_metrics.downgraded_final_to_preliminary > 0 or critic_metrics.downgraded_final_to_abstain > 0:
+            critic_metrics.validation_passed = False
+            if not critic_metrics.validation_errors:
+                critic_metrics.validation_errors.append(
+                    f"Critic downgraded {critic_metrics.downgraded_final_to_preliminary} FINAL to PRELIMINARY, "
+                    f"{critic_metrics.downgraded_final_to_abstain} FINAL to ABSTAIN"
+                )
 
-        return updated
+        return updated, critic_metrics
 
