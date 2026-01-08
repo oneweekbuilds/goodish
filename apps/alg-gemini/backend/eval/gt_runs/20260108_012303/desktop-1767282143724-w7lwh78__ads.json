@@ -1,0 +1,255 @@
+{
+  "scan_id": "desktop-1767282143724-w7lwh78",
+  "tab": "ads",
+  "bundle": {
+    "meta": {
+      "scan_id": "desktop-1767282143724-w7lwh78",
+      "platform": "TWITTER",
+      "n_items": 28,
+      "window_start": "2026-01-01T15:42:23.724Z",
+      "window_end": "2026-01-01T15:42:23.724Z",
+      "generated_at": "2026-01-08T01:23:03.865547",
+      "coverage": {
+        "n_items_total": 28,
+        "n_items_included": 28,
+        "n_items_excluded": 0,
+        "exclusion_reasons": {},
+        "quality_flags": {
+          "missing_text": 28
+        }
+      }
+    },
+    "observations": {
+      "total_posts_seen": 28,
+      "commercial_exposure_spectrum": {
+        "stacked_bar": {
+          "non_commercial": 26,
+          "labeled_ads": 0,
+          "unlabeled_promotion": 1,
+          "total": 27
+        },
+        "excluded": {
+          "unlabeled_promotion_medium_confidence": 0,
+          "ambiguous": 1
+        },
+        "total_items": 28,
+        "high_confidence_items": 27,
+        "coverage_percent": 96.4
+      },
+      "total_ads_detected": 0,
+      "unlabeled_promotions_high_confidence": 1,
+      "total_promotional_content": 1,
+      "promo_signals": {
+        "n_high_confidence": 0,
+        "n_medium_confidence": 1,
+        "n_low_confidence": 3,
+        "n_unlabeled_promo": 0,
+        "signal_types_detected": [
+          "price_mention",
+          "discount_code"
+        ],
+        "signal_type_counts": {
+          "price_mention": 3,
+          "discount_code": 1
+        }
+      },
+      "ocr_extraction_rate_percent": 0.0,
+      "items_with_ocr_text": 0,
+      "ad_rate_percent": 0.0,
+      "ad_rate_percent_ci": {
+        "lower": 0.0,
+        "upper": 12.5,
+        "confidence_level": 0.95,
+        "method": "wilson"
+      },
+      "ad_rate_estimate_type": "INTERVAL",
+      "ad_rate_percent_ci_bayesian": {
+        "lower": 0.4,
+        "upper": 8.0,
+        "confidence_level": 0.95,
+        "method": "bayesian_beta",
+        "point_estimate": 2.9,
+        "prior_used": true,
+        "prior_info": {
+          "platform": "twitter",
+          "source": "learned",
+          "alpha": 2.0,
+          "beta": 38.0,
+          "effective_prior_n": 40.0
+        }
+      },
+      "ad_rate_percent_bayesian": 2.9,
+      "ad_rate_estimate_method": "bayesian_beta",
+      "prior_used": true,
+      "promotional_rate_percent": 3.6,
+      "promotional_rate_percent_ci": {
+        "lower": 0.1,
+        "upper": 18.3,
+        "confidence_level": 0.95,
+        "method": "wilson"
+      },
+      "promotional_rate_estimate_type": "INTERVAL",
+      "top_companies": [],
+      "unique_companies_surfaced": 0,
+      "top_companies_note": "No company or brand names could be extracted from this scan.",
+      "_company_exclusion_stats": {
+        "below_count_threshold": 0,
+        "no_high_confidence_evidence": 0
+      }
+    },
+    "measurements": {
+      "unlabeled_promotions": {
+        "value": {
+          "high_confidence": 1,
+          "medium_confidence": 0,
+          "ambiguous": 1
+        },
+        "method": "classifier:commercial_intent_pipeline",
+        "quality": "ok",
+        "notes": "Unlabeled promotions detected via disclosure tokens, CTA patterns, and entity references. Only high-confidence items counted in metrics. 1 items excluded as ambiguous."
+      },
+      "possible_unlabeled_promotions": {
+        "value": 1,
+        "method": "classifier:commercial_intent_pipeline",
+        "quality": "ok",
+        "notes": "High confidence: 1, Medium confidence: 0. Only high-confidence items are included in primary metrics."
+      },
+      "possible_promo_rate_percent": {
+        "value": 3.6,
+        "method": "classifier:commercial_intent_pipeline",
+        "quality": "ok",
+        "notes": "Percentage of non-ad posts with high-confidence promotional signals."
+      },
+      "promotion_topics": {
+        "value": [],
+        "method": "classifier:topic_keyword_matching",
+        "quality": "insufficient_signal",
+        "notes": "1 promotional items analyzed but no topic keywords matched. This may indicate diverse or unrecognized product categories."
+      }
+    },
+    "limits": {
+      "sample_size_limitations": [
+        "Sample size of 28 posts. Single-item changes significantly affect percentages."
+      ],
+      "commercial_analysis_exclusions": [
+        "1 items had ambiguous commercial signals and were excluded from metrics."
+      ],
+      "missing_metadata_limitations": [
+        "No significant metadata gaps detected."
+      ],
+      "ad_detection_limitations": [
+        "Ad detection relies on platform labels. Native ads or influencer promotions without disclosure may not be detected.",
+        "Unlabeled promotion detection uses pattern matching on disclosure tokens, CTAs, and keywords."
+      ],
+      "ocr_extraction_limitations": [
+        "No significant OCR issues detected."
+      ],
+      "epistemic_boundaries": [
+        "We cannot know why the algorithm showed this content.",
+        "We cannot know your intent or interest level in any content shown.",
+        "We cannot predict future ad targeting based on this single scan.",
+        "Advertiser intent and targeting criteria are not visible to us."
+      ],
+      "bayesian_prior_limitations": {
+        "applies": true,
+        "explanation": "The ad rate estimate uses a statistical prior based on typical twitter ad patterns. This helps provide more stable estimates for small samples, but assumes your feed is broadly similar to typical feeds. The prior has minimal influence on estimates from larger scans (50+ items).",
+        "prior_source": "learned",
+        "prior_influence_percent": 58.8
+      }
+    },
+    "evidence_items": {
+      "ev-ads-aggregate-adrate": {
+        "evidence_id": "ev-ads-aggregate-adrate",
+        "signal_type": "aggregate_computation",
+        "detection_method": "BAYESIAN_BETA",
+        "method_reliability": {
+          "method": "BAYESIAN_BETA",
+          "base_reliability": 0.9,
+          "effective_reliability": 0.9
+        },
+        "conflicts_with": [],
+        "source": "aggregate"
+      }
+    },
+    "insights": [
+      {
+        "insight_id": "ads-commercial-spectrum",
+        "claim_type": "aggregate_observation",
+        "claim_text": "Ad rate: 0.0% (0 ads in 28 posts)",
+        "claim_status": "FINAL",
+        "numeric_confidence": 0.95,
+        "point_estimate": 0.0,
+        "evidence_ids": [
+          "ev-ads-aggregate-adrate"
+        ],
+        "abstention_flag": false,
+        "threshold_gates": []
+      }
+    ],
+    "evidence_chain_metrics": {
+      "evidence_linking_rate": 1.0,
+      "missing_evidence_rate": 0.0,
+      "orphan_evidence_rate": 0.0,
+      "validation_passed": true
+    },
+    "conflict_resolutions": {},
+    "conflict_metrics": {
+      "total_conflicts_detected": 0,
+      "conflicts_by_type": {},
+      "conflicts_by_severity": {},
+      "conflicts_resolved": 0,
+      "conflicts_abstained": 0,
+      "conflict_resolution_rate": 0.0,
+      "precedence_resolutions": 0,
+      "majority_resolutions": 0,
+      "avg_confidence_penalty": 0.0,
+      "platform_label_override_count": 0,
+      "platform_label_override_rate": 0.0,
+      "validation_passed": true,
+      "validation_errors": []
+    },
+    "critic_metrics": {
+      "downgraded_final_to_preliminary": 0,
+      "downgraded_final_to_abstain": 0,
+      "downgraded_reasons": [],
+      "metadata_incomplete_count": 0,
+      "contract_violations": [],
+      "validation_passed": true,
+      "validation_errors": []
+    }
+  },
+  "analysis": {
+    "primary_insight": {
+      "text": "In this scan of 28 posts, 1 showed high-confidence promotional signals without disclosure (3.6% of content).",
+      "cited_fields": [
+        "meta.n_items",
+        "observations.commercial_exposure_spectrum.stacked_bar",
+        "observations.promotional_rate_percent"
+      ],
+      "quality": "ok"
+    },
+    "topic_insight": {
+      "text": "Promotional topics could not be reliably determined for this scan.",
+      "cited_fields": [
+        "measurements.promotion_topics"
+      ],
+      "quality": "insufficient_data"
+    },
+    "unlabeled_promo_insight": {
+      "text": "In this scan, 1 posts showed high-confidence promotional signals without formal disclosure. 1 posts were ambiguous and excluded from counts.",
+      "cited_fields": [
+        "measurements.unlabeled_promotions"
+      ],
+      "quality": "ok"
+    },
+    "limitations_summary": {
+      "text": "Sample size of 28 posts. Single-item changes significantly affect percentages. 1 items had ambiguous commercial signals and were excluded from metrics.",
+      "cited_fields": [
+        "limits.sample_size_limitations",
+        "limits.commercial_analysis_exclusions",
+        "limits.ad_detection_limitations"
+      ],
+      "quality": "ok"
+    }
+  }
+}

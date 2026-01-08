@@ -1,0 +1,1620 @@
+{
+  "scan_id": "desktop-1767213421203-es5qrua",
+  "tab": "creators",
+  "bundle": {
+    "meta": {
+      "scan_id": "desktop-1767213421203-es5qrua",
+      "platform": "TWITTER",
+      "n_items": 31,
+      "window_start": "2025-12-31T20:37:01.203Z",
+      "window_end": "2025-12-31T20:37:01.203Z",
+      "generated_at": "2026-01-08T01:23:03.694250",
+      "coverage": {
+        "n_items_total": 31,
+        "n_items_included": 31,
+        "n_items_excluded": 0,
+        "exclusion_reasons": {},
+        "quality_flags": {}
+      }
+    },
+    "observations": {
+      "total_posts_seen": 31,
+      "unique_creators_count": 31,
+      "verified_creators_count": 0,
+      "unverified_creators_count": 31,
+      "verified_rate_percent": 0.0,
+      "top_creators": [
+        {
+          "handle": "Gusti Ayu",
+          "display_name": null,
+          "is_verified": false,
+          "post_count": 1,
+          "is_ad_account": true,
+          "extraction_source": "account_metadata"
+        },
+        {
+          "handle": "NAD",
+          "display_name": null,
+          "is_verified": false,
+          "post_count": 1,
+          "is_ad_account": true,
+          "extraction_source": "account_metadata"
+        },
+        {
+          "handle": "Eric Djavid",
+          "display_name": null,
+          "is_verified": false,
+          "post_count": 1,
+          "is_ad_account": true,
+          "extraction_source": "account_metadata"
+        },
+        {
+          "handle": "Cole Jaczko",
+          "display_name": null,
+          "is_verified": false,
+          "post_count": 1,
+          "is_ad_account": true,
+          "extraction_source": "account_metadata"
+        },
+        {
+          "handle": "cole",
+          "display_name": null,
+          "is_verified": false,
+          "post_count": 1,
+          "is_ad_account": true,
+          "extraction_source": "account_metadata"
+        },
+        {
+          "handle": "Amjad Masad",
+          "display_name": null,
+          "is_verified": false,
+          "post_count": 1,
+          "is_ad_account": true,
+          "extraction_source": "account_metadata"
+        },
+        {
+          "handle": "Queen Primis",
+          "display_name": null,
+          "is_verified": false,
+          "post_count": 1,
+          "is_ad_account": true,
+          "extraction_source": "account_metadata"
+        },
+        {
+          "handle": "𝐌𝐨𝐢𝐬é𝐬 𝐂𝐚𝐢𝐜𝐞𝐝𝐨",
+          "display_name": null,
+          "is_verified": false,
+          "post_count": 1,
+          "is_ad_account": true,
+          "extraction_source": "account_metadata"
+        },
+        {
+          "handle": "Simone Canc",
+          "display_name": null,
+          "is_verified": false,
+          "post_count": 1,
+          "is_ad_account": true,
+          "extraction_source": "account_metadata"
+        },
+        {
+          "handle": "Melvyn • Builder",
+          "display_name": null,
+          "is_verified": false,
+          "post_count": 1,
+          "is_ad_account": true,
+          "extraction_source": "account_metadata"
+        }
+      ],
+      "creators_in_ads_count": 31,
+      "extraction_summary": {
+        "total_items": 31,
+        "items_with_creator": 31,
+        "high_confidence_extractions": 31,
+        "med_confidence_extractions": 0
+      }
+    },
+    "measurements": {
+      "creator_concentration": {
+        "value": {
+          "top1_share": 0.03,
+          "top5_share": 0.16,
+          "unique_count": 31
+        },
+        "method": "post_count_per_creator",
+        "quality": "ok",
+        "notes": "Top creator has 1 posts (3% of identified content)."
+      },
+      "voice_diversity": {
+        "value": 1.0,
+        "method": "unique_creators / items_with_creator",
+        "quality": "ok",
+        "notes": "1.0 = all unique creators, lower = more repetition."
+      }
+    },
+    "limits": {
+      "sample_size_limitations": [
+        "Sample of 31 posts from a single scan session."
+      ],
+      "epistemic_boundaries": [
+        "We cannot infer what you trust, follow, or agree with.",
+        "We cannot determine whether creator variety is 'good' or 'bad'.",
+        "We cannot infer political or ideological bias from creator presence.",
+        "We cannot know why the algorithm selected these specific creators.",
+        "Verification status is platform-determined and does not indicate credibility.",
+        "We cannot determine your relationship or engagement with any creator."
+      ],
+      "detection_limitations": [
+        "Creator identification relies on account metadata which may be incomplete.",
+        "Verification status depends on platform data availability.",
+        "Some creators may use multiple accounts not detected here."
+      ]
+    },
+    "evidence_items": {
+      "creator-Gusti Ayu": {
+        "evidence_id": "creator-Gusti Ayu",
+        "source_item_index": 1,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Gusti Ayu",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 1,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Gusti Ayu"
+        }
+      },
+      "creator-Gusti Ayu-observed": {
+        "evidence_id": "creator-Gusti Ayu-observed",
+        "source_item_index": 1,
+        "signal_type": "observed_content",
+        "signal_subtype": "Gusti Ayu",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 1,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Gusti Ayu"
+        }
+      },
+      "creator-NAD": {
+        "evidence_id": "creator-NAD",
+        "source_item_index": 2,
+        "signal_type": "creator_handle",
+        "signal_subtype": "NAD",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 2,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "NAD"
+        }
+      },
+      "creator-NAD-observed": {
+        "evidence_id": "creator-NAD-observed",
+        "source_item_index": 2,
+        "signal_type": "observed_content",
+        "signal_subtype": "NAD",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 2,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "NAD"
+        }
+      },
+      "creator-Eric Djavid": {
+        "evidence_id": "creator-Eric Djavid",
+        "source_item_index": 3,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Eric Djavid",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 3,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Eric Djavid"
+        }
+      },
+      "creator-Eric Djavid-observed": {
+        "evidence_id": "creator-Eric Djavid-observed",
+        "source_item_index": 3,
+        "signal_type": "observed_content",
+        "signal_subtype": "Eric Djavid",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 3,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Eric Djavid"
+        }
+      },
+      "creator-Cole Jaczko": {
+        "evidence_id": "creator-Cole Jaczko",
+        "source_item_index": 4,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Cole Jaczko",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 4,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Cole Jaczko"
+        }
+      },
+      "creator-Cole Jaczko-observed": {
+        "evidence_id": "creator-Cole Jaczko-observed",
+        "source_item_index": 4,
+        "signal_type": "observed_content",
+        "signal_subtype": "Cole Jaczko",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 4,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Cole Jaczko"
+        }
+      },
+      "creator-cole": {
+        "evidence_id": "creator-cole",
+        "source_item_index": 5,
+        "signal_type": "creator_handle",
+        "signal_subtype": "cole",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 5,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "cole"
+        }
+      },
+      "creator-cole-observed": {
+        "evidence_id": "creator-cole-observed",
+        "source_item_index": 5,
+        "signal_type": "observed_content",
+        "signal_subtype": "cole",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 5,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "cole"
+        }
+      },
+      "creator-Amjad Masad": {
+        "evidence_id": "creator-Amjad Masad",
+        "source_item_index": 6,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Amjad Masad",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 6,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Amjad Masad"
+        }
+      },
+      "creator-Amjad Masad-observed": {
+        "evidence_id": "creator-Amjad Masad-observed",
+        "source_item_index": 6,
+        "signal_type": "observed_content",
+        "signal_subtype": "Amjad Masad",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 6,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Amjad Masad"
+        }
+      },
+      "creator-Queen Primis": {
+        "evidence_id": "creator-Queen Primis",
+        "source_item_index": 7,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Queen Primis",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 7,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Queen Primis"
+        }
+      },
+      "creator-Queen Primis-observed": {
+        "evidence_id": "creator-Queen Primis-observed",
+        "source_item_index": 7,
+        "signal_type": "observed_content",
+        "signal_subtype": "Queen Primis",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 7,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Queen Primis"
+        }
+      },
+      "creator-𝐌𝐨𝐢𝐬é𝐬 𝐂𝐚𝐢𝐜𝐞𝐝𝐨": {
+        "evidence_id": "creator-𝐌𝐨𝐢𝐬é𝐬 𝐂𝐚𝐢𝐜𝐞𝐝𝐨",
+        "source_item_index": 8,
+        "signal_type": "creator_handle",
+        "signal_subtype": "𝐌𝐨𝐢𝐬é𝐬 𝐂𝐚𝐢𝐜𝐞𝐝𝐨",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 8,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "𝐌𝐨𝐢𝐬é𝐬 𝐂𝐚𝐢𝐜𝐞𝐝𝐨"
+        }
+      },
+      "creator-𝐌𝐨𝐢𝐬é𝐬 𝐂𝐚𝐢𝐜𝐞𝐝𝐨-observed": {
+        "evidence_id": "creator-𝐌𝐨𝐢𝐬é𝐬 𝐂𝐚𝐢𝐜𝐞𝐝𝐨-observed",
+        "source_item_index": 8,
+        "signal_type": "observed_content",
+        "signal_subtype": "𝐌𝐨𝐢𝐬é𝐬 𝐂𝐚𝐢𝐜𝐞𝐝𝐨",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 8,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "𝐌𝐨𝐢𝐬é𝐬 𝐂𝐚𝐢𝐜𝐞𝐝𝐨"
+        }
+      },
+      "creator-Simone Canc": {
+        "evidence_id": "creator-Simone Canc",
+        "source_item_index": 9,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Simone Canc",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 9,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Simone Canc"
+        }
+      },
+      "creator-Simone Canc-observed": {
+        "evidence_id": "creator-Simone Canc-observed",
+        "source_item_index": 9,
+        "signal_type": "observed_content",
+        "signal_subtype": "Simone Canc",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 9,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Simone Canc"
+        }
+      },
+      "creator-Melvyn • Builder": {
+        "evidence_id": "creator-Melvyn • Builder",
+        "source_item_index": 10,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Melvyn • Builder",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 10,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Melvyn • Builder"
+        }
+      },
+      "creator-Melvyn • Builder-observed": {
+        "evidence_id": "creator-Melvyn • Builder-observed",
+        "source_item_index": 10,
+        "signal_type": "observed_content",
+        "signal_subtype": "Melvyn • Builder",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 10,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Melvyn • Builder"
+        }
+      },
+      "creator-Spencer Hakimian": {
+        "evidence_id": "creator-Spencer Hakimian",
+        "source_item_index": 11,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Spencer Hakimian",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 11,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Spencer Hakimian"
+        }
+      },
+      "creator-Spencer Hakimian-observed": {
+        "evidence_id": "creator-Spencer Hakimian-observed",
+        "source_item_index": 11,
+        "signal_type": "observed_content",
+        "signal_subtype": "Spencer Hakimian",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 11,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Spencer Hakimian"
+        }
+      },
+      "creator-Min Choi": {
+        "evidence_id": "creator-Min Choi",
+        "source_item_index": 12,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Min Choi",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 12,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Min Choi"
+        }
+      },
+      "creator-Min Choi-observed": {
+        "evidence_id": "creator-Min Choi-observed",
+        "source_item_index": 12,
+        "signal_type": "observed_content",
+        "signal_subtype": "Min Choi",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 12,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Min Choi"
+        }
+      },
+      "creator-Marvel Perfect Gifs & Clips": {
+        "evidence_id": "creator-Marvel Perfect Gifs & Clips",
+        "source_item_index": 13,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Marvel Perfect Gifs & Clips",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 13,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Marvel Perfect Gifs & Clips"
+        }
+      },
+      "creator-Marvel Perfect Gifs & Clips-observed": {
+        "evidence_id": "creator-Marvel Perfect Gifs & Clips-observed",
+        "source_item_index": 13,
+        "signal_type": "observed_content",
+        "signal_subtype": "Marvel Perfect Gifs & Clips",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 13,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Marvel Perfect Gifs & Clips"
+        }
+      },
+      "creator-Ernesto Lopez": {
+        "evidence_id": "creator-Ernesto Lopez",
+        "source_item_index": 14,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Ernesto Lopez",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 14,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Ernesto Lopez"
+        }
+      },
+      "creator-Ernesto Lopez-observed": {
+        "evidence_id": "creator-Ernesto Lopez-observed",
+        "source_item_index": 14,
+        "signal_type": "observed_content",
+        "signal_subtype": "Ernesto Lopez",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 14,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Ernesto Lopez"
+        }
+      },
+      "creator-Yu Lin": {
+        "evidence_id": "creator-Yu Lin",
+        "source_item_index": 15,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Yu Lin",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 15,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Yu Lin"
+        }
+      },
+      "creator-Yu Lin-observed": {
+        "evidence_id": "creator-Yu Lin-observed",
+        "source_item_index": 15,
+        "signal_type": "observed_content",
+        "signal_subtype": "Yu Lin",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 15,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Yu Lin"
+        }
+      },
+      "creator-Brian Roemmele": {
+        "evidence_id": "creator-Brian Roemmele",
+        "source_item_index": 16,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Brian Roemmele",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 16,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Brian Roemmele"
+        }
+      },
+      "creator-Brian Roemmele-observed": {
+        "evidence_id": "creator-Brian Roemmele-observed",
+        "source_item_index": 16,
+        "signal_type": "observed_content",
+        "signal_subtype": "Brian Roemmele",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 16,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Brian Roemmele"
+        }
+      },
+      "creator-Holly - I like tech": {
+        "evidence_id": "creator-Holly - I like tech",
+        "source_item_index": 17,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Holly - I like tech",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 17,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Holly - I like tech"
+        }
+      },
+      "creator-Holly - I like tech-observed": {
+        "evidence_id": "creator-Holly - I like tech-observed",
+        "source_item_index": 17,
+        "signal_type": "observed_content",
+        "signal_subtype": "Holly - I like tech",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 17,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Holly - I like tech"
+        }
+      },
+      "creator-Urvish": {
+        "evidence_id": "creator-Urvish",
+        "source_item_index": 18,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Urvish",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 18,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Urvish"
+        }
+      },
+      "creator-Urvish-observed": {
+        "evidence_id": "creator-Urvish-observed",
+        "source_item_index": 18,
+        "signal_type": "observed_content",
+        "signal_subtype": "Urvish",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 18,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Urvish"
+        }
+      },
+      "creator-corbin": {
+        "evidence_id": "creator-corbin",
+        "source_item_index": 19,
+        "signal_type": "creator_handle",
+        "signal_subtype": "corbin",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 19,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "corbin"
+        }
+      },
+      "creator-corbin-observed": {
+        "evidence_id": "creator-corbin-observed",
+        "source_item_index": 19,
+        "signal_type": "observed_content",
+        "signal_subtype": "corbin",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 19,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "corbin"
+        }
+      },
+      "creator-The Startup Ideas Podcast (SIP)": {
+        "evidence_id": "creator-The Startup Ideas Podcast (SIP)",
+        "source_item_index": 20,
+        "signal_type": "creator_handle",
+        "signal_subtype": "The Startup Ideas Podcast (SIP)",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 20,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "The Startup Ideas Podcast (SIP)"
+        }
+      },
+      "creator-The Startup Ideas Podcast (SIP)-observed": {
+        "evidence_id": "creator-The Startup Ideas Podcast (SIP)-observed",
+        "source_item_index": 20,
+        "signal_type": "observed_content",
+        "signal_subtype": "The Startup Ideas Podcast (SIP)",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 20,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "The Startup Ideas Podcast (SIP)"
+        }
+      },
+      "creator-Financial Dystopia": {
+        "evidence_id": "creator-Financial Dystopia",
+        "source_item_index": 21,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Financial Dystopia",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 21,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Financial Dystopia"
+        }
+      },
+      "creator-Financial Dystopia-observed": {
+        "evidence_id": "creator-Financial Dystopia-observed",
+        "source_item_index": 21,
+        "signal_type": "observed_content",
+        "signal_subtype": "Financial Dystopia",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 21,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Financial Dystopia"
+        }
+      },
+      "creator-Aurelien": {
+        "evidence_id": "creator-Aurelien",
+        "source_item_index": 22,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Aurelien",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 22,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Aurelien"
+        }
+      },
+      "creator-Aurelien-observed": {
+        "evidence_id": "creator-Aurelien-observed",
+        "source_item_index": 22,
+        "signal_type": "observed_content",
+        "signal_subtype": "Aurelien",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 22,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Aurelien"
+        }
+      },
+      "creator-Mati Staniszewski": {
+        "evidence_id": "creator-Mati Staniszewski",
+        "source_item_index": 23,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Mati Staniszewski",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 23,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Mati Staniszewski"
+        }
+      },
+      "creator-Mati Staniszewski-observed": {
+        "evidence_id": "creator-Mati Staniszewski-observed",
+        "source_item_index": 23,
+        "signal_type": "observed_content",
+        "signal_subtype": "Mati Staniszewski",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 23,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Mati Staniszewski"
+        }
+      },
+      "creator-Massimo": {
+        "evidence_id": "creator-Massimo",
+        "source_item_index": 24,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Massimo",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 24,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Massimo"
+        }
+      },
+      "creator-Massimo-observed": {
+        "evidence_id": "creator-Massimo-observed",
+        "source_item_index": 24,
+        "signal_type": "observed_content",
+        "signal_subtype": "Massimo",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 24,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Massimo"
+        }
+      },
+      "creator-Kevin W.": {
+        "evidence_id": "creator-Kevin W.",
+        "source_item_index": 25,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Kevin W.",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 25,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Kevin W."
+        }
+      },
+      "creator-Kevin W.-observed": {
+        "evidence_id": "creator-Kevin W.-observed",
+        "source_item_index": 25,
+        "signal_type": "observed_content",
+        "signal_subtype": "Kevin W.",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 25,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Kevin W."
+        }
+      },
+      "creator-fabian": {
+        "evidence_id": "creator-fabian",
+        "source_item_index": 26,
+        "signal_type": "creator_handle",
+        "signal_subtype": "fabian",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 26,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "fabian"
+        }
+      },
+      "creator-fabian-observed": {
+        "evidence_id": "creator-fabian-observed",
+        "source_item_index": 26,
+        "signal_type": "observed_content",
+        "signal_subtype": "fabian",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 26,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "fabian"
+        }
+      },
+      "creator-Paulius": {
+        "evidence_id": "creator-Paulius",
+        "source_item_index": 27,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Paulius",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 27,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Paulius"
+        }
+      },
+      "creator-Paulius-observed": {
+        "evidence_id": "creator-Paulius-observed",
+        "source_item_index": 27,
+        "signal_type": "observed_content",
+        "signal_subtype": "Paulius",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 27,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Paulius"
+        }
+      },
+      "creator-mitsuri": {
+        "evidence_id": "creator-mitsuri",
+        "source_item_index": 28,
+        "signal_type": "creator_handle",
+        "signal_subtype": "mitsuri",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 28,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "mitsuri"
+        }
+      },
+      "creator-mitsuri-observed": {
+        "evidence_id": "creator-mitsuri-observed",
+        "source_item_index": 28,
+        "signal_type": "observed_content",
+        "signal_subtype": "mitsuri",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 28,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "mitsuri"
+        }
+      },
+      "creator-Earn Knowledge": {
+        "evidence_id": "creator-Earn Knowledge",
+        "source_item_index": 29,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Earn Knowledge",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 29,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Earn Knowledge"
+        }
+      },
+      "creator-Earn Knowledge-observed": {
+        "evidence_id": "creator-Earn Knowledge-observed",
+        "source_item_index": 29,
+        "signal_type": "observed_content",
+        "signal_subtype": "Earn Knowledge",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 29,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Earn Knowledge"
+        }
+      },
+      "creator-sui dev": {
+        "evidence_id": "creator-sui dev",
+        "source_item_index": 30,
+        "signal_type": "creator_handle",
+        "signal_subtype": "sui dev",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 30,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "sui dev"
+        }
+      },
+      "creator-sui dev-observed": {
+        "evidence_id": "creator-sui dev-observed",
+        "source_item_index": 30,
+        "signal_type": "observed_content",
+        "signal_subtype": "sui dev",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 30,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "sui dev"
+        }
+      },
+      "creator-Nick Co": {
+        "evidence_id": "creator-Nick Co",
+        "source_item_index": 31,
+        "signal_type": "creator_handle",
+        "signal_subtype": "Nick Co",
+        "detection_method": "account_metadata",
+        "method_reliability": {
+          "method": "NER_EXTRACTION",
+          "base_reliability": 0.75,
+          "effective_reliability": 0.75
+        },
+        "conflicts_with": [],
+        "source": "creator_extraction",
+        "item_context": {
+          "item_index": 31,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Nick Co"
+        }
+      },
+      "creator-Nick Co-observed": {
+        "evidence_id": "creator-Nick Co-observed",
+        "source_item_index": 31,
+        "signal_type": "observed_content",
+        "signal_subtype": "Nick Co",
+        "detection_method": "HEURISTIC_RULE",
+        "method_reliability": {
+          "method": "HEURISTIC_RULE",
+          "base_reliability": 0.65,
+          "effective_reliability": 0.65
+        },
+        "pattern_category": "ad_account",
+        "conflicts_with": [],
+        "source": "content_observation",
+        "item_context": {
+          "item_index": 31,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "POST",
+          "platform_id": "Nick Co"
+        }
+      }
+    },
+    "insights": [
+      {
+        "insight_id": "creators-extracted",
+        "claim_type": "creator_presence",
+        "claim_text": "Creators identified in this scan.",
+        "claim_status": "FINAL",
+        "evidence_ids": [
+          "creator-Gusti Ayu",
+          "creator-Gusti Ayu-observed",
+          "creator-NAD",
+          "creator-NAD-observed",
+          "creator-Eric Djavid",
+          "creator-Eric Djavid-observed",
+          "creator-Cole Jaczko",
+          "creator-Cole Jaczko-observed",
+          "creator-cole",
+          "creator-cole-observed",
+          "creator-Amjad Masad",
+          "creator-Amjad Masad-observed",
+          "creator-Queen Primis",
+          "creator-Queen Primis-observed",
+          "creator-𝐌𝐨𝐢𝐬é𝐬 𝐂𝐚𝐢𝐜𝐞𝐝𝐨",
+          "creator-𝐌𝐨𝐢𝐬é𝐬 𝐂𝐚𝐢𝐜𝐞𝐝𝐨-observed",
+          "creator-Simone Canc",
+          "creator-Simone Canc-observed",
+          "creator-Melvyn • Builder",
+          "creator-Melvyn • Builder-observed",
+          "creator-Spencer Hakimian",
+          "creator-Spencer Hakimian-observed",
+          "creator-Min Choi",
+          "creator-Min Choi-observed",
+          "creator-Marvel Perfect Gifs & Clips",
+          "creator-Marvel Perfect Gifs & Clips-observed",
+          "creator-Ernesto Lopez",
+          "creator-Ernesto Lopez-observed",
+          "creator-Yu Lin",
+          "creator-Yu Lin-observed",
+          "creator-Brian Roemmele",
+          "creator-Brian Roemmele-observed",
+          "creator-Holly - I like tech",
+          "creator-Holly - I like tech-observed",
+          "creator-Urvish",
+          "creator-Urvish-observed",
+          "creator-corbin",
+          "creator-corbin-observed",
+          "creator-The Startup Ideas Podcast (SIP)",
+          "creator-The Startup Ideas Podcast (SIP)-observed",
+          "creator-Financial Dystopia",
+          "creator-Financial Dystopia-observed",
+          "creator-Aurelien",
+          "creator-Aurelien-observed",
+          "creator-Mati Staniszewski",
+          "creator-Mati Staniszewski-observed",
+          "creator-Massimo",
+          "creator-Massimo-observed",
+          "creator-Kevin W.",
+          "creator-Kevin W.-observed",
+          "creator-fabian",
+          "creator-fabian-observed",
+          "creator-Paulius",
+          "creator-Paulius-observed",
+          "creator-mitsuri",
+          "creator-mitsuri-observed",
+          "creator-Earn Knowledge",
+          "creator-Earn Knowledge-observed",
+          "creator-sui dev",
+          "creator-sui dev-observed",
+          "creator-Nick Co",
+          "creator-Nick Co-observed"
+        ],
+        "abstention_flag": false,
+        "preliminary_upgrade_path": "Extract more creators or increase reliability to upgrade",
+        "threshold_gates": []
+      }
+    ],
+    "evidence_chain_metrics": {
+      "evidence_linking_rate": 1.0,
+      "missing_evidence_rate": 0.0,
+      "orphan_evidence_rate": 0.0,
+      "metadata_completeness_rate": 1.0,
+      "validation_passed": true
+    },
+    "conflict_resolutions": {},
+    "conflict_metrics": {
+      "total_conflicts_detected": 0,
+      "conflicts_by_type": {},
+      "conflicts_by_severity": {},
+      "conflicts_resolved": 0,
+      "conflicts_abstained": 0,
+      "conflict_resolution_rate": 0.0,
+      "precedence_resolutions": 0,
+      "majority_resolutions": 0,
+      "avg_confidence_penalty": 0.0,
+      "platform_label_override_count": 0,
+      "platform_label_override_rate": 0.0,
+      "validation_passed": true,
+      "validation_errors": []
+    },
+    "critic_metrics": {
+      "downgraded_final_to_preliminary": 0,
+      "downgraded_final_to_abstain": 0,
+      "downgraded_reasons": [],
+      "metadata_incomplete_count": 0,
+      "contract_violations": [],
+      "validation_passed": true,
+      "validation_errors": []
+    }
+  },
+  "analysis": {
+    "primary_insight": {
+      "text": "In this scan of 31 posts, content came from 31 unique creators.",
+      "cited_fields": [
+        "meta.n_items",
+        "observations.unique_creators_count"
+      ],
+      "quality": "ok"
+    },
+    "verification_insight": {
+      "text": "0 creators (0.0%) had verified accounts.",
+      "cited_fields": [
+        "observations.verified_creators_count",
+        "observations.verified_rate_percent"
+      ],
+      "quality": "ok"
+    },
+    "limitations_summary": {
+      "text": "Creator presence does not indicate your preferences, trust, or agreement with their content.",
+      "cited_fields": [
+        "limits.epistemic_boundaries"
+      ],
+      "quality": "ok"
+    }
+  }
+}

@@ -1,0 +1,155 @@
+{
+  "scan_id": "desktop-1767213795895-7cvybej",
+  "tab": "patterns",
+  "bundle": {
+    "meta": {
+      "scan_id": "desktop-1767213795895-7cvybej",
+      "platform": "TWITTER",
+      "n_items": 29,
+      "window_start": "2025-12-31T20:43:15.895Z",
+      "window_end": "2025-12-31T20:43:15.895Z",
+      "generated_at": "2026-01-08T01:23:03.787380",
+      "coverage": {
+        "n_items_total": 29,
+        "n_items_included": 29,
+        "n_items_excluded": 0,
+        "exclusion_reasons": {},
+        "quality_flags": {}
+      }
+    },
+    "observations": {
+      "total_posts_seen": 29,
+      "content_type_distribution": [
+        {
+          "type": "POST",
+          "count": 29,
+          "percent": 100.0
+        }
+      ],
+      "unique_creators_count": 29,
+      "repeated_creators_count": 0,
+      "top_repeated_creators": [],
+      "top1_creator_share_percent": 3.4,
+      "top5_creator_share_percent": 17.2,
+      "ad_spacing": {
+        "min_gap": 1,
+        "max_gap": 1,
+        "avg_gap": 1.0,
+        "positions": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      },
+      "repeated_hashtags_count": 0
+    },
+    "measurements": {
+      "creator_diversity_ratio": {
+        "value": 1.0,
+        "method": "unique_creators / total_items",
+        "quality": "ok",
+        "notes": "29 unique creators across 29 posts. Ratio of 1.0 = all unique."
+      },
+      "repetition_score": {
+        "value": 0,
+        "method": "count_creators_appearing_2plus_times",
+        "quality": "ok",
+        "notes": "0 creators appeared multiple times in this scan."
+      }
+    },
+    "limits": {
+      "sample_size_limitations": [
+        "Sample size of 29 posts. Pattern detection is tentative."
+      ],
+      "epistemic_boundaries": [
+        "We cannot know why the algorithm chose these specific items.",
+        "We cannot infer your intent, preferences, or interests from this content.",
+        "Repetition does not prove manipulation or targeting.",
+        "Diversity metrics depend on our ability to identify unique creators.",
+        "Patterns in a single scan may not reflect long-term feed behavior."
+      ],
+      "detection_limitations": [
+        "Creator identification relies on account handles which may be incomplete.",
+        "Content type classification is based on available metadata.",
+        "Ad position analysis assumes linear feed ordering."
+      ]
+    },
+    "evidence_items": {},
+    "insights": [
+      {
+        "insight_id": "patterns-creator-repetition",
+        "claim_type": "pattern_repetition",
+        "claim_text": "Creators repeated across the scan.",
+        "claim_status": "ABSTAIN",
+        "evidence_ids": [],
+        "abstention_flag": true,
+        "abstention_reason": "No repeated creators detected",
+        "preliminary_upgrade_path": "Identify more repeated creators to upgrade to FINAL",
+        "threshold_gates": []
+      }
+    ],
+    "evidence_chain_metrics": {
+      "evidence_linking_rate": 1.0,
+      "missing_evidence_rate": 0.0,
+      "orphan_evidence_rate": 0.0,
+      "metadata_completeness_rate": 1.0,
+      "validation_passed": true
+    },
+    "conflict_resolutions": {},
+    "conflict_metrics": {
+      "total_conflicts_detected": 0,
+      "conflicts_by_type": {},
+      "conflicts_by_severity": {},
+      "conflicts_resolved": 0,
+      "conflicts_abstained": 0,
+      "conflict_resolution_rate": 0.0,
+      "precedence_resolutions": 0,
+      "majority_resolutions": 0,
+      "avg_confidence_penalty": 0.0,
+      "platform_label_override_count": 0,
+      "platform_label_override_rate": 0.0,
+      "validation_passed": true,
+      "validation_errors": []
+    },
+    "critic_metrics": {
+      "downgraded_final_to_preliminary": 0,
+      "downgraded_final_to_abstain": 0,
+      "downgraded_reasons": [],
+      "metadata_incomplete_count": 0,
+      "contract_violations": [],
+      "validation_passed": true,
+      "validation_errors": []
+    }
+  },
+  "analysis": {
+    "primary_insight": {
+      "text": "In this scan of 29 posts, all content came from 29 different creators (no repeats).",
+      "cited_fields": [
+        "meta.n_items",
+        "observations.unique_creators_count"
+      ],
+      "quality": "ok"
+    },
+    "content_type_insight": {
+      "text": "Content was primarily POST (100.0% of posts).",
+      "cited_fields": [
+        "observations.content_type_distribution"
+      ],
+      "quality": "ok"
+    },
+    "limitations_summary": {
+      "text": "Patterns in a single scan may not reflect long-term feed behavior.",
+      "cited_fields": [
+        "limits.epistemic_boundaries"
+      ],
+      "quality": "ok"
+    }
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "scan_id": "desktop-1767214732271-5fvxxhi",
+  "tab": "politics",
+  "bundle": {
+    "meta": {
+      "scan_id": "desktop-1767214732271-5fvxxhi",
+      "platform": "TWITTER",
+      "n_items": 25,
+      "window_start": "2025-12-31T20:58:52.271Z",
+      "window_end": "2025-12-31T20:58:52.271Z",
+      "generated_at": "2026-01-08T01:23:03.991318",
+      "coverage": {
+        "n_items_total": 25,
+        "n_items_included": 25,
+        "n_items_excluded": 0,
+        "exclusion_reasons": {},
+        "quality_flags": {}
+      }
+    },
+    "observations": {
+      "total_posts_seen": 25,
+      "top_hashtags": [
+        {
+          "tag": "dubai",
+          "count": 1
+        },
+        {
+          "tag": "aitools",
+          "count": 1
+        },
+        {
+          "tag": "meetingproductivity",
+          "count": 1
+        },
+        {
+          "tag": "3120",
+          "count": 1
+        }
+      ],
+      "unique_hashtags_count": 4,
+      "content_categories": [],
+      "items_with_political_keywords": 0,
+      "items_with_news_keywords": 0,
+      "political_keyword_rate_percent": 0.0,
+      "news_keyword_rate_percent": 0.0
+    },
+    "measurements": {
+      "keyword_density": {
+        "value": {
+          "political_keywords_present": true,
+          "sample_size": 25
+        },
+        "method": "keyword_matching",
+        "quality": "ok",
+        "notes": "Keyword presence detection only. No political leaning inference."
+      }
+    },
+    "limits": {
+      "sample_size_limitations": [
+        "Sample size of 25 posts. Conclusions should be tentative."
+      ],
+      "epistemic_boundaries": [
+        "We cannot infer your political beliefs, ideology, or intent.",
+        "We cannot determine the political persuasion goals of any creator.",
+        "We cannot know why the algorithm showed you this content.",
+        "We cannot assess whether your feed is politically 'balanced' or 'biased'.",
+        "Presence of political keywords does not indicate your agreement or interest.",
+        "We cannot predict how this content might influence your views."
+      ],
+      "detection_limitations": [
+        "Keyword matching may miss nuanced political content.",
+        "Content categorization is based on explicit signals, not interpretation.",
+        "Hashtag analysis reflects creator labeling, not content substance."
+      ],
+      "coverage_notes": [
+        "Analysis covers only content captured in this scan.",
+        "Visual political content (images, video) is not analyzed for political signals."
+      ]
+    },
+    "evidence_items": {},
+    "insights": [
+      {
+        "insight_id": "politics-keyword-presence",
+        "claim_type": "political_signal",
+        "claim_text": "Political or news keywords detected in this scan.",
+        "claim_status": "ABSTAIN",
+        "evidence_ids": [],
+        "abstention_flag": true,
+        "abstention_reason": "No political or news indicators detected",
+        "preliminary_upgrade_path": "Collect more keyword-backed items to upgrade to FINAL",
+        "threshold_gates": []
+      }
+    ],
+    "evidence_chain_metrics": {
+      "evidence_linking_rate": 1.0,
+      "missing_evidence_rate": 0.0,
+      "orphan_evidence_rate": 0.0,
+      "metadata_completeness_rate": 1.0,
+      "validation_passed": true
+    },
+    "conflict_resolutions": {},
+    "conflict_metrics": {
+      "total_conflicts_detected": 0,
+      "conflicts_by_type": {},
+      "conflicts_by_severity": {},
+      "conflicts_resolved": 0,
+      "conflicts_abstained": 0,
+      "conflict_resolution_rate": 0.0,
+      "precedence_resolutions": 0,
+      "majority_resolutions": 0,
+      "avg_confidence_penalty": 0.0,
+      "platform_label_override_count": 0,
+      "platform_label_override_rate": 0.0,
+      "validation_passed": true,
+      "validation_errors": []
+    },
+    "critic_metrics": {
+      "downgraded_final_to_preliminary": 0,
+      "downgraded_final_to_abstain": 0,
+      "downgraded_reasons": [],
+      "metadata_incomplete_count": 0,
+      "contract_violations": [],
+      "validation_passed": true,
+      "validation_errors": []
+    }
+  },
+  "analysis": {
+    "primary_insight": {
+      "text": "In this scan of 25 posts, no posts contained political or news keywords.",
+      "cited_fields": [
+        "meta.n_items",
+        "observations.items_with_political_keywords",
+        "observations.items_with_news_keywords"
+      ],
+      "quality": "ok"
+    },
+    "hashtag_insight": {
+      "text": "Most common hashtags in this scan: #dubai, #aitools, #meetingproductivity, #3120.",
+      "cited_fields": [
+        "observations.top_hashtags"
+      ],
+      "quality": "ok"
+    },
+    "limitations_summary": {
+      "text": "Important: This analysis cannot determine political bias, your beliefs, or why content was shown to you. Only keyword presence is measured.",
+      "cited_fields": [
+        "limits.epistemic_boundaries"
+      ],
+      "quality": "ok"
+    }
+  }
+}

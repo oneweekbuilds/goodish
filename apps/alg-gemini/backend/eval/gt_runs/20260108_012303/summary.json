@@ -1,0 +1,148 @@
+{
+  "timestamp": "20260108_012303",
+  "run_date": "2026-01-08T01:23:04.061824",
+  "scan_ids": [
+    "desktop-1767216093373-0dykcpc",
+    "desktop-1767213421203-es5qrua",
+    "desktop-1767213795895-7cvybej",
+    "desktop-1767282143724-w7lwh78",
+    "desktop-1767214732271-5fvxxhi"
+  ],
+  "tabs": [
+    "ads",
+    "politics",
+    "patterns",
+    "creators",
+    "inferences"
+  ],
+  "fetched_count": 25,
+  "error_count": 0,
+  "fetched": [
+    {
+      "scan_id": "desktop-1767216093373-0dykcpc",
+      "tab": "ads",
+      "file": "desktop-1767216093373-0dykcpc__ads.json"
+    },
+    {
+      "scan_id": "desktop-1767216093373-0dykcpc",
+      "tab": "politics",
+      "file": "desktop-1767216093373-0dykcpc__politics.json"
+    },
+    {
+      "scan_id": "desktop-1767216093373-0dykcpc",
+      "tab": "patterns",
+      "file": "desktop-1767216093373-0dykcpc__patterns.json"
+    },
+    {
+      "scan_id": "desktop-1767216093373-0dykcpc",
+      "tab": "creators",
+      "file": "desktop-1767216093373-0dykcpc__creators.json"
+    },
+    {
+      "scan_id": "desktop-1767216093373-0dykcpc",
+      "tab": "inferences",
+      "file": "desktop-1767216093373-0dykcpc__inferences.json"
+    },
+    {
+      "scan_id": "desktop-1767213421203-es5qrua",
+      "tab": "ads",
+      "file": "desktop-1767213421203-es5qrua__ads.json"
+    },
+    {
+      "scan_id": "desktop-1767213421203-es5qrua",
+      "tab": "politics",
+      "file": "desktop-1767213421203-es5qrua__politics.json"
+    },
+    {
+      "scan_id": "desktop-1767213421203-es5qrua",
+      "tab": "patterns",
+      "file": "desktop-1767213421203-es5qrua__patterns.json"
+    },
+    {
+      "scan_id": "desktop-1767213421203-es5qrua",
+      "tab": "creators",
+      "file": "desktop-1767213421203-es5qrua__creators.json"
+    },
+    {
+      "scan_id": "desktop-1767213421203-es5qrua",
+      "tab": "inferences",
+      "file": "desktop-1767213421203-es5qrua__inferences.json"
+    },
+    {
+      "scan_id": "desktop-1767213795895-7cvybej",
+      "tab": "ads",
+      "file": "desktop-1767213795895-7cvybej__ads.json"
+    },
+    {
+      "scan_id": "desktop-1767213795895-7cvybej",
+      "tab": "politics",
+      "file": "desktop-1767213795895-7cvybej__politics.json"
+    },
+    {
+      "scan_id": "desktop-1767213795895-7cvybej",
+      "tab": "patterns",
+      "file": "desktop-1767213795895-7cvybej__patterns.json"
+    },
+    {
+      "scan_id": "desktop-1767213795895-7cvybej",
+      "tab": "creators",
+      "file": "desktop-1767213795895-7cvybej__creators.json"
+    },
+    {
+      "scan_id": "desktop-1767213795895-7cvybej",
+      "tab": "inferences",
+      "file": "desktop-1767213795895-7cvybej__inferences.json"
+    },
+    {
+      "scan_id": "desktop-1767282143724-w7lwh78",
+      "tab": "ads",
+      "file": "desktop-1767282143724-w7lwh78__ads.json"
+    },
+    {
+      "scan_id": "desktop-1767282143724-w7lwh78",
+      "tab": "politics",
+      "file": "desktop-1767282143724-w7lwh78__politics.json"
+    },
+    {
+      "scan_id": "desktop-1767282143724-w7lwh78",
+      "tab": "patterns",
+      "file": "desktop-1767282143724-w7lwh78__patterns.json"
+    },
+    {
+      "scan_id": "desktop-1767282143724-w7lwh78",
+      "tab": "creators",
+      "file": "desktop-1767282143724-w7lwh78__creators.json"
+    },
+    {
+      "scan_id": "desktop-1767282143724-w7lwh78",
+      "tab": "inferences",
+      "file": "desktop-1767282143724-w7lwh78__inferences.json"
+    },
+    {
+      "scan_id": "desktop-1767214732271-5fvxxhi",
+      "tab": "ads",
+      "file": "desktop-1767214732271-5fvxxhi__ads.json"
+    },
+    {
+      "scan_id": "desktop-1767214732271-5fvxxhi",
+      "tab": "politics",
+      "file": "desktop-1767214732271-5fvxxhi__politics.json"
+    },
+    {
+      "scan_id": "desktop-1767214732271-5fvxxhi",
+      "tab": "patterns",
+      "file": "desktop-1767214732271-5fvxxhi__patterns.json"
+    },
+    {
+      "scan_id": "desktop-1767214732271-5fvxxhi",
+      "tab": "creators",
+      "file": "desktop-1767214732271-5fvxxhi__creators.json"
+    },
+    {
+      "scan_id": "desktop-1767214732271-5fvxxhi",
+      "tab": "inferences",
+      "file": "desktop-1767214732271-5fvxxhi__inferences.json"
+    }
+  ],
+  "errors": []
+}

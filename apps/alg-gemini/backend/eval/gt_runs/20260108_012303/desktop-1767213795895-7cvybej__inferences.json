@@ -1,0 +1,281 @@
+{
+  "scan_id": "desktop-1767213795895-7cvybej",
+  "tab": "inferences",
+  "bundle": {
+    "meta": {
+      "scan_id": "desktop-1767213795895-7cvybej",
+      "platform": "TWITTER",
+      "n_items": 29,
+      "window_start": "2025-12-31T20:43:15.895Z",
+      "window_end": "2025-12-31T20:43:15.895Z",
+      "generated_at": "2026-01-08T01:23:03.842253",
+      "source_bundles": {
+        "ads": true,
+        "politics": true,
+        "patterns": true,
+        "creators": true
+      },
+      "coverage": {
+        "n_items_total": 29,
+        "n_items_included": 29,
+        "n_items_excluded": 0,
+        "exclusion_reasons": {},
+        "quality_flags": {}
+      }
+    },
+    "observations": {
+      "total_posts_analyzed": 29,
+      "surfaced_inferences": [
+        {
+          "signal": "Commercial content present",
+          "detail": "29 promotional items detected",
+          "source": "ads",
+          "evidence_count": 29,
+          "confidence": "high"
+        },
+        {
+          "signal": "Dominant content type",
+          "detail": "POST content (100.0%)",
+          "source": "patterns",
+          "evidence_count": 29,
+          "confidence": "high"
+        },
+        {
+          "signal": "Creators in ad content",
+          "detail": "29 creators appeared in ads",
+          "source": "creators",
+          "evidence_count": 29,
+          "confidence": "high"
+        },
+        {
+          "signal": "Brand presence in promotional content",
+          "detail": "Companies: x.com",
+          "source": "ads",
+          "evidence_count": 1,
+          "confidence": "high"
+        }
+      ],
+      "surfaced_count": 4,
+      "below_threshold": [],
+      "below_threshold_count": 0
+    },
+    "measurements": {
+      "inference_sources": {
+        "value": {
+          "ads": 2,
+          "patterns": 1,
+          "creators": 1
+        },
+        "method": "aggregation_from_evidence_bundles",
+        "quality": "ok",
+        "notes": "4 inferences surfaced from 3 sources."
+      },
+      "surfacing_threshold": {
+        "value": {
+          "min_evidence_count": 2,
+          "confidence_required": "medium or high"
+        },
+        "method": "threshold_gating",
+        "quality": "ok",
+        "notes": "Inferences require at least 2 supporting items to surface."
+      },
+      "confidence_breakdown": {
+        "value": {
+          "high_confidence": 4,
+          "medium_confidence": 0,
+          "below_threshold": 0
+        },
+        "method": "confidence_classification",
+        "quality": "ok",
+        "notes": "4 high-confidence, 0 medium-confidence inferences."
+      }
+    },
+    "limits": {
+      "sample_size_limitations": [
+        "Sample size of 29 posts. Treat inferences as tentative."
+      ],
+      "epistemic_boundaries": [
+        "These are signals IN THE CONTENT, not inferences about YOU.",
+        "We CANNOT infer your identity, beliefs, intent, or demographics.",
+        "We CANNOT know what targeting criteria were used.",
+        "We CANNOT know why this content was shown to you.",
+        "We CANNOT infer causal influence on your behavior or views.",
+        "Content signals do not indicate your agreement, interest, or preferences.",
+        "The presence of commercial/political content is not evidence of targeting."
+      ],
+      "detection_limitations": [
+        "Inferences are aggregated from other evidence bundles.",
+        "Each source bundle has its own detection limitations.",
+        "Surfacing threshold (2+ items) may exclude valid single-item signals.",
+        "Signal detection depends on keyword matching and metadata availability."
+      ],
+      "explicit_non_claims": [
+        "We do NOT claim to know your demographic profile.",
+        "We do NOT claim to know your political views or leanings.",
+        "We do NOT claim to know your purchase intent.",
+        "We do NOT claim to predict algorithm behavior.",
+        "We do NOT claim these signals were used for targeting."
+      ]
+    },
+    "evidence_items": {
+      "alg-inf-000": {
+        "evidence_id": "alg-inf-000",
+        "source_item_index": 0,
+        "signal_type": "intent_signal",
+        "signal_subtype": "Commercial content present",
+        "detection_method": "CLASSIFIER_OUTPUT",
+        "method_reliability": {
+          "method": "CLASSIFIER_OUTPUT",
+          "base_reliability": 0.8,
+          "effective_reliability": 0.8
+        },
+        "detection_rationale": "29 promotional items detected",
+        "conflicts_with": [],
+        "source": "ads",
+        "item_context": {
+          "item_index": 0,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "inference"
+        }
+      },
+      "alg-inf-001": {
+        "evidence_id": "alg-inf-001",
+        "source_item_index": 1,
+        "signal_type": "intent_signal",
+        "signal_subtype": "Dominant content type",
+        "detection_method": "CLASSIFIER_OUTPUT",
+        "method_reliability": {
+          "method": "CLASSIFIER_OUTPUT",
+          "base_reliability": 0.8,
+          "effective_reliability": 0.8
+        },
+        "detection_rationale": "POST content (100.0%)",
+        "conflicts_with": [],
+        "source": "patterns",
+        "item_context": {
+          "item_index": 1,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "inference"
+        }
+      },
+      "alg-inf-002": {
+        "evidence_id": "alg-inf-002",
+        "source_item_index": 2,
+        "signal_type": "intent_signal",
+        "signal_subtype": "Creators in ad content",
+        "detection_method": "CLASSIFIER_OUTPUT",
+        "method_reliability": {
+          "method": "CLASSIFIER_OUTPUT",
+          "base_reliability": 0.8,
+          "effective_reliability": 0.8
+        },
+        "detection_rationale": "29 creators appeared in ads",
+        "conflicts_with": [],
+        "source": "creators",
+        "item_context": {
+          "item_index": 2,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "inference"
+        }
+      },
+      "alg-inf-003": {
+        "evidence_id": "alg-inf-003",
+        "source_item_index": 3,
+        "signal_type": "intent_signal",
+        "signal_subtype": "Brand presence in promotional content",
+        "detection_method": "CLASSIFIER_OUTPUT",
+        "method_reliability": {
+          "method": "CLASSIFIER_OUTPUT",
+          "base_reliability": 0.8,
+          "effective_reliability": 0.8
+        },
+        "detection_rationale": "Companies: x.com",
+        "conflicts_with": [],
+        "source": "ads",
+        "item_context": {
+          "item_index": 3,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "inference"
+        }
+      }
+    },
+    "insights": [
+      {
+        "insight_id": "algorithm-surfaced-signals",
+        "claim_type": "algorithm_signals",
+        "claim_text": "High-confidence signals surfaced across tabs.",
+        "claim_status": "FINAL",
+        "evidence_ids": [
+          "alg-inf-000",
+          "alg-inf-001",
+          "alg-inf-002",
+          "alg-inf-003"
+        ],
+        "abstention_flag": false,
+        "preliminary_upgrade_path": "Surface additional high-confidence signals",
+        "threshold_gates": []
+      }
+    ],
+    "evidence_chain_metrics": {
+      "evidence_linking_rate": 1.0,
+      "missing_evidence_rate": 0.0,
+      "orphan_evidence_rate": 0.0,
+      "metadata_completeness_rate": 1.0,
+      "validation_passed": true
+    },
+    "conflict_resolutions": {},
+    "conflict_metrics": {
+      "total_conflicts_detected": 0,
+      "conflicts_by_type": {},
+      "conflicts_by_severity": {},
+      "conflicts_resolved": 0,
+      "conflicts_abstained": 0,
+      "conflict_resolution_rate": 0.0,
+      "precedence_resolutions": 0,
+      "majority_resolutions": 0,
+      "avg_confidence_penalty": 0.0,
+      "platform_label_override_count": 0,
+      "platform_label_override_rate": 0.0,
+      "validation_passed": true,
+      "validation_errors": []
+    },
+    "critic_metrics": {
+      "downgraded_final_to_preliminary": 0,
+      "downgraded_final_to_abstain": 0,
+      "downgraded_reasons": [],
+      "metadata_incomplete_count": 0,
+      "contract_violations": [],
+      "validation_passed": true,
+      "validation_errors": []
+    }
+  },
+  "analysis": {
+    "primary_insight": {
+      "text": "In this scan of 29 posts, 4 content signals were detected (4 with high confidence).",
+      "cited_fields": [
+        "meta.n_items",
+        "observations.surfaced_count",
+        "measurements.confidence_breakdown"
+      ],
+      "quality": "ok"
+    },
+    "signals_summary": {
+      "text": "Detected signals: Commercial content present; Dominant content type; Creators in ad content; Brand presence in promotional content.",
+      "cited_fields": [
+        "observations.surfaced_inferences"
+      ],
+      "quality": "ok"
+    },
+    "limitations_summary": {
+      "text": "Important: These are signals present in the content, NOT inferences about you. We cannot determine why this content was shown or what targeting was used.",
+      "cited_fields": [
+        "limits.epistemic_boundaries"
+      ],
+      "quality": "ok"
+    }
+  }
+}
