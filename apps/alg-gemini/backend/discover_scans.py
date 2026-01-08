@@ -80,3 +80,4 @@ print("=" * 100)
 for i, s in enumerate(scans[:5], 1):
     print(f"{i}. {s['scan_id']}")
 
+
