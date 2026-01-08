@@ -40,11 +40,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "Ads tab with 3 evidence items. Platform labels are highly reliable. Claim likely correct unless evidence chain is broken."
       }
     },
     {
@@ -154,11 +154,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "Creators tab with 82 evidence items. High coverage suggests claim is correct."
       }
     },
     {
@@ -229,11 +229,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "Ads tab with 32 evidence items. Platform labels are highly reliable. Claim likely correct unless evidence chain is broken."
       }
     },
     {
@@ -343,11 +343,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "Creators tab with 62 evidence items. High coverage suggests claim is correct."
       }
     },
     {
@@ -418,11 +418,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "Ads tab with 30 evidence items. Platform labels are highly reliable. Claim likely correct unless evidence chain is broken."
       }
     },
     {
@@ -532,11 +532,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "Creators tab with 58 evidence items. High coverage suggests claim is correct."
       }
     },
     {
@@ -607,11 +607,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "Ads tab with 1 evidence items. Platform labels are highly reliable. Claim likely correct unless evidence chain is broken."
       }
     },
     {
@@ -721,11 +721,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "Creators tab with 56 evidence items. High coverage suggests claim is correct."
       }
     },
     {
@@ -796,11 +796,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "Ads tab with 1 evidence items. Platform labels are highly reliable. Claim likely correct unless evidence chain is broken."
       }
     },
     {
@@ -910,11 +910,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "Creators tab with 50 evidence items. High coverage suggests claim is correct."
       }
     },
     {
