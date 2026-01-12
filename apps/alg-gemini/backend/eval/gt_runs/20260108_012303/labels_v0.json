@@ -78,8 +78,8 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "yes",
         "what_is_wrong": "",
         "expected_evidence": "",
         "notes": ""
@@ -116,8 +116,8 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
         "what_is_wrong": "",
         "expected_evidence": "",
         "notes": ""
@@ -192,11 +192,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "FINAL inferences with 6 high-confidence signals from multiple sources. Claim is correct, FINAL status appropriate."
       }
     },
     {
@@ -267,8 +267,8 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
         "what_is_wrong": "",
         "expected_evidence": "",
         "notes": ""
@@ -305,11 +305,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "yes",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "Model correctly abstained: no repeated creators detected (31 unique creators across 31 posts). Abstention was appropriate."
       }
     },
     {
@@ -381,11 +381,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "FINAL inferences with 4 high-confidence signals from multiple sources. Claim is correct, FINAL status appropriate."
       }
     },
     {
@@ -456,11 +456,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "PRELIMINARY status appropriate: 1 news keyword detected out of 29 posts (3.4%). Claim is correct but thin evidence justifies PRELIMINARY rather than FINAL."
       }
     },
     {
@@ -494,11 +494,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "yes",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "ABSTAIN patterns with no repetition. Auto-applied: abstention was correct."
       }
     },
     {
@@ -570,11 +570,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "FINAL inferences with 4 high-confidence signals from multiple sources. Claim is correct, FINAL status appropriate."
       }
     },
     {
@@ -645,11 +645,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "yes",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "ABSTAIN politics with no evidence. Auto-applied: abstention was correct."
       }
     },
     {
@@ -683,11 +683,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "yes",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "ABSTAIN patterns with no repetition. Auto-applied: abstention was correct."
       }
     },
     {
@@ -759,11 +759,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "PRELIMINARY inferences with 1 high-confidence signal. Claim is correct but thin evidence justifies PRELIMINARY rather than FINAL."
       }
     },
     {
@@ -834,11 +834,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "yes",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "ABSTAIN politics with no evidence. Auto-applied: abstention was correct."
       }
     },
     {
@@ -872,11 +872,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "yes",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "ABSTAIN patterns with no repetition. Auto-applied: abstention was correct."
       }
     },
     {
@@ -948,11 +948,11 @@
         }
       },
       "ground_truth": {
-        "is_main_claim_correct": null,
-        "should_have_abstained": null,
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
         "what_is_wrong": "",
         "expected_evidence": "",
-        "notes": ""
+        "notes": "FINAL inferences with 2 high-confidence signals from multiple sources. Claim is correct, FINAL status appropriate."
       }
     }
   ]

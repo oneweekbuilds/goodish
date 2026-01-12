@@ -1,171 +1,200 @@
 {
-  "scan_id": "desktop-1767216093373-0dykcpc",
-  "tab": "politics",
-  "bundle": {
-    "meta": {
-      "scan_id": "desktop-1767216093373-0dykcpc",
-      "platform": "TWITTER",
-      "n_items": 41,
-      "window_start": "2025-12-31T21:21:33.373Z",
-      "window_end": "2025-12-31T21:21:33.373Z",
-      "generated_at": "2026-01-08T01:23:03.563888",
-      "coverage": {
-        "n_items_total": 41,
-        "n_items_included": 41,
-        "n_items_excluded": 0,
-        "exclusion_reasons": {},
-        "quality_flags": {}
-      }
-    },
-    "observations": {
-      "total_posts_seen": 41,
-      "top_hashtags": [],
-      "unique_hashtags_count": 0,
-      "content_categories": [],
-      "items_with_political_keywords": 0,
-      "items_with_news_keywords": 2,
-      "political_keyword_rate_percent": 0.0,
-      "news_keyword_rate_percent": 4.9
-    },
-    "measurements": {
-      "keyword_density": {
-        "value": {
-          "political_keywords_present": true,
-          "sample_size": 41
-        },
-        "method": "keyword_matching",
-        "quality": "ok",
-        "notes": "Keyword presence detection only. No political leaning inference."
-      }
-    },
-    "limits": {
-      "sample_size_limitations": [
-        "Sample of 41 posts from a single scan session."
-      ],
-      "epistemic_boundaries": [
-        "We cannot infer your political beliefs, ideology, or intent.",
-        "We cannot determine the political persuasion goals of any creator.",
-        "We cannot know why the algorithm showed you this content.",
-        "We cannot assess whether your feed is politically 'balanced' or 'biased'.",
-        "Presence of political keywords does not indicate your agreement or interest.",
-        "We cannot predict how this content might influence your views."
-      ],
-      "detection_limitations": [
-        "Keyword matching may miss nuanced political content.",
-        "Content categorization is based on explicit signals, not interpretation.",
-        "Hashtag analysis reflects creator labeling, not content substance."
-      ],
-      "coverage_notes": [
-        "Analysis covers only content captured in this scan.",
-        "Visual political content (images, video) is not analyzed for political signals."
-      ]
-    },
-    "evidence_items": {
-      "pol-kw-006": {
-        "evidence_id": "pol-kw-006",
-        "source_item_index": 7,
-        "signal_type": "news_keyword",
-        "signal_subtype": "news",
-        "detection_method": "KEYWORD_MATCH",
-        "method_reliability": {
-          "method": "KEYWORD_MATCH",
-          "base_reliability": 0.7,
-          "effective_reliability": 0.7
-        },
-        "conflicts_with": [],
-        "source": "text_signal",
-        "item_context": {
-          "item_index": 7,
-          "platform": "TWITTER",
-          "modality": "DESKTOP_EXTENSION",
-          "item_type": "POST"
-        }
-      },
-      "pol-kw-034": {
-        "evidence_id": "pol-kw-034",
-        "source_item_index": 35,
-        "signal_type": "news_keyword",
-        "signal_subtype": "news",
-        "detection_method": "KEYWORD_MATCH",
-        "method_reliability": {
-          "method": "KEYWORD_MATCH",
-          "base_reliability": 0.7,
-          "effective_reliability": 0.7
-        },
-        "conflicts_with": [],
-        "source": "text_signal",
-        "item_context": {
-          "item_index": 35,
-          "platform": "TWITTER",
-          "modality": "DESKTOP_EXTENSION",
-          "item_type": "POST"
-        }
-      }
-    },
-    "insights": [
-      {
-        "insight_id": "politics-keyword-presence",
-        "claim_type": "political_signal",
-        "claim_text": "Political or news keywords detected in this scan.",
-        "claim_status": "FINAL",
-        "evidence_ids": [
-          "pol-kw-006",
-          "pol-kw-034"
-        ],
-        "abstention_flag": false,
-        "preliminary_upgrade_path": "Collect more keyword-backed items to upgrade to FINAL",
-        "threshold_gates": []
-      }
-    ],
-    "evidence_chain_metrics": {
-      "evidence_linking_rate": 1.0,
-      "missing_evidence_rate": 0.0,
-      "orphan_evidence_rate": 0.0,
-      "metadata_completeness_rate": 1.0,
-      "validation_passed": true
-    },
-    "conflict_resolutions": {},
-    "conflict_metrics": {
-      "total_conflicts_detected": 0,
-      "conflicts_by_type": {},
-      "conflicts_by_severity": {},
-      "conflicts_resolved": 0,
-      "conflicts_abstained": 0,
-      "conflict_resolution_rate": 0.0,
-      "precedence_resolutions": 0,
-      "majority_resolutions": 0,
-      "avg_confidence_penalty": 0.0,
-      "platform_label_override_count": 0,
-      "platform_label_override_rate": 0.0,
-      "validation_passed": true,
-      "validation_errors": []
-    },
-    "critic_metrics": {
-      "downgraded_final_to_preliminary": 0,
-      "downgraded_final_to_abstain": 0,
-      "downgraded_reasons": [],
-      "metadata_incomplete_count": 0,
-      "contract_violations": [],
-      "validation_passed": true,
-      "validation_errors": []
-    }
-  },
-  "analysis": {
-    "primary_insight": {
-      "text": "In this scan of 41 posts, 2 contained news-related keywords.",
-      "cited_fields": [
-        "meta.n_items",
-        "observations.items_with_political_keywords",
-        "observations.political_keyword_rate_percent"
-      ],
-      "quality": "ok"
-    },
-    "limitations_summary": {
-      "text": "Important: This analysis cannot determine political bias, your beliefs, or why content was shown to you. Only keyword presence is measured.",
-      "cited_fields": [
-        "limits.epistemic_boundaries"
-      ],
-      "quality": "ok"
-    }
-  }
+    "scan_id":  "desktop-1767216093373-0dykcpc",
+    "tab":  "politics",
+    "bundle":  {
+                   "meta":  {
+                                "scan_id":  "desktop-1767216093373-0dykcpc",
+                                "platform":  "TWITTER",
+                                "n_items":  41,
+                                "window_start":  "2025-12-31T21:21:33.373Z",
+                                "window_end":  "2025-12-31T21:21:33.373Z",
+                                "generated_at":  "2026-01-11T22:31:57.302951",
+                                "coverage":  {
+                                                 "n_items_total":  41,
+                                                 "n_items_included":  41,
+                                                 "n_items_excluded":  0,
+                                                 "exclusion_reasons":  {
+
+                                                                       },
+                                                 "quality_flags":  {
+
+                                                                   }
+                                             }
+                            },
+                   "observations":  {
+                                        "total_posts_seen":  41,
+                                        "top_hashtags":  [
+
+                                                         ],
+                                        "unique_hashtags_count":  0,
+                                        "content_categories":  [
+
+                                                               ],
+                                        "items_with_political_keywords":  0,
+                                        "items_with_news_keywords":  2,
+                                        "political_keyword_rate_percent":  0.0,
+                                        "news_keyword_rate_percent":  4.9
+                                    },
+                   "measurements":  {
+                                        "keyword_density":  {
+                                                                "value":  {
+                                                                              "political_keywords_present":  true,
+                                                                              "sample_size":  41
+                                                                          },
+                                                                "method":  "keyword_matching",
+                                                                "quality":  "ok",
+                                                                "notes":  "Keyword presence detection only. No political leaning inference."
+                                                            }
+                                    },
+                   "limits":  {
+                                  "sample_size_limitations":  [
+                                                                  "Sample of 41 posts from a single scan session."
+                                                              ],
+                                  "epistemic_boundaries":  [
+                                                               "We cannot infer your political beliefs, ideology, or intent.",
+                                                               "We cannot determine the political persuasion goals of any creator.",
+                                                               "We cannot know why the algorithm showed you this content.",
+                                                               "We cannot assess whether your feed is politically \u0027balanced\u0027 or \u0027biased\u0027.",
+                                                               "Presence of political keywords does not indicate your agreement or interest.",
+                                                               "We cannot predict how this content might influence your views."
+                                                           ],
+                                  "detection_limitations":  [
+                                                                "Keyword matching may miss nuanced political content.",
+                                                                "Content categorization is based on explicit signals, not interpretation.",
+                                                                "Hashtag analysis reflects creator labeling, not content substance."
+                                                            ],
+                                  "coverage_notes":  [
+                                                         "Analysis covers only content captured in this scan.",
+                                                         "Visual political content (images, video) is not analyzed for political signals."
+                                                     ]
+                              },
+                   "evidence_items":  {
+                                          "pol-kw-006":  {
+                                                             "evidence_id":  "pol-kw-006",
+                                                             "source_item_index":  7,
+                                                             "signal_type":  "news_keyword",
+                                                             "signal_subtype":  "news",
+                                                             "detection_method":  "KEYWORD_MATCH",
+                                                             "method_reliability":  {
+                                                                                        "method":  "KEYWORD_MATCH",
+                                                                                        "base_reliability":  0.7,
+                                                                                        "effective_reliability":  0.7
+                                                                                    },
+                                                             "conflicts_with":  [
+
+                                                                                ],
+                                                             "source":  "text_signal",
+                                                             "item_context":  {
+                                                                                  "item_index":  7,
+                                                                                  "platform":  "TWITTER",
+                                                                                  "modality":  "DESKTOP_EXTENSION",
+                                                                                  "item_type":  "POST"
+                                                                              }
+                                                         },
+                                          "pol-kw-034":  {
+                                                             "evidence_id":  "pol-kw-034",
+                                                             "source_item_index":  35,
+                                                             "signal_type":  "news_keyword",
+                                                             "signal_subtype":  "news",
+                                                             "detection_method":  "KEYWORD_MATCH",
+                                                             "method_reliability":  {
+                                                                                        "method":  "KEYWORD_MATCH",
+                                                                                        "base_reliability":  0.7,
+                                                                                        "effective_reliability":  0.7
+                                                                                    },
+                                                             "conflicts_with":  [
+
+                                                                                ],
+                                                             "source":  "text_signal",
+                                                             "item_context":  {
+                                                                                  "item_index":  35,
+                                                                                  "platform":  "TWITTER",
+                                                                                  "modality":  "DESKTOP_EXTENSION",
+                                                                                  "item_type":  "POST"
+                                                                              }
+                                                         }
+                                      },
+                   "insights":  [
+                                    {
+                                        "insight_id":  "politics-keyword-presence",
+                                        "claim_type":  "political_signal",
+                                        "claim_text":  "Political or news keywords detected in this scan.",
+                                        "claim_status":  "PRELIMINARY",
+                                        "evidence_ids":  [
+                                                             "pol-kw-006",
+                                                             "pol-kw-034"
+                                                         ],
+                                        "abstention_flag":  false,
+                                        "abstention_reason":  "politics: evidence rate 4.88% below threshold 10% with news-only signals",
+                                        "preliminary_upgrade_path":  "Collect more keyword-backed items to upgrade to FINAL",
+                                        "threshold_gates":  [
+
+                                                            ]
+                                    }
+                                ],
+                   "evidence_chain_metrics":  {
+                                                  "evidence_linking_rate":  1.0,
+                                                  "missing_evidence_rate":  0.0,
+                                                  "orphan_evidence_rate":  0.0,
+                                                  "metadata_completeness_rate":  1.0,
+                                                  "validation_passed":  true
+                                              },
+                   "conflict_resolutions":  {
+
+                                            },
+                   "conflict_metrics":  {
+                                            "total_conflicts_detected":  0,
+                                            "conflicts_by_type":  {
+
+                                                                  },
+                                            "conflicts_by_severity":  {
+
+                                                                      },
+                                            "conflicts_resolved":  0,
+                                            "conflicts_abstained":  0,
+                                            "conflict_resolution_rate":  0.0,
+                                            "precedence_resolutions":  0,
+                                            "majority_resolutions":  0,
+                                            "avg_confidence_penalty":  0.0,
+                                            "platform_label_override_count":  0,
+                                            "platform_label_override_rate":  0.0,
+                                            "validation_passed":  true,
+                                            "validation_errors":  [
+
+                                                                  ]
+                                        },
+                   "critic_metrics":  {
+                                          "downgraded_final_to_preliminary":  1,
+                                          "downgraded_final_to_abstain":  0,
+                                          "downgraded_reasons":  [
+                                                                     "politics: evidence rate 4.88% below threshold 10% with news-only signals"
+                                                                 ],
+                                          "metadata_incomplete_count":  0,
+                                          "contract_violations":  [
+
+                                                                  ],
+                                          "validation_passed":  true,
+                                          "validation_errors":  [
+
+                                                                ]
+                                      }
+               },
+    "analysis":  {
+                     "primary_insight":  {
+                                             "text":  "In this scan of 41 posts, 2 contained news-related keywords.",
+                                             "cited_fields":  [
+                                                                  "meta.n_items",
+                                                                  "observations.items_with_political_keywords",
+                                                                  "observations.political_keyword_rate_percent"
+                                                              ],
+                                             "quality":  "ok"
+                                         },
+                     "limitations_summary":  {
+                                                 "text":  "Important: This analysis cannot determine political bias, your beliefs, or why content was shown to you. Only keyword presence is measured.",
+                                                 "cited_fields":  [
+                                                                      "limits.epistemic_boundaries"
+                                                                  ],
+                                                 "quality":  "ok"
+                                             }
+                 }
 }

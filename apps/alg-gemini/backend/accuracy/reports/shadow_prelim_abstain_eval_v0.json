@@ -1,0 +1,3158 @@
+{
+  "evaluations": {
+    "A": [
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.07317073170731707,
+          "unique_support_count": 3,
+          "support_quality_mix": {
+            "high": 3,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "politics",
+        "actual_status": "PRELIMINARY",
+        "rubric_recommended": "PRELIMINARY",
+        "rule_triggered": "Rule 2: PRELIMINARY (medium_reliability >= 2, diversity >= 1)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": false,
+        "inputs": {
+          "evidence_rate": 0.04878048780487805,
+          "unique_support_count": 2,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 2,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "patterns",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.04878048780487805,
+          "unique_support_count": 2,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 2,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 78,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 78,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 78,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "inferences",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.14634146341463414,
+          "unique_support_count": 6,
+          "support_quality_mix": {
+            "high": 6,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 6,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 1.032258064516129,
+          "unique_support_count": 32,
+          "support_quality_mix": {
+            "high": 32,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "politics",
+        "actual_status": "PRELIMINARY",
+        "rubric_recommended": "PRELIMINARY",
+        "rule_triggered": "Rule 2: PRELIMINARY (diversity >= 1)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.03225806451612903,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 1,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "patterns",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 62,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 62,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 62,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "inferences",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.12903225806451613,
+          "unique_support_count": 4,
+          "support_quality_mix": {
+            "high": 4,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 4,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 1.0344827586206897,
+          "unique_support_count": 30,
+          "support_quality_mix": {
+            "high": 30,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "politics",
+        "actual_status": "PRELIMINARY",
+        "rubric_recommended": "PRELIMINARY",
+        "rule_triggered": "Rule 2: PRELIMINARY (diversity >= 1)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.034482758620689655,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 1,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "patterns",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 58,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 58,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 58,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "inferences",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.13793103448275862,
+          "unique_support_count": 4,
+          "support_quality_mix": {
+            "high": 4,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 4,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.03571428571428571,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 1,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "politics",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "patterns",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 56,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 56,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 56,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "inferences",
+        "actual_status": "PRELIMINARY",
+        "rubric_recommended": "PRELIMINARY",
+        "rule_triggered": "Rule 2: PRELIMINARY (high_reliability >= 1, diversity >= 1)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.03571428571428571,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 1,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.04,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 1,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "politics",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "patterns",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 50,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 50,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 50,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "inferences",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.08,
+          "unique_support_count": 2,
+          "support_quality_mix": {
+            "high": 2,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      }
+    ],
+    "B": [
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.07317073170731707,
+          "unique_support_count": 3,
+          "support_quality_mix": {
+            "high": 3,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "politics",
+        "actual_status": "PRELIMINARY",
+        "rubric_recommended": "PRELIMINARY",
+        "rule_triggered": "Rule 2: PRELIMINARY (medium_reliability >= 1)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": false,
+        "inputs": {
+          "evidence_rate": 0.04878048780487805,
+          "unique_support_count": 2,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 2,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "patterns",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.04878048780487805,
+          "unique_support_count": 2,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 2,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 78,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 78,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 78,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "inferences",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.14634146341463414,
+          "unique_support_count": 6,
+          "support_quality_mix": {
+            "high": 6,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 6,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 1.032258064516129,
+          "unique_support_count": 32,
+          "support_quality_mix": {
+            "high": 32,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "politics",
+        "actual_status": "PRELIMINARY",
+        "rubric_recommended": "PRELIMINARY",
+        "rule_triggered": "Rule 2: PRELIMINARY (medium_reliability >= 1)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.03225806451612903,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 1,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "patterns",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 62,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 62,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 62,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "inferences",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.12903225806451613,
+          "unique_support_count": 4,
+          "support_quality_mix": {
+            "high": 4,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 4,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 1.0344827586206897,
+          "unique_support_count": 30,
+          "support_quality_mix": {
+            "high": 30,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "politics",
+        "actual_status": "PRELIMINARY",
+        "rubric_recommended": "PRELIMINARY",
+        "rule_triggered": "Rule 2: PRELIMINARY (medium_reliability >= 1)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.034482758620689655,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 1,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "patterns",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 58,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 58,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 58,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "inferences",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.13793103448275862,
+          "unique_support_count": 4,
+          "support_quality_mix": {
+            "high": 4,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 4,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.03571428571428571,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 1,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "politics",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "patterns",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 56,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 56,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 56,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "inferences",
+        "actual_status": "PRELIMINARY",
+        "rubric_recommended": "PRELIMINARY",
+        "rule_triggered": "Not applicable (meets FINAL thresholds)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.03571428571428571,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 1,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.04,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 1,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "politics",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "patterns",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 50,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 50,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 50,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "inferences",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.08,
+          "unique_support_count": 2,
+          "support_quality_mix": {
+            "high": 2,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      }
+    ],
+    "C": [
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.07317073170731707,
+          "unique_support_count": 3,
+          "support_quality_mix": {
+            "high": 3,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "politics",
+        "actual_status": "PRELIMINARY",
+        "rubric_recommended": "PRELIMINARY",
+        "rule_triggered": "Rule 2: PRELIMINARY (medium_reliability >= 1)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": false,
+        "inputs": {
+          "evidence_rate": 0.04878048780487805,
+          "unique_support_count": 2,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 2,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "patterns",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.04878048780487805,
+          "unique_support_count": 2,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 2,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 78,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 78,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 78,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "inferences",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.14634146341463414,
+          "unique_support_count": 6,
+          "support_quality_mix": {
+            "high": 6,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 6,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 1.032258064516129,
+          "unique_support_count": 32,
+          "support_quality_mix": {
+            "high": 32,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "politics",
+        "actual_status": "PRELIMINARY",
+        "rubric_recommended": "PRELIMINARY",
+        "rule_triggered": "Rule 2: PRELIMINARY (medium_reliability >= 1)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.03225806451612903,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 1,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "patterns",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 62,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 62,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 62,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "inferences",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.12903225806451613,
+          "unique_support_count": 4,
+          "support_quality_mix": {
+            "high": 4,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 4,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 1.0344827586206897,
+          "unique_support_count": 30,
+          "support_quality_mix": {
+            "high": 30,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "politics",
+        "actual_status": "PRELIMINARY",
+        "rubric_recommended": "PRELIMINARY",
+        "rule_triggered": "Rule 2: PRELIMINARY (medium_reliability >= 1)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.034482758620689655,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 1,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "patterns",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 58,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 58,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 58,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "inferences",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.13793103448275862,
+          "unique_support_count": 4,
+          "support_quality_mix": {
+            "high": 4,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 4,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.03571428571428571,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 1,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "politics",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "patterns",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 56,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 56,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 56,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "inferences",
+        "actual_status": "PRELIMINARY",
+        "rubric_recommended": "PRELIMINARY",
+        "rule_triggered": "Not applicable (meets FINAL thresholds)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.03571428571428571,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 1,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.04,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 1,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "politics",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "patterns",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 50,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 50,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 50,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "inferences",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.08,
+          "unique_support_count": 2,
+          "support_quality_mix": {
+            "high": 2,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      }
+    ],
+    "D": [
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.07317073170731707,
+          "unique_support_count": 3,
+          "support_quality_mix": {
+            "high": 3,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "politics",
+        "actual_status": "PRELIMINARY",
+        "rubric_recommended": "PRELIMINARY",
+        "rule_triggered": "Rule 2: PRELIMINARY (medium_reliability >= 2)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": false,
+        "inputs": {
+          "evidence_rate": 0.04878048780487805,
+          "unique_support_count": 2,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 2,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "patterns",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.04878048780487805,
+          "unique_support_count": 2,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 2,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 78,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 78,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 78,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "inferences",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.14634146341463414,
+          "unique_support_count": 6,
+          "support_quality_mix": {
+            "high": 6,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 6,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 1.032258064516129,
+          "unique_support_count": 32,
+          "support_quality_mix": {
+            "high": 32,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "politics",
+        "actual_status": "PRELIMINARY",
+        "rubric_recommended": "PRELIMINARY",
+        "rule_triggered": "Rule 2: PRELIMINARY (weak, quality gate not fully met)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.03225806451612903,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 1,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "patterns",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 62,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 62,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 62,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "inferences",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.12903225806451613,
+          "unique_support_count": 4,
+          "support_quality_mix": {
+            "high": 4,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 4,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 1.0344827586206897,
+          "unique_support_count": 30,
+          "support_quality_mix": {
+            "high": 30,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "politics",
+        "actual_status": "PRELIMINARY",
+        "rubric_recommended": "PRELIMINARY",
+        "rule_triggered": "Rule 2: PRELIMINARY (weak, quality gate not fully met)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.034482758620689655,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 1,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "patterns",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 58,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 58,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 58,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "inferences",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.13793103448275862,
+          "unique_support_count": 4,
+          "support_quality_mix": {
+            "high": 4,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 4,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.03571428571428571,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 1,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "politics",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "patterns",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 56,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 56,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 56,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "inferences",
+        "actual_status": "PRELIMINARY",
+        "rubric_recommended": "PRELIMINARY",
+        "rule_triggered": "Rule 2: PRELIMINARY (high_reliability >= 1)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.03571428571428571,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 1,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.04,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 1,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "politics",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "patterns",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 50,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 50,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 50,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "inferences",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.08,
+          "unique_support_count": 2,
+          "support_quality_mix": {
+            "high": 2,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      }
+    ],
+    "E": [
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.07317073170731707,
+          "unique_support_count": 3,
+          "support_quality_mix": {
+            "high": 3,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "politics",
+        "actual_status": "PRELIMINARY",
+        "rubric_recommended": "PRELIMINARY",
+        "rule_triggered": "Rule 2: PRELIMINARY (medium_reliability >= 1)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": false,
+        "inputs": {
+          "evidence_rate": 0.04878048780487805,
+          "unique_support_count": 2,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 2,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "patterns",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.04878048780487805,
+          "unique_support_count": 2,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 2,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 78,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 78,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 78,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767216093373-0dykcpc",
+        "tab": "inferences",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.14634146341463414,
+          "unique_support_count": 6,
+          "support_quality_mix": {
+            "high": 6,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 6,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 1.032258064516129,
+          "unique_support_count": 32,
+          "support_quality_mix": {
+            "high": 32,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "politics",
+        "actual_status": "PRELIMINARY",
+        "rubric_recommended": "PRELIMINARY",
+        "rule_triggered": "Rule 2: PRELIMINARY (medium_reliability >= 1)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.03225806451612903,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 1,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "patterns",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 62,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 62,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 62,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213421203-es5qrua",
+        "tab": "inferences",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.12903225806451613,
+          "unique_support_count": 4,
+          "support_quality_mix": {
+            "high": 4,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 4,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 1.0344827586206897,
+          "unique_support_count": 30,
+          "support_quality_mix": {
+            "high": 30,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "politics",
+        "actual_status": "PRELIMINARY",
+        "rubric_recommended": "PRELIMINARY",
+        "rule_triggered": "Rule 2: PRELIMINARY (medium_reliability >= 1)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.034482758620689655,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 1,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "patterns",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 58,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 58,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 58,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767213795895-7cvybej",
+        "tab": "inferences",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.13793103448275862,
+          "unique_support_count": 4,
+          "support_quality_mix": {
+            "high": 4,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 4,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.03571428571428571,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 1,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "politics",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "patterns",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 56,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 56,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 56,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767282143724-w7lwh78",
+        "tab": "inferences",
+        "actual_status": "PRELIMINARY",
+        "rubric_recommended": "PRELIMINARY",
+        "rule_triggered": "Not applicable (meets FINAL thresholds)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.03571428571428571,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 1,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "ads",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.04,
+          "unique_support_count": 1,
+          "support_quality_mix": {
+            "high": 1,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 1,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "politics",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "patterns",
+        "actual_status": "ABSTAIN",
+        "rubric_recommended": "ABSTAIN",
+        "rule_triggered": "Rule 1.1: No Evidence (unique_support_count == 0)",
+        "should_have_abstained": "yes",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.0,
+          "unique_support_count": 0,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 0,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "creators",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 2.0,
+          "unique_support_count": 50,
+          "support_quality_mix": {
+            "high": 0,
+            "medium": 50,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 50,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      },
+      {
+        "scan_id": "desktop-1767214732271-5fvxxhi",
+        "tab": "inferences",
+        "actual_status": "FINAL",
+        "rubric_recommended": "FINAL",
+        "rule_triggered": "Not applicable (FINAL is out of scope)",
+        "should_have_abstained": "no",
+        "rubric_acceptable": true,
+        "inputs": {
+          "evidence_rate": 0.08,
+          "unique_support_count": 2,
+          "support_quality_mix": {
+            "high": 2,
+            "medium": 0,
+            "low": 0
+          },
+          "counterevidence_presence": false,
+          "counterevidence_count": 0,
+          "evidence_type_diversity": 2,
+          "missing_inputs": [
+            "claim_specificity (not yet instrumented)"
+          ]
+        }
+      }
+    ]
+  },
+  "metrics": {
+    "A": {
+      "total_items": 25,
+      "actual": {
+        "abstain_count": 6,
+        "preliminary_count": 4,
+        "final_count": 15,
+        "abstain_rate": 0.24,
+        "preliminary_rate": 0.16,
+        "final_rate": 0.6
+      },
+      "rubric": {
+        "abstain_count": 6,
+        "preliminary_count": 4,
+        "final_count": 15,
+        "abstain_rate": 0.24,
+        "preliminary_rate": 0.16,
+        "final_rate": 0.6
+      },
+      "flips_count": 0,
+      "appropriate_abstention_rate": 0.8571428571428571,
+      "false_abstention_rate": 0.0
+    },
+    "B": {
+      "total_items": 25,
+      "actual": {
+        "abstain_count": 6,
+        "preliminary_count": 4,
+        "final_count": 15,
+        "abstain_rate": 0.24,
+        "preliminary_rate": 0.16,
+        "final_rate": 0.6
+      },
+      "rubric": {
+        "abstain_count": 6,
+        "preliminary_count": 4,
+        "final_count": 15,
+        "abstain_rate": 0.24,
+        "preliminary_rate": 0.16,
+        "final_rate": 0.6
+      },
+      "flips_count": 0,
+      "appropriate_abstention_rate": 0.8571428571428571,
+      "false_abstention_rate": 0.0
+    },
+    "C": {
+      "total_items": 25,
+      "actual": {
+        "abstain_count": 6,
+        "preliminary_count": 4,
+        "final_count": 15,
+        "abstain_rate": 0.24,
+        "preliminary_rate": 0.16,
+        "final_rate": 0.6
+      },
+      "rubric": {
+        "abstain_count": 6,
+        "preliminary_count": 4,
+        "final_count": 15,
+        "abstain_rate": 0.24,
+        "preliminary_rate": 0.16,
+        "final_rate": 0.6
+      },
+      "flips_count": 0,
+      "appropriate_abstention_rate": 0.8571428571428571,
+      "false_abstention_rate": 0.0
+    },
+    "D": {
+      "total_items": 25,
+      "actual": {
+        "abstain_count": 6,
+        "preliminary_count": 4,
+        "final_count": 15,
+        "abstain_rate": 0.24,
+        "preliminary_rate": 0.16,
+        "final_rate": 0.6
+      },
+      "rubric": {
+        "abstain_count": 6,
+        "preliminary_count": 4,
+        "final_count": 15,
+        "abstain_rate": 0.24,
+        "preliminary_rate": 0.16,
+        "final_rate": 0.6
+      },
+      "flips_count": 0,
+      "appropriate_abstention_rate": 0.8571428571428571,
+      "false_abstention_rate": 0.0
+    },
+    "E": {
+      "total_items": 25,
+      "actual": {
+        "abstain_count": 6,
+        "preliminary_count": 4,
+        "final_count": 15,
+        "abstain_rate": 0.24,
+        "preliminary_rate": 0.16,
+        "final_rate": 0.6
+      },
+      "rubric": {
+        "abstain_count": 6,
+        "preliminary_count": 4,
+        "final_count": 15,
+        "abstain_rate": 0.24,
+        "preliminary_rate": 0.16,
+        "final_rate": 0.6
+      },
+      "flips_count": 0,
+      "appropriate_abstention_rate": 0.8571428571428571,
+      "false_abstention_rate": 0.0
+    }
+  },
+  "guardrails": {
+    "A": {
+      "accuracy_guardrail": true,
+      "appropriate_abstention_guardrail": true,
+      "false_abstention_guardrail": true,
+      "final_rate_guardrail": true
+    },
+    "B": {
+      "accuracy_guardrail": true,
+      "appropriate_abstention_guardrail": true,
+      "false_abstention_guardrail": true,
+      "final_rate_guardrail": true
+    },
+    "C": {
+      "accuracy_guardrail": true,
+      "appropriate_abstention_guardrail": true,
+      "false_abstention_guardrail": true,
+      "final_rate_guardrail": true
+    },
+    "D": {
+      "accuracy_guardrail": true,
+      "appropriate_abstention_guardrail": true,
+      "false_abstention_guardrail": true,
+      "final_rate_guardrail": true
+    },
+    "E": {
+      "accuracy_guardrail": true,
+      "appropriate_abstention_guardrail": true,
+      "false_abstention_guardrail": true,
+      "final_rate_guardrail": true
+    }
+  }
+}
