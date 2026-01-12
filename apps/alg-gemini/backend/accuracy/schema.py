@@ -91,6 +91,7 @@ class TabAccuracyContract(BaseModel):
     preliminary_definition: str
     abstain_definition: str
     min_evidence_for_final: int = 1
+    min_evidence_rate_for_final: Optional[float] = None
     allowed_evidence_types: List[str] = Field(default_factory=list)
     abstention_triggers: List[str] = Field(default_factory=list)
     uncertainty_width_threshold: Optional[float] = None
@@ -126,6 +127,7 @@ TAB_ACCURACY_CONTRACTS: Dict[str, TabAccuracyContract] = {
         preliminary_definition="Weak or single-source political indicators without corroboration.",
         abstain_definition="No political indicators or conflicting platform vs keyword evidence.",
         min_evidence_for_final=2,
+        min_evidence_rate_for_final=0.10,
         allowed_evidence_types=[
             "platform_label",
             "keyword_match",

@@ -435,8 +435,14 @@ def _build_accuracy_section(
 
     # Independent critic pass
     critic = Critic()
+    # Pass bundle metadata for evidence rate calculations
+    bundle_meta = {
+        "n_items": len(feed_items),
+        "total_posts_seen": observations.get("total_posts_seen", len(feed_items)),
+        "observations": observations,
+    }
     critic_insights, critic_metrics = critic.evaluate(
-        "politics", enforced_insights, evidence_items, conflict_metrics=conflict_metrics
+        "politics", enforced_insights, evidence_items, conflict_metrics=conflict_metrics, bundle_meta=bundle_meta
     )
 
     return {
