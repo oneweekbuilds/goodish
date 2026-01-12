@@ -171,13 +171,12 @@ class Critic:
             updated.append(mutated)
         
         # Finalize critic metrics validation
-        if critic_metrics.downgraded_final_to_preliminary > 0 or critic_metrics.downgraded_final_to_abstain > 0:
-            critic_metrics.validation_passed = False
-            if not critic_metrics.validation_errors:
-                critic_metrics.validation_errors.append(
-                    f"Critic downgraded {critic_metrics.downgraded_final_to_preliminary} FINAL to PRELIMINARY, "
-                    f"{critic_metrics.downgraded_final_to_abstain} FINAL to ABSTAIN"
-                )
+        # validation_passed should only be False if there are actual errors or contract violations
+        # Downgrades are valid operations, not validation failures
+        critic_metrics.validation_passed = (
+            len(critic_metrics.validation_errors) == 0
+            and len(critic_metrics.contract_violations) == 0
+        )
 
         return updated, critic_metrics
 

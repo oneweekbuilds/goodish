@@ -224,6 +224,53 @@ class TestCritic(unittest.TestCase):
         )
         self.assertEqual(reviewed[0].claim_status, "PRELIMINARY")
 
+    def test_critic_downgrade_does_not_fail_validation(self):
+        """Test that downgrades are valid operations, not validation failures."""
+        # Create politics FINAL insight with 2 news-only evidence (low rate: 2/41 = 4.88% < 10%)
+        ev1 = EvidenceItem(
+            evidence_id="pol-kw-006",
+            source="text_signal",
+            signal_type="news_keyword",
+            signal_subtype="news",
+            detection_method="KEYWORD_MATCH",
+            method_reliability=_mr("KEYWORD_MATCH", 0.7),
+            item_context=ItemContext(item_index=7),
+        )
+        ev2 = EvidenceItem(
+            evidence_id="pol-kw-034",
+            source="text_signal",
+            signal_type="news_keyword",
+            signal_subtype="news",
+            detection_method="KEYWORD_MATCH",
+            method_reliability=_mr("KEYWORD_MATCH", 0.7),
+            item_context=ItemContext(item_index=35),
+        )
+        ins = Insight(
+            insight_id="politics-keyword-presence",
+            claim_type="political_signal",
+            claim_status="FINAL",
+            evidence_ids=["pol-kw-006", "pol-kw-034"],
+        )
+        critic = Critic()
+        bundle_meta = {"n_items": 41, "total_posts_seen": 41}
+        reviewed, critic_metrics = critic.evaluate(
+            "politics",
+            [ins],
+            [ev1, ev2],
+            conflict_metrics=None,
+            bundle_meta=bundle_meta,
+        )
+        # Assert downgrade occurred
+        self.assertEqual(reviewed[0].claim_status, "PRELIMINARY")
+        self.assertEqual(critic_metrics.downgraded_final_to_preliminary, 1)
+        # Assert validation passed (downgrades are valid operations, not errors)
+        self.assertTrue(critic_metrics.validation_passed)
+        self.assertEqual(len(critic_metrics.validation_errors), 0)
+        self.assertEqual(len(critic_metrics.contract_violations), 0)
+        # Assert downgrade reason is recorded
+        self.assertGreater(len(critic_metrics.downgraded_reasons), 0)
+        self.assertIn("evidence rate", critic_metrics.downgraded_reasons[0].lower())
+
 
 if __name__ == "__main__":
     unittest.main()
