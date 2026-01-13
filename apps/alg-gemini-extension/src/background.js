@@ -19,6 +19,13 @@ console.log('[AlgorithmLens] Background service worker active');
 // ============================================================================
 const CAPTURE_DEBUG = true; // Set to false to disable all [CaptureDebug] logs
 
+// ============================================================================
+// DEBUG HEARTBEAT (gated)
+// ============================================================================
+if (CAPTURE_DEBUG) {
+  console.log(`[CaptureDebug][Background] service worker booted at ${new Date().toISOString()}`);
+}
+
 // ============================================
 // Utility: Generate unique scan ID
 // ============================================

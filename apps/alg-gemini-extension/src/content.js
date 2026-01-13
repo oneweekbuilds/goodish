@@ -4302,6 +4302,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('\n');
   
   if (CAPTURE_DEBUG) {
-    debugLog('log', `[CaptureDebug] Content script loaded - Platform: ${platform}, URL: ${window.location.href}, RunID: ${runId}`);
+    const timestamp = new Date().toISOString();
+    debugLog('log', `[CaptureDebug] content init - Platform: ${platform}, URL: ${window.location.href}, RunID: ${runId}, Timestamp: ${timestamp}`);
   }
 })();

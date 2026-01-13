@@ -62,6 +62,14 @@ function debugLog(level, message, data = null) {
 
 console.log('[AlgorithmLens] Popup opened');
 
+// ============================================================================
+// DEBUG HEARTBEAT (gated)
+// ============================================================================
+if (CAPTURE_DEBUG) {
+  const timestamp = new Date().toISOString();
+  debugLog('log', `[CaptureDebug] popup opened - Timestamp: ${timestamp}`);
+}
+
 // ============================================
 // DOM Elements
 // ============================================
