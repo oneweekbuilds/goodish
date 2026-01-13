@@ -379,37 +379,237 @@ function hashString(str) {
 }
 
 /**
+ * Extract Instagram post ID from a permalink URL
+ * @param {string|null} permalink - URL like /p/ABC123/ or /reel/XYZ789/
+ * @returns {string|null}
+ */
+function extractInstagramPostId(permalink) {
+  if (!permalink) return null;
+  // Match /p/ID/, /reel/ID/, /tv/ID/
+  const match = permalink.match(/\/(p|reel|tv)\/([A-Za-z0-9_-]+)/);
+  return match ? match[2] : null;
+}
+
+/**
+ * Extract Twitter status ID from a permalink URL
+ * @param {string|null} permalink - URL like /username/status/12345
+ * @returns {string|null}
+ */
+function extractTwitterStatusId(permalink) {
+  if (!permalink) return null;
+  // Match /status/ID or /i/web/status/ID
+  const match = permalink.match(/\/status\/(\d+)/);
+  return match ? match[1] : null;
+}
+
+/**
+ * Extract TikTok video ID from a URL
+ * @param {string|null} url - URL like tiktok.com/@user/video/123456 or /video/123456
+ * @returns {string|null}
+ */
+function extractTikTokVideoId(url) {
+  if (!url) return null;
+  // Match /video/ID pattern
+  const match = url.match(/\/video\/(\d+)/);
+  return match ? match[1] : null;
+}
+
+/**
+ * Extract Reddit post ID from a permalink URL
+ * @param {string|null} permalink - URL like /r/sub/comments/ABC123/title/
+ * @returns {string|null}
+ */
+function extractRedditPostId(permalink) {
+  if (!permalink) return null;
+  // Match /comments/ID/ pattern
+  const match = permalink.match(/\/comments\/([a-zA-Z0-9]+)/);
+  return match ? match[1] : null;
+}
+
+/**
+ * Extract YouTube video ID from a URL
+ * @param {string|null} url - URL like youtube.com/watch?v=ID or /shorts/ID
+ * @returns {string|null}
+ */
+function extractYouTubeVideoId(url) {
+  if (!url) return null;
+  // Match ?v=ID or /shorts/ID
+  const watchMatch = url.match(/[?&]v=([^&]+)/);
+  if (watchMatch) return watchMatch[1];
+  const shortsMatch = url.match(/\/shorts\/([^?/]+)/);
+  if (shortsMatch) return shortsMatch[1];
+  return null;
+}
+
+/**
+ * Check if we're on Instagram Reels page
+ * @returns {boolean}
+ */
+function isInstagramReels() {
+  return window.location.pathname.startsWith('/reels');
+}
+
+// ============================================================================
+// REELS CONFIG: Last resort toggle - do NOT enable by default
+// If true, Reels acceptance can become hasMedia only (weak deduplication)
+// ============================================================================
+const ALLOW_REELS_MEDIA_ONLY_FALLBACK = false;
+
+/**
+ * Extract Reel ID (shortcode) and permalink from container or page context
+ * @param {Element} container
+ * @returns {{ shortcode: string|null, permalink: string|null, source: string|null }}
+ */
+function extractInstagramReelIdAndPermalink(container) {
+  let shortcode = null;
+  let permalink = null;
+  let source = null;
+
+  try {
+    // A) From container: Look for a[href*="/reel/"] or a[href*="/reels/"]
+    const reelLinkSelectors = [
+      'a[href*="/reel/"]',
+      'a[href*="/reels/"]',
+    ];
+
+    for (const sel of reelLinkSelectors) {
+      const el = safeQuery(container, sel);
+      if (el) {
+        const href = el.getAttribute('href') || '';
+        try {
+          const url = new URL(href, window.location.origin);
+          const match = url.pathname.match(/\/reels?\/([^/?#]+)/);
+          if (match && match[1]) {
+            shortcode = match[1];
+            permalink = url.href;
+            source = 'container-link';
+            break;
+          }
+        } catch (e) {
+          // Invalid URL, continue
+        }
+      }
+    }
+
+    // B) From location.pathname if no container link found
+    if (!shortcode) {
+      const pathMatch = window.location.pathname.match(/\/reels?\/([^/?#]+)/);
+      if (pathMatch && pathMatch[1]) {
+        shortcode = pathMatch[1];
+        permalink = window.location.href;
+        source = 'location-pathname';
+      }
+    }
+
+    // C) From canonical or og:url meta tags
+    if (!shortcode) {
+      const canonicalEl = document.querySelector('link[rel="canonical"]');
+      const ogUrlEl = document.querySelector('meta[property="og:url"]');
+
+      const metaUrl = canonicalEl?.getAttribute('href') || ogUrlEl?.getAttribute('content') || '';
+      if (metaUrl) {
+        try {
+          const url = new URL(metaUrl);
+          const match = url.pathname.match(/\/reels?\/([^/?#]+)/);
+          if (match && match[1]) {
+            shortcode = match[1];
+            permalink = url.href;
+            source = 'meta-tag';
+          }
+        } catch (e) {
+          // Invalid URL, continue
+        }
+      }
+    }
+  } catch (e) {
+    // Defensive: return nulls
+  }
+
+  if (CAPTURE_DEBUG && isInstagramReels()) {
+    debugLog('log', `[CaptureDebug][Instagram][Reels] ReelId lookup: source=${source || 'none'}, shortcode=${shortcode || 'null'}, permalinkFound=${!!permalink}`);
+  }
+
+  return { shortcode, permalink, source };
+}
+
+/**
  * Generate a stable unique ID for deduplication
- * @param {string} platform 
- * @param {string|null} creator 
- * @param {string|null} caption 
- * @param {Element} element 
- * @param {number} index 
+ * ENHANCED: Platform-specific ID extraction for better stability
+ * @param {string} platform
+ * @param {string|null} creator
+ * @param {string|null} caption
+ * @param {Element} element
+ * @param {number} index
+ * @param {string|null} permalink - Optional permalink for ID extraction
  * @returns {string}
  */
-function generateStableId(platform, creator, caption, element, index) {
+function generateStableId(platform, creator, caption, element, index, permalink = null) {
+  // ============================================================================
+  // PLATFORM-SPECIFIC ID EXTRACTION (most stable)
+  // ============================================================================
+
+  // Instagram: Extract from permalink /p/ID/ or /reel/ID/
+  if (platform === 'instagram' && permalink) {
+    const igPostId = extractInstagramPostId(permalink);
+    if (igPostId) {
+      return `instagram-${igPostId}`;
+    }
+  }
+
+  // Twitter: Extract from permalink /status/ID
+  if (platform === 'twitter' && permalink) {
+    const tweetId = extractTwitterStatusId(permalink);
+    if (tweetId) {
+      return `twitter-${tweetId}`;
+    }
+  }
+
+  // TikTok: Extract from permalink /video/ID
+  if (platform === 'tiktok' && permalink) {
+    const videoId = extractTikTokVideoId(permalink);
+    if (videoId) {
+      return `tiktok-${videoId}`;
+    }
+  }
+
+  // YouTube: Extract from watch?v=ID or /shorts/ID
+  if (platform === 'youtube' && permalink) {
+    const videoId = extractYouTubeVideoId(permalink);
+    if (videoId) {
+      return `youtube-${videoId}`;
+    }
+  }
+
+  // Reddit: Extract from /comments/ID/
+  if (platform === 'reddit' && permalink) {
+    const postId = extractRedditPostId(permalink);
+    if (postId) {
+      return `reddit-${postId}`;
+    }
+  }
+
   // Try to find a native ID from the DOM
   const nativeId = element?.getAttribute('data-id') ||
                    element?.getAttribute('data-video-id') ||
                    element?.getAttribute('data-post-id') ||
                    element?.getAttribute('data-pagelet') ||
                    element?.id || '';
-  
+
   if (nativeId && nativeId.length > 5) {
     return `${platform}-${nativeId}`;
   }
-  
+
   // Build content-based hash
   const creatorPart = (creator || '').trim().slice(0, 50);
   const captionPart = (caption || '').trim().slice(0, 200);
   const contentKey = `${creatorPart}|${captionPart}`;
-  
+
   if (contentKey.length > 5) {
     return `${platform}-${hashString(contentKey)}`;
   }
-  
-  // Fallback: index + timestamp
-  return `${platform}-idx${index}-${Date.now()}`;
+
+  // Fallback: index-based only (NO timestamp - for deterministic deduplication)
+  return `${platform}-idx${index}`;
 }
 
 /**
@@ -688,30 +888,91 @@ function isTikTokSponsored(container) {
  */
 function extractTikTokPost(container, index) {
   const platform = 'tiktok';
-  
+
   // Skip non-post modules (PYMK, suggestions, etc.)
   if (isNonPostModule(container, platform)) {
-    return null;
+    if (CAPTURE_DEBUG) {
+      debugLog('log', `[CaptureDebug][TikTok] Container ${index}: REJECTED (non-post module)`);
+    }
+    return { rejected: true, code: 'NON_POST_MODULE' };
   }
-  
+
   const creator = extractTikTokCreator(container);
   const caption = extractTikTokCaption(container);
   const isSponsored = isTikTokSponsored(container);
-  
+
   // Extract hashtags
   const hashtags = extractHashtags(caption);
-  
+
   // Extract CTA
   const ctaText = extractCTA(container);
-  
-  // Extract link
-  const link = extractLink(container);
-  
-  // Generate stable ID
-  const postId = generateStableId(platform, creator, caption, container, index);
-  
-  // Only return post if we have meaningful content
-  if (creator || (caption && caption.length > 10)) {
+
+  // Extract link - first try generic, then look for video permalink
+  let link = extractLink(container);
+
+  // TikTok-specific: Look for video permalink for stable ID
+  let tiktokPermalink = null;
+  const videoLinkSelectors = [
+    'a[href*="/video/"]',
+    'a[href*="/@"][href*="/video"]',
+  ];
+  for (const sel of videoLinkSelectors) {
+    const el = safeQuery(container, sel);
+    if (el) {
+      const href = el.getAttribute('href') || '';
+      if (href.includes('/video/')) {
+        tiktokPermalink = href.startsWith('http') ? href : 'https://www.tiktok.com' + href;
+        if (!link) link = tiktokPermalink;
+        break;
+      }
+    }
+  }
+
+  // Also check window.location for fullscreen video page
+  if (!tiktokPermalink && window.location.pathname.includes('/video/')) {
+    tiktokPermalink = window.location.href;
+    if (!link) link = tiktokPermalink;
+  }
+
+  // Check for media presence (video or image)
+  const hasMedia = !!(container.querySelector('video') || container.querySelector('img[src]'));
+
+  // Generate stable ID - pass tiktokPermalink for video ID extraction
+  const postId = generateStableId(platform, creator, caption, container, index, tiktokPermalink);
+
+  // ============================================================================
+  // UNIFIED ACCEPTANCE CRITERIA:
+  // HARD requirements: stable post identifier (link OR postId with content)
+  // SOFT requirements: at least one of (creator, caption, media)
+  // ============================================================================
+  const hasCreator = !!creator;
+  const hasCaption = !!(caption && caption.length > 0);
+  const hasLink = !!link;
+  const hasStableId = postId && !postId.includes('-idx');
+
+  // Accept if we have: (creator OR caption OR media) AND (link OR stable ID)
+  const hasIdentity = hasCreator || hasCaption;
+  const hasIdentifier = hasLink || hasStableId;
+  const isValidPost = (hasIdentity || hasMedia) && hasIdentifier;
+
+  // Determine rejection code if invalid
+  let rejectionCode = null;
+  if (!isValidPost) {
+    if (!hasMedia && !hasIdentity) {
+      rejectionCode = 'NO_CONTENT';
+    } else if (!hasIdentifier) {
+      rejectionCode = 'NO_IDENTIFIER';
+    } else {
+      rejectionCode = 'UNKNOWN';
+    }
+  }
+
+  if (CAPTURE_DEBUG) {
+    const rejectInfo = rejectionCode ? ` [${rejectionCode}]` : '';
+    debugLog('log', `[CaptureDebug][TikTok] Container ${index}: hasCreator=${hasCreator}, hasCaption=${hasCaption}, hasMedia=${hasMedia}, hasLink=${hasLink}, hasStableId=${hasStableId} => ${isValidPost ? 'ACCEPTED' : 'REJECTED'}${rejectInfo}`);
+  }
+
+  if (isValidPost) {
     return {
       id: postId,
       platform,
@@ -719,13 +980,13 @@ function extractTikTokPost(container, index) {
       caption: caption || null,
       hashtags,
       isSponsored: Boolean(isSponsored),
-      sponsoredEvidence: sponsoredEvidence || null,
+      sponsoredEvidence: null, // TikTok sponsored detection returns boolean only
       ctaText: ctaText || null,
       link: link || null
     };
   }
-  
-  return null;
+
+  return { rejected: true, code: rejectionCode };
 }
 
 /**
@@ -815,24 +1076,37 @@ function scanTikTokFeed() {
   
   containers = uniqueContainers;
   console.log(`[AlgorithmLens][TikTok] After deduplication: ${containers.length} containers`);
-  
+
+  // Track rejection code histogram
+  const rejectionCounts = {};
+
   containers.forEach((container, index) => {
     try {
-      const post = extractTikTokPost(container, index);
-      if (post) {
-        posts.push(post);
+      const result = extractTikTokPost(container, index);
+
+      // Check if result is a rejection object
+      if (result && result.rejected) {
+        const code = result.code || 'UNKNOWN';
+        rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
+        issues.push({ index, issue: code, error: result.error || null });
+      } else if (result) {
+        posts.push(result);
       } else {
-        issues.push({ index, issue: 'no_content' });
+        const code = 'NULL_RESULT';
+        rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
+        issues.push({ index, issue: code });
       }
     } catch (err) {
       console.warn(`[AlgorithmLens][TikTok] Error parsing container ${index}:`, err.message);
-      issues.push({ index, issue: 'parse_error', error: err.message });
+      const code = 'PARSE_ERROR';
+      rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
+      issues.push({ index, issue: code, error: err.message });
     }
   });
-  
+
   // === DETAILED LOGGING ===
   console.log(`[AlgorithmLens][TikTok] Final posts extracted: ${posts.length}`);
-  
+
   if (posts.length > 0) {
     console.table(posts.slice(0, 20).map(p => ({
       id: (p.id || '').slice(0, 25),
@@ -843,9 +1117,9 @@ function scanTikTokFeed() {
       link: p.link ? '✓' : ''
     })));
   }
-  
-  logScanResults('TikTok', posts, issues);
-  
+
+  logScanResults('TikTok', posts, issues, containers.length, rejectionCounts);
+
   return posts;
 }
 
@@ -899,7 +1173,50 @@ function extractInstagramCreator(container) {
       }
     }
   }
-  
+
+  // ============================================================================
+  // REELS FALLBACK: Fullscreen Reels have creator in floating overlay
+  // ============================================================================
+  if (isInstagramReels()) {
+    const REELS_EXCLUDED_PATHS = [
+      '/reel/', '/reels/', '/explore/', '/p/', '/accounts/',
+      '/stories/', '/direct/', '/audio/', '/tv/'
+    ];
+
+    // Find all anchor elements with href starting with /
+    const allAnchors = safeQueryAll(container, 'a[href^="/"]');
+    const candidates = [];
+
+    for (const anchor of allAnchors) {
+      try {
+        const href = anchor.getAttribute('href') || '';
+        // Match pattern: starts with /, has username segment, optionally ends with /
+        const usernameMatch = href.match(/^\/([a-zA-Z0-9._]+)\/?$/);
+        if (usernameMatch && usernameMatch[1]) {
+          const username = usernameMatch[1];
+          // Exclude reserved paths
+          const isExcluded = REELS_EXCLUDED_PATHS.some(p => href.startsWith(p));
+          if (!isExcluded && isValidCreator(username)) {
+            candidates.push({ username, source: 'href', selector: anchor.tagName });
+          }
+        }
+      } catch (e) {
+        // Defensive: skip this anchor
+      }
+    }
+
+    // Choose first valid candidate
+    const chosen = candidates.length > 0 ? candidates[0] : null;
+
+    if (CAPTURE_DEBUG) {
+      debugLog('log', `[CaptureDebug][Instagram][Reels] Creator fallback candidates: ${candidates.length}, chosen: ${chosen?.username || 'null'}, source: ${chosen?.source || 'none'}`);
+    }
+
+    if (chosen) {
+      return chosen.username;
+    }
+  }
+
   return null;
 }
 
@@ -944,51 +1261,69 @@ function extractInstagramCaption(container) {
 /**
  * Detect if an Instagram post is sponsored/an ad
  * @param {Element} container 
- * @returns {boolean}
+ * @returns {{isSponsored: boolean, evidence: object|null}}
  */
 function isInstagramSponsored(container) {
-  // Check header area for sponsored text
-  const headerEl = safeQuery(container, 'header');
-  const headerText = safeText(headerEl) || '';
-  
-  if (containsAdIndicator(headerText) || 
-      headerText.toLowerCase().includes('paid partnership')) {
-    console.debug('[AlgorithmLens][Instagram] Sponsored detected via header text');
-    return true;
-  }
-  
-  // Check for sponsored badge via class selectors
-  const sponsoredSelectors = [
-    '[class*="Sponsored"]',
-    '[aria-label*="Sponsored"]',
-    '[aria-label*="sponsored"]'
-  ];
-  
-  for (const sel of sponsoredSelectors) {
-    if (safeQuery(container, sel)) {
-      console.debug('[AlgorithmLens][Instagram] Sponsored detected via selector:', sel);
-      return true;
+  try {
+    // Check header area for sponsored text
+    const headerEl = safeQuery(container, 'header');
+    const headerText = safeText(headerEl) || '';
+    
+    if (containsAdIndicator(headerText) || 
+        headerText.toLowerCase().includes('paid partnership')) {
+      console.debug('[AlgorithmLens][Instagram] Sponsored detected via header text');
+      return {
+        isSponsored: true,
+        evidence: { strategy: 'headerText', matchedText: headerText.slice(0, 100) }
+      };
     }
-  }
-  
-  // Check for "Sponsored" text in spans near the header
-  const headerSpans = safeQueryAll(container, 'header span');
-  for (const span of headerSpans) {
-    const text = (safeText(span) || '').toLowerCase();
-    if (text === 'sponsored' || text === 'paid partnership') {
-      console.debug('[AlgorithmLens][Instagram] Sponsored detected via header span text');
-      return true;
+    
+    // Check for sponsored badge via class selectors
+    const sponsoredSelectors = [
+      '[class*="Sponsored"]',
+      '[aria-label*="Sponsored"]',
+      '[aria-label*="sponsored"]'
+    ];
+    
+    for (const sel of sponsoredSelectors) {
+      if (safeQuery(container, sel)) {
+        console.debug('[AlgorithmLens][Instagram] Sponsored detected via selector:', sel);
+        return {
+          isSponsored: true,
+          evidence: { strategy: 'selector', selector: sel }
+        };
+      }
     }
+    
+    // Check for "Sponsored" text in spans near the header
+    const headerSpans = safeQueryAll(container, 'header span');
+    for (const span of headerSpans) {
+      const text = (safeText(span) || '').toLowerCase();
+      if (text === 'sponsored' || text === 'paid partnership') {
+        console.debug('[AlgorithmLens][Instagram] Sponsored detected via header span text');
+        return {
+          isSponsored: true,
+          evidence: { strategy: 'headerSpan', matchedText: text }
+        };
+      }
+    }
+    
+    // Check full container for ad indicators
+    const fullText = (container.innerText || '').toLowerCase().slice(0, 1500);
+    if (/\bpaid partnership with\b/.test(fullText)) {
+      console.debug('[AlgorithmLens][Instagram] Sponsored detected via paid partnership text');
+      return {
+        isSponsored: true,
+        evidence: { strategy: 'fullText', matchedPattern: 'paid partnership with' }
+      };
+    }
+    
+    return { isSponsored: false, evidence: null };
+  } catch (error) {
+    // Defensive: if ad detection fails, assume not sponsored
+    console.warn('[AlgorithmLens][Instagram] Error in isInstagramSponsored:', error);
+    return { isSponsored: false, evidence: null };
   }
-  
-  // Check full container for ad indicators
-  const fullText = (container.innerText || '').toLowerCase().slice(0, 1500);
-  if (/\bpaid partnership with\b/.test(fullText)) {
-    console.debug('[AlgorithmLens][Instagram] Sponsored detected via paid partnership text');
-    return true;
-  }
-  
-  return false;
 }
 
 /**
@@ -999,48 +1334,244 @@ function isInstagramSponsored(container) {
  */
 function extractInstagramPost(container, index) {
   const platform = 'instagram';
-  
-  // Skip non-post modules (suggestions, explore, etc.)
-  if (isNonPostModule(container, platform)) {
-    return null;
+
+  try {
+    // Skip non-post modules (suggestions, explore, etc.)
+    if (isNonPostModule(container, platform)) {
+      if (CAPTURE_DEBUG) {
+        debugLog('log', `[CaptureDebug][Instagram] Container ${index}: REJECTED (non-post module)`);
+      }
+      return { rejected: true, code: 'NON_POST_MODULE' };
+    }
+
+    // Extract fields with fallback selectors
+    let creator = extractInstagramCreator(container);
+    let caption = extractInstagramCaption(container);
+    let link = extractLink(container);
+
+    // Fallback: Try to extract permalink if link not found
+    if (!link) {
+      // Try multiple permalink patterns
+      const permalinkSelectors = [
+        'a[href*="/p/"]',
+        'a[href*="/reel/"]',
+        'a[href*="/tv/"]',
+        'time[datetime]', // Often has parent link
+      ];
+      for (const sel of permalinkSelectors) {
+        const el = safeQuery(container, sel);
+        if (el) {
+          // Check if element itself is a link or has parent link
+          const linkEl = el.tagName === 'A' ? el : el.closest('a');
+          if (linkEl) {
+            const href = linkEl.getAttribute('href') || '';
+            if (href && (href.includes('/p/') || href.includes('/reel/') || href.includes('/tv/'))) {
+              link = href.startsWith('http') ? href : `https://www.instagram.com${href}`;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // Fallback: Try additional creator selectors
+    if (!creator) {
+      const creatorFallbacks = [
+        'header a[href^="/"]',
+        'a[href*="/"][href*="instagram.com"]',
+        'span[dir="auto"] a[href^="/"]',
+        'a[role="link"] span', // Username spans inside links
+      ];
+      for (const sel of creatorFallbacks) {
+        const el = safeQuery(container, sel);
+        if (el) {
+          // Try text first
+          let candidate = safeText(el);
+          // If no text, try extracting from href
+          if (!candidate) {
+            const href = (el.getAttribute('href') || el.closest('a')?.getAttribute('href')) || '';
+            const match = href.match(/^\/([^/?]+)/);
+            if (match && match[1] && !match[1].includes('p') && !match[1].includes('reel')) {
+              candidate = match[1];
+            }
+          }
+          if (candidate && isValidCreator(candidate)) {
+            creator = candidate;
+            break;
+          }
+        }
+      }
+    }
+
+    // Safe ad detection with try/catch
+    let sponsoredResult;
+    try {
+      sponsoredResult = isInstagramSponsored(container);
+    } catch (error) {
+      console.warn('[AlgorithmLens][Instagram] Error detecting sponsored status:', error);
+      sponsoredResult = { isSponsored: false, evidence: null };
+    }
+    const isSponsored = sponsoredResult.isSponsored;
+    const sponsoredEvidence = sponsoredResult.evidence;
+
+    // Extract hashtags from explicit links first, then from caption text
+    const hashtagEls = safeQueryAll(container, 'a[href*="/explore/tags/"]');
+    let hashtags = hashtagEls.map(el => safeText(el)).filter(Boolean);
+    if (hashtags.length === 0) {
+      hashtags = extractHashtags(caption);
+    }
+
+    // Extract CTA
+    const ctaText = extractCTA(container);
+
+    // Check for media (video or image, excluding small avatars/icons)
+    const hasMedia = (() => {
+      // Check for videos first
+      const videos = safeQueryAll(container, 'video, video[src], source[src]');
+      if (videos.length > 0) return true;
+
+      // Check for images with reasonable size
+      const images = safeQueryAll(container, 'img[srcset], img[src]');
+      for (const img of images) {
+        // Check computed size or natural size or attribute size
+        const width = img.naturalWidth || img.width || parseInt(img.getAttribute('width')) || 0;
+        const height = img.naturalHeight || img.height || parseInt(img.getAttribute('height')) || 0;
+        // Exclude small images (likely avatars/icons) - lowered threshold from 100 to 50
+        if (width > 50 && height > 50) {
+          return true;
+        }
+        // Also accept if image has srcset (indicates content image)
+        if (img.srcset || img.getAttribute('srcset')) {
+          return true;
+        }
+      }
+      return false;
+    })();
+
+    // Detect if this is a Reels context
+    const onReelsPage = isInstagramReels();
+
+    // ============================================================================
+    // REELS: Extract Reel ID and permalink from page/container context
+    // ============================================================================
+    let reelShortcode = null;
+    let reelPermalink = null;
+
+    if (onReelsPage) {
+      const reelData = extractInstagramReelIdAndPermalink(container);
+      reelShortcode = reelData.shortcode;
+      reelPermalink = reelData.permalink;
+
+      // Override link with reel permalink if found
+      if (reelPermalink && !link) {
+        link = reelPermalink;
+      }
+    }
+
+    // Generate stable ID - for Reels, prefer shortcode; otherwise use permalink extraction
+    let postId;
+    if (onReelsPage && reelShortcode) {
+      postId = `instagram-${reelShortcode}`;
+    } else {
+      postId = generateStableId(platform, creator, caption, container, index, link);
+    }
+
+    // ============================================================================
+    // UNIFIED ACCEPTANCE CRITERIA
+    // For Reels: Accept with media + any identity signal (including stableId/permalink)
+    // For Feed: Require (creator OR caption OR media) AND (permalink OR stable ID)
+    // ============================================================================
+    const hasCreator = !!creator;
+    const hasCaption = !!(caption && caption.length > 0);
+    const hasPermalink = !!link;
+    const hasStableId = postId && !postId.includes('-idx');
+
+    // Extract timestamp for Reels (as alternative identity signal)
+    const hasTimestamp = !!safeQuery(container, 'time[datetime]');
+
+    // Determine validity based on context
+    let isValidPost = false;
+
+    if (onReelsPage) {
+      // REELS: Accept with media AND (stableId OR creator OR caption OR timestamp OR permalink)
+      const hasAnyIdentity = hasStableId || hasCreator || hasCaption || hasTimestamp || hasPermalink;
+      isValidPost = hasMedia && hasAnyIdentity;
+
+      // LAST RESORT: If ALLOW_REELS_MEDIA_ONLY_FALLBACK is enabled, accept media-only
+      if (!isValidPost && ALLOW_REELS_MEDIA_ONLY_FALLBACK && hasMedia) {
+        isValidPost = true;
+        if (CAPTURE_DEBUG) {
+          debugLog('warn', `[CaptureDebug][Instagram][Reels] Container ${index}: ACCEPTED via MEDIA_ONLY_FALLBACK`);
+        }
+      }
+    } else {
+      // FEED: Standard validation - (creator OR caption OR media) AND (permalink OR stable ID)
+      const hasIdentity = hasCreator || hasCaption || hasMedia;
+      const hasIdentifier = hasPermalink || hasStableId;
+      isValidPost = hasIdentity && hasIdentifier;
+    }
+
+    // ============================================================================
+    // STAGE 1 DIAGNOSTICS: Determine rejection code if not valid
+    // ============================================================================
+    let rejectionCode = null;
+    if (!isValidPost) {
+      if (onReelsPage) {
+        // Reels rejection codes
+        if (!hasMedia) {
+          rejectionCode = 'REELS_NO_MEDIA';
+        } else {
+          // Has media but no identity
+          rejectionCode = 'REELS_NO_IDENTITY';
+        }
+      } else {
+        // Feed rejection codes
+        if (!hasCreator && !hasCaption && !hasMedia) {
+          rejectionCode = 'FEED_NO_CONTENT';
+        } else if (!hasPermalink && !hasStableId) {
+          rejectionCode = 'FEED_NO_IDENTIFIER';
+        } else {
+          rejectionCode = 'FEED_UNKNOWN';
+        }
+      }
+    }
+
+    if (CAPTURE_DEBUG) {
+      const context = onReelsPage ? 'Reels' : 'Feed';
+      const idPreview = postId ? postId.slice(0, 30) : 'NO_ID';
+      const rejectInfo = rejectionCode ? ` [${rejectionCode}]` : '';
+      debugLog('log', `[CaptureDebug][Instagram][${context}] Container ${index}: hasMedia=${hasMedia}, hasCreator=${hasCreator}, hasCaption=${hasCaption}, hasPermalink=${hasPermalink}, hasStableId=${hasStableId}, hasTimestamp=${hasTimestamp}, id="${idPreview}" => ${isValidPost ? 'ACCEPTED' : 'REJECTED'}${rejectInfo}`);
+    }
+
+    if (isValidPost) {
+      // Log accepted post details for Reels
+      if (CAPTURE_DEBUG && onReelsPage) {
+        const permalinkSource = reelPermalink ? (reelPermalink.includes(window.location.pathname.split('/')[2] || '') ? 'location' : 'container') : (link ? 'link' : 'none');
+        debugLog('log', `[CaptureDebug][Instagram][Reels] ACCEPTED idx=${index}: id="${postId}", creator="${creator || 'missing'}", permalinkSrc=${permalinkSource}, shortcode=${reelShortcode || 'none'}`);
+      }
+      return {
+        id: postId,
+        platform,
+        platformSubtype: onReelsPage ? 'reels' : 'feed',
+        creator: creator || null,
+        caption: caption || null,
+        hashtags,
+        isSponsored: Boolean(isSponsored),
+        sponsoredEvidence: sponsoredEvidence || null,
+        ctaText: ctaText || null,
+        link: link || null
+      };
+    }
+
+    return { rejected: true, code: rejectionCode };
+  } catch (error) {
+    // Defensive: log error but don't crash
+    console.error(`[AlgorithmLens][Instagram] Error extracting post from container ${index}:`, error);
+    if (CAPTURE_DEBUG) {
+      debugLog('error', `[CaptureDebug][Instagram] Container ${index}: EXTRACTION ERROR - ${error.message}`);
+    }
+    return { rejected: true, code: 'PARSE_ERROR', error: error.message };
   }
-  
-  const creator = extractInstagramCreator(container);
-  const caption = extractInstagramCaption(container);
-  const isSponsored = isInstagramSponsored(container);
-  
-  // Extract hashtags from explicit links first, then from caption text
-  const hashtagEls = safeQueryAll(container, 'a[href*="/explore/tags/"]');
-  let hashtags = hashtagEls.map(el => safeText(el)).filter(Boolean);
-  if (hashtags.length === 0) {
-    hashtags = extractHashtags(caption);
-  }
-  
-  // Extract CTA
-  const ctaText = extractCTA(container);
-  
-  // Extract link
-  const link = extractLink(container);
-  
-  // Generate stable ID
-  const postId = generateStableId(platform, creator, caption, container, index);
-  
-  // Only return post if we have meaningful content
-  if (creator || (caption && caption.length > 10)) {
-    return {
-      id: postId,
-      platform,
-      creator: creator || null,
-      caption: caption || null,
-      hashtags,
-      isSponsored: Boolean(isSponsored),
-      sponsoredEvidence: sponsoredEvidence || null,
-      ctaText: ctaText || null,
-      link: link || null
-    };
-  }
-  
-  return null;
 }
 
 /**
@@ -1051,16 +1582,30 @@ function scanInstagramFeed() {
   const platform = 'instagram';
   const posts = [];
   const issues = [];
-  
+  const onReelsPage = isInstagramReels();
+  const subtype = onReelsPage ? 'reels' : 'feed';
+
   console.log('[AlgorithmLens][Instagram] 🔍 Starting scan...');
-  console.log(`[AlgorithmLens][Instagram] URL: ${window.location.href}`);
-  
+  console.log(`[AlgorithmLens][Instagram] URL: ${window.location.href}, subtype: ${subtype}`);
+
   if (CAPTURE_DEBUG) {
-    debugLog('log', `[CaptureDebug][Instagram] Starting scan - URL: ${window.location.href}`);
+    debugLog('log', `[CaptureDebug][Instagram] Starting scan - URL: ${window.location.href}, subtype: ${subtype}`);
   }
-  
-  // Primary selectors for Instagram posts
-  const containerSelectors = [
+
+  // ============================================================================
+  // STAGE 1 DIAGNOSTICS: Reels-specific container selection
+  // ============================================================================
+  // Primary selectors - different for Reels vs Feed
+  const containerSelectors = onReelsPage ? [
+    // Reels-specific selectors (fullscreen video containers)
+    'div[class*="x1ned7t2"]', // Reels video wrapper
+    'div[class*="xh8yej3"]',  // Reels container
+    'section[class*="_aap0"]', // Reels section
+    'div[style*="translateX"]', // Carousel-style reels
+    'article[role="presentation"]',
+    'article',
+  ] : [
+    // Feed selectors
     'article[role="presentation"]',
     'article',
     'div[class*="_aagv"]',
@@ -1119,31 +1664,34 @@ function scanInstagramFeed() {
   containers = uniqueContainers;
   console.log(`[AlgorithmLens][Instagram] After deduplication: ${containers.length} containers`);
   
+  // Track rejection code histogram
+  const rejectionCounts = {};
+
   containers.forEach((container, index) => {
     try {
-      if (CAPTURE_DEBUG && index < 5) {
-        const textNodes = container.querySelectorAll('span[dir="auto"], h1, span');
-        const captionText = Array.from(textNodes).map(n => n.textContent).filter(Boolean).join(' ').slice(0, 100);
-        debugLog('log', `[CaptureDebug][Instagram] Container ${index}: checking extraction, caption preview: "${captionText}..."`);
-      }
-      
-      const post = extractInstagramPost(container, index);
-      if (post) {
-        posts.push(post);
-        if (CAPTURE_DEBUG && index < 5) {
-          debugLog('log', `[CaptureDebug][Instagram] Container ${index}: EXTRACTED - creator: ${post.creator || 'null'}, caption length: ${post.caption?.length || 0}`);
-        }
+      const result = extractInstagramPost(container, index);
+
+      // Check if result is a rejection object
+      if (result && result.rejected) {
+        const code = result.code || 'UNKNOWN';
+        rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
+        issues.push({ index, issue: code, error: result.error || null });
+      } else if (result) {
+        // Valid post
+        posts.push(result);
       } else {
-        issues.push({ index, issue: 'no_content' });
-        if (CAPTURE_DEBUG && index < 5) {
-          debugLog('warn', `[CaptureDebug][Instagram] Container ${index}: EXTRACTION FAILED - no_content`);
-        }
+        // Null result (shouldn't happen with new code, but handle gracefully)
+        const code = 'NULL_RESULT';
+        rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
+        issues.push({ index, issue: code });
       }
     } catch (err) {
       console.warn(`[AlgorithmLens][Instagram] Error parsing container ${index}:`, err.message);
-      issues.push({ index, issue: 'parse_error', error: err.message });
+      const code = 'OUTER_PARSE_ERROR';
+      rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
+      issues.push({ index, issue: code, error: err.message });
       if (CAPTURE_DEBUG) {
-        debugLog('error', `[CaptureDebug][Instagram] Container ${index}: EXTRACTION ERROR - ${err.message}`);
+        debugLog('error', `[CaptureDebug][Instagram] Container ${index}: OUTER ERROR - ${err.message}`);
       }
     }
   });
@@ -1166,9 +1714,9 @@ function scanInstagramFeed() {
       link: p.link ? '✓' : ''
     })));
   }
-  
-  logScanResults('Instagram', posts, issues);
-  
+
+  logScanResults('Instagram', posts, issues, containers.length, rejectionCounts, subtype);
+
   return posts;
 }
 
@@ -1291,56 +1839,95 @@ function isYouTubeSponsored(container) {
  */
 function extractYouTubePost(container, index, isShorts) {
   const platform = 'youtube';
-  
+
   // Skip non-post modules (playlists, mixes, channel suggestions, etc.)
   if (isNonPostModule(container, platform)) {
-    return null;
+    if (CAPTURE_DEBUG) {
+      debugLog('log', `[CaptureDebug][YouTube] Container ${index}: REJECTED (non-post module)`);
+    }
+    return { rejected: true, code: 'NON_POST_MODULE' };
   }
-  
+
   const creator = extractYouTubeCreator(container);
   const caption = extractYouTubeCaption(container);
   const isSponsored = isYouTubeSponsored(container);
-  
+
   // Extract hashtags
   const hashtags = extractHashtags(caption);
-  
+
   // Extract CTA
   const ctaText = extractCTA(container);
-  
+
   // Extract link and video ID
   const linkEl = safeQuery(container, 'a#thumbnail, a[href*="/watch"], a[href*="/shorts"]');
   let link = linkEl?.getAttribute('href') || null;
   if (link && !link.startsWith('http')) {
     link = 'https://www.youtube.com' + link;
   }
-  
-  // Extract video ID for stable ID
-  let videoId = null;
-  if (link) {
-    const watchMatch = link.match(/[?&]v=([^&]+)/);
-    const shortsMatch = link.match(/\/shorts\/([^?/]+)/);
-    videoId = watchMatch?.[1] || shortsMatch?.[1] || null;
+
+  // For Shorts, also check current URL for video ID
+  if (isShorts && !link && window.location.pathname.includes('/shorts/')) {
+    link = window.location.href;
   }
-  
-  // Generate stable ID
-  const postId = videoId ? `${platform}-${videoId}` : generateStableId(platform, creator, caption, container, index);
-  
-  // Only return post if we have meaningful content
-  if (creator || caption) {
+
+  // Extract video ID for stable ID (use helper function)
+  const videoId = extractYouTubeVideoId(link);
+
+  // Check for media presence (thumbnail or video)
+  const hasMedia = !!(container.querySelector('img#img, ytd-thumbnail img, video'));
+
+  // Generate stable ID - pass link for video ID extraction
+  const postId = videoId ? `${platform}-${videoId}` : generateStableId(platform, creator, caption, container, index, link);
+
+  // ============================================================================
+  // UNIFIED ACCEPTANCE CRITERIA:
+  // HARD requirements: stable post identifier (videoId OR link)
+  // SOFT requirements: at least one of (creator, caption, media)
+  // ============================================================================
+  const hasCreator = !!creator;
+  const hasCaption = !!caption;
+  const hasLink = !!link;
+  const hasVideoId = !!videoId;
+  const hasStableId = postId && !postId.includes('-idx');
+
+  // Accept if we have: (creator OR caption OR media) AND (videoId OR link OR stableId)
+  const hasIdentity = hasCreator || hasCaption || hasMedia;
+  const hasIdentifier = hasVideoId || hasLink || hasStableId;
+  const isValidPost = hasIdentity && hasIdentifier;
+
+  // Determine rejection code if invalid
+  let rejectionCode = null;
+  if (!isValidPost) {
+    if (!hasIdentity) {
+      rejectionCode = 'NO_CONTENT';
+    } else if (!hasIdentifier) {
+      rejectionCode = 'NO_IDENTIFIER';
+    } else {
+      rejectionCode = 'UNKNOWN';
+    }
+  }
+
+  if (CAPTURE_DEBUG) {
+    const rejectInfo = rejectionCode ? ` [${rejectionCode}]` : '';
+    debugLog('log', `[CaptureDebug][YouTube] Container ${index}: hasCreator=${hasCreator}, hasCaption=${hasCaption}, hasMedia=${hasMedia}, hasVideoId=${hasVideoId}, hasStableId=${hasStableId} => ${isValidPost ? 'ACCEPTED' : 'REJECTED'}${rejectInfo}`);
+  }
+
+  if (isValidPost) {
     return {
       id: postId,
       platform,
+      platformSubtype: isShorts ? 'shorts' : 'feed',
       creator: creator || null,
       caption: caption || null,
       hashtags,
       isSponsored: Boolean(isSponsored),
-      sponsoredEvidence: sponsoredEvidence || null,
+      sponsoredEvidence: null, // YouTube sponsored detection returns boolean only
       ctaText: ctaText || null,
       link: link || null
     };
   }
-  
-  return null;
+
+  return { rejected: true, code: rejectionCode };
 }
 
 /**
@@ -1410,24 +1997,38 @@ function scanYouTubeFeed() {
   
   containers = uniqueContainers;
   console.log(`[AlgorithmLens][YouTube] After deduplication: ${containers.length} containers`);
-  
+
+  // Track rejection code histogram
+  const rejectionCounts = {};
+  const subtype = isShorts ? 'shorts' : 'feed';
+
   containers.forEach((container, index) => {
     try {
-      const post = extractYouTubePost(container, index, isShorts);
-      if (post) {
-        posts.push(post);
+      const result = extractYouTubePost(container, index, isShorts);
+
+      // Check if result is a rejection object
+      if (result && result.rejected) {
+        const code = result.code || 'UNKNOWN';
+        rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
+        issues.push({ index, issue: code, error: result.error || null });
+      } else if (result) {
+        posts.push(result);
       } else {
-        issues.push({ index, issue: 'no_content' });
+        const code = 'NULL_RESULT';
+        rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
+        issues.push({ index, issue: code });
       }
     } catch (err) {
       console.warn(`[AlgorithmLens][YouTube] Error parsing container ${index}:`, err.message);
-      issues.push({ index, issue: 'parse_error', error: err.message });
+      const code = 'PARSE_ERROR';
+      rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
+      issues.push({ index, issue: code, error: err.message });
     }
   });
-  
+
   // === DETAILED LOGGING ===
   console.log(`[AlgorithmLens][YouTube] Final posts extracted: ${posts.length}`);
-  
+
   if (posts.length > 0) {
     console.table(posts.slice(0, 20).map(p => ({
       id: (p.id || '').slice(0, 25),
@@ -1438,9 +2039,9 @@ function scanYouTubeFeed() {
       link: p.link ? '✓' : ''
     })));
   }
-  
-  logScanResults('YouTube', posts, issues);
-  
+
+  logScanResults('YouTube', posts, issues, containers.length, rejectionCounts, subtype);
+
   return posts;
 }
 
@@ -1907,12 +2508,15 @@ function buildFacebookPostId(container, caption, index) {
  */
 function extractFacebookPost(container, index) {
   const platform = 'facebook';
-  
+
   // Skip non-post modules (PYMK, groups, events, etc.) BEFORE any fallback logic
   if (isNonPostModule(container, platform)) {
-    return null;
+    if (CAPTURE_DEBUG) {
+      debugLog('log', `[CaptureDebug][Facebook] Container ${index}: REJECTED (non-post module)`);
+    }
+    return { rejected: true, code: 'NON_POST_MODULE' };
   }
-  
+
   // Get raw container text for fallback extraction
   const rawContainerText = (container.innerText || '').trim();
   
@@ -2062,7 +2666,7 @@ function extractFacebookPost(container, index) {
       caption: caption || "(No caption)",
       hashtags,
       isSponsored: Boolean(isSponsored),
-      sponsoredEvidence: sponsoredEvidence || null,
+      sponsoredEvidence: null, // Facebook sponsored detection returns boolean only
       ctaText: ctaText || null,
       link: link || null,
       uiLabel: isSponsored ? "Sponsored Ad" : "Post",
@@ -2103,7 +2707,7 @@ function extractFacebookPost(container, index) {
       caption: minimalCaption || "(No caption)",
       hashtags: extractHashtags(minimalCaption),
       isSponsored: Boolean(isSponsored),
-      sponsoredEvidence: sponsoredEvidence || null,
+      sponsoredEvidence: null, // Facebook sponsored detection returns boolean only
       ctaText: null,
       link: null,
       uiLabel: isSponsored ? "Sponsored Ad" : "Post",
@@ -2126,10 +2730,10 @@ function extractFacebookPost(container, index) {
       ? rawContainerText.slice(0, 400).replace(/\s+/g, ' ').trim() 
       : null;
     
-    // Build stable fallback ID
-    const fallbackIdBase = trimmedTextOrNull 
+    // Build stable fallback ID (NO timestamp - use index + content hash for determinism)
+    const fallbackIdBase = trimmedTextOrNull
       ? hashString(trimmedTextOrNull.slice(0, 160))
-      : `media-${index}-${Date.now()}`;
+      : `media-idx${index}`;
     const fallbackId = `facebook:fallback:${fallbackIdBase}`;
     
     console.log(`[AlgorithmLens][Facebook] Fallback post accepted for container ${index} (text length: ${rawContainerText.length}, hasMedia: ${hasMedia})`);
@@ -2142,7 +2746,7 @@ function extractFacebookPost(container, index) {
       caption: trimmedTextOrNull || "(No caption)",
       hashtags: trimmedTextOrNull ? extractHashtags(trimmedTextOrNull) : [],
       isSponsored: Boolean(isSponsored),
-      sponsoredEvidence: sponsoredEvidence || null,
+      sponsoredEvidence: null, // Facebook sponsored detection returns boolean only
       ctaText: ctaText || null,
       link: link || null,
       uiLabel: isSponsored ? "Sponsored Ad" : "Post",
@@ -2168,14 +2772,11 @@ function extractFacebookPost(container, index) {
   // ============================================================================
   // FINAL SKIP: Only skip if containerHasContent is false AND no text AND no media
   // ============================================================================
-  console.debug(`[AlgorithmLens][Facebook] ⏭️ Post ${index} SKIPPED (no content):`, {
-    containerHasContent: false,
-    hasMedia,
-    rawTextLength: rawContainerText.length,
-    containerTextSample: rawContainerText.slice(0, 80)
-  });
-  
-  return null;
+  if (CAPTURE_DEBUG) {
+    debugLog('log', `[CaptureDebug][Facebook] Container ${index}: REJECTED [NO_CONTENT] - hasMedia=${hasMedia}, textLen=${rawContainerText.length}`);
+  }
+
+  return { rejected: true, code: 'NO_CONTENT' };
 }
 
 /**
@@ -2375,12 +2976,15 @@ function scanFacebookFeed() {
   let validPosts = 0;
   let skippedPosts = 0;
   let batchLimitReached = false;
-  
+
+  // Track rejection code histogram
+  const rejectionCounts = {};
+
   console.debug('[AlgorithmLens][Facebook] 🔄 Starting primary extraction pass...');
-  
+
   for (let index = 0; index < containers.length; index++) {
     const container = containers[index];
-    
+
     // Check batch limit before processing each container
     if (posts.length >= MAX_FACEBOOK_POSTS_PER_BATCH) {
       console.debug(
@@ -2390,25 +2994,31 @@ function scanFacebookFeed() {
       batchLimitReached = true;
       break;
     }
-    
+
     try {
-      const post = extractFacebookPost(container, index);
-      if (post) {
-        posts.push(post);
+      const result = extractFacebookPost(container, index);
+
+      // Check if result is a rejection object
+      if (result && result.rejected) {
+        const code = result.code || 'UNKNOWN';
+        rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
+        issues.push({ index, issue: code });
+        skippedPosts++;
+      } else if (result) {
+        posts.push(result);
         validPosts++;
       } else {
-        // Capture diagnostic info for skipped containers
-        const textSample = (container.innerText || '').slice(0, 100).replace(/\n/g, ' ');
-        issues.push({
-          index,
-          reason: 'extractFacebookPost returned null',
-          textSample,
-        });
+        // Capture diagnostic info for null result
+        const code = 'NULL_RESULT';
+        rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
+        issues.push({ index, issue: code });
         skippedPosts++;
       }
     } catch (err) {
       console.warn(`[AlgorithmLens][Facebook] ❌ Error parsing container ${index}:`, err.message);
-      issues.push({ index, reason: 'parse_error', error: err.message });
+      const code = 'PARSE_ERROR';
+      rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
+      issues.push({ index, issue: code, error: err.message });
       skippedPosts++;
     }
   }
@@ -2471,13 +3081,13 @@ function scanFacebookFeed() {
     }
   }
   
-  logScanResults('Facebook', posts, issues);
-  
+  logScanResults('Facebook', posts, issues, totalContainers, rejectionCounts);
+
   console.log('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
   console.log('[AlgorithmLens][Facebook] 🔍 FACEBOOK FEED SCAN COMPLETE');
   console.log('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
   console.log('\n');
-  
+
   return posts;
 }
 
@@ -2671,19 +3281,19 @@ function isTwitterSponsored(container) {
  */
 function extractTwitterPost(container, index) {
   const platform = 'twitter';
-  
+
   const creator = extractTwitterCreator(container);
   const caption = extractTwitterCaption(container);
   const sponsoredResult = isTwitterSponsored(container);
   const isSponsored = sponsoredResult.isSponsored;
   const sponsoredEvidence = sponsoredResult.evidence;
-  
+
   // Extract hashtags from caption
   const hashtags = extractHashtags(caption);
-  
+
   // Extract CTA
   const ctaText = extractCTA(container);
-  
+
   // Extract link - prefer external links over profile links
   let link = null;
   const allLinks = safeQueryAll(container, 'a[role="link"][href^="http"]');
@@ -2695,23 +3305,78 @@ function extractTwitterPost(container, index) {
       break;
     }
   }
-  
-  // Fallback: get tweet link
-  if (!link) {
-    const tweetLink = safeQuery(container, 'a[href*="/status/"]');
-    if (tweetLink) {
-      link = tweetLink.getAttribute('href');
-      if (link && !link.startsWith('http')) {
-        link = 'https://x.com' + link;
+
+  // ============================================================================
+  // ALWAYS extract tweet permalink for stable ID (even if we have external link)
+  // ============================================================================
+  let tweetPermalink = null;
+  const permalinkSelectors = [
+    'a[href*="/status/"]',
+    'time[datetime]', // Often has parent link to tweet
+  ];
+  for (const sel of permalinkSelectors) {
+    const el = safeQuery(container, sel);
+    if (el) {
+      const linkEl = el.tagName === 'A' ? el : el.closest('a');
+      if (linkEl) {
+        const href = linkEl.getAttribute('href') || '';
+        if (href.includes('/status/')) {
+          tweetPermalink = href.startsWith('http') ? href : 'https://x.com' + href;
+          break;
+        }
       }
     }
   }
-  
-  // Generate stable ID
-  const postId = generateStableId(platform, creator, caption, container, index);
-  
-  // Only return post if we have meaningful content
-  if (creator || (caption && caption.length > 10)) {
+
+  // Use tweet permalink as the link if no external link was found
+  if (!link && tweetPermalink) {
+    link = tweetPermalink;
+  }
+
+  // Check for media presence (images, videos, cards)
+  const hasMedia = !!(
+    container.querySelector('img[src*="pbs.twimg.com/media"]') ||
+    container.querySelector('video') ||
+    container.querySelector('[data-testid="card.wrapper"]') ||
+    container.querySelector('[data-testid="tweetPhoto"]')
+  );
+
+  // Generate stable ID - pass tweet permalink for proper status ID extraction
+  const postId = generateStableId(platform, creator, caption, container, index, tweetPermalink);
+
+  // ============================================================================
+  // UNIFIED ACCEPTANCE CRITERIA:
+  // HARD requirements: stable post identifier (permalink OR content-based ID)
+  // SOFT requirements: at least one of (creator, caption, media)
+  // ============================================================================
+  const hasCreator = !!creator;
+  const hasCaption = !!(caption && caption.length > 0);
+  const hasPermalink = !!(link && link.includes('/status/'));
+  const hasStableId = postId && !postId.includes('-idx');
+
+  // Accept if we have: (creator OR caption OR media) AND (permalink OR stable ID)
+  const hasIdentity = hasCreator || hasCaption || hasMedia;
+  const hasIdentifier = hasPermalink || hasStableId;
+  const isValidPost = hasIdentity && hasIdentifier;
+
+  // Determine rejection code if invalid
+  let rejectionCode = null;
+  if (!isValidPost) {
+    if (!hasIdentity) {
+      rejectionCode = 'NO_CONTENT';
+    } else if (!hasIdentifier) {
+      rejectionCode = 'NO_IDENTIFIER';
+    } else {
+      rejectionCode = 'UNKNOWN';
+    }
+  }
+
+  if (CAPTURE_DEBUG) {
+    const rejectInfo = rejectionCode ? ` [${rejectionCode}]` : '';
+    debugLog('log', `[CaptureDebug][Twitter] Container ${index}: hasCreator=${hasCreator}, hasCaption=${hasCaption}, hasMedia=${hasMedia}, hasPermalink=${hasPermalink}, hasStableId=${hasStableId} => ${isValidPost ? 'ACCEPTED' : 'REJECTED'}${rejectInfo}`);
+  }
+
+  if (isValidPost) {
     return {
       id: postId,
       platform,
@@ -2724,8 +3389,8 @@ function extractTwitterPost(container, index) {
       link: link || null
     };
   }
-  
-  return null;
+
+  return { rejected: true, code: rejectionCode };
 }
 
 /**
@@ -2807,7 +3472,10 @@ function scanTwitterFeed() {
   
   containers = uniqueContainers;
   console.log(`[AlgorithmLens][Twitter] After deduplication: ${containers.length} containers`);
-  
+
+  // Track rejection code histogram
+  const rejectionCounts = {};
+
   containers.forEach((container, index) => {
     try {
       if (CAPTURE_DEBUG && index < 5) {
@@ -2815,35 +3483,42 @@ function scanTwitterFeed() {
         const captionText = Array.from(textNodes).map(n => n.textContent).filter(Boolean).join(' ').slice(0, 100);
         debugLog('log', `[CaptureDebug][Twitter] Container ${index}: checking extraction, text preview: "${captionText}..."`);
       }
-      
-      const post = extractTwitterPost(container, index);
-      if (post) {
-        posts.push(post);
+
+      const result = extractTwitterPost(container, index);
+
+      // Check if result is a rejection object
+      if (result && result.rejected) {
+        const code = result.code || 'UNKNOWN';
+        rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
+        issues.push({ index, issue: code });
+      } else if (result) {
+        posts.push(result);
         if (CAPTURE_DEBUG && index < 5) {
-          debugLog('log', `[CaptureDebug][Twitter] Container ${index}: EXTRACTED - creator: ${post.creator || 'null'}, caption length: ${post.caption?.length || 0}`);
+          debugLog('log', `[CaptureDebug][Twitter] Container ${index}: EXTRACTED - creator: ${result.creator || 'null'}, caption length: ${result.caption?.length || 0}`);
         }
       } else {
-        issues.push({ index, issue: 'no_content' });
-        if (CAPTURE_DEBUG && index < 5) {
-          debugLog('warn', `[CaptureDebug][Twitter] Container ${index}: EXTRACTION FAILED - no_content`);
-        }
+        const code = 'NULL_RESULT';
+        rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
+        issues.push({ index, issue: code });
       }
     } catch (err) {
       console.warn(`[AlgorithmLens][Twitter] Error parsing container ${index}:`, err.message);
-      issues.push({ index, issue: 'parse_error', error: err.message });
+      const code = 'PARSE_ERROR';
+      rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
+      issues.push({ index, issue: code, error: err.message });
       if (CAPTURE_DEBUG) {
         debugLog('error', `[CaptureDebug][Twitter] Container ${index}: EXTRACTION ERROR - ${err.message}`);
       }
     }
   });
-  
+
   // === DETAILED LOGGING ===
   console.log(`[AlgorithmLens][Twitter] Final posts extracted: ${posts.length}`);
-  
+
   if (CAPTURE_DEBUG) {
     debugLog('log', `[CaptureDebug][Twitter] Scan complete - Total posts: ${posts.length}, Issues: ${issues.length}`);
   }
-  
+
   if (posts.length > 0) {
     console.table(posts.slice(0, 20).map(p => ({
       id: (p.id || '').slice(0, 25),
@@ -2854,9 +3529,9 @@ function scanTwitterFeed() {
       link: p.link ? '✓' : ''
     })));
   }
-  
-  logScanResults('Twitter', posts, issues);
-  
+
+  logScanResults('Twitter', posts, issues, containers.length, rejectionCounts);
+
   return posts;
 }
 
@@ -3211,30 +3886,27 @@ function extractRedditPost(container, index, issues = []) {
     
     // For shreddit-post with at least one non-empty field, build the post directly
     if (caption || creator) {
-      const id = `reddit:${index}:${link || caption || creator || ''}`;
-      
+      // Generate stable ID using permalink (comment ID) - not index-based
+      const postId = generateStableId(platform, creator, caption, container, index, link);
+
       return {
-        id,
+        id: postId,
         platform,
         creator: creator || null,
         caption: caption || null,
         hashtags: extractHashtags(caption),
         isSponsored: isRedditSponsored(container),
+        sponsoredEvidence: null, // Reddit sponsored detection returns boolean only
         ctaText: null,
         link: link || null
       };
     }
-    
-    // Shreddit-post with no creator AND no caption - skip with issue
-    issues.push({
-      index,
-      issue: 'Skipped shreddit-post: no creator and no caption',
-      tag,
-      titleAttr: titleAttr || '(null)',
-      authorAttr: authorAttr || '(null)',
-      subredditPrefixed: subredditPrefixed || '(null)'
-    });
-    return null;
+
+    // Shreddit-post with no creator AND no caption - return rejection code
+    if (CAPTURE_DEBUG) {
+      debugLog('log', `[CaptureDebug][Reddit] Container ${index}: REJECTED [NO_CONTENT] - shreddit-post with no title/author`);
+    }
+    return { rejected: true, code: 'NO_CONTENT' };
   }
   
   // =========================================================================
@@ -3283,27 +3955,25 @@ function extractRedditPost(container, index, issues = []) {
     }
   }
   
-  // Generate stable ID
-  const id = `reddit:${index}:${link || caption || creator || ''}`;
-  
+  // Generate stable ID using permalink (comment ID) - not index-based
+  const postId = generateStableId(platform, creator, caption, container, index, link);
+
   // Only skip when BOTH creator and caption are missing
   if (!creator && !caption) {
-    issues.push({
-      index,
-      issue: 'Skipped Reddit post: no creator and no caption',
-      tag
-    });
-    return null;
+    if (CAPTURE_DEBUG) {
+      debugLog('log', `[CaptureDebug][Reddit] Container ${index}: REJECTED [NO_CONTENT] - no creator and no caption`);
+    }
+    return { rejected: true, code: 'NO_CONTENT' };
   }
-  
+
   return {
-    id,
+    id: postId,
     platform,
     creator: creator || null,
     caption: caption || null,
     hashtags,
     isSponsored: Boolean(isSponsored),
-      sponsoredEvidence: sponsoredEvidence || null,
+    sponsoredEvidence: null, // Reddit sponsored detection returns boolean only
     ctaText: ctaText || null,
     link: link || null
   };
@@ -3433,21 +4103,34 @@ function scanRedditFeed() {
   
   containers = uniqueContainers;
   console.log(`[AlgorithmLens][Reddit] After deduplication: ${containers.length} containers`);
-  
-  // Map containers to posts, passing issues array for mutation
-  const extractedPosts = containers
-    .map((container, index) => {
-      try {
-        return extractRedditPost(container, index, issues);
-      } catch (err) {
-        console.warn(`[AlgorithmLens][Reddit] Error parsing container ${index}:`, err.message);
-        issues.push({ index, issue: 'parse_error', error: err.message });
-        return null;
+
+  // Track rejection code histogram
+  const rejectionCounts = {};
+
+  // Map containers to posts, handling rejection objects
+  containers.forEach((container, index) => {
+    try {
+      const result = extractRedditPost(container, index, issues);
+
+      // Check if result is a rejection object
+      if (result && result.rejected) {
+        const code = result.code || 'UNKNOWN';
+        rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
+        issues.push({ index, issue: code });
+      } else if (result) {
+        posts.push(result);
+      } else {
+        const code = 'NULL_RESULT';
+        rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
+        issues.push({ index, issue: code });
       }
-    })
-    .filter(Boolean);
-  
-  posts.push(...extractedPosts);
+    } catch (err) {
+      console.warn(`[AlgorithmLens][Reddit] Error parsing container ${index}:`, err.message);
+      const code = 'PARSE_ERROR';
+      rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
+      issues.push({ index, issue: code, error: err.message });
+    }
+  });
   
   // =========================================================================
   // FALLBACK: If normal extraction yields 0 posts but we have containers,
@@ -3491,8 +4174,9 @@ function scanRedditFeed() {
       if (!caption && !creator) {
         return null;
       }
-      
-      const id = `reddit-fallback:${index}:${link || caption || creator || ''}`;
+
+      // Generate stable ID - use permalink if available, otherwise content hash
+      const id = generateStableId('reddit', creator, caption, container, index, link);
       
       return {
         id,
@@ -3520,8 +4204,8 @@ function scanRedditFeed() {
       );
     }
     
-    logScanResults('Reddit', fallbackPosts, issues);
-    
+    logScanResults('Reddit', fallbackPosts, issues, containers.length, rejectionCounts);
+
     // ===== INSTRUMENTATION: Final return value from scanRedditFeed (fallback path) =====
     console.debug('[AlgorithmLens][Reddit] 🔄 scanRedditFeed() RETURNING (fallback):', fallbackPosts.length, 'posts');
     if (fallbackPosts.length > 0) {
@@ -3557,9 +4241,9 @@ function scanRedditFeed() {
   if (posts.length === 0) {
     console.warn('[AlgorithmLens][Reddit] ⚠️ No posts extracted. Issues:', issues);
   }
-  
-  logScanResults('Reddit', posts, issues);
-  
+
+  logScanResults('Reddit', posts, issues, containers.length, rejectionCounts);
+
   // ===== INSTRUMENTATION: Final return value from scanRedditFeed (normal path) =====
   console.debug('[AlgorithmLens][Reddit] 🔄 scanRedditFeed() RETURNING (normal):', posts.length, 'posts');
   if (posts.length > 0) {
@@ -3582,38 +4266,84 @@ function scanRedditFeed() {
 // ============================================================================
 
 /**
- * Log scan results in a developer-friendly format
- * @param {string} platformName 
- * @param {DesktopPostItem[]} posts 
- * @param {Array} issues 
+ * Log scan results in a developer-friendly format with structured diagnostics
+ * @param {string} platformName
+ * @param {DesktopPostItem[]} posts
+ * @param {Array} issues
  */
-function logScanResults(platformName, posts, issues) {
+function logScanResults(platformName, posts, issues, containersSeen = 0, rejectionHistogram = null, explicitSubtype = null) {
+  // Build structured issue histogram (fallback if not provided)
+  const issueCounts = rejectionHistogram || {};
+  if (!rejectionHistogram) {
+    issues.forEach(i => {
+      issueCounts[i.issue] = (issueCounts[i.issue] || 0) + 1;
+    });
+  }
+
+  // ============================================================================
+  // SCAN_SUMMARY: Always logged (not gated) - ONE summary line per scan
+  // ============================================================================
+  const containersCount = containersSeen || (posts.length + issues.length);
+
+  // Determine subtype for Instagram (use explicit if provided, otherwise detect)
+  let subtype = explicitSubtype;
+  if (!subtype && platformName.toLowerCase() === 'instagram') {
+    subtype = isInstagramReels() ? 'reels' : 'feed';
+  }
+
+  // Build summary line with optional subtype and rejection histogram
+  const subtypePart = subtype ? `, subtype: "${subtype}"` : '';
+  const histogramStr = Object.keys(issueCounts).length > 0
+    ? `, rejectionCodes: ${JSON.stringify(issueCounts)}`
+    : '';
+  console.log(`[AlgorithmLens] SCAN_SUMMARY { platform: "${platformName}"${subtypePart}, containersSeen: ${containersCount}, extracted: ${posts.length}, rejected: ${issues.length}${histogramStr} }`);
+
+  // Detailed breakdown (for verbose logging)
   console.log(`[AlgorithmLens][${platformName}] ========================================`);
-  console.log(`[AlgorithmLens][${platformName}] ✅ Scan complete`);
+  console.log(`[AlgorithmLens][${platformName}] SCAN COMPLETE`);
   console.log(`[AlgorithmLens][${platformName}]    Total posts extracted: ${posts.length}`);
-  
+
   const sponsored = posts.filter(p => p.isSponsored).length;
   const withCreator = posts.filter(p => p.creator).length;
   const withCaption = posts.filter(p => p.caption).length;
-  const withHashtags = posts.filter(p => p.hashtags.length > 0).length;
+  const withHashtags = posts.filter(p => p.hashtags && p.hashtags.length > 0).length;
   const withCTA = posts.filter(p => p.ctaText).length;
-  
+  const withLink = posts.filter(p => p.link).length;
+
   console.log(`[AlgorithmLens][${platformName}]    Sponsored/Ads: ${sponsored} (${posts.length > 0 ? Math.round(sponsored/posts.length*100) : 0}%)`);
   console.log(`[AlgorithmLens][${platformName}]    With creator: ${withCreator}`);
   console.log(`[AlgorithmLens][${platformName}]    With caption: ${withCaption}`);
   console.log(`[AlgorithmLens][${platformName}]    With hashtags: ${withHashtags}`);
   console.log(`[AlgorithmLens][${platformName}]    With CTA: ${withCTA}`);
-  
+  console.log(`[AlgorithmLens][${platformName}]    With link: ${withLink}`);
+
   // Log extraction issues
   if (issues.length > 0) {
-    const issueCounts = {};
-    issues.forEach(i => {
-      issueCounts[i.issue] = (issueCounts[i.issue] || 0) + 1;
-    });
-    console.log(`[AlgorithmLens][${platformName}] ⚠️ Extraction issues:`, issueCounts);
+    console.log(`[AlgorithmLens][${platformName}] Rejections: ${issues.length}`, issueCounts);
   }
-  
+
   console.log(`[AlgorithmLens][${platformName}] ========================================`);
+
+  // ============================================================================
+  // STRUCTURED DIAGNOSTICS (gated behind CAPTURE_DEBUG for verbose details)
+  // ============================================================================
+  if (CAPTURE_DEBUG) {
+    const summary = {
+      platform: platformName.toLowerCase(),
+      timestamp: new Date().toISOString(),
+      containersSeen: containersCount,
+      postsAccepted: posts.length,
+      postsRejected: issues.length,
+      rejectionReasons: issueCounts,
+      metrics: {
+        withCreator,
+        withCaption,
+        withLink,
+        sponsored,
+      }
+    };
+    debugLog('log', `[CaptureDebug][${platformName}] Full summary:`, summary);
+  }
 }
 
 // ============================================================================
