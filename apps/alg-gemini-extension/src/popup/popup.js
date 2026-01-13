@@ -18,6 +18,48 @@
 // Keep all Facebook code in place for future re-enable
 const FACEBOOK_ENABLED_FOR_MVP = false;
 
+// ============================================
+// DEBUG FLAG (temporary - remove after fixing capture issues)
+// ============================================
+const CAPTURE_DEBUG = true; // Set to false to disable all [CaptureDebug] logs
+
+// ============================================
+// DEBUG LOGGING RELAY (forwards logs to background service worker)
+// ============================================
+
+/**
+ * Unified debug logging helper that logs locally and forwards to background
+ * @param {string} level - 'log', 'warn', or 'error'
+ * @param {string} message - Log message
+ * @param {any} data - Optional data object
+ */
+function debugLog(level, message, data = null) {
+  if (!CAPTURE_DEBUG) return;
+  
+  // Log locally first
+  const consoleMethod = console[level] || console.log;
+  if (data !== null) {
+    consoleMethod(message, data);
+  } else {
+    consoleMethod(message);
+  }
+  
+  // Forward to background service worker
+  try {
+    chrome.runtime.sendMessage({
+      type: 'CAPTURE_DEBUG_LOG',
+      source: 'popup',
+      level: level,
+      message: message,
+      data: data
+    }).catch(() => {
+      // Silently ignore if background isn't ready (non-blocking)
+    });
+  } catch (e) {
+    // Silently ignore messaging errors (non-blocking)
+  }
+}
+
 console.log('[AlgorithmLens] Popup opened');
 
 // ============================================

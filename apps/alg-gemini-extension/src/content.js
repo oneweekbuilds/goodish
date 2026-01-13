@@ -27,6 +27,48 @@
  */
 
 // ============================================================================
+// DEBUG FLAG (temporary - remove after fixing capture issues)
+// ============================================================================
+const CAPTURE_DEBUG = true; // Set to false to disable all [CaptureDebug] logs
+
+// ============================================================================
+// DEBUG LOGGING RELAY (forwards logs to background service worker)
+// ============================================================================
+
+/**
+ * Unified debug logging helper that logs locally and forwards to background
+ * @param {string} level - 'log', 'warn', or 'error'
+ * @param {string} message - Log message
+ * @param {any} data - Optional data object
+ */
+function debugLog(level, message, data = null) {
+  if (!CAPTURE_DEBUG) return;
+  
+  // Log locally first
+  const consoleMethod = console[level] || console.log;
+  if (data !== null) {
+    consoleMethod(message, data);
+  } else {
+    consoleMethod(message);
+  }
+  
+  // Forward to background service worker
+  try {
+    chrome.runtime.sendMessage({
+      type: 'CAPTURE_DEBUG_LOG',
+      source: 'content',
+      level: level,
+      message: message,
+      data: data
+    }).catch(() => {
+      // Silently ignore if background isn't ready (non-blocking)
+    });
+  } catch (e) {
+    // Silently ignore messaging errors (non-blocking)
+  }
+}
+
+// ============================================================================
 // SESSION STATE
 // ============================================================================
 
@@ -1013,6 +1055,10 @@ function scanInstagramFeed() {
   console.log('[AlgorithmLens][Instagram] 🔍 Starting scan...');
   console.log(`[AlgorithmLens][Instagram] URL: ${window.location.href}`);
   
+  if (CAPTURE_DEBUG) {
+    debugLog('log', `[CaptureDebug][Instagram] Starting scan - URL: ${window.location.href}`);
+  }
+  
   // Primary selectors for Instagram posts
   const containerSelectors = [
     'article[role="presentation"]',
@@ -1024,10 +1070,17 @@ function scanInstagramFeed() {
   let containers = [];
   let usedSelector = null;
   
+  if (CAPTURE_DEBUG) {
+    debugLog('log', `[CaptureDebug][Instagram] Testing ${containerSelectors.length} selector variants...`);
+  }
+  
   for (const selector of containerSelectors) {
     const found = safeQueryAll(document, selector);
     // Filter to only actual posts (containing media)
     const filtered = found.filter(el => el.querySelector('img, video'));
+    if (CAPTURE_DEBUG) {
+      debugLog('log', `[CaptureDebug][Instagram] Selector "${selector}": ${found.length} found, ${filtered.length} with media`);
+    }
     if (filtered.length > 0) {
       containers = filtered;
       usedSelector = selector;
@@ -1036,6 +1089,10 @@ function scanInstagramFeed() {
   }
   
   console.log(`[AlgorithmLens][Instagram] Found raw containers: ${containers.length} (${usedSelector})`);
+  
+  if (CAPTURE_DEBUG) {
+    debugLog('log', `[CaptureDebug][Instagram] Selected selector: ${usedSelector || 'NONE'}, Containers: ${containers.length}`);
+  }
   
   // Deduplicate nested articles
   const uniqueContainers = [];
@@ -1064,20 +1121,39 @@ function scanInstagramFeed() {
   
   containers.forEach((container, index) => {
     try {
+      if (CAPTURE_DEBUG && index < 5) {
+        const textNodes = container.querySelectorAll('span[dir="auto"], h1, span');
+        const captionText = Array.from(textNodes).map(n => n.textContent).filter(Boolean).join(' ').slice(0, 100);
+        debugLog('log', `[CaptureDebug][Instagram] Container ${index}: checking extraction, caption preview: "${captionText}..."`);
+      }
+      
       const post = extractInstagramPost(container, index);
       if (post) {
         posts.push(post);
+        if (CAPTURE_DEBUG && index < 5) {
+          debugLog('log', `[CaptureDebug][Instagram] Container ${index}: EXTRACTED - creator: ${post.creator || 'null'}, caption length: ${post.caption?.length || 0}`);
+        }
       } else {
         issues.push({ index, issue: 'no_content' });
+        if (CAPTURE_DEBUG && index < 5) {
+          debugLog('warn', `[CaptureDebug][Instagram] Container ${index}: EXTRACTION FAILED - no_content`);
+        }
       }
     } catch (err) {
       console.warn(`[AlgorithmLens][Instagram] Error parsing container ${index}:`, err.message);
       issues.push({ index, issue: 'parse_error', error: err.message });
+      if (CAPTURE_DEBUG) {
+        debugLog('error', `[CaptureDebug][Instagram] Container ${index}: EXTRACTION ERROR - ${err.message}`);
+      }
     }
   });
   
   // === DETAILED LOGGING ===
   console.log(`[AlgorithmLens][Instagram] Final posts extracted: ${posts.length}`);
+  
+  if (CAPTURE_DEBUG) {
+    debugLog('log', `[CaptureDebug][Instagram] Scan complete - Total posts: ${posts.length}, Issues: ${issues.length}`);
+  }
   
   if (posts.length > 0) {
     console.table(posts.slice(0, 20).map(p => ({
@@ -2663,6 +2739,10 @@ function scanTwitterFeed() {
   console.log('[AlgorithmLens][Twitter] 🔍 Starting scan...');
   console.log(`[AlgorithmLens][Twitter] URL: ${window.location.href}`);
   
+  if (CAPTURE_DEBUG) {
+    debugLog('log', `[CaptureDebug][Twitter] Starting scan - URL: ${window.location.href}`);
+  }
+  
   // Primary selector for Twitter tweets
   const containerSelectors = [
     'article[data-testid="tweet"]',
@@ -2673,8 +2753,15 @@ function scanTwitterFeed() {
   let containers = [];
   let usedSelector = null;
   
+  if (CAPTURE_DEBUG) {
+    debugLog('log', `[CaptureDebug][Twitter] Testing ${containerSelectors.length} selector variants...`);
+  }
+  
   for (const selector of containerSelectors) {
     const found = safeQueryAll(document, selector);
+    if (CAPTURE_DEBUG) {
+      debugLog('log', `[CaptureDebug][Twitter] Selector "${selector}": ${found.length} found`);
+    }
     if (found.length > 0) {
       containers = found;
       usedSelector = selector;
@@ -2683,6 +2770,10 @@ function scanTwitterFeed() {
   }
   
   console.log(`[AlgorithmLens][Twitter] Found raw containers: ${containers.length} (${usedSelector})`);
+  
+  if (CAPTURE_DEBUG) {
+    debugLog('log', `[CaptureDebug][Twitter] Selected selector: ${usedSelector || 'NONE'}, Containers: ${containers.length}`);
+  }
   
   // Filter out empty or non-tweet containers
   containers = containers.filter(el => {
@@ -2718,20 +2809,39 @@ function scanTwitterFeed() {
   
   containers.forEach((container, index) => {
     try {
+      if (CAPTURE_DEBUG && index < 5) {
+        const textNodes = container.querySelectorAll('div[data-testid="tweetText"], span[lang]');
+        const captionText = Array.from(textNodes).map(n => n.textContent).filter(Boolean).join(' ').slice(0, 100);
+        debugLog('log', `[CaptureDebug][Twitter] Container ${index}: checking extraction, text preview: "${captionText}..."`);
+      }
+      
       const post = extractTwitterPost(container, index);
       if (post) {
         posts.push(post);
+        if (CAPTURE_DEBUG && index < 5) {
+          debugLog('log', `[CaptureDebug][Twitter] Container ${index}: EXTRACTED - creator: ${post.creator || 'null'}, caption length: ${post.caption?.length || 0}`);
+        }
       } else {
         issues.push({ index, issue: 'no_content' });
+        if (CAPTURE_DEBUG && index < 5) {
+          debugLog('warn', `[CaptureDebug][Twitter] Container ${index}: EXTRACTION FAILED - no_content`);
+        }
       }
     } catch (err) {
       console.warn(`[AlgorithmLens][Twitter] Error parsing container ${index}:`, err.message);
       issues.push({ index, issue: 'parse_error', error: err.message });
+      if (CAPTURE_DEBUG) {
+        debugLog('error', `[CaptureDebug][Twitter] Container ${index}: EXTRACTION ERROR - ${err.message}`);
+      }
     }
   });
   
   // === DETAILED LOGGING ===
   console.log(`[AlgorithmLens][Twitter] Final posts extracted: ${posts.length}`);
+  
+  if (CAPTURE_DEBUG) {
+    debugLog('log', `[CaptureDebug][Twitter] Scan complete - Total posts: ${posts.length}, Issues: ${issues.length}`);
+  }
   
   if (posts.length > 0) {
     console.table(posts.slice(0, 20).map(p => ({
@@ -3630,6 +3740,11 @@ function getFeedContainerSelectors(platform) {
 function collectVisiblePosts() {
   if (!sessionActive || !sessionPlatform) return;
   
+  if (CAPTURE_DEBUG) {
+    const elapsed = sessionStartTime ? Math.round((Date.now() - sessionStartTime) / 1000) : 0;
+    debugLog('log', `[CaptureDebug][${sessionPlatform}] collectVisiblePosts() called - Elapsed: ${elapsed}s, Current total: ${sessionPosts.size}`);
+  }
+  
   // Check scroll-based activation - force scan if user scrolled significantly
   const currentScrollY = window.scrollY || window.pageYOffset || 0;
   const scrollDelta = Math.abs(currentScrollY - lastScrollY);
@@ -3713,6 +3828,11 @@ function collectVisiblePosts() {
   
   if (newCount > 0 || duplicateCount > 0) {
     console.log(`[AlgorithmLens][Session] ➕ Batch: ${posts.length} scanned, ${newCount} new, ${duplicateCount} duplicates. Total unique: ${sessionPosts.size}`);
+  }
+  
+  if (CAPTURE_DEBUG) {
+    const elapsed = sessionStartTime ? Math.round((Date.now() - sessionStartTime) / 1000) : 0;
+    debugLog('log', `[CaptureDebug][${sessionPlatform}] Batch complete - Scanned: ${posts.length}, New: ${newCount}, Duplicates: ${duplicateCount}, Total unique: ${sessionPosts.size}, Elapsed: ${elapsed}s`);
   }
   
   // ============================================================================
@@ -3872,11 +3992,43 @@ function startSessionScan() {
   console.log(`[AlgorithmLens][Session] Platform: ${platform}`);
   console.log(`[AlgorithmLens][Session] Start time: ${new Date().toISOString()}`);
   
+  if (CAPTURE_DEBUG) {
+    debugLog('log', `[CaptureDebug][${platform}] START_SESSION_SCAN - Session started at ${new Date().toISOString()}`);
+  }
+  
   // Initial collection
   collectVisiblePosts();
   
   // Set up observers
   setupSessionObserver();
+  
+  // Set up periodic heartbeat logging (every 1 second during active session)
+  if (CAPTURE_DEBUG) {
+    const heartbeatInterval = setInterval(() => {
+      if (!sessionActive) {
+        clearInterval(heartbeatInterval);
+        return;
+      }
+      const elapsed = sessionStartTime ? Math.round((Date.now() - sessionStartTime) / 1000) : 0;
+      const selectorCounts = {};
+      if (platform === 'instagram') {
+        const selectors = ['article[role="presentation"]', 'article', 'div[class*="_aagv"]'];
+        selectors.forEach(sel => {
+          const found = document.querySelectorAll(sel);
+          selectorCounts[sel] = found.length;
+        });
+      } else if (platform === 'twitter') {
+        const selectors = ['article[data-testid="tweet"]', 'article[role="article"]'];
+        selectors.forEach(sel => {
+          const found = document.querySelectorAll(sel);
+          selectorCounts[sel] = found.length;
+        });
+      }
+      debugLog('log', `[CaptureDebug][${platform}] Heartbeat - Elapsed: ${elapsed}s, Total posts: ${sessionPosts.size}, Selector counts:`, selectorCounts);
+    }, 1000);
+    // Store interval ID so we can clear it on stop
+    window._alCaptureDebugHeartbeat = heartbeatInterval;
+  }
   
   console.debug('[AlgorithmLens][Session][Content] startSessionScan() → observers attached, debouncers set.');
   console.log(`[AlgorithmLens][Session] 📊 Initial posts collected: ${sessionPosts.size}`);
@@ -3991,6 +4143,15 @@ function stopSessionScan() {
   
   // Clear session state
   sessionActive = false;
+  
+  if (CAPTURE_DEBUG) {
+    debugLog('log', `[CaptureDebug][${platform}] STOP_SESSION_SCAN - Final total: ${sessionPosts.size} posts, Duration: ${duration}s`);
+    if (window._alCaptureDebugHeartbeat) {
+      clearInterval(window._alCaptureDebugHeartbeat);
+      window._alCaptureDebugHeartbeat = null;
+    }
+  }
+  
   sessionPosts.clear();
   sessionPlatform = null;
   sessionStartTime = null;
@@ -4129,6 +4290,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 (function init() {
   const platform = detectPlatform();
+  const runId = Math.random().toString(36).substring(2, 9);
   
   console.log('\n');
   console.log('[AlgorithmLens] ╔════════════════════════════════════════╗');
@@ -4138,4 +4300,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log(`[AlgorithmLens] URL: ${window.location.href}`);
   console.log('[AlgorithmLens] Ready for commands: SCAN_FEED, START_SESSION_SCAN, STOP_SESSION_SCAN');
   console.log('\n');
+  
+  if (CAPTURE_DEBUG) {
+    debugLog('log', `[CaptureDebug] Content script loaded - Platform: ${platform}, URL: ${window.location.href}, RunID: ${runId}`);
+  }
 })();

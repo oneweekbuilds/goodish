@@ -14,6 +14,11 @@ import { mapDesktopPostsToUnifiedResult } from './desktop_mapper.js';
 
 console.log('[AlgorithmLens] Background service worker active');
 
+// ============================================================================
+// DEBUG FLAG (temporary - remove after fixing capture issues)
+// ============================================================================
+const CAPTURE_DEBUG = true; // Set to false to disable all [CaptureDebug] logs
+
 // ============================================
 // Utility: Generate unique scan ID
 // ============================================
@@ -176,6 +181,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log('[AlgorithmLens] Background received message:', message.action || message.type);
   
   // ----------------------------------------
+  // Debug log relay (forwards content/popup logs to background console)
+  // ----------------------------------------
+  if (message.type === 'CAPTURE_DEBUG_LOG' && CAPTURE_DEBUG) {
+    const { source, level, message: logMessage, data } = message;
+    const prefix = `[CaptureDebug][${source.charAt(0).toUpperCase() + source.slice(1)}]`;
+    const consoleMethod = console[level] || console.log;
+    
+    if (data !== null && data !== undefined) {
+      consoleMethod(`${prefix} ${logMessage}`, data);
+    } else {
+      consoleMethod(`${prefix} ${logMessage}`);
+    }
+    
+    // No response needed for log relay
+    return false;
+  }
+  
+  // ----------------------------------------
   // Get active tab
   // ----------------------------------------
   if (message.type === 'GET_ACTIVE_TAB') {
@@ -300,6 +323,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.debug('[AlgorithmLens][Session] START_SESSION_SCAN received (user clicked Start)');
     console.log('[AlgorithmLens] === START_SESSION_SCAN ===');
     
+    if (CAPTURE_DEBUG) {
+      console.log('[CaptureDebug][Background] START_SESSION_SCAN received - geminiConsent:', message.geminiConsent);
+    }
+    
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
       const tab = tabs[0];
       if (!tab) {
@@ -383,6 +410,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         console.debug(`[AlgorithmLens][Session] NEW scanId generated: ${scanId}`);
         console.log(`[AlgorithmLens] Session state saved with scanId=${scanId}, geminiConsent=${geminiConsent}`);
+        
+        if (CAPTURE_DEBUG) {
+          console.log(`[CaptureDebug][Background] Session started - scanId: ${scanId}, platform: ${contentResponse.platform}, initialPostCount: ${contentResponse.initialPostCount || 0}`);
+        }
         
         // Set the recording badge
         await setRecordingBadge(tabId);
@@ -506,6 +537,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         
         const { posts, platform, rateLimited, rateState } = contentResponse;
         
+        if (CAPTURE_DEBUG) {
+          console.log(`[CaptureDebug][Background] STOP_SESSION_SCAN_AND_PROCESS - Received ${posts?.length || 0} posts from content script, platform: ${platform}`);
+          console.log(`[CaptureDebug][Background] Payload size: ${JSON.stringify(posts || []).length} bytes`);
+        }
+        
         // Log rate limit info if triggered
         if (rateLimited) {
           console.warn('[AlgorithmLens][Background] Session was rate-limited. Posts collected:', posts?.length || 0);
@@ -622,6 +658,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         let backendResponse = null;
         try {
+          if (CAPTURE_DEBUG) {
+            const payloadSize = JSON.stringify(payloadWithConsent).length;
+            console.log(`[CaptureDebug][Background] Sending to backend - URL: ${BACKEND_URL}/api/scan/desktop, Payload size: ${payloadSize} bytes, scanId: ${result.scan_metadata?.scan_id}`);
+          }
+          
           const response = await fetch(`${BACKEND_URL}/api/scan/desktop`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -636,6 +677,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           backendResponse = await response.json();
           console.log('[AlgorithmLens] Scan saved to backend:', backendResponse);
           
+          if (CAPTURE_DEBUG) {
+            console.log(`[CaptureDebug][Background] Backend response received - success: ${backendResponse?.success}, scan_id: ${backendResponse?.scan_id}`);
+          }
+          
         } catch (backendError) {
           console.error('[AlgorithmLens][Background] Ingest request failed:', backendError);
           console.error('[AlgorithmLens][Background] Attempted payload summary:', {
@@ -644,6 +689,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             total_items: result.aggregates?.total_feed_items,
             total_ads: result.aggregates?.total_ads
           });
+          
+          if (CAPTURE_DEBUG) {
+            console.error(`[CaptureDebug][Background] Backend error: ${backendError.message}`);
+          }
+          
           backendResponse = { success: false, error: backendError.message };
         }
         
