@@ -459,6 +459,10 @@ function attachDashboardButtonHandler() {
 async function startSession() {
   console.log('[AlgorithmLens] Starting session scan...');
   
+  if (CAPTURE_DEBUG) {
+    debugLog('log', '[CaptureDebug] Start Scan button clicked');
+  }
+  
   // Safety check: prevent Facebook sessions even if button was somehow clicked
   try {
     const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -555,6 +559,10 @@ async function startSession() {
 
 async function stopSessionAndAnalyze() {
   console.log('[AlgorithmLens] Stopping session and analyzing...');
+  
+  if (CAPTURE_DEBUG) {
+    debugLog('log', '[CaptureDebug] Stop Scan button clicked');
+  }
   
   scanButton.disabled = true;
   scanButton.textContent = 'Analyzing...';

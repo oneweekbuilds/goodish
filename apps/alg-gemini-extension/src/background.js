@@ -419,7 +419,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         console.log(`[AlgorithmLens] Session state saved with scanId=${scanId}, geminiConsent=${geminiConsent}`);
         
         if (CAPTURE_DEBUG) {
-          console.log(`[CaptureDebug][Background] Session started - scanId: ${scanId}, platform: ${contentResponse.platform}, initialPostCount: ${contentResponse.initialPostCount || 0}`);
+          console.log(`[CaptureDebug][Background] START_SESSION_SCAN received - scanId: ${scanId}, platform: ${contentResponse.platform}, initialPostCount: ${contentResponse.initialPostCount || 0}`);
         }
         
         // Set the recording badge
@@ -472,6 +472,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'STOP_SESSION_SCAN_AND_PROCESS') {
     console.debug('[AlgorithmLens][Session] STOP_SESSION_SCAN_AND_PROCESS received (user-initiated stop)');
     console.log('[AlgorithmLens] === STOP_SESSION_SCAN_AND_PROCESS ===');
+    
+    if (CAPTURE_DEBUG) {
+      console.log('[CaptureDebug][Background] STOP_SESSION_SCAN_AND_PROCESS received');
+    }
 
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
       const tab = tabs[0];
@@ -546,7 +550,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         
         if (CAPTURE_DEBUG) {
           console.log(`[CaptureDebug][Background] STOP_SESSION_SCAN_AND_PROCESS - Received ${posts?.length || 0} posts from content script, platform: ${platform}`);
-          console.log(`[CaptureDebug][Background] Payload size: ${JSON.stringify(posts || []).length} bytes`);
+          console.log(`[CaptureDebug][Background] Posts received from content script: ${posts?.length || 0}, Payload size: ${JSON.stringify(posts || []).length} bytes`);
         }
         
         // Log rate limit info if triggered

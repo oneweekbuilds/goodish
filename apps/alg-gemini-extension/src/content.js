@@ -1152,7 +1152,8 @@ function scanInstagramFeed() {
   console.log(`[AlgorithmLens][Instagram] Final posts extracted: ${posts.length}`);
   
   if (CAPTURE_DEBUG) {
-    debugLog('log', `[CaptureDebug][Instagram] Scan complete - Total posts: ${posts.length}, Issues: ${issues.length}`);
+    debugLog('log', `[CaptureDebug][Instagram] Scan complete - Total posts extracted: ${posts.length}, Issues: ${issues.length}`);
+    debugLog('log', `[CaptureDebug][Instagram] Posts successfully extracted: ${posts.length} out of ${containers.length} containers`);
   }
   
   if (posts.length > 0) {
