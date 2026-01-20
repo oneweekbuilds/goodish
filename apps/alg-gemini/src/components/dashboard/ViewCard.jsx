@@ -163,6 +163,7 @@ const ViewCard = ({
   const data = dataResult?.data;
   const missing = dataResult?.missing;
   const chartQuality = dataResult?.chartQuality;
+  const suppressInlineHeroTakeaway = isInline && view?.hero;
 
   // PHASE 11: Quality gating - check if data quality passes threshold
   // Even if hasData is true, we may need to show insufficient data state
@@ -183,7 +184,7 @@ const ViewCard = ({
     : emptyStateType;
 
   // Compute takeaway text
-  const takeawayText = hasData && typeof takeaway === 'function'
+  const takeawayText = (!suppressInlineHeroTakeaway && hasData && typeof takeaway === 'function')
     ? takeaway(data)
     : null;
 
@@ -441,24 +442,34 @@ const ViewCard = ({
       return null;
     }
 
+    const unclassifiedItems = items.filter(item => item.isUnclassified);
+    const mainItems = items.filter(item => !item.isUnclassified);
+
     // UI Refoundation: Bullet color uses semantic accent
     const bulletColor = accentColor === 'green' ? 'text-emerald-500' : 'text-primary-blue';
 
     return (
       <div className="space-y-3">
-        <ul className="space-y-2">
-          {items.map((item, index) => (
-            <li key={index} className="flex items-start gap-2 text-slate-700">
-              <span className={item.isUnclassified ? 'text-slate-400 mt-1' : `${bulletColor} mt-1`}>•</span>
-              <span className={item.isUnclassified ? 'text-slate-500 italic' : ''}>
-                {typeof item === 'string' ? item : item.text}
-                {item.subtext && (
-                  <span className="text-xs text-slate-400 ml-2">({item.subtext})</span>
-                )}
-              </span>
-            </li>
-          ))}
-        </ul>
+        {mainItems.length > 0 && (
+          <ul className="space-y-2">
+            {mainItems.map((item, index) => (
+              <li key={index} className="flex items-start gap-2 text-slate-700">
+                <span className={`${bulletColor} mt-1`}>•</span>
+                <span>
+                  {typeof item === 'string' ? item : item.text}
+                  {item.subtext && (
+                    <span className="text-xs text-slate-400 ml-2">({item.subtext})</span>
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {unclassifiedItems.length > 0 && (
+          <p className="text-xs text-slate-400 italic">
+            Other / couldn&apos;t categorize: {unclassifiedItems.map(item => (typeof item === 'string' ? item : item.text)).join(', ')}
+          </p>
+        )}
         {note && !isInline && (
           <p className="text-xs text-slate-400 italic">
             {note}

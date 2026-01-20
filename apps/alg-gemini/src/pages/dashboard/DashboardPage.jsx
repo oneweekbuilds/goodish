@@ -1789,16 +1789,18 @@ const DashboardPage = () => {
             />
 
             {/* Talk to Your Algorithm - Premium invitation (GREEN theme) - SAME placement for ALL tabs */}
-            <div className="mt-10">
-              <TalkToAlgorithmSection
-                feedData={{
-                  scans,
-                  scanDetails,
-                  viewDataResults,
-                }}
-                tabId={activeTab}
-              />
-            </div>
+            {activeTab !== 'ads' && (
+              <div className="mt-10">
+                <TalkToAlgorithmSection
+                  feedData={{
+                    scans,
+                    scanDetails,
+                    viewDataResults,
+                  }}
+                  tabId={activeTab}
+                />
+              </div>
+            )}
           </FeatureMomentWrapper>
 
           {/* Second Visual Anchor - Chapter opener after Talk - NOW for ALL tabs */}
@@ -1844,6 +1846,19 @@ const DashboardPage = () => {
               />
             )}
           </ReadingColumnWrapper>
+
+          {activeTab === 'ads' && (
+            <div className="mt-10">
+              <TalkToAlgorithmSection
+                feedData={{
+                  scans,
+                  scanDetails,
+                  viewDataResults,
+                }}
+                tabId={activeTab}
+              />
+            </div>
+          )}
         </div>
 
         {/* Phase 8: Minimal footer - Softer, less competing */}

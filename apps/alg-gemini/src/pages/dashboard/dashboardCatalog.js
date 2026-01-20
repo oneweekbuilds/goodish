@@ -452,11 +452,6 @@ export const dashboardCatalog = [
       });
       const [top, second] = labels;
 
-      const total = data.totalPosts || 0;
-      const unclassifiedShare = (data.topTopics || []).find((t) => (
-        t?.isUnclassified || isHeadlineExcludedLabel(t?.label)
-      ))?.value || 0;
-
       // Slice 6: If everything is Unclassified/Other, do not surface it in top-line copy.
       if (!data.topicCount || data.topicCount <= 0) {
         return FALLBACK_MIX_TOPICS_HEADLINE;
@@ -464,26 +459,26 @@ export const dashboardCatalog = [
       
       if (data.topicCount <= 3) {
         if (top && second) {
-          return `In this scan, content clustered around ${data.topicCount} topics — primarily ${top} and ${second}${unclassifiedShare > 20 ? '. Some posts couldn\'t be categorized yet' : ''} (${total} posts observed).`;
+        return `In this scan, content clustered around ${data.topicCount} topics — primarily ${top} and ${second}.`;
         } else if (top) {
-          return `In this scan, content clustered around ${data.topicCount} topics — primarily ${top}${unclassifiedShare > 20 ? '. Some posts couldn\'t be categorized yet' : ''} (${total} posts observed).`;
+        return `In this scan, content clustered around ${data.topicCount} topics — primarily ${top}.`;
         }
-        return `In this scan, content clustered around ${data.topicCount} topics${unclassifiedShare > 20 ? '. Some posts couldn\'t be categorized yet' : ''} (${total} posts observed).`;
+      return `In this scan, content clustered around ${data.topicCount} topics.`;
       }
       if (data.topicCount <= 7) {
         if (top && second) {
-          return `In this scan, ${top} and ${second} appeared most, with ${data.topicCount - 2} other topics present${unclassifiedShare > 20 ? '. Some posts couldn\'t be categorized yet' : ''}.`;
+        return `In this scan, ${top} and ${second} appeared most, with ${data.topicCount - 2} other topics present.`;
         } else if (top) {
-          return `In this scan, ${top} appeared most, with ${data.topicCount - 1} other topics present${unclassifiedShare > 20 ? '. Some posts couldn\'t be categorized yet' : ''}.`;
+        return `In this scan, ${top} appeared most, with ${data.topicCount - 1} other topics present.`;
         }
-        return `In this scan, one topic appeared most, with ${data.topicCount - 1} other topics present${unclassifiedShare > 20 ? '. Some posts couldn\'t be categorized yet' : ''}.`;
+      return `In this scan, one topic appeared most, with ${data.topicCount - 1} other topics present.`;
       }
       if (top && second) {
-        return `In this scan, ${data.topicCount} different topics were detected, with ${top} and ${second} appearing most often${unclassifiedShare > 20 ? '. Some posts couldn\'t be categorized yet' : ''}.`;
+      return `In this scan, ${data.topicCount} different topics were detected, with ${top} and ${second} appearing most often.`;
       } else if (top) {
-        return `In this scan, ${data.topicCount} different topics were detected, with ${top} appearing most often${unclassifiedShare > 20 ? '. Some posts couldn\'t be categorized yet' : ''}.`;
+      return `In this scan, ${data.topicCount} different topics were detected, with ${top} appearing most often.`;
       }
-      return `In this scan, ${data.topicCount} different topics were detected${unclassifiedShare > 20 ? '. Some posts couldn\'t be categorized yet' : ''}.`;
+    return `In this scan, ${data.topicCount} different topics were detected.`;
     },
     action: () => 'You could try searching for new topics to see if variety changes.',
   },
