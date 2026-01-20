@@ -382,6 +382,8 @@ const ExpandableDetailRow = ({ view, dataResult, isExpanded, onToggle, accentCol
             platformCount={0}
             accentColor={accentColor}
             isInline={true}
+            hideTitle={true}
+            hideDescription={true}
           />
         </div>
       )}
@@ -887,6 +889,8 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                             platformCount={platformCount}
                             accentColor="blue"
                             isInline={true}
+                            hideTitle={true}
+                            hideDescription={true}
                           />
                         </div>
                       </div>

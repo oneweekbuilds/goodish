@@ -101,7 +101,17 @@ const CounterfactualNote = ({ text }) => {
  * @param {boolean} isFullWidth - Full width card (primary/summary)
  * @param {boolean} isInline - Inline card (inside expandable section)
  */
-const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0, accentColor = 'blue', isFullWidth = false, isInline = false }) => {
+const ViewCard = ({
+  view,
+  dataResult,
+  scanCount = 0,
+  platformCount = 0,
+  accentColor = 'blue',
+  isFullWidth = false,
+  isInline = false,
+  hideTitle = false,
+  hideDescription = false,
+}) => {
   const {
     title,
     description,
@@ -623,39 +633,49 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0, accentCo
     return 'p-6';
   };
 
+  const showSummaryEyebrow = isSummaryCard;
+  const showPrimaryEyebrow = isPrimary && !isSummaryCard && hasData && !isInline;
+  const showTitle = !hideTitle;
+  const showDescription = !hideDescription && !isInline;
+  const shouldRenderHeader = showSummaryEyebrow || showPrimaryEyebrow || showTitle || showDescription;
+
   return (
     <div className={getCardClasses()} style={getCardStyles()}>
       {/* Card Header - Anatomy: Eyebrow → Title → Description */}
-      <div className={getHeaderClasses()} style={getHeaderBorderStyles()}>
-        {/* Eyebrow label with semantic accent */}
-        {isSummaryCard && (
-          <span className={`inline-block text-[10px] font-semibold uppercase tracking-widest mb-2 ${accentText}`}>
-            Summary
-          </span>
-        )}
-        {isPrimary && !isSummaryCard && hasData && !isInline && (
-          <span className={`inline-block text-[10px] font-semibold uppercase tracking-widest mb-2 ${accentText}`}>
-            Key Insight
-          </span>
-        )}
-        {/* Title */}
-        <h3 className={`font-semibold text-text-main line-clamp-2 ${
-          isPrimary && hasData ? 'text-xl' :
-          isFutureCard ? 'text-sm text-slate-500' :
-          'text-base'
-        }`}>
-          {title}
-        </h3>
-        {/* Description - subtle */}
-        {!isInline && (
-          <p className={`mt-1 line-clamp-2 ${
-            isPrimary && hasData ? 'text-sm text-text-muted' :
-            'text-xs text-slate-400'
-          }`}>
-            {description}
-          </p>
-        )}
-      </div>
+      {shouldRenderHeader && (
+        <div className={getHeaderClasses()} style={getHeaderBorderStyles()}>
+          {/* Eyebrow label with semantic accent */}
+          {showSummaryEyebrow && (
+            <span className={`inline-block text-[10px] font-semibold uppercase tracking-widest mb-2 ${accentText}`}>
+              Summary
+            </span>
+          )}
+          {showPrimaryEyebrow && (
+            <span className={`inline-block text-[10px] font-semibold uppercase tracking-widest mb-2 ${accentText}`}>
+              Key Insight
+            </span>
+          )}
+          {/* Title */}
+          {showTitle && (
+            <h3 className={`font-semibold text-text-main line-clamp-2 ${
+              isPrimary && hasData ? 'text-xl' :
+              isFutureCard ? 'text-sm text-slate-500' :
+              'text-base'
+            }`}>
+              {title}
+            </h3>
+          )}
+          {/* Description - subtle */}
+          {showDescription && (
+            <p className={`mt-1 line-clamp-2 ${
+              isPrimary && hasData ? 'text-sm text-text-muted' :
+              'text-xs text-slate-400'
+            }`}>
+              {description}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Card Content - Anatomy: Takeaway (largest) → Chart (de-emphasized) → Why */}
       {/* PHASE 11: Use showChart (hasData AND quality OK) instead of just hasData */}
