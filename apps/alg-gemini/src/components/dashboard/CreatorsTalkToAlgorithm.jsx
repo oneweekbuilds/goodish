@@ -14,7 +14,6 @@ const CreatorsTalkToAlgorithm = ({ scanId }) => {
     <div className="talk-to-algorithm-panel">
       <div className="talk-to-algorithm-content">
         <h3>Talk to your algorithm (coming soon)</h3>
-        <p>Coming soon</p>
       </div>
     </div>
   );

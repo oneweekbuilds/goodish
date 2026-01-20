@@ -939,7 +939,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
           <MaybeChapter variant="accent">
             <button
               onClick={() => toggleSection('moreDetails')}
-              className="w-full flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-left transition-colors hover:border-slate-300"
+              className="w-full flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-left transition-colors hover:border-slate-300"
               aria-expanded={expandedSections.moreDetails}
               aria-label={expandedSections.moreDetails ? 'Collapse more details' : 'Expand more details'}
             >
@@ -1065,7 +1065,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
           <MaybeChapter variant="default">
             <button
               onClick={() => toggleSection('tryThis')}
-              className="w-full flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-left transition-colors hover:border-slate-300"
+              className="w-full flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-left transition-colors hover:border-slate-300"
               aria-expanded={expandedSections.tryThis}
               aria-label={expandedSections.tryThis ? 'Collapse Try this actions' : 'Expand Try this actions'}
             >
@@ -1808,9 +1808,9 @@ const DashboardPage = () => {
             tabId={activeTab}
             className={
               activeTab === 'politics'
-                ? 'mt-2 mb-8'
+                ? 'mt-1 mb-8'
                 : activeTab === 'ads'
-                  ? 'mt-8'
+                  ? 'mt-10'
                   : ''
             }
           />
