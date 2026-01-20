@@ -559,6 +559,15 @@ const TAB_STORY_HEADERS = {
 // Legacy alias for backward compatibility
 const ALGORITHM_TAB_HEADERS = TAB_STORY_HEADERS.algorithm;
 
+// Curated supporting view whitelists per tab (deterministic)
+const CURATED_SUPPORTING_BY_TAB = {
+  ads: ['ads-concentration', 'ads-by-platform', 'ads-products'],
+  politics: ['politics-creators', 'politics-platform-compare', 'politics-profile'],
+  patterns: ['patterns-echo-risk', 'manipulative-patterns', 'patterns-repeated-themes'],
+  creators: ['creators-concentration', 'creators-voice-diversity', 'creators-new-vs-familiar'],
+  algorithm: ['algorithm-profile-breadth', 'algorithm-recurring-themes', 'algorithm-future-recommendations'],
+};
+
 /**
  * ViewsGridWithCollapsing - Part 3: Editorial Stack Redesign
  *
@@ -675,8 +684,18 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
   // Get views for each section
   const primaryCards = groupedViews.primary.withData;
   const supportingCards = groupedViews.supporting.withData;
-  const visibleSupportingCards = supportingCards.slice(0, 4);
-  const supportingOverflow = supportingCards.slice(4);
+  const whitelist = CURATED_SUPPORTING_BY_TAB[tabId];
+  const supportingIdSet = new Set(supportingCards.map(v => v.id));
+  const whitelistValid = Array.isArray(whitelist) && whitelist.every(id => supportingIdSet.has(id));
+
+  let visibleSupportingCards = supportingCards.slice(0, 4);
+  let supportingOverflow = supportingCards.slice(4);
+
+  if (whitelistValid) {
+    const whitelistSet = new Set(whitelist);
+    visibleSupportingCards = supportingCards.filter(v => whitelistSet.has(v.id));
+    supportingOverflow = supportingCards.filter(v => !whitelistSet.has(v.id));
+  }
   const speculationCards = [
     ...groupedViews.primary.collapsed,
     ...groupedViews.supporting.collapsed,
