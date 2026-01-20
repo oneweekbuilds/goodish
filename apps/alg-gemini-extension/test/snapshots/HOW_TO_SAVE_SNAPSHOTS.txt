@@ -1,0 +1,55 @@
+HOW TO SAVE HTML SNAPSHOTS
+===========================
+
+For each platform, follow these steps:
+
+STEP 1: Go to the website
+-------------------------
+- Instagram Desktop: Go to instagram.com, scroll through 5-10 posts
+- Instagram Reels: Go to instagram.com/reels, watch 5-10 reels
+- Twitter/X: Go to twitter.com or x.com, scroll through 5-10 tweets
+
+STEP 2: Open the browser console
+--------------------------------
+- Press F12 on your keyboard
+- OR right-click anywhere and select "Inspect"
+- Click on the "Console" tab at the top
+
+STEP 3: Copy the page HTML
+--------------------------
+- Click in the console area (where you can type)
+- Paste this command and press Enter:
+
+    copy(document.documentElement.outerHTML)
+
+- You won't see anything happen, but the HTML is now copied
+
+STEP 4: Save to a file
+----------------------
+- Open Notepad (or any text editor)
+- Press Ctrl+V to paste
+- Save the file in THIS folder with one of these names:
+    - instagram_desktop.html
+    - instagram_reels.html
+    - twitter.html
+
+STEP 5: Write down what you saw
+-------------------------------
+Create a text file (e.g., instagram_desktop_notes.txt) with:
+- How many posts you saw
+- Any ads/sponsored posts
+- Any hashtags you noticed
+- Brief topic of each post (sports, food, etc.)
+
+Example:
+  Instagram Desktop - 5 posts
+  Post 1: @nike - sponsored ad - fitness
+  Post 2: @espn - sports - had #NFL hashtag
+  Post 3: @foodnetwork - cooking
+  Post 4: @natgeo - nature photos
+  Post 5: @techcrunch - tech news
+
+DONE!
+-----
+Once you have the HTML files saved here, let Claude know and
+we can run the tests without you having to browse again.

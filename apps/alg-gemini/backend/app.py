@@ -6,6 +6,10 @@ import os
 import uuid
 import threading
 from datetime import datetime
+
+# Load environment variables from .env.local (for GEMINI_API_KEY, etc.)
+from dotenv import load_dotenv
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env.local'))
 from video_processor import process_video
 from models import ScanResult  # Keeping for backward compat if needed, but not used in endpoint
 from unified_scan_models import UnifiedScanResult
@@ -381,6 +385,13 @@ async def desktop_scan(scan_result: dict):
         aggregates = scan_result.get("aggregates", {})
         feed_items = scan_result.get("feed_items", [])
         
+        scan_id = scan_metadata.get("scan_id")
+        platform = scan_metadata.get("platform", "UNKNOWN")
+        payload_size = len(str(scan_result))
+        
+        # [CaptureDebug] Log request received
+        print(f"[CaptureDebug][Backend] Request received - scanId: {scan_id}, platform: {platform}, payload_size: {payload_size} bytes")
+        
         # Log received payload summary for debugging
         platform_summary = {}
         for item in feed_items:
@@ -390,8 +401,8 @@ async def desktop_scan(scan_result: dict):
                 platform_summary["ads"] = platform_summary.get("ads", 0) + 1
         
         print(f"[desktop_scan] Ingest handler: received posts summary: {platform_summary}")
+        print(f"[CaptureDebug][Backend] feed_items count: {len(feed_items)}, aggregates.total_feed_items: {aggregates.get('total_feed_items', 0)}")
         
-        scan_id = scan_metadata.get("scan_id")
         if not scan_id:
             raise HTTPException(status_code=400, detail="Missing scan_id in scan_metadata")
         
@@ -406,10 +417,12 @@ async def desktop_scan(scan_result: dict):
             scan_metadata["created_at"] = created_at
         
         # Extract summary fields
-        platform = scan_metadata.get("platform", "UNKNOWN")
         total_items = aggregates.get("total_feed_items", 0)
         total_ads = aggregates.get("total_ads", 0)
         ad_percentage = aggregates.get("ad_percentage", 0.0)
+        
+        # [CaptureDebug] Log computed n_items that analysis will see
+        print(f"[CaptureDebug][Backend] Computed n_items (total_feed_items): {total_items}, total_ads: {total_ads}")
 
         # Run Gemini AI analysis if user consented
         # Policy: Gemini is CORE to every scan, not a separate tier
@@ -424,10 +437,11 @@ async def desktop_scan(scan_result: dict):
         else:
             try:
                 print(f"[desktop_scan] Running Gemini AI analysis for {total_items} posts (consent=True)...")
-                scan_result = analyze_scan(scan_result)
-                ai_analyzed = True
-                gemini_reason = "success"
-                print(f"[desktop_scan] Gemini analysis complete")
+                scan_result, ai_analyzed, gemini_reason = analyze_scan(scan_result)
+                if ai_analyzed:
+                    print(f"[desktop_scan] Gemini analysis complete")
+                else:
+                    print(f"[desktop_scan] Gemini analysis did not run: {gemini_reason}")
             except Exception as e:
                 gemini_reason = f"error:{str(e)}"
                 print(f"[desktop_scan] Gemini analysis failed (non-fatal): {e}")
@@ -446,6 +460,13 @@ async def desktop_scan(scan_result: dict):
 
         print(f"[desktop_scan] Saved desktop scan {scan_id}: {total_items} items, {total_ads} ads")
 
+        # Extract Gemini-enriched data to return to extension
+        # This allows the popup to show AI-classified topics instead of keyword-based
+        enriched_aggregates = scan_result.get("aggregates", {})
+        enriched_topic_distribution = enriched_aggregates.get("topic_distribution", [])
+        enriched_wellbeing_summary = enriched_aggregates.get("wellbeing_summary", {})
+        enriched_political_summary = enriched_aggregates.get("political_content_summary", {})
+
         return {
             "success": True,
             "scan_id": scan_id,
@@ -455,7 +476,11 @@ async def desktop_scan(scan_result: dict):
             "total_ads": total_ads,
             "ad_percentage": ad_percentage,
             "ai_analyzed": ai_analyzed,
-            "message": "Desktop scan saved successfully"
+            "message": "Desktop scan saved successfully",
+            # Gemini-enriched data for popup display
+            "topic_distribution": enriched_topic_distribution if ai_analyzed else None,
+            "wellbeing_summary": enriched_wellbeing_summary if ai_analyzed else None,
+            "political_content_summary": enriched_political_summary if ai_analyzed else None
         }
         
     except HTTPException:

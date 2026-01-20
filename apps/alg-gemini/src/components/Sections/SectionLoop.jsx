@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import Logo from '../Logo';
 
 const SectionLoop = () => {
     return (
@@ -74,12 +75,7 @@ const SectionLoop = () => {
                         transition={{ duration: 0.6, delay: 0.3 }}
                         className="flex justify-center items-center z-30"
                     >
-                        <img
-                            src="/logo-full.png"
-                            alt="AlgorithmLens"
-                            className="w-72 max-w-[300px]"
-                            style={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.08))' }}
-                        />
+                        <Logo variant="loop" />
                     </motion.div>
 
                     {/* Arrows */}

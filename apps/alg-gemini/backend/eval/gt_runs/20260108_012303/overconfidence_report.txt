@@ -1,0 +1,39 @@
+================================================================================
+OVERCONFIDENCE REPORT
+Ground Truth Run: 20260108_012303
+================================================================================
+
+Total overconfidence cases: 1
+(should_have_abstained="yes" AND claim_status="FINAL")
+
+--------------------------------------------------------------------------------
+Case 1: desktop-1767216093373-0dykcpc - politics
+--------------------------------------------------------------------------------
+Scan ID:        desktop-1767216093373-0dykcpc
+Tab:            politics
+Insight ID:     politics-keyword-presence
+Claim Status:   FINAL
+Evidence Count: 2
+Evidence Items: 2 news_keyword items (pol-kw-006, pol-kw-034)
+Evidence Rate:  2/41 = 4.9%
+Political Keywords: 0
+News Keywords:  2
+Claim Text:     "Political or news keywords detected in this scan."
+
+Why abstention was desired:
+- Only 2 news keywords detected out of 41 posts (4.9% rate)
+- Zero political keywords (claim mentions "political or news" but only news present)
+- Very thin evidence for a FINAL claim
+- Human labeler determined this should have abstained rather than made a FINAL claim
+
+Root Cause:
+- Critic checks min_evidence_for_final=2 (passes: 2 >= 2)
+- Critic does NOT check evidence_rate (4.9% is very low)
+- Critic does NOT check evidence type quality (news-only vs political)
+- Contract allows FINAL with ≥2 evidence items regardless of rate or type
+
+================================================================================
+
+
+
+

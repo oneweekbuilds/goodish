@@ -24,6 +24,12 @@ from datetime import datetime
 from typing import Dict, Any, List
 from collections import Counter
 from creator_extraction import extract_creators_from_feed_items
+from creator_profile_inference import (
+    infer_creator_profile,
+    batch_infer_creator_profiles,
+    FollowerTier,
+    AccountType,
+)
 from accuracy.schema import (
     EvidenceItem,
     Insight,
@@ -207,6 +213,27 @@ def _build_observations(
         if item.get("is_ad", False):
             creator_profiles[creator_id]["is_ad_account"] = True
 
+        # Store bio/description for profile inference
+        account = item.get("account") or {}
+        if "bio" not in creator_profiles[creator_id]:
+            creator_profiles[creator_id]["bio"] = account.get("description") or account.get("bio")
+
+    # Infer creator profiles using profile inference module
+    profile_inference_results = {}
+    for creator_id, profile in creator_profiles.items():
+        inference = infer_creator_profile(
+            handle=profile["handle"],
+            follower_count=profile.get("follower_count"),
+            bio=profile.get("bio"),
+            is_verified=profile.get("is_verified", False),
+            is_ad_account=profile.get("is_ad_account", False),
+        )
+        profile_inference_results[creator_id] = inference
+        # Add inference to profile
+        creator_profiles[creator_id]["inferred_tier"] = inference["follower_tier"]
+        creator_profiles[creator_id]["inferred_type"] = inference["account_type"]
+        creator_profiles[creator_id]["is_commercial"] = inference["is_commercial"]
+
     # Populate creator stats (only for extracted creators)
     observations["unique_creators_count"] = len(creator_profiles)
 
@@ -234,6 +261,10 @@ def _build_observations(
             "post_count": c["post_count_in_scan"],
             "is_ad_account": c["is_ad_account"],
             "extraction_source": c.get("extraction_source"),
+            # Inferred profile data
+            "inferred_tier": c.get("inferred_tier"),
+            "inferred_type": c.get("inferred_type"),
+            "is_commercial": c.get("is_commercial", False),
         }
         for c in top_creators
     ]
@@ -250,6 +281,27 @@ def _build_observations(
         "high_confidence_extractions": summary.get("n_high_confidence", 0),
         "med_confidence_extractions": summary.get("n_med_confidence", 0),
     }
+
+    # Profile inference summary (inferred account types and follower tiers)
+    if creator_profiles:
+        tier_distribution = {}
+        type_distribution = {}
+        n_commercial = 0
+
+        for profile in creator_profiles.values():
+            tier = profile.get("inferred_tier", "unknown")
+            atype = profile.get("inferred_type", "unknown")
+            tier_distribution[tier] = tier_distribution.get(tier, 0) + 1
+            type_distribution[atype] = type_distribution.get(atype, 0) + 1
+            if profile.get("is_commercial"):
+                n_commercial += 1
+
+        observations["profile_inference_summary"] = {
+            "follower_tier_distribution": {k: v for k, v in tier_distribution.items() if v > 0},
+            "account_type_distribution": {k: v for k, v in type_distribution.items() if v > 0},
+            "commercial_accounts_count": n_commercial,
+            "commercial_rate_percent": round(n_commercial / len(creator_profiles) * 100, 1) if creator_profiles else 0,
+        }
 
     return observations
 

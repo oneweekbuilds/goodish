@@ -88,7 +88,8 @@
       "Bash(git config:*)",
       "Bash(python -c:*)",
       "Bash(npx eslint:*)",
-      "Bash(git describe:*)"
+      "Bash(git describe:*)",
+      "Bash(node --check:*)"
     ],
     "deny": [],
     "ask": [],

@@ -6,6 +6,7 @@ import pytesseract
 from PIL import Image
 import numpy as np
 import os
+import re
 import uuid
 from datetime import datetime
 import time
@@ -27,6 +28,390 @@ from ocr_utils import (
 # Ensure Tesseract is available.
 # On Windows, you might need to set the path explicitly if it's not in PATH.
 # pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+# ============================================
+# Wellbeing Theme Detection Keywords
+# ============================================
+
+# Body image keywords - expanded list for better detection
+# Includes hashtags (without #), phrases, and single words
+BODY_IMAGE_KEYWORDS = [
+    # Direct body terms
+    "body", "weight", "waist", "thigh", "stomach", "belly", "abs",
+    "hips", "arms", "legs", "physique", "figure",
+    # Body descriptors
+    "thin", "skinny", "fat", "slim", "curvy", "thick", "lean",
+    "toned", "shredded", "bulky", "petite", "plus size",
+    # Transformation/progress terms
+    "transformation", "beforeandafter", "before and after",
+    "glow up", "glowup", "progress", "journey",
+    "gains", "cut", "bulk", "recomp",
+    # Fitness appearance terms
+    "fitcheck", "fit check", "physique check", "mirror selfie",
+    "gym selfie", "flexing", "posing",
+    # Hashtags (without #)
+    "bodypositivity", "bodygoals", "bodyimage", "bodycheck",
+    "fitspo", "fitspiration", "gymshark", "gymmotivation",
+    "weightloss", "weightlossjourney", "fatloss",
+    # Harmful content markers (for awareness, not endorsement)
+    "thinspo", "thinspiration", "proana",
+    # Beauty standards
+    "beauty standard", "pretty privilege", "attractive",
+    "glow", "skin", "acne", "clear skin", "perfect body",
+    # Cosmetic procedures
+    "bbl", "botox", "filler", "lip filler", "plastic surgery",
+    "nose job", "rhinoplasty", "facelift", "lipo", "liposuction",
+    "coolsculpting", "tummy tuck",
+    # Comparison triggers
+    "body type", "ideal body", "dream body", "goal body",
+    "body goals", "summer body", "beach body", "bikini body",
+]
+
+# Diet/weight loss keywords - expanded
+DIET_KEYWORDS = [
+    # Diet terms
+    "diet", "calorie", "calories", "deficit", "surplus",
+    "macro", "macros", "carb", "carbs", "protein",
+    # Diet types
+    "keto", "paleo", "vegan", "intermittent fasting", "fasting",
+    "low carb", "no carb", "clean eating", "meal prep",
+    # Weight loss terms
+    "weight loss", "weightloss", "fat loss", "fatloss",
+    "lose weight", "losing weight", "shed pounds", "drop weight",
+    # Food/eating patterns
+    "what i eat", "what i ate", "full day of eating",
+    "cheat meal", "cheat day", "binge", "restrict",
+    "food diary", "calorie counting",
+    # Hashtags
+    "weightlossjourney", "caloriedeficit", "mealprep",
+    "eatclean", "cleaneating", "healthyeating",
+]
+
+# Conflict/drama keywords
+CONFLICT_KEYWORDS = [
+    "conflict", "drama", "fight", "argument", "beef",
+    "exposed", "cancelled", "canceled", "call out", "callout",
+    "toxic", "problematic", "controversy", "scandal",
+    "feud", "clap back", "shade", "tea", "spill",
+]
+
+# Ad/promotional detection keywords for video OCR
+# These supplement the OCR disclosure token detection
+AD_PROMO_KEYWORDS = [
+    # Call to action
+    "shop now", "link in bio", "swipe up", "tap link",
+    "click link", "buy now", "order now", "get yours",
+    # Discount/code signals
+    "use code", "use my code", "promo code", "discount code",
+    "% off", "save now", "exclusive discount",
+    # Affiliate signals
+    "affiliate", "commission", "linktr.ee", "bit.ly",
+    "amazon.to", "amzn.to", "shopmy", "ltk.app",
+    # Influencer/brand signals
+    "sent me", "gifted", "pr package", "brand deal",
+    "partnered with", "in partnership", "ambassador",
+    "thanks to", "#ad", "#sponsored", "#partner",
+]
+
+# ============================================
+# Hashtag-to-Topic Dictionary
+# ============================================
+# Maps common hashtags/keywords to topic categories
+# Categories align with Gemini analyzer topics
+
+TOPIC_HASHTAGS = {
+    "fitness": [
+        # Exercise types
+        "workout", "gym", "fitness", "exercise", "training",
+        "cardio", "hiit", "crossfit", "pilates", "yoga",
+        "weightlifting", "powerlifting", "bodybuilding",
+        # Fitness hashtags
+        "fitfam", "fitspo", "gymlife", "gymmotivation",
+        "workoutmotivation", "fitnessmotivation", "getfit",
+        "strongnotskinny", "legday", "armday", "chestday",
+        "personaltrainer", "pt", "homeworkout", "hiitworkout",
+        # Running/sports
+        "running", "runner", "marathon", "5k", "10k",
+        "cycling", "swimmer", "triathlon",
+    ],
+    "beauty": [
+        # Makeup
+        "makeup", "mua", "makeupartist", "makeuptutorial",
+        "eyeshadow", "lipstick", "foundation", "mascara",
+        "contour", "highlight", "blush", "concealer",
+        # Skincare
+        "skincare", "skincareroutine", "skincaretips",
+        "cleanser", "moisturizer", "serum", "spf", "sunscreen",
+        "acne", "antiaging", "glowingskin", "clearskin",
+        # Hair
+        "hair", "hairstyle", "haircare", "haircolor",
+        "balayage", "blowout", "curls", "straighthair",
+        # Nails
+        "nails", "nailart", "manicure", "pedicure", "gelnails",
+        # Beauty hashtags
+        "beauty", "beautytips", "beautyhacks", "grwm",
+        "getreadywithme", "beautyinfluencer", "beautyblogger",
+    ],
+    "fashion": [
+        # Clothing
+        "fashion", "style", "outfit", "ootd", "outfitoftheday",
+        "streetstyle", "streetwear", "mensfashion", "womensfashion",
+        # Fashion terms
+        "trendy", "fashionista", "fashionblogger", "stylist",
+        "lookbook", "haul", "tryonhaul", "shein", "zara",
+        # Accessories
+        "shoes", "sneakers", "bags", "jewelry", "watches",
+        "sunglasses", "accessories",
+        # Seasons
+        "summeroutfit", "winterfashion", "falloutfit", "springfashion",
+    ],
+    "food": [
+        # Cooking
+        "food", "foodie", "cooking", "recipe", "recipes",
+        "homemade", "homecooking", "chef", "baking",
+        # Food types
+        "breakfast", "lunch", "dinner", "brunch", "dessert",
+        "snack", "appetizer", "meal", "mealprep",
+        # Cuisines
+        "italian", "mexican", "asian", "indian", "japanese",
+        "chinese", "thai", "korean", "mediterranean",
+        # Food hashtags
+        "foodporn", "foodstagram", "instafood", "yummy",
+        "delicious", "tasty", "foodphotography", "foodblogger",
+        "mukbang", "asmr", "whatieatinaday",
+        # Restaurants
+        "restaurant", "cafe", "brunch", "foodreview",
+    ],
+    "travel": [
+        # Travel terms
+        "travel", "traveling", "traveler", "wanderlust",
+        "vacation", "holiday", "trip", "adventure",
+        "explore", "explorer", "backpacking", "roadtrip",
+        # Travel hashtags
+        "travelgram", "instatravel", "travelphotography",
+        "travelblogger", "travellife", "traveladdict",
+        # Destinations
+        "beach", "mountains", "city", "nature", "island",
+        "europe", "asia", "bali", "paris", "tokyo", "nyc",
+        # Accommodation
+        "hotel", "resort", "airbnb", "hostel",
+    ],
+    "gaming": [
+        # Gaming general
+        "gaming", "gamer", "videogames", "game", "games",
+        "esports", "streamer", "twitch", "youtube gaming",
+        # Platforms
+        "playstation", "xbox", "nintendo", "pc gaming",
+        "ps5", "ps4", "switch", "steam",
+        # Game types
+        "fps", "rpg", "mmorpg", "battle royale",
+        # Popular games
+        "fortnite", "minecraft", "valorant", "cod",
+        "apex", "league", "lol", "overwatch", "gta",
+        "zelda", "pokemon", "fifa", "nba2k",
+        # Gaming hashtags
+        "gaminglife", "gamingcommunity", "gamersofinstagram",
+    ],
+    "entertainment": [
+        # Movies/TV
+        "movie", "movies", "film", "cinema", "tv",
+        "netflix", "hulu", "disney", "hbo", "streaming",
+        "tvshow", "series", "binge", "bingewatching",
+        # Music
+        "music", "song", "singer", "artist", "concert",
+        "playlist", "spotify", "newmusic", "musicvideo",
+        # Celebrities
+        "celebrity", "celeb", "hollywood", "redcarpet",
+        "famous", "star", "idol", "kpop", "pop",
+        # Entertainment hashtags
+        "moviereview", "filmreview", "entertainment",
+        "popculture", "viral", "trending",
+    ],
+    "sports": [
+        # Sports general
+        "sports", "sport", "athlete", "team",
+        # Major sports
+        "football", "nfl", "basketball", "nba",
+        "soccer", "baseball", "mlb", "hockey", "nhl",
+        "tennis", "golf", "boxing", "mma", "ufc",
+        # Sports hashtags
+        "gameday", "sportsnews", "espn", "highlights",
+        "touchdown", "goal", "slam dunk", "homerun",
+        # Teams/Leagues
+        "premier league", "champions league", "world cup",
+    ],
+    "technology": [
+        # Tech general
+        "tech", "technology", "gadget", "gadgets",
+        "innovation", "digital", "techreview",
+        # Devices
+        "smartphone", "iphone", "android", "samsung",
+        "laptop", "computer", "tablet", "ipad",
+        # Tech topics
+        "ai", "artificial intelligence", "machine learning",
+        "coding", "programming", "developer", "software",
+        "startup", "app", "crypto", "blockchain", "nft",
+        # Tech brands
+        "apple", "google", "microsoft", "tesla",
+    ],
+    "politics": [
+        # Political terms
+        "politics", "political", "government", "policy",
+        "election", "vote", "voting", "democracy",
+        "liberal", "conservative", "democrat", "republican",
+        # Political topics
+        "congress", "senate", "president", "campaign",
+        "debate", "legislation", "bill", "law",
+        # Social issues
+        "rights", "protest", "activism", "activist",
+        "justice", "equality", "climate", "immigration",
+    ],
+    "news": [
+        # News terms
+        "news", "breaking", "breakingnews", "headline",
+        "current events", "journalism", "journalist",
+        "reporter", "media", "press",
+        # News sources
+        "cnn", "bbc", "fox", "nytimes", "washington post",
+    ],
+    "education": [
+        # Education terms
+        "education", "learning", "study", "studying",
+        "school", "college", "university", "student",
+        "teacher", "professor", "lecture",
+        # Learning content
+        "tutorial", "howto", "tips", "tricks", "hack",
+        "diy", "learn", "course", "class", "lesson",
+        # Educational hashtags
+        "studygram", "studytips", "learnsomething",
+        "educationmatters", "knowledge",
+    ],
+    "lifestyle": [
+        # Lifestyle general
+        "lifestyle", "life", "daily", "routine",
+        "dayinmylife", "vlog", "vlogger",
+        # Home
+        "home", "homedecor", "interior", "apartment",
+        "house", "room", "bedroom", "livingroom",
+        "organization", "cleaning", "minimalist",
+        # Wellness
+        "wellness", "selfcare", "mentalhealth", "mindfulness",
+        "meditation", "relaxation", "motivation",
+        # Family/Pets
+        "family", "parenting", "mom", "dad", "baby",
+        "kids", "pet", "dog", "cat", "puppy", "kitten",
+        # Relationships
+        "couple", "relationship", "dating", "love",
+    ],
+    "business": [
+        # Business terms
+        "business", "entrepreneur", "startup", "ceo",
+        "hustle", "grind", "success", "money",
+        # Finance
+        "finance", "investing", "investment", "stocks",
+        "trading", "crypto", "wealth", "passive income",
+        # Career
+        "career", "job", "work", "office", "professional",
+        "networking", "linkedin", "resume",
+        # Business hashtags
+        "entrepreneurlife", "smallbusiness", "businessowner",
+        "sidehustle", "millionaire", "financialfreedom",
+    ],
+}
+
+
+def _normalize_text_for_matching(text: str) -> str:
+    """Normalize text for keyword matching (lowercase, collapse whitespace)."""
+    if not text:
+        return ""
+    return re.sub(r'\s+', ' ', text.lower().strip())
+
+
+def _detect_topic_from_hashtags(text: str) -> tuple:
+    """
+    Detect content topic from text using hashtag/keyword dictionary.
+
+    Returns:
+        tuple of (primary_topic: str or None, matched_keywords: list)
+    """
+    normalized = _normalize_text_for_matching(text)
+    if not normalized:
+        return None, []
+
+    # Count matches per topic
+    topic_matches = {}
+    matched_keywords = []
+
+    for topic, keywords in TOPIC_HASHTAGS.items():
+        matches = []
+        for keyword in keywords:
+            if keyword in normalized:
+                matches.append(keyword)
+        if matches:
+            topic_matches[topic] = len(matches)
+            matched_keywords.extend(matches)
+
+    if not topic_matches:
+        return None, []
+
+    # Return topic with most matches
+    primary_topic = max(topic_matches, key=topic_matches.get)
+    return primary_topic, matched_keywords
+
+
+def _detect_ad_from_keywords(text: str) -> tuple:
+    """
+    Detect promotional/ad content from text using keyword matching.
+
+    Returns:
+        tuple of (is_ad: bool, matched_keyword: str or None)
+    """
+    normalized = _normalize_text_for_matching(text)
+    if not normalized:
+        return False, None
+
+    for keyword in AD_PROMO_KEYWORDS:
+        if keyword in normalized:
+            return True, keyword
+
+    return False, None
+
+
+def _detect_wellbeing_themes(text: str) -> list:
+    """
+    Detect wellbeing themes from text using keyword matching.
+
+    Returns list of detected themes: ["body_image", "diet_weight_loss", "conflict"]
+    """
+    themes = []
+    normalized = _normalize_text_for_matching(text)
+
+    if not normalized:
+        return themes
+
+    # Check body image keywords
+    for keyword in BODY_IMAGE_KEYWORDS:
+        if keyword in normalized:
+            if "body_image" not in themes:
+                themes.append("body_image")
+            break  # Found one match, no need to continue
+
+    # Check diet/weight loss keywords
+    for keyword in DIET_KEYWORDS:
+        if keyword in normalized:
+            if "diet_weight_loss" not in themes:
+                themes.append("diet_weight_loss")
+            break
+
+    # Check conflict keywords
+    for keyword in CONFLICT_KEYWORDS:
+        if keyword in normalized:
+            if "conflict" not in themes:
+                themes.append("conflict")
+            break
+
+    return themes
+
 
 def process_video(file_path: str, user_id: str = "demo-user", platform: str = "tiktok") -> UnifiedScanResult:
     if cv2 is None:
@@ -63,14 +448,11 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
     ocr_ad_detections = 0  # Ads detected via OCR disclosure tokens
 
     # Accumulators for aggregates
-    topic_counts = {
-        "fitness": 0,
-        "shopping/beauty": 0,
-        "funny/memes": 0,
-        "politics": 0,
-        "gaming": 0,
-        "educational": 0
-    }
+    # Initialize topic counts dynamically from hashtag dictionary
+    # Plus legacy categories for backward compatibility
+    topic_counts = {topic: 0 for topic in TOPIC_HASHTAGS.keys()}
+    topic_counts["shopping/beauty"] = 0  # Legacy alias for beauty
+    topic_counts["funny/memes"] = 0  # Legacy category
 
     positive_score = 0
     neutral_score = 0
@@ -145,11 +527,13 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
                 ad_disclosure_match = matched_token
                 ocr_ad_detections += 1
 
-            # Fallback: legacy keyword heuristics (less reliable)
+            # Fallback: expanded keyword heuristics for influencer promos
             if not is_ad:
-                if "shop now" in text or "link in bio" in text or "swipe up" in text:
+                keyword_ad, matched_keyword = _detect_ad_from_keywords(text)
+                if keyword_ad:
                     is_ad = True
                     ad_detected_reason = "keyword_match"
+                    ad_disclosure_match = matched_keyword
 
             if is_ad:
                 item.is_ad = True
@@ -159,20 +543,19 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
                 )
                 ad_items_count += 1
             
-            # Topics
-            detected_topic = None
-            if "workout" in text or "gym" in text or "fitness" in text:
-                detected_topic = "fitness"
-            elif "makeup" in text or "skin" in text or "beauty" in text or "haul" in text:
-                detected_topic = "shopping/beauty"
-            elif "lol" in text or "funny" in text or "meme" in text:
-                detected_topic = "funny/memes"
-            elif "vote" in text or "election" in text or "policy" in text:
-                detected_topic = "politics"
-            
+            # Topics - use comprehensive hashtag dictionary
+            detected_topic, topic_keywords = _detect_topic_from_hashtags(text)
             if detected_topic:
-                topic_counts[detected_topic] += 1
-                item.topics.secondary_categories.append(detected_topic)
+                # Normalize topic name for counting (handle legacy names)
+                topic_key = detected_topic
+                if topic_key == "beauty":
+                    topic_key = "shopping/beauty"  # Match legacy category name
+                if topic_key not in topic_counts:
+                    topic_counts[topic_key] = 0
+                topic_counts[topic_key] += 1
+                item.topics.primary_category = detected_topic
+                if detected_topic not in item.topics.secondary_categories:
+                    item.topics.secondary_categories.append(detected_topic)
 
             # Products (very simple extraction)
             if "drink" in text:
@@ -203,13 +586,11 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
                 neutral_score += 1
                 item.wellbeing.valence = "NEUTRAL"
 
-            # Wellbeing Themes
-            if "body" in text or "weight" in text:
-                item.wellbeing.themes.append("body_image")
-            if "diet" in text:
-                item.wellbeing.themes.append("diet_weight_loss")
-            if "conflict" in text or "drama" in text:
-                item.wellbeing.themes.append("conflict")
+            # Wellbeing Themes - use expanded keyword detection
+            detected_themes = _detect_wellbeing_themes(text)
+            for theme in detected_themes:
+                if theme not in item.wellbeing.themes:
+                    item.wellbeing.themes.append(theme)
 
             # Political
             if detected_topic == "politics":

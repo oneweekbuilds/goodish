@@ -134,6 +134,41 @@ PARTNERSHIP_LANG_PATTERNS = [
     (r"#collab\b", "sponsorship_word"),
 ]
 
+# Strong: influencer-specific promotional patterns
+INFLUENCER_PROMO_PATTERNS = [
+    # Gifted/PR content
+    (r"sent\s+me\b", "sponsorship_word"),
+    (r"they\s+sent\b", "sponsorship_word"),
+    (r"gifted\s+(by|from)\b", "sponsorship_word"),
+    (r"pr\s+package\b", "sponsorship_word"),
+    (r"pr\s+haul\b", "sponsorship_word"),
+    (r"unboxing\b", "sponsorship_word"),
+    (r"brand\s+deal\b", "sponsorship_word"),
+    (r"brand\s+trip\b", "sponsorship_word"),
+    # Affiliate disclosures
+    (r"affiliate\s+link\b", "affiliate_link"),
+    (r"affiliate\s+code\b", "affiliate_link"),
+    (r"i\s+(may\s+)?earn\s+(a\s+)?(small\s+)?commission\b", "affiliate_link"),
+    (r"commission\s+if\s+you\b", "affiliate_link"),
+    (r"at\s+no\s+extra\s+cost\b", "affiliate_link"),  # common FTC disclosure
+    # Brand ambassador signals
+    (r"brand\s+ambassador\b", "sponsorship_word"),
+    (r"ambassador\s+for\b", "sponsorship_word"),
+    (r"rep(ping)?\s+for\b", "sponsorship_word"),
+    (r"proud\s+to\s+partner\b", "sponsorship_word"),
+    # Product placement signals
+    (r"obsessed\s+with\s+this\b", "cta_verb"),  # common paid promotion phrase
+    (r"you\s+need\s+this\b", "cta_verb"),
+    (r"game\s+changer\b", "cta_verb"),
+    (r"holy\s+grail\b", "cta_verb"),
+    # Discount/referral language
+    (r"exclusive\s+discount\b", "discount_code"),
+    (r"special\s+discount\b", "discount_code"),
+    (r"save\s+\d+\b", "discount_code"),
+    (r"my\s+link\b", "affiliate_link"),
+    (r"my\s+affiliate\b", "affiliate_link"),
+]
+
 # =============================================================================
 # MEDIUM Signal Patterns (contribute to HIGH when combined)
 # =============================================================================
@@ -171,6 +206,8 @@ for pattern, signal_type in DISCOUNT_CODE_PATTERNS:
 for pattern, signal_type in AFFILIATE_LINK_PATTERNS:
     STRONG_PATTERNS.append((re.compile(pattern, re.IGNORECASE), signal_type, "strong"))
 for pattern, signal_type in PARTNERSHIP_LANG_PATTERNS:
+    STRONG_PATTERNS.append((re.compile(pattern, re.IGNORECASE), signal_type, "strong"))
+for pattern, signal_type in INFLUENCER_PROMO_PATTERNS:
     STRONG_PATTERNS.append((re.compile(pattern, re.IGNORECASE), signal_type, "strong"))
 
 MEDIUM_PATTERNS = []

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import Logo from './components/Logo';
 import HeroSection from './components/Hero/HeroSection';
 import SectionTracking from './components/Sections/SectionTracking';
 import LabelsPreviewSection from './components/Sections/LabelsPreviewSection';
@@ -106,11 +107,7 @@ function App() {
       <footer className="py-12 bg-bg-page">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
-            <img
-              src="/logo-full.png"
-              alt="AlgorithmLens"
-              style={{ width: '270px', height: 'auto', opacity: 0.8 }}
-            />
+            <Logo variant="footer" />
           </div>
           <p className="text-sm text-text-muted font-medium">
             © {new Date().getFullYear()} AlgorithmLens. All rights reserved.

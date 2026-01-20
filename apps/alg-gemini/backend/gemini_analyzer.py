@@ -56,13 +56,30 @@ def _get_gemini_model():
 ANALYSIS_PROMPT = """You are an Expert Algorithm Auditor analyzing social media content. Your role is to detect subtle cues, emotional subtext, and engagement bait that algorithms use to manipulate user attention and wellbeing.
 
 For each post, determine:
-1. **sentiment**: "POSITIVE", "NEUTRAL", or "NEGATIVE" based on overall emotional tone. Look for emotional subtext even in seemingly neutral content.
-2. **is_political**: true/false - Does this post discuss politics, elections, government, policy, politicians, or political issues?
-3. **political_topic**: If political, briefly describe the topic (e.g., "US election", "climate policy"). Null if not political.
-4. **wellbeing_themes**: Array of relevant themes from this list (empty if none apply):
+1. **primary_topic**: The main content category. Choose ONE from this list:
+   - "sports" - sports teams, games, athletes, scores, leagues (NFL, NBA, MLB, NHL, soccer, etc.)
+   - "entertainment" - movies, TV shows, celebrities, comedy, memes, viral content
+   - "music" - songs, artists, albums, concerts, music industry
+   - "gaming" - video games, esports, streamers, gaming culture
+   - "food" - recipes, restaurants, cooking, food reviews
+   - "fitness" - workouts, gym, exercise, health routines
+   - "beauty" - makeup, skincare, cosmetics, beauty tutorials
+   - "fashion" - clothing, style, outfits, fashion trends
+   - "travel" - destinations, vacations, trips, tourism
+   - "tech" - technology, gadgets, software, AI, crypto
+   - "business" - finance, investing, career, entrepreneurship
+   - "politics" - elections, policy, government, political figures
+   - "news" - current events, breaking news, journalism
+   - "education" - learning, tutorials, academic content, educational videos for any age (including children's educational content)
+   - "lifestyle" - daily life, wellness, home, pets, parenting
+   - "general" - if none of the above clearly apply
+2. **sentiment**: "POSITIVE", "NEUTRAL", or "NEGATIVE" based on overall emotional tone. Look for emotional subtext even in seemingly neutral content.
+3. **is_political**: true/false - Does this post discuss politics, elections, government, policy, politicians, or political issues?
+4. **political_topic**: If political, briefly describe the topic (e.g., "US election", "climate policy"). Null if not political.
+5. **wellbeing_themes**: Array of relevant themes from this list (empty if none apply):
    - "fitness" - exercise, gym, workouts
    - "diet_weight" - dieting, weight loss, calories, eating habits
-   - "body_image" - appearance, body shape, beauty standards
+   - "body_image" - appearance, body shape, beauty standards, transformations, before/after posts, glow ups, physique checks, gym selfies, cosmetic procedures (botox, fillers, BBL), body comparisons, ideal body messaging, beach/bikini body content, thinspo, fitspiration
    - "mental_health" - anxiety, depression, therapy, stress
    - "motivation" - hustle culture, productivity, success mindset
    - "conflict" - arguments, drama, controversy, outrage
@@ -76,12 +93,13 @@ Posts to analyze (JSON array):
 
 Return ONLY a JSON array with one object per post, in the same order. Example:
 [
-  {{"sentiment": "POSITIVE", "is_political": false, "political_topic": null, "wellbeing_themes": ["fitness"]}},
-  {{"sentiment": "NEGATIVE", "is_political": true, "political_topic": "US election", "wellbeing_themes": ["political_polarization"]}}
+  {{"primary_topic": "fitness", "sentiment": "POSITIVE", "is_political": false, "political_topic": null, "wellbeing_themes": ["fitness", "motivation"]}},
+  {{"primary_topic": "politics", "sentiment": "NEGATIVE", "is_political": true, "political_topic": "US election", "wellbeing_themes": ["political_polarization"]}}
 ]
 
 Important:
 - Be accurate and conservative. Only mark as political if clearly about politics.
+- For primary_topic, choose the BEST single category. Sports content about NFL/NBA/etc. should be "sports", not "entertainment".
 - Look for subtle cues, emotional subtext, and engagement bait. If you detect even slight evidence of a theme, classify it. Do not default to neutral if there is subtext.
 - wellbeing_themes should include themes that are present, even if subtle. Look for engagement patterns, comparison triggers, and emotional manipulation tactics.
 - Return ONLY the JSON array, no other text."""
@@ -127,6 +145,14 @@ def analyze_posts_batch(posts: List[Dict[str, Any]]) -> Optional[List[Dict[str, 
         posts_json = json.dumps(posts_for_analysis, ensure_ascii=False)
         prompt = ANALYSIS_PROMPT.format(posts_json=posts_json)
 
+        # DEBUG: Log what we're sending to Gemini (with safe encoding for Windows console)
+        print(f"[Gemini] Sending {len(posts_for_analysis)} posts for analysis:")
+        for p in posts_for_analysis:
+            # Encode to ASCII with replacement to avoid Windows console encoding errors
+            safe_creator = (p['creator'] or '').encode('ascii', 'replace').decode('ascii')
+            safe_text = (p['text'][:80] if p['text'] else '').encode('ascii', 'replace').decode('ascii')
+            print(f"  [{p['index']}] @{safe_creator}: {safe_text}...")
+
         # Call Gemini
         response = model.generate_content(
             prompt,
@@ -138,6 +164,9 @@ def analyze_posts_batch(posts: List[Dict[str, Any]]) -> Optional[List[Dict[str, 
 
         # Parse response
         response_text = response.text.strip()
+
+        # DEBUG: Log raw Gemini response
+        print(f"[Gemini] Raw response (first 500 chars): {response_text[:500]}")
 
         # Clean up response if wrapped in markdown code block
         if response_text.startswith("```"):
@@ -153,6 +182,7 @@ def analyze_posts_batch(posts: List[Dict[str, Any]]) -> Optional[List[Dict[str, 
             # Pad with defaults if needed
             while len(results) < len(posts):
                 results.append({
+                    "primary_topic": "general",
                     "sentiment": "NEUTRAL",
                     "is_political": False,
                     "political_topic": None,
@@ -190,10 +220,18 @@ def merge_analysis_into_scan(scan_result: Dict[str, Any], analysis_results: List
     valence_counts = {"POSITIVE": 0, "NEUTRAL": 0, "NEGATIVE": 0}
     political_count = 0
     wellbeing_theme_counts = {}
+    topic_counts = {}  # Track AI-classified topics for aggregates
 
     for i, item in enumerate(feed_items):
         if i < len(analysis_results):
             analysis = analysis_results[i]
+
+            # Update topics with AI-classified primary_topic (overwrites keyword-based guess)
+            primary_topic = analysis.get("primary_topic", "general")
+            if "topics" not in item:
+                item["topics"] = {}
+            item["topics"]["primary_category"] = primary_topic
+            topic_counts[primary_topic] = topic_counts.get(primary_topic, 0) + 1
 
             # Update wellbeing
             sentiment = analysis.get("sentiment", "NEUTRAL")
@@ -243,14 +281,32 @@ def merge_analysis_into_scan(scan_result: Dict[str, Any], analysis_results: List
         "political_percentage": political_count / total_items if total_items > 0 else 0
     }
 
+    # Update topic_distribution with AI-classified topics (overwrites keyword-based distribution)
+    if topic_counts:
+        ai_topic_distribution = [
+            {
+                "category": category,
+                "count": count,
+                "percentage": count / total_items if total_items > 0 else 0
+            }
+            for category, count in sorted(topic_counts.items(), key=lambda x: x[1], reverse=True)
+        ]
+        scan_result["aggregates"]["topic_distribution"] = ai_topic_distribution
+
     # Update computed themes if present
     if "_computed" in scan_result:
         scan_result["_computed"]["wellbeingThemes"] = list(wellbeing_theme_counts.keys())
+        # Also update topTopics with AI-classified topics
+        if topic_counts:
+            scan_result["_computed"]["topTopics"] = [
+                {"category": cat, "count": cnt, "percentage": cnt / total_items if total_items > 0 else 0}
+                for cat, cnt in sorted(topic_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+            ]
 
     return scan_result
 
 
-def analyze_scan(scan_result: Dict[str, Any]) -> Dict[str, Any]:
+def analyze_scan(scan_result: Dict[str, Any]) -> tuple[Dict[str, Any], bool, str]:
     """
     Analyze a complete scan result with Gemini and merge the results.
 
@@ -260,13 +316,22 @@ def analyze_scan(scan_result: Dict[str, Any]) -> Dict[str, Any]:
         scan_result: The UnifiedScanResult dictionary
 
     Returns:
-        Updated scan_result with AI analysis, or original if analysis failed
+        Tuple of (scan_result, success, reason):
+        - scan_result: Updated with AI analysis, or original if analysis failed
+        - success: True if AI analysis was performed, False otherwise
+        - reason: Explanation of success/failure (e.g., "success", "no_api_key", "no_feed_items", "api_error")
     """
     feed_items = scan_result.get("feed_items", [])
 
     if not feed_items:
         logger.info("No feed items to analyze")
-        return scan_result
+        return scan_result, False, "no_feed_items"
+
+    # Check if Gemini is available before preparing posts
+    model = _get_gemini_model()
+    if model is None:
+        logger.warning("Gemini API key not configured - analysis skipped")
+        return scan_result, False, "no_api_key"
 
     # Prepare posts for analysis
     posts = []
@@ -286,10 +351,11 @@ def analyze_scan(scan_result: Dict[str, Any]) -> Dict[str, Any]:
 
     if analysis_results is None:
         logger.warning("Gemini analysis failed or unavailable, returning original scan")
-        return scan_result
+        return scan_result, False, "api_error"
 
     # Merge results
-    return merge_analysis_into_scan(scan_result, analysis_results)
+    merged_scan = merge_analysis_into_scan(scan_result, analysis_results)
+    return merged_scan, True, "success"
 
 
 def is_gemini_available() -> bool:

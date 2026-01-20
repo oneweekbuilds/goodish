@@ -274,7 +274,10 @@ function showSessionActiveState() {
 
 function formatUnifiedResults(result, durationSeconds, backendSaved = false, backendResponse = null, rateLimited = false) {
   const { aggregates, scan_metadata, _computed } = result;
-  
+
+  // Check if backend returned Gemini-enriched data
+  const hasGeminiData = backendResponse?.ai_analyzed === true;
+
   // Case 1: No posts captured at all
   if (!aggregates || aggregates.total_feed_items === 0) {
     // Different message if rate limit was hit (shouldn't happen with 0 posts, but handle it)
@@ -297,16 +300,26 @@ function formatUnifiedResults(result, durationSeconds, backendSaved = false, bac
   const totalItems = aggregates.total_feed_items;
   const totalAds = aggregates.total_ads;
   const adPercent = Math.round(aggregates.ad_percentage * 100);
-  const politicalPercent = Math.round((aggregates.political_content_summary?.political_percentage || 0) * 100);
+
+  // Political percentage - use Gemini-enriched data if available
+  const politicalSummary = hasGeminiData && backendResponse.political_content_summary
+    ? backendResponse.political_content_summary
+    : aggregates.political_content_summary || {};
+  const politicalPercent = Math.round((politicalSummary.political_percentage || 0) * 100);
   
-  // Valence distribution
-  const valence = aggregates.wellbeing_summary?.valence_distribution || {};
+  // Valence distribution - use Gemini-enriched data if available
+  const wellbeingSummary = hasGeminiData && backendResponse.wellbeing_summary
+    ? backendResponse.wellbeing_summary
+    : aggregates.wellbeing_summary || {};
+  const valence = wellbeingSummary.valence_distribution || {};
   const totalValence = (valence.POSITIVE || 0) + (valence.NEUTRAL || 0) + (valence.NEGATIVE || 0) + (valence.MIXED || 0);
   const positivePercent = totalValence > 0 ? Math.round((valence.POSITIVE || 0) / totalValence * 100) : 0;
   const negativePercent = totalValence > 0 ? Math.round((valence.NEGATIVE || 0) / totalValence * 100) : 0;
   
-  // Top topics
-  const topTopics = (aggregates.topic_distribution || []).slice(0, 4);
+  // Top topics - use Gemini-enriched data if available, otherwise fall back to keyword-based
+  const topTopics = hasGeminiData && backendResponse.topic_distribution
+    ? backendResponse.topic_distribution.slice(0, 4)
+    : (aggregates.topic_distribution || []).slice(0, 4);
   
   // Top hashtags (from _computed)
   const topHashtags = (_computed?.topHashtags || []).slice(0, 6);
@@ -387,7 +400,7 @@ function formatUnifiedResults(result, durationSeconds, backendSaved = false, bac
       
       ${topTopics.length > 0 ? `
         <div class="result-section">
-          <div class="section-title">Top Topics</div>
+          <div class="section-title">Top Topics${hasGeminiData ? ' <small style="color:#10b981;font-weight:normal;">(AI)</small>' : ''}</div>
           <div class="topic-list">
             ${topTopics.map(t => `
               <span class="topic">${t.category} <small>${Math.round(t.percentage * 100)}%</small></span>

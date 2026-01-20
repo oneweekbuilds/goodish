@@ -1,18 +1,15 @@
 import { Link } from 'react-router-dom';
 import { useUserProfile } from '../context/UserProfileContext';
+import Logo from './Logo';
 
 const Navbar = () => {
     const { userProfile } = useUserProfile();
     
     return (
-        <nav className="fixed top-0 left-0 w-full z-50 h-20 md:h-24 px-4 md:px-6 lg:px-12 flex items-center justify-between bg-bg-page/90 backdrop-blur-none border-b border-transparent" aria-label="Main navigation">
+        <nav className="fixed top-0 left-0 w-full z-50 h-14 md:h-16 px-4 md:px-6 lg:px-12 flex items-center justify-between bg-bg-page/90 backdrop-blur-none border-b border-transparent" aria-label="Main navigation">
             <div className="flex items-center gap-4 md:gap-8">
                 <Link to="/" className="flex items-center">
-                    <img
-                        src="/logo-full.png"
-                        alt="AlgorithmLens"
-                        className="h-10 md:h-12 w-auto max-w-none"
-                    />
+                    <Logo variant="nav" />
                 </Link>
                 <div className="hidden md:flex items-center gap-6">
                     <Link to="/" className="text-sm font-medium text-text-main hover:text-primary-blue transition-colors" aria-label="Navigate to home page">
