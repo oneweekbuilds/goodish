@@ -1539,6 +1539,72 @@ export function aggregatePoliticalLeaning(scans, scanDetails) {
   };
 }
 
+/**
+ * Aggregate manipulative patterns data across ALL scans.
+ *
+ * A post is flagged if:
+ * - wellbeing.themes.length > 0 OR engagement_drivers.hooks_detected.length > 0
+ *
+ * Returns:
+ * - totalItems: total feed items analyzed
+ * - flaggedItems: count of posts with manipulative patterns
+ * - percentage: percentage of flagged items (0-1)
+ * - scansUsed: number of scans with data
+ *
+ * @param {Array} scans - List of scan objects
+ * @param {Object} scanDetails - Map of scanId -> scan detail
+ * @returns {Object} Aggregated manipulative patterns data
+ */
+export function aggregateManipulativePatterns(scans, scanDetails) {
+  const result = {
+    totalItems: 0,
+    flaggedItems: 0,
+    percentage: 0,
+    scansUsed: 0,
+    scansWithData: [],
+  };
+
+  if (!scans || scans.length === 0) {
+    return result;
+  }
+
+  for (const scan of scans) {
+    const detail = scanDetails[scan.id];
+    if (!detail) continue;
+
+    const feedItems = getFeedItems(detail);
+    if (feedItems.length === 0) continue;
+
+    let scanHasData = false;
+    let scanFlaggedCount = 0;
+
+    for (const item of feedItems) {
+      // Check if item has manipulative patterns
+      const hasWellbeingThemes = item.wellbeing?.themes && Array.isArray(item.wellbeing.themes) && item.wellbeing.themes.length > 0;
+      const hasEngagementHooks = item.engagement_drivers?.hooks_detected && Array.isArray(item.engagement_drivers.hooks_detected) && item.engagement_drivers.hooks_detected.length > 0;
+
+      if (hasWellbeingThemes || hasEngagementHooks) {
+        scanFlaggedCount++;
+      }
+      scanHasData = true;
+    }
+
+    if (scanHasData) {
+      result.scansUsed++;
+      result.scansWithData.push(scan.id);
+      result.totalItems += feedItems.length;
+      result.flaggedItems += scanFlaggedCount;
+    }
+  }
+
+  // Calculate percentage (0-1)
+  if (result.totalItems > 0) {
+    result.percentage = result.flaggedItems / result.totalItems;
+  }
+
+  return result;
+}
+
 // ============================================
 // UTILITY FUNCTIONS
 // ============================================

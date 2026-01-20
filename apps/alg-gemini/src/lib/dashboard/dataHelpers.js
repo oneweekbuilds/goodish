@@ -34,6 +34,7 @@ import {
   summarizeInfluence,
   classifyPromoThemes,
   aggregatePoliticalLeaning,
+  aggregateManipulativePatterns,
   UNCLASSIFIED_TOPIC,
   normalizeTopicLabel,
   formatDateLabel,
@@ -1978,4 +1979,74 @@ export function getAlgoChangeAdviceData() {
 
   // This view doesn't depend on scan data
   return createResponse(true, { tips }, null, 0, []);
+}
+
+// =====================================================
+// MANIPULATIVE PATTERNS METRIC
+// =====================================================
+
+/**
+ * Get manipulative patterns data (attention tactics)
+ * A post is flagged if wellbeing.themes.length > 0 OR engagement_drivers.hooks_detected.length > 0
+ *
+ * Returns:
+ * - primaryValue: count string like "14 posts"
+ * - percent: numeric 0-1
+ * - percentDisplay: integer percentage (no decimals)
+ * - insight: plain-English insight line
+ * - status: 'good' | 'neutral' | 'attention' based on percentage thresholds
+ */
+export function getManipulativePatternsData(scans, scanDetails) {
+  const patternsData = aggregateManipulativePatterns(scans, scanDetails);
+
+  if (patternsData.scansUsed === 0 || patternsData.totalItems === 0) {
+    return createResponse(
+      false,
+      null,
+      'Need scan data with feed items to analyze attention tactics.',
+      0,
+      []
+    );
+  }
+
+  const flaggedCount = patternsData.flaggedItems;
+  const totalItems = patternsData.totalItems;
+  const percent = patternsData.percentage;
+  const percentDisplay = Math.round(percent * 100);
+
+  // Determine status based on thresholds
+  let status = 'good';
+  if (percentDisplay >= 12) {
+    status = 'attention';
+  } else if (percentDisplay >= 5) {
+    status = 'neutral';
+  }
+
+  // Generate insight text
+  let insight;
+  if (flaggedCount === 0) {
+    insight = 'No attention tactics detected in this scan.';
+  } else if (totalItems < 20) {
+    insight = `${flaggedCount} of ${totalItems} posts used attention tactics (limited sample).`;
+  } else if (percentDisplay < 5) {
+    insight = `A small portion (${percentDisplay}%) of posts used attention tactics.`;
+  } else if (percentDisplay < 12) {
+    insight = `Some posts (${percentDisplay}%) used attention tactics.`;
+  } else {
+    insight = `A notable portion (${percentDisplay}%) of posts used attention tactics.`;
+  }
+
+  return createResponse(
+    true,
+    {
+      currentPercent: percentDisplay,
+      flaggedCount,
+      totalPosts: totalItems,
+      insight,
+      status,
+    },
+    null,
+    patternsData.scansUsed,
+    patternsData.scansWithData
+  );
 }

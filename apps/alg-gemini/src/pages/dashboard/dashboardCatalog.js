@@ -511,6 +511,27 @@ export const dashboardCatalog = [
       : null,
     action: () => 'You could try reducing engagement with intense content to see if tone shifts.',
   },
+  {
+    tab: 'patterns',
+    id: 'manipulative-patterns',
+    title: 'Attention tactics',
+    description: 'Posts that used attention-grabbing patterns or hooks.',
+    outputType: 'number_line',
+    dataFn: 'getManipulativePatternsData',
+    emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
+    whyExplanation: 'Detected posts with wellbeing themes or engagement hooks that may be designed to capture attention.',
+    takeaway: (data) => {
+      if (!data) return null;
+      const count = data.flaggedCount || 0;
+      const total = data.totalPosts || 0;
+      const pct = data.currentPercent || 0;
+      if (count === 0) return `In this scan, no posts used attention tactics (${total} posts observed).`;
+      if (total < 20) return `In this scan, ${count} of ${total} posts used attention tactics (${pct}%, limited sample).`;
+      return `In this scan, ${count} post${count !== 1 ? 's' : ''} (${pct}%) used attention tactics.`;
+    },
+    action: () => 'You could try reducing engagement with content that uses attention tactics.',
+  },
 
   // --- HIDDEN: Removed for cognitive load reduction ---
   {
