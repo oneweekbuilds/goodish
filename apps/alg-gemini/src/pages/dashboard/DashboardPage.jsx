@@ -574,7 +574,7 @@ const ALGORITHM_TAB_HEADERS = TAB_STORY_HEADERS.algorithm;
  * Change 2: Story-driven headers for Algorithm tab
  * Change 3: "Where this is heading" uncollapsed by default
  */
-const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCount, tabName, tabId }) => {
+const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCount, tabName, tabId, heroViewId }) => {
   // Get story-driven headers for current tab (all tabs now use them)
   const tabHeaders = TAB_STORY_HEADERS[tabId] || TAB_STORY_HEADERS.algorithm;
   // Check if we're on the Algorithm tab for special two-column layout
@@ -644,33 +644,8 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
     return String(item);
   };
 
-  // Extract hero card - metadata-driven selection with Patterns tab fallback
-  let heroCard = null;
-  let heroHasData = false;
-  
-  if (tabId === 'patterns') {
-    // Patterns tab: prefer manipulative-patterns if it has data, else topic-variety
-    const manipulativePatterns = views.find(v => v.id === 'manipulative-patterns');
-    const topicVariety = views.find(v => v.id === 'patterns-topic-variety');
-    const manipulativeHasData = manipulativePatterns && viewDataResults['manipulative-patterns']?.hasData;
-    if (manipulativeHasData) {
-      heroCard = manipulativePatterns;
-      heroHasData = true;
-    } else if (topicVariety && viewDataResults['patterns-topic-variety']?.hasData) {
-      heroCard = topicVariety;
-      heroHasData = true;
-    }
-  } else {
-    // Other tabs: use card marked with hero: true
-    const heroCandidate = views.find(v => v.hero === true);
-    if (heroCandidate) {
-      heroCard = heroCandidate;
-      heroHasData = viewDataResults[heroCandidate.id]?.hasData === true;
-    }
-  }
-
-  // Filter hero card out of views for grouping ONLY if it has data (so it can fall back to primary if no data)
-  const viewsForGrouping = (heroCard && heroHasData) ? views.filter(v => v.id !== heroCard.id) : views;
+  // Hero is rendered above. Exclude it here to avoid duplicate "key insight" rendering.
+  const viewsForGrouping = heroViewId ? views.filter(v => v.id !== heroViewId) : views;
 
   // Group views by sortOrder AND data availability
   const groupedViews = {
@@ -716,16 +691,10 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
     return <ChapterContainer variant={variant}>{children}</ChapterContainer>;
   };
 
-  // Hero card data and rendering
-  const heroDataResult = heroCard ? viewDataResults[heroCard.id] : null;
-  const heroTakeawayText = heroHasData && typeof heroCard?.takeaway === 'function'
-    ? heroCard.takeaway(heroDataResult?.data)
-    : null;
-
   return (
     <div className="space-y-10">
       {/* KEY INSIGHT - Part 3 Module Type 1: Declarative + Collapsible Evidence */}
-      {/* NOTE: Hero is rendered above by GenericTabHero/AlgorithmTabHero, so we skip hero rendering here */}
+      {/* NOTE: Hero is rendered above by TabHero, so we skip hero rendering here */}
       {/* Only render primary section if hero doesn't exist OR if primary cards are different from hero */}
       {hasPrimaryContent && (
         <section>
@@ -1305,442 +1274,55 @@ const FeatureMomentWrapper = ({ children }) => (
 );
 
 /**
- * AlgorithmTabHero - Summary for "Observed Patterns" tab
+ * HERO_VIEW_ID_BY_TAB - Deterministic hero metric per tab (Slice 2).
+ * This is the single source of truth for hero selection in v1.
+ */
+const HERO_VIEW_ID_BY_TAB = {
+  ads: 'ads-percentage',
+  politics: 'politics-share',
+  patterns: 'patterns-topic-variety',
+  creators: 'creators-top',
+  algorithm: 'algo-topics-liked',
+};
+
+/**
+ * TabHero - Oura-style hero: insight first, expandable evidence.
  *
- * ACCURACY CONTRACT COMPLIANT:
- * - No claims about what algorithm "thinks"
- * - All language anchored to "this scan"
- * - No identity claims or preference inference
- * - Explicit uncertainty where appropriate
+ * Contract:
+ * - Hero headline is derived from the hero view's `dataResult` (evidence-bound).
+ * - "How we know this" expands to render the underlying `ViewCard` inline.
  */
-const AlgorithmTabHero = ({ scans, viewDataResults }) => {
-  // Get top topics from the primary view data
-  const topicsData = viewDataResults?.['algo-topics-liked']?.data || [];
-  const topTopic = topicsData[0]?.topic || 'certain topics';
-  const secondTopic = topicsData[1]?.topic || '';
-  const topicCount = topicsData.length || 0;
-
-  // Get profile breadth
-  const breadthData = viewDataResults?.['algo-profile-breadth']?.data;
-  const breadth = breadthData?.breadth?.toLowerCase() || 'moderate';
-
+const TabHero = ({
+  tabId,
+  scans,
+  platforms,
+  heroView,
+  heroDataResult,
+  isEvidenceExpanded,
+  onToggleEvidence,
+}) => {
   const scanCount = scans?.length || 0;
-  const platformCount = scans?.length > 0
-    ? [...new Set(scans.map(s => s.platform))].length
-    : 0;
+  const platformCount = platforms?.length ?? 0;
 
-  // Highlighted emphasis word component with subtle underline effect
-  const EmphasisWord = ({ children }) => (
-    <span
-      className="relative inline-block"
-      style={{
-        color: '#1D4ED8',
-        background: 'linear-gradient(180deg, transparent 60%, rgba(37, 99, 235, 0.12) 60%)',
-        paddingLeft: '0.125rem',
-        paddingRight: '0.125rem',
-      }}
-    >
-      {children}
-    </span>
-  );
+  const hasHeroData = heroDataResult?.hasData === true;
 
-  return (
-    <div className="mb-10">
-      {/* Hero Insight Card - PREMIUM SURFACE with gradient */}
-      <div
-        className="w-full rounded-2xl mb-6 relative overflow-hidden transition-shadow duration-300 hover:shadow-lg"
-        style={{
-          background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 50%, #EFF6FF 100%)',
-          border: '2px solid #93C5FD',
-          padding: 'clamp(2.5rem, 6vw, 4rem) clamp(2rem, 5vw, 3.5rem)',
-          boxShadow: '0 8px 32px rgba(37, 99, 235, 0.12)',
-        }}
-      >
-        {/* Subtle decorative gradient overlay at top-left */}
-        <div
-          className="absolute top-0 left-0 w-64 h-64 pointer-events-none"
-          style={{
-            background: 'radial-gradient(circle at top left, rgba(37, 99, 235, 0.08) 0%, transparent 60%)',
-          }}
-        />
+  let headline = null;
+  if (hasHeroData && typeof heroView?.takeaway === 'function') {
+    try {
+      headline = heroView.takeaway(heroDataResult?.data);
+    } catch (err) {
+      console.error(`Error computing hero takeaway for ${heroView?.id}:`, err);
+      headline = null;
+    }
+  }
 
-        {/* Hero Header Row - self-contained label + meta */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-6 relative">
-          {/* Left: Editorial kicker label - grounded in observation */}
-          <p
-            style={{
-              fontSize: '11px',
-              color: '#2563EB',
-              letterSpacing: '0.14em',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-            }}
-          >
-            Observed patterns in this scan
-          </p>
+  if (!headline) {
+    headline = hasHeroData
+      ? 'In this scan, we observed a measurable pattern.'
+      : 'Not enough data yet to quantify this from your scans.';
+  }
 
-          {/* Right: Meta data pill */}
-          <div
-            className="flex items-center gap-2 rounded-full"
-            style={{
-              background: 'rgba(255, 255, 255, 0.7)',
-              border: '1px solid rgba(37, 99, 235, 0.2)',
-              padding: '0.375rem 0.875rem',
-              fontSize: '11px',
-              color: '#64748B',
-              fontWeight: 500,
-            }}
-          >
-            <Database size={12} className="text-slate-400" />
-            <span>{scanCount} scan{scanCount !== 1 ? 's' : ''} · {platformCount} platform{platformCount !== 1 ? 's' : ''}</span>
-          </div>
-        </div>
-
-        {/* Main headline - grounded in observation, not identity */}
-        <div
-          className="relative mb-6"
-          style={{
-            marginLeft: '-1rem',
-            paddingLeft: '1rem',
-          }}
-        >
-          {/* Blue accent bar - slightly thicker */}
-          <div
-            className="absolute left-0 top-0 bottom-0 rounded-r-lg"
-            style={{
-              width: '6px',
-              background: 'linear-gradient(180deg, #2563EB 0%, #60A5FA 100%)',
-            }}
-          />
-          {/* Main headline - observation-based */}
-          <h2
-            className="font-extrabold text-slate-900"
-            style={{
-              fontFamily: 'var(--font-headline, system-ui)',
-              letterSpacing: '-0.035em',
-              fontSize: 'clamp(2rem, 5.5vw, 3rem)',
-              lineHeight: 1.15,
-              maxWidth: '100%',
-            }}
-          >
-            In this scan, <EmphasisWord>{topTopic}</EmphasisWord>
-            {secondTopic && (
-              <>
-                {' '}and <EmphasisWord>{secondTopic}</EmphasisWord>
-              </>
-            )}
-            {' '}appeared most often.
-          </h2>
-        </div>
-
-        {/* Supporting context - explicit epistemic limits */}
-        <p
-          className="text-slate-600 mb-5"
-          style={{
-            fontSize: '17px',
-            lineHeight: 1.75,
-            maxWidth: '680px',
-          }}
-        >
-          This is what showed up when we captured this scroll session.
-          We cannot know why these topics appeared or how platforms categorize you.
-        </p>
-
-        {/* Lede line - grounded */}
-        <p
-          className="text-slate-500 italic"
-          style={{
-            fontSize: '14px',
-            lineHeight: 1.6,
-            maxWidth: '600px',
-          }}
-        >
-          Below: what we observed, possible context, and experiments you could try.
-        </p>
-      </div>
-
-      {/* Two supporting context cards - OBSERVATION-BASED */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8">
-        {/* Topic breadth card */}
-        <div
-          className="rounded-xl relative overflow-hidden transition-all duration-200 hover:border-slate-400 hover:shadow-md group"
-          style={{
-            background: SURFACES.SUPPORT_WHITE.background,
-            border: SURFACES.SUPPORT_WHITE.border,
-            boxShadow: SURFACES.SUPPORT_WHITE.shadow,
-            padding: 'clamp(1.75rem, 3vw, 2.25rem)',
-            minHeight: '140px',
-          }}
-        >
-          {/* Strong blue left accent bar */}
-          <div
-            className="absolute left-0 top-0 bottom-0 w-1 rounded-r"
-            style={{ background: 'linear-gradient(180deg, #2563EB 0%, #3B82F6 100%)' }}
-          />
-          <div className="pl-5">
-            {/* Icon badge + title row */}
-            <div className="flex items-center gap-3 mb-3">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                style={{
-                  background: 'rgba(37, 99, 235, 0.1)',
-                  border: '1px solid rgba(37, 99, 235, 0.2)',
-                }}
-              >
-                <Compass size={16} className="text-blue-600" />
-              </div>
-              <h4 className="text-base font-bold text-slate-800">Topic breadth</h4>
-            </div>
-            {/* Takeaway line - observation-based */}
-            <p className="text-sm font-medium text-slate-700 mb-2">
-              In this scan, topic variety appeared <span className="font-semibold text-blue-700">{breadth}</span>.
-            </p>
-            {/* Explanation - muted */}
-            <p className="text-sm text-slate-500 leading-relaxed">
-              {breadth === 'narrow'
-                ? 'A few topics dominated this scan. Other scans may differ.'
-                : breadth === 'broad'
-                ? 'A wide range of topics appeared in this scan.'
-                : 'Topics were moderately distributed in this scan.'}
-            </p>
-          </div>
-        </div>
-
-        {/* What we cannot know card */}
-        <div
-          className="rounded-xl relative overflow-hidden transition-all duration-200 hover:border-slate-400 hover:shadow-md group"
-          style={{
-            background: SURFACES.SUPPORT_WHITE.background,
-            border: SURFACES.SUPPORT_WHITE.border,
-            boxShadow: SURFACES.SUPPORT_WHITE.shadow,
-            padding: 'clamp(1.75rem, 3vw, 2.25rem)',
-            minHeight: '140px',
-          }}
-        >
-          {/* Strong blue left accent bar */}
-          <div
-            className="absolute left-0 top-0 bottom-0 w-1 rounded-r"
-            style={{ background: 'linear-gradient(180deg, #2563EB 0%, #3B82F6 100%)' }}
-          />
-          <div className="pl-5">
-            {/* Icon badge + title row */}
-            <div className="flex items-center gap-3 mb-3">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                style={{
-                  background: 'rgba(37, 99, 235, 0.1)',
-                  border: '1px solid rgba(37, 99, 235, 0.2)',
-                }}
-              >
-                <ShieldCheck size={16} className="text-blue-600" />
-              </div>
-              <h4 className="text-base font-bold text-slate-800">What we cannot know</h4>
-            </div>
-            {/* Explicit limits */}
-            <p className="text-sm font-medium text-slate-700 mb-2">
-              Why this content appeared, or how you interacted with it.
-            </p>
-            {/* Explanation - muted */}
-            <p className="text-sm text-slate-500 leading-relaxed">
-              We see what showed up, not why. Platform algorithms are opaque. This scan is one snapshot.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-
-/**
- * TAB_HERO_CONFIG - Configuration for each tab's hero section
- * ACCURACY CONTRACT COMPLIANT:
- * - All language anchored to "this scan"
- * - No claims about platform intent or user identity
- * - Explicit epistemic limits
- */
-const TAB_HERO_CONFIG = {
-  ads: {
-    kicker: 'Promotional content observed',
-    getHeadline: (data) => {
-      const pct = data?.['ads-percentage']?.data?.currentPercent;
-      const total = data?.['ads-percentage']?.data?.totalPosts || 0;
-      if (pct === undefined) return "In this scan, we detected promotional content.";
-      if (pct < 10) return `In this scan, approximately ${pct}% of posts were labeled as ads.`;
-      if (pct < 25) return `In this scan, roughly 1 in ${Math.round(100/pct)} posts was labeled as an ad.`;
-      return `In this scan, a substantial portion (~${pct}%) was labeled as ads.`;
-    },
-    interpretation: "These are posts the platform explicitly labeled as ads or sponsored. We cannot know why these ads were shown to you.",
-    lede: "Below: what promotional content appeared, the categories observed, and experiments you could try.",
-    supportCards: [
-      {
-        icon: 'target',
-        title: 'Ad source diversity',
-        getContent: (data) => {
-          const concentration = data?.['ads-concentration']?.data?.qualitativeLabel;
-          return concentration
-            ? `In this scan, ad source diversity: ${concentration.toLowerCase()}.`
-            : 'We counted unique advertisers in this scan.';
-        },
-        explanation: 'We cannot know why specific advertisers appeared.',
-      },
-      {
-        icon: 'repeat',
-        title: 'Product categories',
-        getContent: (data) => {
-          const products = data?.['ads-products']?.data;
-          if (products?.length > 0) return `${products[0].name} appeared frequently in ads in this scan.`;
-          return 'We detected product categories in labeled ads.';
-        },
-        explanation: 'Categories observed in ads — does not indicate your interests.',
-      },
-    ],
-  },
-  politics: {
-    kicker: 'Political content observed',
-    getHeadline: (data) => {
-      const pct = data?.['politics-share']?.data?.currentPercent;
-      if (pct === undefined) return "In this scan, we detected content matching political keywords.";
-      if (pct < 10) return `In this scan, approximately ${pct}% matched political keywords.`;
-      if (pct < 30) return `In this scan, roughly 1 in ${Math.round(100/pct)} posts matched political keywords.`;
-      return `In this scan, a substantial portion (~${pct}%) matched political keywords.`;
-    },
-    interpretation: "Political classification uses keyword matching. We cannot know what you believe or support — only what appeared.",
-    lede: "Below: political keywords detected, sources observed, and experiments you could try.",
-    supportCards: [
-      {
-        icon: 'scale',
-        title: 'Keyword balance (low confidence)',
-        getContent: (data) => {
-          const balance = data?.['politics-balance']?.data?.message;
-          return balance ? `${balance} (Low confidence estimate.)` : 'Keyword balance was measured using simple matching.';
-        },
-        explanation: 'Simple keyword matching — cannot detect nuance or irony.',
-      },
-      {
-        icon: 'users',
-        title: 'Political content sources',
-        getContent: (data) => {
-          const creators = data?.['politics-creators']?.data;
-          if (creators?.length > 0) return `In this scan, political content came from ${Math.min(creators.length, 5)} accounts.`;
-          return 'We counted accounts that posted political content in this scan.';
-        },
-        explanation: 'Accounts that posted political keywords in this scan.',
-      },
-    ],
-  },
-  patterns: {
-    kicker: 'Topic distribution observed',
-    getHeadline: (data) => {
-      const variety = data?.['patterns-topic-variety']?.data;
-      // Exclude Unclassified from top topics for headline
-      const classifiedTopics = variety?.topTopics?.filter(t => !t.isUnclassified && t.label !== 'Unclassified') || [];
-      const top = classifiedTopics[0]?.label;
-      const second = classifiedTopics[1]?.label;
-      const unclassifiedShare = variety?.topTopics?.find(t => t.isUnclassified || t.label === 'Unclassified')?.value || 0;
-      
-      if (top && second) {
-        return `In this scan, ${top} and ${second} appeared most often.`;
-      } else if (top) {
-        return `In this scan, ${top} appeared most often.`;
-      }
-      return "In this scan, we observed topic distribution.";
-    },
-    interpretation: (data) => {
-      const variety = data?.['patterns-topic-variety']?.data;
-      const unclassifiedShare = variety?.topTopics?.find(t => t.isUnclassified || t.label === UNCLASSIFIED_TOPIC || t.label === 'Unclassified')?.value || 0;
-      const classifiedTopics = variety?.topTopics?.filter(t => !t.isUnclassified && t.label !== UNCLASSIFIED_TOPIC && t.label !== 'Unclassified') || [];
-      const top = classifiedTopics[0]?.label;
-      
-      let base = "These are topics detected in this scroll session. We cannot know why they appeared or what you prefer.";
-      if (unclassifiedShare > 20 && top) {
-        base += ` Some posts couldn't be categorized yet. Among categorized posts, ${top} was most common.`;
-      } else if (unclassifiedShare > 20) {
-        base += " Some posts couldn't be categorized yet.";
-      }
-      return base;
-    },
-    lede: "Below: topics observed, concentration levels, and experiments you could try.",
-    supportCards: [
-      {
-        icon: 'layers',
-        title: 'Topic concentration',
-        getContent: (data) => {
-          const echo = data?.['patterns-echo-risk']?.data?.riskLevel;
-          return echo ? `In this scan: ${echo}` : 'We measured how topics were distributed in this scan.';
-        },
-        explanation: 'Measures topic spread in this scan only.',
-      },
-      {
-        icon: 'activity',
-        title: 'What we cannot know',
-        getContent: (data) => {
-          return 'Why these topics appeared, or how they compare to other sessions.';
-        },
-        explanation: 'One scan is one snapshot. Other sessions may differ.',
-      },
-    ],
-  },
-  creators: {
-    kicker: 'Sources observed',
-    getHeadline: (data) => {
-      const top = data?.['creators-top']?.data?.[0]?.creator;
-      if (top) return `In this scan, ${top} appeared most often.`;
-      return "In this scan, we observed account distribution.";
-    },
-    interpretation: "These are accounts that appeared in this scroll session. We cannot know why they were shown.",
-    lede: "Below: sources observed, concentration levels, and experiments you could try.",
-    supportCards: [
-      {
-        icon: 'users',
-        title: 'Source concentration',
-        getContent: (data) => {
-          const concentration = data?.['creators-concentration']?.data?.primaryInsight;
-          return concentration || 'We measured source distribution in this scan.';
-        },
-        explanation: 'How content was distributed across accounts.',
-      },
-      {
-        icon: 'shuffle',
-        title: 'Source diversity',
-        getContent: (data) => {
-          const diversity = data?.['creators-voice-diversity']?.data?.diversity;
-          if (diversity === 'Low') return "In this scan, a narrow set of accounts appeared.";
-          if (diversity === 'High') return "In this scan, a wide range of accounts appeared.";
-          return 'Source diversity was moderate in this scan.';
-        },
-        explanation: 'Counted unique accounts in this scan.',
-      },
-    ],
-  },
-};
-
-/**
- * GenericTabHero - Hero component for non-algorithm tabs
- * Follows the same structure as AlgorithmTabHero
- * Part 2: Apply design system to all tabs
- */
-const GenericTabHero = ({ tabId, scans, viewDataResults }) => {
-  const config = TAB_HERO_CONFIG[tabId];
-  if (!config) return null;
-
-  const scanCount = scans?.length || 0;
-  const platformCount = scans?.length > 0
-    ? [...new Set(scans.map(s => s.platform))].length
-    : 0;
-
-  const headline = config.getHeadline(viewDataResults);
-
-  // Icon mapping for support cards
-  const iconMap = {
-    target: <Compass size={16} className="text-blue-600" />,
-    repeat: <RefreshCcw size={16} className="text-blue-600" />,
-    scale: <Database size={16} className="text-blue-600" />,
-    users: <Globe size={16} className="text-blue-600" />,
-    layers: <BarChart3 size={16} className="text-blue-600" />,
-    activity: <Clock size={16} className="text-blue-600" />,
-    shuffle: <RefreshCw size={16} className="text-blue-600" />,
-  };
+  const contextLine = TAB_TRUST_SENTENCES[tabId] || null;
 
   return (
     <div className="mb-10">
@@ -1774,7 +1356,7 @@ const GenericTabHero = ({ tabId, scans, viewDataResults }) => {
               textTransform: 'uppercase',
             }}
           >
-            {config.kicker}
+            Observed in this scan
           </p>
 
           {/* Right: Meta data pill */}
@@ -1790,13 +1372,15 @@ const GenericTabHero = ({ tabId, scans, viewDataResults }) => {
             }}
           >
             <Database size={12} className="text-slate-400" />
-            <span>{scanCount} scan{scanCount !== 1 ? 's' : ''} · {platformCount} platform{platformCount !== 1 ? 's' : ''}</span>
+            <span>
+              {scanCount} scan{scanCount !== 1 ? 's' : ''} · {platformCount} platform{platformCount !== 1 ? 's' : ''}
+            </span>
           </div>
         </div>
 
-        {/* Main headline */}
+        {/* Headline */}
         <div
-          className="relative mb-6"
+          className="relative mb-4"
           style={{
             marginLeft: '-1rem',
             paddingLeft: '1rem',
@@ -1824,82 +1408,71 @@ const GenericTabHero = ({ tabId, scans, viewDataResults }) => {
           </h2>
         </div>
 
-        {/* Supporting interpretation */}
-        <p
-          className="text-slate-600 mb-5"
-          style={{
-            fontSize: '17px',
-            lineHeight: 1.75,
-            maxWidth: '680px',
-          }}
-        >
-          {typeof config.interpretation === 'function' ? config.interpretation(viewDataResults) : config.interpretation}
-        </p>
-
-        {/* Lede line */}
-        <p
-          className="text-slate-500 italic"
-          style={{
-            fontSize: '14px',
-            lineHeight: 1.6,
-            maxWidth: '600px',
-          }}
-        >
-          {config.lede}
-        </p>
-      </div>
-
-      {/* Two supporting context cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-8">
-        {config.supportCards.map((card, idx) => (
-          <div
-            key={idx}
-            className="rounded-xl relative overflow-hidden transition-all duration-200 hover:border-slate-400 hover:shadow-md group"
+        {/* Optional single context line */}
+        {contextLine && (
+          <p
+            className="text-slate-600"
             style={{
-              background: SURFACES.SUPPORT_WHITE.background,
-              border: SURFACES.SUPPORT_WHITE.border,
-              boxShadow: SURFACES.SUPPORT_WHITE.shadow,
-              padding: 'clamp(1.75rem, 3vw, 2.25rem)',
-              minHeight: '140px',
+              fontSize: '15px',
+              lineHeight: 1.65,
+              maxWidth: '680px',
             }}
           >
-            {/* Strong blue left accent bar */}
-            <div
-              className="absolute left-0 top-0 bottom-0 w-1 rounded-r"
-              style={{ background: 'linear-gradient(180deg, #2563EB 0%, #3B82F6 100%)' }}
+            {contextLine}
+          </p>
+        )}
+
+        {/* Hero-level disclosure control */}
+        <div
+          className="mt-6 flex justify-end"
+          style={{ borderTop: '1px solid rgba(226, 232, 240, 0.6)', paddingTop: '1rem' }}
+        >
+          <button
+            onClick={onToggleEvidence}
+            className="inline-flex items-center gap-2 text-sm font-medium transition-all rounded-full hover:bg-blue-100"
+            style={{
+              color: 'rgba(37, 99, 235, 0.85)',
+              background: 'rgba(37, 99, 235, 0.06)',
+              border: '1px solid rgba(37, 99, 235, 0.12)',
+              padding: '0.5rem 1rem',
+            }}
+            aria-expanded={isEvidenceExpanded}
+            aria-label={isEvidenceExpanded ? 'Hide evidence for this insight' : 'Show evidence for this insight'}
+          >
+            <ChevronDown
+              size={16}
+              className="transition-transform"
+              style={{
+                transform: isEvidenceExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+              }}
+              aria-hidden="true"
             />
-            <div className="pl-5">
-              {/* Icon badge + title row */}
-              <div className="flex items-center gap-3 mb-3">
-                <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{
-                    background: 'rgba(37, 99, 235, 0.1)',
-                    border: '1px solid rgba(37, 99, 235, 0.2)',
-                  }}
-                >
-                  {iconMap[card.icon] || <Info size={16} className="text-blue-600" />}
-                </div>
-                <h4 className="text-base font-bold text-slate-800">{card.title}</h4>
-              </div>
-              {/* Takeaway line */}
-              <p className="text-sm font-medium text-slate-700 mb-2">
-                {(() => {
-                  try {
-                    return card.getContent(viewDataResults || {});
-                  } catch (err) {
-                    console.error(`Error getting content for ${card.title}:`, err);
-                    return card.explanation || 'Data unavailable.';
-                  }
-                })()}
-              </p>
-              {/* Explanation */}
-              <p className="text-sm text-slate-500 leading-relaxed">
-                {card.explanation}
-              </p>
-            </div>
+            {isEvidenceExpanded ? 'Hide details' : 'How we know this'}
+          </button>
+        </div>
+
+        {/* Evidence area */}
+        {isEvidenceExpanded && heroView && (
+          <div
+            className="mt-5 rounded-2xl"
+            style={{
+              background: 'linear-gradient(180deg, rgba(37, 99, 235, 0.04) 0%, rgba(248, 250, 252, 0.85) 100%)',
+              border: '1px solid rgba(37, 99, 235, 0.10)',
+              padding: '1.25rem',
+            }}
+          >
+            <ViewCard
+              view={heroView}
+              dataResult={heroDataResult}
+              scanCount={scanCount}
+              platformCount={platformCount}
+              accentColor="blue"
+              isInline={true}
+              hideTitle={true}
+              hideDescription={true}
+            />
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
@@ -1954,6 +1527,8 @@ const DashboardPage = () => {
   const [activeTab, setActiveTab] = useState(TABS[0].id);
   // PHASE 6A: Political leaning toggle state (default OFF)
   const [politicalLeaningEnabled, setPoliticalLeaningEnabled] = useState(false);
+  // Slice 2: Hero evidence expansion state (per-tab + per-hero-view)
+  const [heroEvidenceExpanded, setHeroEvidenceExpanded] = useState({});
   const {
     scans,
     scanDetails,
@@ -2018,6 +1593,24 @@ const DashboardPage = () => {
     }
     return results;
   }, [currentViews, scans, scanDetails, detailsLoaded, activeTab, politicalLeaningEnabled]);
+
+  // Slice 2: Deterministic hero view selection for the active tab
+  const heroViewId = HERO_VIEW_ID_BY_TAB[activeTab];
+  const heroView =
+    currentViews.find((v) => v.id === heroViewId) ||
+    currentViews.find((v) => v.hero === true) ||
+    null;
+  const resolvedHeroViewId = heroView?.id || heroViewId;
+  const heroDataResult = resolvedHeroViewId ? viewDataResults[resolvedHeroViewId] : null;
+
+  const heroEvidenceKey = `${activeTab}:${resolvedHeroViewId || 'unknown'}`;
+  const isHeroEvidenceExpanded = heroEvidenceExpanded[heroEvidenceKey] === true;
+  const toggleHeroEvidence = () => {
+    setHeroEvidenceExpanded((prev) => ({
+      ...prev,
+      [heroEvidenceKey]: !prev[heroEvidenceKey],
+    }));
+  };
 
   // Loading state
   if (loading) {
@@ -2169,19 +1762,16 @@ const DashboardPage = () => {
 
           {/* Feature Moment - Editorial centerpiece for ALL tabs (Part 2: Design System Application) */}
           <FeatureMomentWrapper>
-            {/* Editorial Hero - Algorithm tab uses special hero, others use GenericTabHero */}
-            {activeTab === 'algorithm' ? (
-              <AlgorithmTabHero
-                scans={scans}
-                viewDataResults={viewDataResults}
-              />
-            ) : (
-              <GenericTabHero
-                tabId={activeTab}
-                scans={scans}
-                viewDataResults={viewDataResults}
-              />
-            )}
+            {/* Editorial Hero - Insight first, expandable evidence (Slice 2) */}
+            <TabHero
+              tabId={activeTab}
+              scans={scans}
+              platforms={platforms}
+              heroView={heroView}
+              heroDataResult={heroDataResult}
+              isEvidenceExpanded={isHeroEvidenceExpanded}
+              onToggleEvidence={toggleHeroEvidence}
+            />
 
             {/* Talk to Your Algorithm - Premium invitation (GREEN theme) - SAME placement for ALL tabs */}
             <div className="mt-10">
@@ -2235,6 +1825,7 @@ const DashboardPage = () => {
                 platformCount={platforms.length}
                 tabName={TABS.find((t) => t.id === activeTab)?.label || 'insights'}
                 tabId={activeTab}
+                heroViewId={resolvedHeroViewId}
               />
             )}
           </ReadingColumnWrapper>
