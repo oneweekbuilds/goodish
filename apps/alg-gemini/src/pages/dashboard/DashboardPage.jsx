@@ -1594,8 +1594,8 @@ const TAB_HERO_CONFIG = {
         icon: 'users',
         title: 'Source concentration',
         getContent: (data) => {
-          const concentration = data?.['creators-concentration']?.data?.qualitativeLabel;
-          return concentration ? `In this scan: ${concentration}` : 'We measured source distribution in this scan.';
+          const concentration = data?.['creators-concentration']?.data?.primaryInsight;
+          return concentration || 'We measured source distribution in this scan.';
         },
         explanation: 'How content was distributed across accounts.',
       },

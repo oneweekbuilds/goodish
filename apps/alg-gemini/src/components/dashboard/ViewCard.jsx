@@ -428,6 +428,45 @@ const ViewCard = ({ view, dataResult, scanCount = 0, platformCount = 0, accentCo
   const renderText = (data) => {
     if (!data) return null;
 
+    // Special handling for creator concentration with context line and top creators
+    if (data.primaryInsight) {
+      return (
+        <div className="space-y-3">
+          {/* Primary insight */}
+          <p className="text-slate-700 leading-relaxed">
+            {data.primaryInsight}
+          </p>
+          {/* Oura-style context line */}
+          {data.contextLine && (
+            <p className="text-sm text-slate-600 leading-relaxed italic">
+              {data.contextLine}
+            </p>
+          )}
+          {/* Top creators list - visually secondary */}
+          {data.topCreators && data.topCreators.length > 0 && (
+            <div className="pt-2 border-t border-slate-100">
+              <p className="text-xs text-slate-500 mb-2 font-medium">Top accounts in this scan:</p>
+              <ul className="space-y-1">
+                {data.topCreators.slice(0, 5).map((c, idx) => (
+                  <li key={idx} className="text-xs text-slate-500 flex items-center gap-2">
+                    <span className="text-slate-400">{idx + 1}.</span>
+                    <span>{c.creator}</span>
+                    <span className="text-slate-400">({c.share}%)</span>
+                  </li>
+                ))}
+                {data.topCreators.length > 5 && (
+                  <li className="text-xs text-slate-400 italic">
+                    ...and {data.topCreators.length - 5} more
+                  </li>
+                )}
+              </ul>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Standard handling for other text types
     let content = [];
     if (data.insights) {
       content = data.insights;

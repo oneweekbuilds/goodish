@@ -652,8 +652,7 @@ export const dashboardCatalog = [
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     whyExplanation: 'Measured how much of this scan came from the top few accounts.',
-    // PHASE 9: Qualitative labels only
-    takeaway: (data) => data?.qualitativeLabel ? `In this scan: ${data.qualitativeLabel}` : null,
+    takeaway: (data) => data?.primaryInsight ? data.primaryInsight : null,
     action: () => 'You could try following more accounts to see if concentration decreases.',
   },
 

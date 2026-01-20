@@ -1375,6 +1375,7 @@ export function getTopCreatorsData(scans, scanDetails) {
 /**
  * View 32: Creator concentration
  * PHASE 9 (Trust): Qualitative only, threshold of 100 posts
+ * POLISH: Human-first phrasing with Oura-style context
  */
 export function getCreatorConcentrationData(scans, scanDetails) {
   const creatorsData = aggregateCreators(scans, scanDetails);
@@ -1402,24 +1403,56 @@ export function getCreatorConcentrationData(scans, scanDetails) {
     );
   }
 
-  // Calculate top 10 concentration
+  // Calculate top 10 concentration (LOCKED: no math changes)
   const sortedCreators = Object.values(creatorsData.creators)
     .sort((a, b) => b.totalPosts - a.totalPosts);
 
   const top10Posts = sortedCreators.slice(0, 10).reduce((sum, c) => sum + c.totalPosts, 0);
   const concentration = totalPosts > 0 ? Math.round((top10Posts / totalPosts) * 100) : 0;
 
-  // PHASE 9: Qualitative labels only - no percentages
-  let qualitativeLabel;
-  if (concentration >= 60) {
-    qualitativeLabel = 'A small number of accounts make up most of your feed';
+  // Round concentration for human-first phrasing (round to nearest 5% for cleaner copy)
+  const roundedConcentration = Math.round(concentration / 5) * 5;
+  const top10Count = Math.min(sortedCreators.length, 10);
+
+  // Human-first primary insight with rounded numbers (no decimals, natural language)
+  let primaryInsight;
+  if (concentration >= 75) {
+    primaryInsight = `About three-quarters of your feed came from just ${top10Count} accounts`;
+  } else if (concentration >= 65) {
+    primaryInsight = `About two-thirds of your feed came from just ${top10Count} accounts`;
+  } else if (concentration >= 60) {
+    primaryInsight = `About three-fifths of your feed came from just ${top10Count} accounts`;
+  } else if (concentration >= 50) {
+    primaryInsight = `About half of your feed came from ${top10Count} accounts`;
+  } else if (concentration >= 40) {
+    primaryInsight = `About two-fifths of your feed came from ${top10Count} accounts`;
+  } else if (concentration >= 30) {
+    primaryInsight = `About a third of your feed came from ${top10Count} accounts`;
   } else {
-    qualitativeLabel = 'Your feed comes from a mix of sources';
+    primaryInsight = `Your feed came from a mix of sources — ${top10Count} accounts accounted for about ${roundedConcentration}%`;
   }
+
+  // Oura-style context line: calm, non-judgmental, acknowledges intentionality
+  const contextLine = 'Seeing the same accounts repeatedly can feel familiar — or limiting — depending on what you\'re hoping to see.';
+
+  // Top creators list (secondary evidence)
+  const topCreators = sortedCreators.slice(0, 10).map((c, idx) => ({
+    rank: idx + 1,
+    creator: c.displayName,
+    posts: c.totalPosts,
+    share: Math.round((c.totalPosts / totalPosts) * 100),
+  }));
 
   return createResponse(
     true,
-    { qualitativeLabel, top10Count: Math.min(sortedCreators.length, 10) },
+    {
+      primaryInsight,
+      contextLine,
+      topCreators,
+      top10Count,
+      // Keep qualitativeLabel for backward compatibility
+      qualitativeLabel: primaryInsight,
+    },
     null,
     creatorsData.scansUsed,
     creatorsData.scansWithData
