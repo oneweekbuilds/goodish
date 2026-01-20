@@ -237,11 +237,19 @@ const ViewCard = ({
     // PHASE 6A: Handle possibleInfluencePercent for promotion heuristic
     const value = data.currentPercent ?? data.concentration ?? data.discoveryRate ?? data.top3Percent ?? data.possibleInfluencePercent;
     const showLine = type === 'number_line' && data.trend && data.trend.length >= 2;
+    const isAttentionTactics = data?.flaggedCount !== undefined && data?.totalPosts !== undefined && data?.status !== undefined;
 
     return (
       <div className="space-y-4">
         {value !== undefined && (
-          <BigNumber value={`${value}%`} />
+          <BigNumber
+            value={`${value}%`}
+            color={isAttentionTactics ? 'text-slate-700' : 'text-text-main'}
+            className={isAttentionTactics ? 'tracking-tight' : ''}
+          />
+        )}
+        {isAttentionTactics && (
+          <p className="text-xs text-slate-500 text-center">Flagged in this scan</p>
         )}
         {showLine && (
           <div className={deemphasizeCharts ? 'opacity-80' : ''}>

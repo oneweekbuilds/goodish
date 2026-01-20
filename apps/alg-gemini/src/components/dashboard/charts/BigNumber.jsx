@@ -8,10 +8,10 @@ import React from 'react';
  * @param {string} label - Label below the number
  * @param {string} color - Text color class (default text-text-main)
  */
-const BigNumber = ({ value, label, color = 'text-text-main' }) => {
+const BigNumber = ({ value, label, color = 'text-text-main', className = '' }) => {
   return (
     <div className="text-center py-4">
-      <div className={`text-5xl font-bold ${color} mb-2`}>
+      <div className={`text-4xl font-semibold ${color} mb-1 ${className}`}>
         {value}
       </div>
       {label && (

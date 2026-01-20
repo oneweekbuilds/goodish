@@ -13,7 +13,7 @@ const InferencesTalkToAlgorithm = ({ scanId }) => {
   return (
     <div className="talk-to-algorithm-panel">
       <div className="talk-to-algorithm-content">
-        <h3>Inferences Talk to Algorithm</h3>
+        <h3>Talk to your algorithm (coming soon)</h3>
         <p>Coming soon</p>
       </div>
     </div>

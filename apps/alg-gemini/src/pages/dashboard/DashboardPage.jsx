@@ -1497,19 +1497,19 @@ const TabHero = ({
  * SecondVisualAnchor - Chapter opener that transitions into the analysis
  * ACCURACY CONTRACT COMPLIANT: All language grounded in observation
  */
-const SecondVisualAnchor = ({ tabId }) => {
+const SecondVisualAnchor = ({ tabId, className = '' }) => {
   // Tab-specific anchor messages - grounded in observation, not intent
   const anchorMessages = {
-    algorithm: "Below: the details of what we observed in this scan, with context and possible experiments.",
-    ads: "Below: the promotional content we detected, categories observed, and experiments you could try.",
-    politics: "Below: political keywords detected, sources observed, and experiments you could try.",
-    patterns: "Below: topics detected in this scan, concentration levels, and experiments you could try.",
-    creators: "Below: sources observed in this scan, concentration levels, and experiments you could try.",
+    algorithm: "Below is what we observed in this scan, plus options to explore.",
+    ads: "Below is what we observed in this scan, plus options to explore.",
+    politics: "Below is what we observed in this scan, plus options to explore.",
+    patterns: "Below is what we observed in this scan, plus options to explore.",
+    creators: "Below is what we observed in this scan, plus options to explore.",
   };
 
   return (
     <div
-      className="mb-10 mt-4"
+      className={`mb-10 mt-4 ${className}`}
       style={{
         paddingLeft: '1rem',
         borderLeft: '4px solid #2563EB',
@@ -1804,7 +1804,16 @@ const DashboardPage = () => {
           </FeatureMomentWrapper>
 
           {/* Second Visual Anchor - Chapter opener after Talk - NOW for ALL tabs */}
-          <SecondVisualAnchor tabId={activeTab} />
+          <SecondVisualAnchor
+            tabId={activeTab}
+            className={
+              activeTab === 'politics'
+                ? 'mt-2 mb-8'
+                : activeTab === 'ads'
+                  ? 'mt-8'
+                  : ''
+            }
+          />
 
           {/* Views Grid with enforced section structure - ReadingColumnWrapper for ALL tabs */}
           <ReadingColumnWrapper>
