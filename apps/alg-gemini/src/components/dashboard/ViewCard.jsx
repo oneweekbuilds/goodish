@@ -168,6 +168,7 @@ const ViewCard = ({
   // Even if hasData is true, we may need to show insufficient data state
   const qualityOk = !chartQuality || chartQuality.quality === QUALITY_FLAGS.OK;
   const showChart = hasData && qualityOk;
+  const microVisual = showChart ? (dataResult?.micro || data?.micro) : null;
 
   // PHASE 5: Use the ACTUAL scans used for this metric, not total scan count
   // This ensures "Based on X scans" labels are accurate for each view
@@ -560,6 +561,82 @@ const ViewCard = ({
     return 'neutral';
   };
 
+  // Micro visual renderers (Visual Metrics v1)
+  const renderMicroVisual = (micro) => {
+    if (!micro || !micro.type) return null;
+    switch (micro.type) {
+      case 'sparkline':
+        return renderMicroSparkline(micro);
+      case 'bar':
+        return renderMicroBar(micro);
+      case 'segments':
+        return renderMicroSegments(micro);
+      default:
+        return null;
+    }
+  };
+
+  const renderMicroSparkline = ({ points = [], color = '#0EA5E9' }) => {
+    if (!points || points.length < 2) return null;
+    const display = points.slice(-8);
+    const values = display.map(p => p.value);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const range = max - min || 1;
+    const width = 72;
+    const height = 32;
+    const padding = 4;
+    const chartWidth = width - padding * 2;
+    const chartHeight = height - padding * 2;
+    const coords = display.map((p, i) => {
+      const x = padding + (i / Math.max(1, display.length - 1)) * chartWidth;
+      const y = padding + chartHeight - ((p.value - min) / range) * chartHeight;
+      return { x, y };
+    });
+    const path = coords.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+
+    return (
+      <div className="w-[88px] h-[36px] flex items-center justify-end">
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" preserveAspectRatio="none">
+          <path d={path} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
+    );
+  };
+
+  const renderMicroBar = ({ value = 0, color = '#0EA5E9' }) => {
+    const safeValue = Math.max(0, Math.min(100, value));
+    return (
+      <div className="w-[88px] h-[12px] rounded-full bg-slate-100 overflow-hidden border border-slate-200">
+        <div
+          className="h-full rounded-full"
+          style={{ width: `${safeValue}%`, background: color, transition: 'width 0.2s ease' }}
+        />
+      </div>
+    );
+  };
+
+  const renderMicroSegments = ({ segments = [] }) => {
+    if (!segments || segments.length === 0) return null;
+    const total = segments.reduce((sum, s) => sum + (s.value || 0), 0) || 1;
+    const palette = ['#0EA5E9', '#22C55E', '#94A3B8'];
+    return (
+      <div className="w-[96px] h-[14px] rounded-full bg-slate-100 overflow-hidden border border-slate-200 flex">
+        {segments.slice(0, 3).map((s, idx) => {
+          const widthPct = Math.max(0, Math.min(100, (s.value / total) * 100));
+          return (
+            <div
+              key={s.label || idx}
+              title={s.label}
+              style={{ width: `${widthPct}%`, background: palette[idx % palette.length] }}
+              className="h-full"
+            />
+          );
+        })}
+      </div>
+    );
+  };
+
   // Semantic accent classes based on color lane
   const accentBorder = accentColor === 'green' ? 'border-emerald-200' : 'border-primary-blue/20';
   const accentRing = accentColor === 'green' ? 'ring-emerald-100' : 'ring-primary-blue/10';
@@ -704,36 +781,42 @@ const ViewCard = ({
     <div className={getCardClasses()} style={getCardStyles()}>
       {/* Card Header - Anatomy: Eyebrow → Title → Description */}
       {shouldRenderHeader && (
-        <div className={getHeaderClasses()} style={getHeaderBorderStyles()}>
-          {/* Eyebrow label with semantic accent */}
-          {showSummaryEyebrow && (
-            <span className={`inline-block text-[10px] font-semibold uppercase tracking-widest mb-2 ${accentText}`}>
-              Summary
-            </span>
-          )}
-          {showPrimaryEyebrow && (
-            <span className={`inline-block text-[10px] font-semibold uppercase tracking-widest mb-2 ${accentText}`}>
-              Key Insight
-            </span>
-          )}
-          {/* Title */}
-          {showTitle && (
-            <h3 className={`font-semibold text-text-main line-clamp-2 ${
-              isPrimary && hasData ? 'text-xl' :
-              isFutureCard ? 'text-sm text-slate-500' :
-              'text-base'
-            }`}>
-              {title}
-            </h3>
-          )}
-          {/* Description - subtle */}
-          {showDescription && (
-            <p className={`mt-1 line-clamp-2 ${
-              isPrimary && hasData ? 'text-sm text-text-muted' :
-              'text-xs text-slate-400'
-            }`}>
-              {description}
-            </p>
+        <div className={`${getHeaderClasses()} ${microVisual ? 'flex items-start gap-3' : ''}`} style={getHeaderBorderStyles()}>
+          <div className="flex-1 min-w-0">
+            {/* Eyebrow label with semantic accent */}
+            {showSummaryEyebrow && (
+              <span className={`inline-block text-[10px] font-semibold uppercase tracking-widest mb-2 ${accentText}`}>
+                Summary
+              </span>
+            )}
+            {showPrimaryEyebrow && (
+              <span className={`inline-block text-[10px] font-semibold uppercase tracking-widest mb-2 ${accentText}`}>
+                Key Insight
+              </span>
+            )}
+            {/* Title */}
+            {showTitle && (
+              <h3 className={`font-semibold text-text-main line-clamp-2 ${
+                isPrimary && hasData ? 'text-xl' :
+                isFutureCard ? 'text-sm text-slate-500' :
+                'text-base'
+              }`}>
+                {title}
+              </h3>
+            )}
+            {/* Description - subtle */}
+            {showDescription && (
+              <p className={`mt-1 line-clamp-2 ${
+                isPrimary && hasData ? 'text-sm text-text-muted' :
+                'text-xs text-slate-400'
+              }`}>
+                {description}
+              </p>
+            )}
+          </div>
+
+          {microVisual && (
+            <div className="shrink-0 pt-1">{renderMicroVisual(microVisual)}</div>
           )}
         </div>
       )}

@@ -192,7 +192,7 @@ export function getAdPercentageData(scans, scanDetails) {
     );
   }
 
-  return createResponse(
+  const response = createResponse(
     true,
     {
       currentPercent: adsData.adPercentageOverall,
@@ -213,6 +213,13 @@ export function getAdPercentageData(scans, scanDetails) {
       quality_reason: qualityResult.reason,
     }
   );
+  if (adsData.byDate.length >= 2) {
+    response.micro = {
+      type: 'sparkline',
+      points: adsData.byDate,
+    };
+  }
+  return response;
 }
 
 /**
@@ -595,7 +602,7 @@ export function getPoliticalShareData(scans, scanDetails) {
     );
   }
 
-  return createResponse(
+  const response = createResponse(
     true,
     {
       currentPercent: politicsData.politicalPercentageOverall,
@@ -614,6 +621,13 @@ export function getPoliticalShareData(scans, scanDetails) {
       quality_reason: qualityResult.reason,
     }
   );
+  if (politicsData.byDate.length >= 2) {
+    response.micro = {
+      type: 'sparkline',
+      points: politicsData.byDate,
+    };
+  }
+  return response;
 }
 
 /**
@@ -1002,7 +1016,7 @@ export function getTopicVarietyData(scans, scanDetails) {
     isUnclassified: t.category === UNCLASSIFIED_TOPIC,
   }));
 
-  return createResponse(
+  const response = createResponse(
     true,
     {
       topicCount: topicsData.uniqueTopicCount,
@@ -1023,6 +1037,21 @@ export function getTopicVarietyData(scans, scanDetails) {
       quality_reason: qualityResult.reason,
     }
   );
+  const microSegments = topTopics
+    .filter(t => !t.isUnclassified)
+    .slice(0, 3)
+    .map(t => ({
+      label: normalizeTopicLabel ? normalizeTopicLabel(t.label) : t.label,
+      value: t.value,
+    }))
+    .filter(s => s.label);
+  if (microSegments.length > 0) {
+    response.micro = {
+      type: 'segments',
+      segments: microSegments,
+    };
+  }
+  return response;
 }
 
 /**
@@ -1740,6 +1769,21 @@ export function getAlgoTopicsLikedData(scans, scanDetails) {
   result.hasUnclassified = hasUnclassified;
   result.unclassifiedNote = hasUnclassified ? "Some content can't be reliably categorized yet." : null;
 
+  const microSegments = sorted
+    .filter(t => !t.isUnclassified)
+    .slice(0, 3)
+    .map(t => ({
+      label: normalizeTopicLabel ? normalizeTopicLabel(t.topic) : t.topic,
+      value: Math.round((t.score || 0) * 100),
+    }))
+    .filter(s => s.label && s.value > 0);
+  if (microSegments.length > 0) {
+    result.micro = {
+      type: 'segments',
+      segments: microSegments,
+    };
+  }
+
   return result;
 }
 
@@ -2091,7 +2135,7 @@ export function getManipulativePatternsData(scans, scanDetails) {
     insight = `A notable portion (${percentDisplay}%) of posts contained patterns often associated with attention-grabbing tactics.`;
   }
 
-  return createResponse(
+  const response = createResponse(
     true,
     {
       currentPercent: percentDisplay,
@@ -2104,4 +2148,9 @@ export function getManipulativePatternsData(scans, scanDetails) {
     patternsData.scansUsed,
     patternsData.scansWithData
   );
+  response.micro = {
+    type: 'bar',
+    value: percentDisplay,
+  };
+  return response;
 }
