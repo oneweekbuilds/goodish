@@ -6,6 +6,7 @@ import ViewCard from '../../components/dashboard/ViewCard';
 import TalkToAlgorithmSection from '../../components/dashboard/TalkToAlgorithmSection';
 import { useDashboardData } from '../../lib/dashboard/useDashboardData';
 import * as dataHelpers from '../../lib/dashboard/dataHelpers';
+import { UNCLASSIFIED_TOPIC } from '../../lib/dashboard/scanAggregator';
 
 /**
  * THEME CONSTANTS - Part 1 Color System
@@ -582,6 +583,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
   // Track which sections are expanded
   // Change 3: moreDetails expanded by default on Algorithm tab
   const [expandedSections, setExpandedSections] = useState({
+    heroEvidence: false,
     keyInsightEvidence: false,
     moreDetails: false,
     summaryMore: false,
@@ -590,6 +592,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
   // Reset expanded state when tab changes
   useEffect(() => {
     setExpandedSections({
+      heroEvidence: false,
       keyInsightEvidence: false,
       moreDetails: false, // On Algorithm tab, content is always visible, not dependent on this state
       summaryMore: false,
@@ -603,6 +606,34 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
     }));
   };
 
+  // Extract hero card - metadata-driven selection with Patterns tab fallback
+  let heroCard = null;
+  let heroHasData = false;
+  
+  if (tabId === 'patterns') {
+    // Patterns tab: prefer manipulative-patterns if it has data, else topic-variety
+    const manipulativePatterns = views.find(v => v.id === 'manipulative-patterns');
+    const topicVariety = views.find(v => v.id === 'patterns-topic-variety');
+    const manipulativeHasData = manipulativePatterns && viewDataResults['manipulative-patterns']?.hasData;
+    if (manipulativeHasData) {
+      heroCard = manipulativePatterns;
+      heroHasData = true;
+    } else if (topicVariety && viewDataResults['patterns-topic-variety']?.hasData) {
+      heroCard = topicVariety;
+      heroHasData = true;
+    }
+  } else {
+    // Other tabs: use card marked with hero: true
+    const heroCandidate = views.find(v => v.hero === true);
+    if (heroCandidate) {
+      heroCard = heroCandidate;
+      heroHasData = viewDataResults[heroCandidate.id]?.hasData === true;
+    }
+  }
+
+  // Filter hero card out of views for grouping ONLY if it has data (so it can fall back to primary if no data)
+  const viewsForGrouping = (heroCard && heroHasData) ? views.filter(v => v.id !== heroCard.id) : views;
+
   // Group views by sortOrder AND data availability
   const groupedViews = {
     primary: { withData: [], collapsed: [] },
@@ -610,7 +641,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
     summary: { withData: [] },
   };
 
-  views.forEach((view) => {
+  viewsForGrouping.forEach((view) => {
     const result = viewDataResults[view.id] || { hasData: false };
     const group = view.sortOrder || 'supporting';
 
@@ -647,9 +678,17 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
     return <ChapterContainer variant={variant}>{children}</ChapterContainer>;
   };
 
+  // Hero card data and rendering
+  const heroDataResult = heroCard ? viewDataResults[heroCard.id] : null;
+  const heroTakeawayText = heroHasData && typeof heroCard?.takeaway === 'function'
+    ? heroCard.takeaway(heroDataResult?.data)
+    : null;
+
   return (
     <div className="space-y-10">
       {/* KEY INSIGHT - Part 3 Module Type 1: Declarative + Collapsible Evidence */}
+      {/* NOTE: Hero is rendered above by GenericTabHero/AlgorithmTabHero, so we skip hero rendering here */}
+      {/* Only render primary section if hero doesn't exist OR if primary cards are different from hero */}
       {hasPrimaryContent && (
         <section>
           <MaybeChapter variant="primary">
@@ -1554,11 +1593,33 @@ const TAB_HERO_CONFIG = {
     kicker: 'Topic distribution observed',
     getHeadline: (data) => {
       const variety = data?.['patterns-topic-variety']?.data;
-      const top = variety?.topTopics?.[0]?.label;
-      if (top) return `In this scan, ${top} appeared most often.`;
+      // Exclude Unclassified from top topics for headline
+      const classifiedTopics = variety?.topTopics?.filter(t => !t.isUnclassified && t.label !== 'Unclassified') || [];
+      const top = classifiedTopics[0]?.label;
+      const second = classifiedTopics[1]?.label;
+      const unclassifiedShare = variety?.topTopics?.find(t => t.isUnclassified || t.label === 'Unclassified')?.value || 0;
+      
+      if (top && second) {
+        return `In this scan, ${top} and ${second} appeared most often.`;
+      } else if (top) {
+        return `In this scan, ${top} appeared most often.`;
+      }
       return "In this scan, we observed topic distribution.";
     },
-    interpretation: "These are topics detected in this scroll session. We cannot know why they appeared or what you prefer.",
+    interpretation: (data) => {
+      const variety = data?.['patterns-topic-variety']?.data;
+      const unclassifiedShare = variety?.topTopics?.find(t => t.isUnclassified || t.label === UNCLASSIFIED_TOPIC || t.label === 'Unclassified')?.value || 0;
+      const classifiedTopics = variety?.topTopics?.filter(t => !t.isUnclassified && t.label !== UNCLASSIFIED_TOPIC && t.label !== 'Unclassified') || [];
+      const top = classifiedTopics[0]?.label;
+      
+      let base = "These are topics detected in this scroll session. We cannot know why they appeared or what you prefer.";
+      if (unclassifiedShare > 20 && top) {
+        base += ` Some posts couldn't be categorized yet. Among categorized posts, ${top} was most common.`;
+      } else if (unclassifiedShare > 20) {
+        base += " Some posts couldn't be categorized yet.";
+      }
+      return base;
+    },
     lede: "Below: topics observed, concentration levels, and experiments you could try.",
     supportCards: [
       {
@@ -1732,7 +1793,7 @@ const GenericTabHero = ({ tabId, scans, viewDataResults }) => {
             maxWidth: '680px',
           }}
         >
-          {config.interpretation}
+          {typeof config.interpretation === 'function' ? config.interpretation(viewDataResults) : config.interpretation}
         </p>
 
         {/* Lede line */}
@@ -1783,7 +1844,14 @@ const GenericTabHero = ({ tabId, scans, viewDataResults }) => {
               </div>
               {/* Takeaway line */}
               <p className="text-sm font-medium text-slate-700 mb-2">
-                {card.getContent(viewDataResults)}
+                {(() => {
+                  try {
+                    return card.getContent(viewDataResults || {});
+                  } catch (err) {
+                    console.error(`Error getting content for ${card.title}:`, err);
+                    return card.explanation || 'Data unavailable.';
+                  }
+                })()}
               </p>
               {/* Explanation */}
               <p className="text-sm text-slate-500 leading-relaxed">
@@ -1893,8 +1961,15 @@ const DashboardPage = () => {
           } else {
             results[view.id] = dataFn(scans, scanDetails);
           }
+          // Ensure result has required structure
+          if (!results[view.id] || typeof results[view.id] !== 'object') {
+            results[view.id] = { hasData: false, data: null, missing: 'Invalid data structure.' };
+          } else if (results[view.id].hasData === undefined) {
+            // If hasData is missing, assume false for safety
+            results[view.id] = { ...results[view.id], hasData: false };
+          }
         } catch (err) {
-          console.error(`Error computing data for ${view.id}:`, err);
+          console.error(`Error computing data for ${view.id}:`, err, err.stack);
           results[view.id] = { hasData: false, data: null, missing: 'Error loading data.' };
         }
       } else {

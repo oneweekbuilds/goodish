@@ -77,6 +77,7 @@ export const dashboardCatalog = [
     outputType: 'number_line',
     dataFn: 'getAdPercentageData',
     emptyStateType: 'needs_more_scans',
+    hero: true,
     isPrimary: true,
     sortOrder: 'primary',
     whyExplanation: 'These are posts the platform explicitly labeled as ads or sponsored.',
@@ -254,6 +255,7 @@ export const dashboardCatalog = [
     outputType: 'number_line',
     dataFn: 'getPoliticalShareData',
     emptyStateType: 'needs_more_scans',
+    hero: true,
     isPrimary: true,
     sortOrder: 'primary',
     whyExplanation: 'Matched keywords related to elections, policy, and political figures. Keyword matching has limitations.',
@@ -436,11 +438,35 @@ export const dashboardCatalog = [
     counterfactual: 'This is what showed up in this scan — may not represent your typical feed.',
     takeaway: (data) => {
       if (!data?.topicCount) return null;
-      const top = data.topTopics?.[0]?.label;
+      // Exclude Unclassified from top topics for headline
+      const classifiedTopics = data.topTopics?.filter(t => !t.isUnclassified && t.label !== 'Unclassified' && t.label !== 'Other / couldn\'t categorize') || [];
+      const top = classifiedTopics[0]?.label;
+      const second = classifiedTopics[1]?.label;
       const total = data.totalPosts || 0;
-      if (data.topicCount <= 3) return `In this scan, content clustered around ${data.topicCount} topics${top ? ` — primarily ${top}` : ''} (${total} posts observed).`;
-      if (data.topicCount <= 7) return `In this scan, ${top || 'one topic'} appeared most, with ${data.topicCount - 1} other topics present.`;
-      return `In this scan, ${data.topicCount} different topics were detected, with ${top || 'a few themes'} appearing most often.`;
+      const unclassifiedShare = data.topTopics?.find(t => t.isUnclassified || t.label === 'Unclassified' || t.label === 'Other / couldn\'t categorize')?.value || 0;
+      
+      if (data.topicCount <= 3) {
+        if (top && second) {
+          return `In this scan, content clustered around ${data.topicCount} topics — primarily ${top} and ${second}${unclassifiedShare > 20 ? '. Some posts couldn\'t be categorized yet' : ''} (${total} posts observed).`;
+        } else if (top) {
+          return `In this scan, content clustered around ${data.topicCount} topics — primarily ${top}${unclassifiedShare > 20 ? '. Some posts couldn\'t be categorized yet' : ''} (${total} posts observed).`;
+        }
+        return `In this scan, content clustered around ${data.topicCount} topics${unclassifiedShare > 20 ? '. Some posts couldn\'t be categorized yet' : ''} (${total} posts observed).`;
+      }
+      if (data.topicCount <= 7) {
+        if (top && second) {
+          return `In this scan, ${top} and ${second} appeared most, with ${data.topicCount - 2} other topics present${unclassifiedShare > 20 ? '. Some posts couldn\'t be categorized yet' : ''}.`;
+        } else if (top) {
+          return `In this scan, ${top} appeared most, with ${data.topicCount - 1} other topics present${unclassifiedShare > 20 ? '. Some posts couldn\'t be categorized yet' : ''}.`;
+        }
+        return `In this scan, one topic appeared most, with ${data.topicCount - 1} other topics present${unclassifiedShare > 20 ? '. Some posts couldn\'t be categorized yet' : ''}.`;
+      }
+      if (top && second) {
+        return `In this scan, ${data.topicCount} different topics were detected, with ${top} and ${second} appearing most often${unclassifiedShare > 20 ? '. Some posts couldn\'t be categorized yet' : ''}.`;
+      } else if (top) {
+        return `In this scan, ${data.topicCount} different topics were detected, with ${top} appearing most often${unclassifiedShare > 20 ? '. Some posts couldn\'t be categorized yet' : ''}.`;
+      }
+      return `In this scan, ${data.topicCount} different topics were detected${unclassifiedShare > 20 ? '. Some posts couldn\'t be categorized yet' : ''}.`;
     },
     action: () => 'You could try searching for new topics to see if variety changes.',
   },
@@ -519,6 +545,7 @@ export const dashboardCatalog = [
     outputType: 'number_line',
     dataFn: 'getManipulativePatternsData',
     emptyStateType: 'needs_more_scans',
+    hero: true,
     sortOrder: 'supporting',
     whyExplanation: 'Based on patterns we detected, these posts contained wellbeing themes or engagement hooks. Context matters — not all urgency is manipulative.',
     takeaway: (data) => {
@@ -650,6 +677,7 @@ export const dashboardCatalog = [
     outputType: 'text',
     dataFn: 'getCreatorConcentrationData',
     emptyStateType: 'needs_more_scans',
+    hero: true,
     sortOrder: 'supporting',
     whyExplanation: 'Measured how much of this scan came from the top few accounts.',
     takeaway: (data) => data?.primaryInsight ? data.primaryInsight : null,

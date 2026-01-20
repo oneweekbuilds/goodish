@@ -68,7 +68,7 @@ function normalizeCreatorId(creator) {
  * Combines confusing/unclear categories into one bucket.
  */
 const CONFUSING_TOPICS = ['unknown', 'general', 'uncategorized', 'other', 'misc', 'miscellaneous', 'none', 'n/a', ''];
-const UNCLASSIFIED_TOPIC = 'Unclassified';
+const UNCLASSIFIED_TOPIC = 'Other / couldn\'t categorize';
 
 function normalizeTopicLabel(label) {
   if (!label) return UNCLASSIFIED_TOPIC;
