@@ -588,6 +588,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
     heroEvidence: false,
     keyInsightEvidence: false,
     moreDetails: false,
+    tryThis: false,
     summaryMore: false,
   });
 
@@ -596,7 +597,8 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
     setExpandedSections({
       heroEvidence: false,
       keyInsightEvidence: false,
-      moreDetails: false, // On Algorithm tab, content is always visible, not dependent on this state
+      moreDetails: false,
+      tryThis: false,
       summaryMore: false,
     });
   }, [tabId]);
@@ -672,18 +674,19 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
 
   // Get views for each section
   const primaryCards = groupedViews.primary.withData;
-  const secondaryCards = groupedViews.supporting.withData.slice(0, 2);
-  const collapsedCards = [
+  const supportingCards = groupedViews.supporting.withData;
+  const visibleSupportingCards = supportingCards.slice(0, 4);
+  const supportingOverflow = supportingCards.slice(4);
+  const speculationCards = [
     ...groupedViews.primary.collapsed,
     ...groupedViews.supporting.collapsed,
-    ...groupedViews.supporting.withData.slice(2),
   ];
   const summaryCards = groupedViews.summary.withData;
 
   // Check if sections have content
   const hasPrimaryContent = primaryCards.length > 0;
-  const hasSecondaryContent = secondaryCards.length > 0;
-  const hasCollapsedContent = collapsedCards.length > 0;
+  const hasObservedSupportingContent = visibleSupportingCards.length > 0;
+  const hasMoreDetailsContent = supportingOverflow.length > 0 || speculationCards.length > 0;
   const hasSummaryContent = summaryCards.length > 0;
 
   // Wrapper for chapter containers - NOW on ALL tabs (Part 2: Apply design system)
@@ -872,18 +875,17 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
         </section>
       )}
 
-      {/* DETAILS - Part 3: Softer backgrounds, headline + takeaway */}
-      {hasSecondaryContent && (
+      {/* OBSERVED SUPPORTING CARDS - calm default, limited to top 4 */}
+      {hasObservedSupportingContent && (
         <section>
           <MaybeChapter variant="default">
-            {/* All tabs now use story-driven headers */}
             <SectionHeader
-              label={tabHeaders.details.label}
+              label={tabHeaders.keyInsight.label}
               title={tabHeaders.details.title}
               subtext={tabHeaders.details.subtext}
             />
             <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-5">
-              {secondaryCards.map((view, idx) => {
+              {visibleSupportingCards.map((view, idx) => {
                 const dataResult = viewDataResults[view.id];
                 const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
                   ? view.takeaway(dataResult?.data)
@@ -928,292 +930,302 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
         </section>
       )}
 
-      {/* MORE DETAILS - Forecast section */}
-      {hasCollapsedContent && (
+      {/* MORE DETAILS - Context + Speculation behind calm accordion */}
+      {hasMoreDetailsContent && (
         <section>
           <MaybeChapter variant="accent">
-            {/* All tabs now use story-driven headers */}
-            <SectionHeader
-              label={tabHeaders.moreDetails.label}
-              title={tabHeaders.moreDetails.title}
-              subtext={tabHeaders.moreDetails.subtext}
-            />
-
-            <div
-              className="rounded-xl overflow-hidden mt-5 transition-all duration-200 hover:shadow-md"
-              style={{
-                background: 'white',
-                border: '1px solid #E2E8F0',
-              }}
+            <button
+              onClick={() => toggleSection('moreDetails')}
+              className="w-full flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-left transition-colors hover:border-slate-300"
+              aria-expanded={expandedSections.moreDetails}
+              aria-label={expandedSections.moreDetails ? 'Collapse more details' : 'Expand more details'}
             >
-              {/* Content: Always visible now that all tabs have proper headers */}
-              <div
-                className="px-6 pb-6"
-                style={{ paddingTop: '1.5rem' }}
-              >
-                  {/* Structured Forecast module - now applies to ALL tabs */}
-                  <div className="space-y-0">
-                      {/* Show up to 3 insights as structured forecast lines with pill labels */}
-                      {collapsedCards.slice(0, 3).map((view, idx) => {
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-slate-700">More details</p>
+                <p className="text-xs text-slate-500">Optional context and deeper cuts.</p>
+              </div>
+              <ChevronDown
+                size={16}
+                className="flex-shrink-0 text-slate-500 transition-transform"
+                style={{
+                  transform: expandedSections.moreDetails ? 'rotate(180deg)' : 'rotate(0deg)',
+                }}
+                aria-hidden="true"
+              />
+            </button>
+
+            {expandedSections.moreDetails && (
+              <div className="mt-6 space-y-8">
+                {supportingOverflow.length > 0 && (
+                  <div>
+                    <SectionHeader
+                      label={tabHeaders.details.label}
+                      title={tabHeaders.details.title}
+                      subtext={tabHeaders.details.subtext}
+                    />
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-5">
+                      {supportingOverflow.map((view) => {
                         const dataResult = viewDataResults[view.id];
                         const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
                           ? view.takeaway(dataResult?.data)
                           : null;
 
-                        // Forecast label pills with dividers
-                        const forecastLabels = [
-                          { text: 'Likely next', bg: '#EFF6FF', color: '#1D4ED8', border: '#BFDBFE' },
-                          { text: 'If this continues', bg: '#FEF3C7', color: '#92400E', border: '#FCD34D' },
-                          { text: 'What may shift it', bg: '#F0FDF4', color: '#166534', border: '#86EFAC' },
-                        ];
-                        const label = forecastLabels[idx] || { text: 'Also', bg: '#F1F5F9', color: '#64748B', border: '#E2E8F0' };
-
                         return (
                           <div
                             key={view.id}
-                            className="py-5 flex items-start gap-4 transition-colors hover:bg-slate-50/50 -mx-2 px-2 rounded-lg"
+                            className="rounded-xl p-4 transition-all duration-200 hover:shadow-sm hover:border-slate-200"
                             style={{
-                              borderBottom: idx < Math.min(collapsedCards.length, 3) - 1 ? '1px solid #E2E8F0' : 'none',
+                              background: 'white',
+                              border: '1px solid rgba(226, 232, 240, 0.6)',
                             }}
                           >
-                            {/* Pill label badge */}
-                            <div
-                              className="flex-shrink-0 text-[11px] font-semibold rounded-full px-3 py-1"
-                              style={{
-                                background: label.bg,
-                                color: label.color,
-                                border: `1px solid ${label.border}`,
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
-                              {label.text}
-                            </div>
-
-                            {/* Forecast line text */}
-                            <div className="flex-1 pt-0.5">
-                              <p className="text-sm text-slate-700 leading-relaxed">
-                                {takeawayText || view.title}
+                            <h4 className="text-sm font-semibold text-slate-600 mb-2.5">{view.title}</h4>
+                            {takeawayText && (
+                              <p className="text-xs font-medium text-slate-600 mb-2.5 leading-relaxed">
+                                {takeawayText}
                               </p>
+                            )}
+                            <div className="text-xs text-slate-500">
+                              <ViewCard
+                                view={view}
+                                dataResult={dataResult}
+                                scanCount={scanCount}
+                                platformCount={platformCount}
+                                accentColor="blue"
+                                isInline={true}
+                                hideTitle={true}
+                              />
                             </div>
                           </div>
                         );
                       })}
-
-                      {/* "More" link if there are additional insights */}
-                      {collapsedCards.length > 3 && (
-                        <button
-                          onClick={() => toggleSection('moreDetails')}
-                          className="text-sm font-medium flex items-center gap-1 mt-3 pt-4 hover:text-blue-700 transition-colors"
-                          style={{ color: '#2563EB', borderTop: '1px solid #E2E8F0' }}
-                          aria-expanded={expandedSections.moreDetails}
-                          aria-label={expandedSections.moreDetails ? 'Collapse additional insights' : `Expand to show ${collapsedCards.length - 3} more insight${collapsedCards.length - 3 === 1 ? '' : 's'}`}
-                        >
-                          <ChevronDown
-                            size={14}
-                            className="transition-transform"
-                            style={{
-                              transform: expandedSections.moreDetails ? 'rotate(180deg)' : 'rotate(0deg)',
-                            }}
-                            aria-hidden="true"
-                          />
-                          {expandedSections.moreDetails
-                            ? 'Show less'
-                            : `${collapsedCards.length - 3} more insight${collapsedCards.length - 3 === 1 ? '' : 's'}`
-                          }
-                        </button>
-                      )}
-
-                      {/* Show additional insights when expanded */}
-                      {expandedSections.moreDetails && collapsedCards.length > 3 && (
-                        <div className="pt-2">
-                          {collapsedCards.slice(3).map((view) => {
-                            const dataResult = viewDataResults[view.id];
-                            const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
-                              ? view.takeaway(dataResult?.data)
-                              : null;
-
-                            return (
-                              <div
-                                key={view.id}
-                                className="py-4 flex items-start gap-4"
-                                style={{
-                                  borderTop: '1px solid #E2E8F0',
-                                }}
-                              >
-                                <div
-                                  className="flex-shrink-0 text-[11px] font-semibold rounded-full px-3 py-1"
-                                  style={{
-                                    background: '#F1F5F9',
-                                    color: '#64748B',
-                                    border: '1px solid #E2E8F0',
-                                  }}
-                                >
-                                  Also
-                                </div>
-                                <div className="flex-1 pt-0.5">
-                                  <p className="text-sm text-slate-700 leading-relaxed">
-                                    {takeawayText || view.title}
-                                  </p>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
                     </div>
-                </div>
-            </div>
+                  </div>
+                )}
+
+                {speculationCards.length > 0 && (
+                  <div>
+                    <SectionHeader
+                      label={tabHeaders.moreDetails.label}
+                      title={tabHeaders.moreDetails.title}
+                      subtext={tabHeaders.moreDetails.subtext}
+                    />
+                    <div className="mt-4 space-y-4">
+                      {speculationCards.map((view) => {
+                        const dataResult = viewDataResults[view.id];
+                        const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
+                          ? view.takeaway(dataResult?.data)
+                          : null;
+
+                        return (
+                          <div
+                            key={view.id}
+                            className="rounded-xl p-4 transition-all duration-200 hover:shadow-sm hover:border-slate-200"
+                            style={{
+                              background: 'white',
+                              border: '1px solid rgba(226, 232, 240, 0.6)',
+                            }}
+                          >
+                            <h4 className="text-sm font-semibold text-slate-600 mb-2">{view.title}</h4>
+                            {takeawayText && (
+                              <p className="text-xs font-medium text-slate-600 mb-2 leading-relaxed">
+                                {takeawayText}
+                              </p>
+                            )}
+                            <div className="text-xs text-slate-500">
+                              <ViewCard
+                                view={view}
+                                dataResult={dataResult}
+                                scanCount={scanCount}
+                                platformCount={platformCount}
+                                accentColor="blue"
+                                isInline={true}
+                                hideTitle={true}
+                                hideDescription={true}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </MaybeChapter>
         </section>
       )}
 
-      {/* SUMMARY - Calm Closing Chapter with Action Cards */}
+      {/* SUMMARY - Experiments behind calm accordion */}
       {hasSummaryContent && (
         <section>
           <MaybeChapter variant="default">
-            {/* All tabs now use story-driven headers */}
-            <SectionHeader
-              label={tabHeaders.summary.label}
-              title={tabHeaders.summary.title}
-              subtext={tabHeaders.summary.subtext}
-            />
-            <div className="mt-5">
-              {summaryCards.map((view) => {
-                const dataResult = viewDataResults[view.id];
-                const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
-                  ? view.takeaway(dataResult?.data)
-                  : null;
-                const actionText = dataResult?.hasData && typeof view.action === 'function'
-                  ? view.action(dataResult?.data)
-                  : null;
+            <button
+              onClick={() => toggleSection('tryThis')}
+              className="w-full flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-left transition-colors hover:border-slate-300"
+              aria-expanded={expandedSections.tryThis}
+              aria-label={expandedSections.tryThis ? 'Collapse Try this actions' : 'Expand Try this actions'}
+            >
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-slate-700">Try this</p>
+                <p className="text-xs text-slate-500">Optional actions to explore change.</p>
+              </div>
+              <ChevronDown
+                size={16}
+                className="flex-shrink-0 text-slate-500 transition-transform"
+                style={{
+                  transform: expandedSections.tryThis ? 'rotate(180deg)' : 'rotate(0deg)',
+                }}
+                aria-hidden="true"
+              />
+            </button>
 
-                // For list data, show max 3 items as actions
-                const listData = Array.isArray(dataResult?.data)
-                  ? dataResult.data.slice(0, 3)
-                  : dataResult?.data?.tips?.slice(0, 3) || [];
+            {expandedSections.tryThis && (
+              <div className="mt-6">
+                <SectionHeader
+                  label={tabHeaders.summary.label}
+                  title={tabHeaders.summary.title}
+                  subtext={tabHeaders.summary.subtext}
+                />
+                <div className="mt-5">
+                  {summaryCards.map((view) => {
+                    const dataResult = viewDataResults[view.id];
+                    const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
+                      ? view.takeaway(dataResult?.data)
+                      : null;
+                    const actionText = dataResult?.hasData && typeof view.action === 'function'
+                      ? view.action(dataResult?.data)
+                      : null;
 
-                return (
-                  <div
-                    key={view.id}
-                    className="rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-md"
-                    style={{
-                      background: SURFACES.SECTION_WHITE.background,
-                      border: SURFACES.SECTION_WHITE.border,
-                    }}
-                  >
-                    <div className="p-6 md:p-8">
-                      {/* Summary paragraph */}
-                      {takeawayText && (
-                        <p className="text-base text-slate-700 leading-relaxed mb-6" style={{ maxWidth: '600px' }}>
-                          {takeawayText}
-                        </p>
-                      )}
+                    // For list data, show max 3 items as actions
+                    const listData = Array.isArray(dataResult?.data)
+                      ? dataResult.data.slice(0, 3)
+                      : dataResult?.data?.tips?.slice(0, 3) || [];
 
-                      {/* Action tiles - numbered steps */}
-                      {listData.length > 0 && (
-                        <div className="space-y-4">
-                          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
-                            Try this
-                          </p>
-                          <div className="grid gap-3">
-                            {listData.map((item, idx) => (
-                              <div
-                                key={idx}
-                                className="flex items-start gap-4 p-4 rounded-xl transition-all duration-200 hover:bg-slate-50 hover:shadow-sm"
-                                style={{
-                                  background: '#FAFBFC',
-                                  border: '1px solid #E2E8F0',
-                                }}
-                              >
-                                {/* Numbered badge */}
-                                <span
-                                  className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold"
-                                  style={{
-                                    background: '#EFF6FF',
-                                    color: '#2563EB',
-                                    border: '1px solid #BFDBFE',
-                                  }}
-                                >
-                                  {idx + 1}
-                                </span>
-                                {/* Action text - with optional subtext */}
-                                <div className="flex-1 pt-1">
-                                  <p className="text-sm font-medium text-slate-700 leading-relaxed">
-                                    {formatSummaryItemLabel(item)}
-                                  </p>
-                                  {/* Subtext for non-string items */}
-                                  {typeof item !== 'string' && item.description && (
-                                    <p className="text-xs text-slate-500 mt-1">{item.description}</p>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Fallback to action text if no list */}
-                      {listData.length === 0 && actionText && (
-                        <p className="text-sm text-slate-500 italic">{actionText}</p>
-                      )}
-
-                      {/* Show more collapse for additional items */}
-                      {Array.isArray(dataResult?.data) && dataResult.data.length > 3 && (
-                        <button
-                          onClick={() => toggleSection('summaryMore')}
-                          className="mt-5 text-sm font-medium flex items-center gap-1 hover:text-blue-700 transition-colors"
-                          style={{ color: '#2563EB' }}
-                          aria-expanded={expandedSections.summaryMore}
-                          aria-label={expandedSections.summaryMore ? 'Collapse additional ideas' : `Expand to show ${dataResult.data.length - 3} more ideas`}
-                        >
-                          <ChevronDown
-                            size={14}
-                            className="transition-transform"
-                            style={{
-                              transform: expandedSections.summaryMore ? 'rotate(180deg)' : 'rotate(0deg)',
-                            }}
-                            aria-hidden="true"
-                          />
-                          {expandedSections.summaryMore
-                            ? 'Show less'
-                            : `More ideas (${dataResult.data.length - 3} more)`
-                          }
-                        </button>
-                      )}
-
-                      {expandedSections.summaryMore && Array.isArray(dataResult?.data) && (
-                        <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
-                          {dataResult.data.slice(3).map((item, idx) => (
-                            <div key={idx} className="flex items-start gap-3 text-sm text-slate-500">
-                              <span className="text-slate-300">•</span>
-                              <span>{formatSummaryItemLabel(item)}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Closing card footer - designed, not tacked on */}
-                    {isAlgorithmTab && (
+                    return (
                       <div
-                        className="px-6 py-5 md:px-8 text-center"
+                        key={view.id}
+                        className="rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-md"
                         style={{
-                          background: 'linear-gradient(180deg, #EFF6FF 0%, #DBEAFE 100%)',
-                          borderTop: '1px solid #BFDBFE',
+                          background: SURFACES.SECTION_WHITE.background,
+                          border: SURFACES.SECTION_WHITE.border,
                         }}
                       >
-                      <p
-                        className="text-sm text-slate-600 leading-relaxed"
-                        style={{ maxWidth: '560px' }}
-                      >
-                        <span className="font-medium text-slate-700">Remember:</span> small shifts matter. This is about awareness, not blame—your feed is shaped by invisible systems, and even gentle changes can make a difference over time.
-                      </p>
-                    </div>
-                  )}
+                        <div className="p-6 md:p-8">
+                          {/* Summary paragraph */}
+                          {takeawayText && (
+                            <p className="text-base text-slate-700 leading-relaxed mb-6" style={{ maxWidth: '600px' }}>
+                              {takeawayText}
+                            </p>
+                          )}
+
+                          {/* Action tiles - numbered steps */}
+                          {listData.length > 0 && (
+                            <div className="space-y-4">
+                              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
+                                Try this
+                              </p>
+                              <div className="grid gap-3">
+                                {listData.map((item, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="flex items-start gap-4 p-4 rounded-xl transition-all duration-200 hover:bg-slate-50 hover:shadow-sm"
+                                    style={{
+                                      background: '#FAFBFC',
+                                      border: '1px solid #E2E8F0',
+                                    }}
+                                  >
+                                    {/* Numbered badge */}
+                                    <span
+                                      className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold"
+                                      style={{
+                                        background: '#EFF6FF',
+                                        color: '#2563EB',
+                                        border: '1px solid #BFDBFE',
+                                      }}
+                                    >
+                                      {idx + 1}
+                                    </span>
+                                    {/* Action text - with optional subtext */}
+                                    <div className="flex-1 pt-1">
+                                      <p className="text-sm font-medium text-slate-700 leading-relaxed">
+                                        {formatSummaryItemLabel(item)}
+                                      </p>
+                                      {/* Subtext for non-string items */}
+                                      {typeof item !== 'string' && item.description && (
+                                        <p className="text-xs text-slate-500 mt-1">{item.description}</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Fallback to action text if no list */}
+                          {listData.length === 0 && actionText && (
+                            <p className="text-sm text-slate-500 italic">{actionText}</p>
+                          )}
+
+                          {/* Show more collapse for additional items */}
+                          {Array.isArray(dataResult?.data) && dataResult.data.length > 3 && (
+                            <button
+                              onClick={() => toggleSection('summaryMore')}
+                              className="mt-5 text-sm font-medium flex items-center gap-1 hover:text-blue-700 transition-colors"
+                              style={{ color: '#2563EB' }}
+                              aria-expanded={expandedSections.summaryMore}
+                              aria-label={expandedSections.summaryMore ? 'Collapse additional ideas' : `Expand to show ${dataResult.data.length - 3} more ideas`}
+                            >
+                              <ChevronDown
+                                size={14}
+                                className="transition-transform"
+                                style={{
+                                  transform: expandedSections.summaryMore ? 'rotate(180deg)' : 'rotate(0deg)',
+                                }}
+                                aria-hidden="true"
+                              />
+                              {expandedSections.summaryMore
+                                ? 'Show less'
+                                : `More ideas (${dataResult.data.length - 3} more)`
+                              }
+                            </button>
+                          )}
+
+                          {expandedSections.summaryMore && Array.isArray(dataResult?.data) && (
+                            <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
+                              {dataResult.data.slice(3).map((item, idx) => (
+                                <div key={idx} className="flex items-start gap-3 text-sm text-slate-500">
+                                  <span className="text-slate-300">•</span>
+                                  <span>{formatSummaryItemLabel(item)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Closing card footer - designed, not tacked on */}
+                        {isAlgorithmTab && (
+                          <div
+                            className="px-6 py-5 md:px-8 text-center"
+                            style={{
+                              background: 'linear-gradient(180deg, #EFF6FF 0%, #DBEAFE 100%)',
+                              borderTop: '1px solid #BFDBFE',
+                            }}
+                          >
+                            <p
+                              className="text-sm text-slate-600 leading-relaxed"
+                              style={{ maxWidth: '560px' }}
+                            >
+                              <span className="font-medium text-slate-700">Remember:</span> small shifts matter. This is about awareness, not blame—your feed is shaped by invisible systems, and even gentle changes can make a difference over time.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-            </div>
+              </div>
+            )}
           </MaybeChapter>
         </section>
       )}
