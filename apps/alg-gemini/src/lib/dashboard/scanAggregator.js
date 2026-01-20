@@ -1576,24 +1576,23 @@ export function aggregateManipulativePatterns(scans, scanDetails) {
     if (feedItems.length === 0) continue;
 
     let scanHasData = false;
-    let scanFlaggedCount = 0;
 
     for (const item of feedItems) {
-      // Check if item has manipulative patterns
-      const hasWellbeingThemes = item.wellbeing?.themes && Array.isArray(item.wellbeing.themes) && item.wellbeing.themes.length > 0;
-      const hasEngagementHooks = item.engagement_drivers?.hooks_detected && Array.isArray(item.engagement_drivers.hooks_detected) && item.engagement_drivers.hooks_detected.length > 0;
+      result.totalItems++;
 
-      if (hasWellbeingThemes || hasEngagementHooks) {
-        scanFlaggedCount++;
+      // Check if item has manipulative patterns
+      const hasThemes = item.wellbeing?.themes && Array.isArray(item.wellbeing.themes) && item.wellbeing.themes.length > 0;
+      const hasHooks = item.engagement_drivers?.hooks_detected && Array.isArray(item.engagement_drivers.hooks_detected) && item.engagement_drivers.hooks_detected.length > 0;
+
+      if (hasThemes || hasHooks) {
+        result.flaggedItems++;
+        scanHasData = true;
       }
-      scanHasData = true;
     }
 
     if (scanHasData) {
       result.scansUsed++;
       result.scansWithData.push(scan.id);
-      result.totalItems += feedItems.length;
-      result.flaggedItems += scanFlaggedCount;
     }
   }
 
