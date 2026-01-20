@@ -515,22 +515,22 @@ export const dashboardCatalog = [
     tab: 'patterns',
     id: 'manipulative-patterns',
     title: 'Attention tactics',
-    description: 'Posts that used attention-grabbing patterns or hooks.',
+    description: 'Posts that contained patterns often associated with attention-grabbing tactics.',
     outputType: 'number_line',
     dataFn: 'getManipulativePatternsData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
-    whyExplanation: 'Detected posts with wellbeing themes or engagement hooks that may be designed to capture attention.',
+    whyExplanation: 'Based on patterns we detected, these posts contained wellbeing themes or engagement hooks. Context matters — not all urgency is manipulative.',
     takeaway: (data) => {
       if (!data) return null;
       const count = data.flaggedCount || 0;
       const total = data.totalPosts || 0;
       const pct = data.currentPercent || 0;
-      if (count === 0) return `In this scan, no posts used attention tactics (${total} posts observed).`;
-      if (total < 20) return `In this scan, ${count} of ${total} posts used attention tactics (${pct}%, limited sample).`;
-      return `In this scan, ${count} post${count !== 1 ? 's' : ''} (${pct}%) used attention tactics.`;
+      if (count === 0) return `In this scan, no posts contained patterns often associated with attention-grabbing tactics (${total} posts observed).`;
+      if (total < 20) return `In this scan, ${count} of ${total} posts contained patterns often associated with attention-grabbing tactics (${pct}%, limited sample).`;
+      return `In this scan, ${count} post${count !== 1 ? 's' : ''} (${pct}%) contained patterns often associated with attention-grabbing tactics.`;
     },
-    action: () => 'You could try reducing engagement with content that uses attention tactics.',
+    action: () => 'You could try reducing engagement with content that uses urgency language or engagement hooks.',
   },
 
   // --- HIDDEN: Removed for cognitive load reduction ---

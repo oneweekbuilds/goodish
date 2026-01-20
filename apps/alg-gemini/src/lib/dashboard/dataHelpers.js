@@ -2025,15 +2025,15 @@ export function getManipulativePatternsData(scans, scanDetails) {
   // Generate insight text
   let insight;
   if (flaggedCount === 0) {
-    insight = 'No attention tactics detected in this scan.';
+    insight = 'No posts contained patterns often associated with attention-grabbing tactics.';
   } else if (totalItems < 20) {
-    insight = `${flaggedCount} of ${totalItems} posts used attention tactics (limited sample).`;
+    insight = `${flaggedCount} of ${totalItems} posts contained patterns often associated with attention-grabbing tactics (limited sample).`;
   } else if (percentDisplay < 5) {
-    insight = `A small portion (${percentDisplay}%) of posts used attention tactics.`;
+    insight = `A small portion (${percentDisplay}%) of posts contained patterns often associated with attention-grabbing tactics.`;
   } else if (percentDisplay < 12) {
-    insight = `Some posts (${percentDisplay}%) used attention tactics.`;
+    insight = `Some posts (${percentDisplay}%) contained patterns often associated with attention-grabbing tactics.`;
   } else {
-    insight = `A notable portion (${percentDisplay}%) of posts used attention tactics.`;
+    insight = `A notable portion (${percentDisplay}%) of posts contained patterns often associated with attention-grabbing tactics.`;
   }
 
   return createResponse(
