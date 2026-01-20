@@ -84,6 +84,39 @@ const CounterfactualNote = ({ text }) => {
 };
 
 /**
+ * HowWeMeasureSection - Standardized disclosure block for expanded evidence
+ */
+const HowWeMeasureSection = ({ what, how, limitations, scope, unclassifiedNote }) => {
+  const hasContent = what || how || limitations || scope || unclassifiedNote;
+  if (!hasContent) return null;
+
+  const Row = ({ label, text }) => {
+    if (!text) return null;
+    return (
+      <p className="text-xs leading-relaxed text-slate-600">
+        <span className="font-semibold text-slate-500 mr-1">{label}</span>
+        <span className="text-slate-600">{text}</span>
+      </p>
+    );
+  };
+
+  return (
+    <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/60 p-3">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 mb-2">
+        How we measure
+      </p>
+      <div className="space-y-1.5">
+        <Row label="What this measures:" text={what} />
+        <Row label="How we measure it:" text={how} />
+        <Row label="Limitations:" text={limitations} />
+        <Row label="Scope:" text={scope} />
+        <Row label="Notes:" text={unclassifiedNote} />
+      </div>
+    </div>
+  );
+};
+
+/**
  * ViewCard component - UI Refoundation
  *
  * Card Anatomy Contract:
@@ -251,7 +284,7 @@ const ViewCard = ({
             <BarChartSimple data={data.topTopics} valueLabel="%" />
           </div>
         )}
-        {data.unclassifiedNote && (
+        {data.unclassifiedNote && !isInline && (
           <p className="text-xs text-slate-400 italic">
             {data.unclassifiedNote}
           </p>
@@ -425,7 +458,7 @@ const ViewCard = ({
             </li>
           ))}
         </ul>
-        {note && (
+        {note && !isInline && (
           <p className="text-xs text-slate-400 italic">
             {note}
           </p>
@@ -638,6 +671,34 @@ const ViewCard = ({
   const showTitle = !hideTitle;
   const showDescription = !hideDescription && !isInline;
   const shouldRenderHeader = showSummaryEyebrow || showPrimaryEyebrow || showTitle || showDescription;
+  const unclassifiedNote = dataResult?.unclassifiedNote || data?.unclassifiedNote;
+
+  // Standardized "How we measure" content (only shown when evidence is expanded)
+  const measurementTotalItems = chartQuality?.n_items
+    ?? data?.totalPosts
+    ?? data?.totalItems
+    ?? dataResult?.totalItems;
+  const measurementScopeParts = [];
+  if (actualScansUsed > 1) {
+    measurementScopeParts.push(`Across ${actualScansUsed} scans`);
+  } else if (actualScansUsed === 1) {
+    measurementScopeParts.push('This scan');
+  }
+  if (platformCount > 0) {
+    measurementScopeParts.push(`${platformCount} platform${platformCount !== 1 ? 's' : ''}`);
+  }
+  if (measurementTotalItems) {
+    measurementScopeParts.push(`${measurementTotalItems} posts analyzed`);
+  }
+  const measurementScope = measurementScopeParts.join(' · ') || null;
+  const measurementWhat = description;
+  const measurementHow = whyExplanation || data?.whyExplanation;
+  const measurementLimitations = view?.limitations
+    || dataResult?.limitations
+    || data?.limitations
+    || ((chartQuality?.quality && chartQuality.quality !== QUALITY_FLAGS.OK) ? chartQuality?.quality_reason : null);
+  const shouldShowHowWeMeasure = isInline && showChart;
+  const shouldShowWhyExplanation = whyExplanation && !shouldShowHowWeMeasure;
 
   return (
     <div className={getCardClasses()} style={getCardStyles()}>
@@ -696,8 +757,19 @@ const ViewCard = ({
               {renderContent()}
             </div>
 
+            {/* Standardized measurement disclosure for expanded evidence */}
+            {shouldShowHowWeMeasure && (
+              <HowWeMeasureSection
+                what={measurementWhat}
+                how={measurementHow}
+                limitations={measurementLimitations}
+                scope={measurementScope}
+                unclassifiedNote={unclassifiedNote}
+              />
+            )}
+
             {/* Why explanation - how insight was inferred */}
-            {whyExplanation && (
+            {shouldShowWhyExplanation && (
               <WhyExplanation text={whyExplanation} />
             )}
 
