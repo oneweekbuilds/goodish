@@ -964,7 +964,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
             >
               <div className="flex-1">
                 <p className="text-sm font-semibold text-slate-700">More details</p>
-                <p className="text-xs text-slate-500">Optional context and deeper cuts.</p>
+                <p className="text-xs text-slate-500">Optional extra metrics and deeper cuts.</p>
               </div>
               <ChevronDown
                 size={16}
@@ -1080,7 +1080,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
 
       {/* SUMMARY - Experiments behind calm accordion */}
       {hasSummaryContent && (
-        <section>
+        <section className="mt-4">
           <MaybeChapter variant="default">
             <button
               onClick={() => toggleSection('tryThis')}
@@ -1089,7 +1089,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
               aria-label={expandedSections.tryThis ? 'Collapse Try this actions' : 'Expand Try this actions'}
             >
               <div className="flex-1">
-                <p className="text-sm font-semibold text-slate-700">Try this</p>
+                <p className="text-sm font-semibold text-slate-800">Try this</p>
                 <p className="text-xs text-slate-500">Optional actions to explore change.</p>
               </div>
               <ChevronDown
@@ -1536,7 +1536,7 @@ const SecondVisualAnchor = ({ tabId, className = '' }) => {
     >
       <p
         className="text-lg font-medium text-slate-700 leading-relaxed"
-        style={{ maxWidth: '600px' }}
+        style={{ maxWidth: '560px' }}
       >
         {anchorMessages[tabId] || anchorMessages.algorithm}
       </p>
@@ -1807,9 +1807,9 @@ const DashboardPage = () => {
               onToggleEvidence={toggleHeroEvidence}
             />
 
-            {/* Talk to Your Algorithm - Premium invitation (GREEN theme) - SAME placement for ALL tabs */}
+            {/* Talk to Your Algorithm - Placeholder/premium invitation on non-Ads tabs */}
             {activeTab !== 'ads' && (
-              <div className="mt-10">
+              <div className="mt-12">
                 <TalkToAlgorithmSection
                   feedData={{
                     scans,
