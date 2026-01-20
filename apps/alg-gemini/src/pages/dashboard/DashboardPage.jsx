@@ -606,6 +606,42 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
     }));
   };
 
+  // Render-safe label for summary list items (avoids rendering raw objects)
+  const formatSummaryItemLabel = (item) => {
+    if (item == null) return '';
+    if (typeof item === 'string' || typeof item === 'number') return String(item);
+
+    // Creator summary objects from getInfluentialCreatorsData()
+    if (typeof item === 'object' && item.creator) {
+      const creator = String(item.creator);
+
+      // `share` may be a number (e.g. 12) or a string (e.g. "12%")
+      const shareRaw = item.share;
+      const share =
+        typeof shareRaw === 'number'
+          ? `${Math.round(shareRaw)}%`
+          : typeof shareRaw === 'string'
+            ? shareRaw
+            : null;
+
+      // `contributions` is a derived string like "promotions, politics"
+      const contributions =
+        typeof item.contributions === 'string' && item.contributions.trim().length > 0
+          ? item.contributions.trim()
+          : null;
+
+      const parts = [creator, share, contributions].filter(Boolean);
+      return parts.join(' • ');
+    }
+
+    // Generic structured items used elsewhere (tips, topics, etc.)
+    if (typeof item === 'object') {
+      return String(item.text || item.topic || item.label || '[item]');
+    }
+
+    return String(item);
+  };
+
   // Extract hero card - metadata-driven selection with Patterns tab fallback
   let heroCard = null;
   let heroHasData = false;
@@ -1130,7 +1166,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                                 {/* Action text - with optional subtext */}
                                 <div className="flex-1 pt-1">
                                   <p className="text-sm font-medium text-slate-700 leading-relaxed">
-                                    {typeof item === 'string' ? item : item.text || item.topic || item}
+                                    {formatSummaryItemLabel(item)}
                                   </p>
                                   {/* Subtext for non-string items */}
                                   {typeof item !== 'string' && item.description && (
@@ -1177,7 +1213,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                           {dataResult.data.slice(3).map((item, idx) => (
                             <div key={idx} className="flex items-start gap-3 text-sm text-slate-500">
                               <span className="text-slate-300">•</span>
-                              <span>{typeof item === 'string' ? item : item.text || item.topic || item}</span>
+                              <span>{formatSummaryItemLabel(item)}</span>
                             </div>
                           ))}
                         </div>
