@@ -397,7 +397,7 @@ const ViewCard = ({
     }
 
     // Check for notes
-    note = dataResult?.data?.unclassifiedNote || data.note || data.message;
+    note = dataResult?.unclassifiedNote || dataResult?.data?.unclassifiedNote || data.note || data.message;
 
     // PHASE 6A: Show message if no items
     if (items.length === 0) {

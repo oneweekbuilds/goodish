@@ -6,7 +6,7 @@ import ViewCard from '../../components/dashboard/ViewCard';
 import TalkToAlgorithmSection from '../../components/dashboard/TalkToAlgorithmSection';
 import { useDashboardData } from '../../lib/dashboard/useDashboardData';
 import * as dataHelpers from '../../lib/dashboard/dataHelpers';
-import { UNCLASSIFIED_TOPIC } from '../../lib/dashboard/scanAggregator';
+import { isHeadlineExcludedLabel } from '../../lib/dashboard/headlineSafety';
 
 /**
  * THEME CONSTANTS - Part 1 Color System
@@ -716,7 +716,10 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                   : null;
 
                 // Get top topics for two-column layout
-                const topicsData = viewDataResults?.['algo-topics-liked']?.data || [];
+                const topicsDataRaw = viewDataResults?.['algo-topics-liked']?.data || [];
+                const topicsData = Array.isArray(topicsDataRaw)
+                  ? topicsDataRaw.filter((t) => !isHeadlineExcludedLabel(t?.topic))
+                  : [];
                 const hasTopics = topicsData.length > 0;
 
                 return (

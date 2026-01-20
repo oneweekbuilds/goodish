@@ -35,6 +35,12 @@
  * - counterfactual: string - (PRIMARY only) legitimizes disagreement
  */
 
+import {
+  FALLBACK_MIX_TOPICS_HEADLINE,
+  isHeadlineExcludedLabel,
+  pickHeadlineSafeLabels,
+} from '../../lib/dashboard/headlineSafety';
+
 // Empty state type constants
 export const EMPTY_STATE_TYPES = {
   NEEDS_MORE_SCANS: 'needs_more_scans',
@@ -438,13 +444,23 @@ export const dashboardCatalog = [
     whyExplanation: 'Grouped posts by detected topic (fitness, news, entertainment, etc.). Classification is approximate.',
     counterfactual: 'This is what showed up in this scan — may not represent your typical feed.',
     takeaway: (data) => {
-      if (!data?.topicCount) return null;
-      // Exclude Unclassified from top topics for headline
-      const classifiedTopics = data.topTopics?.filter(t => !t.isUnclassified && t.label !== 'Unclassified' && t.label !== 'Other / couldn\'t categorize') || [];
-      const top = classifiedTopics[0]?.label;
-      const second = classifiedTopics[1]?.label;
+      if (!data) return null;
+
+      const { labels } = pickHeadlineSafeLabels(data.topTopics, {
+        getLabel: (t) => t?.label,
+        limit: 2,
+      });
+      const [top, second] = labels;
+
       const total = data.totalPosts || 0;
-      const unclassifiedShare = data.topTopics?.find(t => t.isUnclassified || t.label === 'Unclassified' || t.label === 'Other / couldn\'t categorize')?.value || 0;
+      const unclassifiedShare = (data.topTopics || []).find((t) => (
+        t?.isUnclassified || isHeadlineExcludedLabel(t?.label)
+      ))?.value || 0;
+
+      // Slice 6: If everything is Unclassified/Other, do not surface it in top-line copy.
+      if (!data.topicCount || data.topicCount <= 0) {
+        return FALLBACK_MIX_TOPICS_HEADLINE;
+      }
       
       if (data.topicCount <= 3) {
         if (top && second) {
@@ -826,9 +842,18 @@ export const dashboardCatalog = [
     whyExplanation: 'Counted topic occurrences in this scan. Does not indicate what the platform "thinks" about you.',
     counterfactual: 'This is what appeared in this scan — may not match what you want or expect.',
     takeaway: (data) => {
-      const top = data?.[0]?.topic;
-      const count = data?.[0]?.count || 0;
-      if (!top) return 'These topics appeared most often in this scan.';
+      const { labels, hadExcluded } = pickHeadlineSafeLabels(data, {
+        getLabel: (t) => t?.topic,
+        limit: 1,
+      });
+      const top = labels[0];
+      const count = top
+        ? (Array.isArray(data) ? data.find((t) => t?.topic === top) : null)?.count || 0
+        : 0;
+
+      if (!top) {
+        return hadExcluded ? FALLBACK_MIX_TOPICS_HEADLINE : 'These topics appeared most often in this scan.';
+      }
       return `In this scan, ${top} appeared most frequently${count > 1 ? ` (${count} times)` : ''}.`;
     },
     action: () => 'You could try engaging with different content to see if topics shift.',

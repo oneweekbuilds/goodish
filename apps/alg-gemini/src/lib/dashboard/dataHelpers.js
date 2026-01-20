@@ -48,6 +48,8 @@ import {
   CHART_THRESHOLDS,
 } from './chartQuality';
 
+import { FALLBACK_MIX_TOPICS_HEADLINE, pickHeadlineSafeLabels } from './headlineSafety';
+
 // Re-export formatDateLabel for backward compatibility
 export { formatDateLabel };
 
@@ -1837,9 +1839,20 @@ export function getAlgoConfidentData(scans, scanDetails) {
   }
 
   if (Object.keys(topicsData.topics).length > 0) {
-    const topTopic = Object.entries(topicsData.topics)
-      .sort((a, b) => b[1] - a[1])[0][0];
-    insights.push(`Strong association with "${topTopic}" content.`);
+    const sortedTopics = Object.entries(topicsData.topics)
+      .sort((a, b) => b[1] - a[1]);
+
+    const { labels, hadExcluded } = pickHeadlineSafeLabels(sortedTopics, {
+      getLabel: ([topic]) => topic,
+      limit: 1,
+    });
+
+    const topTopic = labels[0];
+    if (topTopic) {
+      insights.push(`Strong association with "${topTopic}" content.`);
+    } else if (hadExcluded) {
+      insights.push(`${FALLBACK_MIX_TOPICS_HEADLINE}.`);
+    }
   }
 
   if (insights.length === 0) {
@@ -1972,8 +1985,17 @@ export function getFutureRecommendationsData(scans, scanDetails) {
     totalScansUsed = Math.max(totalScansUsed, topics.scansUsed);
     topics.scansWithData.forEach(id => allScansWithData.add(id));
 
-    const top = topics.data[0].topic;
-    predictions.push(`Because your feed emphasizes "${top}", you'll likely see more similar content.`);
+    const { labels, hadExcluded } = pickHeadlineSafeLabels(topics.data, {
+      getLabel: (t) => t?.topic,
+      limit: 1,
+    });
+    const top = labels[0];
+
+    if (top) {
+      predictions.push(`Because your feed emphasizes "${top}", you'll likely see more similar content.`);
+    } else if (hadExcluded) {
+      predictions.push('Your feed showed a mix of topics; future recommendations may also stay mixed.');
+    }
   }
 
   if (products.hasData && products.data.length > 0) {
