@@ -475,12 +475,12 @@ const TAB_STORY_HEADERS = {
     details: {
       label: 'Context',
       title: 'Where the selling comes from',
-      subtext: 'Which advertisers and platforms are doing the most selling in this scan window.',
+      subtext: 'Which advertisers and platforms are doing the most selling during this window.',
     },
     moreDetails: {
       label: 'Speculation',
       title: 'Additional detail from the same window',
-      subtext: 'Optional deeper cuts from the same scan window. We cannot predict.',
+      subtext: 'Optional deeper cuts from the same window. We cannot predict.',
     },
     summary: {
       label: 'Experiments',
@@ -1562,7 +1562,7 @@ const SecondVisualAnchor = ({ tabId, className = '' }) => {
   // Tab-specific anchor messages - grounded in observation, not intent
   const anchorMessages = {
     algorithm: "Below is what we observed during this window. Patterns show system interpretation, not your identity.",
-    ads: "Below is what we observed during this window. All metrics use the same scan window.",
+    ads: "Below is what we observed during this window. All metrics use the same window.",
     politics: "Below is what we observed during this window. All metrics measure exposure, not belief formation.",
     patterns: "Below is what we observed during this window. Patterns show what surfaced, not what you seek.",
     creators: "Below is what we observed during this window. Patterns show what appeared, not who you are.",

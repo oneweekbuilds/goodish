@@ -51,11 +51,12 @@
 - **Done means**: Single canonical scope calculation per tab. All references to scan count/window must derive from one source of truth and match exactly.
 
 ### X3 — "Try this" content is inconsistent with the "no generic advice" decision
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Copy / UX consistency
 - Several tabs still show "Try this" sections with generic actions (follow/unfollow, engage differently). You explicitly removed this earlier, but it reappears and feels preachy.
 - **Done means**: Either remove all "Try this" sections or make them specific to observed patterns with no generic "follow/unfollow" advice.
+- **Resolution**: Removed all generic "You could try" action fields across patterns, creators, and algorithm tabs (set to null).
 
 ### X4 — Confidence signaling is inconsistent or contradictory
 - **Status**: OPEN
@@ -112,11 +113,12 @@
 - **Done means**: Visual hierarchy makes interpretive sentence primary, with percentage as supporting detail (smaller, less prominent).
 
 ### A6 — "Where the selling comes from" section mixes metaphors and scope language
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Copy consistency
 - Header says "Where the selling comes from," but subcopy says "in this scan window," while other areas say "during this window," and elsewhere "across last N scans." Needs one consistent system.
 - **Done means**: Section uses same scope language pattern as rest of Ads tab.
+- **Resolution**: Changed all "scan window" references to "window" in ads tab section headers and anchor messages for consistency.
 
 ### A7 — Possibly Promotional card is redundant and reads like a false precision machine
 - **Status**: OPEN
@@ -181,11 +183,12 @@
 - **Resolution**: Table now uses qualitative labels ("all"/"some") when total posts ≤ 2.
 
 ### P5 — Table lacks explanation for what "Political Percent" means
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Copy / Labeling clarity
 - Percent of that creator's posts? Percent of political posts? Percent of your total feed? The column label is ambiguous.
 - **Done means**: Column header or tooltip clearly explains what the percentage represents.
+- **Resolution**: Changed table columns from "politicalPosts"/"politicalPercent" to "Political posts"/"% of their posts".
 
 ### P6 — Viewpoint distribution section reads like it's claiming "lean" from keywords
 - **Status**: OPEN
@@ -209,11 +212,12 @@
 - **Done means**: Confidence labeling is internally consistent (same as X4 but specific to Politics tab).
 
 ### P9 — "Try this" appears again (generic behavioral advice)
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Copy / Tone consistency
 - This reintroduces tone you already decided to remove and makes the product feel preachy.
 - **Done means**: Generic "Try this" advice removed from Politics tab.
+- **Resolution**: Politics tab already had action: null for all non-hidden views. Fixed as part of X3 cross-tab cleanup.
 
 ### P10 — Summary card repeats the hero rather than adding a new synthesis
 - **Status**: OPEN
@@ -287,11 +291,12 @@
 - **Resolution**: Increased spacing in "How we measure" blocks, text size to 13px, padding to p-4, row spacing to 2.5, shortened whyExplanation text.
 
 ### PA9 — "Try this" section returns (generic advice)
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Copy / Tone consistency
 - Conflicts with earlier editorial decision.
 - **Done means**: Generic "Try this" advice removed from Patterns tab.
+- **Resolution**: Removed 4 action fields with generic advice in patterns tab (set to null).
 
 ### PA10 — Summary conflicts with hero/empty-state logic
 - **Status**: FIXED
@@ -343,11 +348,12 @@
 - **Resolution**: Same fix as PA8 - increased text size, spacing, and padding in "How we measure" component.
 
 ### C6 — Still includes generic "You could try…" advice
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Copy / Tone consistency
 - Conflicts with your "remove try-this advice" decision.
 - **Done means**: Generic advice removed from Creators tab.
+- **Resolution**: Removed action field with generic "follow new accounts" advice (set to null).
 
 ### C7 — "Does this match your experience?" / feedback affordance appears (or remnants)
 - **Status**: OPEN
@@ -432,11 +438,12 @@
 - **Done means**: Content has clear structure with headers/sections, not a wall of text.
 
 ### W8 — "Try this" advice comes back (follow/search/mute)
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Copy / Tone consistency
 - Conflicts with the earlier editorial direction; also can feel manipulative ("train your feed").
 - **Done means**: Generic "Try this" advice removed from Algorithm tab.
+- **Resolution**: Removed action field with generic "engage with different content" advice (set to null).
 
 ### W9 — "Summary" header says "Current algorithmic interpretation" but the content below looks like a checklist
 - **Status**: OPEN

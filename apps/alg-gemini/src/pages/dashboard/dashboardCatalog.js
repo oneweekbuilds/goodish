@@ -619,7 +619,7 @@ export const dashboardCatalog = [
       }
       return `Your feed broadened — content spread across many themes.`;
     },
-    action: () => 'You could try searching for new topics to see if variety changes.',
+    action: null, // FIX X3, PA9: Removed generic advice
   },
 
   // --- SECONDARY: Supporting details ---
@@ -703,7 +703,7 @@ export const dashboardCatalog = [
       }
       return `Across your scans, feed content appeared ${stability}.`;
     },
-    action: () => 'You could try following new creators to see if variety increases.',
+    action: null, // FIX X3, PA9: Removed generic advice
   },
 
   // --- COLLAPSED BY DEFAULT: Still available but de-emphasized ---
@@ -752,7 +752,7 @@ export const dashboardCatalog = [
       }
       return 'Attention-grabbing patterns recurred heavily — a consistent thread throughout.';
     },
-    action: () => 'You could try reducing engagement with content that uses urgency language or engagement hooks.',
+    action: null, // FIX X3, PA9: Removed generic advice
   },
 
   // --- HIDDEN: Removed for cognitive load reduction ---
@@ -1095,7 +1095,7 @@ export const dashboardCatalog = [
 
       return `${top} appeared most frequently.`;
     },
-    action: () => 'You could try engaging with different content to see if topics shift.',
+    action: null, // FIX X3, W8: Removed generic advice
   },
 
   // --- SECONDARY: Supporting details ---

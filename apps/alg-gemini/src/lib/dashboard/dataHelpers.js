@@ -782,13 +782,14 @@ export function getPoliticalCreatorsData(scans, scanDetails) {
         politicalPercent = `${Math.round((stats.political / stats.total) * 100)}%`;
       }
       
+      // FIX P5: Clarify what the percentage means
       return {
         creator: stats.displayName,
-        politicalPosts: stats.political,
-        politicalPercent,
+        'Political posts': stats.political,
+        '% of their posts': politicalPercent,
       };
     })
-    .sort((a, b) => b.politicalPosts - a.politicalPosts)
+    .sort((a, b) => b['Political posts'] - a['Political posts'])
     .slice(0, 10);
 
   if (rows.length === 0) {
