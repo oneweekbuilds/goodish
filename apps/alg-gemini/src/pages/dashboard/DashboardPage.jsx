@@ -491,23 +491,23 @@ const TAB_STORY_HEADERS = {
   politics: {
     keyInsight: {
       label: 'Observed',
-      title: 'Political keywords in this scan',
-      subtext: 'Content that matched political keyword patterns.',
+      title: 'Political keywords during this window',
+      subtext: 'Measures exposure to political content, not belief formation.',
     },
     details: {
       label: 'Context',
-      title: 'Sources of political content',
-      subtext: 'Accounts that posted political content in this scan.',
+      title: 'Where political exposure comes from',
+      subtext: 'Which accounts and platforms drove political keywords during this window.',
     },
     moreDetails: {
-      label: 'Speculation',
-      title: 'What might continue (uncertain)',
-      subtext: 'If these sources recur, political content may persist. We cannot predict.',
+      label: 'Additional detail',
+      title: 'Viewpoint distribution from this window',
+      subtext: 'Low-confidence keyword patterns from this window. Measures exposure skew, not content quality.',
     },
     summary: {
-      label: 'Experiments',
-      title: 'What you could try',
-      subtext: 'Optional actions to see if political balance shifts. Results may vary.',
+      label: 'Summary',
+      title: 'Political keyword patterns',
+      subtext: 'Observed patterns during this window.',
     },
   },
   patterns: {
@@ -729,6 +729,10 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
     }
   } else if (tabId === 'ads') {
     moreDetailsSubtitle = 'Additional ad analysis from this window.';
+  } else if (tabId === 'politics' && hasMoreDetailsContent) {
+    moreDetailsSubtitle = 'Platform comparison and low-confidence viewpoint distribution from this window.';
+  } else if (tabId === 'politics') {
+    moreDetailsSubtitle = 'Additional political keyword analysis from this window.';
   }
 
   return (
@@ -1553,7 +1557,7 @@ const SecondVisualAnchor = ({ tabId, className = '' }) => {
   const anchorMessages = {
     algorithm: "Below is what we observed in this scan, plus options to explore.",
     ads: "Below is what we observed across your recent scans. All metrics use the same window.",
-    politics: "Below is what we observed in this scan, plus options to explore.",
+    politics: "Below is what we observed during this window. All metrics measure exposure, not belief formation.",
     patterns: "Below is what we observed in this scan, plus options to explore.",
     creators: "Below is what we observed in this scan, plus options to explore.",
   };

@@ -51,7 +51,7 @@ export const EMPTY_STATE_TYPES = {
 // Tab-level trust sentences - grounded in observation, not identity
 export const TAB_TRUST_SENTENCES = {
   ads: "Promotional content observed during this window — not what you buy or want.",
-  politics: "Political content that appeared — not what you believe or support.",
+  politics: "Political keywords observed during this window — measures exposure, not your beliefs.",
   patterns: "Topics that showed up in this scroll session.",
   creators: "Accounts that appeared in this scan — may differ from who you follow.",
   algorithm: "Patterns we observed. We cannot know how platforms actually categorize you.",
@@ -317,8 +317,8 @@ export const dashboardCatalog = [
   {
     tab: 'politics',
     id: 'politics-share',
-    title: 'Political Content in This Scan',
-    description: 'Posts that matched political keywords or topics.',
+    title: 'How much political content appeared',
+    description: 'Posts that matched political keywords during this window.',
     outputType: 'number_line',
     dataFn: 'getPoliticalShareData',
     emptyStateType: 'needs_more_scans',
@@ -326,71 +326,121 @@ export const dashboardCatalog = [
     isPrimary: true,
     sortOrder: 'primary',
     whyExplanation: 'Matched keywords related to elections, policy, and political figures. Keyword matching has limitations.',
-    counterfactual: 'This may not match your perception — political content may be more memorable.',
+    counterfactual: 'This measures exposure, not belief formation. Political content may be more memorable than other topics.',
     takeaway: (data) => {
       if (data?.currentPercent === undefined) return null;
       const pct = data.currentPercent;
       const total = data.totalPosts || 0;
-      if (pct === 0) return `In this scan, no posts matched political keywords (${total} posts observed).`;
-      if (total < 20) return `In this scan, ~${pct}% matched political keywords (${Math.round(pct * total / 100)} of ${total} posts, limited sample).`;
-      if (pct < 10) return `In this scan, approximately ${pct}% of posts matched political keywords.`;
-      if (pct < 30) return `In this scan, roughly 1 in ${Math.round(100/pct)} posts matched political keywords.`;
-      return `In this scan, a substantial portion (~${pct}%) matched political keywords.`;
+      const smallSample = total > 0 && total < 20;
+      
+      if (pct === 0) {
+        return smallSample
+          ? 'In this small window, political keywords were absent.'
+          : 'In this window, political keywords were largely absent from your feed.';
+      }
+      
+      if (pct < 5) {
+        return 'Political content appeared lightly in this window — a small fraction of what you saw.';
+      }
+      
+      if (pct < 15) {
+        return 'Political keywords appeared in a modest share of posts during this window.';
+      }
+      
+      if (pct < 30) {
+        return 'Political content was a visible part of your feed during this window.';
+      }
+      
+      return 'Political keywords appeared frequently during this window — a substantial portion of your feed.';
     },
-    action: () => 'You could try following non-political accounts to see if this balance shifts.',
+    action: null,
   },
 
   // --- SECONDARY: Supporting details ---
   {
     tab: 'politics',
     id: 'politics-balance',
-    title: 'Perspective Balance (Estimate)',
-    description: 'A rough estimate of directional lean based on keyword matching.',
+    title: 'Viewpoint distribution',
+    description: 'Whether political keywords skewed toward one perspective or appeared more evenly.',
     outputType: 'status',
     dataFn: 'getPoliticalBalanceData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     requiresOptIn: true,
     confidenceDisclaimer: true,
-    whyExplanation: 'Uses simple keyword matching. LOW confidence — cannot detect nuance, irony, or context.',
-    takeaway: (data) => data?.message ? `${data.message} (Low confidence estimate from this scan.)` : 'Rough estimate of directional lean from keyword matching.',
-    action: () => 'You could try following credible sources across perspectives to see if balance shifts.',
+    whyExplanation: 'Counts keywords associated with different political perspectives. This is a rough distributional signal, not a measure of truth or persuasion.',
+    takeaway: (data) => {
+      if (!data?.message) return 'Keyword distribution during this window (low confidence).';
+      return `${data.message} This measures exposure skew, not content accuracy or your beliefs.`;
+    },
+    action: null,
   },
 
   {
     tab: 'politics',
     id: 'politics-creators',
-    title: 'Sources of Political Content',
-    description: 'Accounts that posted the most political content in this scan.',
+    title: 'Which accounts drive political exposure',
+    description: 'Accounts that posted the most political keywords during this window.',
     outputType: 'table',
     dataFn: 'getPoliticalCreatorsData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
-    whyExplanation: 'Counted political keyword matches per account in this scan.',
-    takeaway: () => 'In this scan, most political content came from a small number of accounts.',
-    action: () => 'You could try unfollowing one or two to see if political volume changes.',
+    whyExplanation: 'Counted political keyword matches per account during this window.',
+    takeaway: (data) => {
+      if (!Array.isArray(data) || data.length === 0) return null;
+      const [top] = data;
+      const totalAccounts = data.length;
+      if (totalAccounts === 1) {
+        return `One account (${top.creator}) drove most political keywords.`;
+      }
+      if (totalAccounts <= 3) {
+        return `A small group of accounts drove most political keywords.`;
+      }
+      return `Political keywords came from ${totalAccounts} accounts, with concentration at the top.`;
+    },
+    action: null,
   },
   {
     tab: 'politics',
     id: 'politics-by-platform',
-    title: 'Political Content by Platform',
-    description: 'How political keyword matches compared across platforms scanned.',
+    title: 'Political exposure by platform',
+    description: 'Which platform had the highest political keyword rate during this window.',
     outputType: 'bar',
     dataFn: 'getCrossPlatformPoliticalData',
     emptyStateType: 'needs_broader_behavior',
     sortOrder: 'supporting',
     collapsedByDefault: true,
-    whyExplanation: 'Compared political keyword rates on each scanned platform.',
-    takeaway: () => 'Different platforms showed different political content frequencies in these scans.',
-    action: () => 'You could try spending time on lower-politics platforms when you want a break.',
+    whyExplanation: 'Compared political keyword rates on each platform during this window.',
+    takeaway: (data) => {
+      if (!Array.isArray(data) || data.length === 0) return null;
+      const sorted = [...data].sort((a, b) => (b?.value || 0) - (a?.value || 0));
+      const [top, second] = sorted;
+      if (!top) return null;
+      
+      if (!second) {
+        return `${top.label} had the highest political keyword rate.`;
+      }
+      
+      const gap = (top.value || 0) - (second.value || 0);
+      if (gap >= 10) {
+        return `${top.label} had notably more political keywords than ${second.label}.`;
+      }
+      
+      if (Math.abs(gap) <= 3) {
+        return `Political keyword rates were similar on ${top.label} and ${second.label}.`;
+      }
+      
+      return `${top.label} had more political keywords than ${second.label}.`;
+    },
+    action: null,
   },
 
   // --- COLLAPSED BY DEFAULT: Low confidence, opt-in required ---
   {
     tab: 'politics',
     id: 'politics-leaning',
-    title: 'Directional Lean (Low Confidence)',
-    description: 'Very rough estimate of political lean based on keyword matching.',
+    title: 'Keyword skew (low confidence)',
+    description: 'Rough estimate of whether keywords leaned more toward one perspective.',
     outputType: 'text',
     dataFn: 'getPoliticalLeaningData',
     emptyStateType: 'needs_more_scans',
@@ -398,16 +448,19 @@ export const dashboardCatalog = [
     requiresOptIn: true,
     confidenceDisclaimer: true,
     collapsedByDefault: true,
-    whyExplanation: 'Simple keyword matching only. Cannot detect nuance, irony, or full context. This is NOT a reliable measure.',
+    whyExplanation: 'Simple keyword matching. Cannot detect nuance, irony, or context. Measures exposure distribution, not content quality or your beliefs.',
     // PHASE 9: Qualitative labels only
-    takeaway: (data) => data?.qualitativeLabel ? `${data.qualitativeLabel} (Low confidence — from keyword matching only.)` : null,
-    action: () => 'If keywords from one perspective dominated this scan, you could try diversifying sources.',
+    takeaway: (data) => {
+      if (!data?.qualitativeLabel) return null;
+      return `${data.qualitativeLabel} (Low confidence — keyword distribution only.)`;
+    },
+    action: null,
   },
   {
     tab: 'politics',
     id: 'politics-blind-spots',
-    title: 'Absent Perspectives (Low Confidence)',
-    description: 'Keywords that were absent from this scan.',
+    title: 'Absent keyword categories (low confidence)',
+    description: 'Keyword categories that did not appear during this window.',
     outputType: 'list',
     dataFn: 'getPoliticalBlindSpotsData',
     emptyStateType: 'needs_more_scans',
@@ -415,9 +468,12 @@ export const dashboardCatalog = [
     requiresOptIn: true,
     confidenceDisclaimer: true,
     collapsedByDefault: true,
-    whyExplanation: 'Detected by absence of certain keywords in this scan. Very rough estimate — absence in one scan does not prove absence in your feed.',
-    takeaway: (data) => data?.message ? `${data.message} (Based on this scan only.)` : 'Some keyword categories were absent from this scan.',
-    action: () => 'You could try following sources from absent categories to see if exposure broadens.',
+    whyExplanation: 'Detected by absence of certain keywords during this window. Very rough — absence here does not prove absence elsewhere in your feed.',
+    takeaway: (data) => {
+      if (!data?.message) return 'Some keyword categories were absent during this window.';
+      return `${data.message} (Window-specific only.)`;
+    },
+    action: null,
   },
 
   // --- HIDDEN: Removed for cognitive load reduction ---
@@ -467,18 +523,29 @@ export const dashboardCatalog = [
   {
     tab: 'politics',
     id: 'politics-profile',
-    title: 'Political Content Summary',
-    description: 'Summary of political keyword matches in this scan.',
+    title: 'Political Keyword Summary',
+    description: 'Summary of political keyword patterns during this window.',
     outputType: 'text',
     dataFn: 'getPoliticalProfileData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'summary',
     isSummaryCard: true,
-    whyExplanation: 'Based on political keywords detected in this scan. Does not reflect your beliefs or interests.',
-    takeaway: (data) => data?.politicalPercent !== undefined
-      ? `In this scan, approximately ${data.politicalPercent}% of content matched political keywords.`
-      : null,
-    action: () => 'You could try diversifying who you follow to see if the balance shifts.',
+    whyExplanation: 'Based on political keywords during this window. This measures exposure patterns, not your beliefs.',
+    takeaway: (data) => {
+      if (data?.politicalPercent === undefined) return null;
+      const pct = data.politicalPercent;
+      if (pct === 0) {
+        return 'During this window, political keywords were absent from your feed.';
+      }
+      if (pct < 10) {
+        return `During this window, political keywords appeared in a small fraction of posts.`;
+      }
+      if (pct < 25) {
+        return `During this window, political keywords appeared in roughly ${pct}% of posts.`;
+      }
+      return `During this window, political keywords were prominent — appearing in roughly ${pct}% of posts.`;
+    },
+    action: null,
   },
 
   // ==========================================
