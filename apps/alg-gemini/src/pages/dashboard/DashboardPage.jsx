@@ -469,23 +469,23 @@ const TAB_STORY_HEADERS = {
   ads: {
     keyInsight: {
       label: 'Observed',
-      title: 'Promotional content in this scan',
-      subtext: 'Posts labeled as ads or sponsored by the platform.',
+      title: 'What your feed is trying to sell you',
+      subtext: 'How strongly the feed is steering you toward sponsored content, based on labeled ads.',
     },
     details: {
       label: 'Context',
-      title: 'Ad sources and categories',
-      subtext: 'We cannot know why these ads appeared — only what showed up.',
+      title: 'Where the selling comes from',
+      subtext: 'Which advertisers and platforms are doing the most selling in this scan window.',
     },
     moreDetails: {
       label: 'Speculation',
-      title: 'What might continue (uncertain)',
-      subtext: 'If similar ads recur, they may continue. We cannot predict.',
+      title: 'Additional detail from the same window',
+      subtext: 'Optional deeper cuts from the same scan window. We cannot predict.',
     },
     summary: {
       label: 'Experiments',
       title: 'What you could try',
-      subtext: 'Optional actions to see if ad patterns shift. Results may vary.',
+      subtext: 'Optional actions if you want to test changes in upcoming scans.',
     },
   },
   politics: {
@@ -583,7 +583,7 @@ const CURATED_SUPPORTING_BY_TAB = {
  * Change 2: Story-driven headers for Algorithm tab
  * Change 3: "Where this is heading" uncollapsed by default
  */
-const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCount, tabName, tabId, heroViewId }) => {
+const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCount, tabName, tabId, heroViewId, scopeLabel }) => {
   // Get story-driven headers for current tab (all tabs now use them)
   const tabHeaders = TAB_STORY_HEADERS[tabId] || TAB_STORY_HEADERS.algorithm;
   // Check if we're on the Algorithm tab for special two-column layout
@@ -713,6 +713,11 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
     return <ChapterContainer variant={variant}>{children}</ChapterContainer>;
   };
 
+  const evidenceLabel = scopeLabel || `Based on ${scanCount} scan${scanCount !== 1 ? 's' : ''}`;
+  const moreDetailsSubtitle = tabId === 'ads'
+    ? 'Ad sources, platforms, and product categories from this scan window.'
+    : 'Optional extra metrics and deeper cuts.';
+
   return (
     <div className="space-y-10">
       {/* KEY INSIGHT - Part 3 Module Type 1: Declarative + Collapsible Evidence */}
@@ -835,7 +840,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                       style={{ borderTop: '1px solid rgba(226, 232, 240, 0.6)' }}
                     >
                       <span className="text-xs text-slate-400">
-                        Based on {scanCount} scan{scanCount !== 1 ? 's' : ''}
+                        {evidenceLabel}
                       </span>
                       <button
                         onClick={() => toggleSection('keyInsightEvidence')}
@@ -885,6 +890,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                             isInline={true}
                             hideTitle={true}
                             hideDescription={true}
+                          scopeLabel={scopeLabel}
                           />
                         </div>
                       </div>
@@ -942,6 +948,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                         accentColor="blue"
                         isInline={true}
                         hideTitle={true}
+                        scopeLabel={scopeLabel}
                       />
                     </div>
                   </div>
@@ -964,7 +971,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
             >
               <div className="flex-1">
                 <p className="text-sm font-semibold text-slate-700">More details</p>
-                <p className="text-xs text-slate-500">Optional extra metrics and deeper cuts.</p>
+                <p className="text-xs text-slate-500">{moreDetailsSubtitle}</p>
               </div>
               <ChevronDown
                 size={16}
@@ -1016,6 +1023,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                                 accentColor="blue"
                                 isInline={true}
                                 hideTitle={true}
+                            scopeLabel={scopeLabel}
                               />
                             </div>
                           </div>
@@ -1064,6 +1072,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                                 isInline={true}
                                 hideTitle={true}
                                 hideDescription={true}
+                              scopeLabel={scopeLabel}
                               />
                             </div>
                           </div>
@@ -1334,6 +1343,7 @@ const TabHero = ({
   heroDataResult,
   isEvidenceExpanded,
   onToggleEvidence,
+  scopeLabel,
 }) => {
   const scanCount = scans?.length || 0;
   const platformCount = platforms?.length ?? 0;
@@ -1357,6 +1367,16 @@ const TabHero = ({
   }
 
   const contextLine = TAB_TRUST_SENTENCES[tabId] || null;
+
+  const platformMeta = platformCount
+    ? `${platformCount} platform${platformCount !== 1 ? 's' : ''}`
+    : null;
+  const metaText = scopeLabel
+    ? platformMeta
+      ? `${scopeLabel} • ${platformMeta}`
+      : scopeLabel
+    : `${scanCount} scan${scanCount !== 1 ? 's' : ''} · ${platformCount} platform${platformCount !== 1 ? 's' : ''}`;
+  const kickerText = scopeLabel || 'Observed in this scan';
 
   return (
     <div className="mb-10">
@@ -1385,12 +1405,12 @@ const TabHero = ({
             style={{
               fontSize: '11px',
               color: '#2563EB',
-              letterSpacing: '0.14em',
+              letterSpacing: scopeLabel ? '0.04em' : '0.14em',
               fontWeight: 700,
-              textTransform: 'uppercase',
+              textTransform: scopeLabel ? 'none' : 'uppercase',
             }}
           >
-            Observed in this scan
+            {kickerText}
           </p>
 
           {/* Right: Meta data pill */}
@@ -1406,9 +1426,7 @@ const TabHero = ({
             }}
           >
             <Database size={12} className="text-slate-400" />
-            <span>
-              {scanCount} scan{scanCount !== 1 ? 's' : ''} · {platformCount} platform{platformCount !== 1 ? 's' : ''}
-            </span>
+            <span>{metaText}</span>
           </div>
         </div>
 
@@ -1504,6 +1522,7 @@ const TabHero = ({
               isInline={true}
               hideTitle={true}
               hideDescription={true}
+              scopeLabel={scopeLabel}
             />
           </div>
         )}
@@ -1520,7 +1539,7 @@ const SecondVisualAnchor = ({ tabId, className = '' }) => {
   // Tab-specific anchor messages - grounded in observation, not intent
   const anchorMessages = {
     algorithm: "Below is what we observed in this scan, plus options to explore.",
-    ads: "Below is what we observed in this scan, plus options to explore.",
+    ads: "Below is what we observed across your recent scans. All metrics use the same window.",
     politics: "Below is what we observed in this scan, plus options to explore.",
     patterns: "Below is what we observed in this scan, plus options to explore.",
     creators: "Below is what we observed in this scan, plus options to explore.",
@@ -1799,6 +1818,31 @@ const DashboardPage = () => {
     }));
   };
 
+  const formatDateRange = (start, end) => {
+    if (!start || !end) return null;
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    if (Number.isNaN(startDate) || Number.isNaN(endDate)) return null;
+    const sameYear = startDate.getFullYear() === endDate.getFullYear();
+    const baseOptions = { month: 'short', day: 'numeric' };
+    const startText = startDate.toLocaleDateString('en-US', sameYear ? baseOptions : { ...baseOptions, year: 'numeric' });
+    const endText = endDate.toLocaleDateString('en-US', { ...baseOptions, year: 'numeric' });
+    return `${startText} – ${endText}`;
+  };
+
+  const adsScopeLabel = useMemo(() => {
+    if (activeTab !== 'ads') return null;
+    const windowStart = heroDataResult?.chartQuality?.windowStart;
+    const windowEnd = heroDataResult?.chartQuality?.windowEnd;
+    const scansUsed = heroDataResult?.scansUsed;
+    const rangeText = formatDateRange(windowStart, windowEnd);
+    const scanPhrase = scansUsed ? `${scansUsed} scan${scansUsed !== 1 ? 's' : ''}` : 'recent scans';
+    const prefix = scansUsed ? `Across your last ${scanPhrase}` : 'Across your recent scans';
+    return rangeText ? `${prefix} (${rangeText})` : prefix;
+  }, [activeTab, heroDataResult]);
+
+  const tabScopeLabel = activeTab === 'ads' ? adsScopeLabel : null;
+
   // Loading state
   if (loading) {
     return (
@@ -1962,6 +2006,7 @@ const DashboardPage = () => {
                   heroDataResult={heroDataResult}
                   isEvidenceExpanded={isHeroEvidenceExpanded}
                   onToggleEvidence={toggleHeroEvidence}
+                  scopeLabel={tabScopeLabel}
                 />
               </FeatureMomentWrapper>
 
@@ -2014,6 +2059,7 @@ const DashboardPage = () => {
                     tabName={TABS.find((t) => t.id === activeTab)?.label || 'insights'}
                     tabId={activeTab}
                     heroViewId={resolvedHeroViewId}
+                    scopeLabel={tabScopeLabel}
                   />
                 )}
               </ReadingColumnWrapper>

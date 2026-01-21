@@ -50,7 +50,7 @@ export const EMPTY_STATE_TYPES = {
 
 // Tab-level trust sentences - grounded in observation, not identity
 export const TAB_TRUST_SENTENCES = {
-  ads: "Promotional content observed in this scan — not what you buy or want.",
+  ads: "Promotional content observed across your recent scans — not what you buy or want.",
   politics: "Political content that appeared — not what you believe or support.",
   patterns: "Topics that showed up in this scroll session.",
   creators: "Accounts that appeared in this scan — may differ from who you follow.",
@@ -79,8 +79,8 @@ export const dashboardCatalog = [
   {
     tab: 'ads',
     id: 'ads-percentage',
-    title: 'Promotional Content in This Scan',
-    description: 'Posts labeled as ads or sponsored by the platform.',
+    title: 'Where your feed is steering you to spend',
+    description: 'Looks at labeled promotions across your recent scans to see how hard the feed is selling to you.',
     outputType: 'number_line',
     dataFn: 'getAdPercentageData',
     emptyStateType: 'needs_more_scans',
@@ -93,78 +93,132 @@ export const dashboardCatalog = [
       if (data?.currentPercent === undefined) return null;
       const pct = data.currentPercent;
       const total = data.totalPosts || 0;
-      if (pct === 0) return `In this scan, no posts were labeled as ads (${total} posts observed).`;
-      if (total < 20) return `In this scan, ~${pct}% appeared to be ads (${Math.round(pct * total / 100)} of ${total} posts, limited sample).`;
-      if (pct < 10) return `In this scan, approximately ${pct}% of posts were labeled as ads.`;
-      if (pct < 25) return `In this scan, roughly 1 in ${Math.round(100/pct)} posts was labeled as an ad.`;
-      return `In this scan, a substantial portion (~1 in ${Math.round(100/pct)} posts) was labeled as ads.`;
+      const smallSample = total > 0 && total < 20;
+
+      if (pct === 0) {
+        return smallSample
+          ? 'In this small window, the feed wasn’t actively selling to you.'
+          : 'Your recent scans showed no visible selling pressure.';
+      }
+
+      if (pct < 8) {
+        return smallSample
+          ? 'Early signal: light sponsored touches showed up in this window.'
+          : 'Selling pressure is light — promotions appear but don’t drive the feed.';
+      }
+
+      if (pct < 18) {
+        return 'Your feed appears to be steering you toward sponsored offers as a steady background.';
+      }
+
+      return 'Advertising is a main storyline here — the feed is actively steering you toward paid content.';
     },
-    action: () => 'You could try spending time with non-promotional content to see if this shifts.',
+    action: null,
   },
 
   // --- SECONDARY: Supporting details ---
   {
     tab: 'ads',
     id: 'ads-concentration',
-    title: 'Ad Source Diversity',
-    description: 'Whether ads came from many sources or just a few in this scan.',
+    title: 'Who is driving the selling',
+    description: 'Shows whether a handful of repeat advertisers are steering what you’re being sold.',
     outputType: 'text',
     dataFn: 'getAdConcentrationData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
-    whyExplanation: 'Counted unique advertisers in this scan.',
+    whyExplanation: 'Counted unique advertisers across your recent scans.',
     // PHASE 9: Qualitative labels only
-    takeaway: (data) => data?.qualitativeLabel ? `In this scan: ${data.qualitativeLabel}` : null,
-    action: () => 'You could try muting specific advertisers to see if variety changes.',
+    takeaway: (data) => {
+      const label = data?.qualitativeLabel;
+      if (!label) return null;
+      if (label.toLowerCase().includes('small number')) {
+        return 'Most of the selling comes from repeat advertisers.';
+      }
+      if (label.toLowerCase().includes('mix')) {
+        return 'Selling is spread across different advertisers.';
+      }
+      return label;
+    },
+    action: null,
   },
   {
     tab: 'ads',
     id: 'ads-by-platform',
-    title: 'Ad Rates by Platform',
-    description: 'How ad frequency compared across platforms scanned.',
+    title: 'Where the selling pressure sits',
+    description: 'Highlights which platform is pushing sponsored content hardest so you know where the sales focus lives.',
     outputType: 'bar',
     dataFn: 'getPlatformPromoData',
     emptyStateType: 'needs_broader_behavior',
     sortOrder: 'supporting',
-    whyExplanation: 'Compared ad labels observed on each scanned platform.',
-    takeaway: () => 'Different platforms showed different ad frequencies in these scans.',
-    action: () => 'You could try spending more time on platforms with fewer observed ads.',
+    whyExplanation: 'Compared ad labels observed on each platform within your recent scans.',
+    takeaway: (data) => {
+      if (!Array.isArray(data) || data.length === 0) return null;
+      const sorted = [...data].sort((a, b) => (b?.value || 0) - (a?.value || 0));
+      const [top, second] = sorted;
+      if (!top) return null;
+
+      if (!second) {
+        return `${top.label} is doing most of the selling right now.`;
+      }
+
+      const gap = (top.value || 0) - (second.value || 0);
+      const ratio = (second.value || 0) === 0 ? Infinity : (top.value || 0) / (second.value || 0);
+
+      if (ratio >= 1.5 && gap >= 5) {
+        return `${top.label} is driving most sponsored posts; other platforms are quieter.`;
+      }
+
+      if (Math.abs(gap) <= 3) {
+        return `Selling pressure is similar on ${top.label} and ${second.label}.`;
+      }
+
+      return `${top.label} carries more of the selling than ${second.label} right now.`;
+    },
+    action: null,
   },
 
   // --- COLLAPSED BY DEFAULT: Lower priority supporting details ---
   {
     tab: 'ads',
     id: 'ads-likely-promo',
-    title: 'Possibly Promotional (Unlabeled)',
-    description: 'Content that matched promotional patterns but lacked ad labels.',
+    title: 'Possibly Promotional (Unlabeled, Recent Scans)',
+    description: 'Content that matched promotional patterns but lacked ad labels across your recent scans.',
     outputType: 'number',
     dataFn: 'getLikelyPromoData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     collapsedByDefault: true,
     confidenceDisclaimer: true,
-    whyExplanation: 'Detected via patterns like discount codes or affiliate links. This is a rough estimate with significant uncertainty.',
+    whyExplanation: 'Detected via patterns like discount codes or affiliate links across your recent scans. This is a rough estimate with significant uncertainty.',
     takeaway: (data) => data?.possibleInfluencePercent !== undefined
-      ? `In this scan, approximately ${data.possibleInfluencePercent}% of content matched promotional patterns but lacked ad labels. (Low confidence estimate.)`
+      ? `Across your recent scans, approximately ${data.possibleInfluencePercent}% of content matched promotional patterns but lacked ad labels. (Low confidence estimate.)`
       : null,
-    action: () => 'You could watch for product mentions in content that appears organic.',
+    action: null,
   },
   {
     tab: 'ads',
     id: 'ads-products',
-    title: 'Product Categories Observed',
-    description: 'Categories mentioned in promotional content in this scan.',
+    title: 'What the ads are pitching',
+    description: 'Top product themes in your ads so you can see what’s being emphasized.',
     outputType: 'bar',
     dataFn: 'getProductMentionsData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     collapsedByDefault: true,
     confidenceDisclaimer: true,
-    whyExplanation: 'Matched product keywords in labeled ads. Does not indicate your interests.',
-    takeaway: (data) => data?.length > 0
-      ? 'These product categories appeared most often in ads in this scan.'
-      : null,
-    action: () => 'You could try avoiding engagement with product content to see if targeting shifts.',
+    whyExplanation: 'Matched product keywords in labeled ads across your recent scans. Does not indicate your interests.',
+    takeaway: (data) => {
+      if (!Array.isArray(data) || data.length === 0) return null;
+      const [first, second] = data;
+      if (first && second) {
+        return `Ads are mainly about ${first.label}, with ${second.label} close behind.`;
+      }
+      if (first) {
+        return `Ads are mainly about ${first.label}.`;
+      }
+      return 'Ads are focusing on a few repeated themes.';
+    },
+    action: null,
   },
 
   // --- HIDDEN: Removed for cognitive load reduction ---
@@ -229,19 +283,19 @@ export const dashboardCatalog = [
   {
     tab: 'ads',
     id: 'ads-advertiser-insights',
-    title: 'Recurring Ad Categories',
-    description: 'Product categories that appeared multiple times in this scan.',
+    title: 'Recurring Ad Categories (Recent Scans)',
+    description: 'Product categories that appeared multiple times across your recent scans.',
     outputType: 'text',
     dataFn: 'getAdvertiserInsightsData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'summary',
     confidenceDisclaimer: true,
     isSummaryCard: true,
-    whyExplanation: 'Based on product keywords in ads in this scan. We cannot know why these were shown to you.',
+    whyExplanation: 'Based on product keywords in ads across your recent scans. We cannot know why these were shown to you.',
     takeaway: (data) => data?.interests?.length > 0
-      ? `In this scan, ${data.interests[0]} appeared most frequently in ads${data.interests.length > 1 ? `, followed by ${data.interests.slice(1).join(' and ')}` : ''}.`
+      ? `Across your recent scans, ${data.interests[0]} appeared most frequently in ads${data.interests.length > 1 ? `, followed by ${data.interests.slice(1).join(' and ')}` : ''}.`
       : null,
-    action: () => 'You could try ignoring these categories to see if ad targeting shifts over time.',
+    action: null,
   },
 
   // ==========================================
