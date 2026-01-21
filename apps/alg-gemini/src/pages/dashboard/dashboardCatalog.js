@@ -182,21 +182,25 @@ export const dashboardCatalog = [
   },
 
   // --- COLLAPSED BY DEFAULT: Lower priority supporting details ---
+  // FIX A7: Reduced repetition and shortened copy for clarity
   {
     tab: 'ads',
     id: 'ads-likely-promo',
-    title: 'Possibly Promotional (Unlabeled)',
-    description: 'Content that matched promotional patterns but lacked ad labels in your scans.',
+    title: 'Unlabeled Promotional Content',
+    description: 'Content that matched promotional patterns but lacked platform ad labels.',
     outputType: 'number',
     dataFn: 'getLikelyPromoData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     collapsedByDefault: true,
     confidenceDisclaimer: true,
-    whyExplanation: 'Detected via patterns like discount codes or affiliate links. This is a rough estimate with significant uncertainty.',
-    takeaway: (data) => data?.possibleInfluencePercent !== undefined
-      ? `Approximately ${data.possibleInfluencePercent}% of content matched promotional patterns but lacked ad labels. (Low confidence estimate.)`
-      : null,
+    whyExplanation: 'Detected via patterns like discount codes or affiliate links.',
+    takeaway: (data) => {
+      if (data?.possibleInfluencePercent === undefined) return null;
+      const pct = data.possibleInfluencePercent;
+      if (pct === 0) return 'No obvious unlabeled promotional signals detected.';
+      return `Approximately ${pct}% showed promotional patterns without ad labels.`;
+    },
     action: null,
   },
   {
@@ -713,21 +717,22 @@ export const dashboardCatalog = [
   },
 
   // --- COLLAPSED BY DEFAULT: Still available but de-emphasized ---
+  // FIX PA6: Softened copy and removed action to reduce judgmental feel
   {
     tab: 'patterns',
     id: 'patterns-emotional-weight',
-    title: 'Emotional Tone (Estimate)',
-    description: 'Estimated emotional tone of content during this window.',
+    title: 'Tone Distribution (Rough Estimate)',
+    description: 'Broad estimate of emotional tone patterns during this window.',
     outputType: 'stacked100',
     dataFn: 'getEmotionalWeightData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     collapsedByDefault: true,
-    whyExplanation: 'Estimated using keyword patterns. Very rough signal — sentiment analysis has significant limitations.',
+    whyExplanation: 'Based on keyword patterns. Sentiment detection has major limitations and cannot capture context or nuance.',
     takeaway: (data) => data?.intensity
-      ? `In this scan, content appeared to lean ${data.intensity.toLowerCase()} (rough estimate).`
+      ? `Content showed a ${data.intensity.toLowerCase()} tone mix (very rough estimate).`
       : null,
-    action: () => 'You could try reducing engagement with intense content to see if tone shifts.',
+    action: null,
   },
   {
     tab: 'patterns',
@@ -1087,7 +1092,7 @@ export const dashboardCatalog = [
     hero: true,
     isPrimary: true,
     sortOrder: 'primary',
-    whyExplanation: 'Counted topic occurrences in your scans. Does not indicate what the platform "thinks" about you.',
+    whyExplanation: 'Counted topic occurrences. Observation only, not a platform classification.',
     counterfactual: 'This reflects what appeared in your scans, not who you are. These are observations, not predictions.',
     takeaway: (data) => {
       // FIX W2: Use "surfaced" language to avoid identity labeling
@@ -1121,7 +1126,7 @@ export const dashboardCatalog = [
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     hidden: true,
-    whyExplanation: 'Counted distinct topics in your scans. Does not indicate how the platform categorizes you.',
+    whyExplanation: 'Counted distinct topics. Not a platform categorization.',
     takeaway: (data) => {
       if (!data?.breadth) return null;
       const b = data.breadth.toLowerCase();
@@ -1141,7 +1146,7 @@ export const dashboardCatalog = [
     dataFn: 'getAlgoConfidentData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
-    whyExplanation: 'Compared topics across scans. Requires multiple scans to identify recurring themes.',
+    whyExplanation: 'Compared topics over time to identify recurring themes.',
     takeaway: (data) => {
       if (!data?.insights?.length) return 'Requires multiple scans to identify what the system is reinforcing.';
 
@@ -1259,7 +1264,7 @@ export const dashboardCatalog = [
     emptyStateType: 'needs_more_scans',
     sortOrder: 'summary',
     isSummaryCard: true,
-    whyExplanation: 'Based on observed patterns across scans. This reflects what appeared, not your actual interests or identity.',
+    whyExplanation: 'Based on observed patterns. Reflects what appeared, not your interests or identity.',
     takeaway: (data) => {
       if (data?.experiments?.length > 0) {
         return 'Certain themes appeared persistently across your scans.';

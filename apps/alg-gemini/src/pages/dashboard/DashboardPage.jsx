@@ -1624,28 +1624,31 @@ const TalkTabPanel = () => {
 
   return (
     <div className="max-w-5xl mx-auto">
+      {/* FIX T2: Reduced padding and softened green treatment for more subtle, premium feel */}
       <div
         className="rounded-2xl overflow-hidden"
         style={{
-          background: SURFACES.TALK_GREEN.background,
-          border: SURFACES.TALK_GREEN.border,
-          boxShadow: SURFACES.TALK_GREEN.shadow,
-          padding: 'clamp(2rem, 5vw, 3rem)',
+          background: 'rgba(236, 253, 245, 0.5)',
+          border: '1px solid rgba(167, 243, 208, 0.4)',
+          boxShadow: '0 2px 12px rgba(16, 185, 129, 0.06)',
+          padding: 'clamp(1.5rem, 4vw, 2rem)',
         }}
       >
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
           <h2 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
             Talk to Your Algorithm
           </h2>
+          {/* FIX T3: Neutral slate pill to match dashboard design system */}
           <span
-            className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
+            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
             style={{
-              background: 'rgba(16, 185, 129, 0.12)',
-              border: '1px solid rgba(16, 185, 129, 0.22)',
-              color: 'rgba(5, 150, 105, 0.95)',
+              background: 'rgba(148, 163, 184, 0.12)',
+              border: '1px solid rgba(148, 163, 184, 0.2)',
+              color: 'rgba(71, 85, 105, 0.85)',
+              letterSpacing: '0.08em',
             }}
           >
-            Beta feature • coming soon
+            Coming Soon
           </span>
         </div>
 
@@ -1663,12 +1666,13 @@ const TalkTabPanel = () => {
           className="mt-10 rounded-2xl"
           style={{
             background: '#FFFFFF',
-            border: '1px solid rgba(167, 243, 208, 0.9)',
-            padding: 'clamp(1.25rem, 3vw, 1.75rem)',
+            border: '1px solid rgba(226, 232, 240, 0.9)',
+            padding: 'clamp(1.5rem, 3vw, 2rem)',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)',
           }}
         >
-          <div className="mb-4">
-            <p className="text-sm font-semibold text-slate-800">Join the waitlist</p>
+          <div className="mb-5">
+            <p className="text-base font-semibold text-slate-800 mb-1.5">Get early access</p>
             <p className="text-sm text-slate-500">
               No spam. We’ll only email when it’s ready to try.
             </p>
@@ -1692,8 +1696,8 @@ const TalkTabPanel = () => {
                 className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-colors"
                 style={{
                   background: status === 'success' ? '#F8FAFC' : '#FFFFFF',
-                  border: emailError ? '1px solid rgba(244, 63, 94, 0.45)' : '1px solid rgba(148, 163, 184, 0.55)',
-                  boxShadow: emailError ? '0 0 0 3px rgba(244, 63, 94, 0.06)' : '0 0 0 3px rgba(16, 185, 129, 0.06)',
+                  border: emailError ? '1px solid rgba(244, 63, 94, 0.45)' : '1px solid rgba(148, 163, 184, 0.35)',
+                  boxShadow: emailError ? '0 0 0 3px rgba(244, 63, 94, 0.06)' : '0 1px 2px rgba(0, 0, 0, 0.04)',
                 }}
               />
               <div className="mt-2 min-h-[18px]">
@@ -1712,15 +1716,15 @@ const TalkTabPanel = () => {
             <button
               type="submit"
               disabled={status === 'submitting' || status === 'success'}
-              className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold transition-colors w-full sm:w-auto"
+              className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold transition-all w-full sm:w-auto hover:shadow-md"
               style={{
-                background: status === 'success' ? 'rgba(16, 185, 129, 0.18)' : '#10B981',
+                background: status === 'success' ? 'rgba(16, 185, 129, 0.12)' : '#10B981',
                 color: status === 'success' ? 'rgba(5, 150, 105, 0.95)' : '#FFFFFF',
-                border: status === 'success' ? '1px solid rgba(16, 185, 129, 0.22)' : '1px solid rgba(16, 185, 129, 0.22)',
+                border: status === 'success' ? '1px solid rgba(16, 185, 129, 0.2)' : 'none',
                 opacity: status === 'submitting' ? 0.9 : 1,
               }}
             >
-              {status === 'success' ? 'You’re on the list' : status === 'submitting' ? 'Saving…' : 'Notify me'}
+              {status === 'success' ? 'You’re on the list' : status === 'submitting' ? 'Saving…' : 'Join waitlist'}
             </button>
           </form>
 

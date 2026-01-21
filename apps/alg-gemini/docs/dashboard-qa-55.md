@@ -131,11 +131,12 @@
 - **Resolution**: Changed all "scan window" references to "window" in ads tab section headers and anchor messages for consistency.
 
 ### A7 — Possibly Promotional card is redundant and reads like a false precision machine
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P2
 - **Type**: Copy / Trust
 - It says ~0% in multiple lines, repeats itself, and the "low confidence" treatment does not match the confidence badge. Also: "no potential promotional signals" is too absolute if it's heuristic.
 - **Done means**: Either suppress card when signal is insufficient, or use softer language ("no obvious promotional signals detected") and ensure confidence labeling is consistent.
+- **Resolution**: Renamed to "Unlabeled Promotional Content" (removed repetitive "Possibly Promotional"), shortened whyExplanation, improved takeaway logic to show "No obvious unlabeled promotional signals detected" for 0% instead of repetitive copy.
 
 ### A8 — "More details" preview text is cluttered and not user-centered
 - **Status**: FIXED
@@ -288,11 +289,12 @@
 - **Resolution**: Reordered takeaway logic to check sample size first, shows "Limited sample — need more posts" when total < 20 before showing percentage.
 
 ### PA6 — Emotional Tone section feels out of place and visually loud
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P2
 - **Type**: Visual hierarchy / Tone
 - The saturated green-to-red bar reads as judgmental and not aligned with the calm Oura aesthetic (also feels like sentiment analysis overclaim). Even if you keep it, the presentation needs to be gentler and more precise.
 - **Done means**: Either tone down visual treatment (softer colors, less saturated) or add clearer framing about what emotion detection can/cannot do.
+- **Resolution**: Softened colors from saturated (#22C55E green, #EF4444 red) to pastel tones (#86EFAC, #FCA5A5), renamed title to "Tone Distribution (Rough Estimate)", enhanced whyExplanation with limitations disclaimer, removed prescriptive action field.
 
 ### PA7 — Emotional tone legend is unreadable at this size
 - **Status**: FIXED
@@ -482,11 +484,12 @@
 - **Done means**: Either improve summary presentation or change header to match actual content style.
 
 ### W10 — Multiple scope lines repeat (scans/platforms/window) in too many places
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P2
 - **Type**: Copy / Visual bloat
 - The page feels cluttered and "explainy," not calm.
 - **Done means**: Scope information consolidated and appears once prominently per section, not repeated everywhere.
+- **Resolution**: Shortened 4 whyExplanation fields in Algorithm tab views: removed repetitive "in your scans" / "across scans" phrases, condensed explanatory copy by 30-50% while keeping core meaning. E.g., "Counted topic occurrences in your scans" became "Counted topic occurrences."
 
 ---
 
@@ -501,18 +504,20 @@
 - **Resolution**: Tab label shortened from "Talk to Your Algorithm" to "Talk".
 
 ### T2 — The green panel background is too large and too saturated
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P2
 - **Type**: Visual hierarchy / Polish
 - It dominates the page more than any other tab and feels like a different design system.
 - **Done means**: Green panel is toned down (smaller area, softer color) to match rest of dashboard aesthetic.
+- **Resolution**: Reduced padding from clamp(2rem, 5vw, 3rem) to clamp(1.5rem, 4vw, 2rem), softened background from solid to rgba(236, 253, 245, 0.5), reduced border opacity, and lightened box shadow for subtle premium feel.
 
 ### T3 — The "Beta feature • coming soon" pill styling feels off-brand
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P2
 - **Type**: Visual consistency
 - It looks like a random badge component. Needs alignment with the rest of the UI.
 - **Done means**: Badge styling matches dashboard design system.
+- **Resolution**: Replaced bright green pill with neutral slate styling. Changed from green rgba(16, 185, 129, 0.12) to slate rgba(148, 163, 184, 0.12), reduced size, changed text to "Coming Soon" uppercase with tight tracking.
 
 ### T4 — The description copy is long and slightly repetitive
 - **Status**: FIXED
@@ -523,11 +528,12 @@
 - **Resolution**: Removed redundant explanatory paragraph. Condensed subtitle from "Explore what we observed in this scan's evidence bundle" to direct "Ask about ad density, promotions, topics, creators, and other observed patterns."
 
 ### T5 — Waitlist module feels generic and not premium
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P2
 - **Type**: Visual hierarchy / Polish
 - Placeholder "you@domain.com" + "Notify me" button is fine, but the layout/spacing feels like a standard form, not an Oura-grade "early access" module.
 - **Done means**: Waitlist module has polished spacing, typography, and visual treatment matching dashboard quality bar.
+- **Resolution**: Changed heading from "Join the waitlist" to "Get early access", added clear privacy promise ("Your address stays private and won't be shared"), removed redundant helper text, changed button from "Notify me" to "Join waitlist", improved spacing and borders to feel more premium.
 
 ---
 
@@ -536,8 +542,8 @@
 - **Total issues**: 60
 - **P0 (Trust breakers)**: 12 (0 OPEN, 12 FIXED) ✅
 - **P1 (UX/comprehension)**: 30 (0 OPEN, 30 FIXED) ✅
-- **P2 (Polish)**: 18 (13 OPEN, 5 FIXED)
-- **Overall Status**: 13 OPEN, 47 FIXED
+- **P2 (Polish)**: 18 (7 OPEN, 11 FIXED)
+- **Overall Status**: 7 OPEN, 53 FIXED
 
 ### Remaining OPEN P0 Issues (Trust Breakers)
 **None** - All P0 trust breakers are now resolved.
@@ -555,3 +561,5 @@
 - **Pre-2A (untracked)**: W1 (tab rename)
 - **Pass P0-A**: X2, A2, X4, P8, A1 (presentation-only trust fixes)
 - **Pass 2F**: P3, A8, P10, C8, W7, T4 (final P1 + high-value P2 polish)
+- **Post-Pass 2F Verify**: Smart quote fix, P10 data safety
+- **Pass 2G**: T2, T3, T5, A7, PA6, W10 (P2 polish - Talk tab, copy, visuals)

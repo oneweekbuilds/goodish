@@ -1162,10 +1162,11 @@ export function getEmotionalWeightData(scans, scanDetails) {
     );
   }
 
+  // FIX PA6: Softened colors to be less judgmental and more Oura-aligned
   const segments = [
-    { label: 'Calm/Positive', value: emotionsData.valencePercentages.POSITIVE, color: '#22C55E' },
-    { label: 'Neutral', value: emotionsData.valencePercentages.NEUTRAL, color: '#94A3B8' },
-    { label: 'Intense/Negative', value: emotionsData.valencePercentages.NEGATIVE, color: '#EF4444' },
+    { label: 'Calm/Positive', value: emotionsData.valencePercentages.POSITIVE, color: '#86EFAC' },
+    { label: 'Neutral', value: emotionsData.valencePercentages.NEUTRAL, color: '#CBD5E1' },
+    { label: 'Intense/Negative', value: emotionsData.valencePercentages.NEGATIVE, color: '#FCA5A5' },
   ];
 
   return createResponse(
