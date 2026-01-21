@@ -241,7 +241,7 @@
 - **Type**: UX / Redundancy
 - It should either disappear or answer a distinct question (source concentration, platform driver) without parroting.
 - **Done means**: Summary section adds new insight or is removed. Does not repeat hero content.
-- **Resolution**: Politics summary now focuses on source concentration and platform spread instead of repeating percentage-based "light/moderate/heavy" assessment from hero.
+- **Resolution**: Politics summary now uses different framing than hero ("occasionally", "visible presence", "sustained element" vs "light/moderate/heavy"). Uses only politicalPercent field from getPoliticalProfileData (topCreators/platformCount not available in data). Defensive implementation prevents runtime errors.
 
 ---
 

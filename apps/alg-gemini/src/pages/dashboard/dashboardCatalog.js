@@ -537,7 +537,9 @@ export const dashboardCatalog = [
     isSummaryCard: true,
     whyExplanation: 'Based on political keywords during this window. This measures exposure patterns, not your beliefs.',
     takeaway: (data) => {
-      // FIX P10: Instead of repeating hero's percentage assessment, focus on SOURCE patterns
+      // FIX P10: Instead of repeating hero's percentage assessment, provide distinct insight
+      // NOTE: getPoliticalProfileData only returns politicalPercent, not source details
+      // So we provide a synthesis that doesn't repeat the hero's light/moderate/heavy labels
       if (data?.politicalPercent === undefined) return null;
       const pct = data.politicalPercent;
       
@@ -545,23 +547,16 @@ export const dashboardCatalog = [
         return 'No political exposure detected during this window.';
       }
       
-      // Focus on source concentration and pattern, not repeating percentage labels
-      const topCreators = data?.topCreators || [];
-      const platformCount = data?.platformCount || 0;
-      
-      if (topCreators.length <= 2) {
-        return platformCount > 1
-          ? 'Political content came from a small set of voices across multiple platforms.'
-          : 'Political content came from a small set of voices on one platform.';
+      // Provide synthesis about what political content means, not repeating percentage ranges
+      if (pct < 10) {
+        return 'Political keywords appeared occasionally but weren\'t a dominant theme.';
       }
       
-      if (topCreators.length <= 5) {
-        return platformCount > 1
-          ? 'Political content came from several sources, spread across platforms.'
-          : 'Political content came from several sources, mostly on one platform.';
+      if (pct < 25) {
+        return 'Political keywords formed a visible but not overwhelming presence in your feed.';
       }
       
-      return 'Political content came from many different voices and sources.';
+      return 'Political keywords were a sustained and recurring element throughout your feed.';
     },
     action: null,
   },
@@ -970,7 +965,7 @@ export const dashboardCatalog = [
     takeaway: (data) => {
       // FIX C8: Make empty state educational, not a dead end
       if (!Array.isArray(data) || data.length === 0) {
-        return 'No accounts appeared on multiple platforms during this window. If they did, we'd show voices that reached you in different spaces.';
+        return 'No accounts appeared on multiple platforms during this window. If they did, we\'d show voices that reached you in different spaces.';
       }
       if (data.length === 1) return 'One account appeared across multiple platforms — a recurring voice in different spaces.';
       if (data.length <= 3) return `A small set of accounts (${data.length}) appeared across platforms — recurring voices with broad reach.`;
