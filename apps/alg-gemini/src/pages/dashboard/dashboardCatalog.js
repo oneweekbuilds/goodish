@@ -373,10 +373,10 @@ export const dashboardCatalog = [
     sortOrder: 'supporting',
     requiresOptIn: true,
     confidenceDisclaimer: true,
-    whyExplanation: 'Counts keywords associated with different political perspectives. This is a rough distributional signal, not a measure of truth or persuasion.',
+    whyExplanation: 'Counts keywords associated with different political perspectives. This measures exposure pattern only, not content accuracy or your beliefs.',
     takeaway: (data) => {
-      if (!data?.message) return 'Keyword distribution skewed in your scans (low confidence).';
-      return `${data.message} Measures exposure asymmetry, not content accuracy or your beliefs.`;
+      if (!data?.message) return 'Keyword exposure skewed in one direction (low confidence estimate).';
+      return `${data.message} This shows which perspective keywords appeared more, not which is correct.`;
     },
     action: null,
   },
@@ -626,7 +626,7 @@ export const dashboardCatalog = [
   {
     tab: 'patterns',
     id: 'patterns-echo-risk',
-    title: 'How concentrated the top themes were',
+    title: 'Topic concentration',
     description: 'Whether a few topics dominated or content spread evenly across many themes.',
     outputType: 'status',
     dataFn: 'getEchoRiskData',
@@ -711,7 +711,7 @@ export const dashboardCatalog = [
     tab: 'patterns',
     id: 'patterns-emotional-weight',
     title: 'Emotional Tone (Estimate)',
-    description: 'Estimated emotional tone of content in this scan.',
+    description: 'Estimated emotional tone of content during this window.',
     outputType: 'stacked100',
     dataFn: 'getEmotionalWeightData',
     emptyStateType: 'needs_more_scans',
@@ -734,23 +734,24 @@ export const dashboardCatalog = [
     sortOrder: 'supporting',
     whyExplanation: 'Detected wellbeing themes or engagement hooks. Context matters.',
     takeaway: (data) => {
+      // FIX PA5: Lead with interpretation, make low-signal clearer
       if (!data) return null;
       const pct = data.currentPercent || 0;
       const total = data.totalPosts || 0;
 
+      if (total < 20) {
+        return 'Limited sample — need more posts to assess attention tactics reliably.';
+      }
       if (pct === 0) {
-        return 'Attention-grabbing patterns were absent in your scans.';
+        return 'Attention-grabbing patterns were absent during this window.';
       }
       if (pct < 10) {
-        return 'Attention-grabbing patterns appeared lightly — present but not pervasive.';
+        return 'Attention tactics appeared lightly — present but not a dominant pattern.';
       }
       if (pct < 25) {
-        return 'Attention-grabbing patterns surfaced regularly — a noticeable presence.';
+        return 'Attention tactics surfaced regularly — a noticeable presence in the feed.';
       }
-      if (total < 20) {
-        return 'Attention-grabbing patterns appeared frequently (limited sample).';
-      }
-      return 'Attention-grabbing patterns recurred heavily — a consistent thread throughout.';
+      return 'Attention tactics recurred heavily — a consistent thread throughout.';
     },
     action: null, // FIX X3, PA9: Removed generic advice
   },
@@ -869,24 +870,25 @@ export const dashboardCatalog = [
 
       if (!top) return 'Influence spread across multiple voices.';
 
-      // If top account has significantly more posts than second, it's dominating
+      // FIX C4: Use softer language without claiming "dominated"
+      // If top account has significantly more posts than second
       if (totalAccounts === 1 || (secondCount > 0 && topCount >= secondCount * 2)) {
-        return `${top} dominated your feed — one voice with outsized influence.`;
+        return `${top} appeared very frequently — one voice with strong presence.`;
       }
 
       // If top few accounts are close in count, it's concentrated
       if (totalAccounts <= 3) {
-        return `A few familiar accounts shaped most of your feed.`;
+        return `A small set of familiar accounts shaped most of your feed.`;
       }
 
       // If many accounts but top still stands out
       if (topCount >= 3) {
-        return `${top} led, but ${totalAccounts} different voices contributed.`;
+        return `${top} appeared most often, but content came from ${totalAccounts} voices.`;
       }
 
-      return `Influence spread across ${totalAccounts} voices — no single account dominated.`;
+      return `Content came from ${totalAccounts} different voices — distributed influence.`;
     },
-    action: () => 'You could try following new accounts to see if the mix changes.',
+    action: null, // FIX X3, C6: Removed generic advice (already fixed in 2C)
   },
 
   // --- SECONDARY: Supporting details ---

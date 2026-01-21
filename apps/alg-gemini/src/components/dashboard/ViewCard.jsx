@@ -223,7 +223,7 @@ const ViewCard = ({
           />
         )}
         {isAttentionTactics && (
-          <p className="text-xs text-slate-500 text-center">Flagged in this scan</p>
+          <p className="text-xs text-slate-500 text-center">Flagged during this window</p>
         )}
         {showLine && (
           <div className={deemphasizeCharts ? 'opacity-80' : ''}>

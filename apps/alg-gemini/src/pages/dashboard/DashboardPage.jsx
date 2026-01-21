@@ -263,10 +263,10 @@ const PoliticalLeaningToggle = ({ enabled, onToggle }) => (
     <Info size={16} className="text-amber-600 flex-shrink-0" />
     <div className="flex-1">
       <p className="text-sm text-amber-800">
-        <span className="font-medium">Political leaning estimates</span> use keyword matching and are LOW confidence.
+        <span className="font-medium">Optional:</span> Show viewpoint distribution estimate (low confidence, keyword-based only)
       </p>
       <p className="text-xs text-amber-600 mt-0.5">
-        These are rough estimates, not facts about content or creators.
+        Enabling shows which perspective keywords appeared more. Does not measure accuracy or your beliefs.
       </p>
     </div>
     <button

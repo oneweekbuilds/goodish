@@ -99,11 +99,12 @@
 - **Resolution**: Changed to "Sponsored content appears regularly — promotions are present but not dominant."
 
 ### A4 — Line chart x-axis labeling is cramped and confusing
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Visual hierarchy / Bug appearance
 - The x-axis repeats "Dec 31" with stacked tiny % labels under each tick. It looks broken and undermines "premium dashboard" feel.
 - **Done means**: Chart x-axis shows clean date labels (de-duplicated, readable spacing) and looks polished.
+- **Resolution**: Increased spacing (mt-1 to mt-2), improved label separation (mb-0.5), increased value font weight and size (text-[13px] font-semibold), wider max-width (60px to 70px).
 
 ### A5 — 8% displayed as a big number competes with the actual insight
 - **Status**: OPEN
@@ -154,11 +155,12 @@
 ## POLITICS & WORLDVIEW (P1–P10)
 
 ### P1 — Top warning banner is awkward and confusing ("Enable")
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: UX / Copy clarity
 - The banner says political leaning estimates are low confidence, then shows an "Enable" control. It's unclear what gets enabled and why the user should. Feels like an unfinished feature flag.
 - **Done means**: Banner clearly explains what enabling does, or is repositioned/reframed as an opt-in control with clear value prop.
+- **Resolution**: Changed banner copy to "Optional: Show viewpoint distribution estimate" with explanation "Enabling shows which perspective keywords appeared more. Does not measure accuracy or your beliefs."
 
 ### P2 — Still uses "OBSERVED IN THIS SCAN" while content is windowed
 - **Status**: OPEN
@@ -191,11 +193,12 @@
 - **Resolution**: Changed table columns from "politicalPosts"/"politicalPercent" to "Political posts"/"% of their posts".
 
 ### P6 — Viewpoint distribution section reads like it's claiming "lean" from keywords
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Copy / Trust
 - Even with caveats, users will read it as "the app says my politics are X." The expanded copy needs to be more precise about exposure skew vs ideology classification.
 - **Done means**: Copy clearly frames as "exposure pattern" not "your political identity," with boundary language that stays calm.
+- **Resolution**: Changed whyExplanation to emphasize "exposure pattern only", takeaway to "shows which perspective keywords appeared more, not which is correct".
 
 ### P7 — Platform asymmetry conclusion is weird when most platforms are 0
 - **Status**: OPEN
@@ -254,18 +257,20 @@
 - **Done means**: Patterns tab uses consistent window language throughout.
 
 ### PA4 — "How topics distributed" card uses unclear terminology
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Copy / Labeling clarity
 - "Distribution" vs "concentration" vs "variety" are mixed, and the card doesn't clearly distinguish what it's measuring.
 - **Done means**: Card uses one clear term consistently and explains what it measures.
+- **Resolution**: Changed patterns-echo-risk title from "How concentrated the top themes were" to "Topic concentration" for clarity.
 
 ### PA5 — Attention tactics card shows "5%" as a headline with weak interpretation
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Visual hierarchy / Copy
 - The number doesn't map to meaning, and the explanation is tiny. Needs a clearer interpretive sentence or a better "low signal" treatment.
 - **Done means**: Either make interpretation primary (with % secondary), or use low-signal treatment when percentage lacks context.
+- **Resolution**: Reordered takeaway logic to check sample size first, shows "Limited sample — need more posts" when total < 20 before showing percentage.
 
 ### PA6 — Emotional Tone section feels out of place and visually loud
 - **Status**: OPEN
@@ -333,11 +338,12 @@
 - **Resolution**: Changed column headers from "posts" / "share" to "Posts in window" / "% of your feed".
 
 ### C4 — The hero conclusion ("no single account dominated") doesn't feel justified
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Copy / Logic clarity
 - Top share is 6%. Maybe that's "not dominated," but the UI should explain the threshold for "dominated," or use softer language.
 - **Done means**: Either explain threshold, or use neutral language like "content came from multiple creators" without claiming non-dominance.
+- **Resolution**: Replaced "dominated" language with softer phrases: "appeared very frequently", "appeared most often", "content came from X voices".
 
 ### C5 — "How we measure" block is too dense and tiny
 - **Status**: FIXED

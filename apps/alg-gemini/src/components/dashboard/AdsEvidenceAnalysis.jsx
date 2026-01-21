@@ -220,7 +220,7 @@ const PromotionTopics = ({ measurements }) => {
         <div>
           <p className="text-sm text-slate-500 italic">
             {quality === 'not_applicable'
-              ? 'No promotional content detected in this scan.'
+              ? 'No promotional content detected during this window.'
               : detected_but_excluded_count > 0
               ? `${detected_but_excluded_count} topic${detected_but_excluded_count > 1 ? 's' : ''} detected but did not meet surfacing threshold.`
               : 'No topic keywords matched in promotional content.'}
