@@ -447,23 +447,23 @@ const TAB_STORY_HEADERS = {
   algorithm: {
     keyInsight: {
       label: 'Observed',
-      title: 'What appeared in this scan',
-      subtext: 'Topics that showed up most often in this scroll session.',
+      title: 'System interpretation during this window',
+      subtext: 'How the algorithm appears to be reading your signals based on what surfaced.',
     },
     details: {
       label: 'Context',
-      title: 'How content clustered',
-      subtext: 'We cannot know why — only what appeared together.',
+      title: 'What the system is reinforcing',
+      subtext: 'Themes that recurred, suggesting persistent associations.',
     },
     moreDetails: {
       label: 'Speculation',
-      title: 'What might continue (uncertain)',
-      subtext: 'If these topics recur, you may see more of them. We cannot predict.',
+      title: 'Extrapolated future associations',
+      subtext: 'If patterns continue, the system might associate you with these themes. Pure speculation.',
     },
     summary: {
-      label: 'Experiments',
-      title: 'What you could try',
-      subtext: 'Optional actions to see if content shifts. Results may vary.',
+      label: 'Summary',
+      title: 'Current algorithmic interpretation',
+      subtext: 'How the system appears to be categorizing you based on observed patterns.',
     },
   },
   ads: {
@@ -513,45 +513,45 @@ const TAB_STORY_HEADERS = {
   patterns: {
     keyInsight: {
       label: 'Observed',
-      title: 'Topics in this scan',
-      subtext: 'Topics detected in this scroll session.',
+      title: 'Topics during this window',
+      subtext: 'What surfaced — patterns in exposure, not preference.',
     },
     details: {
       label: 'Context',
       title: 'How topics distributed',
-      subtext: 'We cannot know why — only what appeared.',
+      subtext: 'Where repetition formed and where variety emerged.',
     },
     moreDetails: {
-      label: 'Speculation',
-      title: 'What might continue (uncertain)',
-      subtext: 'If topics recur across scans, they may persist. We cannot predict.',
+      label: 'Additional detail',
+      title: 'Pattern movement from this window',
+      subtext: 'How themes shifted — narrowing, broadening, or stabilizing.',
     },
     summary: {
-      label: 'Experiments',
-      title: 'What you could try',
-      subtext: 'Optional actions to see if variety changes. Results may vary.',
+      label: 'Summary',
+      title: 'Topic patterns observed',
+      subtext: 'Movement detected during this window.',
     },
   },
   creators: {
     keyInsight: {
       label: 'Observed',
-      title: 'Accounts that appeared',
-      subtext: 'Sources that showed up most often in this scan.',
+      title: 'Influence during this window',
+      subtext: 'Which accounts shaped what you saw — what appeared, not who you are.',
     },
     details: {
       label: 'Context',
-      title: 'Source concentration',
-      subtext: 'How content was distributed across accounts.',
+      title: 'How influence concentrated',
+      subtext: 'Whether a few voices dominated or many contributed.',
     },
     moreDetails: {
-      label: 'Speculation',
-      title: 'What might continue (uncertain)',
-      subtext: 'If these sources recur, they may dominate. We cannot predict.',
+      label: 'Additional detail',
+      title: 'Cross-platform patterns from this window',
+      subtext: 'Voices that appeared in multiple spaces.',
     },
     summary: {
-      label: 'Experiments',
-      title: 'What you could try',
-      subtext: 'Optional actions to see if source diversity changes. Results may vary.',
+      label: 'Summary',
+      title: 'Influence patterns observed',
+      subtext: 'Concentration detected during this window.',
     },
   },
 };
@@ -1555,11 +1555,11 @@ const TabHero = ({
 const SecondVisualAnchor = ({ tabId, className = '' }) => {
   // Tab-specific anchor messages - grounded in observation, not intent
   const anchorMessages = {
-    algorithm: "Below is what we observed in this scan, plus options to explore.",
-    ads: "Below is what we observed across your recent scans. All metrics use the same window.",
+    algorithm: "Below is what we observed during this window. Patterns show system interpretation, not your identity.",
+    ads: "Below is what we observed during this window. All metrics use the same scan window.",
     politics: "Below is what we observed during this window. All metrics measure exposure, not belief formation.",
-    patterns: "Below is what we observed in this scan, plus options to explore.",
-    creators: "Below is what we observed in this scan, plus options to explore.",
+    patterns: "Below is what we observed during this window. Patterns show what surfaced, not what you seek.",
+    creators: "Below is what we observed during this window. Patterns show what appeared, not who you are.",
   };
 
   return (
