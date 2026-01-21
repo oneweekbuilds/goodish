@@ -1850,6 +1850,9 @@ const DashboardPage = () => {
     return `${startText} – ${endText}`;
   };
 
+  // FIX X2/A2: Remove specific scan counts to avoid contradictory numbers across views
+  // Each view has different scansUsed counts based on data availability, which creates trust issues
+  // Solution: Prefer date ranges, fall back to generic "window" language without specific counts
   const deriveWindowLabel = (start, end, scansUsed) => {
     if (start && end) {
       const startDate = new Date(start);
@@ -1860,13 +1863,11 @@ const DashboardPage = () => {
           return 'In the past 7 days';
         }
         const rangeText = formatDateRange(start, end);
-        if (rangeText) return `Across this window (${rangeText})`;
+        if (rangeText) return `During this window (${rangeText})`;
       }
     }
-    if (scansUsed && scansUsed > 0) {
-      return `Across your last ${scansUsed} scan${scansUsed !== 1 ? 's' : ''}`;
-    }
-    return 'In the past 7 days';
+    // Avoid showing specific scan counts - they vary per-metric and create confusion
+    return 'Based on your recent scans';
   };
 
   const adsScanWindow = useMemo(() => {

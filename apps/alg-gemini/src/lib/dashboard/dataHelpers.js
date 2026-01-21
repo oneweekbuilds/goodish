@@ -156,6 +156,28 @@ function getFeedItems(scanDetail) {
 }
 
 // =====================================================
+// HELPER: Normalize platform names for consistent presentation
+// FIX A1: Map Twitter -> X at display time
+// =====================================================
+
+/**
+ * Normalize platform name for consistent display.
+ * Maps legacy platform names to current naming (e.g., Twitter -> X).
+ * This is presentation-only - does not affect data storage or computations.
+ */
+function normalizePlatformName(platform) {
+  if (!platform || typeof platform !== 'string') return 'Unknown';
+  
+  const lower = platform.toLowerCase().trim();
+  
+  // Map legacy "twitter" to current "X" branding
+  if (lower === 'twitter') return 'X';
+  
+  // Standard capitalization for other platforms
+  return platform.charAt(0).toUpperCase() + platform.slice(1).toLowerCase();
+}
+
+// =====================================================
 // HELPER: Normalize creator names for consistent presentation
 // FIX C2: Handle formatting normalization
 // =====================================================
@@ -537,7 +559,7 @@ export function getPlatformPromoData(scans, scanDetails) {
   }
 
   const bars = platforms.map(platform => ({
-    label: platform.charAt(0).toUpperCase() + platform.slice(1),
+    label: normalizePlatformName(platform), // FIX A1: Consistent platform naming
     value: adsData.byPlatform[platform].adPercentage,
   })).sort((a, b) => b.value - a.value);
 
@@ -946,7 +968,7 @@ export function getCrossPlatformPoliticalData(scans, scanDetails) {
   }
 
   const bars = platforms.map(p => ({
-    label: p.charAt(0).toUpperCase() + p.slice(1),
+    label: normalizePlatformName(p), // FIX A1: Consistent platform naming
     value: politicsData.byPlatform[p].politicalPercentage,
   })).sort((a, b) => b.value - a.value);
 

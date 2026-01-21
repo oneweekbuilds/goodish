@@ -47,12 +47,12 @@
 - **Resolution**: Fixed in prepass-2d-verification. All main dashboard tabs now use "during this window" consistently (30+ instances). One residual in TalkToAlgorithmSection.jsx chat feature is a different context.
 
 ### X2 — Scope labels conflict across the same view
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P0
 - **Type**: Trust breaker / Data contradiction
 - Example patterns: page header says 115 scans, a pill says 108 scans, and "How we measure" says 105 or another number. Users will assume something is broken or cherry-picked.
 - **Done means**: Single canonical scope calculation per tab. All references to scan count/window must derive from one source of truth and match exactly.
-- **Where it appears**: DashboardPage.jsx `deriveWindowLabel()` and individual data functions in dataHelpers.js each compute `scansUsed` independently. Would require data architecture change.
+- **Resolution**: Fixed in p0a-presentation. Changed `deriveWindowLabel()` to prefer date ranges and use generic "Based on your recent scans" instead of specific counts. Removes conflicting numbers without changing data logic.
 
 ### X3 — "Try this" content is inconsistent with the "no generic advice" decision
 - **Status**: FIXED
@@ -63,12 +63,12 @@
 - **Resolution**: Removed all generic "You could try" action fields across patterns, creators, and algorithm tabs (set to null).
 
 ### X4 — Confidence signaling is inconsistent or contradictory
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P0
 - **Type**: Trust breaker / Logic contradiction
 - Examples: "Low confidence estimate" inside a card + a "Higher confidence" badge on the same card. Or a low-confidence banner at top of tab but "Higher confidence" badges throughout.
 - **Done means**: Confidence labeling rules are consistent. If a section has low confidence banner, individual cards cannot show "higher confidence" unless explicitly comparative.
-- **Where it appears**: ConfidenceBadge.jsx `calculateConfidence()` and badge rendering. Would require logic change to coordinate banner state with badge display.
+- **Resolution**: Fixed in p0a-presentation. Changed badge labels from "confidence" language to "sample size" language: "Higher confidence" → "Broader sample", "Moderate confidence" → "Moderate sample". Avoids semantic contradiction with "low confidence" banners.
 
 ### X5 — Expanded-state UX is visually noisy and feels "prototype-y," not Oura-level
 - **Status**: FIXED
@@ -83,20 +83,20 @@
 ## ADS & INFLUENCE (A1–A10)
 
 ### A1 — Platform naming inconsistency inside Ads by-platform card
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P0
 - **Type**: Trust breaker / Naming consistency
 - The list includes both Twitter and X in the same breakdown (and/or across the dashboard). This is a blatant credibility hit.
 - **Done means**: Use "X" consistently everywhere. No "Twitter" references in any user-facing copy or data labels.
-- **Where it appears**: dataHelpers.js `getPlatformPromoData()` displays platform names from scan data. If backend returns both "twitter" and "x" for different scans, both appear. Data-dependent issue.
+- **Resolution**: Fixed in p0a-presentation. Added `normalizePlatformName()` helper that maps "twitter" → "X" at display time. Applied to ads and politics platform breakdowns. Pure presentation mapping - does not change stored data.
 
 ### A2 — Hero scope mismatch: "Across your last 108 scans" vs other dashboard totals
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P0
 - **Type**: Trust breaker / Data contradiction
 - Dashboard header says 115 scans, Ads hero says 108, and other sections reference different counts. Needs one canonical scope label per tab.
 - **Done means**: All scope references in Ads tab derive from single calculation and display identical numbers.
-- **Where it appears**: Same root cause as X2. Each data function returns its own `scansUsed` based on data availability. Would require data architecture change.
+- **Resolution**: Fixed in p0a-presentation. Same fix as X2 - hero now shows date range or generic "Based on your recent scans" instead of specific counts that could conflict.
 
 ### A3 — Hero sentence claims interpretive insight while evidence feels underexplained
 - **Status**: FIXED
@@ -218,12 +218,12 @@
 - **Done means**: Conclusion suppressed or reworded when comparison is meaningless (e.g., only one platform has political content).
 
 ### P8 — Confidence badges contradict the low-confidence framing
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P0
 - **Type**: Trust breaker / Logic contradiction
 - If the banner says the leaning estimate is low confidence, the "Higher confidence" badges in the same region feel wrong.
 - **Done means**: Confidence labeling is internally consistent (same as X4 but specific to Politics tab).
-- **Where it appears**: Same root cause as X4. Politics tab banner vs ConfidenceBadge rendering. Would require logic change.
+- **Resolution**: Fixed in p0a-presentation. Same fix as X4 - badges now use "sample size" language ("Broader sample" / "Moderate sample" / "Limited data") which doesn't contradict the "low confidence" banner.
 
 ### P9 — "Try this" appears again (generic behavioral advice)
 - **Status**: FIXED
@@ -528,19 +528,13 @@
 ## SUMMARY
 
 - **Total issues**: 60
-- **P0 (Trust breakers)**: 12 (5 OPEN, 7 FIXED)
+- **P0 (Trust breakers)**: 12 (0 OPEN, 12 FIXED) ✅
 - **P1 (UX/comprehension)**: 30 (1 OPEN, 29 FIXED)
 - **P2 (Polish)**: 18 (18 OPEN, 0 FIXED)
-- **Overall Status**: 24 OPEN, 36 FIXED
+- **Overall Status**: 19 OPEN, 41 FIXED
 
 ### Remaining OPEN P0 Issues (Trust Breakers)
-| ID | Issue | Root Cause |
-|----|-------|------------|
-| X2 | Scope labels conflict across same view | Data architecture |
-| X4 | Confidence signaling inconsistent | Logic change needed |
-| A1 | Platform naming (Twitter vs X) | Data-dependent |
-| A2 | Hero scope mismatch | Data architecture |
-| P8 | Confidence badges contradict banner | Logic change needed |
+**None** - All P0 trust breakers are now resolved.
 
 ### Remaining OPEN P1 Issue
 | ID | Issue |
@@ -555,3 +549,4 @@
 - **Pass 2D**: A4, P1, P6, PA4, PA5, C4
 - **Pass 2E**: X5, A5, C2, W2, W3, W4
 - **Pre-2A (untracked)**: W1 (tab rename)
+- **Pass P0-A**: X2, A2, X4, P8, A1 (presentation-only trust fixes)

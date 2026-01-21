@@ -101,16 +101,18 @@ export function getScanCountText(scanCount, platformCount) {
  * @param {string} size - Size variant: 'sm' | 'md' (default: 'sm')
  */
 const ConfidenceBadge = ({ level, showLabel = true, size = 'sm' }) => {
-  // Phase 4: Muted colors so confidence feels like metadata
+  // FIX X4/P8: Changed labels from "confidence" to "sample size" language
+  // Reason: "Higher confidence" badges contradicted "low confidence" banners on Politics tab
+  // Using data quantity language avoids this trust-breaking contradiction
   const config = {
     [CONFIDENCE_LEVELS.HIGH]: {
-      label: 'Higher confidence',
+      label: 'Broader sample',
       bgColor: 'bg-slate-100',
       textColor: 'text-slate-500',
       dotColor: 'bg-emerald-400',
     },
     [CONFIDENCE_LEVELS.MEDIUM]: {
-      label: 'Moderate confidence',
+      label: 'Moderate sample',
       bgColor: 'bg-slate-50',
       textColor: 'text-slate-400',
       dotColor: 'bg-slate-300',
