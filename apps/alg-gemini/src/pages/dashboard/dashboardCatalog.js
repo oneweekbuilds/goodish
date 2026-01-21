@@ -104,7 +104,7 @@ export const dashboardCatalog = [
       if (pct < 8) {
         return smallSample
           ? 'Early signal: light sponsored touches surfaced.'
-          : 'Selling pressure is light — promotions appear but don’t drive the feed.';
+          : 'Selling pressure is light — promotions appear but don\'t drive the feed.';
       }
 
       if (pct < 18) {
@@ -122,7 +122,7 @@ export const dashboardCatalog = [
     tab: 'ads',
     id: 'ads-concentration',
     title: 'Who is driving the selling',
-    description: 'Shows whether a handful of repeat advertisers are steering what you’re being sold in this window.',
+    description: 'Shows whether a handful of repeat advertisers are steering what you\'re being sold in this window.',
     outputType: 'text',
     dataFn: 'getAdConcentrationData',
     emptyStateType: 'needs_more_scans',
@@ -207,7 +207,7 @@ export const dashboardCatalog = [
     tab: 'ads',
     id: 'ads-products',
     title: 'What the ads are pitching',
-    description: 'Top product themes in your ads during this window so you can see what’s being emphasized.',
+    description: 'Top product themes in your ads during this window so you can see what\'s being emphasized.',
     outputType: 'bar',
     dataFn: 'getProductMentionsData',
     emptyStateType: 'needs_more_scans',
@@ -409,6 +409,7 @@ export const dashboardCatalog = [
     },
     action: null,
   },
+  // FIX P7: Improved platform asymmetry phrasing when comparator is near-zero
   {
     tab: 'politics',
     id: 'politics-by-platform',
@@ -430,7 +431,15 @@ export const dashboardCatalog = [
         return `Political keywords concentrated entirely on ${top.label}.`;
       }
 
-      const gap = (top.value || 0) - (second.value || 0);
+      const topValue = top.value || 0;
+      const secondValue = second.value || 0;
+      const gap = topValue - secondValue;
+
+      // FIX P7: If second platform has 0 or near-0, don't phrase as "over [platform]"
+      if (secondValue < 2) {
+        return `Political keywords appeared primarily on ${top.label} during this window.`;
+      }
+
       if (gap >= 10) {
         return `Political exposure clustered heavily on ${top.label}, with much lighter presence on ${second.label}.`;
       }
@@ -913,7 +922,7 @@ export const dashboardCatalog = [
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     hidden: true,
-    whyExplanation: 'Measured how much of this scan came from the top few accounts.',
+    whyExplanation: 'Measured how much of this window came from the top few accounts.',
     takeaway: (data) => {
       if (!data?.primaryInsight) return null;
       const insight = data.primaryInsight.toLowerCase();

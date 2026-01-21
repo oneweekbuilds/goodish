@@ -1184,7 +1184,7 @@ const AFFILIATE_SIGNALS = [
   'use my code', 'use code', 'discount code', 'promo code', 'coupon code',
   'link in bio', 'affiliate', 'shop now', 'limited time', 'sponsored by',
   'check out', 'get yours', 'click the link', 'swipe up', 'tap to shop',
-  'available now', 'order now', 'buy now', "i'm partnering", 'partnership',
+  'available now', 'order now', 'buy now', "i\'m partnering", 'partnership',
 ];
 
 // URL patterns that suggest affiliate links

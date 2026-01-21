@@ -1601,7 +1601,7 @@ const TalkTabPanel = () => {
   const emailError = touched && !emailTrimmed
     ? 'Please enter an email address.'
     : touched && !emailLooksValid
-      ? 'That email doesn’t look quite right.'
+      ? 'That email doesn\'t look quite right.'
       : null;
 
   const onSubmit = async (e) => {
@@ -1615,7 +1615,7 @@ const TalkTabPanel = () => {
     const result = await submitWaitlistEmail({ email: emailTrimmed, source: 'talk_tab_waitlist' });
     if (result?.ok) {
       setStatus('success');
-      setMessage('Thanks — you’re on the list.');
+      setMessage('Thanks — you\'re on the list.');
       return;
     }
 
@@ -1655,7 +1655,7 @@ const TalkTabPanel = () => {
 
         <div className="space-y-4" style={{ maxWidth: '720px' }}>
           <p className="text-slate-700 leading-relaxed">
-            We’re building a calm, evidence-first way to ask questions about your feed using your scan data.
+            We\'re building a calm, evidence-first way to ask questions about your feed using your scan data.
             Answers will cite what we observed, show uncertainty when it exists, and avoid speculation.
           </p>
           <p className="text-slate-700 leading-relaxed">
@@ -1675,7 +1675,7 @@ const TalkTabPanel = () => {
           <div className="mb-5">
             <p className="text-base font-semibold text-slate-800 mb-1.5">Get early access</p>
             <p className="text-sm text-slate-500">
-              No spam. We’ll only email when it’s ready to try.
+              No spam. We\'ll only email when it\'s ready to try.
             </p>
           </div>
 
@@ -1708,7 +1708,7 @@ const TalkTabPanel = () => {
                   </p>
                 ) : (
                   <p className="text-xs text-slate-400">
-                    Use the address you’d like early access sent to.
+                    Use the address you\'d like early access sent to.
                   </p>
                 )}
               </div>
@@ -1725,7 +1725,7 @@ const TalkTabPanel = () => {
                 opacity: status === 'submitting' ? 0.9 : 1,
               }}
             >
-              {status === 'success' ? 'You’re on the list' : status === 'submitting' ? 'Saving…' : 'Join waitlist'}
+              {status === 'success' ? 'You\'re on the list' : status === 'submitting' ? 'Saving…' : 'Join waitlist'}
             </button>
           </form>
 

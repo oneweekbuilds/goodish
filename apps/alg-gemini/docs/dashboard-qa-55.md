@@ -215,11 +215,12 @@
 - **Resolution**: Changed whyExplanation to emphasize "exposure pattern only", takeaway to "shows which perspective keywords appeared more, not which is correct".
 
 ### P7 — Platform asymmetry conclusion is weird when most platforms are 0
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P2
 - **Type**: Copy / Logic
 - "Leaned toward Twitter over TikTok" when TikTok is 0 reads robotic and low-value.
 - **Done means**: Conclusion suppressed or reworded when comparison is meaningless (e.g., only one platform has political content).
+- **Resolution**: Added check in politics-by-platform takeaway: if second platform value < 2, use simpler phrasing "Political keywords appeared primarily on {platform} during this window" instead of "leaned toward X over Y".
 
 ### P8 — Confidence badges contradict the low-confidence framing
 - **Status**: FIXED
@@ -548,8 +549,8 @@
 - **Total issues**: 60
 - **P0 (Trust breakers)**: 12 (0 OPEN, 12 FIXED) ✅
 - **P1 (UX/comprehension)**: 30 (0 OPEN, 30 FIXED) ✅
-- **P2 (Polish)**: 18 (1 OPEN, 17 FIXED)
-- **Overall Status**: 1 OPEN, 59 FIXED
+- **P2 (Polish)**: 18 (0 OPEN, 18 FIXED) ✅
+- **Overall Status**: 0 OPEN, 60 FIXED ✅✅✅
 
 ### Remaining OPEN P0 Issues (Trust Breakers)
 **None** - All P0 trust breakers are now resolved.
@@ -570,4 +571,5 @@
 - **Post-Pass 2F Verify**: Smart quote fix, P10 data safety
 - **Pass 2G**: T2, T3, T5, A7, PA6, W10 (P2 polish - Talk tab, copy, visuals)
 - **Hotfix**: PA6 color separation (moved to presentation layer)
-- **Pass 2H**: A10, C7, C9, C10, W5, W9 (final P2 polish - footers, organization, summaries)
+- **Pass 2H**: A10, C7, C9, C10, W5, W9 (P2 polish - footers, organization, summaries)
+- **Pass 2I**: P7 (final P2 - platform asymmetry), Smart quote cleanup, Scope language cleanup

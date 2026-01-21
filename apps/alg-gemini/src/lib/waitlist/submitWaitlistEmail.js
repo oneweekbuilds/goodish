@@ -21,7 +21,7 @@ export async function submitWaitlistEmail({ email, source }) {
   const normalizedSource = typeof source === 'string' ? source.trim() : '';
 
   if (!normalizedEmail) return { ok: false, error: 'Please enter an email address.' };
-  if (!isValidEmail(normalizedEmail)) return { ok: false, error: 'That email doesn’t look quite right.' };
+  if (!isValidEmail(normalizedEmail)) return { ok: false, error: 'That email doesn\'t look quite right.' };
   if (!normalizedSource) return { ok: false, error: 'Missing source.' };
 
   try {

@@ -8,12 +8,12 @@ const EXCLUDED_HEADLINE_LABELS = new Set([
   // Canonical unclassified label used by the topic aggregator
   String(UNCLASSIFIED_TOPIC || '').toLowerCase(),
   // Historical / variant spellings
-  "other / couldn't categorize",
-  "other / couldn’t categorize",
+  "other / couldn\'t categorize",
+  "other / couldn\'t categorize",
 ]);
 
 export const FALLBACK_MIX_TOPICS_HEADLINE = 'We detected a mix of topics in this scan';
-export const UNCATEGORIZED_NOTE = "Some posts couldn’t be categorized yet.";
+export const UNCATEGORIZED_NOTE = "Some posts couldn\'t be categorized yet.";
 
 export function isHeadlineExcludedLabel(label) {
   if (label == null) return true;
