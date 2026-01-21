@@ -138,11 +138,12 @@
 - **Done means**: Either suppress card when signal is insufficient, or use softer language ("no obvious promotional signals detected") and ensure confidence labeling is consistent.
 
 ### A8 — "More details" preview text is cluttered and not user-centered
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P2
 - **Type**: Copy / UX
 - The preview lists internal categories ("Possibly Promotional (Unlabeled…)") rather than what value the user gets ("Unlabeled promos and what's being pitched").
 - **Done means**: Preview text describes user value, not internal classification labels.
+- **Resolution**: Changed ads preview from listing card titles to "What products are being pitched and where ads are concentrated." Politics preview changed to "Platform-by-platform breakdown and additional viewpoint estimates."
 
 ### A9 — Ads-products "low signal" copy is unclear and feels defensive
 - **Status**: FIXED
@@ -180,11 +181,12 @@
 - **Resolution**: Fixed as part of X1 in prepass-2d-verification. Politics tab now uses "during this window" language consistently.
 
 ### P3 — Hero chart has cramped tick labels and reads as noisy
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Visual hierarchy
 - The line chart has dense dates and tiny stacked percentages. The visuals feel like debug charts, not Oura-grade.
 - **Done means**: Chart rendering has clean spacing, readable labels, and polished visual treatment.
+- **Resolution**: Increased label spacing (mt-2 to mt-3, mb-0.5 to mb-1), improved label contrast (text-slate-400 to text-slate-500 font-medium), increased value size (text-[13px] to text-sm), wider label containers (70px to 80px).
 
 ### P4 — "Where political exposure concentrated" table produces misleading percentages
 - **Status**: FIXED
@@ -234,11 +236,12 @@
 - **Resolution**: Politics tab already had action: null for all non-hidden views. Fixed as part of X3 cross-tab cleanup.
 
 ### P10 — Summary card repeats the hero rather than adding a new synthesis
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P2
 - **Type**: UX / Redundancy
 - It should either disappear or answer a distinct question (source concentration, platform driver) without parroting.
 - **Done means**: Summary section adds new insight or is removed. Does not repeat hero content.
+- **Resolution**: Politics summary now focuses on source concentration and platform spread instead of repeating percentage-based "light/moderate/heavy" assessment from hero.
 
 ---
 
@@ -383,11 +386,12 @@
 - **Done means**: Feedback affordance removed or fully implemented with working backend.
 
 ### C8 — Cross-platform section reads low-value when empty
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P2
 - **Type**: Empty state / Copy
 - "No accounts appeared across multiple platforms" is a dead end. Needs a better empty-state that still teaches something.
 - **Done means**: Empty state explains what this would show if detected, or section is hidden when no data.
+- **Resolution**: Changed empty state from "No accounts appeared..." to "No accounts appeared on multiple platforms during this window. If they did, we'd show voices that reached you in different spaces."
 
 ### C9 — The "More details" organization doesn't match user mental model
 - **Status**: OPEN
@@ -455,11 +459,12 @@
 - **Resolution**: Title changed to "If current trends continued (speculation)", takeaway reframed to emphasize "not a forecast".
 
 ### W7 — The speculation card contains too much text and not enough structure
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P2
 - **Type**: Visual hierarchy / UX
 - It's a paragraph blob. Needs scannable structure (what, why, confidence) without adding new logic.
 - **Done means**: Content has clear structure with headers/sections, not a wall of text.
+- **Resolution**: Condensed description and whyExplanation to remove repetitive disclaimers. Restructured takeaway with clear format: "If patterns stayed constant: [topics]. (Pure speculation — not a forecast.)"
 
 ### W8 — "Try this" advice comes back (follow/search/mute)
 - **Status**: FIXED
@@ -510,11 +515,12 @@
 - **Done means**: Badge styling matches dashboard design system.
 
 ### T4 — The description copy is long and slightly repetitive
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P2
 - **Type**: Copy / Editing
 - "Calm, evidence-first… cite what we observed… show uncertainty… avoid speculation… guardrails… tuned to earn trust" repeats the same promise 3 times.
 - **Done means**: Copy edited to be concise while preserving key value props.
+- **Resolution**: Removed redundant explanatory paragraph. Condensed subtitle from "Explore what we observed in this scan's evidence bundle" to direct "Ask about ad density, promotions, topics, creators, and other observed patterns."
 
 ### T5 — Waitlist module feels generic and not premium
 - **Status**: OPEN
@@ -529,17 +535,15 @@
 
 - **Total issues**: 60
 - **P0 (Trust breakers)**: 12 (0 OPEN, 12 FIXED) ✅
-- **P1 (UX/comprehension)**: 30 (1 OPEN, 29 FIXED)
-- **P2 (Polish)**: 18 (18 OPEN, 0 FIXED)
-- **Overall Status**: 19 OPEN, 41 FIXED
+- **P1 (UX/comprehension)**: 30 (0 OPEN, 30 FIXED) ✅
+- **P2 (Polish)**: 18 (13 OPEN, 5 FIXED)
+- **Overall Status**: 13 OPEN, 47 FIXED
 
 ### Remaining OPEN P0 Issues (Trust Breakers)
 **None** - All P0 trust breakers are now resolved.
 
-### Remaining OPEN P1 Issue
-| ID | Issue |
-|----|-------|
-| P3 | Hero chart cramped tick labels |
+### Remaining OPEN P1 Issues
+**None** - All P1 UX/comprehension issues are now resolved.
 
 ### Fix Pass History
 - **Pass 2A**: PA1, PA10, A3, P4, W6, T1
@@ -550,3 +554,4 @@
 - **Pass 2E**: X5, A5, C2, W2, W3, W4
 - **Pre-2A (untracked)**: W1 (tab rename)
 - **Pass P0-A**: X2, A2, X4, P8, A1 (presentation-only trust fixes)
+- **Pass 2F**: P3, A8, P10, C8, W7, T4 (final P1 + high-value P2 polish)

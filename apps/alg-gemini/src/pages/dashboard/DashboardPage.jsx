@@ -711,23 +711,16 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
   const evidenceLabel = scopeLabel || `Based on ${scanCount} scan${scanCount !== 1 ? 's' : ''}`;
   
   // Generate a dynamic preview for More Details based on what's actually inside
+  // FIX A8: Use user-centered language describing value, not internal labels
   let moreDetailsSubtitle = 'Optional extra metrics and deeper cuts.';
-  if (tabId === 'ads' && hasMoreDetailsContent) {
-    const allCards = [...supportingOverflow, ...speculationCards];
-    const titles = allCards.map(v => v.title).slice(0, 2);
-    if (titles.length === 2) {
-      moreDetailsSubtitle = `${titles[0]} and ${titles[1]}.`;
-    } else if (titles.length === 1) {
-      moreDetailsSubtitle = titles[0];
-    } else {
-      moreDetailsSubtitle = 'Additional ad analysis from this window.';
-    }
-  } else if (tabId === 'ads') {
-    moreDetailsSubtitle = 'Additional ad analysis from this window.';
-  } else if (tabId === 'politics' && hasMoreDetailsContent) {
-    moreDetailsSubtitle = 'Platform comparison and low-confidence viewpoint distribution from this window.';
+  if (tabId === 'ads') {
+    moreDetailsSubtitle = hasMoreDetailsContent
+      ? 'What products are being pitched and where ads are concentrated.'
+      : 'Additional ad analysis from this window.';
   } else if (tabId === 'politics') {
-    moreDetailsSubtitle = 'Additional political keyword analysis from this window.';
+    moreDetailsSubtitle = hasMoreDetailsContent
+      ? 'Platform-by-platform breakdown and additional viewpoint estimates.'
+      : 'Additional political keyword analysis from this window.';
   }
 
   return (

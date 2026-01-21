@@ -102,20 +102,21 @@ const LineChartSimple = ({ data = [], valueLabel = '', color = '#3B82F6', height
         ))}
       </svg>
 
-      {/* X-axis labels - FIX A4: Improved spacing and readability */}
-      <div className="flex justify-between px-2 mt-2">
+      {/* X-axis labels - FIX A4 & P3: Improved spacing, readability, and label clarity */}
+      <div className="flex justify-between px-2 mt-3">
         {displayData.map((d, i) => {
           // Check if this label is the same as previous one
           const prevLabel = i > 0 ? displayData[i - 1]?.label : null;
           const isDuplicate = prevLabel === d.label;
           
           return (
-            <div key={i} className="text-xs text-center" style={{ maxWidth: '70px' }}>
+            <div key={i} className="text-xs text-center" style={{ maxWidth: '80px' }}>
               {/* Only show label if it's not a duplicate, or if it's the first or last */}
-              <div className="truncate text-slate-400 mb-0.5">
+              {/* FIX P3: Increased label spacing and contrast */}
+              <div className="truncate text-slate-500 mb-1 font-medium">
                 {!isDuplicate || i === 0 || i === displayData.length - 1 ? d.label : '·'}
               </div>
-              <div className="font-semibold text-slate-700 text-[13px]">
+              <div className="font-semibold text-slate-700 text-sm">
                 {typeof d.value === 'number' && d.value % 1 !== 0
                   ? d.value.toFixed(1)
                   : d.value}

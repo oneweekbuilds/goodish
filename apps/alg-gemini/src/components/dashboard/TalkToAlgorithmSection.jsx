@@ -120,12 +120,12 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt, tabId }) =
           >
             Ask About This Scan
           </h3>
-          {/* Subtitle */}
+          {/* Subtitle - FIX T4: Condensed description, removed repetitive "evidence" language */}
           <p
             className="text-slate-500"
             style={{ fontSize: '14px', maxWidth: '400px' }}
           >
-            Explore what we observed in this scan's evidence bundle.
+            Ask about ad density, promotions, topics, creators, and other observed patterns.
           </p>
         </div>
 
@@ -161,18 +161,6 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt, tabId }) =
           </p>
         </div>
       </div>
-
-      {/* Explanatory paragraph - ACCURACY CONTRACT COMPLIANT - Updated per spec */}
-      <p
-        className="text-text-muted mb-8"
-        style={{
-          fontSize: '16px',
-          lineHeight: 1.8,
-          maxWidth: '540px',
-        }}
-      >
-        Ask questions about the evidence bundle fields: ad density, promotions, topic mix, creator concentration, and more. Answers are based only on this scan's evidence.
-      </p>
 
       {/* Example prompts - enhanced button-like appearance */}
       <div className="mb-10">

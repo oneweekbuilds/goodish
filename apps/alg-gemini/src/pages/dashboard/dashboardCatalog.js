@@ -537,20 +537,31 @@ export const dashboardCatalog = [
     isSummaryCard: true,
     whyExplanation: 'Based on political keywords during this window. This measures exposure patterns, not your beliefs.',
     takeaway: (data) => {
+      // FIX P10: Instead of repeating hero's percentage assessment, focus on SOURCE patterns
       if (data?.politicalPercent === undefined) return null;
       const pct = data.politicalPercent;
       
-      // Instead of repeating hero, provide synthesis
       if (pct === 0) {
         return 'No political exposure detected during this window.';
       }
-      if (pct < 10) {
-        return `Light political exposure from a few sources — not a major theme in your feed.`;
+      
+      // Focus on source concentration and pattern, not repeating percentage labels
+      const topCreators = data?.topCreators || [];
+      const platformCount = data?.platformCount || 0;
+      
+      if (topCreators.length <= 2) {
+        return platformCount > 1
+          ? 'Political content came from a small set of voices across multiple platforms.'
+          : 'Political content came from a small set of voices on one platform.';
       }
-      if (pct < 25) {
-        return `Moderate political exposure — present in your feed but not dominating what you saw.`;
+      
+      if (topCreators.length <= 5) {
+        return platformCount > 1
+          ? 'Political content came from several sources, spread across platforms.'
+          : 'Political content came from several sources, mostly on one platform.';
       }
-      return `Heavy political exposure — a recurring presence from concentrated sources throughout your feed.`;
+      
+      return 'Political content came from many different voices and sources.';
     },
     action: null,
   },
@@ -957,7 +968,10 @@ export const dashboardCatalog = [
     collapsedByDefault: true,
     whyExplanation: 'Matched handles across scanned platforms.',
     takeaway: (data) => {
-      if (!Array.isArray(data) || data.length === 0) return 'No accounts appeared across multiple platforms in your scans.';
+      // FIX C8: Make empty state educational, not a dead end
+      if (!Array.isArray(data) || data.length === 0) {
+        return 'No accounts appeared on multiple platforms during this window. If they did, we'd show voices that reached you in different spaces.';
+      }
       if (data.length === 1) return 'One account appeared across multiple platforms — a recurring voice in different spaces.';
       if (data.length <= 3) return `A small set of accounts (${data.length}) appeared across platforms — recurring voices with broad reach.`;
       return `${data.length} accounts appeared across multiple platforms — a recurring set of voices shaping what you saw in different spaces.`;
@@ -1150,18 +1164,19 @@ export const dashboardCatalog = [
     tab: 'algorithm',
     id: 'algo-future',
     title: 'If current trends continued (speculation)',
-    description: 'A purely speculative guess about what might appear more if patterns stayed the same. Not a prediction.',
+    description: 'Extrapolation based on recent patterns — not a prediction or recommendation.',
     outputType: 'text',
     dataFn: 'getFutureRecommendationsData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     collapsedByDefault: true,
     confidenceDisclaimer: true,
-    whyExplanation: 'This is speculation based on recent topic trends. We cannot predict what will actually appear.',
+    whyExplanation: 'Extrapolated from recent topic trends. Cannot predict what will actually surface.',
     takeaway: (data) => {
-      // FIX W6: Soften speculative language to avoid feeling like identity forecasting
+      // FIX W6 & W7: Clear structure without repetitive disclaimers
       if (!data?.predictions?.length) return null;
-      return `Speculative only: If trends stayed the same, ${data.predictions.join(', ')} might surface more. This is not a forecast.`;
+      const topics = data.predictions.join(', ');
+      return `If patterns stayed constant: ${topics} might appear more often. (Pure speculation — not a forecast of what will happen.)`;
     },
     action: null,
   },
