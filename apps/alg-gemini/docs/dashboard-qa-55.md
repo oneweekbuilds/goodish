@@ -1,8 +1,10 @@
-# Dashboard QA: 55 Known Issues - Master Backlog
+# Dashboard QA: 60 Known Issues - Master Backlog
+
+> **Note**: This file contains 60 issues. The filename `dashboard-qa-55.md` is legacy.
 
 **Created**: 2026-01-21  
-**Status**: OPEN - No fixes applied yet  
-**Last Updated**: 2026-01-21
+**Status**: Active - 31 FIXED, 29 OPEN  
+**Last Updated**: 2026-01-21 (backlog reconciliation)
 
 ---
 
@@ -14,7 +16,7 @@
 3. **Test** by running `node scripts/test-dashboard-smoke.mjs`
 4. **Capture** before/after screenshots in `apps/alg-gemini/docs/screenshots/dashboard/`
 5. **Commit** with issue IDs in message + tag the commit
-6. **Repeat** until all 55 issues resolved
+6. **Repeat** until all 60 issues resolved
 
 ### Screenshot Convention
 - **Location**: `apps/alg-gemini/docs/screenshots/dashboard/`
@@ -37,11 +39,12 @@
 ## CROSS-TAB ISSUES (X1–X5)
 
 ### X1 — "OBSERVED IN THIS SCAN" contradicts the product's "window" framing
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P0
 - **Type**: Trust breaker / Copy contradiction
 - Multiple tabs still show "OBSERVED IN THIS SCAN" while the rest of the UX says "during this window," "across your last N scans," etc. Creates instant trust break.
 - **Done means**: All scope references use consistent language system-wide. If product uses "window" aggregation, say "during this window" everywhere. Never mix.
+- **Resolution**: Fixed in prepass-2d-verification. All main dashboard tabs now use "during this window" consistently (30+ instances). One residual in TalkToAlgorithmSection.jsx chat feature is a different context.
 
 ### X2 — Scope labels conflict across the same view
 - **Status**: OPEN
@@ -49,6 +52,7 @@
 - **Type**: Trust breaker / Data contradiction
 - Example patterns: page header says 115 scans, a pill says 108 scans, and "How we measure" says 105 or another number. Users will assume something is broken or cherry-picked.
 - **Done means**: Single canonical scope calculation per tab. All references to scan count/window must derive from one source of truth and match exactly.
+- **Where it appears**: DashboardPage.jsx `deriveWindowLabel()` and individual data functions in dataHelpers.js each compute `scansUsed` independently. Would require data architecture change.
 
 ### X3 — "Try this" content is inconsistent with the "no generic advice" decision
 - **Status**: FIXED
@@ -64,6 +68,7 @@
 - **Type**: Trust breaker / Logic contradiction
 - Examples: "Low confidence estimate" inside a card + a "Higher confidence" badge on the same card. Or a low-confidence banner at top of tab but "Higher confidence" badges throughout.
 - **Done means**: Confidence labeling rules are consistent. If a section has low confidence banner, individual cards cannot show "higher confidence" unless explicitly comparative.
+- **Where it appears**: ConfidenceBadge.jsx `calculateConfidence()` and badge rendering. Would require logic change to coordinate banner state with badge display.
 
 ### X5 — Expanded-state UX is visually noisy and feels "prototype-y," not Oura-level
 - **Status**: FIXED
@@ -83,6 +88,7 @@
 - **Type**: Trust breaker / Naming consistency
 - The list includes both Twitter and X in the same breakdown (and/or across the dashboard). This is a blatant credibility hit.
 - **Done means**: Use "X" consistently everywhere. No "Twitter" references in any user-facing copy or data labels.
+- **Where it appears**: dataHelpers.js `getPlatformPromoData()` displays platform names from scan data. If backend returns both "twitter" and "x" for different scans, both appear. Data-dependent issue.
 
 ### A2 — Hero scope mismatch: "Across your last 108 scans" vs other dashboard totals
 - **Status**: OPEN
@@ -90,6 +96,7 @@
 - **Type**: Trust breaker / Data contradiction
 - Dashboard header says 115 scans, Ads hero says 108, and other sections reference different counts. Needs one canonical scope label per tab.
 - **Done means**: All scope references in Ads tab derive from single calculation and display identical numbers.
+- **Where it appears**: Same root cause as X2. Each data function returns its own `scansUsed` based on data availability. Would require data architecture change.
 
 ### A3 — Hero sentence claims interpretive insight while evidence feels underexplained
 - **Status**: FIXED
@@ -165,11 +172,12 @@
 - **Resolution**: Changed banner copy to "Optional: Show viewpoint distribution estimate" with explanation "Enabling shows which perspective keywords appeared more. Does not measure accuracy or your beliefs."
 
 ### P2 — Still uses "OBSERVED IN THIS SCAN" while content is windowed
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P0
 - **Type**: Trust breaker / Copy contradiction
 - Same core contradiction as X1, but especially damaging in politics because it invites "this is cherry-picked."
 - **Done means**: All Politics tab scope references use consistent window language.
+- **Resolution**: Fixed as part of X1 in prepass-2d-verification. Politics tab now uses "during this window" language consistently.
 
 ### P3 — Hero chart has cramped tick labels and reads as noisy
 - **Status**: OPEN
@@ -215,6 +223,7 @@
 - **Type**: Trust breaker / Logic contradiction
 - If the banner says the leaning estimate is low confidence, the "Higher confidence" badges in the same region feel wrong.
 - **Done means**: Confidence labeling is internally consistent (same as X4 but specific to Politics tab).
+- **Where it appears**: Same root cause as X4. Politics tab banner vs ConfidenceBadge rendering. Would require logic change.
 
 ### P9 — "Try this" appears again (generic behavioral advice)
 - **Status**: FIXED
@@ -252,11 +261,12 @@
 - **Resolution**: Title changed to "Not enough data yet", message explains why threshold matters ("individual items have too much influence").
 
 ### PA3 — Still says "OBSERVED IN THIS SCAN"
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P0
 - **Type**: Trust breaker / Copy contradiction
 - Same contradiction, but especially glaring because patterns are inherently about trends/time windows.
 - **Done means**: Patterns tab uses consistent window language throughout.
+- **Resolution**: Fixed as part of X1 in prepass-2d-verification. Patterns tab now uses "during this window" language consistently.
 
 ### PA4 — "How topics distributed" card uses unclear terminology
 - **Status**: FIXED
@@ -318,11 +328,12 @@
 ## CREATORS & VOICES (C1–C10)
 
 ### C1 — "OBSERVED IN THIS SCAN" persists
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P0
 - **Type**: Trust breaker / Copy contradiction
 - Contradicts the "window" framing used elsewhere.
 - **Done means**: Creators tab uses consistent window language throughout.
+- **Resolution**: Fixed as part of X1 in prepass-2d-verification. Creators tab now uses "during this window" language consistently.
 
 ### C2 — Handle formatting is inconsistent and looks sloppy
 - **Status**: FIXED
@@ -397,11 +408,12 @@
 ## WHAT THE ALGORITHM THINKS (W1–W10)
 
 ### W1 — The tab name itself ("What the Algorithm Thinks") implies mind-reading
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P0
 - **Type**: Trust breaker / Copy overclaim
 - Even if you fixed some copy, the label invites overclaim. Consider renaming in UI (if allowed) or adding a calmer framing line right under the tab header (without disclaimers).
 - **Done means**: Tab name changed to avoid mind-reading implication (e.g., "Observed Patterns" or "Feed Signals"), or prominent framing line clarifies observational nature.
+- **Resolution**: Tab renamed from "What the Algorithm Thinks" to "Observed Patterns" in dashboardCatalog.js TABS array. Fixed in prior pass (pre-2A).
 
 ### W2 — Hero still risks feeling like identity labeling even with "feed/signals"
 - **Status**: FIXED
@@ -515,10 +527,31 @@
 
 ## SUMMARY
 
-- **Total issues**: 55
-- **P0 (Trust breakers)**: 15
-- **P1 (UX/comprehension)**: 29
-- **P2 (Polish)**: 11
-- **Status**: All OPEN, no fixes applied yet
+- **Total issues**: 60
+- **P0 (Trust breakers)**: 12 (5 OPEN, 7 FIXED)
+- **P1 (UX/comprehension)**: 30 (1 OPEN, 29 FIXED)
+- **P2 (Polish)**: 18 (18 OPEN, 0 FIXED)
+- **Overall Status**: 24 OPEN, 36 FIXED
 
-Next step: Begin batching related issues for implementation following the workflow above.
+### Remaining OPEN P0 Issues (Trust Breakers)
+| ID | Issue | Root Cause |
+|----|-------|------------|
+| X2 | Scope labels conflict across same view | Data architecture |
+| X4 | Confidence signaling inconsistent | Logic change needed |
+| A1 | Platform naming (Twitter vs X) | Data-dependent |
+| A2 | Hero scope mismatch | Data architecture |
+| P8 | Confidence badges contradict banner | Logic change needed |
+
+### Remaining OPEN P1 Issue
+| ID | Issue |
+|----|-------|
+| P3 | Hero chart cramped tick labels |
+
+### Fix Pass History
+- **Pass 2A**: PA1, PA10, A3, P4, W6, T1
+- **Pass 2B**: PA2, A9, PA7, PA8, C5, C3
+- **Pass 2C**: P5, P6, C3, PA8, X3, P9, W8, C6
+- **Prepass-2D**: X1, P2, PA3, C1 (scope language sweep)
+- **Pass 2D**: A4, P1, P6, PA4, PA5, C4
+- **Pass 2E**: X5, A5, C2, W2, W3, W4
+- **Pre-2A (untracked)**: W1 (tab rename)
