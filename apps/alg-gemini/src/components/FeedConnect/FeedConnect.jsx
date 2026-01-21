@@ -52,7 +52,7 @@ const FeedConnect = () => {
                     />
                     <SocialButton
                         icon={Twitter}
-                        label="X / Twitter"
+                        label="X"
                         colorClass="text-black"
                         glowClass="shadow-gray-500/50 bg-gray-400/20"
                     />

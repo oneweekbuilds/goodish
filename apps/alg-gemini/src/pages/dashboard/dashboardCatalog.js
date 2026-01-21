@@ -37,7 +37,6 @@
 
 import {
   FALLBACK_MIX_TOPICS_HEADLINE,
-  isHeadlineExcludedLabel,
   pickHeadlineSafeLabels,
 } from '../../lib/dashboard/headlineSafety';
 
@@ -49,12 +48,13 @@ export const EMPTY_STATE_TYPES = {
 };
 
 // Tab-level trust sentences - grounded in observation, not identity
+// FIX X2, P1, C1: Use consistent observational language without implying single vs multiple scans
 export const TAB_TRUST_SENTENCES = {
-  ads: "Promotional content observed during this window — not what you buy or want.",
-  politics: "Political keywords observed during this window — measures exposure, not your beliefs.",
-  patterns: "Topics observed during this window — what surfaced, not what you seek.",
-  creators: "Accounts observed during this window — what appeared, not who you are.",
-  algorithm: "Patterns observed during this window — system interpretation, not your identity.",
+  ads: "Promotional content observed here — not what you buy or want.",
+  politics: "Political keywords observed here — measures exposure, not your beliefs.",
+  patterns: "Topics observed here — what surfaced, not what you seek.",
+  creators: "Accounts observed here — what appeared, not who you are.",
+  algorithm: "Patterns observed here — system interpretation, not your identity.",
 };
 
 export const TABS = [
@@ -62,7 +62,7 @@ export const TABS = [
   { id: 'politics', label: 'Politics & Worldview' },
   { id: 'patterns', label: 'Patterns in Your Feed' },
   { id: 'creators', label: 'Creators & Voices' },
-  { id: 'algorithm', label: 'What the Algorithm Thinks' },
+  { id: 'algorithm', label: 'Observed Patterns' },
   { id: 'talk', label: 'Talk to Your Algorithm' },
 ];
 
@@ -80,7 +80,7 @@ export const dashboardCatalog = [
     tab: 'ads',
     id: 'ads-percentage',
     title: 'Where your feed is steering you to spend',
-    description: 'Looks at labeled promotions across this window to see how hard the feed is selling to you.',
+    description: 'Looks at labeled promotions to see how hard the feed is selling to you.',
     outputType: 'number_line',
     dataFn: 'getAdPercentageData',
     emptyStateType: 'needs_more_scans',
@@ -97,8 +97,8 @@ export const dashboardCatalog = [
 
       if (pct === 0) {
         return smallSample
-          ? 'The feed wasn\'t selling during this small window.'
-          : 'The feed wasn\'t selling during this window.';
+          ? 'The feed wasn\'t selling in this sample.'
+          : 'No selling pressure detected here.';
       }
 
       if (pct < 8) {
@@ -126,7 +126,7 @@ export const dashboardCatalog = [
     dataFn: 'getAdConcentrationData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
-    whyExplanation: 'Counted unique advertisers in labeled ads during this window.',
+    whyExplanation: 'Counted unique advertisers in labeled ads from your scans.',
     // PHASE 9: Qualitative labels only
     takeaway: (data) => {
       const label = data?.qualitativeLabel;
@@ -148,12 +148,12 @@ export const dashboardCatalog = [
     tab: 'ads',
     id: 'ads-by-platform',
     title: 'Where the selling pressure sits',
-    description: 'Which platform has the highest ad rate in this window.',
+    description: 'Which platform has the highest ad rate in your scans.',
     outputType: 'bar',
     dataFn: 'getPlatformPromoData',
     emptyStateType: 'needs_broader_behavior',
     sortOrder: 'supporting',
-    whyExplanation: 'Counted labeled ads per platform during this window.',
+    whyExplanation: 'Counted labeled ads per platform in your scans.',
     takeaway: (data) => {
       if (!Array.isArray(data) || data.length === 0) return null;
       const sorted = [...data].sort((a, b) => (b?.value || 0) - (a?.value || 0));
@@ -184,17 +184,17 @@ export const dashboardCatalog = [
   {
     tab: 'ads',
     id: 'ads-likely-promo',
-    title: 'Possibly Promotional (Unlabeled, Recent Scans)',
-    description: 'Content that matched promotional patterns but lacked ad labels in this window.',
+    title: 'Possibly Promotional (Unlabeled)',
+    description: 'Content that matched promotional patterns but lacked ad labels in your scans.',
     outputType: 'number',
     dataFn: 'getLikelyPromoData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     collapsedByDefault: true,
     confidenceDisclaimer: true,
-    whyExplanation: 'Detected via patterns like discount codes or affiliate links in this window. This is a rough estimate with significant uncertainty.',
+    whyExplanation: 'Detected via patterns like discount codes or affiliate links. This is a rough estimate with significant uncertainty.',
     takeaway: (data) => data?.possibleInfluencePercent !== undefined
-      ? `During this window, approximately ${data.possibleInfluencePercent}% of content matched promotional patterns but lacked ad labels. (Low confidence estimate.)`
+      ? `Approximately ${data.possibleInfluencePercent}% of content matched promotional patterns but lacked ad labels. (Low confidence estimate.)`
       : null,
     action: null,
   },
@@ -289,17 +289,17 @@ export const dashboardCatalog = [
   {
     tab: 'ads',
     id: 'ads-advertiser-insights',
-    title: 'Recurring Ad Categories (Recent Scans)',
-    description: 'Product categories that appeared multiple times in this window.',
+    title: 'Recurring Ad Categories',
+    description: 'Product categories that appeared multiple times in your scans.',
     outputType: 'text',
     dataFn: 'getAdvertiserInsightsData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'summary',
     confidenceDisclaimer: true,
     isSummaryCard: true,
-    whyExplanation: 'Based on product keywords in ads during this window. We cannot know why these were shown to you.',
+    whyExplanation: 'Based on product keywords in ads from your scans. We cannot know why these were shown to you.',
     takeaway: (data) => data?.interests?.length > 0
-      ? `During this window, ${data.interests[0]} appeared most frequently in ads${data.interests.length > 1 ? `, followed by ${data.interests.slice(1).join(' and ')}` : ''}.`
+      ? `${data.interests[0]} appeared most frequently in ads${data.interests.length > 1 ? `, followed by ${data.interests.slice(1).join(' and ')}` : ''}.`
       : null,
     action: null,
   },
@@ -318,7 +318,7 @@ export const dashboardCatalog = [
     tab: 'politics',
     id: 'politics-share',
     title: 'How much political exposure you got',
-    description: 'Whether political keywords appeared as isolated touches or formed a sustained presence in this window.',
+    description: 'Whether political keywords appeared as isolated touches or formed a sustained presence.',
     outputType: 'number_line',
     dataFn: 'getPoliticalShareData',
     emptyStateType: 'needs_more_scans',
@@ -335,8 +335,8 @@ export const dashboardCatalog = [
 
       if (pct === 0) {
         return smallSample
-          ? 'No political keywords surfaced during this small window.'
-          : 'Political exposure was absent during this window — your feed had no detectable political keywords.';
+          ? 'No political keywords surfaced in this sample.'
+          : 'Political exposure was absent — your feed had no detectable political keywords.';
       }
 
       if (pct < 5) {
@@ -370,7 +370,7 @@ export const dashboardCatalog = [
     confidenceDisclaimer: true,
     whyExplanation: 'Counts keywords associated with different political perspectives. This is a rough distributional signal, not a measure of truth or persuasion.',
     takeaway: (data) => {
-      if (!data?.message) return 'Keyword distribution skewed during this window (low confidence).';
+      if (!data?.message) return 'Keyword distribution skewed in your scans (low confidence).';
       return `${data.message} Measures exposure asymmetry, not content accuracy or your beliefs.`;
     },
     action: null,
@@ -385,7 +385,7 @@ export const dashboardCatalog = [
     dataFn: 'getPoliticalCreatorsData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
-    whyExplanation: 'Counted political keyword matches per account during this window.',
+    whyExplanation: 'Counted political keyword matches per account in your scans.',
     takeaway: (data) => {
       if (!Array.isArray(data) || data.length === 0) return null;
       const [top] = data;
@@ -410,7 +410,7 @@ export const dashboardCatalog = [
     emptyStateType: 'needs_broader_behavior',
     sortOrder: 'supporting',
     collapsedByDefault: true,
-    whyExplanation: 'Compared political keyword rates on each platform during this window.',
+    whyExplanation: 'Compared political keyword rates on each platform in your scans.',
     takeaway: (data) => {
       if (!Array.isArray(data) || data.length === 0) return null;
       const sorted = [...data].sort((a, b) => (b?.value || 0) - (a?.value || 0));
@@ -460,7 +460,7 @@ export const dashboardCatalog = [
     tab: 'politics',
     id: 'politics-blind-spots',
     title: 'Absent keyword categories (low confidence)',
-    description: 'Keyword categories that did not appear during this window.',
+    description: 'Keyword categories that did not appear in your scans.',
     outputType: 'list',
     dataFn: 'getPoliticalBlindSpotsData',
     emptyStateType: 'needs_more_scans',
@@ -468,10 +468,10 @@ export const dashboardCatalog = [
     requiresOptIn: true,
     confidenceDisclaimer: true,
     collapsedByDefault: true,
-    whyExplanation: 'Detected by absence of certain keywords during this window. Very rough — absence here does not prove absence elsewhere in your feed.',
+    whyExplanation: 'Detected by absence of certain keywords in your scans. Very rough — absence here does not prove absence elsewhere in your feed.',
     takeaway: (data) => {
-      if (!data?.message) return 'Some keyword categories were absent during this window.';
-      return `${data.message} (Window-specific only.)`;
+      if (!data?.message) return 'Some keyword categories were absent in your scans.';
+      return `${data.message} (Scan-specific only.)`;
     },
     action: null,
   },
@@ -564,7 +564,7 @@ export const dashboardCatalog = [
     tab: 'patterns',
     id: 'patterns-topic-variety',
     title: 'How topic variety shifted',
-    description: 'Whether your feed narrowed to repeat themes or broadened across different topics during this window.',
+    description: 'Whether your feed narrowed to repeat themes or broadened across different topics.',
     outputType: 'number_bar',
     dataFn: 'getTopicVarietyData',
     emptyStateType: 'needs_more_scans',
@@ -646,7 +646,7 @@ export const dashboardCatalog = [
     tab: 'patterns',
     id: 'patterns-repeated-themes',
     title: 'Which themes recurred most',
-    description: 'Topics that appeared consistently throughout this window, forming the core of what you saw.',
+    description: 'Topics that appeared consistently, forming the core of what you saw.',
     outputType: 'number',
     dataFn: 'getRepeatedThemesData',
     emptyStateType: 'needs_more_scans',
@@ -718,7 +718,7 @@ export const dashboardCatalog = [
     tab: 'patterns',
     id: 'manipulative-patterns',
     title: 'How often attention tactics appeared',
-    description: 'Posts that used urgency language, engagement hooks, or other patterns designed to capture attention.',
+    description: 'Posts that used urgency language, engagement hooks, or other attention-grabbing patterns.',
     outputType: 'number_line',
     dataFn: 'getManipulativePatternsData',
     emptyStateType: 'needs_more_scans',
@@ -730,18 +730,18 @@ export const dashboardCatalog = [
       const total = data.totalPosts || 0;
 
       if (pct === 0) {
-        return 'Attention-grabbing patterns were absent during this window.';
+        return 'Attention-grabbing patterns were absent in your scans.';
       }
       if (pct < 10) {
-        return 'Attention-grabbing patterns appeared lightly during this window — present but not pervasive.';
+        return 'Attention-grabbing patterns appeared lightly — present but not pervasive.';
       }
       if (pct < 25) {
-        return 'Attention-grabbing patterns surfaced regularly during this window — a noticeable presence.';
+        return 'Attention-grabbing patterns surfaced regularly — a noticeable presence.';
       }
       if (total < 20) {
-        return 'Attention-grabbing patterns appeared frequently during this window (limited sample).';
+        return 'Attention-grabbing patterns appeared frequently (limited sample).';
       }
-      return 'Attention-grabbing patterns recurred heavily during this window — a consistent thread throughout.';
+      return 'Attention-grabbing patterns recurred heavily — a consistent thread throughout.';
     },
     action: () => 'You could try reducing engagement with content that uses urgency language or engagement hooks.',
   },
@@ -838,7 +838,7 @@ export const dashboardCatalog = [
     tab: 'creators',
     id: 'creators-top',
     title: 'Where influence concentrated',
-    description: 'Whether many voices shaped what you saw, or a small set of accounts dominated your feed during this window.',
+    description: 'Whether many voices shaped what you saw, or a small set of accounts dominated your feed.',
     outputType: 'table',
     dataFn: 'getTopCreatorsData',
     emptyStateType: 'needs_more_scans',
@@ -1045,7 +1045,7 @@ export const dashboardCatalog = [
 
   // ==========================================
   // TAB 5: OBSERVED PATTERNS
-  // Core question: "What patterns appeared in this scan?"
+  // Core question: "What patterns appeared in my scans?"
   // NOTE: We CANNOT know what the algorithm "thinks" - only what appeared
   // Primary (1): Topics observed - the single clearest answer
   // Secondary (2): Topic breadth, Recurring themes
@@ -1057,16 +1057,16 @@ export const dashboardCatalog = [
   {
     tab: 'algorithm',
     id: 'algo-topics-liked',
-    title: 'How the system is reading your signals',
-    description: 'Based on what surfaced repeatedly, the algorithm appears to be interpreting your interests in specific ways.',
+    title: 'Topics that appeared most',
+    description: 'Based on what surfaced repeatedly in your scans.',
     outputType: 'list',
     dataFn: 'getAlgoTopicsLikedData',
     emptyStateType: 'needs_more_scans',
     hero: true,
     isPrimary: true,
     sortOrder: 'primary',
-    whyExplanation: 'Counted topic occurrences in this scan. Does not indicate what the platform "thinks" about you.',
-    counterfactual: 'This reflects what appeared, not who you are. The system interprets signals, but those signals may not match your actual interests.',
+    whyExplanation: 'Counted topic occurrences in your scans. Does not indicate what the platform "thinks" about you.',
+    counterfactual: 'This reflects what appeared in your scans, not who you are. These are observations, not predictions.',
     takeaway: (data) => {
       const { labels, hadExcluded } = pickHeadlineSafeLabels(data, {
         getLabel: (t) => t?.topic,
@@ -1075,14 +1075,14 @@ export const dashboardCatalog = [
       const [top, second] = labels;
 
       if (!top) {
-        return hadExcluded ? FALLBACK_MIX_TOPICS_HEADLINE : 'The system is reading multiple themes in your signals.';
+        return hadExcluded ? FALLBACK_MIX_TOPICS_HEADLINE : 'Multiple themes appeared in your scans.';
       }
 
       if (second) {
-        return `The system is associating your feed with ${top} and ${second}.`;
+        return `${top} and ${second} appeared most frequently.`;
       }
 
-      return `The system is associating your feed with ${top}.`;
+      return `${top} appeared most frequently.`;
     },
     action: () => 'You could try engaging with different content to see if topics shift.',
   },
@@ -1091,20 +1091,20 @@ export const dashboardCatalog = [
   {
     tab: 'algorithm',
     id: 'algo-profile-breadth',
-    title: 'How compressed the inferred profile is',
-    description: 'Whether the system appears to be categorizing you narrowly around a few themes or reading your signals more broadly.',
+    title: 'Topic range in your scans',
+    description: 'Whether topics concentrated narrowly around a few themes or spread more broadly.',
     outputType: 'status',
     dataFn: 'getProfileBreadthData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     hidden: true,
-    whyExplanation: 'Counted distinct topics in this scan. Does not indicate how the platform categorizes you.',
+    whyExplanation: 'Counted distinct topics in your scans. Does not indicate how the platform categorizes you.',
     takeaway: (data) => {
       if (!data?.breadth) return null;
       const b = data.breadth.toLowerCase();
-      if (b === 'narrow') return "The system appears to have compressed your profile into a narrow set of categories during this window.";
-      if (b === 'broad') return "The system appears to be reading your signals across a wide range of categories during this window.";
-      return "The system appears to be categorizing you moderately during this window — neither highly compressed nor fully open.";
+      if (b === 'narrow') return "Topics concentrated in a narrow set of categories in your scans.";
+      if (b === 'broad') return "Topics spread across a wide range of categories in your scans.";
+      return "Topics showed moderate range in your scans — neither highly concentrated nor fully dispersed.";
     },
     action: null,
   },
@@ -1112,8 +1112,8 @@ export const dashboardCatalog = [
   {
     tab: 'algorithm',
     id: 'algo-confident',
-    title: 'What the system keeps reinforcing',
-    description: 'Themes that recurred across scans, suggesting the algorithm has formed persistent associations.',
+    title: 'Recurring themes across scans',
+    description: 'Themes that appeared consistently across multiple scans.',
     outputType: 'text',
     dataFn: 'getAlgoConfidentData',
     emptyStateType: 'needs_more_scans',
@@ -1135,18 +1135,18 @@ export const dashboardCatalog = [
   {
     tab: 'algorithm',
     id: 'algo-future',
-    title: 'Extrapolated future associations (speculation)',
-    description: 'If current patterns continue, the system might begin associating you with these themes. Pure speculation — not guaranteed.',
+    title: 'Possible future patterns (speculation)',
+    description: 'If current patterns continue, these themes might appear more. Pure speculation — not guaranteed.',
     outputType: 'text',
     dataFn: 'getFutureRecommendationsData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     collapsedByDefault: true,
     confidenceDisclaimer: true,
-    whyExplanation: 'Based on topic trends across scans. This is speculation — we cannot predict what platforms will show.',
+    whyExplanation: 'Based on topic trends across scans. This is speculation — we cannot predict what will appear.',
     takeaway: (data) => {
       if (!data?.predictions?.length) return null;
-      return `Speculation based on current trends: The system might begin associating you with ${data.predictions.join(', ')}. This is extrapolation only.`;
+      return `Speculation based on current trends: ${data.predictions.join(', ')} might appear more frequently. This is extrapolation only.`;
     },
     action: () => 'You could try changing what you engage with to see if content shifts.',
   },
@@ -1227,19 +1227,19 @@ export const dashboardCatalog = [
   {
     tab: 'algorithm',
     id: 'algo-change-advice',
-    title: 'Algorithmic Association Summary',
-    description: 'What the system appears to associate with your profile based on recurring themes.',
+    title: 'Recurring Pattern Summary',
+    description: 'Themes that appeared consistently based on recurring topics.',
     outputType: 'list',
     dataFn: 'getAlgoChangeAdviceData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'summary',
     isSummaryCard: true,
-    whyExplanation: 'Based on observed patterns across scans. This reflects system interpretation, not your actual interests or identity.',
+    whyExplanation: 'Based on observed patterns across scans. This reflects what appeared, not your actual interests or identity.',
     takeaway: (data) => {
       if (data?.experiments?.length > 0) {
-        return 'The system has formed persistent associations based on what keeps surfacing in your feed.';
+        return 'Certain themes appeared persistently across your scans.';
       }
-      return 'The system is interpreting your signals based on recurring exposure patterns.';
+      return 'Recurring themes appeared based on observed patterns.';
     },
     action: null,
   },

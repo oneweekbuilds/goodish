@@ -19,8 +19,8 @@ const PLATFORM_NAMES = {
   tiktok: 'TikTok',
   instagram: 'Instagram',
   youtube: 'YouTube',
-  x: 'X (Twitter)',
-  twitter: 'X (Twitter)',
+  x: 'X',
+  twitter: 'X',
   facebook: 'Facebook',
 };
 

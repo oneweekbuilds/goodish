@@ -13,51 +13,9 @@ import {
 import { QUALITY_FLAGS } from '../../lib/dashboard/dataHelpers';
 
 /**
- * FeedbackAffordance - Phase 10: Very minimal, almost invisible
- * Only appears on interaction - doesn't compete for attention
+ * FeedbackAffordance - REMOVED (C10 fix)
+ * Non-functional UI removed to avoid confusion
  */
-const FeedbackAffordance = () => {
-  const [selected, setSelected] = useState(null);
-  const [showOptions, setShowOptions] = useState(false);
-
-  if (selected) {
-    return (
-      <div className="pt-2">
-        <p className="text-[11px] text-slate-400 italic">
-          Thanks for the feedback.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="pt-3">
-      {!showOptions ? (
-        <button
-          onClick={() => setShowOptions(true)}
-          className="text-[11px] text-slate-400 hover:text-slate-500 transition-colors"
-          aria-label="Provide feedback on whether this insight matches your experience"
-        >
-          Does this match your experience?
-        </button>
-      ) : (
-        <div className="flex items-center gap-2" role="group" aria-label="Feedback options">
-          <span className="text-[11px] text-slate-400">Match?</span>
-          {['Yes', 'Somewhat', 'No'].map((option) => (
-            <button
-              key={option}
-              onClick={() => setSelected(option)}
-              className="px-2 py-0.5 text-[11px] rounded bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
-              aria-label={`Select ${option} for feedback`}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
 
 /**
  * WhyExplanation - PHASE 7: Micro-explanation of how insight was inferred
@@ -958,11 +916,6 @@ const ViewCard = ({
                   {data?.disclaimer || 'This insight is based on repeated patterns, not confirmed intent.'}
                 </p>
               </div>
-            )}
-
-            {/* PHASE 7: Non-functional feedback affordance for PRIMARY cards only */}
-            {isPrimary && showChart && (
-              <FeedbackAffordance />
             )}
 
             {/* Data quality footer - shows ACTUAL scan count used for this metric */}

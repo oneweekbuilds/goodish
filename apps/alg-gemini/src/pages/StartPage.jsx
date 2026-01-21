@@ -35,7 +35,7 @@ const PLATFORMS = [
   },
   {
     id: 'x',
-    name: 'X (Twitter)',
+    name: 'X',
     icon: '𝕏',
     description: 'Analyze your timeline',
     color: 'bg-slate-900',

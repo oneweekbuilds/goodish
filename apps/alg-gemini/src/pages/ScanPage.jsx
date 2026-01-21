@@ -7,7 +7,7 @@ const PLATFORMS = [
     { id: 'instagram', name: 'Instagram', icon: '📷', color: 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' },
     { id: 'youtube', name: 'YouTube', icon: '▶️', color: 'bg-red-600 text-white' },
     { id: 'facebook', name: 'Facebook', icon: '👤', color: 'bg-blue-600 text-white' },
-    { id: 'twitter', name: 'Twitter/X', icon: '𝕏', color: 'bg-black text-white' },
+    { id: 'twitter', name: 'X', icon: '𝕏', color: 'bg-black text-white' },
 ];
 
 // Recording instructions per platform

@@ -708,11 +708,6 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
   const hasMoreDetailsContent = supportingOverflow.length > 0 || speculationCards.length > 0;
   const hasSummaryContent = summaryCards.length > 0;
 
-  // Wrapper for chapter containers - NOW on ALL tabs (Part 2: Apply design system)
-  const MaybeChapter = ({ children, variant = 'default' }) => {
-    return <ChapterContainer variant={variant}>{children}</ChapterContainer>;
-  };
-
   const evidenceLabel = scopeLabel || `Based on ${scanCount} scan${scanCount !== 1 ? 's' : ''}`;
   
   // Generate a dynamic preview for More Details based on what's actually inside
@@ -742,7 +737,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
       {/* Only render primary section if hero doesn't exist OR if primary cards are different from hero */}
       {hasPrimaryContent && (
         <section>
-          <MaybeChapter variant="primary">
+          <ChapterContainer variant="primary">
             {/* All tabs now use story-driven headers */}
             <SectionHeader
               label={tabHeaders.keyInsight.label}
@@ -916,14 +911,14 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                 );
               })}
             </div>
-          </MaybeChapter>
+          </ChapterContainer>
         </section>
       )}
 
       {/* OBSERVED SUPPORTING CARDS - calm default, limited to top 4 */}
       {hasObservedSupportingContent && (
         <section>
-          <MaybeChapter variant="default">
+          <ChapterContainer variant="default">
             <SectionHeader
               label={tabHeaders.keyInsight.label}
               title={tabHeaders.details.title}
@@ -972,14 +967,14 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                 );
               })}
             </div>
-          </MaybeChapter>
+          </ChapterContainer>
         </section>
       )}
 
       {/* MORE DETAILS - Context + Speculation behind calm accordion */}
       {hasMoreDetailsContent && (
         <section>
-          <MaybeChapter variant="accent">
+          <ChapterContainer variant="accent">
             <button
               onClick={() => toggleSection('moreDetails')}
               className="w-full flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-left transition-colors hover:border-slate-300"
@@ -1100,14 +1095,14 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                 )}
               </div>
             )}
-          </MaybeChapter>
+          </ChapterContainer>
         </section>
       )}
 
       {/* SUMMARY - Experiments behind calm accordion */}
       {hasSummaryContent && (
         <section className="mt-4">
-          <MaybeChapter variant="default">
+          <ChapterContainer variant="default">
             <button
               onClick={() => toggleSection('tryThis')}
               className="w-full flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-left transition-colors hover:border-slate-300"
@@ -1274,7 +1269,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                 </div>
               </div>
             )}
-          </MaybeChapter>
+          </ChapterContainer>
         </section>
       )}
     </div>
@@ -1366,9 +1361,14 @@ const TabHero = ({
   const platformCount = platforms?.length ?? 0;
 
   const hasHeroData = heroDataResult?.hasData === true;
+  
+  // FIX X4, A6, P10, W6, C9: Check chart quality - don't show hero if data quality is insufficient
+  const heroQualityOk = !heroDataResult?.chartQuality || 
+                         heroDataResult?.chartQuality?.quality === 'OK' ||
+                         heroDataResult?.chartQuality?.quality === 'CHART_QUALITY_OK';
 
   let headline = null;
-  if (hasHeroData && typeof heroView?.takeaway === 'function') {
+  if (hasHeroData && heroQualityOk && typeof heroView?.takeaway === 'function') {
     try {
       headline = heroView.takeaway(heroDataResult?.data);
     } catch (err) {
@@ -1377,9 +1377,10 @@ const TabHero = ({
     }
   }
 
+  // FIX: Only show fallback if we actually have quality-approved data
   if (!headline) {
-    headline = hasHeroData
-      ? 'In this scan, we observed a measurable pattern.'
+    headline = (hasHeroData && heroQualityOk)
+      ? 'We observed a measurable pattern in your scans.'
       : 'Not enough data yet to quantify this from your scans.';
   }
 
@@ -1393,7 +1394,12 @@ const TabHero = ({
       ? `${scopeLabel} • ${platformMeta}`
       : scopeLabel
     : `${scanCount} scan${scanCount !== 1 ? 's' : ''} · ${platformCount} platform${platformCount !== 1 ? 's' : ''}`;
-  const kickerText = scopeLabel || 'Observed in this scan';
+  // FIX X2, A10: Use consistent scope language - if multiple scans or explicit window, say "window"; if single scan, say "scan"
+  const kickerText = scopeLabel 
+    ? scopeLabel 
+    : scanCount > 1 
+      ? `During this window (${scanCount} scans)`
+      : 'Observed in this scan';
 
   return (
     <div className="mb-10">

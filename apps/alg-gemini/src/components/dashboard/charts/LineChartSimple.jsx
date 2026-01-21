@@ -102,19 +102,28 @@ const LineChartSimple = ({ data = [], valueLabel = '', color = '#3B82F6', height
         ))}
       </svg>
 
-      {/* X-axis labels */}
+      {/* X-axis labels - FIX X3, A8, PA10: De-duplicate consecutive identical labels */}
       <div className="flex justify-between px-2 mt-1">
-        {displayData.map((d, i) => (
-          <div key={i} className="text-xs text-slate-400 text-center" style={{ maxWidth: '60px' }}>
-            <div className="truncate">{d.label}</div>
-            <div className="font-medium text-slate-600">
-              {typeof d.value === 'number' && d.value % 1 !== 0
-                ? d.value.toFixed(1)
-                : d.value}
-              {valueLabel}
+        {displayData.map((d, i) => {
+          // Check if this label is the same as previous one
+          const prevLabel = i > 0 ? displayData[i - 1]?.label : null;
+          const isDuplicate = prevLabel === d.label;
+          
+          return (
+            <div key={i} className="text-xs text-slate-400 text-center" style={{ maxWidth: '60px' }}>
+              {/* Only show label if it's not a duplicate, or if it's the first or last */}
+              <div className="truncate">
+                {!isDuplicate || i === 0 || i === displayData.length - 1 ? d.label : '·'}
+              </div>
+              <div className="font-medium text-slate-600">
+                {typeof d.value === 'number' && d.value % 1 !== 0
+                  ? d.value.toFixed(1)
+                  : d.value}
+                {valueLabel}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
