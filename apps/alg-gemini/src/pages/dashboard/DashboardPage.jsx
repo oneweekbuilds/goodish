@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 import { Loader2, RefreshCw, BarChart3, Clock, Globe, Database, Info, ToggleLeft, ToggleRight, ChevronDown, ChevronUp, Compass, RefreshCcw, Lock, Sparkles, ExternalLink, ShieldCheck, MessageSquare, EyeOff } from 'lucide-react';
 import { TABS, getViewsForTab, getVisibleViewCount, EMPTY_STATE_TYPES, TAB_TRUST_SENTENCES } from './dashboardCatalog';
 import ViewCard from '../../components/dashboard/ViewCard';
-import TalkToAlgorithmSection from '../../components/dashboard/TalkToAlgorithmSection';
 import { useDashboardData } from '../../lib/dashboard/useDashboardData';
 import * as dataHelpers from '../../lib/dashboard/dataHelpers';
 import { isHeadlineExcludedLabel } from '../../lib/dashboard/headlineSafety';
+import { submitWaitlistEmail } from '../../lib/waitlist/submitWaitlistEmail';
 
 /**
  * THEME CONSTANTS - Part 1 Color System
@@ -1557,6 +1557,159 @@ const ReadingColumnWrapper = ({ children }) => (
   </div>
 );
 
+const TalkTabPanel = () => {
+  const [email, setEmail] = useState('');
+  const [touched, setTouched] = useState(false);
+  const [status, setStatus] = useState('idle'); // idle | submitting | success
+  const [message, setMessage] = useState(null);
+
+  const emailTrimmed = email.trim();
+  const emailLooksValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed);
+  const emailError = touched && !emailTrimmed
+    ? 'Please enter an email address.'
+    : touched && !emailLooksValid
+      ? 'That email doesn’t look quite right.'
+      : null;
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setTouched(true);
+    setMessage(null);
+
+    if (!emailTrimmed || !emailLooksValid) return;
+
+    setStatus('submitting');
+    const result = await submitWaitlistEmail({ email: emailTrimmed, source: 'talk_tab_waitlist' });
+    if (result?.ok) {
+      setStatus('success');
+      setMessage('Thanks — you’re on the list.');
+      return;
+    }
+
+    setStatus('idle');
+    setMessage(result?.error || 'Something went wrong. Please try again.');
+  };
+
+  return (
+    <div className="max-w-5xl mx-auto">
+      <div
+        className="rounded-2xl overflow-hidden"
+        style={{
+          background: SURFACES.TALK_GREEN.background,
+          border: SURFACES.TALK_GREEN.border,
+          boxShadow: SURFACES.TALK_GREEN.shadow,
+          padding: 'clamp(2rem, 5vw, 3rem)',
+        }}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
+            Talk to Your Algorithm
+          </h2>
+          <span
+            className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
+            style={{
+              background: 'rgba(16, 185, 129, 0.12)',
+              border: '1px solid rgba(16, 185, 129, 0.22)',
+              color: 'rgba(5, 150, 105, 0.95)',
+            }}
+          >
+            Beta feature • coming soon
+          </span>
+        </div>
+
+        <div className="space-y-4" style={{ maxWidth: '720px' }}>
+          <p className="text-slate-700 leading-relaxed">
+            We’re building a calm, evidence-first way to ask questions about your feed using your scan data.
+            Answers will cite what we observed, show uncertainty when it exists, and avoid speculation.
+          </p>
+          <p className="text-slate-700 leading-relaxed">
+            This will be a <span className="font-medium text-slate-800">beta</span>: designed with guardrails, and tuned to earn trust over time.
+          </p>
+        </div>
+
+        <div
+          className="mt-10 rounded-2xl"
+          style={{
+            background: '#FFFFFF',
+            border: '1px solid rgba(167, 243, 208, 0.9)',
+            padding: 'clamp(1.25rem, 3vw, 1.75rem)',
+          }}
+        >
+          <div className="mb-4">
+            <p className="text-sm font-semibold text-slate-800">Join the waitlist</p>
+            <p className="text-sm text-slate-500">
+              No spam. We’ll only email when it’s ready to try.
+            </p>
+          </div>
+
+          <form onSubmit={onSubmit} className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
+            <div className="w-full flex-1">
+              <label className="block text-xs font-medium text-slate-600 mb-1.5" htmlFor="talk-waitlist-email">
+                Email
+              </label>
+              <input
+                id="talk-waitlist-email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={email}
+                disabled={status === 'success'}
+                onChange={(e) => setEmail(e.target.value)}
+                onBlur={() => setTouched(true)}
+                placeholder="you@domain.com"
+                className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-colors"
+                style={{
+                  background: status === 'success' ? '#F8FAFC' : '#FFFFFF',
+                  border: emailError ? '1px solid rgba(244, 63, 94, 0.45)' : '1px solid rgba(148, 163, 184, 0.55)',
+                  boxShadow: emailError ? '0 0 0 3px rgba(244, 63, 94, 0.06)' : '0 0 0 3px rgba(16, 185, 129, 0.06)',
+                }}
+              />
+              <div className="mt-2 min-h-[18px]">
+                {emailError ? (
+                  <p className="text-xs" style={{ color: 'rgba(225, 29, 72, 0.85)' }}>
+                    {emailError}
+                  </p>
+                ) : (
+                  <p className="text-xs text-slate-400">
+                    Use the address you’d like early access sent to.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={status === 'submitting' || status === 'success'}
+              className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold transition-colors w-full sm:w-auto"
+              style={{
+                background: status === 'success' ? 'rgba(16, 185, 129, 0.18)' : '#10B981',
+                color: status === 'success' ? 'rgba(5, 150, 105, 0.95)' : '#FFFFFF',
+                border: status === 'success' ? '1px solid rgba(16, 185, 129, 0.22)' : '1px solid rgba(16, 185, 129, 0.22)',
+                opacity: status === 'submitting' ? 0.9 : 1,
+              }}
+            >
+              {status === 'success' ? 'You’re on the list' : status === 'submitting' ? 'Saving…' : 'Notify me'}
+            </button>
+          </form>
+
+          {message && (
+            <div className="mt-4">
+              <p
+                className="text-sm"
+                style={{
+                  color: status === 'success' ? 'rgba(5, 150, 105, 0.95)' : 'rgba(225, 29, 72, 0.85)',
+                }}
+              >
+                {message}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const DashboardPage = () => {
   const [activeTab, setActiveTab] = useState(TABS[0].id);
   // PHASE 6A: Political leaning toggle state (default OFF)
@@ -1784,108 +1937,87 @@ const DashboardPage = () => {
 
         {/* Tab Content */}
         <div className="mb-8" role="tabpanel" id={`tabpanel-${activeTab}`} aria-labelledby={`tab-${activeTab}`}>
-          {/* PHASE 6A: Political Leaning Toggle (only on politics tab) - shown above hero */}
-          {activeTab === 'politics' && (
-            <div className="mb-6">
-              <PoliticalLeaningToggle
-                enabled={politicalLeaningEnabled}
-                onToggle={() => setPoliticalLeaningEnabled(!politicalLeaningEnabled)}
-              />
-            </div>
-          )}
+          {activeTab === 'talk' ? (
+            <TalkTabPanel />
+          ) : (
+            <>
+              {/* PHASE 6A: Political Leaning Toggle (only on politics tab) - shown above hero */}
+              {activeTab === 'politics' && (
+                <div className="mb-6">
+                  <PoliticalLeaningToggle
+                    enabled={politicalLeaningEnabled}
+                    onToggle={() => setPoliticalLeaningEnabled(!politicalLeaningEnabled)}
+                  />
+                </div>
+              )}
 
-          {/* Feature Moment - Editorial centerpiece for ALL tabs (Part 2: Design System Application) */}
-          <FeatureMomentWrapper>
-            {/* Editorial Hero - Insight first, expandable evidence (Slice 2) */}
-            <TabHero
-              tabId={activeTab}
-              scans={scans}
-              platforms={platforms}
-              heroView={heroView}
-              heroDataResult={heroDataResult}
-              isEvidenceExpanded={isHeroEvidenceExpanded}
-              onToggleEvidence={toggleHeroEvidence}
-            />
-
-            {/* Talk to Your Algorithm - Placeholder/premium invitation on non-Ads tabs */}
-            {activeTab !== 'ads' && (
-              <div className="mt-12">
-                <TalkToAlgorithmSection
-                  feedData={{
-                    scans,
-                    scanDetails,
-                    viewDataResults,
-                  }}
+              {/* Feature Moment - Editorial centerpiece for ALL tabs (Part 2: Design System Application) */}
+              <FeatureMomentWrapper>
+                {/* Editorial Hero - Insight first, expandable evidence (Slice 2) */}
+                <TabHero
                   tabId={activeTab}
+                  scans={scans}
+                  platforms={platforms}
+                  heroView={heroView}
+                  heroDataResult={heroDataResult}
+                  isEvidenceExpanded={isHeroEvidenceExpanded}
+                  onToggleEvidence={toggleHeroEvidence}
                 />
-              </div>
-            )}
-          </FeatureMomentWrapper>
+              </FeatureMomentWrapper>
 
-          {/* Second Visual Anchor - Chapter opener after Talk - NOW for ALL tabs */}
-          <SecondVisualAnchor
-            tabId={activeTab}
-            className={
-              activeTab === 'politics'
-                ? 'mt-1 mb-8'
-                : activeTab === 'ads'
-                  ? 'mt-10'
-                  : ''
-            }
-          />
+              {/* Second Visual Anchor - Chapter opener - NOW for ALL tabs */}
+              <SecondVisualAnchor
+                tabId={activeTab}
+                className={
+                  activeTab === 'politics'
+                    ? 'mt-1 mb-8'
+                    : activeTab === 'ads'
+                      ? 'mt-10'
+                      : ''
+                }
+              />
 
-          {/* Views Grid with enforced section structure - ReadingColumnWrapper for ALL tabs */}
-          <ReadingColumnWrapper>
-            {detailsLoading ? (
-              // Phase 4A: Skeleton loading states
-              <div className="space-y-10">
-                {/* Primary card skeleton */}
-                <section>
-                  <div className="rounded-2xl overflow-hidden" style={{ background: 'white', border: '1px solid rgba(148, 163, 184, 0.8)', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)' }}>
-                    <div className="p-7 md:p-9">
-                      <div className="h-8 bg-slate-200 rounded w-3/4 mb-4 animate-pulse" />
-                      <div className="h-4 bg-slate-200 rounded w-full mb-2 animate-pulse" />
-                      <div className="h-4 bg-slate-200 rounded w-5/6 animate-pulse" />
-                    </div>
-                  </div>
-                </section>
-                {/* Secondary cards skeleton */}
-                <section>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {[1, 2].map((i) => (
-                      <div key={i} className="rounded-xl p-4" style={{ background: 'white', border: '1px solid rgba(226, 232, 240, 0.6)' }}>
-                        <div className="h-5 bg-slate-200 rounded w-2/3 mb-3 animate-pulse" />
-                        <div className="h-4 bg-slate-200 rounded w-full mb-2 animate-pulse" />
-                        <div className="h-4 bg-slate-200 rounded w-4/5 animate-pulse" />
+              {/* Views Grid with enforced section structure - ReadingColumnWrapper for ALL tabs */}
+              <ReadingColumnWrapper>
+                {detailsLoading ? (
+                  // Phase 4A: Skeleton loading states
+                  <div className="space-y-10">
+                    {/* Primary card skeleton */}
+                    <section>
+                      <div className="rounded-2xl overflow-hidden" style={{ background: 'white', border: '1px solid rgba(148, 163, 184, 0.8)', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)' }}>
+                        <div className="p-7 md:p-9">
+                          <div className="h-8 bg-slate-200 rounded w-3/4 mb-4 animate-pulse" />
+                          <div className="h-4 bg-slate-200 rounded w-full mb-2 animate-pulse" />
+                          <div className="h-4 bg-slate-200 rounded w-5/6 animate-pulse" />
+                        </div>
                       </div>
-                    ))}
+                    </section>
+                    {/* Secondary cards skeleton */}
+                    <section>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        {[1, 2].map((i) => (
+                          <div key={i} className="rounded-xl p-4" style={{ background: 'white', border: '1px solid rgba(226, 232, 240, 0.6)' }}>
+                            <div className="h-5 bg-slate-200 rounded w-2/3 mb-3 animate-pulse" />
+                            <div className="h-4 bg-slate-200 rounded w-full mb-2 animate-pulse" />
+                            <div className="h-4 bg-slate-200 rounded w-4/5 animate-pulse" />
+                          </div>
+                        ))}
+                      </div>
+                    </section>
                   </div>
-                </section>
-              </div>
-            ) : (
-              <ViewsGridWithCollapsing
-                views={currentViews}
-                viewDataResults={viewDataResults}
-                scanCount={scans.length}
-                platformCount={platforms.length}
-                tabName={TABS.find((t) => t.id === activeTab)?.label || 'insights'}
-                tabId={activeTab}
-                heroViewId={resolvedHeroViewId}
-              />
-            )}
-          </ReadingColumnWrapper>
-
-          {activeTab === 'ads' && (
-            <div className="mt-10">
-              <TalkToAlgorithmSection
-                feedData={{
-                  scans,
-                  scanDetails,
-                  viewDataResults,
-                }}
-                tabId={activeTab}
-              />
-            </div>
+                ) : (
+                  <ViewsGridWithCollapsing
+                    views={currentViews}
+                    viewDataResults={viewDataResults}
+                    scanCount={scans.length}
+                    platformCount={platforms.length}
+                    tabName={TABS.find((t) => t.id === activeTab)?.label || 'insights'}
+                    tabId={activeTab}
+                    heroViewId={resolvedHeroViewId}
+                  />
+                )}
+              </ReadingColumnWrapper>
+            </>
           )}
         </div>
 

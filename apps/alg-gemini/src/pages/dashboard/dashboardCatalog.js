@@ -63,6 +63,7 @@ export const TABS = [
   { id: 'patterns', label: 'Patterns in Your Feed' },
   { id: 'creators', label: 'Creators & Voices' },
   { id: 'algorithm', label: 'What the Algorithm Thinks' },
+  { id: 'talk', label: 'Talk to Your Algorithm' },
 ];
 
 export const dashboardCatalog = [
