@@ -714,9 +714,22 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
   };
 
   const evidenceLabel = scopeLabel || `Based on ${scanCount} scan${scanCount !== 1 ? 's' : ''}`;
-  const moreDetailsSubtitle = tabId === 'ads'
-    ? 'Ad sources, platforms, and product categories from this scan window.'
-    : 'Optional extra metrics and deeper cuts.';
+  
+  // Generate a dynamic preview for More Details based on what's actually inside
+  let moreDetailsSubtitle = 'Optional extra metrics and deeper cuts.';
+  if (tabId === 'ads' && hasMoreDetailsContent) {
+    const allCards = [...supportingOverflow, ...speculationCards];
+    const titles = allCards.map(v => v.title).slice(0, 2);
+    if (titles.length === 2) {
+      moreDetailsSubtitle = `${titles[0]} and ${titles[1]}.`;
+    } else if (titles.length === 1) {
+      moreDetailsSubtitle = titles[0];
+    } else {
+      moreDetailsSubtitle = 'Additional ad analysis from this window.';
+    }
+  } else if (tabId === 'ads') {
+    moreDetailsSubtitle = 'Additional ad analysis from this window.';
+  }
 
   return (
     <div className="space-y-10">
@@ -1830,18 +1843,40 @@ const DashboardPage = () => {
     return `${startText} – ${endText}`;
   };
 
-  const adsScopeLabel = useMemo(() => {
+  const deriveWindowLabel = (start, end, scansUsed) => {
+    if (start && end) {
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+      if (!Number.isNaN(startDate) && !Number.isNaN(endDate)) {
+        const diffDays = Math.max(0, Math.round((endDate - startDate) / (1000 * 60 * 60 * 24)));
+        if (diffDays >= 5 && diffDays <= 9) {
+          return 'In the past 7 days';
+        }
+        const rangeText = formatDateRange(start, end);
+        if (rangeText) return `Across this window (${rangeText})`;
+      }
+    }
+    if (scansUsed && scansUsed > 0) {
+      return `Across your last ${scansUsed} scan${scansUsed !== 1 ? 's' : ''}`;
+    }
+    return 'In the past 7 days';
+  };
+
+  const adsScanWindow = useMemo(() => {
     if (activeTab !== 'ads') return null;
     const windowStart = heroDataResult?.chartQuality?.windowStart;
     const windowEnd = heroDataResult?.chartQuality?.windowEnd;
-    const scansUsed = heroDataResult?.scansUsed;
-    const rangeText = formatDateRange(windowStart, windowEnd);
-    const scanPhrase = scansUsed ? `${scansUsed} scan${scansUsed !== 1 ? 's' : ''}` : 'recent scans';
-    const prefix = scansUsed ? `Across your last ${scanPhrase}` : 'Across your recent scans';
-    return rangeText ? `${prefix} (${rangeText})` : prefix;
+    const scansUsed = heroDataResult?.scansUsed || heroDataResult?.scansWithData?.length || 0;
+    const humanLabel = deriveWindowLabel(windowStart, windowEnd, scansUsed);
+    return {
+      startDate: windowStart || null,
+      endDate: windowEnd || null,
+      scansUsed,
+      humanLabel,
+    };
   }, [activeTab, heroDataResult]);
 
-  const tabScopeLabel = activeTab === 'ads' ? adsScopeLabel : null;
+  const tabScopeLabel = activeTab === 'ads' ? adsScanWindow?.humanLabel : null;
 
   // Loading state
   if (loading) {

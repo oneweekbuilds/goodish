@@ -144,6 +144,7 @@ const ViewCard = ({
   isInline = false,
   hideTitle = false,
   hideDescription = false,
+  scopeLabel = null,
 }) => {
   const {
     title,
@@ -159,6 +160,7 @@ const ViewCard = ({
     whyExplanation,
     counterfactual,
   } = view;
+  const viewTab = view?.tab;
   const hasData = dataResult?.hasData === true;
   const data = dataResult?.data;
   const missing = dataResult?.missing;
@@ -236,8 +238,21 @@ const ViewCard = ({
 
     // PHASE 6A: Handle possibleInfluencePercent for promotion heuristic
     const value = data.currentPercent ?? data.concentration ?? data.discoveryRate ?? data.top3Percent ?? data.possibleInfluencePercent;
-    const showLine = type === 'number_line' && data.trend && data.trend.length >= 2;
+    let showLine = type === 'number_line' && data.trend && data.trend.length >= 2;
     const isAttentionTactics = data?.flaggedCount !== undefined && data?.totalPosts !== undefined && data?.status !== undefined;
+    let trendNote = null;
+
+    if (showLine) {
+      const labels = new Set(data.trend.map((t) => t.label));
+      const values = new Set(data.trend.map((t) => t.value));
+      const hasMeaningfulTrend = labels.size > 1 && values.size > 1;
+      if (!hasMeaningfulTrend) {
+        showLine = false;
+        trendNote = viewTab === 'ads'
+          ? 'Ad levels were stable across this period.'
+          : 'No meaningful day-to-day variation detected in this window.';
+      }
+    }
 
     return (
       <div className="space-y-4">
@@ -258,6 +273,9 @@ const ViewCard = ({
               valueLabel="%"
             />
           </div>
+        )}
+        {trendNote && (
+          <p className="text-xs text-slate-500 text-center">{trendNote}</p>
         )}
         {/* PHASE 6A: Show top signals for promotion heuristic */}
         {data.topSignals && data.topSignals.length > 0 && (
@@ -350,6 +368,19 @@ const ViewCard = ({
     if (!data) return null;
     const trend = data.trend || data;
     if (!Array.isArray(trend) || trend.length < 2) return null;
+
+    const labels = new Set(trend.map((t) => t.label));
+    const values = new Set(trend.map((t) => t.value));
+    const hasMeaningfulTrend = labels.size > 1 && values.size > 1;
+    if (!hasMeaningfulTrend) {
+      return (
+        <p className="text-xs text-center text-slate-500">
+          {viewTab === 'ads'
+            ? 'Ad levels were stable across this period.'
+            : 'No meaningful day-to-day variation detected in this window.'}
+        </p>
+      );
+    }
 
     // Reverse to show oldest to newest
     const chartData = [...trend].reverse().map(t => ({
@@ -775,18 +806,20 @@ const ViewCard = ({
     ?? data?.totalItems
     ?? dataResult?.totalItems;
   const measurementScopeParts = [];
-  if (actualScansUsed > 1) {
-    measurementScopeParts.push(`Across ${actualScansUsed} scans`);
-  } else if (actualScansUsed === 1) {
-    measurementScopeParts.push('This scan');
+  if (!scopeLabel) {
+    if (actualScansUsed > 1) {
+      measurementScopeParts.push(`Across ${actualScansUsed} scans`);
+    } else if (actualScansUsed === 1) {
+      measurementScopeParts.push('This scan');
+    }
+    if (platformCount > 0) {
+      measurementScopeParts.push(`${platformCount} platform${platformCount !== 1 ? 's' : ''}`);
+    }
+    if (measurementTotalItems) {
+      measurementScopeParts.push(`${measurementTotalItems} posts analyzed`);
+    }
   }
-  if (platformCount > 0) {
-    measurementScopeParts.push(`${platformCount} platform${platformCount !== 1 ? 's' : ''}`);
-  }
-  if (measurementTotalItems) {
-    measurementScopeParts.push(`${measurementTotalItems} posts analyzed`);
-  }
-  const measurementScope = measurementScopeParts.join(' · ') || null;
+  const measurementScope = scopeLabel || measurementScopeParts.join(' · ') || null;
   const measurementWhat = description;
   const measurementHow = whyExplanation || data?.whyExplanation;
   const measurementLimitations = view?.limitations
@@ -939,7 +972,7 @@ const ViewCard = ({
               <DataQualityFooter
                 scanCount={actualScansUsed}
                 platformCount={platformCount}
-                nItems={chartQuality?.n_items}
+                scopeLabel={scopeLabel}
               />
             )}
           </div>

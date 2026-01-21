@@ -145,9 +145,9 @@ const ConfidenceBadge = ({ level, showLabel = true, size = 'sm' }) => {
  * @param {number} platformCount - Number of platforms in the data
  * @param {string} confidenceLevel - Optional override for confidence level
  */
-export const DataQualityFooter = ({ scanCount, platformCount, confidenceLevel }) => {
+export const DataQualityFooter = ({ scanCount, platformCount, confidenceLevel, scopeLabel }) => {
   const level = confidenceLevel || calculateConfidence(scanCount, platformCount);
-  const scanText = getScanCountText(scanCount, platformCount);
+  const scanText = scopeLabel || getScanCountText(scanCount, platformCount);
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 pt-3 mt-3 border-t border-slate-100">
