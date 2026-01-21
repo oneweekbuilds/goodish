@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Dashboard Catalog - Phase 8: UX Simplification and Product Judgment
  *
  * PHASE 8 PRINCIPLES:
@@ -97,18 +97,18 @@ export const dashboardCatalog = [
 
       if (pct === 0) {
         return smallSample
-          ? 'During this small window, the feed wasn’t actively selling to you.'
-          : 'During this window, we saw no visible selling pressure.';
+          ? 'The feed wasn\'t selling during this small window.'
+          : 'The feed wasn\'t selling during this window.';
       }
 
       if (pct < 8) {
         return smallSample
-          ? 'Early signal: light sponsored touches surfaced during this window.'
+          ? 'Early signal: light sponsored touches surfaced.'
           : 'Selling pressure is light — promotions appear but don’t drive the feed.';
       }
 
       if (pct < 18) {
-        return 'Your feed appears to be steering you toward sponsored offers as a steady background.';
+        return 'Your feed is steering you toward sponsored offers as background noise.';
       }
 
       return 'Advertising is a main storyline here — the feed is actively steering you toward paid content.';
@@ -335,7 +335,7 @@ export const dashboardCatalog = [
 
       if (pct === 0) {
         return smallSample
-          ? 'Political exposure was absent during this small window.'
+          ? 'No political keywords surfaced during this small window.'
           : 'Political exposure was absent during this window — your feed had no detectable political keywords.';
       }
 
@@ -589,26 +589,26 @@ export const dashboardCatalog = [
 
       if (data.topicCount <= 3) {
         if (top && second) {
-          return `Topics narrowed during this window — ${top} and ${second} dominated, with little else surfacing.`;
+          return `Your feed narrowed to ${top} and ${second} — almost nothing else surfaced.`;
         } else if (top) {
-          return `Topics narrowed during this window — ${top} dominated, with minimal rotation to other themes.`;
+          return `Your feed narrowed to ${top} — minimal rotation to other topics.`;
         }
-        return `Topics narrowed during this window — content concentrated around a small set of repeated themes.`;
+        return `Your feed narrowed to a few repeated themes.`;
       }
       if (data.topicCount <= 7) {
         if (top && second) {
-          return `Topic mix stayed concentrated during this window — ${top} and ${second} led a moderate rotation.`;
+          return `${top} and ${second} led a moderate rotation — your feed stayed concentrated.`;
         } else if (top) {
-          return `Topic mix stayed concentrated during this window — ${top} led with moderate rotation to other themes.`;
+          return `${top} led with moderate rotation — your feed stayed concentrated.`;
         }
-        return `Topic mix stayed concentrated during this window — content cycled through familiar themes.`;
+        return `Your feed cycled through familiar themes — concentration stayed high.`;
       }
       if (top && second) {
-        return `Topics broadened during this window — ${top} and ${second} appeared among a wide rotating mix.`;
+        return `Your feed broadened — ${top} and ${second} among a wide rotating mix.`;
       } else if (top) {
-        return `Topics broadened during this window — ${top} appeared among a wide rotating mix of themes.`;
+        return `Your feed broadened — ${top} among a wide rotating mix of themes.`;
       }
-      return `Topics broadened during this window — content spread across a wide rotating mix.`;
+      return `Your feed broadened — content spread across many themes.`;
     },
     action: () => 'You could try searching for new topics to see if variety changes.',
   },
@@ -849,31 +849,31 @@ export const dashboardCatalog = [
     whyExplanation: 'Counted how often each account appeared in this scan.',
     counterfactual: 'This may not match who you follow or expect — it is what appeared in this specific scroll session.',
     takeaway: (data) => {
-      if (!Array.isArray(data) || data.length === 0) return 'Influence was distributed across multiple voices during this window.';
+      if (!Array.isArray(data) || data.length === 0) return 'Influence spread across multiple voices.';
 
       const top = data[0]?.creator;
       const topCount = data[0]?.postCount || 0;
       const secondCount = data[1]?.postCount || 0;
       const totalAccounts = data.length;
 
-      if (!top) return 'Influence was distributed across multiple voices during this window.';
+      if (!top) return 'Influence spread across multiple voices.';
 
       // If top account has significantly more posts than second, it's dominating
       if (totalAccounts === 1 || (secondCount > 0 && topCount >= secondCount * 2)) {
-        return `${top} dominated what you saw during this window — a single voice had outsized influence.`;
+        return `${top} dominated your feed — one voice with outsized influence.`;
       }
 
       // If top few accounts are close in count, it's concentrated
       if (totalAccounts <= 3) {
-        return `A tight cluster of familiar accounts shaped most of what you saw during this window.`;
+        return `A few familiar accounts shaped most of your feed.`;
       }
 
       // If many accounts but top still stands out
       if (topCount >= 3) {
-        return `${top} appeared most during this window, but influence spread across ${totalAccounts} different voices.`;
+        return `${top} led, but ${totalAccounts} different voices contributed.`;
       }
 
-      return `Influence distributed across ${totalAccounts} voices during this window — no single account dominated.`;
+      return `Influence spread across ${totalAccounts} voices — no single account dominated.`;
     },
     action: () => 'You could try following new accounts to see if the mix changes.',
   },
@@ -1075,14 +1075,14 @@ export const dashboardCatalog = [
       const [top, second] = labels;
 
       if (!top) {
-        return hadExcluded ? FALLBACK_MIX_TOPICS_HEADLINE : 'Based on what surfaced, the system appears to be reading your signals across multiple themes.';
+        return hadExcluded ? FALLBACK_MIX_TOPICS_HEADLINE : 'The system is reading you across multiple themes.';
       }
 
       if (second) {
-        return `Based on what surfaced repeatedly, the system appears to be associating you primarily with ${top} and ${second}.`;
+        return `The system associates you with ${top} and ${second}.`;
       }
 
-      return `Based on what surfaced repeatedly, the system appears to be associating you primarily with ${top}.`;
+      return `The system associates you with ${top}.`;
     },
     action: () => 'You could try engaging with different content to see if topics shift.',
   },
@@ -1292,5 +1292,7 @@ export const getVisibleViewCount = (tabId) => {
 export const getViewById = (viewId) => {
   return dashboardCatalog.find((view) => view.id === viewId);
 };
+
+
 
 
