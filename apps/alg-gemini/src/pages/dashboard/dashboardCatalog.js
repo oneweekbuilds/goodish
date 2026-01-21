@@ -1081,6 +1081,7 @@ export const dashboardCatalog = [
     whyExplanation: 'Counted topic occurrences in your scans. Does not indicate what the platform "thinks" about you.',
     counterfactual: 'This reflects what appeared in your scans, not who you are. These are observations, not predictions.',
     takeaway: (data) => {
+      // FIX W2: Use "surfaced" language to avoid identity labeling
       const { labels, hadExcluded } = pickHeadlineSafeLabels(data, {
         getLabel: (t) => t?.topic,
         limit: 2,
@@ -1088,14 +1089,14 @@ export const dashboardCatalog = [
       const [top, second] = labels;
 
       if (!top) {
-        return hadExcluded ? FALLBACK_MIX_TOPICS_HEADLINE : 'Multiple themes appeared in your scans.';
+        return hadExcluded ? FALLBACK_MIX_TOPICS_HEADLINE : 'Multiple themes surfaced in your feed.';
       }
 
       if (second) {
-        return `${top} and ${second} appeared most frequently.`;
+        return `${top} and ${second} surfaced most often in your feed.`;
       }
 
-      return `${top} appeared most frequently.`;
+      return `${top} surfaced most often in your feed.`;
     },
     action: null, // FIX X3, W8: Removed generic advice
   },

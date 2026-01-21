@@ -999,12 +999,8 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
               <div className="mt-6 space-y-8">
                 {supportingOverflow.length > 0 && (
                   <div>
-                    <SectionHeader
-                      label={tabHeaders.details.label}
-                      title={tabHeaders.details.title}
-                      subtext={tabHeaders.details.subtext}
-                    />
-                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {/* FIX X5: Reduce header repetition in expanded section */}
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
                       {supportingOverflow.map((view) => {
                         const dataResult = viewDataResults[view.id];
                         const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
@@ -1014,15 +1010,16 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                         return (
                           <div
                             key={view.id}
-                            className="rounded-xl p-4 transition-all duration-200 hover:shadow-sm hover:border-slate-200"
+                            className="rounded-xl p-5 transition-all duration-200 hover:shadow-sm hover:border-slate-200"
                             style={{
                               background: 'white',
                               border: '1px solid rgba(226, 232, 240, 0.6)',
                             }}
                           >
-                            <h4 className="text-sm font-semibold text-slate-600 mb-2.5">{view.title}</h4>
+                            {/* FIX X5: Improved spacing for expanded cards */}
+                            <h4 className="text-sm font-semibold text-slate-600 mb-3">{view.title}</h4>
                             {takeawayText && (
-                              <p className="text-xs font-medium text-slate-600 mb-2.5 leading-relaxed">
+                              <p className="text-xs font-medium text-slate-600 mb-3 leading-relaxed">
                                 {takeawayText}
                               </p>
                             )}

@@ -66,11 +66,12 @@
 - **Done means**: Confidence labeling rules are consistent. If a section has low confidence banner, individual cards cannot show "higher confidence" unless explicitly comparative.
 
 ### X5 — Expanded-state UX is visually noisy and feels "prototype-y," not Oura-level
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Visual hierarchy / Polish
 - When expanding details, spacing, typography density, and repeated boilerplate ("How we measure," scope lines, disclaimers) create a wall of tiny text that looks unconsidered.
 - **Done means**: Expanded state has clear visual hierarchy, comfortable spacing, consolidated explanatory text (not repeated per card), and reads as premium product.
+- **Resolution**: Removed redundant SectionHeader in expanded "More details", increased card padding (p-4 to p-5), increased gap between cards (gap-5 to gap-6), increased spacing between elements (mb-2.5 to mb-3).
 
 ---
 
@@ -107,11 +108,12 @@
 - **Resolution**: Increased spacing (mt-1 to mt-2), improved label separation (mb-0.5), increased value font weight and size (text-[13px] font-semibold), wider max-width (60px to 70px).
 
 ### A5 — 8% displayed as a big number competes with the actual insight
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Visual hierarchy
 - Even after hierarchy tuning, the big "8%" still reads as the headline, not the interpretive sentence. Oura-style would make the sentence the hero and the % a supporting annotation.
 - **Done means**: Visual hierarchy makes interpretive sentence primary, with percentage as supporting detail (smaller, less prominent).
+- **Resolution**: Added `deemphasize` prop to BigNumber component for primary hero cards - reduces size from text-3xl to text-2xl and opacity from 90% to 60%.
 
 ### A6 — "Where the selling comes from" section mixes metaphors and scope language
 - **Status**: FIXED
@@ -323,11 +325,12 @@
 - **Done means**: Creators tab uses consistent window language throughout.
 
 ### C2 — Handle formatting is inconsistent and looks sloppy
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Visual consistency
 - Some are handles, some are display names ("Elon Musk"), capitalization differs, spacing differs. Needs normalization in presentation.
 - **Done means**: Creator names follow consistent format rules (e.g., always @handle, or always display name with handle secondary).
+- **Resolution**: Added `normalizeCreatorName()` helper function in dataHelpers - converts all-lowercase/all-uppercase to title case, preserves intentional mixed case. Applied to all 6 locations where creator displayName is used.
 
 ### C3 — Table columns are unclear ("Posts" and "Share" of what?)
 - **Status**: FIXED
@@ -401,25 +404,28 @@
 - **Done means**: Tab name changed to avoid mind-reading implication (e.g., "Observed Patterns" or "Feed Signals"), or prominent framing line clarifies observational nature.
 
 ### W2 — Hero still risks feeling like identity labeling even with "feed/signals"
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Copy / Trust
 - "The system is associating your feed with Sports and Food" is better, but still feels like "this is who you are." Needs a sharper boundary line that stays calm and non-defensive.
 - **Done means**: Copy clearly distinguishes between "topics that appeared" vs "what you are" without sounding defensive.
+- **Resolution**: Changed algo-topics-liked takeaway from "appeared most frequently" to "surfaced most often in your feed" - emphasizes platform action, not identity.
 
 ### W3 — Topic list presentation feels like raw tags, not insight
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Visual hierarchy / UX
 - The vertical list (Sports, Food, Tech…) lacks grouping, ordering explanation, or "why these" clarity.
 - **Done means**: Topic list has clear organizing principle (frequency, recency, etc.) or context about why these topics matter.
+- **Resolution**: Added rank indicators (#1, #2, etc.) as subtext for top 5 topics in algo-topics-liked view to show ordering principle.
 
 ### W4 — Expanded "How we measure" text is cramped and repetitive
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Visual hierarchy
 - Same wall-of-text issue, but more harmful here because users are sensitive to misclassification.
 - **Done means**: Expanded text is well-spaced and consolidated (not repeated across cards).
+- **Resolution**: Already fixed in PA8/C5 - "How we measure" component spacing improved (text-[13px], p-4, row spacing 2.5). Additional X5 fixes further reduced visual noise in expanded sections.
 
 ### W5 — "What the system is reinforcing" section repeats the hero themes
 - **Status**: OPEN

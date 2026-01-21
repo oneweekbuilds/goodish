@@ -156,6 +156,32 @@ function getFeedItems(scanDetail) {
 }
 
 // =====================================================
+// HELPER: Normalize creator names for consistent presentation
+// FIX C2: Handle formatting normalization
+// =====================================================
+
+/**
+ * Normalize creator display name for consistent formatting.
+ * Ensures consistent capitalization and format across dashboard.
+ */
+function normalizeCreatorName(displayName) {
+  if (!displayName || typeof displayName !== 'string') return 'Unknown';
+  
+  const trimmed = displayName.trim();
+  
+  // If it's all lowercase or all uppercase, use title case for readability
+  if (trimmed === trimmed.toLowerCase() || trimmed === trimmed.toUpperCase()) {
+    return trimmed
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  }
+  
+  // Otherwise preserve original mixed case (likely intentional branding)
+  return trimmed;
+}
+
+// =====================================================
 // TAB 1: ADS & INFLUENCE
 // Phase 5: All views now use aggregateAds for consistency
 // =====================================================
@@ -368,7 +394,7 @@ export function getPromoCreatorsData(scans, scanDetails) {
   const promoCreators = Object.entries(creatorsData.creators)
     .filter(([_, c]) => c.ads > 0)
     .map(([id, c]) => ({
-      creator: c.displayName,
+      creator: normalizeCreatorName(c.displayName), // FIX C2
       promoPosts: c.ads,
       promoPercent: `${Math.round((c.ads / c.totalPosts) * 100)}%`,
     }))
@@ -784,7 +810,7 @@ export function getPoliticalCreatorsData(scans, scanDetails) {
       
       // FIX P5: Clarify what the percentage means
       return {
-        creator: stats.displayName,
+        creator: normalizeCreatorName(stats.displayName), // FIX C2
         'Political posts': stats.political,
         '% of their posts': politicalPercent,
       };
@@ -1407,7 +1433,7 @@ export function getTopCreatorsData(scans, scanDetails) {
   // FIX C3: Use clearer column labels
   const rows = Object.entries(creatorsData.creators)
     .map(([_, c]) => ({
-      creator: c.displayName,
+      creator: normalizeCreatorName(c.displayName), // FIX C2
       'Posts in window': c.totalPosts,
       '% of your feed': `${Math.round((c.totalPosts / creatorsData.totalPostsWithCreatorData) * 100)}%`,
     }))
@@ -1489,7 +1515,7 @@ export function getCreatorConcentrationData(scans, scanDetails) {
   // Top creators list (secondary evidence)
   const topCreators = sortedCreators.slice(0, 10).map((c, idx) => ({
     rank: idx + 1,
-    creator: c.displayName,
+    creator: normalizeCreatorName(c.displayName), // FIX C2
     posts: c.totalPosts,
     share: Math.round((c.totalPosts / totalPosts) * 100),
   }));
@@ -1610,7 +1636,7 @@ export function getCreatorsByToneData(scans, scanDetails) {
 
   // Build table data
   const rows = creatorTones.topCreatorsByTone.map(c => ({
-    creator: c.displayName,
+    creator: normalizeCreatorName(c.displayName), // FIX C2
     dominantTone: c.dominantTone,
     negativePercent: `${c.negativePercent}%`,
     positivePercent: `${c.positivePercent}%`,
@@ -1646,7 +1672,7 @@ export function getCrossplatformCreatorData(scans, scanDetails) {
   const overlapping = creatorsData.crossPlatformCreators
     .slice(0, 10)
     .map(c => ({
-      creator: c.displayName,
+      creator: normalizeCreatorName(c.displayName), // FIX C2
       platforms: c.platforms.join(', '),
     }));
 

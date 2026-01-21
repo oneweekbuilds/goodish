@@ -220,6 +220,7 @@ const ViewCard = ({
             value={`${value}%`}
             color={isAttentionTactics ? 'text-slate-700' : 'text-text-main'}
             className={isAttentionTactics ? 'tracking-tight' : ''}
+            deemphasize={isPrimary}
           />
         )}
         {isAttentionTactics && (
@@ -399,10 +400,11 @@ const ViewCard = ({
     let note = null;
 
     if (Array.isArray(data)) {
-      items = data.map(d => ({
+      items = data.map((d, index) => ({
         text: d.topic || d.label || d,
         isUnclassified: d.isUnclassified || false,
-        subtext: d.share !== undefined ? `${d.share}%` : null,
+        // FIX W3: Add share percentage or rank context for topics
+        subtext: d.share !== undefined ? `${d.share}% of feed` : (viewId === 'algo-topics-liked' && index < 5 ? `#${index + 1}` : null),
       }));
     } else if (data.tips) {
       items = data.tips.map(t => ({ text: t, isUnclassified: false }));
