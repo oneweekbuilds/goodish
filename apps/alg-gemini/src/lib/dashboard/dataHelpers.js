@@ -1162,11 +1162,12 @@ export function getEmotionalWeightData(scans, scanDetails) {
     );
   }
 
-  // FIX PA6: Softened colors to be less judgmental and more Oura-aligned
+  // Return semantic categories without presentation colors
+  // Colors are applied in presentation layer (StackedBar100.jsx)
   const segments = [
-    { label: 'Calm/Positive', value: emotionsData.valencePercentages.POSITIVE, color: '#86EFAC' },
-    { label: 'Neutral', value: emotionsData.valencePercentages.NEUTRAL, color: '#CBD5E1' },
-    { label: 'Intense/Negative', value: emotionsData.valencePercentages.NEGATIVE, color: '#FCA5A5' },
+    { label: 'Calm/Positive', value: emotionsData.valencePercentages.POSITIVE, category: 'positive' },
+    { label: 'Neutral', value: emotionsData.valencePercentages.NEUTRAL, category: 'neutral' },
+    { label: 'Intense/Negative', value: emotionsData.valencePercentages.NEGATIVE, category: 'negative' },
   ];
 
   return createResponse(

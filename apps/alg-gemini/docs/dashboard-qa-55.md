@@ -294,7 +294,7 @@
 - **Type**: Visual hierarchy / Tone
 - The saturated green-to-red bar reads as judgmental and not aligned with the calm Oura aesthetic (also feels like sentiment analysis overclaim). Even if you keep it, the presentation needs to be gentler and more precise.
 - **Done means**: Either tone down visual treatment (softer colors, less saturated) or add clearer framing about what emotion detection can/cannot do.
-- **Resolution**: Softened colors from saturated (#22C55E green, #EF4444 red) to pastel tones (#86EFAC, #FCA5A5), renamed title to "Tone Distribution (Rough Estimate)", enhanced whyExplanation with limitations disclaimer, removed prescriptive action field.
+- **Resolution**: Softened colors from saturated (#22C55E green, #EF4444 red) to pastel tones (#86EFAC, #FCA5A5), renamed title to "Tone Distribution (Rough Estimate)", enhanced whyExplanation with limitations disclaimer, removed prescriptive action field. **Hotfix**: Moved color definitions from dataHelpers.js to StackedBar100.jsx presentation layer for proper separation of concerns.
 
 ### PA7 — Emotional tone legend is unreadable at this size
 - **Status**: FIXED
