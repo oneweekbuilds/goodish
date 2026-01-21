@@ -1075,14 +1075,14 @@ export const dashboardCatalog = [
       const [top, second] = labels;
 
       if (!top) {
-        return hadExcluded ? FALLBACK_MIX_TOPICS_HEADLINE : 'The system is reading you across multiple themes.';
+        return hadExcluded ? FALLBACK_MIX_TOPICS_HEADLINE : 'The system is reading multiple themes in your signals.';
       }
 
       if (second) {
-        return `The system associates you with ${top} and ${second}.`;
+        return `The system is associating your feed with ${top} and ${second}.`;
       }
 
-      return `The system associates you with ${top}.`;
+      return `The system is associating your feed with ${top}.`;
     },
     action: () => 'You could try engaging with different content to see if topics shift.',
   },
@@ -1239,7 +1239,7 @@ export const dashboardCatalog = [
       if (data?.experiments?.length > 0) {
         return 'The system has formed persistent associations based on what keeps surfacing in your feed.';
       }
-      return 'The system appears to be interpreting your signals based on recurring exposure patterns.';
+      return 'The system is interpreting your signals based on recurring exposure patterns.';
     },
     action: null,
   },
