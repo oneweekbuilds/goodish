@@ -1047,11 +1047,12 @@ export const dashboardCatalog = [
   },
 
   // --- SUMMARY: What this means for you ---
+  // FIX C10: Clarified summary to focus on pattern observation, not creator labeling
   {
     tab: 'creators',
     id: 'creators-influential',
-    title: 'Creator Influence Summary',
-    description: 'Which voices shaped most of what you saw and whether they appeared across platforms.',
+    title: 'Influence Pattern',
+    description: 'Whether influence concentrated around a few accounts or distributed across many voices.',
     outputType: 'text',
     dataFn: 'getInfluentialCreatorsData',
     emptyStateType: 'needs_more_scans',
@@ -1061,11 +1062,11 @@ export const dashboardCatalog = [
     takeaway: (data) => {
       if (data?.creators && Array.isArray(data.creators)) {
         const count = data.creators.length;
-        if (count <= 3) return 'A small set of familiar accounts shaped most of what you saw — concentrated influence.';
-        if (count <= 8) return 'Several recurring accounts shaped what you saw — moderate influence concentration.';
-        return 'Many different voices contributed to what you saw — distributed influence.';
+        if (count <= 3) return 'Influence concentrated — a few familiar accounts appeared repeatedly.';
+        if (count <= 8) return 'Influence moderately distributed — several accounts appeared regularly.';
+        return 'Influence broadly distributed — many different accounts contributed.';
       }
-      return 'Summary of which accounts had the most influence on your feed during this window.';
+      return 'Pattern of how influence distributed across accounts during this window.';
     },
     action: null,
   },
@@ -1137,6 +1138,7 @@ export const dashboardCatalog = [
     action: null,
   },
 
+  // FIX W5: Removed redundancy with hero by focusing on persistence, not re-listing
   {
     tab: 'algorithm',
     id: 'algo-confident',
@@ -1148,17 +1150,17 @@ export const dashboardCatalog = [
     sortOrder: 'supporting',
     whyExplanation: 'Compared topics over time to identify recurring themes.',
     takeaway: (data) => {
-      if (!data?.insights?.length) return 'Requires multiple scans to identify what the system is reinforcing.';
+      if (!data?.insights?.length) return null;
 
-      // Reframe insights to emphasize system reinforcement
+      // Focus on persistence/consistency rather than repeating theme lists
       const insights = data.insights.join(' ');
-      if (insights.toLowerCase().includes('appeared') || insights.toLowerCase().includes('recurred')) {
-        return insights.replace(/appeared/gi, 'the system reinforced').replace(/recurred/gi, 'the system kept surfacing');
+      if (insights.toLowerCase().includes('consistent') || insights.toLowerCase().includes('stable')) {
+        return 'Certain themes persisted across multiple scans — stable patterns over time.';
       }
 
       return insights;
     },
-    action: () => 'Themes the system keeps reinforcing may be harder to shift — changing them may take sustained effort.',
+    action: null,
   },
   {
     tab: 'algorithm',
@@ -1254,11 +1256,12 @@ export const dashboardCatalog = [
   },
 
   // --- SUMMARY: What this means for you ---
+  // FIX W9: Improved header to match actual content (list of observed patterns)
   {
     tab: 'algorithm',
     id: 'algo-change-advice',
-    title: 'Recurring Pattern Summary',
-    description: 'Themes that appeared consistently based on recurring topics.',
+    title: 'Observed Pattern Summary',
+    description: 'Themes that appeared consistently during this window.',
     outputType: 'list',
     dataFn: 'getAlgoChangeAdviceData',
     emptyStateType: 'needs_more_scans',
@@ -1267,9 +1270,9 @@ export const dashboardCatalog = [
     whyExplanation: 'Based on observed patterns. Reflects what appeared, not your interests or identity.',
     takeaway: (data) => {
       if (data?.experiments?.length > 0) {
-        return 'Certain themes appeared persistently across your scans.';
+        return 'These themes appeared persistently across your scans.';
       }
-      return 'Recurring themes appeared based on observed patterns.';
+      return null;
     },
     action: null,
   },

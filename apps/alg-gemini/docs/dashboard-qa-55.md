@@ -155,11 +155,12 @@
 - **Resolution**: Changed to "Found X product keyword matches. This may mean ads were subtle, or few ads appeared."
 
 ### A10 — Footer + meta repetition creates bloat
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P2
 - **Type**: Copy / Visual bloat
 - Scope lines like "Across your last 108 scans" appear multiple times (hero, measure box, footer). It feels unedited.
 - **Done means**: Scope information appears once prominently, not repeated in every section.
+- **Resolution**: Simplified DataQualityFooter to show only confidence badge (right-aligned), removing repetitive "Based on X scans" text that appeared on every card.
 
 ---
 
@@ -381,11 +382,12 @@
 - **Resolution**: Removed action field with generic "follow new accounts" advice (set to null).
 
 ### C7 — "Does this match your experience?" / feedback affordance appears (or remnants)
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P2
 - **Type**: UX / Dead UI
 - This feels like an unfinished feature and lowers trust.
 - **Done means**: Feedback affordance removed or fully implemented with working backend.
+- **Resolution**: FeedbackAffordance component was already removed in earlier pass. ViewCard.jsx confirms removal with comment "REMOVED (C10 fix)" - non-functional UI eliminated.
 
 ### C8 — Cross-platform section reads low-value when empty
 - **Status**: FIXED
@@ -396,18 +398,20 @@
 - **Resolution**: Changed empty state from "No accounts appeared..." to "No accounts appeared on multiple platforms during this window. If they did, we'd show voices that reached you in different spaces."
 
 ### C9 — The "More details" organization doesn't match user mental model
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P2
 - **Type**: UX / Information architecture
 - "Additional detail" and "Summary" sections feel redundant and not clearly differentiated.
 - **Done means**: Sections have clear distinct purposes or are consolidated into one well-organized expanded view.
+- **Resolution**: Changed Creators tab moreDetails label from vague "Additional detail" to specific "Cross-platform presence" with clearer title "Accounts that appeared in multiple spaces".
 
 ### C10 — Summary list at bottom looks like it's labeling creators ("promotions", "general content")
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P2
 - **Type**: Copy / Trust
 - Feels arbitrary and not obviously evidence-based. If kept, it needs clearer justification or different phrasing.
 - **Done means**: Either provide clear evidence trail for labels, or remove speculative categorization.
+- **Resolution**: Changed creators-influential title from "Creator Influence Summary" to "Influence Pattern", updated description and takeaway to focus on pattern observation (concentrated/distributed) rather than labeling specific creators.
 
 ---
 
@@ -446,11 +450,12 @@
 - **Resolution**: Already fixed in PA8/C5 - "How we measure" component spacing improved (text-[13px], p-4, row spacing 2.5). Additional X5 fixes further reduced visual noise in expanded sections.
 
 ### W5 — "What the system is reinforcing" section repeats the hero themes
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P2
 - **Type**: UX / Redundancy
 - It needs to add something different (persistence across time, not just re-listing).
 - **Done means**: Section adds distinct insight or is removed to avoid repetition.
+- **Resolution**: Modified algo-confident to focus on persistence/consistency ("stable patterns over time") rather than re-listing themes. Removed redundant empty state text and prescriptive action field.
 
 ### W6 — "Extrapolated future associations" is scary and reads like prediction
 - **Status**: FIXED
@@ -477,11 +482,12 @@
 - **Resolution**: Removed action field with generic "engage with different content" advice (set to null).
 
 ### W9 — "Summary" header says "Current algorithmic interpretation" but the content below looks like a checklist
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P2
 - **Type**: Copy / Visual mismatch
 - Feels like an MVP coaching panel, not an Oura-grade insight page.
 - **Done means**: Either improve summary presentation or change header to match actual content style.
+- **Resolution**: Changed algo-change-advice title from "Recurring Pattern Summary" to "Observed Pattern Summary", simplified description to "Themes that appeared consistently during this window", clarified takeaway wording.
 
 ### W10 — Multiple scope lines repeat (scans/platforms/window) in too many places
 - **Status**: FIXED
@@ -542,8 +548,8 @@
 - **Total issues**: 60
 - **P0 (Trust breakers)**: 12 (0 OPEN, 12 FIXED) ✅
 - **P1 (UX/comprehension)**: 30 (0 OPEN, 30 FIXED) ✅
-- **P2 (Polish)**: 18 (7 OPEN, 11 FIXED)
-- **Overall Status**: 7 OPEN, 53 FIXED
+- **P2 (Polish)**: 18 (1 OPEN, 17 FIXED)
+- **Overall Status**: 1 OPEN, 59 FIXED
 
 ### Remaining OPEN P0 Issues (Trust Breakers)
 **None** - All P0 trust breakers are now resolved.
@@ -563,3 +569,5 @@
 - **Pass 2F**: P3, A8, P10, C8, W7, T4 (final P1 + high-value P2 polish)
 - **Post-Pass 2F Verify**: Smart quote fix, P10 data safety
 - **Pass 2G**: T2, T3, T5, A7, PA6, W10 (P2 polish - Talk tab, copy, visuals)
+- **Hotfix**: PA6 color separation (moved to presentation layer)
+- **Pass 2H**: A10, C7, C9, C10, W5, W9 (final P2 polish - footers, organization, summaries)

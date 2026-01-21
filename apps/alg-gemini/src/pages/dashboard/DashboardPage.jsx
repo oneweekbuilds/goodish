@@ -532,6 +532,7 @@ const TAB_STORY_HEADERS = {
       subtext: 'Movement detected during this window.',
     },
   },
+  // FIX C9: Clarified "More details" organization with specific labels
   creators: {
     keyInsight: {
       label: 'Observed',
@@ -544,9 +545,9 @@ const TAB_STORY_HEADERS = {
       subtext: 'Whether a few voices dominated or many contributed.',
     },
     moreDetails: {
-      label: 'Additional detail',
-      title: 'Cross-platform patterns from this window',
-      subtext: 'Voices that appeared in multiple spaces.',
+      label: 'Cross-platform presence',
+      title: 'Accounts that appeared in multiple spaces',
+      subtext: 'Voices that reached you across different platforms.',
     },
     summary: {
       label: 'Summary',

@@ -142,6 +142,7 @@ const ConfidenceBadge = ({ level, showLabel = true, size = 'sm' }) => {
 
 /**
  * DataQualityFooter component - displays scan count and confidence info
+ * FIX A10: Simplified to show only confidence badge, reducing repetitive scope text
  *
  * @param {number} scanCount - Number of scans used for this data
  * @param {number} platformCount - Number of platforms in the data
@@ -149,13 +150,9 @@ const ConfidenceBadge = ({ level, showLabel = true, size = 'sm' }) => {
  */
 export const DataQualityFooter = ({ scanCount, platformCount, confidenceLevel, scopeLabel }) => {
   const level = confidenceLevel || calculateConfidence(scanCount, platformCount);
-  const scanText = scopeLabel || getScanCountText(scanCount, platformCount);
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 pt-3 mt-3 border-t border-slate-100">
-      <span className="text-xs text-slate-400">
-        {scanText}
-      </span>
+    <div className="flex items-center justify-end pt-2 mt-2">
       <ConfidenceBadge level={level} size="sm" />
     </div>
   );
