@@ -40,16 +40,16 @@ const StackedBar100 = ({ segments = [], showLegend = true }) => {
         ))}
       </div>
 
-      {/* Legend */}
+      {/* Legend - FIX PA7: Increase readability with larger text and better spacing */}
       {showLegend && (
-        <div className="flex flex-wrap gap-4 justify-center">
+        <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center">
           {normalized.map((segment, index) => (
             <div key={index} className="flex items-center gap-2">
               <div
-                className="w-3 h-3 rounded-full flex-shrink-0"
+                className="w-3.5 h-3.5 rounded-full flex-shrink-0"
                 style={{ backgroundColor: segment.color || '#94A3B8' }}
               />
-              <span className="text-sm text-slate-600">
+              <span className="text-[13px] leading-relaxed text-slate-700 font-medium">
                 {segment.label}: {Math.round(segment.value)}%
               </span>
             </div>

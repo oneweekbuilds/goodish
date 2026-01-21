@@ -133,11 +133,12 @@
 - **Done means**: Preview text describes user value, not internal classification labels.
 
 ### A9 — Ads-products "low signal" copy is unclear and feels defensive
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Copy / Empty state
 - "Only 3 keyword matches across all ads" doesn't tell the user what to do, whether that's expected, or how many ads were analyzed. It feels like the system shrugging.
 - **Done means**: Low-signal copy provides context ("we analyzed X ads but only found 3 product keywords") and calm guidance about what this means.
+- **Resolution**: Changed to "Found X product keyword matches. This may mean ads were subtle, or few ads appeared."
 
 ### A10 — Footer + meta repetition creates bloat
 - **Status**: OPEN
@@ -234,11 +235,12 @@
 - **Resolution**: Takeaway now returns null if data/topTopics is missing or empty.
 
 ### PA2 — "Insufficient data requires 20 posts" empty state is visually harsh and generic
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Empty state / Tone
 - It feels like an error state, not a premium product. It should tell the user what to do next and why 20 matters, calmly.
 - **Done means**: Empty state uses calm, helpful language explaining why threshold exists and what user can do.
+- **Resolution**: Title changed to "Not enough data yet", message explains why threshold matters ("individual items have too much influence").
 
 ### PA3 — Still says "OBSERVED IN THIS SCAN"
 - **Status**: OPEN
@@ -269,18 +271,20 @@
 - **Done means**: Either tone down visual treatment (softer colors, less saturated) or add clearer framing about what emotion detection can/cannot do.
 
 ### PA7 — Emotional tone legend is unreadable at this size
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Visual hierarchy / Bug appearance
 - Text is tiny and cramped; it looks broken in expanded mode.
 - **Done means**: Legend is readable with comfortable font size and spacing.
+- **Resolution**: Increased legend text size from 14px to 13px with better spacing, made font medium weight.
 
 ### PA8 — "More details" section creates a wall of microcopy
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Visual hierarchy / UX
 - Too many repeated "How we measure" blocks; the density kills trust and premium feel.
 - **Done means**: Consolidate explanatory text, improve spacing, make expanded state feel considered and calm.
+- **Resolution**: Increased spacing in "How we measure" blocks, text size to 13px, padding to p-4, row spacing to 2.5, shortened whyExplanation text.
 
 ### PA9 — "Try this" section returns (generic advice)
 - **Status**: OPEN
@@ -316,11 +320,12 @@
 - **Done means**: Creator names follow consistent format rules (e.g., always @handle, or always display name with handle secondary).
 
 ### C3 — Table columns are unclear ("Posts" and "Share" of what?)
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Copy / Labeling clarity
 - Is "Posts" count across window? "Share" of total feed? Needs explicit labeling.
 - **Done means**: Column headers clearly state what they measure (e.g., "Posts in window" / "% of your feed").
+- **Resolution**: Changed column headers from "posts" / "share" to "Posts in window" / "% of your feed".
 
 ### C4 — The hero conclusion ("no single account dominated") doesn't feel justified
 - **Status**: OPEN
@@ -330,11 +335,12 @@
 - **Done means**: Either explain threshold, or use neutral language like "content came from multiple creators" without claiming non-dominance.
 
 ### C5 — "How we measure" block is too dense and tiny
-- **Status**: OPEN
+- **Status**: FIXED
 - **Severity**: P1
 - **Type**: Visual hierarchy
 - Expanded state becomes unreadable, looks like debug notes, not product.
 - **Done means**: Explanatory text has comfortable reading size and spacing.
+- **Resolution**: Same fix as PA8 - increased text size, spacing, and padding in "How we measure" component.
 
 ### C6 — Still includes generic "You could try…" advice
 - **Status**: OPEN

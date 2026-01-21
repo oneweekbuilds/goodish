@@ -212,10 +212,14 @@ export const dashboardCatalog = [
     confidenceDisclaimer: true,
     whyExplanation: 'Matched keywords in labeled ads. Does not indicate your interests.',
     takeaway: (data) => {
+      // FIX A9: Add context to low-signal copy
       if (!Array.isArray(data) || data.length === 0) return null;
       const totalMatches = data.reduce((sum, item) => sum + (item.value || 0), 0);
       const [first, second] = data;
-      if (totalMatches < 10) return `Low signal: only ${totalMatches} keyword matches across all ads.`;
+      if (totalMatches < 10) {
+        // Provide calm context about what low signal means
+        return `Low signal: Found ${totalMatches} product keyword matches. This may mean ads were subtle, or few ads appeared.`;
+      }
       
       if (first && second) {
         return `${first.label} (${first.value} ads) and ${second.label} (${second.value} ads) lead.`;
@@ -572,7 +576,7 @@ export const dashboardCatalog = [
     hero: true,
     isPrimary: true,
     sortOrder: 'primary',
-    whyExplanation: 'Grouped posts by detected topic (fitness, news, entertainment, etc.). Classification is approximate.',
+    whyExplanation: 'Grouped posts by detected topic. Classification is approximate.',
     counterfactual: 'This is what showed up in this scan — may not represent your typical feed.',
     takeaway: (data) => {
       // FIX PA1: Don't make confident claims when data is insufficient
@@ -628,7 +632,7 @@ export const dashboardCatalog = [
     dataFn: 'getEchoRiskData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
-    whyExplanation: 'Measured topic distribution in this scan. Does not indicate a pattern over time.',
+    whyExplanation: 'Measured topic distribution across scans.',
     takeaway: (data) => {
       if (!data?.riskLevel) return null;
       const level = data.riskLevel.toLowerCase();
@@ -658,7 +662,7 @@ export const dashboardCatalog = [
     sortOrder: 'supporting',
     collapsedByDefault: true,
     hidden: true,
-    whyExplanation: 'Measured what percentage of this scan fell into the top 3 detected topics.',
+    whyExplanation: 'Percentage that fell into top 3 topics.',
     takeaway: (data) => {
       if (data?.top3Percent === undefined) return null;
       const pct = data.top3Percent;
@@ -686,7 +690,7 @@ export const dashboardCatalog = [
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     collapsedByDefault: true,
-    whyExplanation: 'Compares topics and creators between scans. Requires multiple scans to measure.',
+    whyExplanation: 'Compares topics between scans.',
     takeaway: (data) => {
       if (!data?.stability) return 'Insufficient scans to measure evolution.';
       const stability = data.stability.toLowerCase();
@@ -728,7 +732,7 @@ export const dashboardCatalog = [
     dataFn: 'getManipulativePatternsData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
-    whyExplanation: 'Based on patterns we detected, these posts contained wellbeing themes or engagement hooks. Context matters — not all urgency is manipulative.',
+    whyExplanation: 'Detected wellbeing themes or engagement hooks. Context matters.',
     takeaway: (data) => {
       if (!data) return null;
       const pct = data.currentPercent || 0;
@@ -853,7 +857,7 @@ export const dashboardCatalog = [
     isPrimary: true,
     sortOrder: 'primary',
     maxItems: 5,
-    whyExplanation: 'Counted how often each account appeared in this scan.',
+    whyExplanation: 'Counted posts by account across your scans.',
     counterfactual: 'This may not match who you follow or expect — it is what appeared in this specific scroll session.',
     takeaway: (data) => {
       if (!Array.isArray(data) || data.length === 0) return 'Influence spread across multiple voices.';

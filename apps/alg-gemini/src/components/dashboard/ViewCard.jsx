@@ -48,22 +48,23 @@ const HowWeMeasureSection = ({ what, how, limitations, scope, unclassifiedNote }
   const hasContent = what || how || limitations || scope || unclassifiedNote;
   if (!hasContent) return null;
 
+  // FIX C5, PA8: Improve readability with better spacing and text size
   const Row = ({ label, text }) => {
     if (!text) return null;
     return (
-      <p className="text-xs leading-relaxed text-slate-600">
-        <span className="font-semibold text-slate-500 mr-1">{label}</span>
+      <p className="text-[13px] leading-relaxed text-slate-600">
+        <span className="font-semibold text-slate-700 mr-1.5">{label}</span>
         <span className="text-slate-600">{text}</span>
       </p>
     );
   };
 
   return (
-    <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/60 p-3">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 mb-2">
+    <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/60 p-4">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 mb-3">
         How we measure
       </p>
-      <div className="space-y-1.5">
+      <div className="space-y-2.5">
         <Row label="What this measures:" text={what} />
         <Row label="How we measure it:" text={how} />
         <Row label="Limitations:" text={limitations} />

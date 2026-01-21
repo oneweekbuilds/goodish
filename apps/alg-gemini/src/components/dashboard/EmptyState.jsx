@@ -70,21 +70,34 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
         };
 
       case EMPTY_STATE_TYPES.INSUFFICIENT_DATA:
+        // FIX PA2: Make empty state calmer and more helpful
         // Phase 3A: Surface threshold information from quality_reason if available
         const qualityReason = chartQuality?.quality_reason || missing || 'Not enough data for a reliable analysis.';
         const hasThreshold = qualityReason.includes('at least') || qualityReason.includes('requires');
         
+        // Make the "why" message calmer - explain threshold purpose
+        let calmWhy = qualityReason;
+        if (hasThreshold) {
+          // Extract the threshold number if present
+          const match = qualityReason.match(/(\d+)\s+(posts|items|scans)/i);
+          if (match) {
+            const threshold = match[1];
+            const unit = match[2];
+            calmWhy = `We need at least ${threshold} ${unit} to show meaningful patterns. Below that, individual items have too much influence on the results.`;
+          }
+        }
+        
         return {
           icon: 'quality',
-          title: 'Insufficient data',
-          why: qualityReason,
+          title: 'Not enough data yet',
+          why: calmWhy,
           howToUnlock: hasThreshold 
-            ? [] // Threshold already in why message
+            ? ['Run a few more scans to reach the threshold'] // Simpler instruction
             : [
                 'Run more scans to increase sample size',
                 'Ensure scans capture enough posts',
               ],
-          cta: { label: 'Run More Scans', to: '/start' },
+          cta: { label: 'Run Another Scan', to: '/start' },
           footer: chartQuality?.n_items > 0
             ? `Currently: ${chartQuality.n_items} item${chartQuality.n_items !== 1 ? 's' : ''} analyzed`
             : null,

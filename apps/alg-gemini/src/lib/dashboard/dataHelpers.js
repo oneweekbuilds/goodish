@@ -1403,13 +1403,14 @@ export function getTopCreatorsData(scans, scanDetails) {
     );
   }
 
+  // FIX C3: Use clearer column labels
   const rows = Object.entries(creatorsData.creators)
     .map(([_, c]) => ({
       creator: c.displayName,
-      posts: c.totalPosts,
-      share: `${Math.round((c.totalPosts / creatorsData.totalPostsWithCreatorData) * 100)}%`,
+      'Posts in window': c.totalPosts,
+      '% of your feed': `${Math.round((c.totalPosts / creatorsData.totalPostsWithCreatorData) * 100)}%`,
     }))
-    .sort((a, b) => b.posts - a.posts)
+    .sort((a, b) => b['Posts in window'] - a['Posts in window'])
     .slice(0, 10);
 
   return createResponse(
