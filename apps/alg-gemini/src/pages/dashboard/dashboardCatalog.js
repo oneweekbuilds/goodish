@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Dashboard Catalog - Phase 8: UX Simplification and Product Judgment
  *
  * PHASE 8 PRINCIPLES:
@@ -317,7 +317,7 @@ export const dashboardCatalog = [
   {
     tab: 'politics',
     id: 'politics-share',
-    title: 'How political exposure was distributed',
+    title: 'How much political exposure you got',
     description: 'Whether political keywords appeared as isolated touches or formed a sustained presence in this window.',
     outputType: 'number_line',
     dataFn: 'getPoliticalShareData',
@@ -335,23 +335,23 @@ export const dashboardCatalog = [
 
       if (pct === 0) {
         return smallSample
-          ? 'During this small window, political keywords were absent entirely.'
-          : 'During this window, political keywords were absent — no exposure detected across your feed.';
+          ? 'Political exposure was absent during this small window.'
+          : 'Political exposure was absent during this window — your feed had no detectable political keywords.';
       }
 
       if (pct < 5) {
-        return 'Political keywords surfaced as scattered touches during this window, not as a sustained theme.';
+        return 'Political exposure was light — scattered keywords surfaced but didn\'t form a sustained theme.';
       }
 
       if (pct < 15) {
-        return 'Political keywords appeared unevenly during this window — some clusters, but not continuous.';
+        return 'Political exposure was moderate — keywords appeared in clusters but not continuously.';
       }
 
       if (pct < 30) {
-        return 'Political exposure formed a visible layer during this window — recurring but not dominant.';
+        return 'Political exposure was substantial — recurring keywords formed a visible layer in your feed.';
       }
 
-      return 'Political keywords ran as a sustained thread during this window — a recurring presence across your feed.';
+      return 'Political exposure was heavy — keywords ran as a sustained thread throughout your feed.';
     },
     action: null,
   },
@@ -524,7 +524,7 @@ export const dashboardCatalog = [
     tab: 'politics',
     id: 'politics-profile',
     title: 'Political Exposure Pattern',
-    description: 'How political keywords appeared during this window — scattered or sustained.',
+    description: 'Summary of where political keywords came from and how they concentrated.',
     outputType: 'text',
     dataFn: 'getPoliticalProfileData',
     emptyStateType: 'needs_more_scans',
@@ -534,16 +534,18 @@ export const dashboardCatalog = [
     takeaway: (data) => {
       if (data?.politicalPercent === undefined) return null;
       const pct = data.politicalPercent;
+      
+      // Instead of repeating hero, provide synthesis
       if (pct === 0) {
-        return 'During this window, political exposure was absent — no keywords detected.';
+        return 'No political exposure detected during this window.';
       }
       if (pct < 10) {
-        return `During this window, political keywords surfaced lightly — isolated touches rather than a theme.`;
+        return `Light political exposure from a few sources — not a major theme in your feed.`;
       }
       if (pct < 25) {
-        return `During this window, political keywords formed an intermittent layer — present but not pervasive.`;
+        return `Moderate political exposure — present in your feed but not dominating what you saw.`;
       }
-      return `During this window, political keywords ran as a sustained presence — a recurring thread throughout your feed.`;
+      return `Heavy political exposure — a recurring presence from concentrated sources throughout your feed.`;
     },
     action: null,
   },
@@ -615,30 +617,29 @@ export const dashboardCatalog = [
   {
     tab: 'patterns',
     id: 'patterns-echo-risk',
-    title: 'Where repetition formed',
-    description: 'Whether content recycled similar themes or spread across different topics during this window.',
+    title: 'How concentrated the top themes were',
+    description: 'Whether a few topics dominated or content spread evenly across many themes.',
     outputType: 'status',
     dataFn: 'getEchoRiskData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     whyExplanation: 'Measured topic distribution in this scan. Does not indicate a pattern over time.',
-    // PHASE 9: Qualitative concentration labels
     takeaway: (data) => {
       if (!data?.riskLevel) return null;
       const level = data.riskLevel.toLowerCase();
 
       if (level.includes('high') || level.includes('concentrated') || level.includes('narrow')) {
-        return 'Topics recycled heavily during this window — content reinforced a narrow set of themes.';
+        return 'A few topics dominated — most content reinforced the same narrow themes.';
       }
       if (level.includes('moderate') || level.includes('medium')) {
-        return 'Topics showed some recurrence during this window — content cycled through familiar themes.';
+        return 'Several topics recurred — content cycled through a moderate set of familiar themes.';
       }
       if (level.includes('low') || level.includes('diverse') || level.includes('broad')) {
-        return 'Topics spread broadly during this window — content covered diverse themes without heavy repetition.';
+        return 'Topics spread broadly — content covered many different themes without heavy concentration.';
       }
       return `In this scan: ${data.riskLevel}`;
     },
-    action: () => 'You could try following different creators to see if variety changes.',
+    action: null,
   },
 
   {
@@ -651,6 +652,7 @@ export const dashboardCatalog = [
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     collapsedByDefault: true,
+    hidden: true,
     whyExplanation: 'Measured what percentage of this scan fell into the top 3 detected topics.',
     takeaway: (data) => {
       if (data?.top3Percent === undefined) return null;
@@ -667,7 +669,7 @@ export const dashboardCatalog = [
       }
       return 'Themes rotated broadly during this window — content spread across many topics without heavy repetition.';
     },
-    action: () => 'You could try engaging with content outside these topics.',
+    action: null,
   },
   {
     tab: 'patterns',
@@ -806,18 +808,20 @@ export const dashboardCatalog = [
   {
     tab: 'patterns',
     id: 'patterns-summary',
-    title: 'Pattern Movement Observed',
-    description: 'How topic patterns shifted during this window — whether themes narrowed, broadened, or stabilized.',
+    title: 'Topic Pattern Summary',
+    description: 'Whether your feed is narrowing to familiar themes or broadening with new topics.',
     outputType: 'text',
     dataFn: 'getPatternSummaryData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'summary',
     isSummaryCard: true,
     whyExplanation: 'A summary of topics detected in this scan. Does not indicate patterns over time.',
-    takeaway: (data) => data?.insights?.length > 0
-      ? data.insights.join(' ')
-      : null,
-    action: () => 'You could try changing what you engage with to see if topics shift.',
+    takeaway: (data) => {
+      if (!data?.insights?.length) return null;
+      const insights = data.insights.join(' ');
+      return insights || 'Topic patterns observed during this window.';
+    },
+    action: null,
   },
 
   // ==========================================
@@ -884,19 +888,17 @@ export const dashboardCatalog = [
     dataFn: 'getCreatorConcentrationData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
+    hidden: true,
     whyExplanation: 'Measured how much of this scan came from the top few accounts.',
     takeaway: (data) => {
       if (!data?.primaryInsight) return null;
-
-      // Enhance the takeaway to use concentration language
       const insight = data.primaryInsight.toLowerCase();
 
       if (insight.includes('dominated') || insight.includes('majority')) {
-        return data.primaryInsight; // Already strong language
+        return data.primaryInsight;
       }
 
       if (insight.includes('top') && (insight.includes('account') || insight.includes('creator'))) {
-        // Try to reframe numerical insights into concentration patterns
         return data.primaryInsight.replace(/(\d+)%/, (match, pct) => {
           const p = parseInt(pct);
           if (p >= 60) return 'Most content';
@@ -907,7 +909,7 @@ export const dashboardCatalog = [
 
       return data.primaryInsight;
     },
-    action: () => 'You could try following more accounts to see if concentration decreases.',
+    action: null,
   },
 
   {
@@ -919,6 +921,7 @@ export const dashboardCatalog = [
     dataFn: 'getVoiceDiversityData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
+    hidden: true,
     whyExplanation: 'Counted unique accounts in this scan.',
     takeaway: (data) => {
       if (!data?.diversity) return null;
@@ -927,7 +930,7 @@ export const dashboardCatalog = [
       if (d === 'high') return "Your feed surfaced a wide range of voices during this window — diverse sources shaped what you saw.";
       return "Your feed mixed familiar accounts with some newer voices during this window — moderate diversity.";
     },
-    action: () => 'You could try adding different accounts to see if diversity increases.',
+    action: null,
   },
   {
     tab: 'creators',
@@ -1020,8 +1023,8 @@ export const dashboardCatalog = [
   {
     tab: 'creators',
     id: 'creators-influential',
-    title: 'Influence Concentration Pattern',
-    description: 'Whether influence was spread across many voices or concentrated among familiar accounts during your scans.',
+    title: 'Creator Influence Summary',
+    description: 'Which voices shaped most of what you saw and whether they appeared across platforms.',
     outputType: 'text',
     dataFn: 'getInfluentialCreatorsData',
     emptyStateType: 'needs_more_scans',
@@ -1029,18 +1032,15 @@ export const dashboardCatalog = [
     isSummaryCard: true,
     whyExplanation: 'Based on appearance frequency in your scans. Does not indicate your preferences.',
     takeaway: (data) => {
-      // If data provides creator list, infer concentration
       if (data?.creators && Array.isArray(data.creators)) {
         const count = data.creators.length;
-        if (count <= 3) return 'A small set of familiar accounts dominated what you saw across scans.';
-        if (count <= 8) return 'Influence concentrated among several recurring accounts across your scans.';
-        return 'Influence spread across many different voices in your scans — no single set dominated.';
+        if (count <= 3) return 'A small set of familiar accounts shaped most of what you saw — concentrated influence.';
+        if (count <= 8) return 'Several recurring accounts shaped what you saw — moderate influence concentration.';
+        return 'Many different voices contributed to what you saw — distributed influence.';
       }
-
-      // Fallback
-      return 'These accounts had the most influence on what you saw during your scans.';
+      return 'Summary of which accounts had the most influence on your feed during this window.';
     },
-    action: () => 'You could try adjusting who you follow to see if the source mix changes.',
+    action: null,
   },
 
   // ==========================================
@@ -1097,6 +1097,7 @@ export const dashboardCatalog = [
     dataFn: 'getProfileBreadthData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
+    hidden: true,
     whyExplanation: 'Counted distinct topics in this scan. Does not indicate how the platform categorizes you.',
     takeaway: (data) => {
       if (!data?.breadth) return null;
@@ -1105,7 +1106,7 @@ export const dashboardCatalog = [
       if (b === 'broad') return "The system appears to be reading your signals across a wide range of categories during this window.";
       return "The system appears to be categorizing you moderately during this window — neither highly compressed nor fully open.";
     },
-    action: () => 'You could try exploring new topics to see if variety increases.',
+    action: null,
   },
 
   {
@@ -1226,8 +1227,8 @@ export const dashboardCatalog = [
   {
     tab: 'algorithm',
     id: 'algo-change-advice',
-    title: 'Current Algorithmic Interpretation',
-    description: 'How the system currently appears to be reading your signals, based on repeated exposure patterns during your scans.',
+    title: 'Algorithmic Association Summary',
+    description: 'What the system appears to associate with your profile based on recurring themes.',
     outputType: 'list',
     dataFn: 'getAlgoChangeAdviceData',
     emptyStateType: 'needs_more_scans',
@@ -1236,9 +1237,9 @@ export const dashboardCatalog = [
     whyExplanation: 'Based on observed patterns across scans. This reflects system interpretation, not your actual interests or identity.',
     takeaway: (data) => {
       if (data?.experiments?.length > 0) {
-        return 'The system appears to have formed specific associations based on what surfaced repeatedly. These are experiments you could try to shift how it reads your signals.';
+        return 'The system has formed persistent associations based on what keeps surfacing in your feed.';
       }
-      return 'The system is currently interpreting your signals based on observed exposure patterns. You could try different engagement strategies to shift this interpretation.';
+      return 'The system appears to be interpreting your signals based on recurring exposure patterns.';
     },
     action: null,
   },
@@ -1291,4 +1292,5 @@ export const getVisibleViewCount = (tabId) => {
 export const getViewById = (viewId) => {
   return dashboardCatalog.find((view) => view.id === viewId);
 };
+
 
