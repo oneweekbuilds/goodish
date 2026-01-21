@@ -1,37 +1,28 @@
 # Dashboard QA: 55 Known Issues - Master Backlog
 
 **Created**: 2026-01-21  
-**Status**: Pass 1 (P0 Trust Breakers) - IN PROGRESS  
+**Status**: OPEN - No fixes applied yet  
 **Last Updated**: 2026-01-21
 
 ---
 
-## QA FLOW (REQUIRED FOR ALL PASSES)
+## HOW WE WILL EXECUTE
 
-### Smoke Test Command
-```bash
-cd apps/alg-gemini
-npm run test:smoke
-```
+### Fix Workflow
+1. **Batch** 5–8 related issues together
+2. **Implement** fixes for that batch
+3. **Test** by running `node scripts/test-dashboard-smoke.mjs`
+4. **Capture** before/after screenshots in `apps/alg-gemini/docs/screenshots/dashboard/`
+5. **Commit** with issue IDs in message + tag the commit
+6. **Repeat** until all 55 issues resolved
 
-For UI mode:
-```bash
-npm run test:smoke:ui
-```
-
-### Screenshot Capture Process
-1. **Location**: `apps/alg-gemini/docs/screenshots/dashboard/`
-2. **Naming**: `YYYYMMDD_tab_state_issueIDs.png`
-   - Example: `20260121_ads_expanded_A1-A4.png`
-3. **States to capture per tab**:
-   - Collapsed (default view)
-   - Expanded ("More details" sections open)
-
-### Screenshots Folder
-All dashboard QA screenshots are stored in:
-```
-apps/alg-gemini/docs/screenshots/dashboard/
-```
+### Screenshot Convention
+- **Location**: `apps/alg-gemini/docs/screenshots/dashboard/`
+- **Naming**: `YYYYMMDD_tab_state_issueIDs.png`
+  - Example: `20260121_ads_expanded_A1-A4.png`
+- **States to capture per tab**:
+  - Collapsed (default view)
+  - Expanded ("More details" sections open)
 
 ---
 
@@ -43,592 +34,466 @@ apps/alg-gemini/docs/screenshots/dashboard/
 
 ---
 
-## ISSUES BY TAB
+## CROSS-TAB ISSUES (X1–X5)
 
-### ADS TAB (A1-A10)
-
-#### A1: Scan/window language contradiction in hero
+### X1 — "OBSERVED IN THIS SCAN" contradicts the product's "window" framing
+- **Status**: OPEN
 - **Severity**: P0
 - **Type**: Trust breaker / Copy contradiction
-- **Symptom**: Hero says "Observed in this scan" but supporting card says "during this window" and metadata says "115 scans / 5 platforms"
-- **Fix intent**: Single consistent scope language pattern. If window-based aggregation, say "during this window" everywhere. If single scan, say "in this scan" everywhere. Never mix.
-- **Likely files**: `DashboardPage.jsx` (TabHero), `dashboardCatalog.js` (TAB_TRUST_SENTENCES)
-- **Status**: Fixed
-- **Fixed in**: Pass 1 - Changed TAB_TRUST_SENTENCES to use neutral "here" language, updated kickerText logic to be context-aware
+- Multiple tabs still show "OBSERVED IN THIS SCAN" while the rest of the UX says "during this window," "across your last N scans," etc. Creates instant trust break.
+- **Done means**: All scope references use consistent language system-wide. If product uses "window" aggregation, say "during this window" everywhere. Never mix.
 
-#### A2: Metadata contradiction - single scan vs multiple scans
+### X2 — Scope labels conflict across the same view
+- **Status**: OPEN
 - **Severity**: P0
 - **Type**: Trust breaker / Data contradiction
-- **Symptom**: Top of hero says "Observed in this scan" but metadata pill shows "115 scans / 5 platforms"
-- **Fix intent**: Metadata should accurately reflect the actual scope. If 115 scans were used, don't say "this scan" anywhere.
-- **Likely files**: `DashboardPage.jsx` (TabHero component)
-- **Status**: Fixed
-- **Fixed in**: Pass 1 - Updated kickerText to say "During this window (N scans)" when multiple scans
+- Example patterns: page header says 115 scans, a pill says 108 scans, and "How we measure" says 105 or another number. Users will assume something is broken or cherry-picked.
+- **Done means**: Single canonical scope calculation per tab. All references to scan count/window must derive from one source of truth and match exactly.
 
-#### A3: "More Details" expanded section - low signal content
+### X3 — "Try this" content is inconsistent with the "no generic advice" decision
+- **Status**: OPEN
 - **Severity**: P1
-- **Type**: UX / Empty state
-- **Symptom**: When expanded, "More Details" shows cards that feel internal or repetitive, not useful
-- **Fix intent**: Either improve content quality or hide these cards when they don't add value
-- **Likely files**: `DashboardPage.jsx` (ViewsGridWithCollapsing), `dashboardCatalog.js`
-- **Status**: Open
+- **Type**: Copy / UX consistency
+- Several tabs still show "Try this" sections with generic actions (follow/unfollow, engage differently). You explicitly removed this earlier, but it reappears and feels preachy.
+- **Done means**: Either remove all "Try this" sections or make them specific to observed patterns with no generic "follow/unfollow" advice.
 
-#### A4: Platform comparison bar - single platform shows as "comparison"
-- **Severity**: P1
-- **Type**: Labeling / Copy
-- **Symptom**: If user only scanned one platform, "Platform comparison" card is misleading
-- **Fix intent**: Empty state or different label like "Ad rate by platform" when only 1 platform
-- **Likely files**: `dashboardCatalog.js` (ads-by-platform view)
-- **Status**: Open
-
-#### A5: Ad concentration takeaway - percentage without context
-- **Severity**: P1
-- **Type**: Copy / Labeling
-- **Symptom**: Says "X% from top 5 advertisers" but from how many total? No denominator context.
-- **Fix intent**: Use qualitative label only (already in code but verify it shows), e.g. "Most ads come from a small group"
-- **Likely files**: `dashboardCatalog.js` (ads-concentration takeaway)
-- **Status**: Open
-
-#### A6: Empty state copy contradicts hero claim
+### X4 — Confidence signaling is inconsistent or contradictory
+- **Status**: OPEN
 - **Severity**: P0
-- **Type**: Trust breaker / Contradiction
-- **Symptom**: Hero says "broadened" but empty state says "insufficient data"
-- **Fix intent**: Hero should only make claims when data supports it. Check data availability before showing takeaway.
-- **Likely files**: `dashboardCatalog.js` (ads hero takeaway function)
-- **Status**: Fixed
-- **Fixed in**: Pass 1 - Added chartQuality check to TabHero to prevent rendering claims when quality is insufficient
+- **Type**: Trust breaker / Logic contradiction
+- Examples: "Low confidence estimate" inside a card + a "Higher confidence" badge on the same card. Or a low-confidence banner at top of tab but "Higher confidence" badges throughout.
+- **Done means**: Confidence labeling rules are consistent. If a section has low confidence banner, individual cards cannot show "higher confidence" unless explicitly comparative.
 
-#### A7: "Try this" advice is generic
-- **Severity**: P2
-- **Type**: Copy / UX
-- **Symptom**: Summary section gives generic advice like "reduce engagement" without context
-- **Fix intent**: Make advice specific to what was observed, or remove if not useful
-- **Likely files**: `dashboardCatalog.js` (ads summary view)
-- **Status**: Open
-
-#### A8: Date labels on trend line duplicated
+### X5 — Expanded-state UX is visually noisy and feels "prototype-y," not Oura-level
+- **Status**: OPEN
 - **Severity**: P1
-- **Type**: Visual hierarchy / Bug appearance
-- **Symptom**: Chart shows "Dec 31" repeated multiple times, looks like rendering error
-- **Fix intent**: De-duplicate date labels in chart rendering. Show only unique dates or use "Day 1, Day 2" format.
-- **Likely files**: `LineChartSimple.jsx`, `dataHelpers.js` (formatDateLabel)
-- **Status**: Fixed
-- **Fixed in**: Pass 1 - Updated LineChartSimple to show "·" for duplicate consecutive labels except first/last
-
-#### A9: "Advertiser insights" low confidence not labeled
-- **Severity**: P1
-- **Type**: Trust / Labeling
-- **Symptom**: Product category list presented without confidence disclaimer, but it's keyword matching
-- **Fix intent**: Add low-confidence labeling or disclaimer
-- **Likely files**: `dashboardCatalog.js` (ads-advertiser-insights)
-- **Status**: Open
-
-#### A10: Scope pill contradicts kicker label
-- **Severity**: P0
-- **Type**: Trust breaker / Copy contradiction
-- **Symptom**: Kicker says "Observed in this scan" but scope pill says "115 scans / 5 platforms"
-- **Fix intent**: Kicker and pill must match. Use consistent scope language.
-- **Likely files**: `DashboardPage.jsx` (TabHero component, lines 1420-1448)
-- **Status**: Fixed
-- **Fixed in**: Pass 1 - Same fix as A1, A2
-
----
-
-### POLITICS TAB (P1-P10)
-
-#### P1: Scan/window contradiction in trust sentence
-- **Severity**: P0
-- **Type**: Trust breaker / Copy contradiction
-- **Symptom**: TAB_TRUST_SENTENCES says "during this window" but other copy says "in this scan"
-- **Fix intent**: Use one pattern everywhere: either "during this window" or "in this scan", not both
-- **Likely files**: `dashboardCatalog.js` (TAB_TRUST_SENTENCES)
-- **Status**: Fixed
-- **Fixed in**: Pass 1 - Updated TAB_TRUST_SENTENCES and all view descriptions to remove "window" language
-
-#### P2: Political leaning opt-in toggle position confusing
-- **Severity**: P1
-- **Type**: UX / Visual hierarchy
-- **Symptom**: Toggle appears before hero, disrupts flow
-- **Fix intent**: Consider moving toggle below hero or into "More details" section
-- **Likely files**: `DashboardPage.jsx` (political leaning toggle, line 2028-2035)
-- **Status**: Open
-
-#### P3: "Viewpoint distribution" card when leaning disabled
-- **Severity**: P1
-- **Type**: Empty state / Copy
-- **Symptom**: Shows card even when leaning is disabled, with confusing empty state
-- **Fix intent**: Hide card entirely when opt-in is disabled
-- **Likely files**: `dashboardCatalog.js` (politics-balance view, requiresOptIn)
-- **Status**: Open
-
-#### P4: Platform comparison empty when 1 platform
-- **Severity**: P1
-- **Type**: Empty state / Labeling
-- **Symptom**: "Platform asymmetry" card shown even with single platform
-- **Fix intent**: Hide or show different message when only 1 platform scanned
-- **Likely files**: `dashboardCatalog.js` (politics-by-platform)
-- **Status**: Open
-
-#### P5: Keyword matching disclaimer too subtle
-- **Severity**: P1
-- **Type**: Trust / Labeling
-- **Symptom**: Political exposure is keyword-based but warning is buried
-- **Fix intent**: Make keyword matching limitation more prominent
-- **Likely files**: `dashboardCatalog.js` (politics tab views whyExplanation)
-- **Status**: Open
-
-#### P6: "Blind spots" section feels speculative
-- **Severity**: P2
-- **Type**: Copy / Trust
-- **Symptom**: "Absent keyword categories" presented as insight when it's just absence
-- **Fix intent**: Reframe as "Not detected" instead of "Blind spots", or remove
-- **Likely files**: `dashboardCatalog.js` (politics-blind-spots view)
-- **Status**: Open
-
-#### P7: Creator concentration table with 1 row
-- **Severity**: P1
-- **Type**: Visual hierarchy / Empty state
-- **Symptom**: Table showing single creator looks broken
-- **Fix intent**: Use different layout or text format for single-creator case
-- **Likely files**: `ViewCard.jsx` (renderTable), `dashboardCatalog.js` (politics-creators takeaway)
-- **Status**: Open
-
-#### P8: "Low confidence" badge not prominent enough
-- **Severity**: P1
-- **Type**: Trust / Labeling
-- **Symptom**: Political leaning has low confidence badge but it's small and easy to miss
-- **Fix intent**: Make confidence badge larger/more prominent or move to top of card
-- **Likely files**: `ViewCard.jsx` (confidence disclaimer rendering)
-- **Status**: Open
-
-#### P9: Expanded section "Additional detail" feels repetitive
-- **Severity**: P2
-- **Type**: UX / Copy
-- **Symptom**: "Additional detail" header is vague, content feels like repeat of above
-- **Fix intent**: Use more specific header or consolidate content
-- **Likely files**: `DashboardPage.jsx` (ViewsGridWithCollapsing moreDetails section)
-- **Status**: Open
-
-#### P10: Empty state for political share conflicts with hero
-- **Severity**: P0
-- **Type**: Trust breaker / Contradiction
-- **Symptom**: Hero makes claim about political exposure but supporting cards say "no data"
-- **Fix intent**: Hero should only render when data exists
-- **Likely files**: `dashboardCatalog.js` (politics-share hero takeaway)
-- **Status**: Fixed
-- **Fixed in**: Pass 1 - Same chartQuality check as A6
-
----
-
-### PATTERNS TAB (PA1-PA10)
-
-#### PA1: "Topic variety" takeaway contradicts data shown
-- **Severity**: P0
-- **Type**: Trust breaker / Data contradiction
-- **Symptom**: Hero says "broadened" but chart shows concentrated topics
-- **Fix intent**: Takeaway logic should match actual topic distribution
-- **Likely files**: `dashboardCatalog.js` (patterns-topic-variety takeaway function)
-- **Status**: Open
-
-#### PA2: Unclassified topic shown in headline
-- **Severity**: P1
-- **Type**: Copy / Trust
-- **Symptom**: Hero says "Your feed broadened to Unclassified and Other"
-- **Fix intent**: Use headline safety filter to exclude Unclassified/Other from top-line copy
-- **Likely files**: `dashboardCatalog.js` (patterns-topic-variety takeaway), `headlineSafety.js`
-- **Status**: Open
-
-#### PA3: "Echo risk" label is jargon
-- **Severity**: P2
-- **Type**: Copy / UX
-- **Symptom**: "Echo risk" title is internal jargon, not user-facing language
-- **Fix intent**: Change to "Topic concentration" or similar plain language
-- **Likely files**: `dashboardCatalog.js` (patterns-echo-risk view title)
-- **Status**: Open
-
-#### PA4: Repeated themes percentage unclear
-- **Severity**: P1
-- **Type**: Copy / Labeling
-- **Symptom**: Says "X% repeated" but not clear if that's good or bad
-- **Fix intent**: Add context like "high repetition" or "moderate variety"
-- **Likely files**: `dashboardCatalog.js` (patterns-repeated-themes takeaway)
-- **Status**: Open
-
-#### PA5: Feed stability card when only 1 scan
-- **Severity**: P1
-- **Type**: Empty state / Copy
-- **Symptom**: "How your feed is evolving" shown even with single scan
-- **Fix intent**: Require 2+ scans, show clear empty state otherwise
-- **Likely files**: `dashboardCatalog.js` (patterns-stability, emptyStateType)
-- **Status**: Open
-
-#### PA6: Emotional weight with low confidence
-- **Severity**: P1
-- **Type**: Trust / Labeling
-- **Symptom**: Sentiment analysis presented without prominent disclaimer
-- **Fix intent**: Add "Estimate" to title or low-confidence badge
-- **Likely files**: `dashboardCatalog.js` (patterns-emotional-weight)
-- **Status**: Open
-
-#### PA7: Manipulative patterns threshold unclear
-- **Severity**: P1
-- **Type**: Copy / Labeling
-- **Symptom**: "Attention tactics" flagged but criteria not explained
-- **Fix intent**: Add explanation of what counts as "attention tactic"
-- **Likely files**: `dashboardCatalog.js` (manipulative-patterns whyExplanation)
-- **Status**: Open
-
-#### PA8: Chart bar color inconsistency
-- **Severity**: P2
-- **Type**: Visual hierarchy
-- **Symptom**: Some charts use blue, others use mixed colors without semantic meaning
-- **Fix intent**: Consistent color scheme across all charts in tab
-- **Likely files**: `BarChartSimple.jsx`, `THEME` constants in `DashboardPage.jsx`
-- **Status**: Open
-
-#### PA9: "Try this" section empty or generic
-- **Severity**: P2
-- **Type**: UX / Copy
-- **Symptom**: Summary section has generic or no actionable advice
-- **Fix intent**: Provide specific actions based on observed patterns
-- **Likely files**: `dashboardCatalog.js` (patterns-summary)
-- **Status**: Open
-
-#### PA10: Date labels repeated on trend line
-- **Severity**: P1
-- **Type**: Visual hierarchy / Bug appearance
-- **Symptom**: Same as A8 - chart shows duplicated date labels
-- **Fix intent**: De-duplicate date labels in chart component
-- **Likely files**: `LineChartSimple.jsx`
-- **Status**: Fixed
-- **Fixed in**: Pass 1 - Same fix as A8, X3
-
----
-
-### CREATORS TAB (C1-C10)
-
-#### C1: Scan/window language contradiction
-- **Severity**: P0
-- **Type**: Trust breaker / Copy contradiction
-- **Symptom**: Same pattern as other tabs - inconsistent scope language
-- **Fix intent**: Single consistent pattern across all copy
-- **Likely files**: `dashboardCatalog.js` (TAB_TRUST_SENTENCES, creator view descriptions)
-- **Status**: Fixed
-- **Fixed in**: Pass 1 - Same fix as A1, P1
-
-#### C2: Top creators table with single row looks broken
-- **Severity**: P1
-- **Type**: Visual hierarchy / UX
-- **Symptom**: Hero shows table with 1 creator, feels incomplete
-- **Fix intent**: Use different layout for single creator case
-- **Likely files**: `ViewCard.jsx` (renderTable), `dashboardCatalog.js` (creators-top takeaway)
-- **Status**: Open
-
-#### C3: Creator concentration shows percentage from unknown denominator
-- **Severity**: P1
-- **Type**: Copy / Labeling
-- **Symptom**: "X% from top 3" but no context on total creator count
-- **Fix intent**: Use qualitative label or add denominator context
-- **Likely files**: `dashboardCatalog.js` (creators-concentration takeaway)
-- **Status**: Open
-
-#### C4: Cross-platform creators empty when 1 platform
-- **Severity**: P1
-- **Type**: Empty state / Copy
-- **Symptom**: "Voices that appeared everywhere" shown for single platform
-- **Fix intent**: Hide card or show different message when only 1 platform
-- **Likely files**: `dashboardCatalog.js` (creators-cross-platform)
-- **Status**: Open
-
-#### C5: Voice diversity qualitative label unclear
-- **Severity**: P2
-- **Type**: Copy / UX
-- **Symptom**: "Low/Medium/High diversity" without context of what that means
-- **Fix intent**: Add explanation or use more descriptive labels
-- **Likely files**: `dashboardCatalog.js` (creators-voice-diversity takeaway)
-- **Status**: Open
-
-#### C6: Influential creators summary feels repetitive
-- **Severity**: P2
-- **Type**: UX / Copy
-- **Symptom**: Summary section repeats hero content
-- **Fix intent**: Either add new insight or remove summary
-- **Likely files**: `dashboardCatalog.js` (creators-influential)
-- **Status**: Open
-
-#### C7: Creator share percentages don't add up
-- **Severity**: P1
-- **Type**: Trust breaker / Data display
-- **Symptom**: Top creators show percentages that sum to >100% or <50% without explanation
-- **Fix intent**: Label as "share of feed" and explain overlap or filtering
-- **Likely files**: `ViewCard.jsx` (table rendering), `dashboardCatalog.js`
-- **Status**: Open
-
-#### C8: "New vs Familiar" stacked bar with unclear baseline
-- **Severity**: P2
-- **Type**: Visual hierarchy / Labeling
-- **Symptom**: Stacked bar shows distribution but "new" criteria not defined
-- **Fix intent**: Add tooltip or explanation of "new" threshold
-- **Likely files**: `StackedBar100.jsx`, `dashboardCatalog.js` (creators-new-vs-familiar)
-- **Status**: Open
-
-#### C9: Empty state for creators when data exists
-- **Severity**: P0
-- **Type**: Trust breaker / Bug
-- **Symptom**: Hero shows empty state despite having creator data
-- **Fix intent**: Fix data availability check in hero rendering
-- **Likely files**: `DashboardPage.jsx` (TabHero), `dataHelpers.js` (getTopCreatorsData)
-- **Status**: Fixed
-- **Fixed in**: Pass 1 - Same chartQuality check as A6
-
-#### C10: "Does this match your experience?" dead UI
-- **Severity**: P2
-- **Type**: UX / Dead UI
-- **Symptom**: Feedback affordance with no backend action
-- **Fix intent**: Either wire up feedback or remove affordance
-- **Likely files**: `ViewCard.jsx` (FeedbackAffordance component)
-- **Status**: Fixed
-- **Fixed in**: Pass 1 - Removed FeedbackAffordance component entirely
-
----
-
-### ALGORITHM TAB (W1-W10)
-
-#### W1: "What the Algorithm Thinks" implies mind-reading
-- **Severity**: P0
-- **Type**: Trust breaker / Copy
-- **Symptom**: Tab title and copy imply we know algorithm's intent, but we only observe patterns
-- **Fix intent**: Change all copy to "observed patterns" language, not "what algorithm thinks"
-- **Likely files**: `dashboardCatalog.js` (tab label, view descriptions), `DashboardPage.jsx`
-- **Status**: Fixed
-- **Fixed in**: Pass 1 - Changed tab label to "Observed Patterns", updated all view titles and descriptions
-
-#### W2: Hero takeaway makes identity claim
-- **Severity**: P0
-- **Type**: Trust breaker / Copy
-- **Symptom**: Says "the system sees you as X" when we only observe topics that surfaced
-- **Fix intent**: Reframe as "these topics appeared most" not "system categorizes you"
-- **Likely files**: `dashboardCatalog.js` (algo-topics-liked takeaway)
-- **Status**: Fixed
-- **Fixed in**: Pass 1 - Changed takeaway to "X appeared most frequently" instead of "system associates"
-
-#### W3: "Profile breadth" jargon
-- **Severity**: P2
-- **Type**: Copy / UX
-- **Symptom**: "How compressed the inferred profile is" - internal jargon
-- **Fix intent**: Change to "Topic range" or similar plain language
-- **Likely files**: `dashboardCatalog.js` (algo-profile-breadth view)
-- **Status**: Open
-
-#### W4: Speculation section makes predictions
-- **Severity**: P1
-- **Type**: Trust / Copy
-- **Symptom**: "Future recommendations" presented as insight when it's pure speculation
-- **Fix intent**: Label prominently as speculation or remove
-- **Likely files**: `dashboardCatalog.js` (algo-future view, label says "speculation" but needs prominence)
-- **Status**: Open
-
-#### W5: Recurring themes vs top topics redundant
-- **Severity**: P2
-- **Type**: UX / Redundancy
-- **Symptom**: Two different cards showing essentially same topic list
-- **Fix intent**: Consolidate or differentiate more clearly
-- **Likely files**: `dashboardCatalog.js` (algo-topics-liked, algo-confident)
-- **Status**: Open
-
-#### W6: Empty state contradicts hero claim
-- **Severity**: P0
-- **Type**: Trust breaker / Contradiction
-- **Symptom**: Hero says "system associates you with X" but supporting cards show "insufficient data"
-- **Fix intent**: Hero should only render with sufficient data
-- **Likely files**: `dashboardCatalog.js` (algo-topics-liked takeaway), `DashboardPage.jsx` (TabHero)
-- **Status**: Fixed
-- **Fixed in**: Pass 1 - Same chartQuality check as A6
-
-#### W7: Two-column layout breaks on mobile
-- **Severity**: P1
-- **Type**: Visual hierarchy / Responsive
-- **Symptom**: Algorithm tab hero has two-column layout that stacks poorly on small screens
-- **Fix intent**: Ensure clean stack on mobile with proper spacing
-- **Likely files**: `DashboardPage.jsx` (Algorithm tab hero rendering, lines 778-851)
-- **Status**: Open
-
-#### W8: Topic pills show percentages inconsistently
-- **Severity**: P2
-- **Type**: Visual hierarchy / Consistency
-- **Symptom**: Some topic pills show percentage, others don't
-- **Fix intent**: Consistent format across all topic pills
-- **Likely files**: `DashboardPage.jsx` (topic pills rendering in hero)
-- **Status**: Open
-
-#### W9: "Try this" advice feels preachy
-- **Severity**: P2
-- **Type**: Copy / UX
-- **Symptom**: Summary section gives advice in prescriptive tone
-- **Fix intent**: Soften to optional experiments, not shoulds
-- **Likely files**: `dashboardCatalog.js` (algo-change-advice view)
-- **Status**: Open
-
-#### W10: Unclassified topics shown in headline
-- **Severity**: P1
-- **Type**: Copy / Trust
-- **Symptom**: Same as PA2 - "Unclassified" shown in hero takeaway
-- **Fix intent**: Use headline safety filter
-- **Likely files**: `dashboardCatalog.js` (algo-topics-liked takeaway), `headlineSafety.js`
-- **Status**: Open
-
----
-
-### TALK TAB (T1-T5)
-
-#### T1: Tab label truncated to "Ta"
-- **Severity**: P1
-- **Type**: Visual hierarchy / Bug appearance
-- **Symptom**: Tab label "Talk to Your Algorithm" truncates to "Ta" on narrow screens
-- **Fix intent**: Ensure minimum width or use shorter label "Talk"
-- **Likely files**: `DashboardPage.jsx` (tab navigation rendering), `dashboardCatalog.js` (TABS array)
-- **Status**: Open
-
-#### T2: Green theme not Oura-level polish
-- **Severity**: P2
 - **Type**: Visual hierarchy / Polish
-- **Symptom**: Talk tab has green theme but feels less polished than hero sections
-- **Fix intent**: Match Oura-level visual quality with gradients, spacing, shadows
-- **Likely files**: `DashboardPage.jsx` (TalkTabPanel component, SURFACES.TALK_GREEN)
-- **Status**: Open
-
-#### T3: Beta badge position awkward
-- **Severity**: P2
-- **Type**: Visual hierarchy / Layout
-- **Symptom**: "Beta feature · coming soon" badge placement feels tacked on
-- **Fix intent**: Integrate badge more naturally into header design
-- **Likely files**: `DashboardPage.jsx` (TalkTabPanel, lines 1644-1653)
-- **Status**: Open
-
-#### T4: Waitlist form copy generic
-- **Severity**: P2
-- **Type**: Copy / UX
-- **Symptom**: Form copy doesn't communicate value proposition clearly
-- **Fix intent**: Improve copy to be more specific about what user gets
-- **Likely files**: `DashboardPage.jsx` (TalkTabPanel form section, lines 1656-1663)
-- **Status**: Open
-
-#### T5: Success state feels anticlimactic
-- **Severity**: P2
-- **Type**: UX / Polish
-- **Symptom**: After form submit, success message is plain text, not celebrated
-- **Fix intent**: Add visual flourish or more encouraging success state
-- **Likely files**: `DashboardPage.jsx` (TalkTabPanel form onSubmit, line 1621)
-- **Status**: Open
+- When expanding details, spacing, typography density, and repeated boilerplate ("How we measure," scope lines, disclaimers) create a wall of tiny text that looks unconsidered.
+- **Done means**: Expanded state has clear visual hierarchy, comfortable spacing, consolidated explanatory text (not repeated per card), and reads as premium product.
 
 ---
 
-### CROSS-TAB ISSUES (X1-X5)
+## ADS & INFLUENCE (A1–A10)
 
-#### X1: "Twitter" vs "X" inconsistency
+### A1 — Platform naming inconsistency inside Ads by-platform card
+- **Status**: OPEN
 - **Severity**: P0
 - **Type**: Trust breaker / Naming consistency
-- **Symptom**: Some places say "Twitter", others say "X"
-- **Fix intent**: Use "X" everywhere, canonical mapping in PlatformBadge
-- **Likely files**: `PlatformBadge.jsx` (already handles this), verify all other references
-- **Status**: Fixed
-- **Fixed in**: Pass 1 - Updated StartPage, ScanPlatformPage, ScanPage, FeedConnect to use "X" consistently
+- The list includes both Twitter and X in the same breakdown (and/or across the dashboard). This is a blatant credibility hit.
+- **Done means**: Use "X" consistently everywhere. No "Twitter" references in any user-facing copy or data labels.
 
-#### X2: "Observed in this scan" vs "during this window" global pattern
+### A2 — Hero scope mismatch: "Across your last 108 scans" vs other dashboard totals
+- **Status**: OPEN
 - **Severity**: P0
-- **Type**: Trust breaker / Copy contradiction
-- **Symptom**: Inconsistent scope language across all tabs
-- **Fix intent**: Single source of truth for scope labeling based on actual aggregation method
-- **Likely files**: `DashboardPage.jsx` (TabHero, deriveWindowLabel), `dashboardCatalog.js` (TAB_TRUST_SENTENCES)
-- **Status**: Fixed
-- **Fixed in**: Pass 1 - Comprehensive update across all tabs and views
+- **Type**: Trust breaker / Data contradiction
+- Dashboard header says 115 scans, Ads hero says 108, and other sections reference different counts. Needs one canonical scope label per tab.
+- **Done means**: All scope references in Ads tab derive from single calculation and display identical numbers.
 
-#### X3: Date labels repeated across all tabs with trend lines
+### A3 — Hero sentence claims interpretive insight while evidence feels underexplained
+- **Status**: FIXED
+- **Severity**: P1
+- **Type**: Copy / Evidence clarity
+- "Steering you toward sponsored offers as background noise" is crisp, but the supporting evidence doesn't clearly define what counts as "sponsored," what the denominator is, and why "background noise" maps to the shown trend.
+- **Done means**: Hero copy connects clearly to visible evidence. Either make interpretation more grounded or soften claim language.
+- **Resolution**: Changed to "Sponsored content appears regularly — promotions are present but not dominant."
+
+### A4 — Line chart x-axis labeling is cramped and confusing
+- **Status**: OPEN
 - **Severity**: P1
 - **Type**: Visual hierarchy / Bug appearance
-- **Symptom**: LineChartSimple shows repeated date labels looking like render bug
-- **Fix intent**: De-duplicate logic in chart component or data formatting
-- **Likely files**: `LineChartSimple.jsx`, `dataHelpers.js` (formatDateLabel)
-- **Status**: Fixed
-- **Fixed in**: Pass 1 - Same fix as A8
+- The x-axis repeats "Dec 31" with stacked tiny % labels under each tick. It looks broken and undermines "premium dashboard" feel.
+- **Done means**: Chart x-axis shows clean date labels (de-duplicated, readable spacing) and looks polished.
 
-#### X4: Empty states contradict hero claims pattern
-- **Severity**: P0
-- **Type**: Trust breaker / Logic error
-- **Symptom**: Multiple tabs show hero with claim but supporting cards say "no data"
-- **Fix intent**: Hero should only render takeaway when sufficient data exists
-- **Likely files**: `DashboardPage.jsx` (TabHero component), all hero takeaway functions in `dashboardCatalog.js`
-- **Status**: Fixed
-- **Fixed in**: Pass 1 - Added chartQuality gating to TabHero
+### A5 — 8% displayed as a big number competes with the actual insight
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Visual hierarchy
+- Even after hierarchy tuning, the big "8%" still reads as the headline, not the interpretive sentence. Oura-style would make the sentence the hero and the % a supporting annotation.
+- **Done means**: Visual hierarchy makes interpretive sentence primary, with percentage as supporting detail (smaller, less prominent).
 
-#### X5: "More Details" label generic across tabs
+### A6 — "Where the selling comes from" section mixes metaphors and scope language
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Copy consistency
+- Header says "Where the selling comes from," but subcopy says "in this scan window," while other areas say "during this window," and elsewhere "across last N scans." Needs one consistent system.
+- **Done means**: Section uses same scope language pattern as rest of Ads tab.
+
+### A7 — Possibly Promotional card is redundant and reads like a false precision machine
+- **Status**: OPEN
+- **Severity**: P2
+- **Type**: Copy / Trust
+- It says ~0% in multiple lines, repeats itself, and the "low confidence" treatment does not match the confidence badge. Also: "no potential promotional signals" is too absolute if it's heuristic.
+- **Done means**: Either suppress card when signal is insufficient, or use softer language ("no obvious promotional signals detected") and ensure confidence labeling is consistent.
+
+### A8 — "More details" preview text is cluttered and not user-centered
+- **Status**: OPEN
 - **Severity**: P2
 - **Type**: Copy / UX
-- **Symptom**: All tabs use same "More details" label, doesn't describe what's inside
-- **Fix intent**: Use dynamic label based on content, e.g. "Platform comparison and trends"
-- **Likely files**: `DashboardPage.jsx` (ViewsGridWithCollapsing, moreDetailsSubtitle logic already exists but verify)
-- **Status**: Open
+- The preview lists internal categories ("Possibly Promotional (Unlabeled…)") rather than what value the user gets ("Unlabeled promos and what's being pitched").
+- **Done means**: Preview text describes user value, not internal classification labels.
+
+### A9 — Ads-products "low signal" copy is unclear and feels defensive
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Copy / Empty state
+- "Only 3 keyword matches across all ads" doesn't tell the user what to do, whether that's expected, or how many ads were analyzed. It feels like the system shrugging.
+- **Done means**: Low-signal copy provides context ("we analyzed X ads but only found 3 product keywords") and calm guidance about what this means.
+
+### A10 — Footer + meta repetition creates bloat
+- **Status**: OPEN
+- **Severity**: P2
+- **Type**: Copy / Visual bloat
+- Scope lines like "Across your last 108 scans" appear multiple times (hero, measure box, footer). It feels unedited.
+- **Done means**: Scope information appears once prominently, not repeated in every section.
 
 ---
 
-## PASS 1: P0 TRUST BREAKERS (PRIORITY LIST)
+## POLITICS & WORLDVIEW (P1–P10)
 
-The following issues are P0 and will be fixed in Pass 1:
+### P1 — Top warning banner is awkward and confusing ("Enable")
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: UX / Copy clarity
+- The banner says political leaning estimates are low confidence, then shows an "Enable" control. It's unclear what gets enabled and why the user should. Feels like an unfinished feature flag.
+- **Done means**: Banner clearly explains what enabling does, or is repositioned/reframed as an opt-in control with clear value prop.
 
-1. **X2**: Scan/window language contradiction (global)
-2. **X1**: Twitter vs X inconsistency  
-3. **X4**: Empty states contradict hero claims (global pattern)
-4. **A1**: Scan/window language in ads hero
-5. **A2**: Metadata contradiction ads hero
-6. **A6**: Empty state contradicts hero (ads)
-7. **A10**: Scope pill vs kicker contradiction
-8. **P1**: Scan/window contradiction politics
-9. **P10**: Empty state contradicts hero (politics)
-10. **PA1**: Topic variety takeaway contradicts data
-11. **C1**: Scan/window language contradiction creators
-12. **C9**: Empty state when data exists creators
-13. **W1**: "What Algorithm Thinks" implies mind-reading
-14. **W2**: Hero makes identity claims
-15. **W6**: Empty state contradicts hero (algorithm)
+### P2 — Still uses "OBSERVED IN THIS SCAN" while content is windowed
+- **Status**: OPEN
+- **Severity**: P0
+- **Type**: Trust breaker / Copy contradiction
+- Same core contradiction as X1, but especially damaging in politics because it invites "this is cherry-picked."
+- **Done means**: All Politics tab scope references use consistent window language.
 
-**Total P0 issues**: 15
+### P3 — Hero chart has cramped tick labels and reads as noisy
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Visual hierarchy
+- The line chart has dense dates and tiny stacked percentages. The visuals feel like debug charts, not Oura-grade.
+- **Done means**: Chart rendering has clean spacing, readable labels, and polished visual treatment.
+
+### P4 — "Where political exposure concentrated" table produces misleading percentages
+- **Status**: FIXED
+- **Severity**: P1
+- **Type**: Data display / Trust
+- Rows like 1 post = 100% are not meaningful and look absurd. Needs suppression/aggregation rules in UI copy/formatting (without changing data logic, this can be solved via display rules).
+- **Done means**: Table either suppresses meaningless rows or uses qualitative labels ("nearly all from X") when percentages would be misleading.
+- **Resolution**: Table now uses qualitative labels ("all"/"some") when total posts ≤ 2.
+
+### P5 — Table lacks explanation for what "Political Percent" means
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Copy / Labeling clarity
+- Percent of that creator's posts? Percent of political posts? Percent of your total feed? The column label is ambiguous.
+- **Done means**: Column header or tooltip clearly explains what the percentage represents.
+
+### P6 — Viewpoint distribution section reads like it's claiming "lean" from keywords
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Copy / Trust
+- Even with caveats, users will read it as "the app says my politics are X." The expanded copy needs to be more precise about exposure skew vs ideology classification.
+- **Done means**: Copy clearly frames as "exposure pattern" not "your political identity," with boundary language that stays calm.
+
+### P7 — Platform asymmetry conclusion is weird when most platforms are 0
+- **Status**: OPEN
+- **Severity**: P2
+- **Type**: Copy / Logic
+- "Leaned toward Twitter over TikTok" when TikTok is 0 reads robotic and low-value.
+- **Done means**: Conclusion suppressed or reworded when comparison is meaningless (e.g., only one platform has political content).
+
+### P8 — Confidence badges contradict the low-confidence framing
+- **Status**: OPEN
+- **Severity**: P0
+- **Type**: Trust breaker / Logic contradiction
+- If the banner says the leaning estimate is low confidence, the "Higher confidence" badges in the same region feel wrong.
+- **Done means**: Confidence labeling is internally consistent (same as X4 but specific to Politics tab).
+
+### P9 — "Try this" appears again (generic behavioral advice)
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Copy / Tone consistency
+- This reintroduces tone you already decided to remove and makes the product feel preachy.
+- **Done means**: Generic "Try this" advice removed from Politics tab.
+
+### P10 — Summary card repeats the hero rather than adding a new synthesis
+- **Status**: OPEN
+- **Severity**: P2
+- **Type**: UX / Redundancy
+- It should either disappear or answer a distinct question (source concentration, platform driver) without parroting.
+- **Done means**: Summary section adds new insight or is removed. Does not repeat hero content.
 
 ---
 
-## PASS 2: P1 VISUAL HIERARCHY & UX (DEFERRED)
+## PATTERNS IN YOUR FEED (PA1–PA10)
 
-Pass 2 will address P1 issues affecting comprehension and trust. Not started yet.
+### PA1 — Hero claims "Your feed broadened" while card shows "Insufficient data"
+- **Status**: FIXED
+- **Severity**: P0
+- **Type**: Trust breaker / Logic contradiction
+- This is a direct contradiction. If the hero cannot be supported, the hero needs a "not enough signal" variant, not a confident conclusion.
+- **Done means**: Hero only renders interpretive claim when data is sufficient. Otherwise shows calm "insufficient data" state.
+- **Resolution**: Takeaway now returns null if data/topTopics is missing or empty.
+
+### PA2 — "Insufficient data requires 20 posts" empty state is visually harsh and generic
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Empty state / Tone
+- It feels like an error state, not a premium product. It should tell the user what to do next and why 20 matters, calmly.
+- **Done means**: Empty state uses calm, helpful language explaining why threshold exists and what user can do.
+
+### PA3 — Still says "OBSERVED IN THIS SCAN"
+- **Status**: OPEN
+- **Severity**: P0
+- **Type**: Trust breaker / Copy contradiction
+- Same contradiction, but especially glaring because patterns are inherently about trends/time windows.
+- **Done means**: Patterns tab uses consistent window language throughout.
+
+### PA4 — "How topics distributed" card uses unclear terminology
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Copy / Labeling clarity
+- "Distribution" vs "concentration" vs "variety" are mixed, and the card doesn't clearly distinguish what it's measuring.
+- **Done means**: Card uses one clear term consistently and explains what it measures.
+
+### PA5 — Attention tactics card shows "5%" as a headline with weak interpretation
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Visual hierarchy / Copy
+- The number doesn't map to meaning, and the explanation is tiny. Needs a clearer interpretive sentence or a better "low signal" treatment.
+- **Done means**: Either make interpretation primary (with % secondary), or use low-signal treatment when percentage lacks context.
+
+### PA6 — Emotional Tone section feels out of place and visually loud
+- **Status**: OPEN
+- **Severity**: P2
+- **Type**: Visual hierarchy / Tone
+- The saturated green-to-red bar reads as judgmental and not aligned with the calm Oura aesthetic (also feels like sentiment analysis overclaim). Even if you keep it, the presentation needs to be gentler and more precise.
+- **Done means**: Either tone down visual treatment (softer colors, less saturated) or add clearer framing about what emotion detection can/cannot do.
+
+### PA7 — Emotional tone legend is unreadable at this size
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Visual hierarchy / Bug appearance
+- Text is tiny and cramped; it looks broken in expanded mode.
+- **Done means**: Legend is readable with comfortable font size and spacing.
+
+### PA8 — "More details" section creates a wall of microcopy
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Visual hierarchy / UX
+- Too many repeated "How we measure" blocks; the density kills trust and premium feel.
+- **Done means**: Consolidate explanatory text, improve spacing, make expanded state feel considered and calm.
+
+### PA9 — "Try this" section returns (generic advice)
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Copy / Tone consistency
+- Conflicts with earlier editorial decision.
+- **Done means**: Generic "Try this" advice removed from Patterns tab.
+
+### PA10 — Summary conflicts with hero/empty-state logic
+- **Status**: FIXED
+- **Severity**: P0
+- **Type**: Trust breaker / Logic contradiction
+- Example: summary says "Your feed covers 16 topics" while hero shows insufficient data. Either the empty state or the summary logic needs a coherence rule.
+- **Done means**: Summary and hero draw from same data availability check and never contradict each other.
+- **Resolution**: Summary now checks chartQuality (not just hasData) before adding topic insight.
 
 ---
 
-## PASS 3: P2 POLISH & CONSISTENCY (DEFERRED)
+## CREATORS & VOICES (C1–C10)
 
-Pass 3 will address P2 polish issues. Not started yet.
+### C1 — "OBSERVED IN THIS SCAN" persists
+- **Status**: OPEN
+- **Severity**: P0
+- **Type**: Trust breaker / Copy contradiction
+- Contradicts the "window" framing used elsewhere.
+- **Done means**: Creators tab uses consistent window language throughout.
+
+### C2 — Handle formatting is inconsistent and looks sloppy
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Visual consistency
+- Some are handles, some are display names ("Elon Musk"), capitalization differs, spacing differs. Needs normalization in presentation.
+- **Done means**: Creator names follow consistent format rules (e.g., always @handle, or always display name with handle secondary).
+
+### C3 — Table columns are unclear ("Posts" and "Share" of what?)
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Copy / Labeling clarity
+- Is "Posts" count across window? "Share" of total feed? Needs explicit labeling.
+- **Done means**: Column headers clearly state what they measure (e.g., "Posts in window" / "% of your feed").
+
+### C4 — The hero conclusion ("no single account dominated") doesn't feel justified
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Copy / Logic clarity
+- Top share is 6%. Maybe that's "not dominated," but the UI should explain the threshold for "dominated," or use softer language.
+- **Done means**: Either explain threshold, or use neutral language like "content came from multiple creators" without claiming non-dominance.
+
+### C5 — "How we measure" block is too dense and tiny
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Visual hierarchy
+- Expanded state becomes unreadable, looks like debug notes, not product.
+- **Done means**: Explanatory text has comfortable reading size and spacing.
+
+### C6 — Still includes generic "You could try…" advice
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Copy / Tone consistency
+- Conflicts with your "remove try-this advice" decision.
+- **Done means**: Generic advice removed from Creators tab.
+
+### C7 — "Does this match your experience?" / feedback affordance appears (or remnants)
+- **Status**: OPEN
+- **Severity**: P2
+- **Type**: UX / Dead UI
+- This feels like an unfinished feature and lowers trust.
+- **Done means**: Feedback affordance removed or fully implemented with working backend.
+
+### C8 — Cross-platform section reads low-value when empty
+- **Status**: OPEN
+- **Severity**: P2
+- **Type**: Empty state / Copy
+- "No accounts appeared across multiple platforms" is a dead end. Needs a better empty-state that still teaches something.
+- **Done means**: Empty state explains what this would show if detected, or section is hidden when no data.
+
+### C9 — The "More details" organization doesn't match user mental model
+- **Status**: OPEN
+- **Severity**: P2
+- **Type**: UX / Information architecture
+- "Additional detail" and "Summary" sections feel redundant and not clearly differentiated.
+- **Done means**: Sections have clear distinct purposes or are consolidated into one well-organized expanded view.
+
+### C10 — Summary list at bottom looks like it's labeling creators ("promotions", "general content")
+- **Status**: OPEN
+- **Severity**: P2
+- **Type**: Copy / Trust
+- Feels arbitrary and not obviously evidence-based. If kept, it needs clearer justification or different phrasing.
+- **Done means**: Either provide clear evidence trail for labels, or remove speculative categorization.
 
 ---
 
-## CHANGELOG
+## WHAT THE ALGORITHM THINKS (W1–W10)
 
-### 2026-01-21 - Pass 1 Complete (P0 Trust Breakers)
-- **Fixed 15 P0 issues** (all trust breakers)
-- **Files changed**: 8
-  - `DashboardPage.jsx`: Fixed scope language consistency, added chartQuality gating
-  - `dashboardCatalog.js`: Updated all tab labels, view descriptions, takeaways
-  - `LineChartSimple.jsx`: De-duplicated repeated date labels
-  - `ViewCard.jsx`: Removed non-functional feedback UI
-  - `PlatformBadge.jsx`: Already handled Twitter→X (verified)
-  - `StartPage.jsx`, `ScanPlatformPage.jsx`, `ScanPage.jsx`, `FeedConnect.jsx`: Consistent X naming
-- **Key achievements**:
-  - ✓ Eliminated scan/window language contradictions globally
-  - ✓ Fixed Twitter vs X naming everywhere
-  - ✓ Prevented hero claims when data insufficient
-  - ✓ Fixed repeated date labels in charts
-  - ✓ Removed "What Algorithm Thinks" mind-reading language
-  - ✓ Removed dead feedback UI
-- Ready for smoke test and screenshots
+### W1 — The tab name itself ("What the Algorithm Thinks") implies mind-reading
+- **Status**: OPEN
+- **Severity**: P0
+- **Type**: Trust breaker / Copy overclaim
+- Even if you fixed some copy, the label invites overclaim. Consider renaming in UI (if allowed) or adding a calmer framing line right under the tab header (without disclaimers).
+- **Done means**: Tab name changed to avoid mind-reading implication (e.g., "Observed Patterns" or "Feed Signals"), or prominent framing line clarifies observational nature.
 
-### 2026-01-21 - Backlog Created
-- Created comprehensive 55-issue backlog
-- Organized by tab with clear IDs
-- Defined severity levels and pass structure
-- Ready for Pass 1 execution
+### W2 — Hero still risks feeling like identity labeling even with "feed/signals"
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Copy / Trust
+- "The system is associating your feed with Sports and Food" is better, but still feels like "this is who you are." Needs a sharper boundary line that stays calm and non-defensive.
+- **Done means**: Copy clearly distinguishes between "topics that appeared" vs "what you are" without sounding defensive.
+
+### W3 — Topic list presentation feels like raw tags, not insight
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Visual hierarchy / UX
+- The vertical list (Sports, Food, Tech…) lacks grouping, ordering explanation, or "why these" clarity.
+- **Done means**: Topic list has clear organizing principle (frequency, recency, etc.) or context about why these topics matter.
+
+### W4 — Expanded "How we measure" text is cramped and repetitive
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Visual hierarchy
+- Same wall-of-text issue, but more harmful here because users are sensitive to misclassification.
+- **Done means**: Expanded text is well-spaced and consolidated (not repeated across cards).
+
+### W5 — "What the system is reinforcing" section repeats the hero themes
+- **Status**: OPEN
+- **Severity**: P2
+- **Type**: UX / Redundancy
+- It needs to add something different (persistence across time, not just re-listing).
+- **Done means**: Section adds distinct insight or is removed to avoid repetition.
+
+### W6 — "Extrapolated future associations" is scary and reads like prediction
+- **Status**: FIXED
+- **Severity**: P1
+- **Type**: Copy / Trust
+- Even with "speculation," the UI looks like it's forecasting your future identity. Needs calmer language and clearer "why user should care."
+- **Done means**: Section is removed, or reframed with prominent speculation framing and softer language.
+- **Resolution**: Title changed to "If current trends continued (speculation)", takeaway reframed to emphasize "not a forecast".
+
+### W7 — The speculation card contains too much text and not enough structure
+- **Status**: OPEN
+- **Severity**: P2
+- **Type**: Visual hierarchy / UX
+- It's a paragraph blob. Needs scannable structure (what, why, confidence) without adding new logic.
+- **Done means**: Content has clear structure with headers/sections, not a wall of text.
+
+### W8 — "Try this" advice comes back (follow/search/mute)
+- **Status**: OPEN
+- **Severity**: P1
+- **Type**: Copy / Tone consistency
+- Conflicts with the earlier editorial direction; also can feel manipulative ("train your feed").
+- **Done means**: Generic "Try this" advice removed from Algorithm tab.
+
+### W9 — "Summary" header says "Current algorithmic interpretation" but the content below looks like a checklist
+- **Status**: OPEN
+- **Severity**: P2
+- **Type**: Copy / Visual mismatch
+- Feels like an MVP coaching panel, not an Oura-grade insight page.
+- **Done means**: Either improve summary presentation or change header to match actual content style.
+
+### W10 — Multiple scope lines repeat (scans/platforms/window) in too many places
+- **Status**: OPEN
+- **Severity**: P2
+- **Type**: Copy / Visual bloat
+- The page feels cluttered and "explainy," not calm.
+- **Done means**: Scope information consolidated and appears once prominently per section, not repeated everywhere.
+
+---
+
+## TALK TO YOUR ALGORITHM (T1–T5)
+
+### T1 — Tab label is truncated in the top nav ("Ta")
+- **Status**: FIXED
+- **Severity**: P1
+- **Type**: Visual hierarchy / Bug appearance
+- Looks broken and cheap.
+- **Done means**: Tab label either shortened to "Talk" or nav layout ensures full label is visible.
+- **Resolution**: Tab label shortened from "Talk to Your Algorithm" to "Talk".
+
+### T2 — The green panel background is too large and too saturated
+- **Status**: OPEN
+- **Severity**: P2
+- **Type**: Visual hierarchy / Polish
+- It dominates the page more than any other tab and feels like a different design system.
+- **Done means**: Green panel is toned down (smaller area, softer color) to match rest of dashboard aesthetic.
+
+### T3 — The "Beta feature • coming soon" pill styling feels off-brand
+- **Status**: OPEN
+- **Severity**: P2
+- **Type**: Visual consistency
+- It looks like a random badge component. Needs alignment with the rest of the UI.
+- **Done means**: Badge styling matches dashboard design system.
+
+### T4 — The description copy is long and slightly repetitive
+- **Status**: OPEN
+- **Severity**: P2
+- **Type**: Copy / Editing
+- "Calm, evidence-first… cite what we observed… show uncertainty… avoid speculation… guardrails… tuned to earn trust" repeats the same promise 3 times.
+- **Done means**: Copy edited to be concise while preserving key value props.
+
+### T5 — Waitlist module feels generic and not premium
+- **Status**: OPEN
+- **Severity**: P2
+- **Type**: Visual hierarchy / Polish
+- Placeholder "you@domain.com" + "Notify me" button is fine, but the layout/spacing feels like a standard form, not an Oura-grade "early access" module.
+- **Done means**: Waitlist module has polished spacing, typography, and visual treatment matching dashboard quality bar.
+
+---
+
+## SUMMARY
+
+- **Total issues**: 55
+- **P0 (Trust breakers)**: 15
+- **P1 (UX/comprehension)**: 29
+- **P2 (Polish)**: 11
+- **Status**: All OPEN, no fixes applied yet
+
+Next step: Begin batching related issues for implementation following the workflow above.

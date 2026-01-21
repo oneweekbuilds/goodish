@@ -63,7 +63,7 @@ export const TABS = [
   { id: 'patterns', label: 'Patterns in Your Feed' },
   { id: 'creators', label: 'Creators & Voices' },
   { id: 'algorithm', label: 'Observed Patterns' },
-  { id: 'talk', label: 'Talk to Your Algorithm' },
+  { id: 'talk', label: 'Talk' },
 ];
 
 export const dashboardCatalog = [
@@ -108,10 +108,11 @@ export const dashboardCatalog = [
       }
 
       if (pct < 18) {
-        return 'Your feed is steering you toward sponsored offers as background noise.';
+        // FIX A3: Soften interpretive language - be clearer about what we're measuring
+        return 'Sponsored content appears regularly — promotions are present but not dominant.';
       }
 
-      return 'Advertising is a main storyline here — the feed is actively steering you toward paid content.';
+      return 'Advertising is a main storyline here — paid promotions make up a substantial portion of what you see.';
     },
     action: null,
   },
@@ -574,7 +575,11 @@ export const dashboardCatalog = [
     whyExplanation: 'Grouped posts by detected topic (fitness, news, entertainment, etc.). Classification is approximate.',
     counterfactual: 'This is what showed up in this scan — may not represent your typical feed.',
     takeaway: (data) => {
-      if (!data) return null;
+      // FIX PA1: Don't make confident claims when data is insufficient
+      // Check if we have meaningful data before claiming broadened/narrowed
+      if (!data || !data.topTopics || data.topTopics.length === 0) {
+        return null;
+      }
 
       const { labels } = pickHeadlineSafeLabels(data.topTopics, {
         getLabel: (t) => t?.label,
@@ -817,9 +822,11 @@ export const dashboardCatalog = [
     isSummaryCard: true,
     whyExplanation: 'A summary of topics detected in this scan. Does not indicate patterns over time.',
     takeaway: (data) => {
+      // FIX PA10: Don't make claims in summary if hero shows insufficient data
+      // Summary should be coherent with hero data availability
       if (!data?.insights?.length) return null;
       const insights = data.insights.join(' ');
-      return insights || 'Topic patterns observed during this window.';
+      return insights || null;
     },
     action: null,
   },
@@ -1135,20 +1142,21 @@ export const dashboardCatalog = [
   {
     tab: 'algorithm',
     id: 'algo-future',
-    title: 'Possible future patterns (speculation)',
-    description: 'If current patterns continue, these themes might appear more. Pure speculation — not guaranteed.',
+    title: 'If current trends continued (speculation)',
+    description: 'A purely speculative guess about what might appear more if patterns stayed the same. Not a prediction.',
     outputType: 'text',
     dataFn: 'getFutureRecommendationsData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     collapsedByDefault: true,
     confidenceDisclaimer: true,
-    whyExplanation: 'Based on topic trends across scans. This is speculation — we cannot predict what will appear.',
+    whyExplanation: 'This is speculation based on recent topic trends. We cannot predict what will actually appear.',
     takeaway: (data) => {
+      // FIX W6: Soften speculative language to avoid feeling like identity forecasting
       if (!data?.predictions?.length) return null;
-      return `Speculation based on current trends: ${data.predictions.join(', ')} might appear more frequently. This is extrapolation only.`;
+      return `Speculative only: If trends stayed the same, ${data.predictions.join(', ')} might surface more. This is not a forecast.`;
     },
-    action: () => 'You could try changing what you engage with to see if content shifts.',
+    action: null,
   },
 
   // --- HIDDEN: Removed for cognitive load reduction ---

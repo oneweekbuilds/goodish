@@ -771,11 +771,23 @@ export function getPoliticalCreatorsData(scans, scanDetails) {
 
   const rows = Object.entries(politicsData.byCreator)
     .filter(([_, stats]) => stats.political > 0)
-    .map(([_, stats]) => ({
-      creator: stats.displayName,
-      politicalPosts: stats.political,
-      politicalPercent: `${Math.round((stats.political / stats.total) * 100)}%`,
-    }))
+    .map(([_, stats]) => {
+      // FIX P4: Use qualitative labels when numbers are too small to be meaningful
+      // Avoid showing "1 post = 100%" which looks absurd
+      let politicalPercent;
+      if (stats.total <= 2) {
+        // Too small for percentage to be meaningful
+        politicalPercent = stats.political === stats.total ? 'all' : 'some';
+      } else {
+        politicalPercent = `${Math.round((stats.political / stats.total) * 100)}%`;
+      }
+      
+      return {
+        creator: stats.displayName,
+        politicalPosts: stats.political,
+        politicalPercent,
+      };
+    })
     .sort((a, b) => b.politicalPosts - a.politicalPosts)
     .slice(0, 10);
 
@@ -1325,7 +1337,13 @@ export function getPatternSummaryData(scans, scanDetails) {
   let totalScansUsed = 0;
   const allScansWithData = new Set();
 
-  if (topics.hasData) {
+  // FIX PA10: Only add topic insight if data quality is OK (not just hasData)
+  const topicQualityOk = topics.hasData && 
+    (!topics.chartQuality || 
+     topics.chartQuality.quality === 'OK' || 
+     topics.chartQuality.quality === 'ok');
+
+  if (topicQualityOk) {
     const variety = topics.data.topicCount > 10 ? 'diverse' : topics.data.topicCount > 5 ? 'moderate' : 'narrow';
     insights.push(`Your feed covers ${topics.data.topicCount} topics (${variety} variety).`);
     totalScansUsed = Math.max(totalScansUsed, topics.scansUsed);

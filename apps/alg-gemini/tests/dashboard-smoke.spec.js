@@ -14,7 +14,8 @@ const TABS = [
   { id: 'politics', label: 'Politics & Worldview' },
   { id: 'patterns', label: 'Patterns in Your Feed' },
   { id: 'creators', label: 'Creators & Voices' },
-  { id: 'algorithm', label: 'What the Algorithm Thinks' },
+  { id: 'algorithm', label: 'Observed Patterns' },
+  { id: 'talk', label: 'Talk' },
 ];
 
 test.describe('Dashboard Smoke Test', () => {
