@@ -577,7 +577,7 @@ export const dashboardCatalog = [
     isPrimary: true,
     sortOrder: 'primary',
     whyExplanation: 'Grouped posts by detected topic. Classification is approximate.',
-    counterfactual: 'This is what showed up in this scan — may not represent your typical feed.',
+    counterfactual: 'This is what showed up during this window — may not represent your typical feed.',
     takeaway: (data) => {
       // FIX PA1: Don't make confident claims when data is insufficient
       // Check if we have meaningful data before claiming broadened/narrowed
@@ -646,7 +646,7 @@ export const dashboardCatalog = [
       if (level.includes('low') || level.includes('diverse') || level.includes('broad')) {
         return 'Topics spread broadly — content covered many different themes without heavy concentration.';
       }
-      return `In this scan: ${data.riskLevel}`;
+      return `During this window: ${data.riskLevel}`;
     },
     action: null,
   },
@@ -824,7 +824,7 @@ export const dashboardCatalog = [
     emptyStateType: 'needs_more_scans',
     sortOrder: 'summary',
     isSummaryCard: true,
-    whyExplanation: 'A summary of topics detected in this scan. Does not indicate patterns over time.',
+    whyExplanation: 'A summary of topics detected during this window.',
     takeaway: (data) => {
       // FIX PA10: Don't make claims in summary if hero shows insufficient data
       // Summary should be coherent with hero data availability
@@ -933,7 +933,7 @@ export const dashboardCatalog = [
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     hidden: true,
-    whyExplanation: 'Counted unique accounts in this scan.',
+    whyExplanation: 'Counted unique accounts during this window.',
     takeaway: (data) => {
       if (!data?.diversity) return null;
       const d = data.diversity.toLowerCase();

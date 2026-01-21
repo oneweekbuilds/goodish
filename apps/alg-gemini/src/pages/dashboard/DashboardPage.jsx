@@ -1399,7 +1399,7 @@ const TabHero = ({
     ? scopeLabel 
     : scanCount > 1 
       ? `During this window (${scanCount} scans)`
-      : 'Observed in this scan';
+      : 'Observed during this window';
 
   return (
     <div className="mb-10">

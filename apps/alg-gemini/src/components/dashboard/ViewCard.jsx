@@ -498,7 +498,7 @@ const ViewCard = ({
           {/* Top creators list - visually secondary */}
           {data.topCreators && data.topCreators.length > 0 && (
             <div className="pt-2 border-t border-slate-100">
-              <p className="text-xs text-slate-500 mb-2 font-medium">Top accounts in this scan:</p>
+              <p className="text-xs text-slate-500 mb-2 font-medium">Top accounts during this window:</p>
               <ul className="space-y-1">
                 {data.topCreators.slice(0, 5).map((c, idx) => (
                   <li key={idx} className="text-xs text-slate-500 flex items-center gap-2">
@@ -769,7 +769,7 @@ const ViewCard = ({
     if (actualScansUsed > 1) {
       measurementScopeParts.push(`Across ${actualScansUsed} scans`);
     } else if (actualScansUsed === 1) {
-      measurementScopeParts.push('This scan');
+      measurementScopeParts.push('This window');
     }
     if (platformCount > 0) {
       measurementScopeParts.push(`${platformCount} platform${platformCount !== 1 ? 's' : ''}`);
