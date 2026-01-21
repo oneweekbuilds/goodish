@@ -12,7 +12,7 @@ import React from 'react';
  * @param {number} height - Chart height in pixels (max 120)
  * @param {number} maxPoints - Maximum data points to show (default 7)
  */
-const LineChartSimple = ({ data = [], valueLabel = '', color = '#3B82F6', height = 120, maxPoints = 7 }) => {
+const LineChartSimple = ({ data = [], valueLabel = '', color = '#3B82F6', height = 100, maxPoints = 7 }) => {
   if (!data || data.length < 2) return null;
 
   // UI Refoundation: Limit data points for visual clarity
@@ -80,10 +80,11 @@ const LineChartSimple = ({ data = [], valueLabel = '', color = '#3B82F6', height
           d={pathD}
           fill="none"
           stroke={color}
-          strokeWidth="2"
+          strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
           vectorEffect="non-scaling-stroke"
+          opacity="0.9"
         />
 
         {/* Data points */}
@@ -104,9 +105,9 @@ const LineChartSimple = ({ data = [], valueLabel = '', color = '#3B82F6', height
       {/* X-axis labels */}
       <div className="flex justify-between px-2 mt-1">
         {displayData.map((d, i) => (
-          <div key={i} className="text-xs text-slate-500 text-center" style={{ maxWidth: '60px' }}>
+          <div key={i} className="text-xs text-slate-400 text-center" style={{ maxWidth: '60px' }}>
             <div className="truncate">{d.label}</div>
-            <div className="font-medium text-slate-700">
+            <div className="font-medium text-slate-600">
               {typeof d.value === 'number' && d.value % 1 !== 0
                 ? d.value.toFixed(1)
                 : d.value}

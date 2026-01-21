@@ -1421,9 +1421,9 @@ const TabHero = ({
           <p
             style={{
               fontSize: '11px',
-              color: '#2563EB',
+              color: '#64748B',
               letterSpacing: scopeLabel ? '0.04em' : '0.14em',
-              fontWeight: 700,
+              fontWeight: 500,
               textTransform: scopeLabel ? 'none' : 'uppercase',
             }}
           >
@@ -1464,12 +1464,12 @@ const TabHero = ({
             }}
           />
           <h2
-            className="font-extrabold text-slate-900"
+            className="font-bold text-slate-800"
             style={{
               fontFamily: 'var(--font-headline, system-ui)',
-              letterSpacing: '-0.035em',
-              fontSize: 'clamp(1.75rem, 5vw, 2.5rem)',
-              lineHeight: 1.2,
+              letterSpacing: '-0.025em',
+              fontSize: 'clamp(1.625rem, 4.5vw, 2.25rem)',
+              lineHeight: 1.25,
               maxWidth: '100%',
             }}
           >

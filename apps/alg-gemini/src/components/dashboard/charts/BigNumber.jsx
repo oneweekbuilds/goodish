@@ -10,12 +10,12 @@ import React from 'react';
  */
 const BigNumber = ({ value, label, color = 'text-text-main', className = '' }) => {
   return (
-    <div className="text-center py-4">
-      <div className={`text-4xl font-semibold ${color} mb-1 ${className}`}>
+    <div className="text-center py-3">
+      <div className={`text-3xl font-medium ${color} mb-1 opacity-90 ${className}`}>
         {value}
       </div>
       {label && (
-        <p className="text-sm text-slate-500">{label}</p>
+        <p className="text-xs text-slate-400">{label}</p>
       )}
     </div>
   );

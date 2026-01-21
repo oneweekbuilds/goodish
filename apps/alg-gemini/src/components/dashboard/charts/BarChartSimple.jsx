@@ -20,20 +20,21 @@ const BarChartSimple = ({ data = [], valueLabel = '', maxBars = 5 }) => {
     <div className="space-y-3">
       {displayData.map((item, index) => (
         <div key={index} className="flex items-center gap-3">
-          <span className="text-sm text-slate-600 w-32 truncate flex-shrink-0" title={item.label}>
+          <span className="text-sm text-slate-500 w-32 truncate flex-shrink-0" title={item.label}>
             {item.label}
           </span>
-          <div className="flex-1 h-6 bg-slate-100 rounded-full overflow-hidden">
+          <div className="flex-1 h-5 bg-slate-100 rounded-full overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-300"
               style={{
                 width: `${(item.value / maxValue) * 100}%`,
                 backgroundColor: item.color || '#3B82F6',
                 minWidth: item.value > 0 ? '8px' : '0',
+                opacity: 0.85,
               }}
             />
           </div>
-          <span className="text-sm font-medium text-slate-700 w-16 text-right flex-shrink-0">
+          <span className="text-sm font-medium text-slate-600 w-16 text-right flex-shrink-0">
             {typeof item.value === 'number' && item.value % 1 !== 0
               ? item.value.toFixed(1)
               : item.value}

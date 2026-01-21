@@ -837,21 +837,21 @@ const ViewCard = ({
           <div className="flex-1 min-w-0">
             {/* Eyebrow label with semantic accent */}
             {showSummaryEyebrow && (
-              <span className={`inline-block text-[10px] font-semibold uppercase tracking-widest mb-2 ${accentText}`}>
+              <span className={`inline-block text-[10px] font-medium uppercase tracking-widest mb-2 opacity-60 ${accentText}`}>
                 Summary
               </span>
             )}
             {showPrimaryEyebrow && (
-              <span className={`inline-block text-[10px] font-semibold uppercase tracking-widest mb-2 ${accentText}`}>
+              <span className={`inline-block text-[10px] font-medium uppercase tracking-widest mb-2 opacity-60 ${accentText}`}>
                 Key Insight
               </span>
             )}
             {/* Title */}
             {showTitle && (
-              <h3 className={`font-semibold text-text-main line-clamp-2 ${
-                isPrimary && hasData ? 'text-xl' :
+              <h3 className={`font-semibold line-clamp-2 ${
+                isPrimary && hasData ? 'text-lg text-slate-700' :
                 isFutureCard ? 'text-sm text-slate-500' :
-                'text-base'
+                'text-base text-text-main'
               }`}>
                 {title}
               </h3>
@@ -880,15 +880,15 @@ const ViewCard = ({
           <div className="space-y-5">
             {/* Takeaway FIRST for primary cards - makes it visually dominant */}
             {isPrimary && takeawayText && (
-              <div className="pb-5 mb-3 border-b border-slate-100">
-                <p className="text-xl text-slate-800 font-semibold leading-relaxed tracking-tight">
+              <div className="pb-6 mb-5 border-b border-slate-200">
+                <p className="text-xl text-slate-900 font-semibold leading-relaxed tracking-tight">
                   {takeawayText}
                 </p>
               </div>
             )}
 
             {/* Main visualization - reduced emphasis for primary cards */}
-            <div className={isPrimary ? 'opacity-90' : ''}>
+            <div className={isPrimary ? 'opacity-75' : ''}>
               {renderContent()}
             </div>
 

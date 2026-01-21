@@ -28,7 +28,7 @@ const SimpleTable = ({ columns = [], rows = [], maxRows = 10 }) => {
             {columns.map((col, i) => (
               <th
                 key={i}
-                className={`py-2 px-3 font-semibold text-slate-600 ${getAlignment(col.align)}`}
+                className={`py-2 px-3 font-medium text-slate-500 ${getAlignment(col.align)}`}
               >
                 {col.label}
               </th>
@@ -44,7 +44,7 @@ const SimpleTable = ({ columns = [], rows = [], maxRows = 10 }) => {
               {columns.map((col, colIndex) => (
                 <td
                   key={colIndex}
-                  className={`py-2 px-3 text-slate-700 ${getAlignment(col.align)}`}
+                  className={`py-2 px-3 text-slate-600 ${getAlignment(col.align)}`}
                 >
                   {row[col.key] ?? '-'}
                 </td>
