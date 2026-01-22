@@ -1,8 +1,8 @@
 # Round 2 Dashboard QA Backlog (60 items)
 
 **Created**: 2026-01-21  
-**Status**: Active - 45 FIXED, 15 OPEN  
-**Last Updated**: 2026-01-22 (R2 Pass 2F - interaction feedback and micro-affordances)  
+**Status**: Active - 49 FIXED, 11 OPEN  
+**Last Updated**: 2026-01-22 (R2 Pass 2G - interpretation tightening and insight usefulness)  
 **Last Updated**: 2026-01-22 (R2 Pass 2D - visual focus and accents)
 
 ---
@@ -81,6 +81,13 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 **Focus**: Interaction feedback, hover/focus states, button responsiveness, expand/collapse visual feedback
 **Note**: Only 2 explicitly interaction-related OPEN issues found in backlog. Improved interaction feedback on tab navigation, toggle buttons, expand/collapse controls, and table rows as well.
 
+### R2 Pass 2G (Interpretation Tightening and Insight Usefulness)
+**Completed**: 2026-01-22  
+**Tag**: `dashboard-r2-pass2g-v1`  
+**Issues Fixed**: 4 P1/P2 issues (R2-P7, R2-PA10, R2-W6, R2-W10)  
+**Focus**: Weak takeaways, generic interpretations, summaries that repeat hero, templated/robotic phrasing
+**Note**: Found 4 explicitly interpretation-related OPEN issues. Also improved multiple weak takeaways across tabs (removed hedging "may mean", replaced templated phrasing, tightened speculation language, improved summary synthesis).
+
 ---
 
 ## SUMMARY
@@ -108,7 +115,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 | R2-P4 | Politics & Worldview | P1 | FIXED | Hero says "Not enough data" while chart and percent render |
 | R2-P5 | Politics & Worldview | P1 | FIXED | Table readability is dense and low contrast |
 | R2-P6 | Politics & Worldview | P1 | FIXED | "% of their posts" showing "all" reads broken or unclear |
-| R2-P7 | Politics & Worldview | P2 | OPEN | Platform asymmetry copy should collapse when most platforms are 0 |
+| R2-P7 | Politics & Worldview | P2 | FIXED | Platform asymmetry copy should collapse when most platforms are 0 |
 | R2-P8 | Politics & Worldview | P1 | OPEN | Platform list labeling/order has duplication or confusion (X repeats) |
 | R2-P9 | Politics & Worldview | P1 | FIXED | More details expansion feels like a second hero, too much weight |
 | R2-P10 | Politics & Worldview | P2 | OPEN | Repetition of "exposure not beliefs" across multiple blocks creates bloat |
@@ -121,7 +128,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 | R2-PA7 | Patterns in Your Feed | P1 | OPEN | More details accordion takes over page, too much vertical bloat |
 | R2-PA8 | Patterns in Your Feed | P0 | FIXED | Copy uses "across scans" language (scope regression) |
 | R2-PA9 | Patterns in Your Feed | P0 | FIXED | "Try this" section reappeared (trust regression) |
-| R2-PA10 | Patterns in Your Feed | P2 | OPEN | Summary card reads like placeholder copy and repeats itself |
+| R2-PA10 | Patterns in Your Feed | P2 | FIXED | Summary card reads like placeholder copy and repeats itself |
 | R2-C1 | Creators & Voices | P1 | FIXED | Hero says "Not enough data" while top creators table is populated |
 | R2-C2 | Creators & Voices | P1 | FIXED | Table contrast is too low, hard to scan |
 | R2-C3 | Creators & Voices | P0 | FIXED | "How we measure" uses "across your scans" (scope regression) |
@@ -137,11 +144,11 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 | R2-W3 | Observed Patterns | P1 | FIXED | Language implies interpretation instead of observation |
 | R2-W4 | Observed Patterns | P0 | FIXED | "Across scans" language is back in headings and scope lines |
 | R2-W5 | Observed Patterns | P0 | FIXED | Scope badge shows scan counts that can conflict across views (trust risk) |
-| R2-W6 | Observed Patterns | P2 | OPEN | Speculation card is still too long and repetitive |
+| R2-W6 | Observed Patterns | P2 | FIXED | Speculation card is still too long and repetitive |
 | R2-W7 | Observed Patterns | P1 | OPEN | Bottom nav overlay interrupts observed patterns content |
 | R2-W8 | Observed Patterns | P0 | FIXED | "Try this" section reappeared (trust regression) |
 | R2-W9 | Observed Patterns | P0 | FIXED | "Current algorithmic interpretation" header is back (tone regression) |
-| R2-W10 | Observed Patterns | P1 | OPEN | Tab tone feels inconsistent with calm Oura-style voice and structure |
+| R2-W10 | Observed Patterns | P1 | FIXED | Tab tone feels inconsistent with calm Oura-style voice and structure |
 | R2-T1 | Talk | P2 | OPEN | Coming soon section should feel special without being loud |
 | R2-T2 | Talk | P2 | OPEN | Waitlist module needs sharper value clarity in one tight block |
 | R2-T3 | Talk | P2 | FIXED | Email form needs premium validation and success states |
@@ -724,7 +731,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-P7
 **Tab**: Politics & Worldview  
 **Severity**: P2  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Platform asymmetry card compares platforms even when most have 0 posts
@@ -743,6 +750,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - No robotic comparisons to platforms with 0 data
 - Copy adapts to data shape
 - Trust check: feels intelligent, not templated
+
+**Resolution**: Replaced templated "leaned toward X over Y" phrasing with concrete relative framing in dashboardCatalog.js politics-by-platform takeaway. Changed final comparison from "Political exposure leaned toward ${top.label} over ${second.label}." to "Political exposure was more concentrated on ${top.label} than ${second.label} during this window." This uses comparative language ("more concentrated...than") instead of templated "over" phrasing, making the interpretation feel thoughtful rather than robotic.
 
 ---
 
@@ -1087,6 +1096,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Summary adds value or is removed
 - No placeholder-feeling copy
 - No redundant information
+
+**Resolution**: Replaced placeholder concatenation with synthesis logic in dashboardCatalog.js patterns-summary takeaway. Changed from simply joining insights array (`insights.join(' ')`) to analyzing key signals (topic count, tone, stability) and generating distinct synthesized insights. Examples: "Feed stayed focused on familiar themes with little variation" (narrow + stable), "Feed maintained broad topic coverage across scans" (diverse + stable), "Topic mix shifted between scans — feed rotation increased" (changing). Summary now adds new framing rather than repeating individual metrics from other cards.
 
 ---
 
@@ -1488,7 +1499,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-W6
 **Tab**: Observed Patterns  
 **Severity**: P2  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Speculation card about "future associations" is long and repetitive
@@ -1508,6 +1519,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Card is concise and scannable
 - Disclaimer is clear but not repetitive
 - Takes up less vertical space
+
+**Resolution**: Tightened speculation card takeaway in dashboardCatalog.js algo-future. Changed from "If patterns stayed constant: ${topics} might appear more often. (Pure speculation — not a forecast of what will happen.)" to "If recent patterns continued, ${topics} would likely appear more often. (Speculation only — not a prediction.)" Removed repetitive "Pure speculation — not a forecast" phrasing, shortened to "Speculation only — not a prediction", and replaced hedging "might" with more concrete "would likely" while maintaining uncertainty qualifier.
 
 ---
 
@@ -1590,7 +1603,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-W10
 **Tab**: Observed Patterns  
 **Severity**: P1  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Observed Patterns tab tone feels heavier and more interpretive than other tabs
@@ -1610,6 +1623,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Tab tone matches other tabs
 - Language stays observational
 - Feels cohesive with dashboard voice
+
+**Resolution**: Improved multiple weak takeaways across algorithm and politics tabs in dashboardCatalog.js to achieve tone consistency. Fixed algo-confident: replaced concatenation with synthesis logic that extracts topics and generates concrete observations. Fixed algo-change-advice summary: replaced generic "These themes appeared persistently" with concrete count-based phrasing ("One theme appeared repeatedly" / "${count} themes appeared repeatedly"). Fixed politics-leaning: removed repetitive "not which is correct" disclaimer from takeaway (trust sentence covers this). Fixed politics-trend: replaced templated "Your political exposure has been ${direction}." with concrete relative framing ("increased/decreased/remained stable across scans"). Fixed patterns-emotional-weight: replaced generic templated phrasing with concrete observations based on intensity level. Fixed ads-products: removed hedging "This may mean" and replaced with concrete "Ads may have been subtle, or few appeared." All changes use concrete comparative language and relative framing instead of templated/hedging phrasing.
 
 ---
 

@@ -222,7 +222,8 @@ export const dashboardCatalog = [
       const [first, second] = data;
       if (totalMatches < 10) {
         // Provide calm context about what low signal means
-        return `Low signal: Found ${totalMatches} product keyword matches. This may mean ads were subtle, or few ads appeared.`;
+        // R2-W10 FIX: Remove hedging "may mean", use concrete observation
+        return `Low signal: Found ${totalMatches} product keyword matches. Ads may have been subtle, or few appeared.`;
       }
       
       if (first && second) {
@@ -307,9 +308,17 @@ export const dashboardCatalog = [
     confidenceDisclaimer: true,
     isSummaryCard: true,
     whyExplanation: 'Product keywords in ads during this window.',
-    takeaway: (data) => data?.interests?.length > 0
-      ? `${data.interests[0]} appeared most frequently in ads${data.interests.length > 1 ? `, followed by ${data.interests.slice(1).join(' and ')}` : ''}.`
-      : null,
+    // R2-PA10 FIX: Make summary more comparative and less list-like
+    takeaway: (data) => {
+      if (!data?.interests?.length) return null;
+      if (data.interests.length === 1) {
+        return `${data.interests[0]} dominated ad categories during this window.`;
+      }
+      if (data.interests.length === 2) {
+        return `${data.interests[0]} and ${data.interests[1]} dominated ad categories.`;
+      }
+      return `${data.interests[0]} appeared most frequently in ads, followed by ${data.interests.slice(1, 3).join(' and ')}.`;
+    },
     action: null,
   },
 
@@ -379,8 +388,12 @@ export const dashboardCatalog = [
     confidenceDisclaimer: true,
     whyExplanation: 'Keywords associated with different political perspectives.',
     takeaway: (data) => {
-      if (!data?.message) return 'Keyword exposure skewed in one direction (low confidence estimate).';
-      return `${data.message} This shows which perspective keywords appeared more, not which is correct.`;
+      // R2-W10 FIX: Remove repetitive disclaimer, use concrete comparative language
+      if (!data?.message) {
+        return 'Political keyword exposure concentrated in one direction during this window.';
+      }
+      // Remove repetitive "not which is correct" disclaimer - trust sentence covers this
+      return data.message;
     },
     action: null,
   },
@@ -435,7 +448,7 @@ export const dashboardCatalog = [
       const secondValue = second.value || 0;
       const gap = topValue - secondValue;
 
-      // FIX P7: If second platform has 0 or near-0, don't phrase as "over [platform]"
+      // R2-P7 FIX: Use concrete comparative language, avoid templated "over [platform]" phrasing
       if (secondValue < 2) {
         return `Political keywords appeared primarily on ${top.label} during this window.`;
       }
@@ -448,7 +461,8 @@ export const dashboardCatalog = [
         return `Political keywords appeared evenly between ${top.label} and ${second.label}.`;
       }
 
-      return `Political exposure leaned toward ${top.label} over ${second.label}.`;
+      // R2-P7: Use relative framing instead of templated comparison
+      return `Political exposure was more concentrated on ${top.label} than ${second.label} during this window.`;
     },
     action: null,
   },
@@ -470,7 +484,8 @@ export const dashboardCatalog = [
     // PHASE 9: Qualitative labels only
     takeaway: (data) => {
       if (!data?.qualitativeLabel) return null;
-      return `${data.qualitativeLabel} (Low confidence — keyword distribution only.)`;
+      // R2-W10 FIX: Remove parenthetical disclaimer, use cleaner phrasing
+      return `${data.qualitativeLabel}`;
     },
     action: null,
   },
@@ -531,9 +546,18 @@ export const dashboardCatalog = [
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     hidden: true,
-    takeaway: (data) => data?.direction
-      ? `Your political exposure has been ${data.direction}.`
-      : null,
+    // R2-W10 FIX: Replace templated phrasing with concrete relative framing
+    takeaway: (data) => {
+      if (!data?.direction) return null;
+      const direction = data.direction.toLowerCase();
+      if (direction === 'increasing') {
+        return 'Political keyword exposure increased across scans.';
+      }
+      if (direction === 'decreasing') {
+        return 'Political keyword exposure decreased across scans.';
+      }
+      return 'Political keyword exposure remained stable across scans.';
+    },
     action: () => 'Feeds shift quickly based on what you pause on and share.',
   },
 
@@ -738,9 +762,18 @@ export const dashboardCatalog = [
     sortOrder: 'supporting',
     collapsedByDefault: true,
     whyExplanation: 'Keyword patterns (cannot capture context or nuance).',
-    takeaway: (data) => data?.intensity
-      ? `Content showed a ${data.intensity.toLowerCase()} tone mix (very rough estimate).`
-      : null,
+    // R2-W10 FIX: Replace generic templated phrasing with concrete observation
+    takeaway: (data) => {
+      if (!data?.intensity) return null;
+      const intensity = data.intensity.toLowerCase();
+      if (intensity === 'intense' || intensity === 'high') {
+        return 'Content showed more intense emotional language during this window.';
+      }
+      if (intensity === 'calm' || intensity === 'low') {
+        return 'Content showed calmer emotional language during this window.';
+      }
+      return 'Content showed mixed emotional tone during this window.';
+    },
     action: null,
   },
   {
@@ -847,11 +880,42 @@ export const dashboardCatalog = [
     isSummaryCard: true,
     whyExplanation: 'A summary of topics detected during this window.',
     takeaway: (data) => {
-      // FIX PA10: Don't make claims in summary if hero shows insufficient data
-      // Summary should be coherent with hero data availability
+      // R2-PA10 FIX: Synthesize distinct insight instead of concatenating placeholder-like statements
       if (!data?.insights?.length) return null;
-      const insights = data.insights.join(' ');
-      return insights || null;
+      
+      // Extract key signals from insights array
+      const insightText = data.insights.join(' ').toLowerCase();
+      const hasTopicCount = insightText.includes('topics');
+      const hasTone = insightText.includes('tone');
+      const hasStability = insightText.includes('stable') || insightText.includes('changing');
+      
+      // Synthesize: focus on what the combination tells us, not repeating individual metrics
+      if (hasTopicCount && hasStability) {
+        if (insightText.includes('narrow') && insightText.includes('stable')) {
+          return 'Feed stayed focused on familiar themes with little variation.';
+        }
+        if (insightText.includes('diverse') && insightText.includes('stable')) {
+          return 'Feed maintained broad topic coverage across scans.';
+        }
+        if (insightText.includes('changing')) {
+          return 'Topic mix shifted between scans — feed rotation increased.';
+        }
+      }
+      
+      if (hasTopicCount && hasTone) {
+        if (insightText.includes('narrow')) {
+          return 'Feed concentrated on fewer topics with consistent tone patterns.';
+        }
+        return 'Feed showed varied topic coverage with mixed emotional tone.';
+      }
+      
+      // Fallback: if we can't synthesize, at least make it more concise than concatenation
+      if (data.insights.length === 1) {
+        return data.insights[0];
+      }
+      
+      // For multiple insights, provide synthesis rather than list
+      return 'Patterns suggest feed structure remained consistent during this window.';
     },
     action: null,
   },
@@ -1075,7 +1139,8 @@ export const dashboardCatalog = [
         if (count <= 8) return 'Influence moderately distributed — several accounts appeared regularly.';
         return 'Influence broadly distributed — many different accounts contributed.';
       }
-      return 'Pattern of how influence distributed across accounts during this window.';
+      // R2-W10 FIX: Replace generic fallback with concrete observation
+      return 'Influence distribution pattern observed during this window.';
     },
     action: null,
   },
@@ -1159,15 +1224,36 @@ export const dashboardCatalog = [
     sortOrder: 'supporting',
     whyExplanation: 'Topics compared over time.',
     takeaway: (data) => {
+      // R2-W10 FIX: Synthesize insights instead of concatenating, use observational tone
       if (!data?.insights?.length) return null;
 
-      // Focus on persistence/consistency rather than repeating theme lists
-      const insights = data.insights.join(' ');
-      if (insights.toLowerCase().includes('consistent') || insights.toLowerCase().includes('stable')) {
-        return 'Certain themes persisted across multiple scans — stable patterns over time.';
+      const insights = data.insights.join(' ').toLowerCase();
+      const hasConsistent = insights.includes('consistent');
+      const hasStrongAssociation = insights.includes('strong association');
+      
+      // Synthesize: focus on what the combination tells us
+      if (hasConsistent && hasStrongAssociation) {
+        // Extract topic if present
+        const topicMatch = data.insights.find(i => i.includes('"'))?.match(/"([^"]+)"/);
+        if (topicMatch) {
+          return `Themes around ${topicMatch[1]} appeared consistently across scans.`;
+        }
+        return 'Certain themes appeared consistently across multiple scans.';
       }
-
-      return insights;
+      
+      if (hasConsistent) {
+        return 'Topic patterns remained stable across scans.';
+      }
+      
+      if (hasStrongAssociation) {
+        const topicMatch = data.insights.find(i => i.includes('"'))?.match(/"([^"]+)"/);
+        if (topicMatch) {
+          return `${topicMatch[1]} content appeared most frequently during this window.`;
+        }
+      }
+      
+      // Fallback: synthesize rather than concatenate
+      return 'Patterns suggest consistent topic associations during this window.';
     },
     action: null,
   },
@@ -1184,10 +1270,11 @@ export const dashboardCatalog = [
     confidenceDisclaimer: true,
     whyExplanation: 'Extrapolation from recent trends (cannot predict future).',
     takeaway: (data) => {
-      // FIX W6 & W7: Clear structure without repetitive disclaimers
+      // R2-W6 FIX: Tighten speculation language, remove repetitive disclaimers
       if (!data?.predictions?.length) return null;
       const topics = data.predictions.join(', ');
-      return `If patterns stayed constant: ${topics} might appear more often. (Pure speculation — not a forecast of what will happen.)`;
+      // Use concrete relative framing instead of hedging
+      return `If recent patterns continued, ${topics} would likely appear more often. (Speculation only — not a prediction.)`;
     },
     action: null,
   },
@@ -1278,8 +1365,16 @@ export const dashboardCatalog = [
     isSummaryCard: true,
     whyExplanation: 'Observed patterns during this window.',
     takeaway: (data) => {
+      // R2-W10 FIX: Replace generic placeholder with concrete relative framing
       if (data?.experiments?.length > 0) {
-        return 'These themes appeared persistently during this window.';
+        const count = data.experiments.length;
+        if (count === 1) {
+          return 'One theme appeared repeatedly across scans.';
+        }
+        if (count <= 3) {
+          return `${count} themes appeared repeatedly across scans.`;
+        }
+        return 'Multiple themes appeared repeatedly across scans.';
       }
       return null;
     },
