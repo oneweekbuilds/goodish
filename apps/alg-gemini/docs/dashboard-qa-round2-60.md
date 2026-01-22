@@ -33,6 +33,30 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 
 ---
 
+## PASS HISTORY
+
+### R2 Pass 1 (P0 Fixes)
+**Completed**: 2026-01-21  
+**Tag**: `dashboard-r2-pass1-p0-v1`  
+**Issues Fixed**: 13 P0 issues (R2-G3, R2-G4, R2-A6, R2-A7, R2-PA8, R2-PA9, R2-C3, R2-C7, R2-W1, R2-W4, R2-W5, R2-W8, R2-W9)  
+**Focus**: Trust discipline regressions and crash fixes
+
+### R2 Pass 2A (Visual Legibility)
+**Completed**: 2026-01-22  
+**Tag**: `dashboard-r2-pass2a-v1`  
+**Issues Fixed**: 6 P1/P2 issues (R2-G1, R2-G2, R2-P1, R2-A1, R2-PA1, R2-C1)  
+**Focus**: Card borders, contrast, bottom padding, banner colors, empty states, hero messages
+
+### R2 Pass 2B (Quantitative Clarity)
+**Completed**: 2026-01-22  
+**Tag**: `dashboard-r2-pass2b-v2`  
+**Issues Fixed**: 6 P1/P2 issues (R2-A2, R2-A3, R2-P2, R2-PA2, R2-C2, R2-W2)  
+**Focus**: Hero contradictions, button contrast, CTA consistency, table scannability
+
+**Process Note**: All 6 planned issues were fixed as specified. Going forward, pass definitions will explicitly list issue IDs in the pass request to maintain strict selection discipline and avoid scope drift.
+
+---
+
 ## SUMMARY
 
 | ID | Tab | Severity | Status | Issue |
