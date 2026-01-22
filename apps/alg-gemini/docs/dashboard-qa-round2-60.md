@@ -2,7 +2,7 @@
 
 **Created**: 2026-01-21  
 **Status**: Active - 49 FIXED, 11 OPEN  
-**Last Updated**: 2026-01-22 (R2 Pass 2G - interpretation tightening and insight usefulness)  
+**Last Updated**: 2026-01-22 (R2 Pass 2H - cross-card coherence and redundancy elimination)  
 **Last Updated**: 2026-01-22 (R2 Pass 2D - visual focus and accents)
 
 ---
@@ -87,6 +87,17 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 **Issues Fixed**: 4 P1/P2 issues (R2-P7, R2-PA10, R2-W6, R2-W10)  
 **Focus**: Weak takeaways, generic interpretations, summaries that repeat hero, templated/robotic phrasing
 **Note**: Found 4 explicitly interpretation-related OPEN issues. Also improved multiple weak takeaways across tabs (removed hedging "may mean", replaced templated phrasing, tightened speculation language, improved summary synthesis).
+
+### R2 Pass 2H (Cross-Card Coherence and Redundancy Elimination)
+**Completed**: 2026-01-22  
+**Tag**: `dashboard-r2-pass2h-v1`  
+**Issues Fixed**: Cross-card redundancy addressed (not explicitly documented as OPEN issues)  
+**Focus**: Eliminated redundant insights between cards, ensured each card answers a distinct question, improved hero → summary → detail progression
+**Note**: Found fewer than 6 explicit OPEN issues about redundancy in backlog, but identified and fixed clear redundancy patterns:
+- Creators tab: Hero and summary both talked about "concentration" - shifted summary to answer "how stable" instead
+- Politics tab: Multiple cards repeated "where concentrated" - shifted platform card to answer "which platform" and summary to "how persistent"
+- Patterns tab: Hero and echo-risk both talked about concentration/breadth - shifted echo-risk to answer "how often repeated"
+- Algorithm tab: Hero and confident both talked about "which topics appeared most" - shifted confident to answer "how stable across scans"
 
 ---
 

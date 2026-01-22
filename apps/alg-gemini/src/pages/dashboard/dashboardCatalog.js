@@ -427,7 +427,8 @@ export const dashboardCatalog = [
     tab: 'politics',
     id: 'politics-by-platform',
     title: 'Platform asymmetry',
-    description: 'Whether political exposure was evenly distributed across platforms or concentrated on one.',
+    // R2-Pass2H FIX: Shift from repeating "concentrated" to answering "which platform" - distinct from creators card's "which accounts"
+    description: 'Which platforms showed the most political keyword activity during this window.',
     outputType: 'bar',
     dataFn: 'getCrossPlatformPoliticalData',
     emptyStateType: 'needs_broader_behavior',
@@ -435,34 +436,34 @@ export const dashboardCatalog = [
     collapsedByDefault: true,
     whyExplanation: 'Political keyword rates per platform.',
     takeaway: (data) => {
+      // R2-Pass2H FIX: Answer "which platform" instead of repeating "concentrated" from creators card
       if (!Array.isArray(data) || data.length === 0) return null;
       const sorted = [...data].sort((a, b) => (b?.value || 0) - (a?.value || 0));
       const [top, second] = sorted;
       if (!top) return null;
 
       if (!second) {
-        return `Political keywords concentrated entirely on ${top.label}.`;
+        return `Political keywords appeared entirely on ${top.label} during this window.`;
       }
 
       const topValue = top.value || 0;
       const secondValue = second.value || 0;
       const gap = topValue - secondValue;
 
-      // R2-P7 FIX: Use concrete comparative language, avoid templated "over [platform]" phrasing
       if (secondValue < 2) {
         return `Political keywords appeared primarily on ${top.label} during this window.`;
       }
 
       if (gap >= 10) {
-        return `Political exposure clustered heavily on ${top.label}, with much lighter presence on ${second.label}.`;
+        return `${top.label} showed much higher political keyword activity than ${second.label}.`;
       }
 
       if (Math.abs(gap) <= 3) {
         return `Political keywords appeared evenly between ${top.label} and ${second.label}.`;
       }
 
-      // R2-P7: Use relative framing instead of templated comparison
-      return `Political exposure was more concentrated on ${top.label} than ${second.label} during this window.`;
+      // Focus on platform comparison, not repeating "concentrated" theme
+      return `${top.label} showed more political keyword activity than ${second.label} during this window.`;
     },
     action: null,
   },
@@ -670,24 +671,26 @@ export const dashboardCatalog = [
     tab: 'patterns',
     id: 'patterns-echo-risk',
     title: 'Repetition vs. rotation',
-    description: 'Whether a few topics dominated or content spread evenly across many themes.',
+    // R2-Pass2H FIX: Shift from repeating "concentration" to answering "how often topics repeated" - distinct from hero's breadth
+    description: 'How frequently the same topics reappeared versus how often new themes rotated in.',
     outputType: 'status',
     dataFn: 'getEchoRiskData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     whyExplanation: 'Topic distribution during this window.',
     takeaway: (data) => {
+      // R2-Pass2H FIX: Answer "how often repeated" instead of repeating "concentrated/broad" from hero
       if (!data?.riskLevel) return null;
       const level = data.riskLevel.toLowerCase();
 
       if (level.includes('high') || level.includes('concentrated') || level.includes('narrow')) {
-        return 'A few topics dominated — most content reinforced the same narrow themes.';
+        return 'Same topics reappeared frequently — content returned to familiar themes repeatedly.';
       }
       if (level.includes('moderate') || level.includes('medium')) {
-        return 'Several topics recurred — content cycled through a moderate set of familiar themes.';
+        return 'Topics rotated with some repetition — mix of familiar and new themes.';
       }
       if (level.includes('low') || level.includes('diverse') || level.includes('broad')) {
-        return 'Topics spread broadly — content covered many different themes without heavy concentration.';
+        return 'Topics rotated frequently — content shifted between different themes with little repetition.';
       }
       return `During this window: ${data.riskLevel}`;
     },
@@ -1125,7 +1128,8 @@ export const dashboardCatalog = [
     tab: 'creators',
     id: 'creators-influential',
     title: 'Influence Pattern',
-    description: 'Whether influence concentrated around a few accounts or distributed across many voices.',
+    // R2-Pass2H FIX: Shift from repeating "concentration" to answering "how stable" - distinct from hero's "where"
+    description: 'Whether the same accounts appeared consistently across scans or rotated frequently.',
     outputType: 'text',
     dataFn: 'getInfluentialCreatorsData',
     emptyStateType: 'needs_more_scans',
@@ -1133,13 +1137,13 @@ export const dashboardCatalog = [
     isSummaryCard: true,
     whyExplanation: 'Appearance frequency during this window.',
     takeaway: (data) => {
+      // R2-Pass2H FIX: Answer "how stable" instead of repeating "concentrated/distributed" from hero
       if (data?.creators && Array.isArray(data.creators)) {
         const count = data.creators.length;
-        if (count <= 3) return 'Influence concentrated — a few familiar accounts appeared repeatedly.';
-        if (count <= 8) return 'Influence moderately distributed — several accounts appeared regularly.';
-        return 'Influence broadly distributed — many different accounts contributed.';
+        if (count <= 3) return 'Same accounts appeared repeatedly across scans — stable influence pattern.';
+        if (count <= 8) return 'Account mix rotated moderately — some consistency with regular variation.';
+        return 'Account mix rotated frequently — influence shifted across different voices.';
       }
-      // R2-W10 FIX: Replace generic fallback with concrete observation
       return 'Influence distribution pattern observed during this window.';
     },
     action: null,
