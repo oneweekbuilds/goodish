@@ -12,7 +12,8 @@ import React from 'react';
 const BigNumber = ({ value, label, color = 'text-text-main', className = '', deemphasize = false }) => {
   return (
     <div className="text-center py-3">
-      <div className={`${deemphasize ? 'text-2xl' : 'text-3xl'} font-medium ${color} mb-1 ${deemphasize ? 'opacity-60' : 'opacity-90'} ${className}`}>
+      {/* R2-PA5: Further reduced visual weight when de-emphasized for better hierarchy */}
+      <div className={`${deemphasize ? 'text-xl' : 'text-3xl'} ${deemphasize ? 'font-normal' : 'font-medium'} ${color} mb-1 ${deemphasize ? 'opacity-50' : 'opacity-90'} ${className}`}>
         {value}
       </div>
       {label && (

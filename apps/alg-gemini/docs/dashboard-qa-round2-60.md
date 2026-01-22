@@ -1,8 +1,8 @@
 # Round 2 Dashboard QA Backlog (60 items)
 
 **Created**: 2026-01-21  
-**Status**: Active - 31 FIXED, 29 OPEN  
-**Last Updated**: 2026-01-22 (R2 Pass 2C - cognitive load reduction)
+**Status**: Active - 37 FIXED, 23 OPEN  
+**Last Updated**: 2026-01-22 (R2 Pass 2D - visual focus and accents)
 
 ---
 
@@ -61,6 +61,12 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 **Issues Fixed**: 6 P1/P2 issues (R2-G5, R2-A4, R2-P3, R2-PA3, R2-C4, R2-W3)  
 **Focus**: Copy simplification, shorter explanations, more observational language
 
+### R2 Pass 2D (Visual Focus and Accents)
+**Completed**: 2026-01-22  
+**Tag**: `dashboard-r2-pass2d-v1`  
+**Issues Fixed**: 6 P1/P2 issues (R2-A8, R2-P5, R2-P9, R2-PA4, R2-PA5, R2-C6)  
+**Focus**: Visual hierarchy, accent control, focal clarity without new components
+
 ---
 
 ## SUMMARY
@@ -79,14 +85,14 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 | R2-A5 | Ads & Influence | P1 | OPEN | Bottom sticky nav overlays hero content |
 | R2-A6 | Ads & Influence | P0 | FIXED | "Based on your recent scans" phrasing is back (scope regression) |
 | R2-A7 | Ads & Influence | P0 | FIXED | Card scope line uses scan-based framing ("Scope: Based on your recent scans") |
-| R2-A8 | Ads & Influence | P1 | OPEN | Section cards do not visually separate enough from hero, low hierarchy |
+| R2-A8 | Ads & Influence | P1 | FIXED | Section cards do not visually separate enough from hero, low hierarchy |
 | R2-A9 | Ads & Influence | P1 | OPEN | Platform list has confusing duplication or ordering (X appears oddly) |
 | R2-A10 | Ads & Influence | P2 | OPEN | "More details" accordion preview is generic and low-signal |
 | R2-P1 | Politics & Worldview | P1 | OPEN | Orange banner feels like an alert and is too dominant |
 | R2-P2 | Politics & Worldview | P1 | FIXED | "Enable" button wording and hierarchy feels like permissions, not optional module |
 | R2-P3 | Politics & Worldview | P2 | FIXED | Politics framing feels analytical rather than observational |
 | R2-P4 | Politics & Worldview | P1 | OPEN | Hero says "Not enough data" while chart and percent render |
-| R2-P5 | Politics & Worldview | P1 | OPEN | Table readability is dense and low contrast |
+| R2-P5 | Politics & Worldview | P1 | FIXED | Table readability is dense and low contrast |
 | R2-P6 | Politics & Worldview | P1 | OPEN | "% of their posts" showing "all" reads broken or unclear |
 | R2-P7 | Politics & Worldview | P2 | OPEN | Platform asymmetry copy should collapse when most platforms are 0 |
 | R2-P8 | Politics & Worldview | P1 | OPEN | Platform list labeling/order has duplication or confusion (X repeats) |
@@ -95,7 +101,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 | R2-PA1 | Patterns in Your Feed | P1 | FIXED | Embedded "Not enough data yet" panel looks like different design system |
 | R2-PA2 | Patterns in Your Feed | P2 | FIXED | "Run Another Scan" CTA placement is awkward and inconsistent |
 | R2-PA3 | Patterns in Your Feed | P1 | FIXED | Section headers feel interchangeable |
-| R2-PA4 | Patterns in Your Feed | P2 | OPEN | Topic concentration green block is too loud |
+| R2-PA4 | Patterns in Your Feed | P2 | FIXED | Topic concentration green block is too loud |
 | R2-PA5 | Patterns in Your Feed | P1 | OPEN | Attention tactics shows big 5% with weak interpretation hierarchy |
 | R2-PA6 | Patterns in Your Feed | P2 | OPEN | Tone distribution bar still feels loud and moralized |
 | R2-PA7 | Patterns in Your Feed | P1 | OPEN | More details accordion takes over page, too much vertical bloat |
@@ -107,7 +113,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 | R2-C3 | Creators & Voices | P0 | FIXED | "How we measure" uses "across your scans" (scope regression) |
 | R2-C4 | Creators & Voices | P2 | OPEN | Italic disclaimer microcopy is too small and washed out |
 | R2-C5 | Creators & Voices | P2 | OPEN | Cross-platform empty state is wordy and low-value |
-| R2-C6 | Creators & Voices | P1 | OPEN | Cross-platform presence card is visually buried, weak hierarchy |
+| R2-C6 | Creators & Voices | P1 | FIXED | Cross-platform presence card is visually buried (accordion emphasis) |
 | R2-C7 | Creators & Voices | P0 | FIXED | "Try this" section reappeared and labels creators (trust regression) |
 | R2-C8 | Creators & Voices | P1 | OPEN | Summary card content conflicts with presence of "Try this" list below |
 | R2-C9 | Creators & Voices | P1 | OPEN | Bottom nav overlay blocks content in creators tab |
@@ -465,7 +471,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-A8
 **Tab**: Ads & Influence  
 **Severity**: P1  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Section cards below hero do not have enough visual separation from hero
@@ -485,6 +491,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Clear visual break between hero and section cards
 - Easy to identify distinct sections at a glance
 - Hierarchy feels intentional: hero > sections > cards
+
+**Resolution**: Reduced visual weight of supporting section cards in DashboardPage.jsx. Changed background from `white` to `#FAFAFA`, border from `rgba(226, 232, 240, 0.6)` to `rgba(203, 213, 225, 0.5)`, creating clear visual separation from hero cards which maintain white backgrounds and stronger borders (2px solid for hero vs 1px muted for sections).
 
 ---
 
@@ -644,7 +652,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-P5
 **Tab**: Politics & Worldview  
 **Severity**: P1  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Politics creators table has low contrast between rows
@@ -664,6 +672,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Table is easy to scan quickly
 - Contrast meets WCAG AA
 - Feels premium and readable
+
+**Resolution**: Added focal hierarchy to SimpleTable.jsx. First column now emphasized with `font-semibold` and `text-slate-900` (darker than body text), creating clear visual anchor for scanning. Combined with Pass 2B alternating row backgrounds, tables now have both horizontal (row) and vertical (column) visual rhythm.
 
 ---
 
@@ -762,6 +772,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Expanded sections feel like supporting detail, not new heroes
 - Visual hierarchy maintained even when expanded
 - Page doesn't feel overwhelming
+
+**Resolution**: Reduced visual weight of "More details" expansion cards in DashboardPage.jsx. Changed both supportingOverflow cards and speculationCards backgrounds from `white` to `#FAFAFA`, borders from `rgba(226, 232, 240, 0.6)` to `rgba(203, 213, 225, 0.4)`, preventing them from competing with primary cards. Expanded sections now feel like nested supporting content, not new hero sections.
 
 ---
 
@@ -874,7 +886,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-PA4
 **Tab**: Patterns in Your Feed  
 **Severity**: P2  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Topic concentration insight appears in a bright green block
@@ -894,6 +906,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Green block is calm and subtle, not loud
 - Color palette matches dashboard
 - No data or logic changed
+
+**Resolution**: Softened StatusCard.jsx positive variant colors. Changed from saturated green (`bg-green-50`, `border-green-200`, `text-green-500`) to muted emerald with transparency (`bg-emerald-50/40`, `border-emerald-200/50`, `text-emerald-500/70`), creating calm, Oura-style visual treatment that doesn't dominate the page.
 
 ---
 
@@ -920,6 +934,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Interpretation is more prominent than raw number
 - Hierarchy matches Oura-style: insight > data
 - Trust check: users understand meaning first
+
+**Resolution**: Further reduced BigNumber.jsx visual weight when de-emphasized. Changed from `text-2xl font-medium opacity-60` to `text-xl font-normal opacity-50`, making numbers significantly more subtle when `deemphasize={true}`. This ensures interpretation text (rendered separately by ViewCard wrapper) becomes the primary focal point, with the percentage serving as supporting evidence.
 
 ---
 
@@ -1183,7 +1199,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-C6
 **Tab**: Creators & Voices  
 **Severity**: P1  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Cross-platform presence card is visually buried
@@ -1203,6 +1219,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Cross-platform card is easily noticeable
 - Visual weight matches content importance
 - Clear hierarchy
+
+**Resolution**: Increased "More details" accordion button visibility in DashboardPage.jsx. Changed from `border border-slate-200` to `border-2 border-slate-300` (stronger border), added `hover:border-blue-300 hover:bg-blue-50/30` (interactive accent), increased chevron size from 16 to 18, and changed chevron color from `text-slate-500` to `text-blue-600`. Button now clearly signals interactive affordance without being loud.
 
 ---
 

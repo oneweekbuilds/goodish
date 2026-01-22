@@ -44,10 +44,11 @@ const SimpleTable = ({ columns = [], rows = [], maxRows = 10 }) => {
               className={`border-b border-slate-200 hover:bg-slate-50 transition-colors ${rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}
             >
               {/* R2-C2: Alternating row backgrounds, darker text, more padding */}
+              {/* R2-P5: First column emphasized for focal hierarchy */}
               {columns.map((col, colIndex) => (
                 <td
                   key={colIndex}
-                  className={`py-3 px-4 text-slate-800 ${getAlignment(col.align)}`}
+                  className={`py-3 px-4 text-slate-800 ${getAlignment(col.align)} ${colIndex === 0 ? 'font-semibold text-slate-900' : ''}`}
                 >
                   {row[col.key] ?? '-'}
                 </td>

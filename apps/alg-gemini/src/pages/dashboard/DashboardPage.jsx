@@ -933,10 +933,10 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                 return (
                   <div
                     key={view.id}
-                    className="rounded-xl p-4 transition-all duration-200 hover:shadow-sm hover:border-slate-200"
+                    className="rounded-xl p-4 transition-all duration-200 hover:shadow-sm hover:border-slate-300"
                     style={{
-                      background: 'white',
-                      border: '1px solid rgba(226, 232, 240, 0.6)',
+                      background: '#FAFAFA',
+                      border: '1px solid rgba(203, 213, 225, 0.5)',
                     }}
                   >
                     {/* Card title */}
@@ -976,7 +976,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
           <ChapterContainer variant="accent">
             <button
               onClick={() => toggleSection('moreDetails')}
-              className="w-full flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-left transition-colors hover:border-slate-300"
+              className="w-full flex items-center justify-between rounded-xl border-2 border-slate-300 bg-white px-4 py-3.5 text-left transition-all hover:border-blue-300 hover:bg-blue-50/30"
               aria-expanded={expandedSections.moreDetails}
               aria-label={expandedSections.moreDetails ? 'Collapse more details' : 'Expand more details'}
             >
@@ -985,8 +985,8 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                 <p className="text-xs text-slate-500">{moreDetailsSubtitle}</p>
               </div>
               <ChevronDown
-                size={16}
-                className="flex-shrink-0 text-slate-500 transition-transform"
+                size={18}
+                className="flex-shrink-0 text-blue-600 transition-transform"
                 style={{
                   transform: expandedSections.moreDetails ? 'rotate(180deg)' : 'rotate(0deg)',
                 }}
@@ -1009,13 +1009,14 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                         return (
                           <div
                             key={view.id}
-                            className="rounded-xl p-5 transition-all duration-200 hover:shadow-sm hover:border-slate-200"
+                            className="rounded-xl p-5 transition-all duration-200 hover:shadow-sm hover:border-slate-300"
                             style={{
-                              background: 'white',
-                              border: '1px solid rgba(226, 232, 240, 0.6)',
+                              background: '#FAFAFA',
+                              border: '1px solid rgba(203, 213, 225, 0.4)',
                             }}
                           >
                             {/* FIX X5: Improved spacing for expanded cards */}
+                            {/* R2-P9: Reduced visual weight to prevent competing with primary cards */}
                             <h4 className="text-sm font-semibold text-slate-600 mb-3">{view.title}</h4>
                             {takeawayText && (
                               <p className="text-xs font-medium text-slate-600 mb-3 leading-relaxed">
@@ -1058,12 +1059,13 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                         return (
                           <div
                             key={view.id}
-                            className="rounded-xl p-4 transition-all duration-200 hover:shadow-sm hover:border-slate-200"
+                            className="rounded-xl p-4 transition-all duration-200 hover:shadow-sm hover:border-slate-300"
                             style={{
-                              background: 'white',
-                              border: '1px solid rgba(226, 232, 240, 0.6)',
+                              background: '#FAFAFA',
+                              border: '1px solid rgba(203, 213, 225, 0.4)',
                             }}
                           >
+                            {/* R2-P9: Reduced visual weight for speculation cards */}
                             <h4 className="text-sm font-semibold text-slate-600 mb-2">{view.title}</h4>
                             {takeawayText && (
                               <p className="text-xs font-medium text-slate-600 mb-2 leading-relaxed">
