@@ -87,8 +87,8 @@ export const dashboardCatalog = [
     hero: true,
     isPrimary: true,
     sortOrder: 'primary',
-    whyExplanation: 'These are posts the platform explicitly labeled as ads or sponsored.',
-    counterfactual: 'This may not match your perception — some ads blend in with regular content.',
+    whyExplanation: 'Platform-labeled ads and sponsored posts.',
+    counterfactual: 'Some ads blend in with regular content.',
     takeaway: (data) => {
       if (data?.currentPercent === undefined) return null;
       const pct = data.currentPercent;
@@ -127,7 +127,7 @@ export const dashboardCatalog = [
     dataFn: 'getAdConcentrationData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
-    whyExplanation: 'Counted unique advertisers in labeled ads from your scans.',
+    whyExplanation: 'Unique advertisers in labeled ads.',
     // PHASE 9: Qualitative labels only
     takeaway: (data) => {
       const label = data?.qualitativeLabel;
@@ -154,7 +154,7 @@ export const dashboardCatalog = [
     dataFn: 'getPlatformPromoData',
     emptyStateType: 'needs_broader_behavior',
     sortOrder: 'supporting',
-    whyExplanation: 'Counted labeled ads per platform in your scans.',
+    whyExplanation: 'Labeled ads per platform.',
     takeaway: (data) => {
       if (!Array.isArray(data) || data.length === 0) return null;
       const sorted = [...data].sort((a, b) => (b?.value || 0) - (a?.value || 0));
@@ -194,7 +194,7 @@ export const dashboardCatalog = [
     sortOrder: 'supporting',
     collapsedByDefault: true,
     confidenceDisclaimer: true,
-    whyExplanation: 'Detected via patterns like discount codes or affiliate links.',
+    whyExplanation: 'Discount codes and affiliate link patterns.',
     takeaway: (data) => {
       if (data?.possibleInfluencePercent === undefined) return null;
       const pct = data.possibleInfluencePercent;
@@ -214,7 +214,7 @@ export const dashboardCatalog = [
     sortOrder: 'supporting',
     collapsedByDefault: true,
     confidenceDisclaimer: true,
-    whyExplanation: 'Matched keywords in labeled ads. Does not indicate your interests.',
+    whyExplanation: 'Keywords in labeled ads.',
     takeaway: (data) => {
       // FIX A9: Add context to low-signal copy
       if (!Array.isArray(data) || data.length === 0) return null;
@@ -306,7 +306,7 @@ export const dashboardCatalog = [
     sortOrder: 'summary',
     confidenceDisclaimer: true,
     isSummaryCard: true,
-    whyExplanation: 'Based on product keywords in ads from your scans. We cannot know why these were shown to you.',
+    whyExplanation: 'Product keywords in ads during this window.',
     takeaway: (data) => data?.interests?.length > 0
       ? `${data.interests[0]} appeared most frequently in ads${data.interests.length > 1 ? `, followed by ${data.interests.slice(1).join(' and ')}` : ''}.`
       : null,
@@ -334,8 +334,8 @@ export const dashboardCatalog = [
     hero: true,
     isPrimary: true,
     sortOrder: 'primary',
-    whyExplanation: 'Matched keywords related to elections, policy, and political figures. Keyword matching has limitations.',
-    counterfactual: 'This measures exposure, not belief formation. Political content may be more memorable than other topics.',
+    whyExplanation: 'Keywords related to elections, policy, and political figures.',
+    counterfactual: 'Political content may be more memorable than other topics.',
     takeaway: (data) => {
       if (data?.currentPercent === undefined) return null;
       const pct = data.currentPercent;
@@ -377,7 +377,7 @@ export const dashboardCatalog = [
     sortOrder: 'supporting',
     requiresOptIn: true,
     confidenceDisclaimer: true,
-    whyExplanation: 'Counts keywords associated with different political perspectives. This measures exposure pattern only, not content accuracy or your beliefs.',
+    whyExplanation: 'Keywords associated with different political perspectives.',
     takeaway: (data) => {
       if (!data?.message) return 'Keyword exposure skewed in one direction (low confidence estimate).';
       return `${data.message} This shows which perspective keywords appeared more, not which is correct.`;
@@ -420,7 +420,7 @@ export const dashboardCatalog = [
     emptyStateType: 'needs_broader_behavior',
     sortOrder: 'supporting',
     collapsedByDefault: true,
-    whyExplanation: 'Compared political keyword rates on each platform in your scans.',
+    whyExplanation: 'Political keyword rates per platform.',
     takeaway: (data) => {
       if (!Array.isArray(data) || data.length === 0) return null;
       const sorted = [...data].sort((a, b) => (b?.value || 0) - (a?.value || 0));
@@ -466,7 +466,7 @@ export const dashboardCatalog = [
     requiresOptIn: true,
     confidenceDisclaimer: true,
     collapsedByDefault: true,
-    whyExplanation: 'Simple keyword matching. Cannot detect nuance, irony, or context. Measures exposure distribution, not content quality or your beliefs.',
+    whyExplanation: 'Keyword matching (cannot detect nuance or context).',
     // PHASE 9: Qualitative labels only
     takeaway: (data) => {
       if (!data?.qualitativeLabel) return null;
@@ -548,7 +548,7 @@ export const dashboardCatalog = [
     emptyStateType: 'needs_more_scans',
     sortOrder: 'summary',
     isSummaryCard: true,
-    whyExplanation: 'Based on political keywords during this window. This measures exposure patterns, not your beliefs.',
+    whyExplanation: 'Political keywords during this window.',
     takeaway: (data) => {
       // FIX P10: Instead of repeating hero's percentage assessment, provide distinct insight
       // NOTE: getPoliticalProfileData only returns politicalPercent, not source details
@@ -587,7 +587,7 @@ export const dashboardCatalog = [
   {
     tab: 'patterns',
     id: 'patterns-topic-variety',
-    title: 'How topic variety shifted',
+    title: 'Feed breadth: narrow or wide',
     description: 'Whether your feed narrowed to repeat themes or broadened across different topics.',
     outputType: 'number_bar',
     dataFn: 'getTopicVarietyData',
@@ -595,8 +595,8 @@ export const dashboardCatalog = [
     hero: true,
     isPrimary: true,
     sortOrder: 'primary',
-    whyExplanation: 'Grouped posts by detected topic. Classification is approximate.',
-    counterfactual: 'This is what showed up during this window — may not represent your typical feed.',
+    whyExplanation: 'Posts grouped by detected topic.',
+    counterfactual: 'This window may differ from your typical feed.',
     takeaway: (data) => {
       // FIX PA1: Don't make confident claims when data is insufficient
       // Check if we have meaningful data before claiming broadened/narrowed
@@ -645,13 +645,13 @@ export const dashboardCatalog = [
   {
     tab: 'patterns',
     id: 'patterns-echo-risk',
-    title: 'Topic concentration',
+    title: 'Repetition vs. rotation',
     description: 'Whether a few topics dominated or content spread evenly across many themes.',
     outputType: 'status',
     dataFn: 'getEchoRiskData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
-    whyExplanation: 'Measured topic distribution across scans.',
+    whyExplanation: 'Topic distribution during this window.',
     takeaway: (data) => {
       if (!data?.riskLevel) return null;
       const level = data.riskLevel.toLowerCase();
@@ -730,14 +730,14 @@ export const dashboardCatalog = [
   {
     tab: 'patterns',
     id: 'patterns-emotional-weight',
-    title: 'Tone Distribution (Rough Estimate)',
+    title: 'Emotional tone balance',
     description: 'Broad estimate of emotional tone patterns during this window.',
     outputType: 'stacked100',
     dataFn: 'getEmotionalWeightData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     collapsedByDefault: true,
-    whyExplanation: 'Based on keyword patterns. Sentiment detection has major limitations and cannot capture context or nuance.',
+    whyExplanation: 'Keyword patterns (cannot capture context or nuance).',
     takeaway: (data) => data?.intensity
       ? `Content showed a ${data.intensity.toLowerCase()} tone mix (very rough estimate).`
       : null,
@@ -746,13 +746,13 @@ export const dashboardCatalog = [
   {
     tab: 'patterns',
     id: 'manipulative-patterns',
-    title: 'How often attention tactics appeared',
+    title: 'Engagement hook frequency',
     description: 'Posts that used urgency language, engagement hooks, or other attention-grabbing patterns.',
     outputType: 'number_line',
     dataFn: 'getManipulativePatternsData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
-    whyExplanation: 'Detected wellbeing themes or engagement hooks. Context matters.',
+    whyExplanation: 'Urgency language and engagement hooks.',
     takeaway: (data) => {
       // FIX PA5: Lead with interpretation, make low-signal clearer
       if (!data) return null;
@@ -878,8 +878,8 @@ export const dashboardCatalog = [
     isPrimary: true,
     sortOrder: 'primary',
     maxItems: 5,
-    whyExplanation: 'Counted posts by account during this window.',
-    counterfactual: 'This may not match who you follow or expect — it is what appeared in this specific scroll session.',
+    whyExplanation: 'Posts per account during this window.',
+    counterfactual: 'Reflects what appeared, not who you follow.',
     takeaway: (data) => {
       if (!Array.isArray(data) || data.length === 0) return 'Influence spread across multiple voices.';
 
@@ -922,7 +922,7 @@ export const dashboardCatalog = [
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     hidden: true,
-    whyExplanation: 'Measured how much of this window came from the top few accounts.',
+    whyExplanation: 'Share of posts from top accounts.',
     takeaway: (data) => {
       if (!data?.primaryInsight) return null;
       const insight = data.primaryInsight.toLowerCase();
@@ -975,7 +975,7 @@ export const dashboardCatalog = [
     emptyStateType: 'needs_broader_behavior',
     sortOrder: 'supporting',
     collapsedByDefault: true,
-    whyExplanation: 'Matched handles across scanned platforms.',
+    whyExplanation: 'Matched handles across platforms.',
     takeaway: (data) => {
       // FIX C8: Make empty state educational, not a dead end
       if (!Array.isArray(data) || data.length === 0) {
@@ -1067,7 +1067,7 @@ export const dashboardCatalog = [
     emptyStateType: 'needs_more_scans',
     sortOrder: 'summary',
     isSummaryCard: true,
-    whyExplanation: 'Based on appearance frequency in your scans. Does not indicate your preferences.',
+    whyExplanation: 'Appearance frequency during this window.',
     takeaway: (data) => {
       if (data?.creators && Array.isArray(data.creators)) {
         const count = data.creators.length;
@@ -1102,8 +1102,8 @@ export const dashboardCatalog = [
     hero: true,
     isPrimary: true,
     sortOrder: 'primary',
-    whyExplanation: 'Counted topic occurrences. Observation only, not a platform classification.',
-    counterfactual: 'This reflects what appeared in your scans, not who you are. These are observations, not predictions.',
+    whyExplanation: 'Topic occurrences during this window.',
+    counterfactual: 'Observations only, not predictions or classifications.',
     takeaway: (data) => {
       // FIX W2: Use "surfaced" language to avoid identity labeling
       const { labels, hadExcluded } = pickHeadlineSafeLabels(data, {
@@ -1136,7 +1136,7 @@ export const dashboardCatalog = [
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     hidden: true,
-    whyExplanation: 'Counted distinct topics. Not a platform categorization.',
+    whyExplanation: 'Distinct topics observed.',
     takeaway: (data) => {
       if (!data?.breadth) return null;
       const b = data.breadth.toLowerCase();
@@ -1157,7 +1157,7 @@ export const dashboardCatalog = [
     dataFn: 'getAlgoConfidentData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
-    whyExplanation: 'Compared topics over time to identify recurring themes.',
+    whyExplanation: 'Topics compared over time.',
     takeaway: (data) => {
       if (!data?.insights?.length) return null;
 
@@ -1182,7 +1182,7 @@ export const dashboardCatalog = [
     sortOrder: 'supporting',
     collapsedByDefault: true,
     confidenceDisclaimer: true,
-    whyExplanation: 'Extrapolated from recent topic trends. Cannot predict what will actually surface.',
+    whyExplanation: 'Extrapolation from recent trends (cannot predict future).',
     takeaway: (data) => {
       // FIX W6 & W7: Clear structure without repetitive disclaimers
       if (!data?.predictions?.length) return null;
@@ -1276,7 +1276,7 @@ export const dashboardCatalog = [
     emptyStateType: 'needs_more_scans',
     sortOrder: 'summary',
     isSummaryCard: true,
-    whyExplanation: 'Based on observed patterns. Reflects what appeared, not your interests or identity.',
+    whyExplanation: 'Observed patterns during this window.',
     takeaway: (data) => {
       if (data?.experiments?.length > 0) {
         return 'These themes appeared persistently during this window.';

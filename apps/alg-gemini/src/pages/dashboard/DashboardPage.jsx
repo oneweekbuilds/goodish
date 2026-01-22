@@ -456,8 +456,8 @@ const TAB_STORY_HEADERS = {
     },
     details: {
       label: 'Context',
-      title: 'What the system is reinforcing',
-      subtext: 'Themes that recurred, suggesting persistent associations.',
+      title: 'Recurring patterns observed',
+      subtext: 'Themes that appeared repeatedly during this window.',
     },
     moreDetails: {
       label: 'Speculation',

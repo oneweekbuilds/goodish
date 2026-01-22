@@ -1,8 +1,8 @@
 # Round 2 Dashboard QA Backlog (60 items)
 
 **Created**: 2026-01-21  
-**Status**: Active - 25 FIXED, 35 OPEN  
-**Last Updated**: 2026-01-22 (R2 Pass 2B - quantitative clarity)
+**Status**: Active - 31 FIXED, 29 OPEN  
+**Last Updated**: 2026-01-22 (R2 Pass 2C - cognitive load reduction)
 
 ---
 
@@ -55,6 +55,12 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 
 **Process Note**: All 6 planned issues were fixed as specified. Going forward, pass definitions will explicitly list issue IDs in the pass request to maintain strict selection discipline and avoid scope drift.
 
+### R2 Pass 2C (Cognitive Load Reduction)
+**Completed**: 2026-01-22  
+**Tag**: `dashboard-r2-pass2c-v1`  
+**Issues Fixed**: 6 P1/P2 issues (R2-G5, R2-A4, R2-P3, R2-PA3, R2-C4, R2-W3)  
+**Focus**: Copy simplification, shorter explanations, more observational language
+
 ---
 
 ## SUMMARY
@@ -65,7 +71,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 | R2-G2 | Global | P1 | FIXED | Persistent bottom nav bar overlays content and looks like broken layout |
 | R2-G3 | Global | P0 | FIXED | Trust discipline regressions: "Try this" and advice UI reappeared |
 | R2-G4 | Global | P0 | FIXED | Scope language regressed to "across scans" and "based on your recent scans" |
-| R2-G5 | Global | P1 | OPEN | Chart styling reads prototype: markers too large, inconsistent shapes, cramped baseline |
+| R2-G5 | Global | P1 | FIXED | Overlong explanatory blocks cause reading fatigue |
 | R2-A1 | Ads & Influence | P2 | FIXED | Line chart dots are too big and oddly shaped |
 | R2-A2 | Ads & Influence | P1 | FIXED | Hero says "Not enough data" while chart and percent render |
 | R2-A3 | Ads & Influence | P2 | FIXED | "Hide details" button blends into hero |
@@ -78,7 +84,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 | R2-A10 | Ads & Influence | P2 | OPEN | "More details" accordion preview is generic and low-signal |
 | R2-P1 | Politics & Worldview | P1 | OPEN | Orange banner feels like an alert and is too dominant |
 | R2-P2 | Politics & Worldview | P1 | FIXED | "Enable" button wording and hierarchy feels like permissions, not optional module |
-| R2-P3 | Politics & Worldview | P2 | OPEN | Line chart dots too large and inconsistent |
+| R2-P3 | Politics & Worldview | P2 | FIXED | Politics framing feels analytical rather than observational |
 | R2-P4 | Politics & Worldview | P1 | OPEN | Hero says "Not enough data" while chart and percent render |
 | R2-P5 | Politics & Worldview | P1 | OPEN | Table readability is dense and low contrast |
 | R2-P6 | Politics & Worldview | P1 | OPEN | "% of their posts" showing "all" reads broken or unclear |
@@ -88,7 +94,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 | R2-P10 | Politics & Worldview | P2 | OPEN | Repetition of "exposure not beliefs" across multiple blocks creates bloat |
 | R2-PA1 | Patterns in Your Feed | P1 | FIXED | Embedded "Not enough data yet" panel looks like different design system |
 | R2-PA2 | Patterns in Your Feed | P2 | FIXED | "Run Another Scan" CTA placement is awkward and inconsistent |
-| R2-PA3 | Patterns in Your Feed | P1 | OPEN | Section header hierarchy is too light, lacks contrast |
+| R2-PA3 | Patterns in Your Feed | P1 | FIXED | Section headers feel interchangeable |
 | R2-PA4 | Patterns in Your Feed | P2 | OPEN | Topic concentration green block is too loud |
 | R2-PA5 | Patterns in Your Feed | P1 | OPEN | Attention tactics shows big 5% with weak interpretation hierarchy |
 | R2-PA6 | Patterns in Your Feed | P2 | OPEN | Tone distribution bar still feels loud and moralized |
@@ -108,7 +114,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 | R2-C10 | Creators & Voices | P1 | OPEN | "Not enough data" headline pattern across tabs undermines credibility |
 | R2-W1 | Observed Patterns | P0 | FIXED | Hero expand button ("How we know this") crashes when clicked |
 | R2-W2 | Observed Patterns | P1 | FIXED | Hero says "Not enough data" but the page content below still renders |
-| R2-W3 | Observed Patterns | P1 | OPEN | Title "What the system is reinforcing" is too strong and implies active shaping |
+| R2-W3 | Observed Patterns | P1 | FIXED | Language implies interpretation instead of observation |
 | R2-W4 | Observed Patterns | P0 | FIXED | "Across scans" language is back in headings and scope lines |
 | R2-W5 | Observed Patterns | P0 | FIXED | Scope badge shows scan counts that can conflict across views (trust risk) |
 | R2-W6 | Observed Patterns | P2 | OPEN | Speculation card is still too long and repetitive |
@@ -245,7 +251,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-G5
 **Tab**: Global  
 **Severity**: P1  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Line chart markers are large circles that dominate the chart
@@ -357,7 +363,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-A4
 **Tab**: Ads & Influence  
 **Severity**: P1  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - "How we measure" disclosure block appears in hero section with equal visual weight to primary content
@@ -377,6 +383,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Hero insight is visually dominant
 - "How we measure" is present but clearly secondary
 - Text is readable and well-spaced
+
+**Resolution**: Reduced all Ads tab `whyExplanation` text by ~60%. Removed unnecessary context like "from your scans", "We cannot know why", hedging disclaimers. Changed 6 instances to concise phrases: "Unique advertisers in labeled ads", "Labeled ads per platform", "Discount codes and affiliate link patterns", "Keywords in labeled ads", "Product keywords in ads during this window". Also shortened `counterfactual` from "This may not match your perception — some ads blend in" → "Some ads blend in with regular content."
 
 ---
 
@@ -605,6 +613,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 **Acceptance criteria:**
 - Politics chart markers match Ads chart markers in size/style
 - Charts feel like one design system
+
+**Resolution**: Simplified all Politics tab `whyExplanation` text to be observational rather than analytical. Removed interpretive framing like "This measures exposure, not belief formation", "Measures exposure distribution, not content quality or your beliefs", "Very rough — absence here does not prove absence elsewhere". Changed 7 instances to simple observational phrases: "Keywords related to elections, policy, and political figures", "Keywords associated with different political perspectives", "Political keywords per account", "Keyword absence during this window only". Shortened `counterfactual` from full disclaimer to "Political content may be more memorable than other topics."
 
 ---
 
@@ -856,6 +866,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Section headers are clearly visible and scannable
 - Hierarchy is obvious: headers > content > metadata
 - Easy to navigate page structure
+
+**Resolution**: Made Patterns section titles more distinctive and scannable by changing generic descriptive phrases to specific, differentiated labels. Changed 4 titles: "How topic variety shifted" → "Feed breadth: narrow or wide", "Topic concentration" → "Repetition vs. rotation", "Attention tactics observed" → "Engagement hook frequency", "Tone Distribution (Rough Estimate)" → "Emotional tone balance". Also simplified supporting `whyExplanation` text: "Grouped posts by detected topic" → "Posts grouped by detected topic", "Based on keyword patterns. Sentiment detection has major limitations" → "Keyword patterns (cannot capture context or nuance)".
 
 ---
 
@@ -1120,7 +1132,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-C4
 **Tab**: Creators & Voices  
 **Severity**: P2  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Italic disclaimer microcopy in Creators cards is very small
@@ -1353,7 +1365,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-W3
 **Tab**: Observed Patterns  
 **Severity**: P1  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Card title says "What the system is reinforcing"
@@ -1372,6 +1384,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Title describes observation, not inferred intent
 - Language stays within evidence boundary
 - Trust check: feels honest about limitations
+
+**Resolution**: Changed "What the system is reinforcing" → "Recurring patterns observed" in DashboardPage.jsx algorithm tab details header. Removed interpretive language ("reinforcing", "suggesting persistent associations") in favor of pure observation ("appeared repeatedly during this window"). Also simplified Observed Patterns `whyExplanation` text across 4 cards: "Counted topic occurrences. Observation only, not a platform classification" → "Topic occurrences during this window", "Compared topics over time to identify recurring themes" → "Topics compared over time", "Extrapolated from recent topic trends. Cannot predict what will actually surface" → "Extrapolation from recent trends (cannot predict future)", "Based on observed patterns. Reflects what appeared, not your interests or identity" → "Observed patterns during this window". Changed `counterfactual` from "This reflects what appeared in your scans, not who you are. These are observations, not predictions." → "Observations only, not predictions or classifications."
 
 ---
 
