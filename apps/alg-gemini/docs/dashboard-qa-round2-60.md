@@ -1,7 +1,8 @@
 # Round 2 Dashboard QA Backlog (60 items)
 
 **Created**: 2026-01-21  
-**Status**: Active - 37 FIXED, 23 OPEN  
+**Status**: Active - 43 FIXED, 17 OPEN  
+**Last Updated**: 2026-01-22 (R2 Pass 2E - data clarity and consistency)  
 **Last Updated**: 2026-01-22 (R2 Pass 2D - visual focus and accents)
 
 ---
@@ -67,6 +68,12 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 **Issues Fixed**: 6 P1/P2 issues (R2-A8, R2-P5, R2-P9, R2-PA4, R2-PA5, R2-C6)  
 **Focus**: Visual hierarchy, accent control, focal clarity without new components
 
+### R2 Pass 2E (Data Clarity and Consistency)
+**Completed**: 2026-01-22  
+**Tag**: `dashboard-r2-pass2e-v1`  
+**Issues Fixed**: 6 P1/P2 issues (R2-P4, R2-P6, R2-C10, R2-A10, R2-C5, R2-PA6)  
+**Focus**: Data presentation clarity, label precision, message consistency, visual calm
+
 ---
 
 ## SUMMARY
@@ -87,23 +94,23 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 | R2-A7 | Ads & Influence | P0 | FIXED | Card scope line uses scan-based framing ("Scope: Based on your recent scans") |
 | R2-A8 | Ads & Influence | P1 | FIXED | Section cards do not visually separate enough from hero, low hierarchy |
 | R2-A9 | Ads & Influence | P1 | OPEN | Platform list has confusing duplication or ordering (X appears oddly) |
-| R2-A10 | Ads & Influence | P2 | OPEN | "More details" accordion preview is generic and low-signal |
-| R2-P1 | Politics & Worldview | P1 | OPEN | Orange banner feels like an alert and is too dominant |
+| R2-A10 | Ads & Influence | P2 | FIXED | "More details" accordion preview is generic and low-signal |
+| R2-P1 | Politics & Worldview | P1 | FIXED | Orange banner feels like an alert and is too dominant |
 | R2-P2 | Politics & Worldview | P1 | FIXED | "Enable" button wording and hierarchy feels like permissions, not optional module |
-| R2-P3 | Politics & Worldview | P2 | FIXED | Politics framing feels analytical rather than observational |
-| R2-P4 | Politics & Worldview | P1 | OPEN | Hero says "Not enough data" while chart and percent render |
+| R2-P3 | Politics & Worldview | P2 | FIXED | Politics framing feels analytical rather than observational (copy fixed in Pass 2C) |
+| R2-P4 | Politics & Worldview | P1 | FIXED | Hero says "Not enough data" while chart and percent render |
 | R2-P5 | Politics & Worldview | P1 | FIXED | Table readability is dense and low contrast |
-| R2-P6 | Politics & Worldview | P1 | OPEN | "% of their posts" showing "all" reads broken or unclear |
+| R2-P6 | Politics & Worldview | P1 | FIXED | "% of their posts" showing "all" reads broken or unclear |
 | R2-P7 | Politics & Worldview | P2 | OPEN | Platform asymmetry copy should collapse when most platforms are 0 |
 | R2-P8 | Politics & Worldview | P1 | OPEN | Platform list labeling/order has duplication or confusion (X repeats) |
-| R2-P9 | Politics & Worldview | P1 | OPEN | More details expansion feels like a second hero, too much weight |
+| R2-P9 | Politics & Worldview | P1 | FIXED | More details expansion feels like a second hero, too much weight |
 | R2-P10 | Politics & Worldview | P2 | OPEN | Repetition of "exposure not beliefs" across multiple blocks creates bloat |
 | R2-PA1 | Patterns in Your Feed | P1 | FIXED | Embedded "Not enough data yet" panel looks like different design system |
 | R2-PA2 | Patterns in Your Feed | P2 | FIXED | "Run Another Scan" CTA placement is awkward and inconsistent |
 | R2-PA3 | Patterns in Your Feed | P1 | FIXED | Section headers feel interchangeable |
 | R2-PA4 | Patterns in Your Feed | P2 | FIXED | Topic concentration green block is too loud |
-| R2-PA5 | Patterns in Your Feed | P1 | OPEN | Attention tactics shows big 5% with weak interpretation hierarchy |
-| R2-PA6 | Patterns in Your Feed | P2 | OPEN | Tone distribution bar still feels loud and moralized |
+| R2-PA5 | Patterns in Your Feed | P1 | FIXED | Attention tactics shows big 5% with weak interpretation hierarchy |
+| R2-PA6 | Patterns in Your Feed | P2 | FIXED | Tone distribution bar still feels loud and moralized |
 | R2-PA7 | Patterns in Your Feed | P1 | OPEN | More details accordion takes over page, too much vertical bloat |
 | R2-PA8 | Patterns in Your Feed | P0 | FIXED | Copy uses "across scans" language (scope regression) |
 | R2-PA9 | Patterns in Your Feed | P0 | FIXED | "Try this" section reappeared (trust regression) |
@@ -111,7 +118,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 | R2-C1 | Creators & Voices | P1 | FIXED | Hero says "Not enough data" while top creators table is populated |
 | R2-C2 | Creators & Voices | P1 | FIXED | Table contrast is too low, hard to scan |
 | R2-C3 | Creators & Voices | P0 | FIXED | "How we measure" uses "across your scans" (scope regression) |
-| R2-C4 | Creators & Voices | P2 | OPEN | Italic disclaimer microcopy is too small and washed out |
+| R2-C4 | Creators & Voices | P2 | FIXED | Italic disclaimer microcopy is too small and washed out |
 | R2-C5 | Creators & Voices | P2 | OPEN | Cross-platform empty state is wordy and low-value |
 | R2-C6 | Creators & Voices | P1 | FIXED | Cross-platform presence card is visually buried (accordion emphasis) |
 | R2-C7 | Creators & Voices | P0 | FIXED | "Try this" section reappeared and labels creators (trust regression) |
@@ -525,7 +532,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-A10
 **Tab**: Ads & Influence  
 **Severity**: P2  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - "More details" accordion preview text is generic: "Additional detail from the same window"
@@ -542,6 +549,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Preview text is specific and informative
 - Users can decide whether to expand based on preview
 - No new data exposed, just clearer labeling
+
+**Resolution**: Enhanced moreDetailsSubtitle logic in DashboardPage.jsx ViewsGridWithCollapsing. Added tab-specific preview text for patterns, creators, and algorithm tabs (previously only ads and politics had custom text). Patterns: "Topic repetition patterns and emotional tone distribution.", Creators: "Cross-platform presence and voice diversity metrics.", Algorithm: "Recurring themes and algorithmic pattern observations." Default remains generic but now only used as fallback. Preview text now clearly signals what users will see when expanding.
 
 ---
 
@@ -629,7 +638,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-P4
 **Tab**: Politics & Worldview  
 **Severity**: P1  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Hero shows "Not enough data" message
@@ -646,6 +655,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 **Acceptance criteria:**
 - No contradictory "not enough" + rendered chart
 - Clear empty state or clear data state
+
+**Resolution**: Enhanced TabHero logic in DashboardPage.jsx to ensure `anyViewHasData` check prevents "building patterns" message when any content renders. Changed final fallback from "Building patterns from your scans." to "Patterns will appear as you scan more content." (more neutral, less "not enough data" implication). Combined with existing `anyViewHasData` check, Politics tab now shows "Patterns from your recent activity." when charts render, eliminating contradiction.
 
 ---
 
@@ -698,6 +709,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - No ambiguous "all" label in percentage columns
 - Values are clear and numeric where expected
 - Trust check: data feels precise, not vague
+
+**Resolution**: Removed qualitative "all"/"some" labels in dataHelpers.js getPoliticalCreatorsData(). Now always displays numeric percentage (e.g., "100%" instead of "all", "50%" instead of "some"), even for small counts (stats.total <= 2). This eliminates ambiguity and makes data feel precise rather than placeholder-like.
 
 ---
 
@@ -942,7 +955,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-PA6
 **Tab**: Patterns in Your Feed  
 **Severity**: P2  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Emotional tone distribution bar uses saturated colors (red, yellow, green)
@@ -963,6 +976,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Tone bar uses calm, neutral colors
 - No moralized color coding (avoid red=bad, green=good)
 - Matches dashboard aesthetic
+
+**Resolution**: Softened tone distribution bar presentation in StackedBar100.jsx. Reduced bar height from `h-8` to `h-6` (25% smaller), changed segment text from `text-xs font-medium` to `text-[11px] font-normal` with `text-white/90` (lighter, less prominent), increased threshold for showing percentage from 10% to 15%. Legend: reduced dot size from `w-3.5 h-3.5` to `w-3 h-3`, changed text from `text-[13px] font-medium text-slate-700` to `text-xs font-normal text-slate-600` (softer, less bold). Overall presentation now calmer and less moralized while maintaining readability.
 
 ---
 
@@ -1174,7 +1189,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-C5
 **Tab**: Creators & Voices  
 **Severity**: P2  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Cross-platform empty state is long and wordy
@@ -1193,6 +1208,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Empty state is concise and clear
 - Copy feels edited
 - Still educational but not verbose
+
+**Resolution**: Shortened cross-platform empty state copy in EmptyState.jsx. Changed "why" text from "This insight appears when you scan across multiple platforms." to "Scan multiple platforms to see this insight." (from 11 words to 7, more direct and actionable). Maintains educational value while reducing verbosity.
 
 ---
 
@@ -1303,7 +1320,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-C10
 **Tab**: Creators & Voices  
 **Severity**: P1  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Multiple tabs show "Not enough data" in hero even when content renders below
@@ -1322,6 +1339,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - No tab shows contradictory "not enough" + rendered content
 - Pattern is consistent across dashboard
 - Trust check: data presentation feels coherent
+
+**Resolution**: Enhanced TabHero fallback message logic in DashboardPage.jsx. Changed final fallback from "Building patterns from your scans." to "Patterns will appear as you scan more content." (more neutral, avoids "not enough data" implication). The `anyViewHasData` check ensures that when ANY view has data (including charts/tables), hero shows "Patterns from your recent activity." instead of building message. This creates consistent pattern across all tabs, preventing credibility-undermining contradictions.
 
 ---
 

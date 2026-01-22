@@ -51,7 +51,8 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
         return {
           icon: 'platforms',
           title: 'Broader data needed',
-          why: 'This insight appears when you scan across multiple platforms.',
+          // R2-C5 FIX: Shortened from wordy explanation to concise statement
+          why: 'Scan multiple platforms to see this insight.',
           howToUnlock: [
             'Scan at least 2 different platforms',
             'Compare patterns across platforms',

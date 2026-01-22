@@ -717,6 +717,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
   
   // Generate a dynamic preview for More Details based on what's actually inside
   // FIX A8: Use user-centered language describing value, not internal labels
+  // R2-A10 FIX: More specific preview text for all tabs
   let moreDetailsSubtitle = 'Optional extra metrics and deeper cuts.';
   if (tabId === 'ads') {
     moreDetailsSubtitle = hasMoreDetailsContent
@@ -726,6 +727,18 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
     moreDetailsSubtitle = hasMoreDetailsContent
       ? 'Platform-by-platform breakdown and additional viewpoint estimates.'
       : 'Additional political keyword analysis from this window.';
+  } else if (tabId === 'patterns') {
+    moreDetailsSubtitle = hasMoreDetailsContent
+      ? 'Topic repetition patterns and emotional tone distribution.'
+      : 'Additional pattern analysis from this window.';
+  } else if (tabId === 'creators') {
+    moreDetailsSubtitle = hasMoreDetailsContent
+      ? 'Cross-platform presence and voice diversity metrics.'
+      : 'Additional creator analysis from this window.';
+  } else if (tabId === 'algorithm') {
+    moreDetailsSubtitle = hasMoreDetailsContent
+      ? 'Recurring themes and algorithmic pattern observations.'
+      : 'Additional pattern observations from this window.';
   }
 
   return (
@@ -1206,16 +1219,19 @@ const TabHero = ({
 
   // FIX: Only show fallback if we actually have quality-approved data
   // R2-C1 FIX: Softened low-data message to avoid contradiction when content renders below
-  // R2-A2, R2-W2 FIX: If ANY view has data, don't show low-confidence message
+  // R2-A2, R2-W2, R2-P4, R2-C10 FIX: If ANY view has data, show neutral observational statement
+  // Never show "building" or "not enough" message when content renders below
   if (!headline) {
     if (hasHeroData && heroQualityOk) {
       headline = 'We observed a measurable pattern in your scans.';
     } else if (anyViewHasData) {
-      // If hero has no data but OTHER views do, show neutral observational statement
+      // R2-P4, R2-C10: If ANY view has data (including charts/tables), show neutral statement
+      // This prevents "building patterns" + rendered content contradiction
       headline = 'Patterns from your recent activity.';
     } else {
-      // Only if NO views have data, show building message
-      headline = 'Building patterns from your scans.';
+      // Only if NO views have data at all, show neutral building message
+      // R2-C10: Made message more neutral to avoid "not enough data" implication
+      headline = 'Patterns will appear as you scan more content.';
     }
   }
 

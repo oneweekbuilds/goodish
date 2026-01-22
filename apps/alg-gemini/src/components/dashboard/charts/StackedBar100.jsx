@@ -32,8 +32,8 @@ const StackedBar100 = ({ segments = [], showLegend = true }) => {
 
   return (
     <div className="space-y-3">
-      {/* Stacked Bar */}
-      <div className="h-8 bg-slate-100 rounded-full overflow-hidden flex">
+      {/* Stacked Bar - R2-PA6: Reduced height and softened text for calmer presentation */}
+      <div className="h-6 bg-slate-100 rounded-full overflow-hidden flex">
         {normalized.map((segment, index) => (
           <div
             key={index}
@@ -45,8 +45,8 @@ const StackedBar100 = ({ segments = [], showLegend = true }) => {
             }}
             title={`${segment.label}: ${Math.round(segment.value)}%`}
           >
-            {segment.value >= 10 && (
-              <span className="text-xs font-medium text-white drop-shadow-sm">
+            {segment.value >= 15 && (
+              <span className="text-[11px] font-normal text-white/90 drop-shadow-sm">
                 {Math.round(segment.value)}%
               </span>
             )}
@@ -54,16 +54,16 @@ const StackedBar100 = ({ segments = [], showLegend = true }) => {
         ))}
       </div>
 
-      {/* Legend - FIX PA7: Increase readability with larger text and better spacing */}
+      {/* Legend - R2-PA6: Softer typography to reduce moralized feel */}
       {showLegend && (
         <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center">
           {normalized.map((segment, index) => (
             <div key={index} className="flex items-center gap-2">
               <div
-                className="w-3.5 h-3.5 rounded-full flex-shrink-0"
+                className="w-3 h-3 rounded-full flex-shrink-0"
                 style={{ backgroundColor: segment.color || '#94A3B8' }}
               />
-              <span className="text-[13px] leading-relaxed text-slate-700 font-medium">
+              <span className="text-xs leading-relaxed text-slate-600 font-normal">
                 {segment.label}: {Math.round(segment.value)}%
               </span>
             </div>

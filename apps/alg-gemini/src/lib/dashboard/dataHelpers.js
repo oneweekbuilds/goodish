@@ -820,12 +820,11 @@ export function getPoliticalCreatorsData(scans, scanDetails) {
   const rows = Object.entries(politicsData.byCreator)
     .filter(([_, stats]) => stats.political > 0)
     .map(([_, stats]) => {
-      // FIX P4: Use qualitative labels when numbers are too small to be meaningful
-      // Avoid showing "1 post = 100%" which looks absurd
+      // R2-P6 FIX: Always show numeric percentage, even for small counts
+      // "all" is ambiguous; "100%" is clear and precise
       let politicalPercent;
-      if (stats.total <= 2) {
-        // Too small for percentage to be meaningful
-        politicalPercent = stats.political === stats.total ? 'all' : 'some';
+      if (stats.total === 0) {
+        politicalPercent = '0%';
       } else {
         politicalPercent = `${Math.round((stats.political / stats.total) * 100)}%`;
       }
