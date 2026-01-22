@@ -41,7 +41,7 @@ const SimpleTable = ({ columns = [], rows = [], maxRows = 10 }) => {
           {displayRows.map((row, rowIndex) => (
             <tr
               key={rowIndex}
-              className={`border-b border-slate-200 hover:bg-slate-50 transition-colors ${rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}
+              className={`border-b border-slate-200 hover:bg-slate-100 transition-colors duration-150 ${rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}
             >
               {/* R2-C2: Alternating row backgrounds, darker text, more padding */}
               {/* R2-P5: First column emphasized for focal hierarchy */}

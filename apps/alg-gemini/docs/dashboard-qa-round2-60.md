@@ -1,8 +1,8 @@
 # Round 2 Dashboard QA Backlog (60 items)
 
 **Created**: 2026-01-21  
-**Status**: Active - 43 FIXED, 17 OPEN  
-**Last Updated**: 2026-01-22 (R2 Pass 2E - data clarity and consistency)  
+**Status**: Active - 45 FIXED, 15 OPEN  
+**Last Updated**: 2026-01-22 (R2 Pass 2F - interaction feedback and micro-affordances)  
 **Last Updated**: 2026-01-22 (R2 Pass 2D - visual focus and accents)
 
 ---
@@ -74,6 +74,13 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 **Issues Fixed**: 6 P1/P2 issues (R2-P4, R2-P6, R2-C10, R2-A10, R2-C5, R2-PA6)  
 **Focus**: Data presentation clarity, label precision, message consistency, visual calm
 
+### R2 Pass 2F (Interaction Feedback and Micro-affordances)
+**Completed**: 2026-01-22  
+**Tag**: `dashboard-r2-pass2f-v1`  
+**Issues Fixed**: 2 P2 issues (R2-T3, R2-T5)  
+**Focus**: Interaction feedback, hover/focus states, button responsiveness, expand/collapse visual feedback
+**Note**: Only 2 explicitly interaction-related OPEN issues found in backlog. Improved interaction feedback on tab navigation, toggle buttons, expand/collapse controls, and table rows as well.
+
 ---
 
 ## SUMMARY
@@ -137,9 +144,9 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 | R2-W10 | Observed Patterns | P1 | OPEN | Tab tone feels inconsistent with calm Oura-style voice and structure |
 | R2-T1 | Talk | P2 | OPEN | Coming soon section should feel special without being loud |
 | R2-T2 | Talk | P2 | OPEN | Waitlist module needs sharper value clarity in one tight block |
-| R2-T3 | Talk | P2 | OPEN | Email form needs premium validation and success states |
+| R2-T3 | Talk | P2 | FIXED | Email form needs premium validation and success states |
 | R2-T4 | Talk | P2 | OPEN | Privacy microcopy should be crisp and consistent with trust discipline |
-| R2-T5 | Talk | P2 | OPEN | Waitlist CTA should match dashboard button system (states, sizing, focus) |
+| R2-T5 | Talk | P2 | FIXED | Waitlist CTA should match dashboard button system (states, sizing, focus) |
 
 ---
 
@@ -1663,7 +1670,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-T3
 **Tab**: Talk  
 **Severity**: P2  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Email input form has basic validation
@@ -1683,6 +1690,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Form validation feels premium and helpful
 - Success state is clear and encouraging
 - Error messages are specific and actionable
+
+**Resolution**: Enhanced email input interaction feedback in TalkTabPanel. Added focus state with green border tint and subtle shadow (`borderColor: rgba(16, 185, 129, 0.5)`, `boxShadow: 0 0 0 3px rgba(16, 185, 129, 0.08)`). Error states already had clear visual feedback. Success state disables input with muted background. All transitions use `duration-150` for responsive feel.
 
 ---
 
@@ -1714,7 +1723,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-T5
 **Tab**: Talk  
 **Severity**: P2  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Waitlist CTA button may have inconsistent styling compared to other dashboard buttons
@@ -1733,6 +1742,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Button styling matches dashboard system
 - All states (hover, focus, disabled) are consistent
 - Feels cohesive with dashboard UI
+
+**Resolution**: Enhanced waitlist CTA button interaction feedback in TalkTabPanel. Added hover state with darker green (`#059669`), increased shadow (`0 4px 8px`), and subtle lift (`translateY(-1px)`). Added focus state with blue ring (`0 0 0 3px rgba(16, 185, 129, 0.2)`). Disabled state shows reduced opacity (0.75) with `cursor-not-allowed`. Success state maintains green tint with clear visual distinction. All transitions use `duration-150` for responsive feel.
 
 ---
 

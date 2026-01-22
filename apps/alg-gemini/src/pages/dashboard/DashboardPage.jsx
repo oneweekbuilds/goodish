@@ -273,11 +273,28 @@ const PoliticalLeaningToggle = ({ enabled, onToggle }) => (
     </div>
     <button
       onClick={onToggle}
-      className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors border"
+      className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-150 border outline-none cursor-pointer"
       style={{
         backgroundColor: enabled ? '#EFF6FF' : 'white',
         color: enabled ? '#3B82F6' : '#64748B',
         borderColor: enabled ? '#3B82F6' : '#CBD5E1',
+      }}
+      onMouseEnter={(e) => {
+        e.target.style.backgroundColor = enabled ? '#DBEAFE' : '#F8FAFC';
+        e.target.style.borderColor = enabled ? '#2563EB' : '#94A3B8';
+        e.target.style.transform = 'translateY(-1px)';
+      }}
+      onMouseLeave={(e) => {
+        e.target.style.backgroundColor = enabled ? '#EFF6FF' : 'white';
+        e.target.style.borderColor = enabled ? '#3B82F6' : '#CBD5E1';
+        e.target.style.transform = 'translateY(0)';
+      }}
+      onFocus={(e) => {
+        e.target.style.outline = 'none';
+        e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.15)';
+      }}
+      onBlur={(e) => {
+        e.target.style.boxShadow = 'none';
       }}
     >
       {/* R2-P2 FIX: Changed "Enable" to "Show" for less permission-like feel, secondary button style */}
@@ -867,20 +884,39 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                       </span>
                       <button
                         onClick={() => toggleSection('keyInsightEvidence')}
-                        className="inline-flex items-center gap-2 text-sm font-medium transition-all rounded-full hover:bg-blue-600 hover:text-white"
+                        className="inline-flex items-center gap-2 text-sm font-medium transition-all duration-150 rounded-full outline-none cursor-pointer"
                         style={{
-                          color: '#3B82F6',
-                          background: 'rgba(59, 130, 246, 0.10)',
+                          color: expandedSections.keyInsightEvidence ? '#FFFFFF' : '#3B82F6',
+                          background: expandedSections.keyInsightEvidence ? '#2563EB' : 'rgba(59, 130, 246, 0.10)',
                           border: '1.5px solid rgba(59, 130, 246, 0.30)',
                           padding: '0.5rem 1rem',
                         }}
                         aria-expanded={expandedSections.keyInsightEvidence}
                         aria-label={expandedSections.keyInsightEvidence ? 'Hide evidence for this insight' : 'Show evidence for this insight'}
+                        onMouseEnter={(e) => {
+                          if (!expandedSections.keyInsightEvidence) {
+                            e.target.style.background = 'rgba(59, 130, 246, 0.15)';
+                            e.target.style.borderColor = 'rgba(59, 130, 246, 0.40)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!expandedSections.keyInsightEvidence) {
+                            e.target.style.background = 'rgba(59, 130, 246, 0.10)';
+                            e.target.style.borderColor = 'rgba(59, 130, 246, 0.30)';
+                          }
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.outline = 'none';
+                          e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.15)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.boxShadow = 'none';
+                        }}
                       >
                         {/* R2-A3 FIX: Increased button contrast for visibility */}
                         <ChevronDown
                           size={16}
-                          className="transition-transform"
+                          className="transition-transform duration-150"
                           style={{
                             transform: expandedSections.keyInsightEvidence ? 'rotate(180deg)' : 'rotate(0deg)',
                           }}
@@ -989,9 +1025,32 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
           <ChapterContainer variant="accent">
             <button
               onClick={() => toggleSection('moreDetails')}
-              className="w-full flex items-center justify-between rounded-xl border-2 border-slate-300 bg-white px-4 py-3.5 text-left transition-all hover:border-blue-300 hover:bg-blue-50/30"
+              className="w-full flex items-center justify-between rounded-xl border-2 bg-white px-4 py-3.5 text-left transition-all duration-150 outline-none cursor-pointer"
+              style={{
+                borderColor: expandedSections.moreDetails ? '#3B82F6' : '#CBD5E1',
+                backgroundColor: expandedSections.moreDetails ? '#EFF6FF' : '#FFFFFF',
+              }}
               aria-expanded={expandedSections.moreDetails}
               aria-label={expandedSections.moreDetails ? 'Collapse more details' : 'Expand more details'}
+              onMouseEnter={(e) => {
+                if (!expandedSections.moreDetails) {
+                  e.target.style.borderColor = '#93C5FD';
+                  e.target.style.backgroundColor = 'rgba(239, 246, 255, 0.5)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!expandedSections.moreDetails) {
+                  e.target.style.borderColor = '#CBD5E1';
+                  e.target.style.backgroundColor = '#FFFFFF';
+                }
+              }}
+              onFocus={(e) => {
+                e.target.style.outline = 'none';
+                e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.15)';
+              }}
+              onBlur={(e) => {
+                e.target.style.boxShadow = 'none';
+              }}
             >
               <div className="flex-1">
                 <p className="text-sm font-semibold text-slate-700">More details</p>
@@ -999,7 +1058,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
               </div>
               <ChevronDown
                 size={18}
-                className="flex-shrink-0 text-blue-600 transition-transform"
+                className="flex-shrink-0 text-blue-600 transition-transform duration-150"
                 style={{
                   transform: expandedSections.moreDetails ? 'rotate(180deg)' : 'rotate(0deg)',
                 }}
@@ -1555,11 +1614,24 @@ const TalkTabPanel = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 onBlur={() => setTouched(true)}
                 placeholder="you@domain.com"
-                className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-colors"
+                className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all duration-150"
                 style={{
                   background: status === 'success' ? '#F8FAFC' : '#FFFFFF',
                   border: emailError ? '1px solid rgba(244, 63, 94, 0.45)' : '1px solid rgba(148, 163, 184, 0.35)',
                   boxShadow: emailError ? '0 0 0 3px rgba(244, 63, 94, 0.06)' : '0 1px 2px rgba(0, 0, 0, 0.04)',
+                }}
+                onFocus={(e) => {
+                  if (!emailError && status !== 'success') {
+                    e.target.style.borderColor = 'rgba(16, 185, 129, 0.5)';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.08)';
+                  }
+                }}
+                onBlur={(e) => {
+                  setTouched(true);
+                  if (!emailError && status !== 'success') {
+                    e.target.style.borderColor = 'rgba(148, 163, 184, 0.35)';
+                    e.target.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.04)';
+                  }
                 }}
               />
               <div className="mt-2 min-h-[18px]">
@@ -1578,12 +1650,38 @@ const TalkTabPanel = () => {
             <button
               type="submit"
               disabled={status === 'submitting' || status === 'success'}
-              className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold transition-all w-full sm:w-auto hover:shadow-md"
+              className="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold transition-all duration-150 w-full sm:w-auto cursor-pointer disabled:cursor-not-allowed"
               style={{
-                background: status === 'success' ? 'rgba(16, 185, 129, 0.12)' : '#10B981',
+                background: status === 'success' ? 'rgba(16, 185, 129, 0.12)' : status === 'submitting' ? '#10B981' : '#10B981',
                 color: status === 'success' ? 'rgba(5, 150, 105, 0.95)' : '#FFFFFF',
                 border: status === 'success' ? '1px solid rgba(16, 185, 129, 0.2)' : 'none',
-                opacity: status === 'submitting' ? 0.9 : 1,
+                opacity: status === 'submitting' ? 0.75 : status === 'success' ? 1 : 1,
+                boxShadow: status === 'success' ? 'none' : '0 2px 4px rgba(16, 185, 129, 0.2)',
+              }}
+              onMouseEnter={(e) => {
+                if (!e.target.disabled && status !== 'success') {
+                  e.target.style.background = '#059669';
+                  e.target.style.boxShadow = '0 4px 8px rgba(16, 185, 129, 0.3)';
+                  e.target.style.transform = 'translateY(-1px)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (status !== 'success') {
+                  e.target.style.background = '#10B981';
+                  e.target.style.boxShadow = '0 2px 4px rgba(16, 185, 129, 0.2)';
+                  e.target.style.transform = 'translateY(0)';
+                }
+              }}
+              onFocus={(e) => {
+                if (!e.target.disabled && status !== 'success') {
+                  e.target.style.outline = 'none';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.2), 0 2px 4px rgba(16, 185, 129, 0.2)';
+                }
+              }}
+              onBlur={(e) => {
+                if (status !== 'success') {
+                  e.target.style.boxShadow = '0 2px 4px rgba(16, 185, 129, 0.2)';
+                }
               }}
             >
               {status === 'success' ? 'You\'re on the list' : status === 'submitting' ? 'Saving…' : 'Join waitlist'}
@@ -1859,15 +1957,25 @@ const DashboardPage = () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`
-                  px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors
-                  border-b-2 -mb-px
+                  px-4 py-3 text-sm font-medium whitespace-nowrap transition-all duration-150
+                  border-b-2 -mb-px outline-none
                   ${activeTab === tab.id
                     ? 'border-primary-blue text-primary-blue'
-                    : 'border-transparent text-text-muted hover:text-text-main hover:border-border-card'
+                    : 'border-transparent text-text-muted hover:text-text-main hover:border-slate-300 focus:text-text-main focus:border-slate-300'
                   }
                 `}
                 aria-selected={activeTab === tab.id}
                 role="tab"
+                onFocus={(e) => {
+                  if (activeTab !== tab.id) {
+                    e.target.style.borderBottomColor = '#CBD5E1';
+                  }
+                }}
+                onBlur={(e) => {
+                  if (activeTab !== tab.id) {
+                    e.target.style.borderBottomColor = 'transparent';
+                  }
+                }}
               >
                 {tab.label}
               </button>
