@@ -1,8 +1,8 @@
 # Round 2 Dashboard QA Backlog (60 items)
 
 **Created**: 2026-01-21  
-**Status**: Active - 13 FIXED, 47 OPEN  
-**Last Updated**: 2026-01-21 (R2 Pass 1 - P0 fixes)
+**Status**: Active - 19 FIXED, 41 OPEN  
+**Last Updated**: 2026-01-22 (R2 Pass 2A - visual legibility)
 
 ---
 
@@ -37,12 +37,12 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 
 | ID | Tab | Severity | Status | Issue |
 |----|-----|----------|--------|-------|
-| R2-G1 | Global | P1 | OPEN | Color and contrast separation is too low (eyes glaze over) |
-| R2-G2 | Global | P1 | OPEN | Persistent bottom nav bar overlays content and looks like broken layout |
+| R2-G1 | Global | P1 | FIXED | Color and contrast separation is too low (eyes glaze over) |
+| R2-G2 | Global | P1 | FIXED | Persistent bottom nav bar overlays content and looks like broken layout |
 | R2-G3 | Global | P0 | FIXED | Trust discipline regressions: "Try this" and advice UI reappeared |
 | R2-G4 | Global | P0 | FIXED | Scope language regressed to "across scans" and "based on your recent scans" |
 | R2-G5 | Global | P1 | OPEN | Chart styling reads prototype: markers too large, inconsistent shapes, cramped baseline |
-| R2-A1 | Ads & Influence | P2 | OPEN | Line chart dots are too big and oddly shaped |
+| R2-A1 | Ads & Influence | P2 | FIXED | Line chart dots are too big and oddly shaped |
 | R2-A2 | Ads & Influence | P1 | OPEN | Hero says "Not enough data" while chart and percent render |
 | R2-A3 | Ads & Influence | P2 | OPEN | "Hide details" button blends into hero |
 | R2-A4 | Ads & Influence | P1 | OPEN | "How we measure" block in hero is cramped and equal weight to content |
@@ -62,7 +62,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 | R2-P8 | Politics & Worldview | P1 | OPEN | Platform list labeling/order has duplication or confusion (X repeats) |
 | R2-P9 | Politics & Worldview | P1 | OPEN | More details expansion feels like a second hero, too much weight |
 | R2-P10 | Politics & Worldview | P2 | OPEN | Repetition of "exposure not beliefs" across multiple blocks creates bloat |
-| R2-PA1 | Patterns in Your Feed | P1 | OPEN | Embedded "Not enough data yet" panel looks like different design system |
+| R2-PA1 | Patterns in Your Feed | P1 | FIXED | Embedded "Not enough data yet" panel looks like different design system |
 | R2-PA2 | Patterns in Your Feed | P2 | OPEN | "Run Another Scan" CTA placement is awkward and inconsistent |
 | R2-PA3 | Patterns in Your Feed | P1 | OPEN | Section header hierarchy is too light, lacks contrast |
 | R2-PA4 | Patterns in Your Feed | P2 | OPEN | Topic concentration green block is too loud |
@@ -72,7 +72,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 | R2-PA8 | Patterns in Your Feed | P0 | FIXED | Copy uses "across scans" language (scope regression) |
 | R2-PA9 | Patterns in Your Feed | P0 | FIXED | "Try this" section reappeared (trust regression) |
 | R2-PA10 | Patterns in Your Feed | P2 | OPEN | Summary card reads like placeholder copy and repeats itself |
-| R2-C1 | Creators & Voices | P1 | OPEN | Hero says "Not enough data" while top creators table is populated |
+| R2-C1 | Creators & Voices | P1 | FIXED | Hero says "Not enough data" while top creators table is populated |
 | R2-C2 | Creators & Voices | P1 | OPEN | Table contrast is too low, hard to scan |
 | R2-C3 | Creators & Voices | P0 | FIXED | "How we measure" uses "across your scans" (scope regression) |
 | R2-C4 | Creators & Voices | P2 | OPEN | Italic disclaimer microcopy is too small and washed out |
@@ -105,7 +105,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-G1
 **Tab**: Global  
 **Severity**: P1  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Text colors, borders, and card separations use very similar grays
@@ -132,7 +132,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-G2
 **Tab**: Global  
 **Severity**: P1  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - A persistent bottom navigation bar sits at the bottom of the viewport
@@ -253,7 +253,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-A1
 **Tab**: Ads & Influence  
 **Severity**: P2  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Line chart in Ads hero section has large circular markers at each data point
@@ -508,7 +508,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-P1
 **Tab**: Politics & Worldview  
 **Severity**: P1  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Orange banner at top of Politics tab feels like an alert or warning
@@ -528,6 +528,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Banner is calm and informational, not alarming
 - Color palette matches dashboard aesthetic
 - Trust check: users feel informed, not warned
+
+**Resolution**: Changed PoliticalLeaningToggle from amber/orange (bg-amber-50, border-amber-100, text-amber-600/800) to neutral slate (bg-slate-50, border-slate-200, text-slate-500/700). Enable button changed from green to blue (#3B82F6). Banner now calm and informational.
 
 ---
 
@@ -757,7 +759,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-PA1
 **Tab**: Patterns in Your Feed  
 **Severity**: P1  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - "Not enough data yet" panel appears embedded in cards
@@ -1017,7 +1019,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-C1
 **Tab**: Creators & Voices  
 **Severity**: P1  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Hero displays "Not enough data" message

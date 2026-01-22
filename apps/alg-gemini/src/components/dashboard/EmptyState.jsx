@@ -215,7 +215,8 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
 
     if (config.icon === 'quality') {
       return (
-        <AlertTriangle className="w-6 h-6 text-amber-500" />
+        <AlertTriangle className="w-6 h-6 text-slate-400" />
+        // R2-PA1 FIX: Changed from amber to slate for consistency
       );
     }
 
@@ -228,23 +229,23 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+    <div className="flex flex-col items-center justify-center py-10 px-6 text-center bg-slate-50 rounded-xl border border-slate-200">
+      {/* R2-PA1 FIX: Added background, border, padding to match dashboard card system */}
       {/* Icon */}
       <div className={`w-12 h-12 mb-4 rounded-full flex items-center justify-center ${
-        config.icon === 'quality' ? 'bg-amber-50' : 'bg-slate-100'
+        config.icon === 'quality' ? 'bg-slate-100' : 'bg-slate-100'
       }`}>
         {renderIcon()}
       </div>
 
       {/* Title */}
-      <h4 className={`text-sm font-semibold mb-2 ${
-        config.icon === 'quality' ? 'text-amber-700' : 'text-slate-600'
-      }`}>
+      <h4 className="text-sm font-semibold mb-2 text-slate-700">
+        {/* R2-PA1 FIX: Consistent text color, removed amber styling for calmer tone */}
         {config.title}
       </h4>
 
       {/* Why you're seeing this */}
-      <p className="text-sm text-slate-500 max-w-xs mb-3">
+      <p className="text-sm text-slate-600 max-w-xs mb-3">
         {config.why}
       </p>
 

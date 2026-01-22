@@ -87,16 +87,16 @@ const LineChartSimple = ({ data = [], valueLabel = '', color = '#3B82F6', height
           opacity="0.9"
         />
 
-        {/* Data points */}
+        {/* Data points - R2-A1 FIX: Reduced marker size for cleaner, less distracting appearance */}
         {points.map((p, i) => (
           <circle
             key={i}
             cx={p.x}
             cy={p.y}
-            r="3"
+            r="1.5"
             fill="white"
             stroke={color}
-            strokeWidth="2"
+            strokeWidth="1.5"
             vectorEffect="non-scaling-stroke"
           />
         ))}

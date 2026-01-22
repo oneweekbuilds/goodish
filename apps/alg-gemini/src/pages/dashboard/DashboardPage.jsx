@@ -37,19 +37,20 @@ export const THEME = {
 /**
  * SOLID SURFACE TOKENS - Solid Surfaces Strategy
  * Replace translucent everywhere with solid, intentional surfaces
+ * R2-G1 FIX: Increased border weights and contrast for better hierarchy
  */
 export const SURFACES = {
   // Hero chapter - solid light blue background
   HERO_BLUE: {
     background: '#EFF6FF', // solid light blue
-    border: '1px solid #BFDBFE',
+    border: '2px solid #BFDBFE', // R2-G1: increased from 1px
     shadow: '0 4px 24px rgba(37, 99, 235, 0.08)',
   },
   // Support cards in hero - solid white with clear border
   SUPPORT_WHITE: {
     background: '#FFFFFF',
-    border: '1px solid #CBD5E1',
-    shadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+    border: '1.5px solid #94A3B8', // R2-G1: stronger border for visibility
+    shadow: '0 2px 8px rgba(0, 0, 0, 0.06)', // R2-G1: slightly stronger shadow
   },
   // Talk chapter - solid light green background
   TALK_GREEN: {
@@ -60,13 +61,13 @@ export const SURFACES = {
   // Content sections - solid white with border
   SECTION_WHITE: {
     background: '#FFFFFF',
-    border: '1px solid #E2E8F0',
-    shadow: 'none',
+    border: '1.5px solid #CBD5E1', // R2-G1: stronger border
+    shadow: '0 1px 3px rgba(15, 23, 42, 0.04)', // R2-G1: subtle shadow for depth
   },
   // Alternating tint for visual rhythm
   SECTION_TINT: {
     background: '#F8FAFC',
-    border: '1px solid #E2E8F0',
+    border: '1.5px solid #CBD5E1', // R2-G1: stronger border
     shadow: 'none',
   },
 };
@@ -259,13 +260,14 @@ const DataCoverageBar = ({ scans, scanDetails, tabId }) => {
  * UI Refoundation: Uses green accent (politics tab semantic color lane)
  */
 const PoliticalLeaningToggle = ({ enabled, onToggle }) => (
-  <div className="flex items-center gap-3 px-4 py-3 bg-amber-50 rounded-lg border border-amber-100">
-    <Info size={16} className="text-amber-600 flex-shrink-0" />
+  <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 rounded-lg border border-slate-200">
+    {/* R2-P1 FIX: Changed from amber (orange/warning) to neutral slate for calm tone */}
+    <Info size={16} className="text-slate-500 flex-shrink-0" />
     <div className="flex-1">
-      <p className="text-sm text-amber-800">
+      <p className="text-sm text-slate-700">
         <span className="font-medium">Optional:</span> Show viewpoint distribution estimate (low confidence, keyword-based only)
       </p>
-      <p className="text-xs text-amber-600 mt-0.5">
+      <p className="text-xs text-slate-500 mt-0.5">
         Enabling shows which perspective keywords appeared more. Does not measure accuracy or your beliefs.
       </p>
     </div>
@@ -273,7 +275,7 @@ const PoliticalLeaningToggle = ({ enabled, onToggle }) => (
       onClick={onToggle}
       className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
       style={{
-        backgroundColor: enabled ? '#10B981' : '#E5E7EB',
+        backgroundColor: enabled ? '#3B82F6' : '#E5E7EB',
         color: enabled ? 'white' : '#64748B',
       }}
     >
@@ -1197,10 +1199,11 @@ const TabHero = ({
   }
 
   // FIX: Only show fallback if we actually have quality-approved data
+  // R2-C1 FIX: Softened low-data message to avoid contradiction when content renders below
   if (!headline) {
     headline = (hasHeroData && heroQualityOk)
       ? 'We observed a measurable pattern in your scans.'
-      : 'Not enough data yet to quantify this from your scans.';
+      : 'Building patterns from your scans.';
   }
 
   const contextLine = TAB_TRUST_SENTENCES[tabId] || null;
@@ -1777,7 +1780,8 @@ const DashboardPage = () => {
   const isOnAlgorithmTab = activeTab === 'algorithm';
 
   return (
-    <div className="min-h-screen bg-bg-page pt-24 md:pt-28 pb-16 px-4 md:px-6">
+    <div className="min-h-screen bg-bg-page pt-24 md:pt-28 pb-32 px-4 md:px-6">
+      {/* R2-G2 FIX: Increased bottom padding from pb-16 to pb-32 to prevent content overlay */}
       <div className="max-w-7xl mx-auto px-6">
         {/* Page Header - reduced on Algorithm tab to let hero be the star */}
         <div className={`flex flex-col md:flex-row md:items-center md:justify-between gap-4 ${isOnAlgorithmTab ? 'mb-4' : 'mb-8'}`}>
