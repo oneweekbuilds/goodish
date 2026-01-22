@@ -265,22 +265,24 @@ const PoliticalLeaningToggle = ({ enabled, onToggle }) => (
     <Info size={16} className="text-slate-500 flex-shrink-0" />
     <div className="flex-1">
       <p className="text-sm text-slate-700">
-        <span className="font-medium">Optional:</span> Show viewpoint distribution estimate (low confidence, keyword-based only)
+        <span className="font-medium">Optional detail:</span> View keyword-based viewpoint estimate (low confidence)
       </p>
       <p className="text-xs text-slate-500 mt-0.5">
-        Enabling shows which perspective keywords appeared more. Does not measure accuracy or your beliefs.
+        Shows which perspective keywords appeared more. Does not measure accuracy or your beliefs.
       </p>
     </div>
     <button
       onClick={onToggle}
-      className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+      className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors border"
       style={{
-        backgroundColor: enabled ? '#3B82F6' : '#E5E7EB',
-        color: enabled ? 'white' : '#64748B',
+        backgroundColor: enabled ? '#EFF6FF' : 'white',
+        color: enabled ? '#3B82F6' : '#64748B',
+        borderColor: enabled ? '#3B82F6' : '#CBD5E1',
       }}
     >
+      {/* R2-P2 FIX: Changed "Enable" to "Show" for less permission-like feel, secondary button style */}
       {enabled ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
-      {enabled ? 'Enabled' : 'Enable'}
+      {enabled ? 'Shown' : 'Show'}
     </button>
   </div>
 );
@@ -852,16 +854,17 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                       </span>
                       <button
                         onClick={() => toggleSection('keyInsightEvidence')}
-                        className="inline-flex items-center gap-2 text-sm font-medium transition-all rounded-full hover:bg-blue-100"
+                        className="inline-flex items-center gap-2 text-sm font-medium transition-all rounded-full hover:bg-blue-600 hover:text-white"
                         style={{
-                          color: 'rgba(37, 99, 235, 0.8)',
-                          background: 'rgba(37, 99, 235, 0.06)',
-                          border: '1px solid rgba(37, 99, 235, 0.12)',
+                          color: '#3B82F6',
+                          background: 'rgba(59, 130, 246, 0.10)',
+                          border: '1.5px solid rgba(59, 130, 246, 0.30)',
                           padding: '0.5rem 1rem',
                         }}
                         aria-expanded={expandedSections.keyInsightEvidence}
                         aria-label={expandedSections.keyInsightEvidence ? 'Hide evidence for this insight' : 'Show evidence for this insight'}
                       >
+                        {/* R2-A3 FIX: Increased button contrast for visibility */}
                         <ChevronDown
                           size={16}
                           className="transition-transform"
@@ -1174,6 +1177,7 @@ const TabHero = ({
   platforms,
   heroView,
   heroDataResult,
+  anyViewHasData,
   isEvidenceExpanded,
   onToggleEvidence,
   scopeLabel,
@@ -1200,10 +1204,17 @@ const TabHero = ({
 
   // FIX: Only show fallback if we actually have quality-approved data
   // R2-C1 FIX: Softened low-data message to avoid contradiction when content renders below
+  // R2-A2, R2-W2 FIX: If ANY view has data, don't show low-confidence message
   if (!headline) {
-    headline = (hasHeroData && heroQualityOk)
-      ? 'We observed a measurable pattern in your scans.'
-      : 'Building patterns from your scans.';
+    if (hasHeroData && heroQualityOk) {
+      headline = 'We observed a measurable pattern in your scans.';
+    } else if (anyViewHasData) {
+      // If hero has no data but OTHER views do, show neutral observational statement
+      headline = 'Patterns from your recent activity.';
+    } else {
+      // Only if NO views have data, show building message
+      headline = 'Building patterns from your scans.';
+    }
   }
 
   const contextLine = TAB_TRUST_SENTENCES[tabId] || null;
@@ -1326,16 +1337,17 @@ const TabHero = ({
         >
           <button
             onClick={onToggleEvidence}
-            className="inline-flex items-center gap-2 text-sm font-medium transition-all rounded-full hover:bg-blue-100"
+            className="inline-flex items-center gap-2 text-sm font-medium transition-all rounded-full hover:bg-blue-600 hover:text-white"
             style={{
-              color: 'rgba(37, 99, 235, 0.85)',
-              background: 'rgba(37, 99, 235, 0.06)',
-              border: '1px solid rgba(37, 99, 235, 0.12)',
+              color: '#3B82F6',
+              background: 'rgba(59, 130, 246, 0.10)',
+              border: '1.5px solid rgba(59, 130, 246, 0.30)',
               padding: '0.5rem 1rem',
             }}
             aria-expanded={isEvidenceExpanded}
             aria-label={isEvidenceExpanded ? 'Hide evidence for this insight' : 'Show evidence for this insight'}
           >
+            {/* R2-A3 FIX: Increased button contrast for visibility */}
             <ChevronDown
               size={16}
               className="transition-transform"
@@ -1658,6 +1670,9 @@ const DashboardPage = () => {
   const resolvedHeroViewId = heroView?.id || heroViewId;
   const heroDataResult = resolvedHeroViewId ? viewDataResults[resolvedHeroViewId] : null;
 
+  // R2-A2, R2-W2 FIX: Check if ANY view in tab has data to avoid "building patterns" + rendered content contradiction
+  const anyViewHasData = Object.values(viewDataResults).some(result => result?.hasData === true);
+
   const heroEvidenceKey = `${activeTab}:${resolvedHeroViewId || 'unknown'}`;
   const isHeroEvidenceExpanded = heroEvidenceExpanded[heroEvidenceKey] === true;
   const toggleHeroEvidence = () => {
@@ -1877,6 +1892,7 @@ const DashboardPage = () => {
                   platforms={platforms}
                   heroView={heroView}
                   heroDataResult={heroDataResult}
+                  anyViewHasData={anyViewHasData}
                   isEvidenceExpanded={isHeroEvidenceExpanded}
                   onToggleEvidence={toggleHeroEvidence}
                   scopeLabel={tabScopeLabel}

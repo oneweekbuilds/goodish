@@ -22,13 +22,15 @@ const SimpleTable = ({ columns = [], rows = [], maxRows = 10 }) => {
 
   return (
     <div className="overflow-x-auto">
+      {/* R2-C2 FIX: Increased text contrast, padding, and visual separation for better scannability */}
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-slate-200">
+          <tr className="border-b-2 border-slate-300">
+            {/* R2-C2: Stronger border, darker header text */}
             {columns.map((col, i) => (
               <th
                 key={i}
-                className={`py-2 px-3 font-medium text-slate-500 ${getAlignment(col.align)}`}
+                className={`py-2.5 px-4 font-semibold text-slate-700 text-xs uppercase tracking-wide ${getAlignment(col.align)}`}
               >
                 {col.label}
               </th>
@@ -39,12 +41,13 @@ const SimpleTable = ({ columns = [], rows = [], maxRows = 10 }) => {
           {displayRows.map((row, rowIndex) => (
             <tr
               key={rowIndex}
-              className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
+              className={`border-b border-slate-200 hover:bg-slate-50 transition-colors ${rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}
             >
+              {/* R2-C2: Alternating row backgrounds, darker text, more padding */}
               {columns.map((col, colIndex) => (
                 <td
                   key={colIndex}
-                  className={`py-2 px-3 text-slate-600 ${getAlignment(col.align)}`}
+                  className={`py-3 px-4 text-slate-800 ${getAlignment(col.align)}`}
                 >
                   {row[col.key] ?? '-'}
                 </td>

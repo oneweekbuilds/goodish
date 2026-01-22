@@ -1,8 +1,8 @@
 # Round 2 Dashboard QA Backlog (60 items)
 
 **Created**: 2026-01-21  
-**Status**: Active - 19 FIXED, 41 OPEN  
-**Last Updated**: 2026-01-22 (R2 Pass 2A - visual legibility)
+**Status**: Active - 25 FIXED, 35 OPEN  
+**Last Updated**: 2026-01-22 (R2 Pass 2B - quantitative clarity)
 
 ---
 
@@ -43,8 +43,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 | R2-G4 | Global | P0 | FIXED | Scope language regressed to "across scans" and "based on your recent scans" |
 | R2-G5 | Global | P1 | OPEN | Chart styling reads prototype: markers too large, inconsistent shapes, cramped baseline |
 | R2-A1 | Ads & Influence | P2 | FIXED | Line chart dots are too big and oddly shaped |
-| R2-A2 | Ads & Influence | P1 | OPEN | Hero says "Not enough data" while chart and percent render |
-| R2-A3 | Ads & Influence | P2 | OPEN | "Hide details" button blends into hero |
+| R2-A2 | Ads & Influence | P1 | FIXED | Hero says "Not enough data" while chart and percent render |
+| R2-A3 | Ads & Influence | P2 | FIXED | "Hide details" button blends into hero |
 | R2-A4 | Ads & Influence | P1 | OPEN | "How we measure" block in hero is cramped and equal weight to content |
 | R2-A5 | Ads & Influence | P1 | OPEN | Bottom sticky nav overlays hero content |
 | R2-A6 | Ads & Influence | P0 | FIXED | "Based on your recent scans" phrasing is back (scope regression) |
@@ -53,7 +53,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 | R2-A9 | Ads & Influence | P1 | OPEN | Platform list has confusing duplication or ordering (X appears oddly) |
 | R2-A10 | Ads & Influence | P2 | OPEN | "More details" accordion preview is generic and low-signal |
 | R2-P1 | Politics & Worldview | P1 | OPEN | Orange banner feels like an alert and is too dominant |
-| R2-P2 | Politics & Worldview | P1 | OPEN | "Enable" button wording and hierarchy feels like permissions, not optional module |
+| R2-P2 | Politics & Worldview | P1 | FIXED | "Enable" button wording and hierarchy feels like permissions, not optional module |
 | R2-P3 | Politics & Worldview | P2 | OPEN | Line chart dots too large and inconsistent |
 | R2-P4 | Politics & Worldview | P1 | OPEN | Hero says "Not enough data" while chart and percent render |
 | R2-P5 | Politics & Worldview | P1 | OPEN | Table readability is dense and low contrast |
@@ -63,7 +63,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 | R2-P9 | Politics & Worldview | P1 | OPEN | More details expansion feels like a second hero, too much weight |
 | R2-P10 | Politics & Worldview | P2 | OPEN | Repetition of "exposure not beliefs" across multiple blocks creates bloat |
 | R2-PA1 | Patterns in Your Feed | P1 | FIXED | Embedded "Not enough data yet" panel looks like different design system |
-| R2-PA2 | Patterns in Your Feed | P2 | OPEN | "Run Another Scan" CTA placement is awkward and inconsistent |
+| R2-PA2 | Patterns in Your Feed | P2 | FIXED | "Run Another Scan" CTA placement is awkward and inconsistent |
 | R2-PA3 | Patterns in Your Feed | P1 | OPEN | Section header hierarchy is too light, lacks contrast |
 | R2-PA4 | Patterns in Your Feed | P2 | OPEN | Topic concentration green block is too loud |
 | R2-PA5 | Patterns in Your Feed | P1 | OPEN | Attention tactics shows big 5% with weak interpretation hierarchy |
@@ -73,7 +73,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 | R2-PA9 | Patterns in Your Feed | P0 | FIXED | "Try this" section reappeared (trust regression) |
 | R2-PA10 | Patterns in Your Feed | P2 | OPEN | Summary card reads like placeholder copy and repeats itself |
 | R2-C1 | Creators & Voices | P1 | FIXED | Hero says "Not enough data" while top creators table is populated |
-| R2-C2 | Creators & Voices | P1 | OPEN | Table contrast is too low, hard to scan |
+| R2-C2 | Creators & Voices | P1 | FIXED | Table contrast is too low, hard to scan |
 | R2-C3 | Creators & Voices | P0 | FIXED | "How we measure" uses "across your scans" (scope regression) |
 | R2-C4 | Creators & Voices | P2 | OPEN | Italic disclaimer microcopy is too small and washed out |
 | R2-C5 | Creators & Voices | P2 | OPEN | Cross-platform empty state is wordy and low-value |
@@ -83,7 +83,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 | R2-C9 | Creators & Voices | P1 | OPEN | Bottom nav overlay blocks content in creators tab |
 | R2-C10 | Creators & Voices | P1 | OPEN | "Not enough data" headline pattern across tabs undermines credibility |
 | R2-W1 | Observed Patterns | P0 | FIXED | Hero expand button ("How we know this") crashes when clicked |
-| R2-W2 | Observed Patterns | P1 | OPEN | Hero says "Not enough data" but the page content below still renders |
+| R2-W2 | Observed Patterns | P1 | FIXED | Hero says "Not enough data" but the page content below still renders |
 | R2-W3 | Observed Patterns | P1 | OPEN | Title "What the system is reinforcing" is too strong and implies active shaping |
 | R2-W4 | Observed Patterns | P0 | FIXED | "Across scans" language is back in headings and scope lines |
 | R2-W5 | Observed Patterns | P0 | FIXED | Scope badge shows scan counts that can conflict across views (trust risk) |
@@ -279,7 +279,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-A2
 **Tab**: Ads & Influence  
 **Severity**: P1  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Hero section displays "Not enough data" message
@@ -300,12 +300,14 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Empty state or full data state, never mixed
 - Trust check: users don't question data reliability
 
+**Resolution**: Added `anyViewHasData` check to TabHero. Hero now shows: (1) specific takeaway if hero has data, (2) "Patterns from your recent activity" if hero lacks data BUT other views have data (avoids contradiction), (3) "Building patterns" only if NO views have data. Fixes R2-A2 and R2-W2.
+
 ---
 
 ### R2-A3
 **Tab**: Ads & Influence  
 **Severity**: P2  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - "Hide details" collapse button in hero section has low contrast
@@ -536,7 +538,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-P2
 **Tab**: Politics & Worldview  
 **Severity**: P1  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - "Enable" button in Politics banner feels like a permission request
@@ -785,7 +787,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-PA2
 **Tab**: Patterns in Your Feed  
 **Severity**: P2  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - "Run Another Scan" CTA appears in some empty states
@@ -1042,7 +1044,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-C2
 **Tab**: Creators & Voices  
 **Severity**: P1  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Creators table has low contrast text
@@ -1062,6 +1064,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Table meets WCAG AA contrast
 - Easy to scan quickly
 - Feels high-quality
+
+**Resolution**: Enhanced SimpleTable.jsx for better scannability: (1) Headers: text-slate-500→text-slate-700, border-b→border-b-2, border-slate-200→border-slate-300, added uppercase tracking, (2) Body: text-slate-600→text-slate-800, border-slate-100→border-slate-200, (3) Added alternating row backgrounds (white/slate-50), (4) Increased padding py-2→py-2.5 (headers), py-2→py-3 (body), px-3→px-4 (all). Tables now easier to scan with clear visual separation.
 
 ---
 
@@ -1300,7 +1304,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-W2
 **Tab**: Observed Patterns  
 **Severity**: P1  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Hero says "Not enough data"
@@ -1317,6 +1321,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 **Acceptance criteria:**
 - No contradictory "not enough" + rendered content
 - Clear empty state or clear data state
+
+**Resolution**: Fixed by R2-A2 solution. Same `anyViewHasData` logic prevents "Building patterns" message when content cards render below hero.
 
 ---
 

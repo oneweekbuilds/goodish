@@ -44,7 +44,7 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
             'Run 2-3 scans this week',
             'Scan the same platform multiple times',
           ],
-          cta: { label: 'Start a Scan', to: '/start' },
+          cta: { label: 'Run Another Scan', to: '/start' },
         };
 
       case EMPTY_STATE_TYPES.NEEDS_BROADER_BEHAVIOR:
@@ -121,7 +121,7 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
           'Run 2-3 scans this week',
           'Scan the same platform multiple times',
         ],
-        cta: { label: 'Start a Scan', to: '/start' },
+        cta: { label: 'Run Another Scan', to: '/start' },
       };
     }
 
@@ -144,7 +144,7 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
               'Run more scans to increase sample size',
               'Ensure scans capture enough posts',
             ],
-        cta: { label: 'Run More Scans', to: '/start' },
+        cta: { label: 'Run Another Scan', to: '/start' },
       };
     }
 
@@ -189,9 +189,10 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
         'Run 2-3 scans this week',
         'Scan the same platform multiple times',
       ],
-      cta: { label: 'Start a Scan', to: '/start' },
+      cta: { label: 'Run Another Scan', to: '/start' },
     };
   };
+  // R2-PA2 FIX: Standardized all CTA labels to "Run Another Scan" for consistency
 
   const config = getConfig();
 
