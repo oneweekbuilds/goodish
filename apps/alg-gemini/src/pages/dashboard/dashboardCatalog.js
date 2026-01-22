@@ -241,7 +241,7 @@ export const dashboardCatalog = [
     tab: 'ads',
     id: 'ads-trend',
     title: 'Changes in Advertising Over Time',
-    description: 'Track how ad percentage has changed across your scans.',
+    description: 'Track how ad percentage has changed during this window.',
     outputType: 'line',
     dataFn: 'getAdTrendData',
     emptyStateType: 'needs_more_scans',
@@ -878,7 +878,7 @@ export const dashboardCatalog = [
     isPrimary: true,
     sortOrder: 'primary',
     maxItems: 5,
-    whyExplanation: 'Counted posts by account across your scans.',
+    whyExplanation: 'Counted posts by account during this window.',
     counterfactual: 'This may not match who you follow or expect — it is what appeared in this specific scroll session.',
     takeaway: (data) => {
       if (!Array.isArray(data) || data.length === 0) return 'Influence spread across multiple voices.';
@@ -1252,7 +1252,7 @@ export const dashboardCatalog = [
     tab: 'algorithm',
     id: 'algo-uncertain',
     title: 'Variable Patterns',
-    description: 'Areas with high variance across your scans.',
+    description: 'Areas with high variance during this window.',
     outputType: 'text',
     dataFn: 'getAlgoUncertainData',
     emptyStateType: 'needs_more_scans',
@@ -1279,7 +1279,7 @@ export const dashboardCatalog = [
     whyExplanation: 'Based on observed patterns. Reflects what appeared, not your interests or identity.',
     takeaway: (data) => {
       if (data?.experiments?.length > 0) {
-        return 'These themes appeared persistently across your scans.';
+        return 'These themes appeared persistently during this window.';
       }
       return null;
     },

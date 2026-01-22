@@ -1,8 +1,8 @@
 # Round 2 Dashboard QA Backlog (60 items)
 
 **Created**: 2026-01-21  
-**Status**: Active - 0 FIXED, 60 OPEN  
-**Last Updated**: 2026-01-21
+**Status**: Active - 13 FIXED, 47 OPEN  
+**Last Updated**: 2026-01-21 (R2 Pass 1 - P0 fixes)
 
 ---
 
@@ -39,16 +39,16 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 |----|-----|----------|--------|-------|
 | R2-G1 | Global | P1 | OPEN | Color and contrast separation is too low (eyes glaze over) |
 | R2-G2 | Global | P1 | OPEN | Persistent bottom nav bar overlays content and looks like broken layout |
-| R2-G3 | Global | P0 | OPEN | Trust discipline regressions: "Try this" and advice UI reappeared |
-| R2-G4 | Global | P0 | OPEN | Scope language regressed to "across scans" and "based on your recent scans" |
+| R2-G3 | Global | P0 | FIXED | Trust discipline regressions: "Try this" and advice UI reappeared |
+| R2-G4 | Global | P0 | FIXED | Scope language regressed to "across scans" and "based on your recent scans" |
 | R2-G5 | Global | P1 | OPEN | Chart styling reads prototype: markers too large, inconsistent shapes, cramped baseline |
 | R2-A1 | Ads & Influence | P2 | OPEN | Line chart dots are too big and oddly shaped |
 | R2-A2 | Ads & Influence | P1 | OPEN | Hero says "Not enough data" while chart and percent render |
 | R2-A3 | Ads & Influence | P2 | OPEN | "Hide details" button blends into hero |
 | R2-A4 | Ads & Influence | P1 | OPEN | "How we measure" block in hero is cramped and equal weight to content |
 | R2-A5 | Ads & Influence | P1 | OPEN | Bottom sticky nav overlays hero content |
-| R2-A6 | Ads & Influence | P0 | OPEN | "Based on your recent scans" phrasing is back (scope regression) |
-| R2-A7 | Ads & Influence | P0 | OPEN | Card scope line uses scan-based framing ("Scope: Based on your recent scans") |
+| R2-A6 | Ads & Influence | P0 | FIXED | "Based on your recent scans" phrasing is back (scope regression) |
+| R2-A7 | Ads & Influence | P0 | FIXED | Card scope line uses scan-based framing ("Scope: Based on your recent scans") |
 | R2-A8 | Ads & Influence | P1 | OPEN | Section cards do not visually separate enough from hero, low hierarchy |
 | R2-A9 | Ads & Influence | P1 | OPEN | Platform list has confusing duplication or ordering (X appears oddly) |
 | R2-A10 | Ads & Influence | P2 | OPEN | "More details" accordion preview is generic and low-signal |
@@ -69,28 +69,28 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 | R2-PA5 | Patterns in Your Feed | P1 | OPEN | Attention tactics shows big 5% with weak interpretation hierarchy |
 | R2-PA6 | Patterns in Your Feed | P2 | OPEN | Tone distribution bar still feels loud and moralized |
 | R2-PA7 | Patterns in Your Feed | P1 | OPEN | More details accordion takes over page, too much vertical bloat |
-| R2-PA8 | Patterns in Your Feed | P0 | OPEN | Copy uses "across scans" language (scope regression) |
-| R2-PA9 | Patterns in Your Feed | P0 | OPEN | "Try this" section reappeared (trust regression) |
+| R2-PA8 | Patterns in Your Feed | P0 | FIXED | Copy uses "across scans" language (scope regression) |
+| R2-PA9 | Patterns in Your Feed | P0 | FIXED | "Try this" section reappeared (trust regression) |
 | R2-PA10 | Patterns in Your Feed | P2 | OPEN | Summary card reads like placeholder copy and repeats itself |
 | R2-C1 | Creators & Voices | P1 | OPEN | Hero says "Not enough data" while top creators table is populated |
 | R2-C2 | Creators & Voices | P1 | OPEN | Table contrast is too low, hard to scan |
-| R2-C3 | Creators & Voices | P0 | OPEN | "How we measure" uses "across your scans" (scope regression) |
+| R2-C3 | Creators & Voices | P0 | FIXED | "How we measure" uses "across your scans" (scope regression) |
 | R2-C4 | Creators & Voices | P2 | OPEN | Italic disclaimer microcopy is too small and washed out |
 | R2-C5 | Creators & Voices | P2 | OPEN | Cross-platform empty state is wordy and low-value |
 | R2-C6 | Creators & Voices | P1 | OPEN | Cross-platform presence card is visually buried, weak hierarchy |
-| R2-C7 | Creators & Voices | P0 | OPEN | "Try this" section reappeared and labels creators (trust regression) |
+| R2-C7 | Creators & Voices | P0 | FIXED | "Try this" section reappeared and labels creators (trust regression) |
 | R2-C8 | Creators & Voices | P1 | OPEN | Summary card content conflicts with presence of "Try this" list below |
 | R2-C9 | Creators & Voices | P1 | OPEN | Bottom nav overlay blocks content in creators tab |
 | R2-C10 | Creators & Voices | P1 | OPEN | "Not enough data" headline pattern across tabs undermines credibility |
-| R2-W1 | Observed Patterns | P0 | OPEN | Hero expand button ("How we know this") crashes when clicked |
+| R2-W1 | Observed Patterns | P0 | FIXED | Hero expand button ("How we know this") crashes when clicked |
 | R2-W2 | Observed Patterns | P1 | OPEN | Hero says "Not enough data" but the page content below still renders |
 | R2-W3 | Observed Patterns | P1 | OPEN | Title "What the system is reinforcing" is too strong and implies active shaping |
-| R2-W4 | Observed Patterns | P0 | OPEN | "Across scans" language is back in headings and scope lines |
-| R2-W5 | Observed Patterns | P0 | OPEN | Scope badge shows scan counts that can conflict across views (trust risk) |
+| R2-W4 | Observed Patterns | P0 | FIXED | "Across scans" language is back in headings and scope lines |
+| R2-W5 | Observed Patterns | P0 | FIXED | Scope badge shows scan counts that can conflict across views (trust risk) |
 | R2-W6 | Observed Patterns | P2 | OPEN | Speculation card is still too long and repetitive |
 | R2-W7 | Observed Patterns | P1 | OPEN | Bottom nav overlay interrupts observed patterns content |
-| R2-W8 | Observed Patterns | P0 | OPEN | "Try this" section reappeared (trust regression) |
-| R2-W9 | Observed Patterns | P0 | OPEN | "Current algorithmic interpretation" header is back (tone regression) |
+| R2-W8 | Observed Patterns | P0 | FIXED | "Try this" section reappeared (trust regression) |
+| R2-W9 | Observed Patterns | P0 | FIXED | "Current algorithmic interpretation" header is back (tone regression) |
 | R2-W10 | Observed Patterns | P1 | OPEN | Tab tone feels inconsistent with calm Oura-style voice and structure |
 | R2-T1 | Talk | P2 | OPEN | Coming soon section should feel special without being loud |
 | R2-T2 | Talk | P2 | OPEN | Waitlist module needs sharper value clarity in one tight block |
@@ -159,7 +159,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-G3
 **Tab**: Global  
 **Severity**: P0  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - "Try this" sections have reappeared in multiple tabs
@@ -183,12 +183,14 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Trust check: dashboard stays observational, never prescriptive
 - No data logic changed
 
+**Resolution**: Removed entire "Try this" section from DashboardPage.jsx (lines 1094-1265). Section included accordion UI with prescriptive "Try this" actions and advice. Replaced with single comment line. Fixes R2-G3, R2-PA9, R2-C7, R2-W8.
+
 ---
 
 ### R2-G4
 **Tab**: Global  
 **Severity**: P0  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Scope language reverted to "across your scans", "based on your recent scans", "in this scan"
@@ -211,6 +213,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - No "across your scans" or "in this scan" remains
 - Trust check: scope feels coherent and intentional
 - No data aggregation logic changed
+
+**Resolution**: Changed scope language across all user-visible dashboard areas: (1) DashboardPage.jsx line 1868: "Based on your recent scans" → "during this window", (2) dashboardCatalog.js: 4 instances of "across your scans" → "during this window" (ads-trend description, creators-top whyExplanation, algo-uncertain description, algo-change-advice takeaway). Fixes R2-G4, R2-A6, R2-A7, R2-PA8, R2-C3, R2-W4.
 
 ---
 
@@ -376,7 +380,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-A6
 **Tab**: Ads & Influence  
 **Severity**: P0  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Scope label in Ads tab says "Based on your recent scans"
@@ -395,12 +399,14 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - No "scans" framing in Ads tab scope
 - Trust check: feels intentional and consistent
 
+**Resolution**: Fixed by R2-G4 scope language sweep.
+
 ---
 
 ### R2-A7
 **Tab**: Ads & Influence  
 **Severity**: P0  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Card-level scope lines display "Scope: Based on your recent scans"
@@ -417,6 +423,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Card scope uses "during this window" phrasing
 - No scan-count framing at card level
 - Consistent with tab-level scope
+
+**Resolution**: Fixed by R2-G4 scope language sweep. Scope labels now derive from deriveWindowLabel() which returns "during this window".
 
 ---
 
@@ -931,7 +939,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-PA8
 **Tab**: Patterns in Your Feed  
 **Severity**: P0  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Copy in Patterns tab uses "across scans" phrasing
@@ -949,12 +957,14 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - No "across scans" remains in Patterns tab
 - Consistent with other tabs
 
+**Resolution**: Fixed by R2-G4 scope language sweep.
+
 ---
 
 ### R2-PA9
 **Tab**: Patterns in Your Feed  
 **Severity**: P0  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - "Try this" section reappeared in Patterns tab
@@ -972,6 +982,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - No "Try this" UI in Patterns tab
 - No prescriptive language
 - Trust check: dashboard stays observational
+
+**Resolution**: Fixed by R2-G3 "Try this" removal.
 
 ---
 
@@ -1054,7 +1066,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-C3
 **Tab**: Creators & Voices  
 **Severity**: P0  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - "How we measure" text in Creators tab uses "across your scans"
@@ -1070,6 +1082,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 **Acceptance criteria:**
 - Scope language matches "during this window" standard
 - Consistent across all tabs
+
+**Resolution**: Fixed by R2-G4 scope language sweep.
 
 ---
 
@@ -1153,7 +1167,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-C7
 **Tab**: Creators & Voices  
 **Severity**: P0  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - "Try this" section reappeared in Creators tab
@@ -1173,6 +1187,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - No "Try this" UI in Creators tab
 - No creator labeling or advice
 - Trust check: dashboard stays neutral and observational
+
+**Resolution**: Fixed by R2-G3 "Try this" removal.
 
 ---
 
@@ -1254,7 +1270,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-W1
 **Tab**: Observed Patterns  
 **Severity**: P0  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Hero section has "How we know this" expand button
@@ -1274,6 +1290,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - No crashes when interacting with hero
 - Button works or is removed
 - Trust check: dashboard feels stable and reliable
+
+**Resolution**: Verified "How we know this" button works correctly. expandedSections.keyInsightEvidence is properly initialized in useState, toggleSection handler exists, and smoke tests show no crashes. Button functionality is intact. False alarm in backlog.
 
 ---
 
@@ -1328,7 +1346,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-W4
 **Tab**: Observed Patterns  
 **Severity**: P0  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - "Across scans" language appears in Observed Patterns headings and scope lines
@@ -1345,12 +1363,14 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - All scope language matches "during this window" standard
 - Consistent across dashboard
 
+**Resolution**: Fixed by R2-G4 scope language sweep.
+
 ---
 
 ### R2-W5
 **Tab**: Observed Patterns  
 **Severity**: P0  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Scope badge shows scan count (e.g., "Based on 108 scans")
@@ -1370,6 +1390,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - No conflicting scan count numbers within same tab
 - Scope feels coherent and intentional
 - Trust check: users don't suspect cherry-picking
+
+**Resolution**: Already addressed in Round 1 Pass 2H (A10 fix). DataQualityFooter was simplified to show only confidence badge, removing all "Based on X scans" text. Scope labels now use window-based framing from R2-G4 fix.
 
 ---
 
@@ -1425,7 +1447,7 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 ### R2-W8
 **Tab**: Observed Patterns  
 **Severity**: P0  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - "Try this" section reappeared in Observed Patterns tab
@@ -1443,12 +1465,14 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - No prescriptive language
 - Trust check: dashboard stays observational
 
+**Resolution**: Fixed by R2-G3 "Try this" removal.
+
 ---
 
 ### R2-W9
 **Tab**: Observed Patterns  
 **Severity**: P0  
-**Status**: OPEN
+**Status**: FIXED
 
 **What you see now:**
 - Summary card header says "Current algorithmic interpretation"
@@ -1468,6 +1492,8 @@ This is Round 2 polish following the successful shipment of dashboard v1 (dashbo
 - Header describes patterns, not algorithm intent
 - Language matches Round 1 trust standard
 - Trust check: feels honest about limitations
+
+**Resolution**: Changed TAB_STORY_HEADERS.algorithm.summary.title from "Current algorithmic interpretation" to "Observed Pattern Summary", updated subtext from "How the system appears to be categorizing you" to "Themes that appeared consistently during this window".
 
 ---
 
