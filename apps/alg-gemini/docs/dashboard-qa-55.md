@@ -3,8 +3,32 @@
 > **Note**: This file contains 60 issues. The filename `dashboard-qa-55.md` is legacy.
 
 **Created**: 2026-01-21  
-**Status**: Active - 31 FIXED, 29 OPEN  
-**Last Updated**: 2026-01-21 (backlog reconciliation)
+**Status**: ✅ SHIPPED (dashboard-ship-v1)  
+**Last Updated**: 2026-01-21 (shipped - freeze in effect)
+
+---
+
+## 🚢 SHIP STATUS
+
+**This dashboard is considered SHIPPED as of `dashboard-ship-v1` (commit d1da1013).**
+
+### Freeze Policy
+
+All 60 QA issues resolved. The dashboard UX, copy, tone, scope language, and confidence framing are now **frozen**.
+
+**Future changes to the dashboard MUST meet one of these criteria:**
+1. **Bug fixes** - addressing functional defects or data accuracy issues
+2. **Accessibility fixes** - improving screen reader support, keyboard navigation, or WCAG compliance
+3. **New features** - implemented behind a feature flag or in a new tab (not modifying existing tabs)
+
+**Changes NOT allowed without new QA review:**
+- Copy or tone revisions
+- Scope language changes
+- Confidence badge wording
+- Layout or visual hierarchy changes
+- Card organization or tab structure
+
+This freeze ensures the dashboard maintains the trust discipline and UX coherence established through 9 systematic polish passes.
 
 ---
 
