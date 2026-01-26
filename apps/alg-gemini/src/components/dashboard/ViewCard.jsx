@@ -1006,8 +1006,8 @@ const ViewCard = ({
     }
 
     if (isPrimary && hasData) {
-      // Primary: lighter presence than before
-      return baseClasses;
+      // Primary: lighter presence than before, with subtle accent border
+      return `${baseClasses} border-l-2 ${accentBorder}`;
     }
 
     if (isPrimary && !hasData) {
@@ -1036,6 +1036,7 @@ const ViewCard = ({
     if (isPrimary && hasData) {
       return {
         border: '1px solid rgba(148, 163, 184, 0.7)',
+        borderLeft: 'none', // Left border handled by border-l-2 class
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)',
       };
     }
@@ -1064,7 +1065,7 @@ const ViewCard = ({
     }
 
     if (isPrimary && hasData) {
-      return 'px-8 py-7 bg-white border-b border-slate-100';
+      return 'px-8 py-7 bg-white border-b border-slate-100 pl-9'; // Extra left padding for accent border
     }
 
     if (isFutureCard) {
@@ -1086,7 +1087,7 @@ const ViewCard = ({
   // Content padding based on card type - increased for readability
   const getContentPadding = () => {
     if (isInline) return '';
-    if (isPrimary && hasData) return 'p-8';
+    if (isPrimary && hasData) return 'px-8 py-8 pl-9'; // Extra left padding for accent border
     if (isSummaryCard) return 'p-7';
     return 'p-6';
   };
