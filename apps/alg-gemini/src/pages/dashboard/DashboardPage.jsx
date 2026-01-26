@@ -521,8 +521,8 @@ const TAB_STORY_HEADERS = {
     },
     summary: {
       label: 'Summary',
-      title: 'Influence patterns observed',
-      subtext: 'Concentration detected during this window.',
+      title: 'Which creators dominate your feed',
+      subtext: 'This section summarizes recurring patterns in which accounts dominate your scanned feed, such as repeated appearances or tight clustering around a small set of creators. It does not judge quality or intent.',
     },
   },
 };
@@ -1081,8 +1081,8 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
       )}
 
       {/* SUMMARY - Experiments behind calm accordion */}
-      {/* Hide "Try this" section for Patterns tab */}
-      {hasSummaryContent && tabId !== 'patterns' && (
+      {/* Hide "Try this" section for Patterns and Creators tabs */}
+      {hasSummaryContent && tabId !== 'patterns' && tabId !== 'creators' && (
         <section className="mt-4">
           <ChapterContainer variant="default">
             <button
@@ -1366,7 +1366,7 @@ const TabHero = ({
     if (!bodyText) {
       bodyText = (hasHeroData && heroQualityOk)
         ? 'We observed a measurable pattern in your scans.'
-        : 'Not enough data yet to quantify this from your scans.';
+        : 'We will show more detail as you scan more posts over time.';
     }
   } else if (tabId === 'politics') {
     // Special handling for Politics tab: static title and body
@@ -1376,6 +1376,10 @@ const TabHero = ({
     // Special handling for Patterns tab: static title and body
     headline = 'Patterns in what you are shown';
     bodyText = 'This view summarizes recurring themes across the content you scanned. It reflects what appeared in the feed, not what you believe or want.';
+  } else if (tabId === 'creators') {
+    // Special handling for Creators tab: static title and body
+    headline = 'Creators shaping your feed';
+    bodyText = 'This view highlights the accounts and sources that appeared most in the content you scanned. It reflects what showed up in the feed, not who you are.';
   } else {
     // Other tabs: takeaway as headline
     if (hasHeroData && heroQualityOk && typeof heroView?.takeaway === 'function') {
@@ -1494,7 +1498,7 @@ const TabHero = ({
         </div>
 
         {/* Body text for Ads, Politics, and Patterns tabs */}
-        {bodyText && (tabId === 'ads' || tabId === 'politics' || tabId === 'patterns') && (
+        {bodyText && (tabId === 'ads' || tabId === 'politics' || tabId === 'patterns' || tabId === 'creators') && (
           <p
             className="text-slate-600 mb-4"
             style={{

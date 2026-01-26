@@ -53,7 +53,7 @@ export const TAB_TRUST_SENTENCES = {
   ads: "This view estimates how often ads and sales-driven posts appeared in the content you scanned. It reflects what showed up, not what you believe or want.",
   politics: "Counts and percentages are based only on the posts included in your scans.",
   patterns: "Counts and percentages are based only on the posts included in your scans.",
-  creators: "Accounts observed here — what appeared, not who you are.",
+  creators: "Counts and percentages are based only on the posts included in your scans.",
   algorithm: "Patterns observed here — system interpretation, not your identity.",
 };
 
