@@ -1741,11 +1741,11 @@ export function getCreatorConcentrationData(scans, scanDetails) {
   } else if (concentration >= 30) {
     primaryInsight = `About a third of your feed came from ${top10Count} accounts`;
   } else {
-    primaryInsight = `Your feed came from a mix of sources — ${top10Count} accounts accounted for about ${roundedConcentration}%`;
+    primaryInsight = `Your feed came from a mix of sources. ${top10Count} accounts accounted for about ${roundedConcentration}%`;
   }
 
   // Oura-style context line: calm, non-judgmental, acknowledges intentionality
-  const contextLine = 'Seeing the same accounts repeatedly can feel familiar — or limiting — depending on what you\'re hoping to see.';
+  const contextLine = 'Seeing the same accounts repeatedly can feel familiar or limiting, depending on what you\'re hoping to see.';
 
   // Top creators list (secondary evidence)
   const topCreators = sortedCreators.slice(0, 10).map((c, idx) => ({

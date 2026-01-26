@@ -54,7 +54,7 @@ export const TAB_TRUST_SENTENCES = {
   politics: "Counts and percentages are based only on the posts included in your scans.",
   patterns: "Counts and percentages are based only on the posts included in your scans.",
   creators: "Counts and percentages are based only on the posts included in your scans.",
-  algorithm: "Patterns observed here — system interpretation, not your identity.",
+  algorithm: "Patterns observed here. This is system interpretation, not your identity.",
 };
 
 export const TABS = [
@@ -88,7 +88,7 @@ export const dashboardCatalog = [
     isPrimary: true,
     sortOrder: 'primary',
     whyExplanation: 'These are posts the platform explicitly labeled as ads or sponsored.',
-    counterfactual: 'This may not match your perception — some ads blend in with regular content.',
+    counterfactual: 'This may not match your perception. Some ads blend in with regular content.',
     takeaway: (data) => {
       if (data?.currentPercent === undefined) return null;
       const pct = data.currentPercent;
@@ -104,15 +104,15 @@ export const dashboardCatalog = [
       if (pct < 8) {
         return smallSample
           ? 'Early signal: light sponsored touches surfaced.'
-          : 'Selling pressure is light — promotions appear but don\'t drive the feed.';
+          : 'Selling pressure is light. Promotions appear but don\'t drive the feed.';
       }
 
       if (pct < 18) {
         // FIX A3: Soften interpretive language - be clearer about what we're measuring
-        return 'Sponsored content appears regularly — promotions are present but not dominant.';
+        return 'Sponsored content appears regularly. Promotions are present but not dominant.';
       }
 
-      return 'Advertising is a main storyline here — paid promotions make up a substantial portion of what you see.';
+      return 'Advertising is a main storyline here. Paid promotions make up a substantial portion of what you see.';
     },
     action: null,
   },
@@ -345,22 +345,22 @@ export const dashboardCatalog = [
       if (pct === 0) {
         return smallSample
           ? 'No political keywords surfaced in this sample.'
-          : 'Political exposure was absent — your feed had no detectable political keywords.';
+          : 'Political exposure was absent. Your feed had no detectable political keywords.';
       }
 
       if (pct < 5) {
-        return 'Political exposure was light — scattered keywords surfaced but didn\'t form a sustained theme.';
+        return 'Political exposure was light. Scattered keywords surfaced but didn\'t form a sustained theme.';
       }
 
       if (pct < 15) {
-        return 'Political exposure was moderate — keywords appeared in clusters but not continuously.';
+        return 'Political exposure was moderate. Keywords appeared in clusters but not continuously.';
       }
 
       if (pct < 30) {
-        return 'Political exposure was substantial — recurring keywords formed a visible layer in your feed.';
+        return 'Political exposure was substantial. Recurring keywords formed a visible layer in your feed.';
       }
 
-      return 'Political exposure was heavy — keywords ran as a sustained thread throughout your feed.';
+      return 'Political exposure was heavy. Keywords ran as a sustained thread throughout your feed.';
     },
     action: null,
   },
@@ -462,7 +462,7 @@ export const dashboardCatalog = [
     // PHASE 9: Qualitative labels only
     takeaway: (data) => {
       if (!data?.qualitativeLabel) return null;
-      return `${data.qualitativeLabel} (Low confidence — keyword distribution only.)`;
+      return `${data.qualitativeLabel} (Low confidence. Keyword distribution only.)`;
     },
     action: null,
   },
@@ -478,7 +478,7 @@ export const dashboardCatalog = [
     requiresOptIn: true,
     confidenceDisclaimer: true,
     collapsedByDefault: true,
-    whyExplanation: 'Detected by absence of certain keywords in your scans. Very rough — absence here does not prove absence elsewhere in your feed.',
+    whyExplanation: 'Detected by absence of certain keywords in your scans. Very rough. Absence here does not prove absence elsewhere in your feed.',
     takeaway: (data) => {
       if (!data?.message) return 'Some keyword categories were absent in your scans.';
       return `${data.message} (Scan-specific only.)`;
@@ -588,7 +588,7 @@ export const dashboardCatalog = [
     isPrimary: true,
     sortOrder: 'primary',
     whyExplanation: 'Grouped posts by detected topic. Classification is approximate.',
-    counterfactual: 'This is what showed up during this window — may not represent your typical feed.',
+    counterfactual: 'This is what showed up during this window. It may not represent your typical feed.',
     takeaway: (data) => {
       // FIX PA1: Don't make confident claims when data is insufficient
       // Check if we have meaningful data before claiming broadened/narrowed
@@ -609,26 +609,26 @@ export const dashboardCatalog = [
 
       if (data.topicCount <= 3) {
         if (top && second) {
-          return `Your feed narrowed to ${top} and ${second} — almost nothing else surfaced.`;
+          return `Your feed narrowed to ${top} and ${second}. Almost nothing else surfaced.`;
         } else if (top) {
-          return `Your feed narrowed to ${top} — minimal rotation to other topics.`;
+          return `Your feed narrowed to ${top}. Minimal rotation to other topics.`;
         }
         return `Your feed narrowed to a few repeated themes.`;
       }
       if (data.topicCount <= 7) {
         if (top && second) {
-          return `${top} and ${second} led a moderate rotation — your feed stayed concentrated.`;
+          return `${top} and ${second} led a moderate rotation. Your feed stayed concentrated.`;
         } else if (top) {
-          return `${top} led with moderate rotation — your feed stayed concentrated.`;
+          return `${top} led with moderate rotation. Your feed stayed concentrated.`;
         }
-        return `Your feed cycled through familiar themes — concentration stayed high.`;
+        return `Your feed cycled through familiar themes. Concentration stayed high.`;
       }
       if (top && second) {
-        return `Your feed broadened — ${top} and ${second} among a wide rotating mix.`;
+        return `Your feed broadened. ${top} and ${second} among a wide rotating mix.`;
       } else if (top) {
-        return `Your feed broadened — ${top} among a wide rotating mix of themes.`;
+        return `Your feed broadened. ${top} among a wide rotating mix of themes.`;
       }
-      return `Your feed broadened — content spread across many themes.`;
+      return `Your feed broadened. Content spread across many themes.`;
     },
     action: null, // FIX X3, PA9: Removed generic advice
   },
@@ -679,15 +679,15 @@ export const dashboardCatalog = [
       const pct = data.top3Percent;
 
       if (pct >= 70) {
-        return 'A small set of themes recycled throughout this window — content concentrated heavily around familiar topics.';
+        return 'A small set of themes recycled throughout this window. Content concentrated heavily around familiar topics.';
       }
       if (pct >= 50) {
-        return 'Several themes recurred consistently during this window — content returned to familiar topics regularly.';
+        return 'Several themes recurred consistently during this window. Content returned to familiar topics regularly.';
       }
       if (pct >= 30) {
-        return 'Themes showed moderate recurrence during this window — some repetition but with rotation to other topics.';
+        return 'Themes showed moderate recurrence during this window. Some repetition but with rotation to other topics.';
       }
-      return 'Themes rotated broadly during this window — content spread across many topics without heavy repetition.';
+      return 'Themes rotated broadly during this window. Content spread across many topics without heavy repetition.';
     },
     action: null,
   },
@@ -863,7 +863,7 @@ export const dashboardCatalog = [
     sortOrder: 'primary',
     maxItems: 5,
     whyExplanation: 'Counted posts by account across your scans.',
-    counterfactual: 'This may not match who you follow or expect — it is what appeared in this specific scroll session.',
+    counterfactual: 'This may not match who you follow or expect. It is what appeared in this specific scroll session.',
     takeaway: (data) => {
       if (!Array.isArray(data) || data.length === 0) return 'Influence spread across multiple voices.';
 
@@ -877,7 +877,7 @@ export const dashboardCatalog = [
       // FIX C4: Use softer language without claiming "dominated"
       // If top account has significantly more posts than second
       if (totalAccounts === 1 || (secondCount > 0 && topCount >= secondCount * 2)) {
-        return `${top} appeared very frequently — one voice with strong presence.`;
+        return `${top} appeared very frequently. One voice with strong presence.`;
       }
 
       // If top few accounts are close in count, it's concentrated
@@ -890,7 +890,7 @@ export const dashboardCatalog = [
         return `${top} appeared most often, but content came from ${totalAccounts} voices.`;
       }
 
-      return `Content came from ${totalAccounts} different voices — distributed influence.`;
+      return `Content came from ${totalAccounts} different voices. Distributed influence.`;
     },
     action: null, // FIX X3, C6: Removed generic advice (already fixed in 2C)
   },
@@ -943,9 +943,9 @@ export const dashboardCatalog = [
     takeaway: (data) => {
       if (!data?.diversity) return null;
       const d = data.diversity.toLowerCase();
-      if (d === 'low') return "Your feed leaned on a familiar set of accounts during this window — few new voices surfaced.";
-      if (d === 'high') return "Your feed surfaced a wide range of voices during this window — diverse sources shaped what you saw.";
-      return "Your feed mixed familiar accounts with some newer voices during this window — moderate diversity.";
+      if (d === 'low') return "Your feed leaned on a familiar set of accounts during this window. Few new voices surfaced.";
+      if (d === 'high') return "Your feed surfaced a wide range of voices during this window. Diverse sources shaped what you saw.";
+      return "Your feed mixed familiar accounts with some newer voices during this window. Moderate diversity.";
     },
     action: null,
   },
@@ -965,9 +965,9 @@ export const dashboardCatalog = [
       if (!Array.isArray(data) || data.length === 0) {
         return 'No accounts appeared on multiple platforms during this window. If they did, we\'d show voices that reached you in different spaces.';
       }
-      if (data.length === 1) return 'One account appeared across multiple platforms — a recurring voice in different spaces.';
-      if (data.length <= 3) return `A small set of accounts (${data.length}) appeared across platforms — recurring voices with broad reach.`;
-      return `${data.length} accounts appeared across multiple platforms — a recurring set of voices shaping what you saw in different spaces.`;
+      if (data.length === 1) return 'One account appeared across multiple platforms. A recurring voice in different spaces.';
+      if (data.length <= 3) return `A small set of accounts (${data.length}) appeared across platforms. Recurring voices with broad reach.`;
+      return `${data.length} accounts appeared across multiple platforms. A recurring set of voices shaping what you saw in different spaces.`;
     },
     action: () => 'Accounts appearing on multiple platforms may have outsized influence on what you see.',
   },
@@ -1055,9 +1055,9 @@ export const dashboardCatalog = [
     takeaway: (data) => {
       if (data?.creators && Array.isArray(data.creators)) {
         const count = data.creators.length;
-        if (count <= 3) return 'Influence concentrated — a few familiar accounts appeared repeatedly.';
-        if (count <= 8) return 'Influence moderately distributed — several accounts appeared regularly.';
-        return 'Influence broadly distributed — many different accounts contributed.';
+        if (count <= 3) return 'Influence concentrated. A few familiar accounts appeared repeatedly.';
+        if (count <= 8) return 'Influence moderately distributed. Several accounts appeared regularly.';
+        return 'Influence broadly distributed. Many different accounts contributed.';
       }
       return 'Pattern of how influence distributed across accounts during this window.';
     },
@@ -1126,7 +1126,7 @@ export const dashboardCatalog = [
       const b = data.breadth.toLowerCase();
       if (b === 'narrow') return "Topics concentrated in a narrow set of categories in your scans.";
       if (b === 'broad') return "Topics spread across a wide range of categories in your scans.";
-      return "Topics showed moderate range in your scans — neither highly concentrated nor fully dispersed.";
+      return "Topics showed moderate range in your scans. Neither highly concentrated nor fully dispersed.";
     },
     action: null,
   },

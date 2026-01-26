@@ -484,7 +484,7 @@ const TAB_STORY_HEADERS = {
     keyInsight: {
       label: 'Observed',
       title: 'Topics during this window',
-      subtext: 'What surfaced — patterns in exposure, not preference.',
+      subtext: 'What surfaced. Patterns in exposure, not preference.',
     },
     details: {
       label: 'Context',
@@ -494,7 +494,7 @@ const TAB_STORY_HEADERS = {
     moreDetails: {
       label: 'Additional detail',
       title: 'Pattern movement from this window',
-      subtext: 'How themes shifted — narrowing, broadening, or stabilizing.',
+      subtext: 'How themes shifted. Narrowing, broadening, or stabilizing.',
     },
     summary: {
       label: 'Summary',
@@ -507,7 +507,7 @@ const TAB_STORY_HEADERS = {
     keyInsight: {
       label: 'Observed',
       title: 'Influence during this window',
-      subtext: 'Which accounts shaped what you saw — what appeared, not who you are.',
+      subtext: 'Which accounts shaped what you saw. What appeared, not who you are.',
     },
     details: {
       label: 'Context',
@@ -1249,7 +1249,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                               className="text-sm text-slate-600 leading-relaxed"
                               style={{ maxWidth: '560px' }}
                             >
-                              <span className="font-medium text-slate-700">Remember:</span> small shifts matter. This is about awareness, not blame—your feed is shaped by invisible systems, and even gentle changes can make a difference over time.
+                              <span className="font-medium text-slate-700">Remember:</span> small shifts matter. This is about awareness, not blame. Your feed is shaped by invisible systems, and even gentle changes can make a difference over time.
                             </p>
                           </div>
                         )}
