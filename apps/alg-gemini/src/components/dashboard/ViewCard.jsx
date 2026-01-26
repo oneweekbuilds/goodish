@@ -236,9 +236,19 @@ const ViewCard = ({
             <LineChartSimple
               data={data.trend.map(t => ({ label: t.label, value: t.value })).reverse()}
               valueLabel="%"
-              title={viewTab === 'ads' ? 'Ad frequency over time' : viewTab === 'politics' ? 'Political terms over time' : null}
-              xAxisLabel={viewTab === 'ads' ? 'Date scanned' : viewTab === 'politics' ? 'Date scanned' : null}
-              yAxisLabel={viewTab === 'ads' ? 'Ads (% of posts)' : viewTab === 'politics' ? 'Posts with political terms (% of posts)' : null}
+              title={
+                viewTab === 'ads' ? 'Ad frequency over time' :
+                viewTab === 'politics' ? 'Political terms over time' :
+                viewTab === 'patterns' ? 'Patterns over time' :
+                'Trend over time'
+              }
+              xAxisLabel={viewTab === 'ads' || viewTab === 'politics' || viewTab === 'patterns' ? 'Date scanned' : 'Date'}
+              yAxisLabel={
+                viewTab === 'ads' ? 'Ads (% of posts)' :
+                viewTab === 'politics' ? 'Posts with political terms (% of posts)' :
+                viewTab === 'patterns' ? 'Patterns (% of posts)' :
+                'Percent of posts'
+              }
             />
           </div>
         )}
@@ -448,9 +458,19 @@ const ViewCard = ({
           <LineChartSimple 
             data={chartData} 
             valueLabel="%" 
-            title={viewTab === 'ads' ? 'Ad frequency over time' : viewTab === 'politics' ? 'Political terms over time' : null}
-            xAxisLabel={viewTab === 'ads' ? 'Date scanned' : viewTab === 'politics' ? 'Date scanned' : null}
-            yAxisLabel={viewTab === 'ads' ? 'Ads (% of posts)' : viewTab === 'politics' ? 'Posts with political terms (% of posts)' : null}
+            title={
+              viewTab === 'ads' ? 'Ad frequency over time' :
+              viewTab === 'politics' ? 'Political terms over time' :
+              viewTab === 'patterns' ? 'Patterns over time' :
+              'Trend over time'
+            }
+            xAxisLabel={viewTab === 'ads' || viewTab === 'politics' || viewTab === 'patterns' ? 'Date scanned' : 'Date'}
+            yAxisLabel={
+              viewTab === 'ads' ? 'Ads (% of posts)' :
+              viewTab === 'politics' ? 'Posts with political terms (% of posts)' :
+              viewTab === 'patterns' ? 'Patterns (% of posts)' :
+              'Percent of posts'
+            }
           />
         </div>
         {data.direction && (
