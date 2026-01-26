@@ -368,25 +368,6 @@ export const dashboardCatalog = [
   // --- SECONDARY: Supporting details ---
   {
     tab: 'politics',
-    id: 'politics-balance',
-    title: 'Viewpoint distribution',
-    description: 'Whether political keywords skewed toward one perspective or appeared more evenly.',
-    outputType: 'status',
-    dataFn: 'getPoliticalBalanceData',
-    emptyStateType: 'needs_more_scans',
-    sortOrder: 'supporting',
-    requiresOptIn: true,
-    confidenceDisclaimer: true,
-    whyExplanation: 'Counts keywords associated with different political perspectives. This measures exposure pattern only, not content accuracy or your beliefs.',
-    takeaway: (data) => {
-      if (!data?.message) return 'Keyword exposure skewed in one direction (low confidence estimate).';
-      return `${data.message} This shows which perspective keywords appeared more, not which is correct.`;
-    },
-    action: null,
-  },
-
-  {
-    tab: 'politics',
     id: 'politics-creators',
     title: 'Where political exposure concentrated',
     description: 'Whether political keywords came from many sources or clustered around a few repeat accounts.',

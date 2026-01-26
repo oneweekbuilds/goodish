@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, RefreshCw, BarChart3, Clock, Globe, Database, Info, ToggleLeft, ToggleRight, ChevronDown, ChevronUp, Compass, RefreshCcw, Lock, Sparkles, ExternalLink, ShieldCheck, MessageSquare, EyeOff } from 'lucide-react';
+import { Loader2, RefreshCw, BarChart3, Clock, Globe, Database, ChevronDown, ChevronUp, Compass, RefreshCcw, Lock, Sparkles, ExternalLink, ShieldCheck, MessageSquare, EyeOff } from 'lucide-react';
 import { TABS, getViewsForTab, getVisibleViewCount, EMPTY_STATE_TYPES, TAB_TRUST_SENTENCES } from './dashboardCatalog';
 import ViewCard from '../../components/dashboard/ViewCard';
 import { useDashboardData } from '../../lib/dashboard/useDashboardData';
@@ -252,36 +252,6 @@ const DataCoverageBar = ({ scans, scanDetails, tabId }) => {
     </div>
   );
 };
-
-/**
- * PoliticalLeaningToggle - Opt-in toggle for political leaning estimates
- * PHASE 6A: Political leaning requires explicit opt-in
- * UI Refoundation: Uses green accent (politics tab semantic color lane)
- */
-const PoliticalLeaningToggle = ({ enabled, onToggle }) => (
-  <div className="flex items-center gap-3 px-4 py-3 bg-amber-50 rounded-lg border border-amber-100">
-    <Info size={16} className="text-amber-600 flex-shrink-0" />
-    <div className="flex-1">
-      <p className="text-sm text-amber-800">
-        <span className="font-medium">Optional:</span> Show viewpoint distribution estimate (low confidence, keyword-based only)
-      </p>
-      <p className="text-xs text-amber-600 mt-0.5">
-        Enabling shows which perspective keywords appeared more. Does not measure accuracy or your beliefs.
-      </p>
-    </div>
-    <button
-      onClick={onToggle}
-      className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
-      style={{
-        backgroundColor: enabled ? '#10B981' : '#E5E7EB',
-        color: enabled ? 'white' : '#64748B',
-      }}
-    >
-      {enabled ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
-      {enabled ? 'Enabled' : 'Enable'}
-    </button>
-  </div>
-);
 
 /**
  * HowToUnlockBox - Shows when a tab has insufficient data
@@ -1793,7 +1763,6 @@ const TalkTabPanel = () => {
 const DashboardPage = () => {
   const [activeTab, setActiveTab] = useState(TABS[0].id);
   // PHASE 6A: Political leaning toggle state (default OFF)
-  const [politicalLeaningEnabled, setPoliticalLeaningEnabled] = useState(false);
   // Slice 2: Hero evidence expansion state (per-tab + per-hero-view)
   const [heroEvidenceExpanded, setHeroEvidenceExpanded] = useState({});
   const {
@@ -1828,7 +1797,6 @@ const DashboardPage = () => {
   const currentViews = useMemo(() => getViewsForTab(activeTab), [activeTab]);
 
   // Compute data for all views in current tab
-  // PHASE 6A: Pass options like politicalLeaningEnabled to relevant data functions
   const viewDataResults = useMemo(() => {
     if (!detailsLoaded) return {};
 
@@ -1837,12 +1805,7 @@ const DashboardPage = () => {
       const dataFn = dataHelpers[view.dataFn];
       if (typeof dataFn === 'function') {
         try {
-          // Pass options for views that require opt-in
-          if (view.requiresOptIn && activeTab === 'politics') {
-            results[view.id] = dataFn(scans, scanDetails, { enabled: politicalLeaningEnabled });
-          } else {
-            results[view.id] = dataFn(scans, scanDetails);
-          }
+          results[view.id] = dataFn(scans, scanDetails);
           // Ensure result has required structure
           if (!results[view.id] || typeof results[view.id] !== 'object') {
             results[view.id] = { hasData: false, data: null, missing: 'Invalid data structure.' };
@@ -1859,7 +1822,7 @@ const DashboardPage = () => {
       }
     }
     return results;
-  }, [currentViews, scans, scanDetails, detailsLoaded, activeTab, politicalLeaningEnabled]);
+  }, [currentViews, scans, scanDetails, detailsLoaded]);
 
   // Slice 2: Deterministic hero view selection for the active tab
   const heroViewId = HERO_VIEW_ID_BY_TAB[activeTab];
@@ -2089,16 +2052,6 @@ const DashboardPage = () => {
             <TalkTabPanel />
           ) : (
             <>
-              {/* PHASE 6A: Political Leaning Toggle (only on politics tab) - shown above hero */}
-              {activeTab === 'politics' && (
-                <div className="mb-6">
-                  <PoliticalLeaningToggle
-                    enabled={politicalLeaningEnabled}
-                    onToggle={() => setPoliticalLeaningEnabled(!politicalLeaningEnabled)}
-                  />
-                </div>
-              )}
-
               {/* Feature Moment - Editorial centerpiece for ALL tabs (Part 2: Design System Application) */}
               <FeatureMomentWrapper>
                 {/* Editorial Hero - Insight first, expandable evidence (Slice 2) */}
