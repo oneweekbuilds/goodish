@@ -614,10 +614,19 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
   }, [tabId]);
 
   const toggleSection = (section) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
+    setExpandedSections(prev => {
+      // Fix null/undefined handling to prevent crashes
+      if (!prev || typeof prev !== 'object') {
+        return { [section]: true };
+      }
+      if (!section || typeof section !== 'string') {
+        return prev;
+      }
+      return {
+        ...prev,
+        [section]: !prev[section],
+      };
+    });
   };
 
   // Render-safe label for summary list items (avoids rendering raw objects)
@@ -873,7 +882,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                     </div>
 
                     {/* Evidence area */}
-                    {expandedSections.keyInsightEvidence && (
+                    {expandedSections.keyInsightEvidence && view && dataResult && (
                       <div
                         className="px-6 pb-6 md:px-8 md:pb-8"
                         style={{
@@ -1202,13 +1211,13 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                           )}
 
                           {/* Show more collapse for additional items */}
-                          {Array.isArray(dataResult?.data) && dataResult.data.length > 3 && (
+                          {Array.isArray(dataResult?.data) && dataResult?.data?.length > 3 && (
                             <button
                               onClick={() => toggleSection('summaryMore')}
                               className="mt-5 text-sm font-medium flex items-center gap-1 hover:text-blue-700 transition-colors"
                               style={{ color: '#2563EB' }}
                               aria-expanded={expandedSections.summaryMore}
-                              aria-label={expandedSections.summaryMore ? 'Collapse additional ideas' : `Expand to show ${dataResult.data.length - 3} more ideas`}
+                              aria-label={expandedSections.summaryMore ? 'Collapse additional ideas' : `Expand to show ${(dataResult?.data?.length || 0) - 3} more ideas`}
                             >
                               <ChevronDown
                                 size={14}
@@ -1220,7 +1229,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                               />
                               {expandedSections.summaryMore
                                 ? 'Show less'
-                                : `More ideas (${dataResult.data.length - 3} more)`
+                                : `More ideas (${(dataResult?.data?.length || 0) - 3} more)`
                               }
                             </button>
                           )}
@@ -1518,7 +1527,7 @@ const TabHero = ({
         </div>
 
         {/* Evidence area */}
-        {isEvidenceExpanded && heroView && (
+        {isEvidenceExpanded && heroView && heroDataResult && (
           <div
             className="mt-5 rounded-2xl"
             style={{
@@ -1830,10 +1839,19 @@ const DashboardPage = () => {
   const heroEvidenceKey = `${activeTab}:${resolvedHeroViewId || 'unknown'}`;
   const isHeroEvidenceExpanded = heroEvidenceExpanded[heroEvidenceKey] === true;
   const toggleHeroEvidence = () => {
-    setHeroEvidenceExpanded((prev) => ({
-      ...prev,
-      [heroEvidenceKey]: !prev[heroEvidenceKey],
-    }));
+    setHeroEvidenceExpanded((prev) => {
+      // Fix null/undefined handling to prevent crashes
+      if (!prev || typeof prev !== 'object') {
+        return { [heroEvidenceKey]: true };
+      }
+      if (!heroEvidenceKey || typeof heroEvidenceKey !== 'string') {
+        return prev;
+      }
+      return {
+        ...prev,
+        [heroEvidenceKey]: !prev[heroEvidenceKey],
+      };
+    });
   };
 
   const formatDateRange = (start, end) => {
@@ -1898,18 +1916,29 @@ const DashboardPage = () => {
 
   // Error state
   if (error) {
+    // Check if this is a backend connection error
+    const isBackendError = error.includes("Couldn't reach the AlgorithmLens API") || 
+                          error.includes("fetch") || 
+                          error.includes("Failed to fetch");
+    
     return (
       <div className="min-h-screen bg-bg-page pt-24 md:pt-28 pb-16 px-4 md:px-6">
         <div className="max-w-2xl mx-auto px-6">
-          <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
-            <h2 className="text-xl font-bold text-red-800 mb-2">Error Loading Dashboard</h2>
-            <p className="text-red-600 mb-6">{error}</p>
+          <div className={`${isBackendError ? 'bg-slate-50 border border-slate-200' : 'bg-red-50 border border-red-200'} rounded-xl p-8 text-center`}>
+            <h2 className={`text-xl font-bold mb-2 ${isBackendError ? 'text-slate-800' : 'text-red-800'}`}>
+              {isBackendError ? 'Backend Not Available' : 'Error Loading Dashboard'}
+            </h2>
+            <p className={`mb-6 ${isBackendError ? 'text-slate-600' : 'text-red-600'}`}>{error}</p>
             <button
               onClick={() => {
                 setDetailsLoaded(false);
                 fetchScans();
               }}
-              className="px-6 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors"
+              className={`px-6 py-3 rounded-xl font-semibold transition-colors ${
+                isBackendError 
+                  ? 'bg-slate-600 text-white hover:bg-slate-700' 
+                  : 'bg-red-600 text-white hover:bg-red-700'
+              }`}
             >
               Try Again
             </button>

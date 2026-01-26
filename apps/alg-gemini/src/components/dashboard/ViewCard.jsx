@@ -404,7 +404,7 @@ const ViewCard = ({
         text: d.topic || d.label || d,
         isUnclassified: d.isUnclassified || false,
         // FIX W3: Add share percentage or rank context for topics
-        subtext: d.share !== undefined ? `${d.share}% of feed` : (viewId === 'algo-topics-liked' && index < 5 ? `#${index + 1}` : null),
+        subtext: d.share !== undefined ? `${d.share}% of feed` : (view?.id === 'algo-topics-liked' && index < 5 ? `#${index + 1}` : null),
       }));
     } else if (data.tips) {
       items = data.tips.map(t => ({ text: t, isUnclassified: false }));

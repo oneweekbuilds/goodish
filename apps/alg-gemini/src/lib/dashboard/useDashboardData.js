@@ -17,17 +17,26 @@ export function useDashboardData() {
     try {
       const response = await fetch(`${API_BASE}/api/scans`);
       if (!response.ok) {
-        throw new Error(`Failed to fetch scans: ${response.status}`);
+        throw new Error(`Failed to fetch scans: ${response.status} ${response.statusText}`);
       }
       const data = await response.json();
       const scanList = data.scans || [];
       // Sort by date descending
       scanList.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       setScans(scanList);
+      setError(null);
       return scanList;
     } catch (err) {
       console.error('Error fetching scans:', err);
-      setError(err.message);
+      // Improve error message for network failures (Failed to fetch, TypeError from fetch, etc.)
+      const isNetworkError = err.message === 'Failed to fetch' ||
+        (typeof err.message === 'string' && err.message.toLowerCase().includes('fetch') && (err.name === 'TypeError' || err.name === 'DOMException'));
+      if (isNetworkError) {
+        const friendlyError = `Couldn't reach the AlgorithmLens API at ${API_BASE}. Start the backend: cd apps/alg-gemini/backend && python -m uvicorn app:app --reload --port 8000`;
+        setError(friendlyError);
+      } else {
+        setError(err.message);
+      }
       return [];
     }
   }, []);
@@ -41,7 +50,7 @@ export function useDashboardData() {
     try {
       const response = await fetch(`${API_BASE}/api/scans/${scanId}`);
       if (!response.ok) {
-        throw new Error(`Failed to fetch scan ${scanId}: ${response.status}`);
+        throw new Error(`Failed to fetch scan ${scanId}: ${response.status} ${response.statusText}`);
       }
       const data = await response.json();
       const detail = data.result || data.scan || data;
