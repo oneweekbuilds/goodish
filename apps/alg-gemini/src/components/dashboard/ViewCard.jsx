@@ -1132,21 +1132,8 @@ const ViewCard = ({
     ?? data?.totalPosts
     ?? data?.totalItems
     ?? dataResult?.totalItems;
-  const measurementScopeParts = [];
-  if (!scopeLabel) {
-    if (actualScansUsed > 1) {
-      measurementScopeParts.push(`Across ${actualScansUsed} scans`);
-    } else if (actualScansUsed === 1) {
-      measurementScopeParts.push('This window');
-    }
-    if (platformCount > 0) {
-      measurementScopeParts.push(`${platformCount} platform${platformCount !== 1 ? 's' : ''}`);
-    }
-    if (measurementTotalItems) {
-      measurementScopeParts.push(`${measurementTotalItems} posts analyzed`);
-    }
-  }
-  const measurementScope = scopeLabel || measurementScopeParts.join(' · ') || null;
+  // Counts removed - single master count displayed at tab bottom
+  const measurementScope = scopeLabel || null;
   const measurementWhat = description;
   const measurementHow = whyExplanation || data?.whyExplanation;
   const measurementLimitations = view?.limitations

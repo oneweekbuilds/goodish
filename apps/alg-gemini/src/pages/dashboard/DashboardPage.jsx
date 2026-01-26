@@ -688,7 +688,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
   const hasMoreDetailsContent = supportingOverflow.length > 0 || speculationCards.length > 0;
   const hasSummaryContent = summaryCards.length > 0;
 
-  const evidenceLabel = scopeLabel || `Based on ${scanCount} scan${scanCount !== 1 ? 's' : ''}`;
+  const evidenceLabel = scopeLabel || null;
   
   // Generate a dynamic preview for More Details based on what's actually inside
   // FIX A8: Use user-centered language describing value, not internal labels
@@ -824,9 +824,11 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                       className="px-6 pb-6 md:px-8 md:pb-6 flex justify-between items-center"
                       style={{ borderTop: '1px solid rgba(226, 232, 240, 0.6)' }}
                     >
-                      <span className="text-xs text-slate-400">
-                        {evidenceLabel}
-                      </span>
+                      {evidenceLabel && (
+                        <span className="text-xs text-slate-400">
+                          {evidenceLabel}
+                        </span>
+                      )}
                       <button
                         onClick={() => toggleSection('keyInsightEvidence')}
                         className="inline-flex items-center gap-2 text-sm font-medium transition-all rounded-full hover:bg-blue-100"
@@ -1387,13 +1389,9 @@ const TabHero = ({
     ? platformMeta
       ? `${scopeLabel} • ${platformMeta}`
       : scopeLabel
-    : `${scanCount} scan${scanCount !== 1 ? 's' : ''} · ${platformCount} platform${platformCount !== 1 ? 's' : ''}`;
+    : null;
   // FIX X2, A10: Use consistent scope language - if multiple scans or explicit window, say "window"; if single scan, say "scan"
-  const kickerText = scopeLabel 
-    ? scopeLabel 
-    : scanCount > 1 
-      ? `During this window (${scanCount} scans)`
-      : 'Observed during this window';
+  const kickerText = scopeLabel || 'Observed during this window';
 
   return (
     <div className="mb-10">
@@ -1538,8 +1536,8 @@ const TabHero = ({
               <ViewCard
                 view={heroView}
                 dataResult={heroDataResult}
-                scanCount={scanCount}
-                platformCount={platformCount}
+                scanCount={0}
+                platformCount={0}
                 accentColor="blue"
                 isInline={true}
                 hideTitle={true}
@@ -1951,6 +1949,38 @@ const DashboardPage = () => {
     loadDetails();
   }, [scans, detailsLoaded, detailsLoading, fetchAllScanDetails]);
 
+  // Master count computation - single source of truth for all tabs
+  const masterCounts = useMemo(() => {
+    if (!scans || scans.length === 0 || !scanDetails) {
+      return {
+        scanCount: 0,
+        platformCount: 0,
+        postCount: 0,
+      };
+    }
+
+    let totalPosts = 0;
+    const platformSet = new Set();
+
+    for (const scan of scans) {
+      const detail = scanDetails[scan.id];
+      if (detail) {
+        const data = detail.result || detail.scan || detail;
+        const items = data?.feed_items || [];
+        totalPosts += items.length;
+      }
+      if (scan.platform) {
+        platformSet.add(scan.platform.toLowerCase());
+      }
+    }
+
+    return {
+      scanCount: totalScanCount || 0,
+      platformCount: platformSet.size,
+      postCount: totalPosts,
+    };
+  }, [scans, scanDetails, totalScanCount]);
+
   // Get views for current tab - Phase 4B: Memoized to prevent unnecessary re-renders
   const currentViews = useMemo(() => getViewsForTab(activeTab), [activeTab]);
 
@@ -2146,7 +2176,7 @@ const DashboardPage = () => {
             {!isOnAlgorithmTab && (
               <div>
                 <p className="text-text-muted">
-                  Explore insights from your {totalScanCount} scan{totalScanCount !== 1 ? 's' : ''} across {platforms.length} platform{platforms.length !== 1 ? 's' : ''}.
+                  Explore insights from your scans.
                 </p>
                 {/* Filter status line */}
                 {filtersActive && totalScanCount !== unfilteredScanCount && (
@@ -2335,8 +2365,8 @@ const DashboardPage = () => {
                   <ViewsGridWithCollapsing
                     views={currentViews}
                     viewDataResults={viewDataResults}
-                    scanCount={totalScanCount}
-                    platformCount={platforms.length}
+                    scanCount={0}
+                    platformCount={0}
                     tabName={TABS.find((t) => t.id === activeTab)?.label || 'insights'}
                     tabId={activeTab}
                     heroViewId={resolvedHeroViewId}
@@ -2347,6 +2377,21 @@ const DashboardPage = () => {
             </>
           )}
         </div>
+
+        {/* Master count line - single source of truth per tab */}
+        {activeTab !== 'talk' && (
+          <div className="mt-8 mb-4 text-center">
+            {masterCounts.postCount > 0 ? (
+              <p className="text-sm text-slate-500">
+                Based on {masterCounts.scanCount} scan{masterCounts.scanCount !== 1 ? 's' : ''} across {masterCounts.platformCount} platform{masterCounts.platformCount !== 1 ? 's' : ''} and {masterCounts.postCount.toLocaleString()} posts.
+              </p>
+            ) : (
+              <p className="text-sm text-slate-500">
+                Based on the selected date range, no posts were available for this tab.
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Phase 8: Minimal footer - Softer, less competing */}
         <div className="text-center py-8 mt-12">
