@@ -332,6 +332,15 @@ const ViewCard = ({
     if (!data) return null;
     const segments = data.segments || data;
     if (!Array.isArray(segments)) return null;
+    
+    // Special handling for patterns-emotional-weight: show tone examples
+    const isToneView = view?.id === 'patterns-emotional-weight';
+    const hasExamples = isToneView && (data.positiveExamples || data.negativeExamples);
+    const hasAnyExamples = hasExamples && (
+      (data.positiveExamples && data.positiveExamples.length > 0) ||
+      (data.negativeExamples && data.negativeExamples.length > 0)
+    );
+    
     return (
       <div className="space-y-3">
         <div className={deemphasizeCharts ? 'opacity-80' : ''}>
@@ -340,6 +349,54 @@ const ViewCard = ({
         {/* PHASE 6A: Show disclaimer if present (political leaning) */}
         {data.disclaimer && (
           <p className="text-xs text-slate-400 italic">{data.disclaimer}</p>
+        )}
+        {/* Examples for tone view */}
+        {isToneView && (
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            <p className="text-xs font-medium text-slate-600 mb-3">Examples from your scans</p>
+            {hasAnyExamples ? (
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs font-medium text-slate-500 mb-1.5">More positive or neutral</p>
+                  {data.positiveExamples && data.positiveExamples.length > 0 ? (
+                    <ul className="space-y-1">
+                      {data.positiveExamples.map((example, idx) => (
+                        <li key={idx} className="text-xs text-slate-600 flex items-center gap-2">
+                          <span className="text-slate-400">•</span>
+                          <span>{example}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-xs text-slate-500">
+                      No clear positive or neutral examples in your scanned posts yet.
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-slate-500 mb-1.5">More negative or tense</p>
+                  {data.negativeExamples && data.negativeExamples.length > 0 ? (
+                    <ul className="space-y-1">
+                      {data.negativeExamples.map((example, idx) => (
+                        <li key={idx} className="text-xs text-slate-600 flex items-center gap-2">
+                          <span className="text-slate-400">•</span>
+                          <span>{example}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-xs text-slate-500">
+                      No clear negative or tense examples in your scanned posts yet.
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-500">
+                We do not have enough detail in this scan summary to list accounts by tone yet. When available, you will see which accounts skew more positive or more negative in the scanned content.
+              </p>
+            )}
+          </div>
         )}
       </div>
     );

@@ -1172,15 +1172,51 @@ export function getEmotionalWeightData(scans, scanDetails) {
 
   // Return semantic categories without presentation colors
   // Colors are applied in presentation layer (StackedBar100.jsx)
+  // Combine positive and neutral into "Mostly positive or neutral" for clarity
   const segments = [
-    { label: 'Calm/Positive', value: emotionsData.valencePercentages.POSITIVE, category: 'positive' },
-    { label: 'Neutral', value: emotionsData.valencePercentages.NEUTRAL, category: 'neutral' },
-    { label: 'Intense/Negative', value: emotionsData.valencePercentages.NEGATIVE, category: 'negative' },
+    { label: 'Mostly positive or neutral', value: emotionsData.valencePercentages.POSITIVE + emotionsData.valencePercentages.NEUTRAL, category: 'positive' },
+    { label: 'More negative or tense', value: emotionsData.valencePercentages.NEGATIVE, category: 'negative' },
   ];
+
+  // Get creator tone examples if available
+  const creatorTones = aggregateCreatorTones(scans, scanDetails);
+  let positiveExamples = null;
+  let negativeExamples = null;
+
+  if (creatorTones.hasPerItemData && creatorTones.topCreatorsByTone.length > 0) {
+    // Get top creators by positive/neutral (lowest negative percent, highest positive+neutral)
+    const creatorsByPositive = creatorTones.topCreatorsByTone
+      .map(c => ({
+        displayName: c.displayName,
+        positiveNeutralPercent: 100 - c.negativePercent,
+        totalPosts: c.totalPosts,
+      }))
+      .filter(c => c.totalPosts >= 3)
+      .sort((a, b) => b.positiveNeutralPercent - a.positiveNeutralPercent)
+      .slice(0, 5);
+    
+    positiveExamples = creatorsByPositive.length > 0 
+      ? creatorsByPositive.map(c => c.displayName).filter(name => name && name.trim())
+      : null;
+
+    // Get top creators by negative (already sorted by negativePercent)
+    const creatorsByNegative = creatorTones.topCreatorsByTone
+      .filter(c => c.negativePercent > 0 && c.totalPosts >= 3)
+      .slice(0, 5);
+    
+    negativeExamples = creatorsByNegative.length > 0
+      ? creatorsByNegative.map(c => c.displayName).filter(name => name && name.trim())
+      : null;
+  }
 
   return createResponse(
     true,
-    { segments, intensity: emotionsData.intensity },
+    { 
+      segments, 
+      intensity: emotionsData.intensity,
+      positiveExamples,
+      negativeExamples,
+    },
     null,
     emotionsData.scansUsed,
     emotionsData.scansWithData
