@@ -231,9 +231,9 @@ const ViewCard = ({
             <LineChartSimple
               data={data.trend.map(t => ({ label: t.label, value: t.value })).reverse()}
               valueLabel="%"
-              title={viewTab === 'ads' ? 'Ad frequency over time' : null}
-              xAxisLabel={viewTab === 'ads' ? 'Date scanned' : null}
-              yAxisLabel={viewTab === 'ads' ? 'Ads (% of posts)' : null}
+              title={viewTab === 'ads' ? 'Ad frequency over time' : viewTab === 'politics' ? 'Political terms over time' : null}
+              xAxisLabel={viewTab === 'ads' ? 'Date scanned' : viewTab === 'politics' ? 'Date scanned' : null}
+              yAxisLabel={viewTab === 'ads' ? 'Ads (% of posts)' : viewTab === 'politics' ? 'Posts with political terms (% of posts)' : null}
             />
           </div>
         )}
@@ -357,9 +357,9 @@ const ViewCard = ({
           <LineChartSimple 
             data={chartData} 
             valueLabel="%" 
-            title={viewTab === 'ads' ? 'Ad frequency over time' : null}
-            xAxisLabel={viewTab === 'ads' ? 'Date scanned' : null}
-            yAxisLabel={viewTab === 'ads' ? 'Ads (% of posts)' : null}
+            title={viewTab === 'ads' ? 'Ad frequency over time' : viewTab === 'politics' ? 'Political terms over time' : null}
+            xAxisLabel={viewTab === 'ads' ? 'Date scanned' : viewTab === 'politics' ? 'Date scanned' : null}
+            yAxisLabel={viewTab === 'ads' ? 'Ads (% of posts)' : viewTab === 'politics' ? 'Posts with political terms (% of posts)' : null}
           />
         </div>
         {data.direction && (
