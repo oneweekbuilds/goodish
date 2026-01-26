@@ -1361,50 +1361,21 @@ const TabHero = ({
   let headline = null;
   let bodyText = null;
   
-  // Special handling for Ads tab: static title, takeaway as body
-  if (tabId === 'ads') {
-    headline = 'Ads and promotions in your feed';
-    if (hasHeroData && heroQualityOk && typeof heroView?.takeaway === 'function') {
-      try {
-        bodyText = heroView.takeaway(heroDataResult?.data);
-      } catch (err) {
-        console.error(`Error computing hero takeaway for ${heroView?.id}:`, err);
-        bodyText = null;
-      }
+  // All tabs: insight-first - use takeaway as headline
+  if (hasHeroData && heroQualityOk && typeof heroView?.takeaway === 'function') {
+    try {
+      headline = heroView.takeaway(heroDataResult?.data);
+    } catch (err) {
+      console.error(`Error computing hero takeaway for ${heroView?.id}:`, err);
+      headline = null;
     }
-    if (!bodyText) {
-      bodyText = (hasHeroData && heroQualityOk)
-        ? 'We observed a measurable pattern in your scans.'
-        : 'We will show more detail as you scan more posts over time.';
-    }
-  } else if (tabId === 'politics') {
-    // Special handling for Politics tab: static title and body
-    headline = 'Political content in your feed';
-    bodyText = 'This view flags posts that contained political terms in the content you scanned. It describes what appeared in the feed, not your beliefs or identity.';
-  } else if (tabId === 'patterns') {
-    // Special handling for Patterns tab: static title and body
-    headline = 'Patterns in what you are shown';
-    bodyText = 'This view summarizes recurring themes across the content you scanned. It reflects what appeared in the feed, not what you believe or want.';
-  } else if (tabId === 'creators') {
-    // Special handling for Creators tab: static title and body
-    headline = 'Creators shaping your feed';
-    bodyText = 'This view highlights the accounts and sources that appeared most in the content you scanned. It reflects what showed up in the feed, not who you are.';
-  } else {
-    // Other tabs: takeaway as headline
-    if (hasHeroData && heroQualityOk && typeof heroView?.takeaway === 'function') {
-      try {
-        headline = heroView.takeaway(heroDataResult?.data);
-      } catch (err) {
-        console.error(`Error computing hero takeaway for ${heroView?.id}:`, err);
-        headline = null;
-      }
-    }
-    // FIX: Only show fallback if we actually have quality-approved data
-    if (!headline) {
-      headline = (hasHeroData && heroQualityOk)
-        ? 'We observed a measurable pattern in your scans.'
-        : 'We will show more detail as you scan more posts over time.';
-    }
+  }
+  
+  // Fallback for weak signal: insight-first, not descriptive
+  if (!headline) {
+    headline = (hasHeroData && heroQualityOk)
+      ? 'No dominant pattern emerged during this window.'
+      : 'No dominant pattern emerged during this window.';
   }
 
   const contextLine = TAB_TRUST_SENTENCES[tabId] || null;
@@ -1506,19 +1477,7 @@ const TabHero = ({
           </h2>
         </div>
 
-        {/* Body text for Ads, Politics, and Patterns tabs */}
-        {bodyText && (tabId === 'ads' || tabId === 'politics' || tabId === 'patterns' || tabId === 'creators') && (
-          <p
-            className="text-slate-600 mb-4"
-            style={{
-              fontSize: '15px',
-              lineHeight: 1.65,
-              maxWidth: '680px',
-            }}
-          >
-            {bodyText}
-          </p>
-        )}
+        {/* Body text removed - insight-first approach uses headline only */}
 
         {/* Optional single context line */}
         {contextLine && (
