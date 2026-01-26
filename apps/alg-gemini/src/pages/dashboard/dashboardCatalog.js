@@ -744,7 +744,7 @@ export const dashboardCatalog = [
       const total = data.totalPosts || 0;
 
       if (total < 20) {
-        return 'Limited sample. Need more posts to assess attention tactics reliably.';
+        return 'Need more posts to assess attention tactics reliably.';
       }
       if (pct === 0) {
         return 'Attention-grabbing patterns were absent during this window.';

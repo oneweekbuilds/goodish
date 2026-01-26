@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import EmptyState, { EMPTY_STATE_TYPES } from './EmptyState';
-import { DataQualityFooter } from './ConfidenceBadge';
 import {
   BarChartSimple,
   StackedBar100,
@@ -1288,16 +1287,6 @@ const ViewCard = ({
               </div>
             )}
 
-            {/* Data quality footer - shows ACTUAL scan count used for this metric */}
-            {/* PHASE 5: Using actualScansUsed for accurate labeling */}
-            {/* PHASE 11: Also shows n_items from chartQuality when available */}
-            {showChart && actualScansUsed > 0 && (
-              <DataQualityFooter
-                scanCount={actualScansUsed}
-                platformCount={platformCount}
-                scopeLabel={scopeLabel}
-              />
-            )}
           </div>
         ) : (
           <EmptyState

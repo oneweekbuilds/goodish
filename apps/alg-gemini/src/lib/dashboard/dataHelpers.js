@@ -2466,7 +2466,7 @@ export function getManipulativePatternsData(scans, scanDetails) {
   if (flaggedCount === 0) {
     insight = 'No posts contained patterns often associated with attention-grabbing tactics.';
   } else if (totalItems < 20) {
-    insight = `${flaggedCount} of ${totalItems} posts contained patterns often associated with attention-grabbing tactics (limited sample).`;
+    insight = `${flaggedCount} of ${totalItems} posts contained patterns often associated with attention-grabbing tactics.`;
   } else if (percentDisplay < 5) {
     insight = `A small portion (${percentDisplay}%) of posts contained patterns often associated with attention-grabbing tactics.`;
   } else if (percentDisplay < 12) {
