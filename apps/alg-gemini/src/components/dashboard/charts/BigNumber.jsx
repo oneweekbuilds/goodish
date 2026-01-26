@@ -12,11 +12,11 @@ import React from 'react';
 const BigNumber = ({ value, label, color = 'text-text-main', className = '', deemphasize = false }) => {
   return (
     <div className="text-center py-3">
-      <div className={`${deemphasize ? 'text-2xl' : 'text-3xl'} font-medium ${color} mb-1 ${deemphasize ? 'opacity-60' : 'opacity-90'} ${className}`}>
+      <div className={`${deemphasize ? 'text-2xl' : 'text-3xl'} font-semibold tracking-tight ${color} mb-1 ${deemphasize ? 'opacity-60' : 'opacity-90'} ${className}`}>
         {value}
       </div>
       {label && (
-        <p className="text-xs text-slate-400">{label}</p>
+        <p className="text-xs text-slate-400 mt-1">{label}</p>
       )}
     </div>
   );

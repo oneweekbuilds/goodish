@@ -724,7 +724,7 @@ const ViewCard = ({
 
       return (
         <div className="space-y-3">
-          <p className="text-sm text-slate-700 leading-relaxed">
+          <p className="text-sm font-medium text-slate-700 leading-relaxed">
             The strongest recurring themes in your scanned feed are: {themeList}.
           </p>
           {evidenceLine && (
@@ -766,7 +766,7 @@ const ViewCard = ({
 
       return (
         <div className="space-y-3">
-          <p className="text-sm text-slate-700 leading-relaxed">
+          <p className="text-sm font-medium text-slate-700 leading-relaxed">
             If these scan patterns continue, related themes that may show up more often include: {themeList}.
           </p>
           <p className="text-xs text-slate-500">
@@ -1206,7 +1206,7 @@ const ViewCard = ({
               <WhyExplanation text={whyExplanation} />
             )}
 
-            {/* Takeaway for non-primary cards - smaller, muted */}
+            {/* Takeaway for non-primary cards - emphasized for hierarchy */}
             {!isPrimary && takeawayText && (
               <div className="pt-3 border-t border-slate-50">
                 {isSummaryCard && (
@@ -1214,7 +1214,7 @@ const ViewCard = ({
                     Summary
                   </p>
                 )}
-                <p className={`${isSummaryCard ? 'text-sm text-slate-700 font-medium' : 'text-sm text-slate-600'}`}>
+                <p className="text-sm font-medium text-slate-700">
                   {takeawayText}
                 </p>
               </div>
