@@ -2292,50 +2292,114 @@ export function getProfileBreadthData(scans, scanDetails) {
 
 /**
  * View 49: How this profile may shape future recommendations
+ * Grounded in co-occurrence analysis, not repetition
  */
 export function getFutureRecommendationsData(scans, scanDetails) {
-  const topics = getAlgoTopicsLikedData(scans, scanDetails);
-  const products = getProductMentionsData(scans, scanDetails);
+  // Get top reinforcement themes (from algo-confident logic)
+  const topicsData = aggregateTopics(scans, scanDetails);
+  const confidentData = getAlgoConfidentData(scans, scanDetails);
 
-  const predictions = [];
-  let totalScansUsed = 0;
-  const allScansWithData = new Set();
+  if (topicsData.scansUsed < 2 || !confidentData.hasData) {
+    return createResponse(
+      false,
+      null,
+      'We do not have enough consistent co-occurrence signal yet to suggest related future themes.',
+      topicsData.scansUsed,
+      topicsData.scansWithData
+    );
+  }
 
-  if (topics.hasData && topics.data.length > 0) {
-    totalScansUsed = Math.max(totalScansUsed, topics.scansUsed);
-    topics.scansWithData.forEach(id => allScansWithData.add(id));
+  // Get top 1-2 reinforcement themes
+  const topThemes = confidentData.data?.summaryThemes?.slice(0, 2) || [];
+  if (topThemes.length === 0) {
+    return createResponse(
+      false,
+      null,
+      'We do not have enough consistent co-occurrence signal yet to suggest related future themes.',
+      topicsData.scansUsed,
+      topicsData.scansWithData
+    );
+  }
 
-    const { labels, hadExcluded } = pickHeadlineSafeLabels(topics.data, {
-      getLabel: (t) => t?.topic,
-      limit: 1,
-    });
-    const top = labels[0];
+  // Build co-occurrence map: topic -> count of scans where it appears with top themes
+  const coOccurrenceCounts = {};
+  const topThemeSet = new Set(topThemes);
 
-    if (top) {
-      predictions.push(`Because your feed emphasizes "${top}", you'll likely see more similar content.`);
-    } else if (hadExcluded) {
-      predictions.push('Your feed showed a mix of topics; future recommendations may also stay mixed.');
+  for (const scan of scans) {
+    const detail = scanDetails[scan.id];
+    if (!detail) continue;
+
+    const aggregates = getAggregates(detail);
+    const topicDistribution = aggregates?.topic_distribution;
+    if (!topicDistribution || !Array.isArray(topicDistribution)) continue;
+
+    // Get all topics in this scan
+    const scanTopics = new Set(
+      topicDistribution
+        .map(t => normalizeTopicLabel(t.category))
+        .filter(t => t !== UNCLASSIFIED_TOPIC)
+    );
+
+    // Check if any top theme appears in this scan
+    const hasTopTheme = topThemes.some(theme => scanTopics.has(theme));
+    if (!hasTopTheme) continue;
+
+    // Count co-occurring topics (excluding the top themes themselves)
+    for (const topic of scanTopics) {
+      if (!topThemeSet.has(topic)) {
+        coOccurrenceCounts[topic] = (coOccurrenceCounts[topic] || 0) + 1;
+      }
     }
   }
 
-  if (products.hasData && products.data.length > 0) {
-    totalScansUsed = Math.max(totalScansUsed, products.scansUsed);
-    products.scansWithData.forEach(id => allScansWithData.add(id));
+  // Get overall topic frequencies for tie-breaking
+  const topicFrequencies = topicsData.topics || {};
 
-    const topProduct = products.data[0].label;
-    predictions.push(`Product recommendations may continue focusing on ${topProduct}.`);
+  // Score and sort co-occurring topics
+  const scoredTopics = Object.entries(coOccurrenceCounts)
+    .map(([topic, coOccurCount]) => ({
+      topic,
+      coOccurCount,
+      frequency: topicFrequencies[topic] || 0,
+    }))
+    .sort((a, b) => {
+      // Sort by co-occurrence count first, then by overall frequency
+      if (b.coOccurCount !== a.coOccurCount) {
+        return b.coOccurCount - a.coOccurCount;
+      }
+      return b.frequency - a.frequency;
+    })
+    .slice(0, 3); // Top 3 suggestions
+
+  // Check if we have sufficient signal (at least 2 co-occurrence counts)
+  const hasSufficientSignal = scoredTopics.length > 0 && scoredTopics.some(t => t.coOccurCount >= 2);
+
+  if (!hasSufficientSignal) {
+    return createResponse(
+      false,
+      null,
+      'We do not have enough consistent co-occurrence signal yet to suggest related future themes.',
+      topicsData.scansUsed,
+      topicsData.scansWithData
+    );
   }
 
-  if (predictions.length === 0) {
-    return createResponse(false, null, 'Need topic or product data.', 0, []);
-  }
+  const suggestedThemes = scoredTopics.map(t => t.topic);
+  const topTheme = topThemes[0]; // Use first top theme for evidence line
 
   return createResponse(
     true,
-    { predictions },
+    {
+      suggestedThemes,
+      topTheme,
+      coOccurrenceCounts: scoredTopics.reduce((acc, t) => {
+        acc[t.topic] = t.coOccurCount;
+        return acc;
+      }, {}),
+    },
     null,
-    totalScansUsed,
-    Array.from(allScansWithData)
+    topicsData.scansUsed,
+    topicsData.scansWithData
   );
 }
 

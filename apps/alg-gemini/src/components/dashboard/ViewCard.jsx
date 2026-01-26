@@ -736,6 +736,51 @@ const ViewCard = ({
       );
     }
 
+    // Special handling for algo-future: show co-occurrence-based suggestions
+    if (view?.id === 'algo-future' && data) {
+      const suggestedThemes = data.suggestedThemes || [];
+      const topTheme = data.topTheme;
+      const coOccurrenceCounts = data.coOccurrenceCounts || {};
+
+      if (suggestedThemes.length === 0) {
+        return (
+          <div className="space-y-2">
+            <p className="text-sm text-slate-600">
+              We do not have enough consistent co-occurrence signal yet to suggest related future themes.
+            </p>
+            <p className="text-xs text-slate-500">
+              As you scan more over time, this section will highlight topics that repeatedly appear together.
+            </p>
+          </div>
+        );
+      }
+
+      // Format theme list (up to 3)
+      const themeList = suggestedThemes.join(', ');
+
+      // Build evidence line if we have top theme
+      let evidenceLine = null;
+      if (topTheme && coOccurrenceCounts[suggestedThemes[0]] >= 2) {
+        evidenceLine = `Evidence from your scans: these topics frequently appeared in the same scans as ${topTheme}.`;
+      }
+
+      return (
+        <div className="space-y-3">
+          <p className="text-sm text-slate-700 leading-relaxed">
+            If these scan patterns continue, related themes that may show up more often include: {themeList}.
+          </p>
+          <p className="text-xs text-slate-500">
+            This is a scan-based guess based on which topics tended to appear together in your scans.
+          </p>
+          {evidenceLine && (
+            <p className="text-xs text-slate-500">
+              {evidenceLine}
+            </p>
+          )}
+        </div>
+      );
+    }
+
     // Standard handling for other text types
     let content = [];
     if (data.insights) {

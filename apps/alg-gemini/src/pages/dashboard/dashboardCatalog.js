@@ -1152,7 +1152,7 @@ export const dashboardCatalog = [
     tab: 'algorithm',
     id: 'algo-future',
     title: 'If current trends continued (speculation)',
-    description: 'Extrapolation based on recent patterns — not a prediction or recommendation.',
+    description: 'Extrapolation based on recent patterns. Not a prediction or recommendation.',
     outputType: 'text',
     dataFn: 'getFutureRecommendationsData',
     emptyStateType: 'needs_more_scans',
@@ -1161,10 +1161,8 @@ export const dashboardCatalog = [
     confidenceDisclaimer: true,
     whyExplanation: 'Extrapolated from recent topic trends. Cannot predict what will actually surface.',
     takeaway: (data) => {
-      // FIX W6 & W7: Clear structure without repetitive disclaimers
-      if (!data?.predictions?.length) return null;
-      const topics = data.predictions.join(', ');
-      return `If patterns stayed constant: ${topics} might appear more often. (Pure speculation — not a forecast of what will happen.)`;
+      // New format: summary handled in ViewCard renderText
+      return null;
     },
     action: null,
   },
