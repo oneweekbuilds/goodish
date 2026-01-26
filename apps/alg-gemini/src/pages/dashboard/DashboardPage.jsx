@@ -1356,6 +1356,10 @@ const TabHero = ({
         ? 'We observed a measurable pattern in your scans.'
         : 'Not enough data yet to quantify this from your scans.';
     }
+  } else if (tabId === 'politics') {
+    // Special handling for Politics tab: static title and body
+    headline = 'Political content in your feed';
+    bodyText = 'This view flags posts that contained political terms in the content you scanned. It describes what appeared in the feed, not your beliefs or identity.';
   } else {
     // Other tabs: takeaway as headline
     if (hasHeroData && heroQualityOk && typeof heroView?.takeaway === 'function') {
@@ -1370,7 +1374,7 @@ const TabHero = ({
     if (!headline) {
       headline = (hasHeroData && heroQualityOk)
         ? 'We observed a measurable pattern in your scans.'
-        : 'Not enough data yet to quantify this from your scans.';
+        : 'We will show more detail as you scan more posts over time.';
     }
   }
 
@@ -1473,8 +1477,8 @@ const TabHero = ({
           </h2>
         </div>
 
-        {/* Body text for Ads tab (takeaway as body) */}
-        {bodyText && tabId === 'ads' && (
+        {/* Body text for Ads and Politics tabs */}
+        {bodyText && (tabId === 'ads' || tabId === 'politics') && (
           <p
             className="text-slate-600 mb-4"
             style={{

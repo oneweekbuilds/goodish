@@ -51,7 +51,7 @@ export const EMPTY_STATE_TYPES = {
 // FIX X2, P1, C1: Use consistent observational language without implying single vs multiple scans
 export const TAB_TRUST_SENTENCES = {
   ads: "This view estimates how often ads and sales-driven posts appeared in the content you scanned. It reflects what showed up, not what you believe or want.",
-  politics: "Political keywords observed here — measures exposure, not your beliefs.",
+  politics: "Counts and percentages are based only on the posts included in your scans.",
   patterns: "Topics observed here — what surfaced, not what you seek.",
   creators: "Accounts observed here — what appeared, not who you are.",
   algorithm: "Patterns observed here — system interpretation, not your identity.",
