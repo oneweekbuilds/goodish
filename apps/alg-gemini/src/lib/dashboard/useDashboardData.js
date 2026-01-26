@@ -1,13 +1,20 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000';
 
 /**
  * Custom hook to fetch and process scan data for the dashboard.
  * Reuses the same API endpoints as HistoryPage and ResultsPage.
+ * 
+ * @param {Object} options - Optional configuration
+ * @param {Object} options.filters - Filter configuration (premium feature)
+ * @param {string} options.filters.platform - Platform filter: 'all' | 'instagram' | 'tiktok' | 'youtube' | 'x' | 'other'
+ * @param {string} options.filters.startDate - Start date filter (YYYY-MM-DD)
+ * @param {string} options.filters.endDate - End date filter (YYYY-MM-DD)
  */
-export function useDashboardData() {
-  const [scans, setScans] = useState([]);
+export function useDashboardData(options = {}) {
+  const { filters = null } = options;
+  const [allScans, setAllScans] = useState([]); // Unfiltered scans from API
   const [scanDetails, setScanDetails] = useState({}); // Map of scanId -> detail
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -23,7 +30,7 @@ export function useDashboardData() {
       const scanList = data.scans || [];
       // Sort by date descending
       scanList.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      setScans(scanList);
+      setAllScans(scanList);
       setError(null);
       return scanList;
     } catch (err) {
@@ -103,14 +110,57 @@ export function useDashboardData() {
     init();
   }, [fetchScans]);
 
-  // Computed properties
-  const hasScans = scans.length > 0;
-  const hasMultipleScans = scans.length >= 2;
-  const platforms = [...new Set(scans.map(s => s.platform?.toLowerCase()).filter(Boolean))];
-  const hasMultiplePlatforms = platforms.length >= 2;
+  // Apply filters to scans (premium feature) - memoized for performance
+  const scans = useMemo(() => {
+    if (!filters || !allScans || allScans.length === 0) {
+      return allScans;
+    }
 
-  // Single source of truth for scan count: dedupe by scan id if available, otherwise use array length
-  const totalScanCount = (() => {
+    // Validate date range: if endDate < startDate, ignore date filters
+    const hasValidDateRange = !filters.startDate || !filters.endDate || 
+      new Date(filters.endDate) >= new Date(filters.startDate);
+
+    return allScans.filter(scan => {
+      // Platform filter
+      if (filters.platform && filters.platform !== 'all') {
+        const scanPlatform = (scan.platform || 'other').toLowerCase();
+        if (scanPlatform !== filters.platform.toLowerCase()) {
+          return false;
+        }
+      }
+
+      // Date range filter (only if valid)
+      if (hasValidDateRange) {
+        if (filters.startDate || filters.endDate) {
+          if (!scan.created_at) {
+            // Exclude scans without timestamps when date filter is active
+            return false;
+          }
+
+          const scanDate = new Date(scan.created_at);
+          const scanDateStr = scanDate.toISOString().split('T')[0]; // YYYY-MM-DD
+
+          if (filters.startDate && scanDateStr < filters.startDate) {
+            return false;
+          }
+          if (filters.endDate && scanDateStr > filters.endDate) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    });
+  }, [allScans, filters]);
+
+  // Computed properties (using filtered scans) - memoized
+  const hasScans = useMemo(() => scans.length > 0, [scans]);
+  const hasMultipleScans = useMemo(() => scans.length >= 2, [scans]);
+  const platforms = useMemo(() => [...new Set(scans.map(s => s.platform?.toLowerCase()).filter(Boolean))], [scans]);
+  const hasMultiplePlatforms = useMemo(() => platforms.length >= 2, [platforms]);
+
+  // Count filtered scans: dedupe by scan id if available, otherwise use array length
+  const totalScanCount = useMemo(() => {
     if (!scans || scans.length === 0) return 0;
     // Dedupe by scan id if ids exist
     const uniqueScanIds = new Set(scans.map(s => s.id).filter(Boolean));
@@ -119,10 +169,23 @@ export function useDashboardData() {
     }
     // Fallback to array length if no ids
     return scans.length;
-  })();
+  }, [scans]);
+
+  // Count unfiltered scans: dedupe by scan id if available, otherwise use array length
+  const unfilteredScanCount = useMemo(() => {
+    if (!allScans || allScans.length === 0) return 0;
+    // Dedupe by scan id if ids exist
+    const uniqueScanIds = new Set(allScans.map(s => s.id).filter(Boolean));
+    if (uniqueScanIds.size > 0) {
+      return uniqueScanIds.size;
+    }
+    // Fallback to array length if no ids
+    return allScans.length;
+  }, [allScans]);
 
   return {
-    scans,
+    scans, // Filtered scans (used by dashboard)
+    allScans, // Unfiltered scans (for reference)
     scanDetails,
     loading,
     error,
@@ -133,7 +196,8 @@ export function useDashboardData() {
     hasMultipleScans,
     platforms,
     hasMultiplePlatforms,
-    totalScanCount,
+    totalScanCount, // Count of filtered scans
+    unfilteredScanCount, // Count of all scans
   };
 }
 

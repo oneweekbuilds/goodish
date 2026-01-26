@@ -1921,7 +1921,8 @@ const DashboardPage = () => {
     hasScans,
     platforms,
     totalScanCount,
-  } = useDashboardData();
+    unfilteredScanCount,
+  } = useDashboardData(isPremiumUser && filtersActive ? { filters: activeFilters } : {});
 
   // Track which scan details we've loaded
   const [detailsLoading, setDetailsLoading] = useState(false);
@@ -2133,9 +2134,17 @@ const DashboardPage = () => {
             </h1>
             {/* Hide subtitle on Algorithm tab - hero has this info */}
             {!isOnAlgorithmTab && (
-              <p className="text-text-muted">
-                Explore insights from your {totalScanCount} scan{totalScanCount !== 1 ? 's' : ''} across {platforms.length} platform{platforms.length !== 1 ? 's' : ''}.
-              </p>
+              <div>
+                <p className="text-text-muted">
+                  Explore insights from your {totalScanCount} scan{totalScanCount !== 1 ? 's' : ''} across {platforms.length} platform{platforms.length !== 1 ? 's' : ''}.
+                </p>
+                {/* Premium filter status line */}
+                {isPremiumUser && filtersActive && totalScanCount !== unfilteredScanCount && (
+                  <p className="text-xs text-slate-500 mt-1">
+                    Showing {totalScanCount} of {unfilteredScanCount} scans.
+                  </p>
+                )}
+              </div>
             )}
           </div>
           <div className="flex gap-3">
