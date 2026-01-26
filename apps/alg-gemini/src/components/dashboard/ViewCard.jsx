@@ -231,6 +231,9 @@ const ViewCard = ({
             <LineChartSimple
               data={data.trend.map(t => ({ label: t.label, value: t.value })).reverse()}
               valueLabel="%"
+              title={viewTab === 'ads' ? 'Ad frequency over time' : null}
+              xAxisLabel={viewTab === 'ads' ? 'Date scanned' : null}
+              yAxisLabel={viewTab === 'ads' ? 'Ads (% of posts)' : null}
             />
           </div>
         )}
@@ -351,7 +354,13 @@ const ViewCard = ({
     return (
       <div className="space-y-2">
         <div className={deemphasizeCharts ? 'opacity-80' : ''}>
-          <LineChartSimple data={chartData} valueLabel="%" />
+          <LineChartSimple 
+            data={chartData} 
+            valueLabel="%" 
+            title={viewTab === 'ads' ? 'Ad frequency over time' : null}
+            xAxisLabel={viewTab === 'ads' ? 'Date scanned' : null}
+            yAxisLabel={viewTab === 'ads' ? 'Ads (% of posts)' : null}
+          />
         </div>
         {data.direction && (
           <p className="text-sm text-center text-slate-600">

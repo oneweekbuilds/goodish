@@ -11,15 +11,24 @@ import React from 'react';
  * @param {string} color - Line color (default blue)
  * @param {number} height - Chart height in pixels (max 120)
  * @param {number} maxPoints - Maximum data points to show (default 7)
+ * @param {string} title - Optional chart title
+ * @param {string} xAxisLabel - Optional x-axis label
+ * @param {string} yAxisLabel - Optional y-axis label
  */
-const LineChartSimple = ({ data = [], valueLabel = '', color = '#3B82F6', height = 100, maxPoints = 7 }) => {
+const LineChartSimple = ({ data = [], valueLabel = '', color = '#3B82F6', height = 100, maxPoints = 7, title = null, xAxisLabel = null, yAxisLabel = null }) => {
   if (!data || data.length < 2) return null;
 
   // UI Refoundation: Limit data points for visual clarity
   const displayData = data.slice(-maxPoints);
 
   const width = 100; // percentage-based
-  const padding = { top: 10, right: 10, bottom: 30, left: 10 };
+  // Increase left padding for y-axis label, bottom padding for x-axis label
+  const padding = { 
+    top: title ? 20 : 10, 
+    right: 10, 
+    bottom: xAxisLabel ? 40 : 30, 
+    left: yAxisLabel ? 20 : 10 
+  };
   const chartWidth = 100 - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
 
@@ -45,6 +54,12 @@ const LineChartSimple = ({ data = [], valueLabel = '', color = '#3B82F6', height
 
   return (
     <div className="w-full">
+      {/* Chart title */}
+      {title && (
+        <h4 className="text-sm font-semibold text-slate-700 mb-2">
+          {title}
+        </h4>
+      )}
       <svg
         viewBox={`0 0 100 ${height}`}
         className="w-full"
@@ -87,20 +102,42 @@ const LineChartSimple = ({ data = [], valueLabel = '', color = '#3B82F6', height
           opacity="0.9"
         />
 
-        {/* Data points */}
+        {/* Data points - reduced size for subtle appearance */}
         {points.map((p, i) => (
           <circle
             key={i}
             cx={p.x}
             cy={p.y}
-            r="3"
+            r="2"
             fill="white"
             stroke={color}
-            strokeWidth="2"
+            strokeWidth="1.5"
             vectorEffect="non-scaling-stroke"
           />
         ))}
+        
+        {/* Y-axis label */}
+        {yAxisLabel && (
+          <text
+            x={padding.left / 2}
+            y={padding.top + chartHeight / 2}
+            textAnchor="middle"
+            transform={`rotate(-90 ${padding.left / 2} ${padding.top + chartHeight / 2})`}
+            fill="#475569"
+            fontSize="11"
+            fontWeight="500"
+          >
+            {yAxisLabel}
+          </text>
+        )}
       </svg>
+
+      {/* X-axis label */}
+      {xAxisLabel && (
+        <p className="text-xs text-slate-600 text-center mt-1 font-medium">
+          {xAxisLabel}
+        </p>
+      )}
 
       {/* X-axis labels - FIX A4 & P3: Improved spacing, readability, and label clarity */}
       <div className="flex justify-between px-2 mt-3">
