@@ -3,7 +3,6 @@ import EmptyState, { EMPTY_STATE_TYPES } from './EmptyState';
 import {
   BarChartSimple,
   StackedBar100,
-  LineChartSimple,
   BigNumber,
   SimpleTable,
   StatusCard,
@@ -194,28 +193,14 @@ const ViewCard = ({
     }
   };
 
-  // Number + optional line chart
+  // Number display only - line charts removed due to clarity issues
   // UI Refoundation: Chart portion de-emphasized on secondary cards
   const renderNumberLine = (data, type) => {
     if (!data) return null;
 
     // PHASE 6A: Handle possibleInfluencePercent for promotion heuristic
     const value = data.currentPercent ?? data.concentration ?? data.discoveryRate ?? data.top3Percent ?? data.possibleInfluencePercent;
-    let showLine = type === 'number_line' && data.trend && data.trend.length >= 2;
     const isAttentionTactics = data?.flaggedCount !== undefined && data?.totalPosts !== undefined && data?.status !== undefined;
-    let trendNote = null;
-
-    if (showLine) {
-      const labels = new Set(data.trend.map((t) => t.label));
-      const values = new Set(data.trend.map((t) => t.value));
-      const hasMeaningfulTrend = labels.size > 1 && values.size > 1;
-      if (!hasMeaningfulTrend) {
-        showLine = false;
-        trendNote = viewTab === 'ads'
-          ? 'Ad levels were stable across this period.'
-          : 'No meaningful day-to-day variation detected in this window.';
-      }
-    }
 
     return (
       <div className="space-y-4">
@@ -229,30 +214,6 @@ const ViewCard = ({
         )}
         {isAttentionTactics && (
           <p className="text-xs text-slate-500 text-center">Flagged during this window</p>
-        )}
-        {showLine && (
-          <div className={deemphasizeCharts ? 'opacity-80' : ''}>
-            <LineChartSimple
-              data={data.trend.map(t => ({ label: t.label, value: t.value })).reverse()}
-              valueLabel="%"
-              title={
-                viewTab === 'ads' ? 'Ad frequency over time' :
-                viewTab === 'politics' ? 'Political terms over time' :
-                viewTab === 'patterns' ? 'Patterns over time' :
-                'Trend over time'
-              }
-              xAxisLabel={viewTab === 'ads' || viewTab === 'politics' || viewTab === 'patterns' ? 'Date scanned' : 'Date'}
-              yAxisLabel={
-                viewTab === 'ads' ? 'Ads (% of posts)' :
-                viewTab === 'politics' ? 'Posts with political terms (% of posts)' :
-                viewTab === 'patterns' ? 'Patterns (% of posts)' :
-                'Percent of posts'
-              }
-            />
-          </div>
-        )}
-        {trendNote && (
-          <p className="text-xs text-slate-500 text-center">{trendNote}</p>
         )}
         {/* PHASE 6A: Show top signals for promotion heuristic */}
         {data.topSignals && data.topSignals.length > 0 && (
@@ -425,56 +386,50 @@ const ViewCard = ({
     );
   };
 
-  // Line chart
-  // UI Refoundation: De-emphasized on secondary cards
+  // Line chart - replaced with simple summary due to clarity issues
   const renderLine = (data) => {
     if (!data) return null;
     const trend = data.trend || data;
-    if (!Array.isArray(trend) || trend.length < 2) return null;
-
-    const labels = new Set(trend.map((t) => t.label));
-    const values = new Set(trend.map((t) => t.value));
-    const hasMeaningfulTrend = labels.size > 1 && values.size > 1;
-    if (!hasMeaningfulTrend) {
+    if (!Array.isArray(trend) || trend.length < 2) {
       return (
         <p className="text-xs text-center text-slate-500">
-          {viewTab === 'ads'
-            ? 'Ad levels were stable across this period.'
-            : 'No meaningful day-to-day variation detected in this window.'}
+          Insufficient data to show trend.
         </p>
       );
     }
 
-    // Reverse to show oldest to newest
-    const chartData = [...trend].reverse().map(t => ({
-      label: t.label,
-      value: t.value,
-    }));
+    // Calculate summary stats from trend data
+    const values = trend.map(t => t.value).filter(v => typeof v === 'number');
+    if (values.length === 0) {
+      return (
+        <p className="text-xs text-center text-slate-500">
+          No trend data available.
+        </p>
+      );
+    }
+
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const avg = values.reduce((a, b) => a + b, 0) / values.length;
+    const latest = values[values.length - 1];
 
     return (
-      <div className="space-y-2">
-        <div className={deemphasizeCharts ? 'opacity-80' : ''}>
-          <LineChartSimple 
-            data={chartData} 
-            valueLabel="%" 
-            title={
-              viewTab === 'ads' ? 'Ad frequency over time' :
-              viewTab === 'politics' ? 'Political terms over time' :
-              viewTab === 'patterns' ? 'Patterns over time' :
-              'Trend over time'
-            }
-            xAxisLabel={viewTab === 'ads' || viewTab === 'politics' || viewTab === 'patterns' ? 'Date scanned' : 'Date'}
-            yAxisLabel={
-              viewTab === 'ads' ? 'Ads (% of posts)' :
-              viewTab === 'politics' ? 'Posts with political terms (% of posts)' :
-              viewTab === 'patterns' ? 'Patterns (% of posts)' :
-              'Percent of posts'
-            }
-          />
+      <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+            <p className="text-xs text-slate-500 mb-1">Current</p>
+            <p className="text-lg font-semibold text-slate-800">{Math.round(latest)}%</p>
+            <p className="text-xs text-slate-500 mt-1">Percent of posts</p>
+          </div>
+          <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+            <p className="text-xs text-slate-500 mb-1">Average</p>
+            <p className="text-lg font-semibold text-slate-800">{Math.round(avg)}%</p>
+            <p className="text-xs text-slate-500 mt-1">Percent of posts</p>
+          </div>
         </div>
-        {data.direction && (
-          <p className="text-sm text-center text-slate-600">
-            Trend: <span className="font-medium">{data.direction}</span>
+        {min !== max && (
+          <p className="text-xs text-center text-slate-500">
+            Range: {Math.round(min)}% to {Math.round(max)}% of posts
           </p>
         )}
       </div>
