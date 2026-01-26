@@ -1854,20 +1854,71 @@ const DashboardPage = () => {
     endDate: '',
   });
   
+  // Date filter preset state
+  const [datePreset, setDatePreset] = useState('all');
+  
+  // Helper function to compute date ranges from presets
+  const computeDateRangeFromPreset = (preset) => {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // End of today
+    const endDate = today.toISOString().split('T')[0]; // YYYY-MM-DD
+    
+    if (preset === 'all') {
+      return { startDate: '', endDate: '' };
+    }
+    
+    const startDate = new Date(today);
+    if (preset === '7days') {
+      startDate.setDate(today.getDate() - 6); // Last 7 days (today + 6 previous)
+    } else if (preset === '30days') {
+      startDate.setDate(today.getDate() - 29); // Last 30 days (today + 29 previous)
+    } else if (preset === '90days') {
+      startDate.setDate(today.getDate() - 89); // Last 90 days (today + 89 previous)
+    } else {
+      return { startDate: '', endDate: '' };
+    }
+    
+    return {
+      startDate: startDate.toISOString().split('T')[0],
+      endDate: endDate,
+    };
+  };
+  
+  // Handle preset change
+  const handlePresetChange = (preset) => {
+    setDatePreset(preset);
+    if (preset === 'custom') {
+      // Keep existing custom dates, don't clear them
+      return;
+    }
+    const range = computeDateRangeFromPreset(preset);
+    setDateRange(range);
+  };
+  
   // Derived: check if any filters are active
-  const filtersActive = platformFilter !== 'all' || dateRange.startDate !== '' || dateRange.endDate !== '';
+  // For custom date range, only count as active if both dates are present
+  const dateFilterActive = datePreset === 'custom' 
+    ? (dateRange.startDate !== '' && dateRange.endDate !== '' && new Date(dateRange.startDate) <= new Date(dateRange.endDate))
+    : (dateRange.startDate !== '' || dateRange.endDate !== '');
+  const filtersActive = platformFilter !== 'all' || dateFilterActive;
   
   // Reset filters function
   const resetFilters = () => {
     setPlatformFilter('all');
     setDateRange({ startDate: '', endDate: '' });
+    setDatePreset('all');
   };
   
   // Active filters object (ready for future integration with data helpers)
+  // For custom date range, only include dates if both are present and valid
   const activeFilters = {
     platform: platformFilter,
-    startDate: dateRange.startDate,
-    endDate: dateRange.endDate,
+    startDate: (datePreset === 'custom' && (!dateRange.startDate || !dateRange.endDate || new Date(dateRange.startDate) > new Date(dateRange.endDate)))
+      ? ''
+      : dateRange.startDate,
+    endDate: (datePreset === 'custom' && (!dateRange.startDate || !dateRange.endDate || new Date(dateRange.startDate) > new Date(dateRange.endDate)))
+      ? ''
+      : dateRange.endDate,
   };
   
   const {
@@ -1881,7 +1932,7 @@ const DashboardPage = () => {
     platforms,
     totalScanCount,
     unfilteredScanCount,
-  } = useDashboardData(isPremiumUser && filtersActive ? { filters: activeFilters } : {});
+  } = useDashboardData(filtersActive ? { filters: activeFilters } : {});
 
   // Track which scan details we've loaded
   const [detailsLoading, setDetailsLoading] = useState(false);
@@ -2097,8 +2148,8 @@ const DashboardPage = () => {
                 <p className="text-text-muted">
                   Explore insights from your {totalScanCount} scan{totalScanCount !== 1 ? 's' : ''} across {platforms.length} platform{platforms.length !== 1 ? 's' : ''}.
                 </p>
-                {/* Premium filter status line */}
-                {isPremiumUser && filtersActive && totalScanCount !== unfilteredScanCount && (
+                {/* Filter status line */}
+                {filtersActive && totalScanCount !== unfilteredScanCount && (
                   <p className="text-xs text-slate-500 mt-1">
                     Showing {totalScanCount} of {unfilteredScanCount} scans.
                   </p>
@@ -2106,7 +2157,52 @@ const DashboardPage = () => {
               </div>
             )}
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Date Range Filter */}
+            <div className="flex items-center gap-2">
+              <label htmlFor="date-preset" className="text-sm text-text-muted whitespace-nowrap">
+                Date range:
+              </label>
+              <select
+                id="date-preset"
+                value={datePreset}
+                onChange={(e) => handlePresetChange(e.target.value)}
+                className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white text-text-main hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue"
+              >
+                <option value="all">All time</option>
+                <option value="7days">Last 7 days</option>
+                <option value="30days">Last 30 days</option>
+                <option value="90days">Last 90 days</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+            
+            {/* Custom date inputs (shown when Custom is selected) */}
+            {datePreset === 'custom' && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={dateRange.startDate}
+                  onChange={(e) => setDateRange({ ...dateRange, startDate: e.target.value })}
+                  className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white text-text-main hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue"
+                />
+                <span className="text-sm text-text-muted">to</span>
+                <input
+                  type="date"
+                  value={dateRange.endDate}
+                  onChange={(e) => setDateRange({ ...dateRange, endDate: e.target.value })}
+                  className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white text-text-main hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue"
+                />
+                {/* Validation messages */}
+                {datePreset === 'custom' && (!dateRange.startDate || !dateRange.endDate) && (
+                  <span className="text-xs text-slate-500 whitespace-nowrap">Select both dates to apply.</span>
+                )}
+                {datePreset === 'custom' && dateRange.startDate && dateRange.endDate && new Date(dateRange.startDate) > new Date(dateRange.endDate) && (
+                  <span className="text-xs text-red-500 whitespace-nowrap">Start date must be on or before end date.</span>
+                )}
+              </div>
+            )}
+            
             <button
               onClick={() => {
                 setDetailsLoaded(false);
