@@ -318,8 +318,17 @@ const ViewCard = ({
     const bars = data.bars || data;
     if (!Array.isArray(bars)) return null;
 
+    // Special handling for ads-by-platform: show denominator explanation
+    const isAdsByPlatform = view?.id === 'ads-by-platform';
+
     return (
       <div className="space-y-3">
+        {/* Denominator explanation for ads-by-platform */}
+        {isAdsByPlatform && (
+          <p className="text-xs text-slate-600 mt-2 mb-2">
+            Percent shown is ads out of total posts on that platform in your scans.
+          </p>
+        )}
         <div className={deemphasizeCharts ? 'opacity-80' : ''}>
           <BarChartSimple data={bars} valueLabel="%" />
         </div>

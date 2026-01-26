@@ -149,7 +149,7 @@ export const dashboardCatalog = [
     tab: 'ads',
     id: 'ads-by-platform',
     title: 'Ads by platform',
-    description: 'Percent of posts on each platform that were classified as ads.',
+    description: 'Ads as a share of posts per platform.',
     outputType: 'bar',
     dataFn: 'getPlatformPromoData',
     emptyStateType: 'needs_broader_behavior',
