@@ -377,10 +377,32 @@ const ViewCard = ({
 
     // PHASE 6A: Handle rows field for creator-topic and creator-tone views
     const rows = data.rows || data;
-    if (!Array.isArray(rows) || rows.length === 0) return null;
+    if (!Array.isArray(rows) || rows.length === 0) {
+      // Handle empty state for politics-creators view
+      if (view?.id === 'politics-creators' && dataResult?.missing) {
+        return (
+          <div className="space-y-2">
+            <p className="text-sm text-slate-600">{dataResult.missing}</p>
+            <p className="text-sm text-slate-500">As you scan more, this section will highlight which accounts contribute most to political content in the feed.</p>
+          </div>
+        );
+      }
+      return null;
+    }
 
-    // Auto-detect columns from first row
-    const firstRow = rows[0];
+    // Filter out internal fields (those starting with _)
+    const filteredRows = rows.map(row => {
+      const filtered = {};
+      Object.keys(row).forEach(key => {
+        if (!key.startsWith('_')) {
+          filtered[key] = row[key];
+        }
+      });
+      return filtered;
+    });
+
+    // Auto-detect columns from first row (after filtering)
+    const firstRow = filteredRows[0];
     const columns = Object.keys(firstRow).map(key => ({
       key,
       label: formatColumnLabel(key),
@@ -395,7 +417,7 @@ const ViewCard = ({
             {data.takeaway}
           </p>
         )}
-        <SimpleTable columns={columns} rows={rows} />
+        <SimpleTable columns={columns} rows={filteredRows} />
       </div>
     );
   };

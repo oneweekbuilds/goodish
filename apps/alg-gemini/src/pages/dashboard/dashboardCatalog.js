@@ -370,7 +370,7 @@ export const dashboardCatalog = [
     tab: 'politics',
     id: 'politics-creators',
     title: 'Where political exposure concentrated',
-    description: 'Whether political keywords came from many sources or clustered around a few repeat accounts.',
+    description: 'Percent shown is the share of that account\'s posts that contained political terms.',
     outputType: 'table',
     dataFn: 'getPoliticalCreatorsData',
     emptyStateType: 'needs_more_scans',
@@ -378,15 +378,26 @@ export const dashboardCatalog = [
     whyExplanation: 'Counted political keyword matches per account in your scans.',
     takeaway: (data) => {
       if (!Array.isArray(data) || data.length === 0) return null;
-      const [top] = data;
+      
+      const [top, second] = data;
+      const top1Percent = top?._rawPercent || 0;
+      const top2Percent = second?._rawPercent || 0;
       const totalAccounts = data.length;
+      
+      // Concentration logic: show concentration only if top account is at least 3x second AND at least 10%
+      const isConcentrated = top1Percent >= 10 && (top2Percent === 0 || top1Percent >= top2Percent * 3);
+      
+      // Special case: single account - only show concentration if >= 25%
       if (totalAccounts === 1) {
-        return `Political exposure came almost entirely from one source: ${top.creator}.`;
+        return top1Percent >= 25 
+          ? 'Most political terms came from a small number of accounts.'
+          : 'Political terms were spread across multiple accounts.';
       }
-      if (totalAccounts <= 3) {
-        return `Most political exposure traced to a tight cluster of ${totalAccounts} accounts.`;
-      }
-      return `Political keywords spread across ${totalAccounts} sources, but clustered heavily at the top.`;
+      
+      // Multiple accounts: use concentration logic
+      return isConcentrated
+        ? 'Most political terms came from a small number of accounts.'
+        : 'Political terms were spread across multiple accounts.';
     },
     action: null,
   },

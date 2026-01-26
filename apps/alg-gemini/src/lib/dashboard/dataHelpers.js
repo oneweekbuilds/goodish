@@ -831,21 +831,18 @@ export function getPoliticalCreatorsData(scans, scanDetails) {
   const rows = Object.entries(politicsData.byCreator)
     .filter(([_, stats]) => stats.political > 0)
     .map(([_, stats]) => {
-      // FIX P4: Use qualitative labels when numbers are too small to be meaningful
-      // Avoid showing "1 post = 100%" which looks absurd
-      let politicalPercent;
-      if (stats.total <= 2) {
-        // Too small for percentage to be meaningful
-        politicalPercent = stats.political === stats.total ? 'all' : 'some';
-      } else {
-        politicalPercent = `${Math.round((stats.political / stats.total) * 100)}%`;
-      }
+      // Normalize percent to 0-100% format consistently
+      const percentValue = stats.total > 0 ? (stats.political / stats.total) * 100 : 0;
+      // Format: 0 decimals if >= 10%, 1 decimal if < 10%
+      const politicalPercent = percentValue >= 10 
+        ? `${Math.round(percentValue)}%`
+        : `${percentValue.toFixed(1)}%`;
       
-      // FIX P5: Clarify what the percentage means
       return {
         creator: normalizeCreatorName(stats.displayName), // FIX C2
         'Political posts': stats.political,
-        '% of their posts': politicalPercent,
+        'Percent of account posts': politicalPercent,
+        _rawPercent: percentValue, // Store raw value for concentration logic
       };
     })
     .sort((a, b) => b['Political posts'] - a['Political posts'])
@@ -855,7 +852,7 @@ export function getPoliticalCreatorsData(scans, scanDetails) {
     return createResponse(
       false,
       null,
-      'No political content with creator attribution found.',
+      'No accounts in your scanned posts contained political terms yet.',
       politicsData.scansUsed,
       politicsData.scansWithData
     );
