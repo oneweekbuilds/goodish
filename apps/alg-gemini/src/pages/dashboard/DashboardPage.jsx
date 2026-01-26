@@ -1081,7 +1081,8 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
       )}
 
       {/* SUMMARY - Experiments behind calm accordion */}
-      {hasSummaryContent && (
+      {/* Hide "Try this" section for Patterns tab */}
+      {hasSummaryContent && tabId !== 'patterns' && (
         <section className="mt-4">
           <ChapterContainer variant="default">
             <button
@@ -1371,6 +1372,10 @@ const TabHero = ({
     // Special handling for Politics tab: static title and body
     headline = 'Political content in your feed';
     bodyText = 'This view flags posts that contained political terms in the content you scanned. It describes what appeared in the feed, not your beliefs or identity.';
+  } else if (tabId === 'patterns') {
+    // Special handling for Patterns tab: static title and body
+    headline = 'Patterns in what you are shown';
+    bodyText = 'This view summarizes recurring themes across the content you scanned. It reflects what appeared in the feed, not what you believe or want.';
   } else {
     // Other tabs: takeaway as headline
     if (hasHeroData && heroQualityOk && typeof heroView?.takeaway === 'function') {
@@ -1488,8 +1493,8 @@ const TabHero = ({
           </h2>
         </div>
 
-        {/* Body text for Ads and Politics tabs */}
-        {bodyText && (tabId === 'ads' || tabId === 'politics') && (
+        {/* Body text for Ads, Politics, and Patterns tabs */}
+        {bodyText && (tabId === 'ads' || tabId === 'politics' || tabId === 'patterns') && (
           <p
             className="text-slate-600 mb-4"
             style={{
