@@ -687,6 +687,52 @@ const ViewCard = ({
   const renderStatus = (data) => {
     if (!data) return null;
 
+    // Special handling for patterns-stability: evidence-based evolution
+    if (view?.id === 'patterns-stability') {
+      // If we have changes array and it's not empty, show them
+      if (data.changes && Array.isArray(data.changes) && data.changes.length > 0) {
+        const bullets = [];
+        for (const change of data.changes.slice(0, 2)) {
+          if (change.type === 'ads') {
+            bullets.push(`Ads moved from ${change.earlier}% to ${change.recent}% of scanned posts.`);
+          } else if (change.type === 'tone') {
+            bullets.push(`More negative or tense posts moved from ${change.earlier}% to ${change.recent}% of scanned posts.`);
+          } else if (change.type === 'topic_change') {
+            bullets.push(`Top topic shifted from ${change.earlierTopic} to ${change.recentTopic}.`);
+          } else if (change.type === 'topic_concentration') {
+            bullets.push(`Top topic ${change.topic} became more common in recent scans.`);
+          }
+        }
+
+        return (
+          <div className="space-y-3">
+            <p className="text-sm text-slate-700 font-medium">
+              Based on your earlier scans compared with your most recent scans:
+            </p>
+            <ul className="space-y-2 list-disc list-inside">
+              {bullets.map((bullet, idx) => (
+                <li key={idx} className="text-sm text-slate-600">
+                  {bullet}
+                </li>
+              ))}
+            </ul>
+            <p className="text-xs text-slate-500 italic mt-3">
+              These are scan-based snapshots, not a complete view of everything you see.
+            </p>
+          </div>
+        );
+      }
+
+      // Fallback: no changes detected or insufficient data
+      return (
+        <div className="space-y-2">
+          <p className="text-sm text-slate-600">
+            We need more scan history to describe changes over time. As you scan on different days, this section will summarize what actually shifted between earlier and more recent scans.
+          </p>
+        </div>
+      );
+    }
+
     const status = data.status || data.breadth || data.diversity || data.stability || data.riskLevel || 'Unknown';
     const variant = getStatusVariant(status, data);
     const description = data.factors?.join('. ') || data.description;

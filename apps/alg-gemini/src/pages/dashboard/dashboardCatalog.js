@@ -703,16 +703,8 @@ export const dashboardCatalog = [
     collapsedByDefault: true,
     whyExplanation: 'Compares topics between scans.',
     takeaway: (data) => {
-      if (!data?.stability) return 'Insufficient scans to measure evolution.';
-      const stability = data.stability.toLowerCase();
-
-      if (stability.includes('stable') || stability.includes('consistent')) {
-        return 'Topics stabilized across scans — the same themes keep reappearing with little rotation.';
-      }
-      if (stability.includes('variable') || stability.includes('changing') || stability.includes('shifting')) {
-        return 'Topics shifted across scans — new themes are emerging and rotating through your feed.';
-      }
-      return `Across your scans, feed content appeared ${stability}.`;
+      // New evidence-based format - takeaway is handled in ViewCard renderStatus
+      return null;
     },
     action: null, // FIX X3, PA9: Removed generic advice
   },

@@ -1240,33 +1240,184 @@ export function getSentimentBalanceData(scans, scanDetails) {
 }
 
 /**
- * View 25: Stability of your feed
- * PHASE 5: Uses calculateStability from aggregator
+ * View 25: Stability of your feed (How your feed is evolving)
+ * Evidence-based comparison of recent vs earlier scans
  */
 export function getFeedStabilityData(scans, scanDetails) {
-  const topicsData = aggregateTopics(scans, scanDetails);
-  const stability = calculateStability(topicsData, scans, scanDetails);
-
-  if (!stability.hasData) {
+  // Require at least 4 scans with timestamps
+  if (!scans || scans.length < 4) {
     return createResponse(
       false,
       null,
-      stability.reason || 'Need at least 2 scans to measure stability.',
+      'We need more scan history to describe changes over time. As you scan on different days, this section will summarize what actually shifted between earlier and more recent scans.',
       0,
       []
     );
   }
 
+  // Sort scans by date (newest first, as they come from API)
+  const sortedScans = [...scans].sort((a, b) => {
+    const dateA = new Date(a.created_at || a.timestamp || 0);
+    const dateB = new Date(b.created_at || b.timestamp || 0);
+    return dateB - dateA;
+  });
+
+  // Split into recent (25%, min 2) and earlier (25%, min 2)
+  const recentCount = Math.max(2, Math.ceil(sortedScans.length * 0.25));
+  const earlierCount = Math.max(2, Math.ceil(sortedScans.length * 0.25));
+  
+  const recentScans = sortedScans.slice(0, recentCount);
+  const earlierScans = sortedScans.slice(-earlierCount);
+
+  // Helper to aggregate metrics for a window of scans
+  const aggregateWindow = (windowScans) => {
+    let totalItems = 0;
+    let adItems = 0;
+    let negativeItems = 0;
+    const topicCounts = {};
+    const scanIds = [];
+
+    for (const scan of windowScans) {
+      const detail = scanDetails[scan.id];
+      if (!detail) continue;
+
+      const aggregates = getAggregates(detail);
+      const feedItems = getFeedItems(detail);
+      
+      if (feedItems.length === 0 && !aggregates) continue;
+      scanIds.push(scan.id);
+
+      // Count ads
+      const adSummary = aggregates?.ad_summary;
+      if (adSummary) {
+        const total = adSummary.total_feed_items || 0;
+        const adCount = adSummary.ad_items || 0;
+        totalItems += total;
+        adItems += adCount;
+      } else {
+        // Fallback: count from feed items
+        for (const item of feedItems) {
+          totalItems++;
+          if (item.ad?.is_ad || item.promotional?.is_promotional) {
+            adItems++;
+          }
+        }
+      }
+
+      // Count negative tone
+      const wellbeing = aggregates?.wellbeing_summary;
+      const valence = wellbeing?.valence_distribution;
+      if (valence) {
+        const neg = valence.NEGATIVE || 0;
+        const total = (valence.POSITIVE || 0) + (valence.NEUTRAL || 0) + neg + (valence.MIXED || 0);
+        negativeItems += neg;
+        if (totalItems === 0 && total > 0) {
+          totalItems += total;
+        }
+      }
+
+      // Collect topics
+      const topics = aggregates?.topic_distribution || [];
+      for (const topic of topics) {
+        const normalized = normalizeTopicLabel(topic.category);
+        topicCounts[normalized] = (topicCounts[normalized] || 0) + (topic.percentage || 0);
+      }
+    }
+
+    // Find top topic
+    let topTopic = null;
+    let topTopicShare = 0;
+    if (Object.keys(topicCounts).length > 0) {
+      const sorted = Object.entries(topicCounts)
+        .filter(([topic]) => topic !== UNCLASSIFIED_TOPIC)
+        .sort((a, b) => b[1] - a[1]);
+      if (sorted.length > 0) {
+        topTopic = sorted[0][0];
+        topTopicShare = sorted[0][1];
+      }
+    }
+
+    return {
+      adPercent: totalItems > 0 ? (adItems / totalItems) * 100 : 0,
+      negativePercent: totalItems > 0 ? (negativeItems / totalItems) * 100 : 0,
+      topTopic,
+      topTopicShare,
+      scanIds,
+    };
+  };
+
+  const recent = aggregateWindow(recentScans);
+  const earlier = aggregateWindow(earlierScans);
+
+  // Check if we have enough data
+  if (recent.scanIds.length < 2 || earlier.scanIds.length < 2) {
+    return createResponse(
+      false,
+      null,
+      'We need more scan history to describe changes over time. As you scan on different days, this section will summarize what actually shifted between earlier and more recent scans.',
+      0,
+      []
+    );
+  }
+
+  // Compute changes (only report if meaningful)
+  const changes = [];
+  
+  // Ads change (threshold: 5 percentage points)
+  const adChange = Math.abs(recent.adPercent - earlier.adPercent);
+  if (adChange >= 5) {
+    changes.push({
+      type: 'ads',
+      earlier: Math.round(earlier.adPercent),
+      recent: Math.round(recent.adPercent),
+    });
+  }
+
+  // Tone change (threshold: 5 percentage points)
+  const toneChange = Math.abs(recent.negativePercent - earlier.negativePercent);
+  if (toneChange >= 5) {
+    changes.push({
+      type: 'tone',
+      earlier: Math.round(earlier.negativePercent),
+      recent: Math.round(recent.negativePercent),
+    });
+  }
+
+  // Topic change (threshold: top topic changed OR new top topic share >= 15%)
+  if (recent.topTopic && earlier.topTopic) {
+    if (recent.topTopic !== earlier.topTopic) {
+      // Top topic changed
+      if (recent.topTopicShare >= 15) {
+        changes.push({
+          type: 'topic_change',
+          earlierTopic: earlier.topTopic,
+          recentTopic: recent.topTopic,
+        });
+      }
+    } else if (recent.topTopic === earlier.topTopic) {
+      // Same topic, check if it became more concentrated
+      const concentrationChange = recent.topTopicShare - earlier.topTopicShare;
+      if (concentrationChange >= 5 && recent.topTopicShare >= 15) {
+        changes.push({
+          type: 'topic_concentration',
+          topic: recent.topTopic,
+        });
+      }
+    }
+  }
+
+  // If no meaningful changes, still return data but indicate no changes
+  const allScanIds = [...new Set([...recent.scanIds, ...earlier.scanIds])];
+
   return createResponse(
     true,
     {
-      overlapPercent: stability.overlapPercent,
-      stability: stability.stability,
-      scansCompared: stability.scansCompared,
+      changes: changes.slice(0, 2), // Max 2 changes
+      hasChanges: changes.length > 0,
     },
     null,
-    stability.scansCompared,
-    topicsData.scansWithData.slice(0, stability.scansCompared)
+    allScanIds.length,
+    allScanIds
   );
 }
 
