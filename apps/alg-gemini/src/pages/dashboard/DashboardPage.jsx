@@ -1654,7 +1654,7 @@ const TalkTabPanel = () => {
   const emailError = touched && !emailTrimmed
     ? 'Please enter an email address.'
     : touched && !emailLooksValid
-      ? 'That email doesn\'t look quite right.'
+      ? "That email doesn't look quite right."
       : null;
 
   const onSubmit = async (e) => {
@@ -1668,7 +1668,7 @@ const TalkTabPanel = () => {
     const result = await submitWaitlistEmail({ email: emailTrimmed, source: 'talk_tab_waitlist' });
     if (result?.ok) {
       setStatus('success');
-      setMessage('Thanks — you\'re on the list.');
+      setMessage("Thanks, you're on the list.");
       return;
     }
 
@@ -1688,31 +1688,15 @@ const TalkTabPanel = () => {
           padding: 'clamp(1.5rem, 4vw, 2rem)',
         }}
       >
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <div className="mb-6">
           <h2 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
-            Talk to Your Algorithm
+            Talk to your algorithm (coming soon)
           </h2>
-          {/* FIX T3: Neutral slate pill to match dashboard design system */}
-          <span
-            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
-            style={{
-              background: 'rgba(148, 163, 184, 0.12)',
-              border: '1px solid rgba(148, 163, 184, 0.2)',
-              color: 'rgba(71, 85, 105, 0.85)',
-              letterSpacing: '0.08em',
-            }}
-          >
-            Coming Soon
-          </span>
         </div>
 
-        <div className="space-y-4" style={{ maxWidth: '720px' }}>
+        <div className="space-y-4 mb-8" style={{ maxWidth: '720px' }}>
           <p className="text-slate-700 leading-relaxed">
-            We\'re building a calm, evidence-first way to ask questions about your feed using your scan data.
-            Answers will cite what we observed, show uncertainty when it exists, and avoid speculation.
-          </p>
-          <p className="text-slate-700 leading-relaxed">
-            This will be a <span className="font-medium text-slate-800">beta</span>: designed with guardrails, and tuned to earn trust over time.
+            Ever wish you could ask your algorithm why it showed you what it showed you? This feature will let you ask questions about patterns in your feed using your scans as context. Join the waitlist to get access when it launches.
           </p>
         </div>
 
@@ -1725,18 +1709,8 @@ const TalkTabPanel = () => {
             boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)',
           }}
         >
-          <div className="mb-5">
-            <p className="text-base font-semibold text-slate-800 mb-1.5">Get early access</p>
-            <p className="text-sm text-slate-500">
-              No spam. We\'ll only email when it\'s ready to try.
-            </p>
-          </div>
-
-          <form onSubmit={onSubmit} className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
-            <div className="w-full flex-1">
-              <label className="block text-xs font-medium text-slate-600 mb-1.5" htmlFor="talk-waitlist-email">
-                Email
-              </label>
+          <form onSubmit={onSubmit} className="flex flex-col sm:flex-row gap-2 sm:items-center">
+            <div className="w-full sm:flex-1">
               <input
                 id="talk-waitlist-email"
                 type="email"
@@ -1761,7 +1735,7 @@ const TalkTabPanel = () => {
                   </p>
                 ) : (
                   <p className="text-xs text-slate-400">
-                    Use the address you\'d like early access sent to.
+                    We will email you when it is ready.
                   </p>
                 )}
               </div>
@@ -1776,9 +1750,10 @@ const TalkTabPanel = () => {
                 color: status === 'success' ? 'rgba(5, 150, 105, 0.95)' : '#FFFFFF',
                 border: status === 'success' ? '1px solid rgba(16, 185, 129, 0.2)' : 'none',
                 opacity: status === 'submitting' ? 0.9 : 1,
+                height: '42px', // Match input height
               }}
             >
-              {status === 'success' ? 'You\'re on the list' : status === 'submitting' ? 'Saving…' : 'Join waitlist'}
+              {status === 'success' ? "You're on the list" : status === 'submitting' ? 'Saving…' : 'Join waitlist'}
             </button>
           </form>
 
