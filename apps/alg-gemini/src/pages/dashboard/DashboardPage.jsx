@@ -213,7 +213,7 @@ const SectionHeader = ({ title, subtitle, label, subtext }) => (
  * DataCoverageBar - Shows data coverage stats for a tab
  * PHASE 6A: Tab-level data coverage line
  */
-const DataCoverageBar = ({ scans, scanDetails, tabId }) => {
+const DataCoverageBar = ({ scans, scanDetails, tabId, totalScanCount }) => {
   // Calculate aggregate stats
   const stats = useMemo(() => {
     if (!scans || scans.length === 0) return null;
@@ -234,12 +234,12 @@ const DataCoverageBar = ({ scans, scanDetails, tabId }) => {
     }
 
     return {
-      scanCount: scans.length,
+      scanCount: totalScanCount || 0, // Use unified scan count
       platformCount: platformSet.size,
       platforms: Array.from(platformSet),
       totalItems,
     };
-  }, [scans, scanDetails]);
+  }, [scans, scanDetails, totalScanCount]);
 
   if (!stats) return null;
 
@@ -1346,8 +1346,9 @@ const TabHero = ({
   isEvidenceExpanded,
   onToggleEvidence,
   scopeLabel,
+  totalScanCount,
 }) => {
-  const scanCount = scans?.length || 0;
+  const scanCount = totalScanCount || 0;
   const platformCount = platforms?.length ?? 0;
 
   const hasHeroData = heroDataResult?.hasData === true;
@@ -1789,6 +1790,7 @@ const DashboardPage = () => {
     fetchAllScanDetails,
     hasScans,
     platforms,
+    totalScanCount,
   } = useDashboardData();
 
   // Track which scan details we've loaded
@@ -2002,7 +2004,7 @@ const DashboardPage = () => {
             {/* Hide subtitle on Algorithm tab - hero has this info */}
             {!isOnAlgorithmTab && (
               <p className="text-text-muted">
-                Explore insights from your {scans.length} scan{scans.length !== 1 ? 's' : ''} across {[...new Set(scans.map(s => s.platform))].length} platform{[...new Set(scans.map(s => s.platform))].length !== 1 ? 's' : ''}.
+                Explore insights from your {totalScanCount} scan{totalScanCount !== 1 ? 's' : ''} across {platforms.length} platform{platforms.length !== 1 ? 's' : ''}.
               </p>
             )}
           </div>
@@ -2079,6 +2081,7 @@ const DashboardPage = () => {
                   isEvidenceExpanded={isHeroEvidenceExpanded}
                   onToggleEvidence={toggleHeroEvidence}
                   scopeLabel={tabScopeLabel}
+                  totalScanCount={totalScanCount}
                 />
               </FeatureMomentWrapper>
 
@@ -2126,7 +2129,7 @@ const DashboardPage = () => {
                   <ViewsGridWithCollapsing
                     views={currentViews}
                     viewDataResults={viewDataResults}
-                    scanCount={scans.length}
+                    scanCount={totalScanCount}
                     platformCount={platforms.length}
                     tabName={TABS.find((t) => t.id === activeTab)?.label || 'insights'}
                     tabId={activeTab}

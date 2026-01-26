@@ -109,6 +109,18 @@ export function useDashboardData() {
   const platforms = [...new Set(scans.map(s => s.platform?.toLowerCase()).filter(Boolean))];
   const hasMultiplePlatforms = platforms.length >= 2;
 
+  // Single source of truth for scan count: dedupe by scan id if available, otherwise use array length
+  const totalScanCount = (() => {
+    if (!scans || scans.length === 0) return 0;
+    // Dedupe by scan id if ids exist
+    const uniqueScanIds = new Set(scans.map(s => s.id).filter(Boolean));
+    if (uniqueScanIds.size > 0) {
+      return uniqueScanIds.size;
+    }
+    // Fallback to array length if no ids
+    return scans.length;
+  })();
+
   return {
     scans,
     scanDetails,
@@ -121,6 +133,7 @@ export function useDashboardData() {
     hasMultipleScans,
     platforms,
     hasMultiplePlatforms,
+    totalScanCount,
   };
 }
 
