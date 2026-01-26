@@ -2151,48 +2151,43 @@ export function getAlgoConfidentData(scans, scanDetails) {
     return createResponse(
       false,
       null,
-      'Need at least 2 scans to identify patterns.',
+      'We did not detect strong recurring themes in your scanned posts yet.',
       topicsData.scansUsed,
       topicsData.scansWithData
     );
   }
 
-  const insights = [];
+  // Get top 3 unique topics (deduplicated by normalized topic name)
+  const sortedTopics = Object.entries(topicsData.topics)
+    .filter(([topic]) => topic !== UNCLASSIFIED_TOPIC)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
 
-  if (stability.hasData && stability.overlapPercent > 60) {
-    insights.push('Your topic interests appear consistent across scans.');
-  }
-
-  if (Object.keys(topicsData.topics).length > 0) {
-    const sortedTopics = Object.entries(topicsData.topics)
-      .sort((a, b) => b[1] - a[1]);
-
-    const { labels, hadExcluded } = pickHeadlineSafeLabels(sortedTopics, {
-      getLabel: ([topic]) => topic,
-      limit: 1,
-    });
-
-    const topTopic = labels[0];
-    if (topTopic) {
-      insights.push(`Strong association with "${topTopic}" content.`);
-    } else if (hadExcluded) {
-      insights.push(`${FALLBACK_MIX_TOPICS_HEADLINE}.`);
-    }
-  }
-
-  if (insights.length === 0) {
+  if (sortedTopics.length === 0) {
     return createResponse(
       false,
       null,
-      'Not enough consistent patterns found.',
+      'We did not detect strong recurring themes in your scanned posts yet.',
       topicsData.scansUsed,
       topicsData.scansWithData
     );
   }
 
+  // Build summary themes and evidence
+  const summaryThemes = sortedTopics.map(([topic]) => topic);
+  const evidence = sortedTopics.map(([topic, percentage]) => ({
+    theme: topic,
+    percentage: Math.round(percentage * 100), // Convert to 0-100%
+    scanCount: topicsData.topicCounts[topic] || 0,
+  }));
+
   return createResponse(
     true,
-    { insights },
+    {
+      summaryThemes,
+      evidence,
+      isStable: stability.hasData && stability.overlapPercent > 60,
+    },
     null,
     topicsData.scansUsed,
     topicsData.scansWithData

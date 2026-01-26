@@ -671,6 +671,71 @@ const ViewCard = ({
       // If no advertiser count, fall through to standard handling
     }
 
+    // Special handling for algo-confident: show summary themes with evidence
+    if (view?.id === 'algo-confident' && data) {
+      const summaryThemes = data.summaryThemes || [];
+      const evidence = data.evidence || [];
+
+      if (summaryThemes.length === 0) {
+        return (
+          <div className="space-y-2">
+            <p className="text-sm text-slate-600">
+              We did not detect strong recurring themes in your scanned posts yet.
+            </p>
+            <p className="text-xs text-slate-500">
+              As you scan more, this section will summarize themes that repeatedly show up.
+            </p>
+          </div>
+        );
+      }
+
+      // Format theme list (up to 3)
+      const themeList = summaryThemes.slice(0, 3).join(', ');
+
+      // Build evidence line
+      let evidenceLine = null;
+      if (evidence.length > 0 && evidence.some(e => e.percentage !== undefined)) {
+        // We have percentage data
+        const evidenceParts = evidence
+          .filter(e => e.theme && e.percentage !== undefined)
+          .slice(0, 3)
+          .map(e => `${e.theme} appeared in ${e.percentage}% of scanned posts`);
+        
+        if (evidenceParts.length > 0) {
+          evidenceLine = `Evidence from your scans: ${evidenceParts.join(', ')}.`;
+        }
+      } else if (evidence.length > 0 && evidence.some(e => e.scanCount !== undefined)) {
+        // We have scan count data
+        const evidenceParts = evidence
+          .filter(e => e.theme && e.scanCount !== undefined)
+          .slice(0, 3)
+          .map(e => `${e.theme} appeared in ${e.scanCount} scan${e.scanCount !== 1 ? 's' : ''}`);
+        
+        if (evidenceParts.length > 0) {
+          evidenceLine = `Evidence from your scans: ${evidenceParts.join(', ')}.`;
+        }
+      } else if (evidence.length > 0) {
+        // We have themes but no counts
+        evidenceLine = 'Evidence from your scans: these themes appeared across multiple posts and accounts in your scans.';
+      } else {
+        // No evidence data
+        evidenceLine = 'Evidence from your scans: detailed evidence is not available for this card yet.';
+      }
+
+      return (
+        <div className="space-y-3">
+          <p className="text-sm text-slate-700 leading-relaxed">
+            The strongest recurring themes in your scanned feed are: {themeList}.
+          </p>
+          {evidenceLine && (
+            <p className="text-xs text-slate-500">
+              {evidenceLine}
+            </p>
+          )}
+        </div>
+      );
+    }
+
     // Standard handling for other text types
     let content = [];
     if (data.insights) {

@@ -1143,15 +1143,8 @@ export const dashboardCatalog = [
     sortOrder: 'supporting',
     whyExplanation: 'Compared topics over time to identify recurring themes.',
     takeaway: (data) => {
-      if (!data?.insights?.length) return null;
-
-      // Focus on persistence/consistency rather than repeating theme lists
-      const insights = data.insights.join(' ');
-      if (insights.toLowerCase().includes('consistent') || insights.toLowerCase().includes('stable')) {
-        return 'Certain themes persisted across multiple scans — stable patterns over time.';
-      }
-
-      return insights;
+      // New format: summary handled in ViewCard renderText
+      return null;
     },
     action: null,
   },
