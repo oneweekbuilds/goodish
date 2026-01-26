@@ -399,7 +399,8 @@ const ViewCard = ({
     }
 
     // Calculate summary stats from trend data
-    const values = trend.map(t => t.value).filter(v => typeof v === 'number');
+    // Trend data represents scans within the selected date range
+    const values = trend.map(t => t.value).filter(v => typeof v === 'number' && v !== null && v !== undefined);
     if (values.length === 0) {
       return (
         <p className="text-xs text-center text-slate-500">
@@ -413,23 +414,30 @@ const ViewCard = ({
     const avg = values.reduce((a, b) => a + b, 0) / values.length;
     const latest = values[values.length - 1];
 
+    // Format percent: 0 decimals if >= 10%, 1 decimal if < 10%
+    const formatPercent = (val) => {
+      if (val === null || val === undefined) return 'Not available';
+      if (val >= 10) return `${Math.round(val)}%`;
+      return `${val.toFixed(1)}%`;
+    };
+
     return (
       <div className="space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-            <p className="text-xs text-slate-500 mb-1">Current</p>
-            <p className="text-lg font-semibold text-slate-800">{Math.round(latest)}%</p>
-            <p className="text-xs text-slate-500 mt-1">Percent of posts</p>
+            <p className="text-xs text-slate-500 mb-1">Most recent scan</p>
+            <p className="text-lg font-semibold text-slate-800">{formatPercent(latest)}</p>
+            <p className="text-xs text-slate-500 mt-1">Percent of posts in the selected date range</p>
           </div>
           <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-            <p className="text-xs text-slate-500 mb-1">Average</p>
-            <p className="text-lg font-semibold text-slate-800">{Math.round(avg)}%</p>
-            <p className="text-xs text-slate-500 mt-1">Percent of posts</p>
+            <p className="text-xs text-slate-500 mb-1">Average across scans</p>
+            <p className="text-lg font-semibold text-slate-800">{formatPercent(avg)}</p>
+            <p className="text-xs text-slate-500 mt-1">Percent of posts in the selected date range</p>
           </div>
         </div>
         {min !== max && (
           <p className="text-xs text-center text-slate-500">
-            Range: {Math.round(min)}% to {Math.round(max)}% of posts
+            Range across scans: {formatPercent(min)} to {formatPercent(max)}
           </p>
         )}
       </div>
