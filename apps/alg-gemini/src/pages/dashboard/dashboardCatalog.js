@@ -649,13 +649,13 @@ export const dashboardCatalog = [
       const level = data.riskLevel.toLowerCase();
 
       if (level.includes('high') || level.includes('concentrated') || level.includes('narrow')) {
-        return 'A few topics dominated — most content reinforced the same narrow themes.';
+        return 'A few topics dominated. Most content reinforced the same narrow themes.';
       }
       if (level.includes('moderate') || level.includes('medium')) {
-        return 'Several topics recurred — content cycled through a moderate set of familiar themes.';
+        return 'Several topics recurred. Content cycled through a moderate set of familiar themes.';
       }
       if (level.includes('low') || level.includes('diverse') || level.includes('broad')) {
-        return 'Topics spread broadly — content covered many different themes without heavy concentration.';
+        return 'Topics spread broadly. Content covered many different themes without heavy concentration.';
       }
       return `During this window: ${data.riskLevel}`;
     },
@@ -739,7 +739,7 @@ export const dashboardCatalog = [
     tab: 'patterns',
     id: 'manipulative-patterns',
     title: 'How often attention tactics appeared',
-    description: 'Posts that used urgency language, engagement hooks, or other attention-grabbing patterns.',
+    description: 'Attention tactics are patterns like urgency, outrage, or clickbait phrasing that try to pull focus.',
     outputType: 'number_line',
     dataFn: 'getManipulativePatternsData',
     emptyStateType: 'needs_more_scans',
@@ -752,18 +752,18 @@ export const dashboardCatalog = [
       const total = data.totalPosts || 0;
 
       if (total < 20) {
-        return 'Limited sample — need more posts to assess attention tactics reliably.';
+        return 'Limited sample. Need more posts to assess attention tactics reliably.';
       }
       if (pct === 0) {
         return 'Attention-grabbing patterns were absent during this window.';
       }
       if (pct < 10) {
-        return 'Attention tactics appeared lightly — present but not a dominant pattern.';
+        return 'Attention tactics appeared lightly. Present but not a dominant pattern.';
       }
       if (pct < 25) {
-        return 'Attention tactics surfaced regularly — a noticeable presence in the feed.';
+        return 'Attention tactics surfaced regularly. A noticeable presence in the feed.';
       }
-      return 'Attention tactics recurred heavily — a consistent thread throughout.';
+      return 'Attention tactics recurred heavily. A consistent thread throughout.';
     },
     action: null, // FIX X3, PA9: Removed generic advice
   },

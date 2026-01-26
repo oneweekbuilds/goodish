@@ -1562,6 +1562,7 @@ export function aggregateManipulativePatterns(scans, scanDetails) {
     percentage: 0,
     scansUsed: 0,
     scansWithData: [],
+    byCreator: {}, // Track creators using attention tactics
   };
 
   if (!scans || scans.length === 0) {
@@ -1587,6 +1588,18 @@ export function aggregateManipulativePatterns(scans, scanDetails) {
       if (hasThemes || hasHooks) {
         result.flaggedItems++;
         scanHasData = true;
+        
+        // Track creator if available
+        const creatorId = item.creator?.id || item.creator?.handle || item.creator?.name;
+        if (creatorId) {
+          if (!result.byCreator[creatorId]) {
+            result.byCreator[creatorId] = {
+              count: 0,
+              displayName: item.creator?.name || item.creator?.handle || creatorId,
+            };
+          }
+          result.byCreator[creatorId].count++;
+        }
       }
     }
 

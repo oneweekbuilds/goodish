@@ -258,6 +258,26 @@ const ViewCard = ({
         {data.message && (
           <p className="text-sm text-slate-600">{data.message}</p>
         )}
+        {/* Examples for attention tactics */}
+        {view?.id === 'manipulative-patterns' && (
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            <p className="text-xs font-medium text-slate-600 mb-2">Examples from your scans</p>
+            {data.examples && data.examples.length > 0 ? (
+              <ul className="space-y-1">
+                {data.examples.map((example, idx) => (
+                  <li key={idx} className="text-xs text-slate-600 flex items-center gap-2">
+                    <span className="text-slate-400">•</span>
+                    <span>{example}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-xs text-slate-500">
+                We detected attention-style language, but this scan summary did not include specific examples. When examples are available, you will see the accounts or phrases that triggered the detection.
+              </p>
+            )}
+          </div>
+        )}
       </div>
     );
   };
@@ -613,6 +633,37 @@ const ViewCard = ({
     const status = data.status || data.breadth || data.diversity || data.stability || data.riskLevel || 'Unknown';
     const variant = getStatusVariant(status, data);
     const description = data.factors?.join('. ') || data.description;
+
+    // Special handling for patterns-echo-risk: show topic list
+    if (view?.id === 'patterns-echo-risk') {
+      const topTopics = data.topTopics || [];
+      const hasTopics = topTopics.length > 0;
+      
+      return (
+        <div className="space-y-3">
+          <StatusCard status={status} variant={variant} description={description} />
+          {hasTopics ? (
+            <div className="mt-4 pt-4 border-t border-slate-100">
+              <p className="text-xs font-medium text-slate-600 mb-2">Top topics observed</p>
+              <ul className="space-y-1">
+                {topTopics.map((topic, idx) => (
+                  <li key={idx} className="text-xs text-slate-600 flex items-center gap-2">
+                    <span className="text-slate-400">•</span>
+                    <span>{topic}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <div className="mt-4 pt-4 border-t border-slate-100">
+              <p className="text-xs text-slate-500">
+                We did not have enough topic detail in this scan summary to list examples yet. When topic extraction is available, this section will list the topics that appeared most often.
+              </p>
+            </div>
+          )}
+        </div>
+      );
+    }
 
     return <StatusCard status={status} variant={variant} description={description} />;
   };

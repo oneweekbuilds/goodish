@@ -1295,12 +1295,28 @@ export function getEchoRiskData(scans, scanDetails) {
     concentrationLabel = 'Low concentration';
   }
 
+  // Get top topics for examples (up to 5)
+  const topTopics = [];
+  if (topicsData.topics && Object.keys(topicsData.topics).length > 0) {
+    const sortedTopics = Object.entries(topicsData.topics)
+      .filter(([topic]) => topic !== UNCLASSIFIED_TOPIC)
+      .map(([topic, percentage]) => ({
+        name: topic,
+        percentage: percentage * 100, // Convert to 0-100%
+      }))
+      .sort((a, b) => b.percentage - a.percentage)
+      .slice(0, 5);
+    
+    topTopics.push(...sortedTopics.map(t => t.name));
+  }
+
   return createResponse(
     true,
     {
       riskLevel: concentrationLabel,
       factors: echoRisk.factors,
       topicCount: echoRisk.topicCount,
+      topTopics: topTopics.length > 0 ? topTopics : null,
     },
     null,
     topicsData.scansUsed,
@@ -2213,6 +2229,20 @@ export function getManipulativePatternsData(scans, scanDetails) {
     insight = `A notable portion (${percentDisplay}%) of posts contained patterns often associated with attention-grabbing tactics.`;
   }
 
+  // Collect examples: top accounts using attention tactics (up to 5)
+  const examples = [];
+  if (patternsData.byCreator && Object.keys(patternsData.byCreator).length > 0) {
+    const sortedCreators = Object.entries(patternsData.byCreator)
+      .map(([_, stats]) => ({
+        name: stats.displayName,
+        count: stats.count,
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+    
+    examples.push(...sortedCreators.map(c => c.name));
+  }
+
   const response = createResponse(
     true,
     {
@@ -2221,6 +2251,7 @@ export function getManipulativePatternsData(scans, scanDetails) {
       totalPosts: totalItems,
       insight,
       status,
+      examples: examples.length > 0 ? examples : null,
     },
     null,
     patternsData.scansUsed,
