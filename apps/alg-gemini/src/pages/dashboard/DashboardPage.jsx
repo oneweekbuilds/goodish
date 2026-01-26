@@ -852,7 +852,8 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                     </div>
 
                     {/* Evidence area */}
-                    {expandedSections.keyInsightEvidence && view && dataResult && (
+                    {/* Guard: Prevent crash when clicking "How we know this" if view/dataResult is missing or malformed */}
+                    {expandedSections.keyInsightEvidence && (
                       <div
                         className="px-6 pb-6 md:px-8 md:pb-8"
                         style={{
@@ -866,17 +867,24 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                           >
                             Supporting evidence
                           </p>
-                          <ViewCard
-                            view={view}
-                            dataResult={dataResult}
-                            scanCount={scanCount}
-                            platformCount={platformCount}
-                            accentColor="blue"
-                            isInline={true}
-                            hideTitle={true}
-                            hideDescription={true}
-                          scopeLabel={scopeLabel}
-                          />
+                          {/* Safety check: Ensure view and dataResult exist and have valid structure before rendering ViewCard */}
+                          {view && dataResult && typeof view === 'object' && typeof dataResult === 'object' ? (
+                            <ViewCard
+                              view={view}
+                              dataResult={dataResult}
+                              scanCount={scanCount}
+                              platformCount={platformCount}
+                              accentColor="blue"
+                              isInline={true}
+                              hideTitle={true}
+                              hideDescription={true}
+                              scopeLabel={scopeLabel}
+                            />
+                          ) : (
+                            <p className="text-sm text-slate-500">
+                              We do not have supporting evidence details for this card yet.
+                            </p>
+                          )}
                         </div>
                       </div>
                     )}
@@ -1555,7 +1563,8 @@ const TabHero = ({
         </div>
 
         {/* Evidence area */}
-        {isEvidenceExpanded && heroView && heroDataResult && (
+        {/* Guard: Prevent crash when clicking "How we know this" in hero if heroView/heroDataResult is missing or malformed */}
+        {isEvidenceExpanded && (
           <div
             className="mt-5 rounded-2xl"
             style={{
@@ -1564,17 +1573,24 @@ const TabHero = ({
               padding: '1.25rem',
             }}
           >
-            <ViewCard
-              view={heroView}
-              dataResult={heroDataResult}
-              scanCount={scanCount}
-              platformCount={platformCount}
-              accentColor="blue"
-              isInline={true}
-              hideTitle={true}
-              hideDescription={true}
-              scopeLabel={scopeLabel}
-            />
+            {/* Safety check: Ensure heroView and heroDataResult exist and have valid structure before rendering ViewCard */}
+            {heroView && heroDataResult && typeof heroView === 'object' && typeof heroDataResult === 'object' ? (
+              <ViewCard
+                view={heroView}
+                dataResult={heroDataResult}
+                scanCount={scanCount}
+                platformCount={platformCount}
+                accentColor="blue"
+                isInline={true}
+                hideTitle={true}
+                hideDescription={true}
+                scopeLabel={scopeLabel}
+              />
+            ) : (
+              <p className="text-sm text-slate-500">
+                We do not have supporting evidence details for this card yet.
+              </p>
+            )}
           </div>
         )}
       </div>

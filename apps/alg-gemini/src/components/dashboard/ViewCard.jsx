@@ -105,6 +105,11 @@ const ViewCard = ({
   hideDescription = false,
   scopeLabel = null,
 }) => {
+  // Guard: Prevent crash if view is missing or malformed (defensive check for evidence rendering)
+  if (!view || typeof view !== 'object') {
+    return null;
+  }
+
   const {
     title,
     description,
