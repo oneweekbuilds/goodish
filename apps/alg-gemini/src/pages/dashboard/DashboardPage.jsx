@@ -471,8 +471,8 @@ const TAB_STORY_HEADERS = {
     },
     moreDetails: {
       label: 'Additional detail',
-      title: 'Viewpoint distribution from this window',
-      subtext: 'Low-confidence keyword patterns from this window. Measures exposure skew, not content quality.',
+      title: 'How this is measured',
+      subtext: 'We look for political terms in post text and captions within your scans. We count how often those terms appear and which accounts they appear from. This does not estimate your viewpoint. It only summarizes what appeared in the feed content you scanned.',
     },
     summary: {
       label: 'Summary',
@@ -699,8 +699,8 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
       : 'Additional ad analysis from this window.';
   } else if (tabId === 'politics') {
     moreDetailsSubtitle = hasMoreDetailsContent
-      ? 'Platform-by-platform breakdown and additional viewpoint estimates.'
-      : 'Additional political keyword analysis from this window.';
+      ? 'Platform-by-platform breakdown and additional analysis.'
+      : 'No political terms were detected in your scanned posts yet. If that changes, this section will explain what was detected and how it was counted.';
   }
 
   return (
@@ -945,7 +945,8 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
       )}
 
       {/* MORE DETAILS - Context + Speculation behind calm accordion */}
-      {hasMoreDetailsContent && (
+      {/* For Politics tab, always show this section to display "How this is measured" */}
+      {(hasMoreDetailsContent || tabId === 'politics') && (
         <section>
           <ChapterContainer variant="accent">
             <button
@@ -1015,15 +1016,24 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                   </div>
                 )}
 
-                {speculationCards.length > 0 && (
+                {/* For Politics tab, always show the "How this is measured" explanation */}
+                {(speculationCards.length > 0 || tabId === 'politics') && (
                   <div>
                     <SectionHeader
                       label={tabHeaders.moreDetails.label}
                       title={tabHeaders.moreDetails.title}
                       subtext={tabHeaders.moreDetails.subtext}
                     />
-                    <div className="mt-4 space-y-4">
-                      {speculationCards.map((view) => {
+                    {speculationCards.length === 0 && tabId === 'politics' && (
+                      <div className="mt-4 p-4 rounded-lg bg-slate-50 border border-slate-200">
+                        <p className="text-sm text-slate-600">
+                          No political terms were detected in your scanned posts yet. If that changes, this section will explain what was detected and how it was counted.
+                        </p>
+                      </div>
+                    )}
+                    {speculationCards.length > 0 && (
+                      <div className="mt-4 space-y-4">
+                        {speculationCards.map((view) => {
                         const dataResult = viewDataResults[view.id];
                         const takeawayText = dataResult?.hasData && typeof view.takeaway === 'function'
                           ? view.takeaway(dataResult?.data)
@@ -1060,7 +1070,8 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                           </div>
                         );
                       })}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
