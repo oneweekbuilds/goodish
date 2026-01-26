@@ -465,9 +465,20 @@ export function getAdConcentrationData(scans, scanDetails) {
     qualitativeLabel = 'Your promotions come from a mix of sources';
   }
 
+  // Include top advertisers list (up to 5) if available
+  const topAdvertisers = rows.slice(0, 5).map(r => ({
+    name: r.creator || r.name || r.domain || r.handle || 'Unknown',
+    count: r.promoPosts || 0,
+  })).filter(a => a.name && a.name !== 'Unknown');
+
   return createResponse(
     true,
-    { qualitativeLabel, top5Count: Math.min(rows.length, 5) },
+    { 
+      qualitativeLabel, 
+      top5Count: Math.min(rows.length, 5),
+      advertisers: topAdvertisers.length > 0 ? topAdvertisers : null,
+      advertiserCount: rows.length,
+    },
     null,
     result.scansUsed,
     result.scansWithData

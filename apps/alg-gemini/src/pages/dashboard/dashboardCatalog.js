@@ -50,7 +50,7 @@ export const EMPTY_STATE_TYPES = {
 // Tab-level trust sentences - grounded in observation, not identity
 // FIX X2, P1, C1: Use consistent observational language without implying single vs multiple scans
 export const TAB_TRUST_SENTENCES = {
-  ads: "Promotional content observed here — not what you buy or want.",
+  ads: "This view estimates how often ads and sales-driven posts appeared in the content you scanned. It reflects what showed up, not what you believe or want.",
   politics: "Political keywords observed here — measures exposure, not your beliefs.",
   patterns: "Topics observed here — what surfaced, not what you seek.",
   creators: "Accounts observed here — what appeared, not who you are.",
@@ -148,8 +148,8 @@ export const dashboardCatalog = [
   {
     tab: 'ads',
     id: 'ads-by-platform',
-    title: 'Where the selling pressure sits',
-    description: 'Which platform has the highest ad rate in your scans.',
+    title: 'Ads by platform',
+    description: 'Percent of posts on each platform that were classified as ads.',
     outputType: 'bar',
     dataFn: 'getPlatformPromoData',
     emptyStateType: 'needs_broader_behavior',
@@ -187,7 +187,7 @@ export const dashboardCatalog = [
     tab: 'ads',
     id: 'ads-likely-promo',
     title: 'Unlabeled Promotional Content',
-    description: 'Content that matched promotional patterns but lacked platform ad labels.',
+    description: 'Ever see a post that is not labeled as an ad, but still feels like someone is trying to sell something? We track those here as promotional posts when the language strongly suggests marketing or sponsorship.',
     outputType: 'number',
     dataFn: 'getLikelyPromoData',
     emptyStateType: 'needs_more_scans',

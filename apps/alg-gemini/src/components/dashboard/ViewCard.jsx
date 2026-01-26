@@ -521,6 +521,43 @@ const ViewCard = ({
       );
     }
 
+    // Special handling for ads-concentration: show advertiser list or fallback
+    if (view?.id === 'ads-concentration' && data) {
+      const advertiserCount = data.advertiserCount || 0;
+      const advertisers = data.advertisers || [];
+      
+      // Advertiser list or fallback message
+      if (advertisers.length > 0) {
+        return (
+          <div className="pt-2 border-t border-slate-100">
+            <p className="text-xs text-slate-500 mb-2 font-medium">
+              Advertisers observed: {advertiserCount}
+            </p>
+            <ul className="space-y-1">
+              {advertisers.map((advertiser, idx) => (
+                <li key={idx} className="text-xs text-slate-500 flex items-center gap-2">
+                  <span className="text-slate-400">{idx + 1}.</span>
+                  <span>{advertiser.name}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      } else if (advertiserCount > 0) {
+        return (
+          <div className="pt-2 border-t border-slate-100">
+            <p className="text-xs text-slate-500 mb-1 font-medium">
+              Advertisers observed: {advertiserCount}
+            </p>
+            <p className="text-xs text-slate-400 italic">
+              This scan summary did not include advertiser names. Future versions will list them when available.
+            </p>
+          </div>
+        );
+      }
+      // If no advertiser count, fall through to standard handling
+    }
+
     // Standard handling for other text types
     let content = [];
     if (data.insights) {

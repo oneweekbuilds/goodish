@@ -1368,20 +1368,40 @@ const TabHero = ({
                          heroDataResult?.chartQuality?.quality === 'CHART_QUALITY_OK';
 
   let headline = null;
-  if (hasHeroData && heroQualityOk && typeof heroView?.takeaway === 'function') {
-    try {
-      headline = heroView.takeaway(heroDataResult?.data);
-    } catch (err) {
-      console.error(`Error computing hero takeaway for ${heroView?.id}:`, err);
-      headline = null;
+  let bodyText = null;
+  
+  // Special handling for Ads tab: static title, takeaway as body
+  if (tabId === 'ads') {
+    headline = 'Ads and promotions in your feed';
+    if (hasHeroData && heroQualityOk && typeof heroView?.takeaway === 'function') {
+      try {
+        bodyText = heroView.takeaway(heroDataResult?.data);
+      } catch (err) {
+        console.error(`Error computing hero takeaway for ${heroView?.id}:`, err);
+        bodyText = null;
+      }
     }
-  }
-
-  // FIX: Only show fallback if we actually have quality-approved data
-  if (!headline) {
-    headline = (hasHeroData && heroQualityOk)
-      ? 'We observed a measurable pattern in your scans.'
-      : 'Not enough data yet to quantify this from your scans.';
+    if (!bodyText) {
+      bodyText = (hasHeroData && heroQualityOk)
+        ? 'We observed a measurable pattern in your scans.'
+        : 'Not enough data yet to quantify this from your scans.';
+    }
+  } else {
+    // Other tabs: takeaway as headline
+    if (hasHeroData && heroQualityOk && typeof heroView?.takeaway === 'function') {
+      try {
+        headline = heroView.takeaway(heroDataResult?.data);
+      } catch (err) {
+        console.error(`Error computing hero takeaway for ${heroView?.id}:`, err);
+        headline = null;
+      }
+    }
+    // FIX: Only show fallback if we actually have quality-approved data
+    if (!headline) {
+      headline = (hasHeroData && heroQualityOk)
+        ? 'We observed a measurable pattern in your scans.'
+        : 'Not enough data yet to quantify this from your scans.';
+    }
   }
 
   const contextLine = TAB_TRUST_SENTENCES[tabId] || null;
@@ -1482,6 +1502,20 @@ const TabHero = ({
             {headline}
           </h2>
         </div>
+
+        {/* Body text for Ads tab (takeaway as body) */}
+        {bodyText && tabId === 'ads' && (
+          <p
+            className="text-slate-600 mb-4"
+            style={{
+              fontSize: '15px',
+              lineHeight: 1.65,
+              maxWidth: '680px',
+            }}
+          >
+            {bodyText}
+          </p>
+        )}
 
         {/* Optional single context line */}
         {contextLine && (
