@@ -296,7 +296,7 @@ export function getLikelyPromoData(scans, scanDetails) {
         topSignals: [],
         disclaimer: influence.disclaimer,
         confidence: influence.confidence,
-        message: 'No potential promotional signals detected in your feed.',
+        message: 'No unlabeled promotional posts were detected in the selected date range.',
       },
       null,
       influence.scansUsed,
@@ -309,7 +309,9 @@ export function getLikelyPromoData(scans, scanDetails) {
     {
       possibleInfluencePercent: influence.possibleInfluenceShare,
       possibleInfluenceCount: influence.possibleInfluence,
+      totalPosts: influence.totalItems,
       topSignals: influence.topSignals,
+      examples: influence.examples,
       disclaimer: influence.disclaimer,
       confidence: influence.confidence,
     },

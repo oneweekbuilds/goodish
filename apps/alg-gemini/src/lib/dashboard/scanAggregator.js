@@ -1300,6 +1300,7 @@ export function summarizeInfluence(scans, scanDetails) {
   let labeledAds = 0;
   let possibleInfluence = 0;
   const allSignals = {};
+  const creatorCounts = {}; // Track creators posting promotional content
   let scansUsed = 0;
 
   for (const scan of scans) {
@@ -1322,6 +1323,20 @@ export function summarizeInfluence(scans, scanDetails) {
     for (const [signal, count] of Object.entries(possible.signalBreakdown)) {
       allSignals[signal] = (allSignals[signal] || 0) + count;
     }
+
+    // Track creators from flagged items
+    for (const flaggedItem of possible.items) {
+      const creatorId = normalizeCreatorId(flaggedItem.creator || flaggedItem.account);
+      if (creatorId) {
+        if (!creatorCounts[creatorId]) {
+          creatorCounts[creatorId] = {
+            displayName: flaggedItem.creator?.name || flaggedItem.creator?.handle || flaggedItem.account?.account_display_name || creatorId,
+            count: 0,
+          };
+        }
+        creatorCounts[creatorId].count++;
+      }
+    }
   }
 
   // Top signals
@@ -1333,6 +1348,17 @@ export function summarizeInfluence(scans, scanDetails) {
       count,
     }));
 
+  // Top creators with promotional content (up to 5)
+  const topCreators = Object.entries(creatorCounts)
+    .map(([_, stats]) => ({
+      name: stats.displayName,
+      count: stats.count,
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  const examples = topCreators.map(c => c.name);
+
   return {
     totalItems,
     labeledAds,
@@ -1340,6 +1366,7 @@ export function summarizeInfluence(scans, scanDetails) {
     possibleInfluence,
     possibleInfluenceShare: totalItems > 0 ? Math.round((possibleInfluence / totalItems) * 100) : 0,
     topSignals,
+    examples: examples.length > 0 ? examples : null,
     scansUsed,
     hasData: scansUsed > 0 && totalItems > 0,
     confidence: 'LOW',

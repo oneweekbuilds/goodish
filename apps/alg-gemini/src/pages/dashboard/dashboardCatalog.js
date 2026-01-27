@@ -187,19 +187,21 @@ export const dashboardCatalog = [
     tab: 'ads',
     id: 'ads-likely-promo',
     title: 'Unlabeled Promotional Content',
-    description: 'Ever see a post that is not labeled as an ad, but still feels like someone is trying to sell something? We track those here as promotional posts when the language strongly suggests marketing or sponsorship.',
+    description: 'Posts that were not labeled as ads but contained promotional signals like discount codes, affiliate links, or product mentions.',
     outputType: 'number',
     dataFn: 'getLikelyPromoData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     collapsedByDefault: true,
     confidenceDisclaimer: true,
-    whyExplanation: 'Detected via patterns like discount codes or affiliate links.',
+    whyExplanation: 'Flagged posts containing discount codes, affiliate links (like "link in bio" or tracking URLs), disclosure keywords ("sponsored", "partnership"), or product mentions in posts not labeled as ads.',
     takeaway: (data) => {
       if (data?.possibleInfluencePercent === undefined) return null;
       const pct = data.possibleInfluencePercent;
-      if (pct === 0) return 'No obvious unlabeled promotional signals detected.';
-      return `Approximately ${pct}% showed promotional patterns without ad labels.`;
+      if (pct === 0) return 'No unlabeled promotional posts were detected in the selected date range.';
+      if (pct < 5) return `Small presence. About ${pct}% of posts showed promotional patterns without ad labels.`;
+      if (pct < 15) return `Moderate presence. About ${pct}% of posts showed promotional patterns without ad labels.`;
+      return `Notable presence. About ${pct}% of posts showed promotional patterns without ad labels.`;
     },
     action: null,
   },

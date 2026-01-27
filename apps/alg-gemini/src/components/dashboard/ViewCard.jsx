@@ -201,6 +201,7 @@ const ViewCard = ({
     // PHASE 6A: Handle possibleInfluencePercent for promotion heuristic
     const value = data.currentPercent ?? data.concentration ?? data.discoveryRate ?? data.top3Percent ?? data.possibleInfluencePercent;
     const isAttentionTactics = data?.flaggedCount !== undefined && data?.totalPosts !== undefined && data?.status !== undefined;
+    const isPromoContent = view?.id === 'ads-likely-promo';
 
     return (
       <div className="space-y-4">
@@ -215,15 +216,18 @@ const ViewCard = ({
         {isAttentionTactics && (
           <p className="text-xs text-slate-500 text-center">Flagged during this window</p>
         )}
+        {isPromoContent && data.totalPosts && (
+          <p className="text-xs text-slate-500 text-center">Percent of posts in the selected date range</p>
+        )}
         {/* PHASE 6A: Show top signals for promotion heuristic */}
         {data.topSignals && data.topSignals.length > 0 && (
           <div className="mt-3 pt-3 border-t border-slate-100">
-            <p className="text-xs font-medium text-slate-500 mb-2">Why flagged:</p>
+            <p className="text-xs font-medium text-slate-500 mb-2">How we identified this:</p>
             <ul className="space-y-1">
               {data.topSignals.slice(0, 3).map((signal, i) => (
                 <li key={i} className="text-xs text-slate-600 flex items-center gap-2">
                   <span className="text-slate-400">•</span>
-                  {signal.signal} ({signal.count})
+                  {signal.signal} ({signal.count} posts)
                 </li>
               ))}
             </ul>
@@ -232,6 +236,26 @@ const ViewCard = ({
         {/* PHASE 6A: Show message if no promotional signals */}
         {data.message && (
           <p className="text-sm text-slate-600">{data.message}</p>
+        )}
+        {/* Examples for promotional content */}
+        {isPromoContent && (
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            <p className="text-xs font-medium text-slate-600 mb-2">Examples from your scans</p>
+            {data.examples && data.examples.length > 0 ? (
+              <ul className="space-y-1">
+                {data.examples.map((example, idx) => (
+                  <li key={idx} className="text-xs text-slate-600 flex items-center gap-2">
+                    <span className="text-slate-400">•</span>
+                    <span>{example}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-xs text-slate-500">
+                No specific account examples available in this scan summary.
+              </p>
+            )}
+          </div>
         )}
         {/* Examples for attention tactics */}
         {view?.id === 'manipulative-patterns' && (
