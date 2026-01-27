@@ -1,5 +1,6 @@
 import React from 'react';
 import Logo from './Logo';
+import WaitlistSignup from './WaitlistSignup';
 
 /**
  * Coming Soon Homepage
@@ -10,36 +11,8 @@ import Logo from './Logo';
  * - Mid-page waitlist signup section
  * - Footer waitlist signup section
  *
- * PLACEHOLDER: Waitlist forms will be connected to Beehiiv in Phase 2.
+ * Waitlist powered by Beehiiv Magic Link with AlgorithmLens UTM tracking.
  */
-
-// Temporary placeholder component for waitlist form
-// This will be replaced with actual Beehiiv integration
-const WaitlistSignupPlaceholder = ({ placement }) => {
-  return (
-    <div className="max-w-md mx-auto">
-      <div className="flex flex-col sm:flex-row gap-3">
-        <input
-          type="email"
-          placeholder="Enter your email"
-          className="flex-1 px-4 py-3 rounded-full border-2 border-primary-blue/30 bg-bg-page/50 text-text-main placeholder:text-text-muted focus:outline-none focus:border-primary-blue transition-colors"
-          disabled
-          aria-label="Email address for waitlist"
-        />
-        <button
-          className="px-6 py-3 bg-primary-blue text-white rounded-full font-bold shadow-glow hover:shadow-lg hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled
-          aria-label="Join the waitlist"
-        >
-          Join Waitlist
-        </button>
-      </div>
-      <p className="text-xs text-text-muted mt-2 text-center">
-        [Placeholder - Beehiiv integration pending]
-      </p>
-    </div>
-  );
-};
 
 const ComingSoonHomepage = () => {
   return (
@@ -64,11 +37,11 @@ const ComingSoonHomepage = () => {
           </p>
 
           <p className="text-lg text-text-muted mb-12 max-w-xl mx-auto">
-            Join the waitlist to be the first to try AlgorithmLens when we launch
+            Join the AlgorithmLens waitlist to be the first to try it when we launch
           </p>
 
           {/* Waitlist Form #1 - Hero */}
-          <WaitlistSignupPlaceholder placement="hero" />
+          <WaitlistSignup placement="hero" />
         </div>
       </section>
 
@@ -123,14 +96,14 @@ const ComingSoonHomepage = () => {
       <section className="py-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-text-main mb-6">
-            Be First to Know
+            Get Early Access
           </h2>
           <p className="text-lg text-text-muted mb-8 max-w-xl mx-auto">
-            Join the waitlist and we'll notify you as soon as AlgorithmLens launches. No spam, just updates.
+            Join the AlgorithmLens waitlist and we'll notify you as soon as we launch. No spam, just updates.
           </p>
 
           {/* Waitlist Form #2 - Mid-page */}
-          <WaitlistSignupPlaceholder placement="mid-page" />
+          <WaitlistSignup placement="mid-page" />
         </div>
       </section>
 
@@ -194,11 +167,11 @@ const ComingSoonHomepage = () => {
             Ready to See What Algorithms See?
           </h2>
           <p className="text-lg text-text-muted mb-8">
-            Join the waitlist for early access to AlgorithmLens
+            Join the AlgorithmLens waitlist for early access
           </p>
 
           {/* Waitlist Form #3 - Footer */}
-          <WaitlistSignupPlaceholder placement="footer" />
+          <WaitlistSignup placement="footer" />
         </div>
       </section>
 
