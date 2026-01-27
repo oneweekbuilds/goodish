@@ -1,5 +1,5 @@
-import React from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Logo from './components/Logo';
 import HeroSection from './components/Hero/HeroSection';
@@ -23,9 +23,65 @@ import HistoryPage from './pages/HistoryPage';
 // Dashboard
 import DashboardPage from './pages/dashboard/DashboardPage';
 
+// Coming Soon Mode - Minimal Overlay
+import { isComingSoon } from './config/comingSoon';
+import ComingSoonBanner from './components/ComingSoonBanner';
+import WaitlistSignup from './components/WaitlistSignup';
+
 function App() {
+  const comingSoonMode = isComingSoon();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [showRedirectMessage, setShowRedirectMessage] = useState(false);
+
+  // Route guard: Block direct URL access to gated routes when Coming Soon mode is enabled
+  useEffect(() => {
+    if (comingSoonMode && location.pathname !== '/') {
+      // Check if this route is gated
+      const isGated = [
+        '/dashboard',
+        '/start',
+        '/scan',
+        '/history',
+        '/pricing',
+      ].some(route => location.pathname.startsWith(route));
+
+      if (isGated) {
+        // Redirect to home
+        navigate('/', { replace: true });
+        // Show message
+        setShowRedirectMessage(true);
+        // Hide message after 5 seconds
+        setTimeout(() => setShowRedirectMessage(false), 5000);
+      }
+    }
+  }, [location.pathname, comingSoonMode, navigate]);
+
   return (
     <div className="min-h-screen bg-bg-page font-sans text-text-main selection:bg-primary-blue/20">
+      {/* Coming Soon Banner - Only shows when Coming Soon mode is enabled */}
+      {comingSoonMode && <ComingSoonBanner />}
+
+      {/* Redirect Message - Shows when user tries to access gated route */}
+      {showRedirectMessage && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-md w-full mx-4">
+          <div className="bg-primary-blue/10 border border-primary-blue/30 rounded-lg p-4 shadow-lg backdrop-blur-sm">
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-sm text-text-main font-medium flex-1">
+                AlgorithmLens is coming soon. Join the waitlist.
+              </p>
+              <button
+                onClick={() => setShowRedirectMessage(false)}
+                className="text-text-muted hover:text-text-main transition-colors"
+                aria-label="Dismiss message"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Navbar />
 
       <main>
@@ -36,11 +92,42 @@ function App() {
             element={
               <>
                 <HeroSection />
+
+                {/* Waitlist Block #1 - Immediately after hero section (Coming Soon mode only) */}
+                {comingSoonMode && (
+                  <section className="py-16 bg-bg-page">
+                    <div className="max-w-4xl mx-auto px-6 text-center">
+                      <h3 className="text-2xl md:text-3xl font-bold text-text-main mb-4">
+                        Join the Waitlist
+                      </h3>
+                      <p className="text-text-muted mb-8">
+                        Get early access when AlgorithmLens launches
+                      </p>
+                      <WaitlistSignup id="waitlist" />
+                    </div>
+                  </section>
+                )}
+
                 <SectionTracking />
                 <LabelsPreviewSection />
                 <SectionLoop />
                 <HeroDashboardPreview />
                 <HowItWorksSection />
+
+                {/* Waitlist Block #2 - Near bottom, before final CTA (Coming Soon mode only) */}
+                {comingSoonMode && (
+                  <section className="py-16 bg-bg-page/50">
+                    <div className="max-w-4xl mx-auto px-6 text-center">
+                      <h3 className="text-2xl md:text-3xl font-bold text-text-main mb-4">
+                        Don't Miss the Launch
+                      </h3>
+                      <p className="text-text-muted mb-8">
+                        Be among the first to experience AlgorithmLens
+                      </p>
+                      <WaitlistSignup id="waitlist-footer" />
+                    </div>
+                  </section>
+                )}
 
                 <section className="py-26 mt-20 bg-bg-page text-center">
                   <div className="max-w-4xl mx-auto px-6">
@@ -51,7 +138,7 @@ function App() {
                       Upload a screen recording of your feed to generate your AlgorithmLens dashboard. Private and secure.
                     </p>
 
-                    <Link 
+                    <Link
                       to="/start"
                       className="inline-block px-10 py-4 bg-primary-blue text-white rounded-full font-bold text-lg shadow-glow hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                     >

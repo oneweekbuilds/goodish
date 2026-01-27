@@ -1,0 +1,118 @@
+import React, { useState } from 'react';
+
+/**
+ * WaitlistSignup Component
+ *
+ * Minimal waitlist signup for Coming Soon mode.
+ * Uses Beehiiv Magic Link for subscription (no backend needed).
+ *
+ * Beehiiv Magic Link:
+ * https://magic.beehiiv.com/v1/607214bf-384d-41dc-bc24-ac0c304c62b4
+ *
+ * UTM Parameters:
+ * - utm_source=algorithmlens
+ * - utm_medium=waitlist
+ * - utm_campaign=coming_soon
+ */
+
+const WaitlistSignup = ({ id }) => {
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  // Simple email validation
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setError('');
+
+    // Validate email
+    if (!email.trim()) {
+      setError('Please enter your email address');
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    // Show loading state
+    setIsSubmitting(true);
+
+    // Build Beehiiv Magic Link URL with UTM parameters
+    const beehiivBaseUrl = 'https://magic.beehiiv.com/v1/607214bf-384d-41dc-bc24-ac0c304c62b4';
+    const params = new URLSearchParams({
+      email: email.trim(),
+      utm_source: 'algorithmlens',
+      utm_medium: 'waitlist',
+      utm_campaign: 'coming_soon',
+    });
+
+    const subscriptionUrl = `${beehiivBaseUrl}?${params.toString()}`;
+
+    // Redirect to Beehiiv Magic Link
+    window.location.href = subscriptionUrl;
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSubmit(e);
+    }
+  };
+
+  return (
+    <div className="max-w-md mx-auto" id={id}>
+      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+        <div className="flex-1">
+          <label htmlFor={`waitlist-email-${id}`} className="sr-only">
+            Email address for AlgorithmLens waitlist
+          </label>
+          <input
+            id={`waitlist-email-${id}`}
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Enter your email"
+            className="w-full px-4 py-3 rounded-full border-2 border-primary-blue/30 bg-bg-page text-text-main placeholder:text-text-muted focus:outline-none focus:border-primary-blue transition-colors"
+            disabled={isSubmitting}
+            aria-label="Email address for AlgorithmLens waitlist"
+            aria-required="true"
+            aria-invalid={error ? 'true' : 'false'}
+            aria-describedby={error ? `waitlist-error-${id}` : undefined}
+          />
+        </div>
+        <button
+          type="submit"
+          className="px-6 py-3 bg-primary-blue text-white rounded-full font-bold shadow-glow hover:shadow-lg hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+          disabled={isSubmitting}
+          aria-label="Join the AlgorithmLens waitlist"
+        >
+          {isSubmitting ? 'Joining...' : 'Join Waitlist'}
+        </button>
+      </form>
+
+      {error && (
+        <div
+          id={`waitlist-error-${id}`}
+          className="mt-3 text-sm text-red-500 text-center"
+          role="alert"
+          aria-live="polite"
+        >
+          {error}
+        </div>
+      )}
+
+      <p className="text-xs text-text-muted mt-3 text-center">
+        Be the first to know when AlgorithmLens launches
+      </p>
+    </div>
+  );
+};
+
+export default WaitlistSignup;
