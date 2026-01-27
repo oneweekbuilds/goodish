@@ -66,8 +66,8 @@ const WaitlistSignup = ({ id }) => {
   };
 
   return (
-    <div className="max-w-md mx-auto" id={id}>
-      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+    <div className="max-w-xl mx-auto" id={id}>
+      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1">
           <label htmlFor={`waitlist-email-${id}`} className="sr-only">
             Email address for AlgorithmLens waitlist
@@ -79,7 +79,7 @@ const WaitlistSignup = ({ id }) => {
             onChange={(e) => setEmail(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Enter your email"
-            className="w-full px-4 py-3 rounded-full border-2 border-primary-blue/30 bg-bg-page text-text-main placeholder:text-text-muted focus:outline-none focus:border-primary-blue transition-colors"
+            className="w-full px-6 py-4 rounded-full border-2 border-primary-blue/30 bg-bg-page text-text-main placeholder:text-text-muted focus:outline-none focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 transition-all shadow-sm"
             disabled={isSubmitting}
             aria-label="Email address for AlgorithmLens waitlist"
             aria-required="true"
@@ -89,7 +89,7 @@ const WaitlistSignup = ({ id }) => {
         </div>
         <button
           type="submit"
-          className="px-6 py-3 bg-primary-blue text-white rounded-full font-bold shadow-glow hover:shadow-lg hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+          className="px-8 py-4 bg-primary-blue text-white rounded-full font-bold text-base shadow-glow hover:shadow-lg hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 whitespace-nowrap"
           disabled={isSubmitting}
           aria-label="Join the AlgorithmLens waitlist"
         >
@@ -100,17 +100,13 @@ const WaitlistSignup = ({ id }) => {
       {error && (
         <div
           id={`waitlist-error-${id}`}
-          className="mt-3 text-sm text-red-500 text-center"
+          className="mt-4 text-sm text-red-500 text-center font-medium"
           role="alert"
           aria-live="polite"
         >
           {error}
         </div>
       )}
-
-      <p className="text-xs text-text-muted mt-3 text-center">
-        Be the first to know when AlgorithmLens launches
-      </p>
     </div>
   );
 };

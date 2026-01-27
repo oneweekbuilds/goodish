@@ -95,12 +95,12 @@ function App() {
 
                 {/* Waitlist Block #1 - Immediately after hero section (Coming Soon mode only) */}
                 {comingSoonMode && (
-                  <section className="py-16 bg-bg-page">
+                  <section className="py-20 bg-bg-page">
                     <div className="max-w-4xl mx-auto px-6 text-center">
-                      <h3 className="text-2xl md:text-3xl font-bold text-text-main mb-4">
+                      <h3 className="text-3xl md:text-4xl font-bold text-text-main mb-3">
                         Join the Waitlist
                       </h3>
-                      <p className="text-text-muted mb-8">
+                      <p className="text-lg text-text-muted mb-10">
                         Get early access when AlgorithmLens launches
                       </p>
                       <WaitlistSignup id="waitlist" />
@@ -116,13 +116,13 @@ function App() {
 
                 {/* Waitlist Block #2 - Near bottom, before final CTA (Coming Soon mode only) */}
                 {comingSoonMode && (
-                  <section className="py-16 bg-bg-page/50">
+                  <section className="py-20 bg-bg-page/50">
                     <div className="max-w-4xl mx-auto px-6 text-center">
-                      <h3 className="text-2xl md:text-3xl font-bold text-text-main mb-4">
-                        Don't Miss the Launch
+                      <h3 className="text-3xl md:text-4xl font-bold text-text-main mb-3">
+                        Join the Waitlist
                       </h3>
-                      <p className="text-text-muted mb-8">
-                        Be among the first to experience AlgorithmLens
+                      <p className="text-lg text-text-muted mb-10">
+                        Get early access when AlgorithmLens launches
                       </p>
                       <WaitlistSignup id="waitlist-footer" />
                     </div>
