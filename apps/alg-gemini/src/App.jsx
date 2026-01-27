@@ -23,45 +23,57 @@ import HistoryPage from './pages/HistoryPage';
 // Dashboard
 import DashboardPage from './pages/dashboard/DashboardPage';
 
+// Coming Soon Mode
+import RouteGuard from './components/RouteGuard';
+import ComingSoonHomepage from './components/ComingSoonHomepage';
+import { isComingSoon } from './config/comingSoon';
+
 function App() {
+  const comingSoonMode = isComingSoon();
+
   return (
     <div className="min-h-screen bg-bg-page font-sans text-text-main selection:bg-primary-blue/20">
       <Navbar />
 
-      <main>
-        <Routes>
-          {/* HOME ROUTE – MUST LOOK EXACTLY LIKE CURRENT HOMEPAGE */}
-          <Route
-            path="/"
-            element={
-              <>
-                <HeroSection />
-                <SectionTracking />
-                <LabelsPreviewSection />
-                <SectionLoop />
-                <HeroDashboardPreview />
-                <HowItWorksSection />
+      <RouteGuard>
+        <main>
+          <Routes>
+            {/* HOME ROUTE - Shows Coming Soon homepage or normal homepage */}
+            <Route
+              path="/"
+              element={
+                comingSoonMode ? (
+                  <ComingSoonHomepage />
+                ) : (
+                  <>
+                    <HeroSection />
+                    <SectionTracking />
+                    <LabelsPreviewSection />
+                    <SectionLoop />
+                    <HeroDashboardPreview />
+                    <HowItWorksSection />
 
-                <section className="py-26 mt-20 bg-bg-page text-center">
-                  <div className="max-w-4xl mx-auto px-6">
-                    <h2 className="text-4xl md:text-5xl font-bold text-text-main mb-8">
-                      Ready to see your profile?
-                    </h2>
-                    <p className="text-lg text-text-muted mb-12 max-w-xl mx-auto">
-                      Upload a screen recording of your feed to generate your AlgorithmLens dashboard. Private and secure.
-                    </p>
+                    <section className="py-26 mt-20 bg-bg-page text-center">
+                      <div className="max-w-4xl mx-auto px-6">
+                        <h2 className="text-4xl md:text-5xl font-bold text-text-main mb-8">
+                          Ready to see your profile?
+                        </h2>
+                        <p className="text-lg text-text-muted mb-12 max-w-xl mx-auto">
+                          Upload a screen recording of your feed to generate your AlgorithmLens dashboard. Private and secure.
+                        </p>
 
-                    <Link 
-                      to="/start"
-                      className="inline-block px-10 py-4 bg-primary-blue text-white rounded-full font-bold text-lg shadow-glow hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-                    >
-                      Start a Scan
-                    </Link>
-                  </div>
-                </section>
-              </>
-            }
-          />
+                        <Link
+                          to="/start"
+                          className="inline-block px-10 py-4 bg-primary-blue text-white rounded-full font-bold text-lg shadow-glow hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                        >
+                          Start a Scan
+                        </Link>
+                      </div>
+                    </section>
+                  </>
+                )
+              }
+            />
 
           {/* PRICING ROUTE */}
           <Route path="/pricing" element={<PricingPage />} />
@@ -103,17 +115,20 @@ function App() {
         </Routes>
       </main>
 
-      {/* Footer */}
-      <footer className="py-12 bg-bg-page">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-2">
-            <Logo variant="footer" />
+      {/* Footer - Hidden in Coming Soon mode (ComingSoonHomepage has its own footer section) */}
+      {!comingSoonMode && (
+        <footer className="py-12 bg-bg-page">
+          <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-2">
+              <Logo variant="footer" />
+            </div>
+            <p className="text-sm text-text-muted font-medium">
+              © {new Date().getFullYear()} AlgorithmLens. All rights reserved.
+            </p>
           </div>
-          <p className="text-sm text-text-muted font-medium">
-            © {new Date().getFullYear()} AlgorithmLens. All rights reserved.
-          </p>
-        </div>
-      </footer>
+        </footer>
+      )}
+      </RouteGuard>
     </div>
   );
 }
