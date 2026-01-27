@@ -1,0 +1,68 @@
+{
+  "timestamp": "2026-01-26T11:15:56.502Z",
+  "baseUrl": "http://localhost:5173",
+  "tabs": [
+    {
+      "id": "ads",
+      "label": "Ads & Influence",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-ads-1769426162102.png",
+      "error": null
+    },
+    {
+      "id": "politics",
+      "label": "Politics & Worldview",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-politics-1769426164690.png",
+      "error": null
+    },
+    {
+      "id": "patterns",
+      "label": "Patterns in Your Feed",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-patterns-1769426167205.png",
+      "error": null
+    },
+    {
+      "id": "creators",
+      "label": "Creators & Voices",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-creators-1769426169692.png",
+      "error": null
+    },
+    {
+      "id": "algorithm",
+      "label": "Observed Patterns",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-algorithm-1769426172042.png",
+      "error": null
+    },
+    {
+      "id": "talk",
+      "label": "Talk",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-talk-1769426174436.png",
+      "error": null
+    }
+  ],
+  "consoleMessages": [
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "timestamp": "2026-01-26T11:15:56.561Z"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "timestamp": "2026-01-26T11:15:56.570Z"
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+      "timestamp": "2026-01-26T11:15:56.663Z"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "passed": true
+}

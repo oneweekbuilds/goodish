@@ -1,0 +1,71 @@
+{
+  "timestamp": "2026-01-20T07:12:08.997Z",
+  "baseUrl": "http://localhost:5173",
+  "tabs": [
+    {
+      "id": "ads",
+      "label": "Ads & Influence",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-ads-1768893138036.png",
+      "error": null
+    },
+    {
+      "id": "politics",
+      "label": "Politics & Worldview",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-politics-1768893141484.png",
+      "error": null
+    },
+    {
+      "id": "patterns",
+      "label": "Patterns in Your Feed",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-patterns-1768893144480.png",
+      "error": null
+    },
+    {
+      "id": "creators",
+      "label": "Creators & Voices",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-creators-1768893147430.png",
+      "error": null
+    },
+    {
+      "id": "algorithm",
+      "label": "What the Algorithm Thinks",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-algorithm-1768893150403.png",
+      "error": null
+    }
+  ],
+  "consoleMessages": [
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "timestamp": "2026-01-20T07:12:09.126Z"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "timestamp": "2026-01-20T07:12:09.144Z"
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+      "timestamp": "2026-01-20T07:12:09.431Z"
+    },
+    {
+      "type": "log",
+      "text": "[Evidence Bundle] Ads & Influence: {raw_bundle: Object, scan_metadata: Object, aggregates: Object, feed_items_count: 6}",
+      "timestamp": "2026-01-20T07:12:09.765Z"
+    },
+    {
+      "type": "log",
+      "text": "[Evidence Bundle] Ads & Influence: {raw_bundle: Object, scan_metadata: Object, aggregates: Object, feed_items_count: 6}",
+      "timestamp": "2026-01-20T07:12:09.773Z"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "passed": true
+}

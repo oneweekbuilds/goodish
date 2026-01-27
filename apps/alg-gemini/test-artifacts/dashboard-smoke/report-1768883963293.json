@@ -1,0 +1,88 @@
+{
+  "timestamp": "2026-01-20T04:39:04.078Z",
+  "baseUrl": "http://localhost:5173",
+  "tabs": [
+    {
+      "id": "ads",
+      "label": "Ads & Influence",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-ads-1768883951007.png",
+      "error": null
+    },
+    {
+      "id": "politics",
+      "label": "Politics & Worldview",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-politics-1768883954199.png",
+      "error": null
+    },
+    {
+      "id": "patterns",
+      "label": "Patterns in Your Feed",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-patterns-1768883957216.png",
+      "error": null
+    },
+    {
+      "id": "creators",
+      "label": "Creators & Voices",
+      "visited": false,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-creators-error-1768883963195.png",
+      "error": "\u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('button[role=\"tab\"]').filter({ hasText: /Creators & Voices/i }).first()\nExpected: \u001b[32m\"true\"\u001b[39m\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('button[role=\"tab\"]').filter({ hasText: /Creators & Voices/i }).first()\u001b[22m\n"
+    },
+    {
+      "id": "algorithm",
+      "label": "What the Algorithm Thinks",
+      "visited": false,
+      "screenshot": null,
+      "error": "Navigation disappeared - page may have crashed"
+    }
+  ],
+  "consoleMessages": [
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "timestamp": "2026-01-20T04:39:04.252Z"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "timestamp": "2026-01-20T04:39:04.275Z"
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+      "timestamp": "2026-01-20T04:39:04.695Z"
+    },
+    {
+      "type": "log",
+      "text": "[Evidence Bundle] Ads & Influence: {raw_bundle: Object, scan_metadata: Object, aggregates: Object, feed_items_count: 6}",
+      "timestamp": "2026-01-20T04:39:05.073Z"
+    },
+    {
+      "type": "log",
+      "text": "[Evidence Bundle] Ads & Influence: {raw_bundle: Object, scan_metadata: Object, aggregates: Object, feed_items_count: 6}",
+      "timestamp": "2026-01-20T04:39:05.262Z"
+    },
+    {
+      "type": "warning",
+      "text": "%s\n\n%s\n An error occurred in the <p> component. Consider adding an error boundary to your tree to customize error handling behavior.\nVisit https://react.dev/link/error-boundaries to learn more about error boundaries.",
+      "timestamp": "2026-01-20T04:39:18.178Z"
+    }
+  ],
+  "errors": [
+    {
+      "message": "Objects are not valid as a React child (found: object with keys {creator, share, contributions}). If you meant to render a collection of children, use an array instead.",
+      "stack": "Error: Objects are not valid as a React child (found: object with keys {creator, share, contributions}). If you meant to render a collection of children, use an array instead.\n    at throwOnInvalidObjectTypeImpl (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=4074a5c1:4596:15)\n    at throwOnInvalidObjectType (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=4074a5c1:4604:13)\n    at reconcileChildFibersImpl (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=4074a5c1:5215:13)\n    at http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=4074a5c1:5235:35\n    at reconcileChildren (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=4074a5c1:7180:53)\n    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=4074a5c1:8699:104)\n    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=4074a5c1:995:72)\n    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=4074a5c1:12559:98)\n    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=4074a5c1:12422:43)\n    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=4074a5c1:12406:13)",
+      "timestamp": "2026-01-20T04:39:18.175Z"
+    }
+  ],
+  "warnings": [
+    {
+      "type": "warning",
+      "text": "%s\n\n%s\n An error occurred in the <p> component. Consider adding an error boundary to your tree to customize error handling behavior.\nVisit https://react.dev/link/error-boundaries to learn more about error boundaries.",
+      "timestamp": "2026-01-20T04:39:18.178Z"
+    }
+  ],
+  "passed": false
+}

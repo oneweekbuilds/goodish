@@ -1,0 +1,148 @@
+{
+  "meta": {
+    "scan_id": "test-ci-validation",
+    "platform": "TIKTOK",
+    "n_items": 20,
+    "window_start": null,
+    "window_end": null,
+    "generated_at": "2026-01-06T09:16:00.125046",
+    "coverage": {
+      "n_items_total": 20,
+      "n_items_included": 20,
+      "n_items_excluded": 0,
+      "exclusion_reasons": {},
+      "quality_flags": {
+        "missing_text": 20
+      }
+    }
+  },
+  "observations": {
+    "total_posts_seen": 20,
+    "commercial_exposure_spectrum": {
+      "stacked_bar": {
+        "non_commercial": 17,
+        "labeled_ads": 3,
+        "unlabeled_promotion": 0,
+        "total": 20
+      },
+      "excluded": {
+        "unlabeled_promotion_medium_confidence": 0,
+        "ambiguous": 0
+      },
+      "total_items": 20,
+      "high_confidence_items": 20,
+      "coverage_percent": 100.0
+    },
+    "total_ads_detected": 3,
+    "platform_labeled_ad_evidence": [
+      {
+        "item_position": 0,
+        "method": "PLATFORM_LABEL",
+        "method_reliability": 0.999,
+        "confidence": "high"
+      },
+      {
+        "item_position": 1,
+        "method": "PLATFORM_LABEL",
+        "method_reliability": 0.999,
+        "confidence": "high"
+      },
+      {
+        "item_position": 2,
+        "method": "PLATFORM_LABEL",
+        "method_reliability": 0.999,
+        "confidence": "high"
+      }
+    ],
+    "platform_labeled_ad_evidence_count": 3,
+    "unlabeled_promotions_high_confidence": 0,
+    "total_promotional_content": 3,
+    "promo_signals": {
+      "n_high_confidence": 0,
+      "n_medium_confidence": 0,
+      "n_low_confidence": 0,
+      "n_unlabeled_promo": 0,
+      "signal_types_detected": [],
+      "signal_type_counts": {}
+    },
+    "ocr_extraction_rate_percent": 0.0,
+    "items_with_ocr_text": 0,
+    "ad_rate_percent": 15.0,
+    "ad_rate_percent_ci": {
+      "lower": 3.8,
+      "upper": 37.5,
+      "confidence_level": 0.95,
+      "method": "wilson"
+    },
+    "ad_rate_estimate_type": "INTERVAL",
+    "promotional_rate_percent": 15.0,
+    "promotional_rate_percent_ci": {
+      "lower": 3.8,
+      "upper": 37.5,
+      "confidence_level": 0.95,
+      "method": "wilson"
+    },
+    "promotional_rate_estimate_type": "INTERVAL",
+    "top_companies": [],
+    "unique_companies_surfaced": 0,
+    "top_companies_note": "No company or brand names could be extracted from this scan.",
+    "_company_exclusion_stats": {
+      "below_count_threshold": 0,
+      "no_high_confidence_evidence": 0
+    }
+  },
+  "measurements": {
+    "unlabeled_promotions": {
+      "value": {
+        "high_confidence": 0,
+        "medium_confidence": 0,
+        "ambiguous": 0
+      },
+      "method": "classifier:commercial_intent_pipeline",
+      "quality": "ok",
+      "notes": "Unlabeled promotions detected via disclosure tokens, CTA patterns, and entity references. Only high-confidence items counted in metrics. 0 items excluded as ambiguous."
+    },
+    "possible_unlabeled_promotions": {
+      "value": 0,
+      "method": "classifier:commercial_intent_pipeline",
+      "quality": "ok",
+      "notes": "High confidence: 0, Medium confidence: 0. Only high-confidence items are included in primary metrics."
+    },
+    "possible_promo_rate_percent": {
+      "value": 0.0,
+      "method": "classifier:commercial_intent_pipeline",
+      "quality": "ok",
+      "notes": "Percentage of non-ad posts with high-confidence promotional signals."
+    },
+    "promotion_topics": {
+      "value": [],
+      "method": "classifier:topic_keyword_matching",
+      "quality": "insufficient_signal",
+      "notes": "3 promotional items analyzed but no topic keywords matched. This may indicate diverse or unrecognized product categories."
+    }
+  },
+  "limits": {
+    "sample_size_limitations": [
+      "Sample size of 20 posts. Single-item changes significantly affect percentages."
+    ],
+    "commercial_analysis_exclusions": [
+      "All items classified with high confidence."
+    ],
+    "missing_metadata_limitations": [
+      "3 of 3 ads lack advertiser name information."
+    ],
+    "ad_detection_limitations": [
+      "Ad detection relies on platform labels. Native ads or influencer promotions without disclosure may not be detected.",
+      "Unlabeled promotion detection uses pattern matching on disclosure tokens, CTAs, and keywords."
+    ],
+    "ocr_extraction_limitations": [
+      "No significant OCR issues detected."
+    ],
+    "epistemic_boundaries": [
+      "We cannot know why the algorithm showed this content.",
+      "We cannot know your intent or interest level in any content shown.",
+      "We cannot predict future ad targeting based on this single scan.",
+      "Advertiser intent and targeting criteria are not visible to us."
+    ]
+  }
+}

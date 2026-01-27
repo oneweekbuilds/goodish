@@ -1,0 +1,89 @@
+{
+  "timestamp": "2026-01-27T11:12:36.359Z",
+  "baseUrl": "http://localhost:5173",
+  "tabs": [
+    {
+      "id": "ads",
+      "label": "Ads & Influence",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-ads-1769512364767.png",
+      "error": null
+    },
+    {
+      "id": "politics",
+      "label": "Politics & Worldview",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-politics-1769512367142.png",
+      "error": null
+    },
+    {
+      "id": "patterns",
+      "label": "Patterns in Your Feed",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-patterns-1769512369530.png",
+      "error": null
+    },
+    {
+      "id": "creators",
+      "label": "Creators & Voices",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-creators-1769512371880.png",
+      "error": null
+    },
+    {
+      "id": "algorithm",
+      "label": "Observed Patterns",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-algorithm-1769512374126.png",
+      "error": null
+    },
+    {
+      "id": "talk",
+      "label": "Talk",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-talk-1769512376443.png",
+      "error": null
+    }
+  ],
+  "consoleMessages": [
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "timestamp": "2026-01-27T11:12:36.407Z"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "timestamp": "2026-01-27T11:12:36.420Z"
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+      "timestamp": "2026-01-27T11:12:36.506Z"
+    },
+    {
+      "type": "error",
+      "text": "Error computing data for ads-advertiser-insights: TypeError: products.data.reduce is not a function\n    at getAdvertiserInsightsData (http://localhost:5173/src/lib/dashboard/dataHelpers.js?t=1769512257604:635:38)\n    at http://localhost:5173/src/pages/dashboard/DashboardPage.jsx?t=1769512329743:2675:30\n    at updateMemo (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:6543:21)\n    at Object.useMemo (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:18967:20)\n    at exports.useMemo (http://localhost:5173/node_modules/.vite/deps/chunk-PWLNVQY7.js?v=cd9495bf:973:36)\n    at DashboardPage (http://localhost:5173/src/pages/dashboard/DashboardPage.jsx?t=1769512329743:2668:27)\n    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:18507:20)\n    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:5652:24)\n    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:7473:21)\n    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:8523:20) TypeError: products.data.reduce is not a function\n    at getAdvertiserInsightsData (http://localhost:5173/src/lib/dashboard/dataHelpers.js?t=1769512257604:635:38)\n    at http://localhost:5173/src/pages/dashboard/DashboardPage.jsx?t=1769512329743:2675:30\n    at updateMemo (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:6543:21)\n    at Object.useMemo (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:18967:20)\n    at exports.useMemo (http://localhost:5173/node_modules/.vite/deps/chunk-PWLNVQY7.js?v=cd9495bf:973:36)\n    at DashboardPage (http://localhost:5173/src/pages/dashboard/DashboardPage.jsx?t=1769512329743:2668:27)\n    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:18507:20)\n    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:5652:24)\n    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:7473:21)\n    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:8523:20)",
+      "timestamp": "2026-01-27T11:12:37.345Z"
+    },
+    {
+      "type": "error",
+      "text": "Error computing data for ads-advertiser-insights: TypeError: products.data.reduce is not a function\n    at getAdvertiserInsightsData (http://localhost:5173/src/lib/dashboard/dataHelpers.js?t=1769512257604:635:38)\n    at http://localhost:5173/src/pages/dashboard/DashboardPage.jsx?t=1769512329743:2675:30\n    at updateMemo (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:6547:13)\n    at Object.useMemo (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:18967:20)\n    at exports.useMemo (http://localhost:5173/node_modules/.vite/deps/chunk-PWLNVQY7.js?v=cd9495bf:973:36)\n    at DashboardPage (http://localhost:5173/src/pages/dashboard/DashboardPage.jsx?t=1769512329743:2668:27)\n    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:18507:20)\n    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:5652:24)\n    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:7473:21)\n    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:8523:20) TypeError: products.data.reduce is not a function\n    at getAdvertiserInsightsData (http://localhost:5173/src/lib/dashboard/dataHelpers.js?t=1769512257604:635:38)\n    at http://localhost:5173/src/pages/dashboard/DashboardPage.jsx?t=1769512329743:2675:30\n    at updateMemo (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:6547:13)\n    at Object.useMemo (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:18967:20)\n    at exports.useMemo (http://localhost:5173/node_modules/.vite/deps/chunk-PWLNVQY7.js?v=cd9495bf:973:36)\n    at DashboardPage (http://localhost:5173/src/pages/dashboard/DashboardPage.jsx?t=1769512329743:2668:27)\n    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:18507:20)\n    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:5652:24)\n    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:7473:21)\n    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:8523:20)",
+      "timestamp": "2026-01-27T11:12:37.365Z"
+    }
+  ],
+  "errors": [
+    {
+      "type": "error",
+      "text": "Error computing data for ads-advertiser-insights: TypeError: products.data.reduce is not a function\n    at getAdvertiserInsightsData (http://localhost:5173/src/lib/dashboard/dataHelpers.js?t=1769512257604:635:38)\n    at http://localhost:5173/src/pages/dashboard/DashboardPage.jsx?t=1769512329743:2675:30\n    at updateMemo (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:6543:21)\n    at Object.useMemo (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:18967:20)\n    at exports.useMemo (http://localhost:5173/node_modules/.vite/deps/chunk-PWLNVQY7.js?v=cd9495bf:973:36)\n    at DashboardPage (http://localhost:5173/src/pages/dashboard/DashboardPage.jsx?t=1769512329743:2668:27)\n    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:18507:20)\n    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:5652:24)\n    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:7473:21)\n    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:8523:20) TypeError: products.data.reduce is not a function\n    at getAdvertiserInsightsData (http://localhost:5173/src/lib/dashboard/dataHelpers.js?t=1769512257604:635:38)\n    at http://localhost:5173/src/pages/dashboard/DashboardPage.jsx?t=1769512329743:2675:30\n    at updateMemo (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:6543:21)\n    at Object.useMemo (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:18967:20)\n    at exports.useMemo (http://localhost:5173/node_modules/.vite/deps/chunk-PWLNVQY7.js?v=cd9495bf:973:36)\n    at DashboardPage (http://localhost:5173/src/pages/dashboard/DashboardPage.jsx?t=1769512329743:2668:27)\n    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:18507:20)\n    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:5652:24)\n    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:7473:21)\n    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:8523:20)",
+      "timestamp": "2026-01-27T11:12:37.345Z"
+    },
+    {
+      "type": "error",
+      "text": "Error computing data for ads-advertiser-insights: TypeError: products.data.reduce is not a function\n    at getAdvertiserInsightsData (http://localhost:5173/src/lib/dashboard/dataHelpers.js?t=1769512257604:635:38)\n    at http://localhost:5173/src/pages/dashboard/DashboardPage.jsx?t=1769512329743:2675:30\n    at updateMemo (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:6547:13)\n    at Object.useMemo (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:18967:20)\n    at exports.useMemo (http://localhost:5173/node_modules/.vite/deps/chunk-PWLNVQY7.js?v=cd9495bf:973:36)\n    at DashboardPage (http://localhost:5173/src/pages/dashboard/DashboardPage.jsx?t=1769512329743:2668:27)\n    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:18507:20)\n    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:5652:24)\n    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:7473:21)\n    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:8523:20) TypeError: products.data.reduce is not a function\n    at getAdvertiserInsightsData (http://localhost:5173/src/lib/dashboard/dataHelpers.js?t=1769512257604:635:38)\n    at http://localhost:5173/src/pages/dashboard/DashboardPage.jsx?t=1769512329743:2675:30\n    at updateMemo (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:6547:13)\n    at Object.useMemo (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:18967:20)\n    at exports.useMemo (http://localhost:5173/node_modules/.vite/deps/chunk-PWLNVQY7.js?v=cd9495bf:973:36)\n    at DashboardPage (http://localhost:5173/src/pages/dashboard/DashboardPage.jsx?t=1769512329743:2668:27)\n    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:18507:20)\n    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:5652:24)\n    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:7473:21)\n    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cd9495bf:8523:20)",
+      "timestamp": "2026-01-27T11:12:37.365Z"
+    }
+  ],
+  "warnings": [],
+  "passed": false
+}

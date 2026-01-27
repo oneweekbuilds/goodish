@@ -1,0 +1,3283 @@
+{
+  "schema_version": "1.0.0",
+  "scan_metadata": {
+    "scan_id": "desktop-1767216093373-0dykcpc",
+    "created_at": "2025-12-31T21:21:33.373Z",
+    "source_type": "DESKTOP_EXTENSION",
+    "platform": "TWITTER",
+    "user_identifier": null,
+    "app_scan_version": "0.1.0",
+    "insights_engine_version": "1.0.0-desktop",
+    "session_duration_seconds": 1
+  },
+  "environment": {
+    "device_type": "DESKTOP",
+    "device_os": "WINDOWS",
+    "device_os_version": null,
+    "browser_name": "Chrome",
+    "browser_version": null,
+    "screen_resolution": {
+      "width": 1920,
+      "height": 1080
+    },
+    "video_capture": null,
+    "extension_capture": {
+      "is_dom_based": true,
+      "dom_capture_strategy": "VISIBLE_FEED_ITEMS",
+      "session_duration_seconds": 1,
+      "capture_method": "SESSION_SCAN"
+    }
+  },
+  "feed_items": [
+    {
+      "position_in_feed": 1,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "corbin",
+        "account_display_name": "corbin",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "I’ll market your app for free to my 140K+ YouTube audience.\n\nWhy?\n\nBecause most founders aren’t losing to distribution.\n\nYour app is just bad.\n\nIf you’re confident it’s not, reply."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "tech",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "market",
+          "app",
+          "free",
+          "140k",
+          "youtube",
+          "audience",
+          "because",
+          "founders",
+          "aren",
+          "losing"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "market",
+          "app",
+          "free",
+          "140k",
+          "youtube"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-iqrl24",
+          "post_url": "https://x.com/corbin_braun/status/2006088211886755851",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 2,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": true,
+      "ad_metadata": {
+        "ad_detected_reason": "sponsored_label",
+        "sponsored_label_text": "Ad",
+        "advertiser_name": "NFL",
+        "advertiser_domain": "ad.doubleclick.net",
+        "product_or_service": null,
+        "detection_evidence": {
+          "strategy": "labelSpan",
+          "matchedText": "Ad",
+          "selector": "span"
+        }
+      },
+      "account": {
+        "account_handle": "NFL",
+        "account_display_name": "NFL",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Grant Delpit tried everything to get Cam Ward on the ground"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "general",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "grant",
+          "delpit",
+          "tried",
+          "everything",
+          "cam",
+          "ward",
+          "ground"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "MEDIUM",
+        "valence": "NEUTRAL",
+        "themes": [
+          "body_image"
+        ],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "grant",
+          "delpit",
+          "tried",
+          "everything",
+          "cam"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-l14z7k",
+          "post_url": "https://ad.doubleclick.net/ddm/trackclk/N3186.2061500TWITTER-OFFICIAL/B33004539.432382676;dc_trk_aid=625370724;dc_trk_cid=243782821;ext_campaign_id=40429723;ext_line_item_id=53559121;ext_creative_id=1997761003812213183;ext_creative_media_id=0;ltd=0?https://www.cottonelle.com/en-us/products?twclid=240jmhovopl7d6bzlsf42hicdq",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 3,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Paul Mit",
+        "account_display_name": "Paul Mit",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "share a screenshot of your product's interface\n\nI'll go first"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "general",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "share",
+          "screenshot",
+          "product",
+          "interface"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "share",
+          "screenshot",
+          "product",
+          "interface"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-6h17dk",
+          "post_url": "https://x.com/pmitu/status/2006349904344764850",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 4,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Vadim",
+        "account_display_name": "Vadim",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Share what you’re building with links. \n\nI’m curious to see new SaaS projects."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "general",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "share",
+          "building",
+          "links",
+          "curious",
+          "saas",
+          "projects"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "share",
+          "building",
+          "links",
+          "curious",
+          "saas"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-ntwqp",
+          "post_url": "https://x.com/VadimStrizheus/status/2006175875218231797",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 5,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Aryan",
+        "account_display_name": "Aryan",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "How many domains do you really own?"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "tech",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "domains",
+          "really"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "domains",
+          "really"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-4w7vwt",
+          "post_url": "https://x.com/aryanlabde/status/2006265428797186292",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 6,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Lovable",
+        "account_display_name": "Lovable",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "how much did you vibe code this year?"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "general",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "vibe",
+          "code",
+          "year"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "vibe",
+          "code",
+          "year"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-l7rwyp",
+          "post_url": "https://x.com/Lovable/status/2006032566454022376",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 7,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": true,
+      "ad_metadata": {
+        "ad_detected_reason": "sponsored_label",
+        "sponsored_label_text": "Ad",
+        "advertiser_name": "FOX One",
+        "advertiser_domain": "ad.doubleclick.net",
+        "product_or_service": null,
+        "detection_evidence": {
+          "strategy": "labelSpan",
+          "matchedText": "Ad",
+          "selector": "span"
+        }
+      },
+      "account": {
+        "account_handle": "FOX One",
+        "account_display_name": "FOX One",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "One app. 100% FOX. Sign up for FOX One today and stream live sports, news, and entertainment."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "tech",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "app",
+          "100",
+          "fox",
+          "sign",
+          "fox",
+          "today",
+          "stream",
+          "live",
+          "sports",
+          "news"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "app",
+          "100",
+          "fox",
+          "sign",
+          "fox"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-ios9xs",
+          "post_url": "https://ad.doubleclick.net/ddm/trackclk/N2442367.2061500TWITTER-OFFICIAL/B33878993.435397370;dc_trk_aid=628635411;dc_trk_cid=246211624?twclid=2-owyvvcabdi7ba8pnesyx70k3",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 8,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Peter Yang",
+        "account_display_name": "Peter Yang",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Wish I could vibe code in bed with Claude Code instead of doom scrolling - what’s the best option to do this?"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "general",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "wish",
+          "vibe",
+          "code",
+          "bed",
+          "claude",
+          "code",
+          "instead",
+          "doom",
+          "scrolling",
+          "option"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "POSITIVE",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "wish",
+          "vibe",
+          "code",
+          "bed",
+          "claude"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-ss4dcz",
+          "post_url": "https://x.com/petergyang/status/2006255081193169067",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 9,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Ｓａｇｅ",
+        "account_display_name": "Ｓａｇｅ",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Last day of 2025, what are you building today?"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "lifestyle",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "day",
+          "2025",
+          "building",
+          "today"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "day",
+          "2025",
+          "building",
+          "today"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-48vgzj",
+          "post_url": "https://x.com/oranahh/status/2006245914848158110",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 10,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Alex Finn",
+        "account_display_name": "Alex Finn",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Everything you need to master in 2026 to get rich:\n\n• Vibe coding\n• Claude Code\n• Building an X audience\n• Creating videos\n• How machine learning works\n• How databases work (I like Supabase)\n• Using API's\n• How the iOS app store works\n• Elimination of doom scrolling"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "food",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "everything",
+          "master",
+          "2026",
+          "rich",
+          "vibe",
+          "coding",
+          "claude",
+          "code",
+          "building",
+          "audience"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "MEDIUM",
+        "valence": "NEUTRAL",
+        "themes": [
+          "body_image"
+        ],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "everything",
+          "master",
+          "2026",
+          "rich",
+          "vibe"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-lpa2gb",
+          "post_url": "https://x.com/AlexFinn/status/2006405700268994930",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 11,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Ado",
+        "account_display_name": "Ado",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Advent of Claude Day 31 - Claude Agent SDK\n\nI saved the best for last. \n\nThe same agent loop, tools, and context management that power Claude Code is available as an SDK.\n\nBuild agents that work like Claude Code in as little as 10 lines of code.\n\nThis is just the beginning."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "tech",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "advent",
+          "claude",
+          "day",
+          "claude",
+          "agent",
+          "sdk",
+          "saved",
+          "agent",
+          "loop",
+          "tools"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "POSITIVE",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "advent",
+          "claude",
+          "day",
+          "claude",
+          "agent"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-jei8mx",
+          "post_url": "https://x.com/adocomplete/status/2006399579554754687",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 12,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Stijn Noorman",
+        "account_display_name": "Stijn Noorman",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "How to gain 1000 followers in 30 days:\n\nWrite 3 tweets and 100 comments per day."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "tech",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "gain",
+          "1000",
+          "followers",
+          "days",
+          "write",
+          "tweets",
+          "100",
+          "comments",
+          "per",
+          "day"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "gain",
+          "1000",
+          "followers",
+          "days",
+          "write"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-tb0tde",
+          "post_url": "https://x.com/stijnnoorman/status/2006281743985193367",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 13,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Steven",
+        "account_display_name": "Steven",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "The day your app launches is Day 0.\n\nThe real work is just beginning."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "tech",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "day",
+          "app",
+          "launches",
+          "day",
+          "real",
+          "work",
+          "beginning"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "day",
+          "app",
+          "launches",
+          "day",
+          "real"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-vqgzhg",
+          "post_url": "https://x.com/StevenCravotta/status/2006379580957831483",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 14,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Elon Musk",
+        "account_display_name": "Elon Musk",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Major upgrades for Grok Business"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "business",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "major",
+          "upgrades",
+          "grok",
+          "business"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "major",
+          "upgrades",
+          "grok",
+          "business"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-62w1y6",
+          "post_url": "https://x.com/elonmusk/status/2006407463948460043",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 15,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Paulius",
+        "account_display_name": "Paulius",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "is anyone still using bolt/lovable?  \n\nor got killed by Claude Code?"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "general",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "anyone",
+          "using",
+          "bolt",
+          "lovable",
+          "killed",
+          "claude",
+          "code"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "anyone",
+          "using",
+          "bolt",
+          "lovable",
+          "killed"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-mvvtqc",
+          "post_url": "https://x.com/0xPaulius/status/2006364239171350613",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 16,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Meta Alchemist",
+        "account_display_name": "Meta Alchemist",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "10 things to master in 2026 \nto have a super successful year:\n\n1. Vibe coding\n2. Automation\n3. Vibe marketing\n4. MCP-first products\n5. Content creation\n6. Value creation\n7. Networking\n8. Discipline\n9. AI tools\n10. PMF\n\nAnything to add?"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "food",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "things",
+          "master",
+          "2026",
+          "super",
+          "successful",
+          "year",
+          "vibe",
+          "coding",
+          "automation",
+          "vibe"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "MEDIUM",
+        "valence": "POSITIVE",
+        "themes": [
+          "motivation",
+          "body_image"
+        ],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "things",
+          "master",
+          "2026",
+          "super",
+          "successful"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-xpvqdw",
+          "post_url": "https://x.com/meta_alchemist/status/2006350968083095584",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 17,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Marshall",
+        "account_display_name": "Marshall",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "30 days ago, I started building SaaS Console.\n\nMy daily routine:\n4AM: Wake up\n5AM: Wife, Reply on X, \n6AM: Build SaaS\n8AM: Work\n12PM: Wife, Reply\n1PM: Work\n5PM: Wife, Unwind\n6PM: Build SaaS\n9PM: Wife\n\n(sometimes) \n10PM-12AM: Build\n\nYes, I enjoy it.\n\nI genuinely love what I do :)"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "lifestyle",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "days",
+          "ago",
+          "started",
+          "building",
+          "saas",
+          "console",
+          "daily",
+          "routine",
+          "4am",
+          "wake"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "POSITIVE",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "days",
+          "ago",
+          "started",
+          "building",
+          "saas"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-779hdk",
+          "post_url": "https://x.com/mdnlabs/status/2006017070920507833",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 18,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Annu meena",
+        "account_display_name": "Annu meena",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Even if you have 10 followers.\n\nSay Hii, that's how connection Start.\n\nIt's that simple"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "general",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "followers",
+          "hii",
+          "connection",
+          "start",
+          "simple"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "followers",
+          "hii",
+          "connection",
+          "start",
+          "simple"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-oh90mq",
+          "post_url": "https://x.com/meenaji7428/status/2006178732298355101",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 19,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Rubab Mentor",
+        "account_display_name": "Rubab Mentor",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Looking for a frontend developer \n\nPay rate - $900/project\n\n\n@Rubab_Mentor"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "general",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "looking",
+          "frontend",
+          "developer",
+          "pay",
+          "rate",
+          "900",
+          "project",
+          "@rubab",
+          "mentor"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "looking",
+          "frontend",
+          "developer",
+          "pay",
+          "rate"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-idkg9y",
+          "post_url": "https://x.com/Rubab_Mentor/status/2006386041054433633",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 20,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Mike Scully",
+        "account_display_name": "Mike Scully",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "don't know why people don't take the risk, legit worst case scenario you’ll be back to 9-5 same as everyone else bro"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "general",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "don",
+          "people",
+          "don",
+          "risk",
+          "legit",
+          "worst",
+          "case",
+          "scenario",
+          "everyone",
+          "else"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "don",
+          "people",
+          "don",
+          "risk",
+          "legit"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-figmea",
+          "post_url": "https://x.com/Mike_Scully_/status/2006349665839833187",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 21,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "rico",
+        "account_display_name": "rico",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Crypto dashboard, with animation"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "general",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "crypto",
+          "dashboard",
+          "animation"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "crypto",
+          "dashboard",
+          "animation"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-9olu0c",
+          "post_url": "https://x.com/_heyrico/status/2006289793077199253",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 22,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "shirish",
+        "account_display_name": "shirish",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "what happened to perplexity?\n\nat one point it was all over my feed constant updates, hype everywhere \n\npeople even called it a real threat to google"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "food",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "happened",
+          "perplexity",
+          "point",
+          "over",
+          "feed",
+          "constant",
+          "updates",
+          "hype",
+          "everywhere",
+          "people"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "happened",
+          "perplexity",
+          "point",
+          "over",
+          "feed"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-p2v0bt",
+          "post_url": "https://x.com/shiri_shh/status/2006304129476702705",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 23,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Karthik",
+        "account_display_name": "Karthik",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "programming language you learned once but never touched again ?"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "tech",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "programming",
+          "language",
+          "learned",
+          "once",
+          "never",
+          "touched",
+          "again"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "programming",
+          "language",
+          "learned",
+          "once",
+          "never"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-eq19ts",
+          "post_url": "https://x.com/karthikponna19/status/2005877257563251120",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 24,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Augustas",
+        "account_display_name": "Augustas",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "2026 best work recap"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "general",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "2026",
+          "work",
+          "recap"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "POSITIVE",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "2026",
+          "work",
+          "recap"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-jzp2fp",
+          "post_url": "https://x.com/AugustasDesign/status/2006228592892461063",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 25,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Bindu Reddy",
+        "account_display_name": "Bindu Reddy",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Best In Class Models - Final 2025 Edition\n\ncoding - opus and sonnet 4.5\nimages - nano banana pro\nvideo - sora-2, kling 2.6 \nplanning - gpt 5.2 thinking\nresearch - gemini 3.0\nreal-time - grok 4.1\nbest small model - gemini flash 3.0\ngeneral-purpose fast model - gpt 5.2\n\nThe big"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "general",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "class",
+          "models",
+          "final",
+          "2025",
+          "edition",
+          "coding",
+          "opus",
+          "sonnet",
+          "images",
+          "nano"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "MEDIUM",
+        "valence": "POSITIVE",
+        "themes": [
+          "body_image"
+        ],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "class",
+          "models",
+          "final",
+          "2025",
+          "edition"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-hbvqzz",
+          "post_url": "https://x.com/bindureddy/status/2006212051979624912",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 26,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Niklas",
+        "account_display_name": "Niklas",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "What was your biggest win of 2025?"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "general",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "biggest",
+          "win",
+          "2025"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "POSITIVE",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "biggest",
+          "win",
+          "2025"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-nvdthe",
+          "post_url": "https://x.com/Niklas_Sikorra/status/2006358578018607476",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 27,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "GREG ISENBERG",
+        "account_display_name": "GREG ISENBERG",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "2026 is the GREATEST time to build a startup in 30 years\n\nI’m 36. I’ve sold 3 startups, helped build companies that raised billions, and backed teams from seed to unicorn.\n\n20 MEGA shifts that make this the BEST time to build in a GENERATION:\n\n1. Hardware got smart. Download"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "food",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "2026",
+          "greatest",
+          "time",
+          "build",
+          "startup",
+          "years",
+          "sold",
+          "startups",
+          "helped",
+          "build"
+        ]
+      },
+      "political": {
+        "is_political": true,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "POSITIVE",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "2026",
+          "greatest",
+          "time",
+          "build",
+          "startup"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-dwqvc3",
+          "post_url": "https://x.com/gregisenberg/status/2006382073418752250",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 28,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Damian Player",
+        "account_display_name": "Damian Player",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "my 2026 AI predictions:\n\n1) AI adoption explodes. 94% of businesses say they want it, less than 30% have implemented. \n\n2) service providers that can't prove ROI die. no one pays for \"management\" anymore.\n\n3) mid-market becomes the biggest AI buyer. enterprises move slow. the"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "business",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "2026",
+          "predictions",
+          "adoption",
+          "explodes",
+          "businesses",
+          "less",
+          "implemented",
+          "service",
+          "providers",
+          "prove"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "2026",
+          "predictions",
+          "adoption",
+          "explodes",
+          "businesses"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-i1ud2n",
+          "post_url": "https://x.com/damianplayer/status/2006460944390697048",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 29,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Hayes",
+        "account_display_name": "Hayes",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Anthropic just released a full crash course to master Claude Code from scratch for free"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "general",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "anthropic",
+          "released",
+          "full",
+          "crash",
+          "course",
+          "master",
+          "claude",
+          "code",
+          "scratch",
+          "free"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "anthropic",
+          "released",
+          "full",
+          "crash",
+          "course"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-taw20m",
+          "post_url": "https://x.com/hayesdev_/status/2006334594266833327",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 30,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Cloud AI",
+        "account_display_name": "Cloud AI",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "My universal subagent setup for each project, bookmark it \n\n.claude/\n     ├── agents/                # 7 subagents\n      │   ├── orchestrator[.]md\n      │   ├── code-reviewer[.]md\n      │   ├── debugger[.]md\n      │   ├── docs-writer[.]md\n      │   ├──"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "general",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "universal",
+          "subagent",
+          "setup",
+          "project",
+          "bookmark",
+          "claude",
+          "agents",
+          "subagents",
+          "orchestrator",
+          "code"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "universal",
+          "subagent",
+          "setup",
+          "project",
+          "bookmark"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-nukyad",
+          "post_url": "https://x.com/cloudxdev/status/2005971267870982305",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 31,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Om Patel",
+        "account_display_name": "Om Patel",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "My 2025 Wrapped:\n\n> failed 8 startups, then finally succeeded \n> hit $40k in revenue from my own startups\n> grew my X account to almost 6k followers\n> built a personal brand from scratch\n> got invited to a bunch of collab videos with founders\n> grew my startup to 10k+ signups\n>"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "tech",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "2025",
+          "wrapped",
+          "failed",
+          "startups",
+          "finally",
+          "succeeded",
+          "hit",
+          "40k",
+          "revenue",
+          "startups"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEGATIVE",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "2025",
+          "wrapped",
+          "failed",
+          "startups",
+          "finally"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-pexa95",
+          "post_url": "https://x.com/om_patel5/status/2005794850264764571",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 32,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Matteo Spada",
+        "account_display_name": "Matteo Spada",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "THIS APP IS WILD\n\nShutEye is making $950K/month by turning your phone into a personal sleep lab that analyzes your health while you sleep.\n\nThey’ve built a high-conversion funnel using deep personalization and psychological triggers.\n\nLet's break down their  onboarding using"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "tech",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "app",
+          "wild",
+          "shuteye",
+          "making",
+          "950k",
+          "month",
+          "turning",
+          "phone",
+          "into",
+          "personal"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "MEDIUM",
+        "valence": "NEUTRAL",
+        "themes": [
+          "health"
+        ],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "app",
+          "wild",
+          "shuteye",
+          "making",
+          "950k"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-u7kft",
+          "post_url": "https://x.com/matteo_spada/status/2006289792921923813",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 33,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Vitto Rivabella",
+        "account_display_name": "Vitto Rivabella",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Anthropic literally released a full 2-hour course to learn Claude Code. Completely for free!\n\nContext management, custom automations, MCP servers, GitHub workflows, and much more \n\nIf you want to improve your vibe coding skills, you should start here."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "education",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "anthropic",
+          "literally",
+          "released",
+          "full",
+          "hour",
+          "course",
+          "learn",
+          "claude",
+          "code",
+          "completely"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "POSITIVE",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "anthropic",
+          "literally",
+          "released",
+          "full",
+          "hour"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-f3jyzz",
+          "post_url": "https://x.com/VittoStack/status/2006367691641348510",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 34,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Jacky Chou (buying online businesses up to $1m)",
+        "account_display_name": "Jacky Chou (buying online businesses up to $1m)",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "I made $279,680.81 in December 2025\n\n Indexsy — $86,575\n LocalRank .so + Trackings .ai + IndexChex .com — $74,367.15\n Version .so — $42,713\n Advise .so — $31,855.79\n OnlyFans — $21,555.10\n STR Lisbon — $8,160.96\n Binance — $6,167\n Amazon — $4,355.85"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "general",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "made",
+          "279",
+          "680",
+          "december",
+          "2025",
+          "indexsy",
+          "575",
+          "localrank",
+          "trackings",
+          "indexchex"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "made",
+          "279",
+          "680",
+          "december",
+          "2025"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-wrcw2x",
+          "post_url": "https://x.com/indexsy/status/2006415039012716937",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 35,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "sui dev",
+        "account_display_name": "sui dev",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "startup idea: turn every social media into a terminal to combat brainrot."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "tech",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "startup",
+          "idea",
+          "turn",
+          "social",
+          "media",
+          "into",
+          "terminal",
+          "combat",
+          "brainrot"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "startup",
+          "idea",
+          "turn",
+          "social",
+          "media"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-5ac1lm",
+          "post_url": "https://x.com/birdabo/status/2006269726042063327",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 36,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Marshall",
+        "account_display_name": "Marshall",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "My SaaS got 2,000+ visitors in the first month"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "general",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "saas",
+          "000",
+          "visitors",
+          "month"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "saas",
+          "000",
+          "visitors",
+          "month"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-8eisk",
+          "post_url": "https://x.com/mdnlabs/status/2006092315757060330",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 37,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Steven",
+        "account_display_name": "Steven",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "You only need one core feature to launch your app.\nYou only need one core feature to launch your app.\nYou only need one core feature to launch your app.\nYou only need one core feature to launch your app.\nYou only need one core feature to launch your app."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "food",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "core",
+          "feature",
+          "launch",
+          "app",
+          "core",
+          "feature",
+          "launch",
+          "app",
+          "core",
+          "feature"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "core",
+          "feature",
+          "launch",
+          "app",
+          "core"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-2azvdx",
+          "post_url": "https://x.com/StevenCravotta/status/2006038332472512906",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 38,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Ben Spak",
+        "account_display_name": "Ben Spak",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Founders:\n\nDo you lose sleep when you have something fun to work on?\n\n4:45 am here.\n\nGood things are coming."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "general",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "founders",
+          "lose",
+          "sleep",
+          "something",
+          "fun",
+          "work",
+          "things",
+          "coming"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "MEDIUM",
+        "valence": "NEUTRAL",
+        "themes": [
+          "body_image"
+        ],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "founders",
+          "lose",
+          "sleep",
+          "something",
+          "fun"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-d4t92o",
+          "post_url": "https://x.com/benvspak/status/2005968479862796343",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 39,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Maddie D. Reese",
+        "account_display_name": "Maddie D. Reese",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "As a vibe coder, here’s how I choose which tools to use to build my apps:\n\nI start with an idea, usually. Unless I’m building for a sponsored hackathon or competition, then I start with the tool and go from there. But typically, I’m starting with an idea.\n\nThen I think. Some"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "tech",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "vibe",
+          "coder",
+          "choose",
+          "tools",
+          "build",
+          "apps",
+          "start",
+          "idea",
+          "usually",
+          "unless"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "MEDIUM",
+        "valence": "NEUTRAL",
+        "themes": [
+          "body_image"
+        ],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "vibe",
+          "coder",
+          "choose",
+          "tools",
+          "build"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-lguerv",
+          "post_url": "https://x.com/maddiedreese/status/2006165217097732266",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 40,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Chong-U",
+        "account_display_name": "Chong-U",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Good guesses y'all! \n\nHere's the gameplay footage:\nRun around and try to count the number of yellow chicks before time runs out! \n\nShould be familiar to those who have played Mario Party on the Switch\n\nMade with GPT 5.2 + Codex CLI + Threejs agent skill (updated)\n\nMore info"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "gaming",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "guesses",
+          "gameplay",
+          "footage",
+          "run",
+          "around",
+          "count",
+          "number",
+          "yellow",
+          "chicks",
+          "before"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "NEUTRAL",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "guesses",
+          "gameplay",
+          "footage",
+          "run",
+          "around"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-wbug3u",
+          "post_url": "https://x.com/chongdashu/status/2006166052938330178",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 41,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "POST",
+      "is_ad": false,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Min Choi",
+        "account_display_name": "Min Choi",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Nano Banana Pro just ended the 2025 as best AI image model.\n\nAnd people found the most creative ways with it.\n\n10 wild examples:"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": "food",
+        "secondary_categories": [],
+        "freeform_tags": [
+          "nano",
+          "banana",
+          "pro",
+          "ended",
+          "2025",
+          "image",
+          "model",
+          "people",
+          "found",
+          "creative"
+        ]
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": "POSITIVE",
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [
+          "nano",
+          "banana",
+          "pro",
+          "ended",
+          "2025"
+        ],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DOM_SCRAPE",
+        "dom_metadata": {
+          "post_id": "twitter-omo225",
+          "post_url": "https://x.com/minchoi/status/2006372492001309179",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    }
+  ],
+  "aggregates": {
+    "total_feed_items": 41,
+    "total_ads": 2,
+    "ad_percentage": 0.04878048780487805,
+    "topic_distribution": [
+      {
+        "category": "general",
+        "count": 18,
+        "percentage": 0.43902439024390244
+      },
+      {
+        "category": "tech",
+        "count": 11,
+        "percentage": 0.2682926829268293
+      },
+      {
+        "category": "food",
+        "count": 6,
+        "percentage": 0.14634146341463414
+      },
+      {
+        "category": "lifestyle",
+        "count": 2,
+        "percentage": 0.04878048780487805
+      },
+      {
+        "category": "business",
+        "count": 2,
+        "percentage": 0.04878048780487805
+      },
+      {
+        "category": "education",
+        "count": 1,
+        "percentage": 0.024390243902439025
+      },
+      {
+        "category": "gaming",
+        "count": 1,
+        "percentage": 0.024390243902439025
+      }
+    ],
+    "wellbeing_summary": {
+      "high_relevance_items": 7,
+      "potential_risk_items": 0,
+      "valence_distribution": {
+        "POSITIVE": 10,
+        "NEUTRAL": 30,
+        "NEGATIVE": 1,
+        "MIXED": 0
+      }
+    },
+    "political_content_summary": {
+      "political_items": 1,
+      "political_percentage": 0.024390243902439025
+    },
+    "repetition_summary": {
+      "items_in_repetition_clusters": 0,
+      "largest_cluster_size": 0
+    },
+    "engagement_pattern_summary": {
+      "top_hooks": []
+    },
+    "duration_seconds": 1
+  },
+  "privacy": {
+    "user_identifiers_stored": false,
+    "profile_photos_stored": false,
+    "raw_text_stored": true,
+    "retention_policy_key": "SHORT",
+    "redacted_fields": []
+  },
+  "debug": {
+    "processing_time_seconds": 0.006,
+    "frames_extracted": null,
+    "frames_sampled_for_ocr": null,
+    "errors": [],
+    "warnings": [],
+    "raw_backend_payload": null
+  },
+  "_computed": {
+    "topHashtags": [],
+    "topTopics": [
+      {
+        "category": "general",
+        "count": 18,
+        "percentage": 0.43902439024390244
+      },
+      {
+        "category": "tech",
+        "count": 11,
+        "percentage": 0.2682926829268293
+      },
+      {
+        "category": "food",
+        "count": 6,
+        "percentage": 0.14634146341463414
+      },
+      {
+        "category": "lifestyle",
+        "count": 2,
+        "percentage": 0.04878048780487805
+      },
+      {
+        "category": "business",
+        "count": 2,
+        "percentage": 0.04878048780487805
+      }
+    ],
+    "uniqueCreators": [
+      "corbin",
+      "NFL",
+      "Paul Mit",
+      "Vadim",
+      "Aryan",
+      "Lovable",
+      "FOX One",
+      "Peter Yang",
+      "Ｓａｇｅ",
+      "Alex Finn",
+      "Ado",
+      "Stijn Noorman",
+      "Steven",
+      "Elon Musk",
+      "Paulius",
+      "Meta Alchemist",
+      "Marshall",
+      "Annu meena",
+      "Rubab Mentor",
+      "Mike Scully",
+      "rico",
+      "shirish",
+      "Karthik",
+      "Augustas",
+      "Bindu Reddy",
+      "Niklas",
+      "GREG ISENBERG",
+      "Damian Player",
+      "Hayes",
+      "Cloud AI",
+      "Om Patel",
+      "Matteo Spada",
+      "Vitto Rivabella",
+      "Jacky Chou (buying online businesses up to $1m)",
+      "sui dev",
+      "Ben Spak",
+      "Maddie D. Reese",
+      "Chong-U",
+      "Min Choi"
+    ],
+    "wellbeingThemes": [
+      "body_image",
+      "motivation",
+      "health"
+    ],
+    "totalCTAs": 0
+  }
+}

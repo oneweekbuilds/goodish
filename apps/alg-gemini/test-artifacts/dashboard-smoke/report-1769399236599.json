@@ -1,0 +1,2418 @@
+{
+  "timestamp": "2026-01-26T03:46:55.925Z",
+  "baseUrl": "http://localhost:5173",
+  "tabs": [
+    {
+      "id": "ads",
+      "label": "Ads & Influence",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-ads-1769399224185.png",
+      "error": null
+    },
+    {
+      "id": "politics",
+      "label": "Politics & Worldview",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-politics-1769399226702.png",
+      "error": null
+    },
+    {
+      "id": "patterns",
+      "label": "Patterns in Your Feed",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-patterns-1769399229220.png",
+      "error": null
+    },
+    {
+      "id": "creators",
+      "label": "Creators & Voices",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-creators-1769399231637.png",
+      "error": null
+    },
+    {
+      "id": "algorithm",
+      "label": "Observed Patterns",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-algorithm-1769399234002.png",
+      "error": null
+    },
+    {
+      "id": "talk",
+      "label": "Talk",
+      "visited": true,
+      "screenshot": "test-artifacts/dashboard-smoke/tab-talk-1769399236436.png",
+      "error": null
+    }
+  ],
+  "consoleMessages": [
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "timestamp": "2026-01-26T03:46:56.006Z"
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "timestamp": "2026-01-26T03:46:56.006Z"
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+      "timestamp": "2026-01-26T03:46:56.131Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScans: Request URL: http://127.0.0.1:8000/api/scans",
+      "timestamp": "2026-01-26T03:46:56.215Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScans: API_BASE: http://127.0.0.1:8000",
+      "timestamp": "2026-01-26T03:46:56.215Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScans: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.215Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScans: Request URL: http://127.0.0.1:8000/api/scans",
+      "timestamp": "2026-01-26T03:46:56.215Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScans: API_BASE: http://127.0.0.1:8000",
+      "timestamp": "2026-01-26T03:46:56.216Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScans: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.216Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScans: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.245Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScans: Success, loaded 115 scans",
+      "timestamp": "2026-01-26T03:46:56.247Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768815228302-lhfdfgj",
+      "timestamp": "2026-01-26T03:46:56.264Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.264Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScans: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.323Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.323Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScans: Success, loaded 115 scans",
+      "timestamp": "2026-01-26T03:46:56.323Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768815228302-lhfdfgj",
+      "timestamp": "2026-01-26T03:46:56.323Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768813139849-vsb36sv",
+      "timestamp": "2026-01-26T03:46:56.323Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.323Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.324Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768813139849-vsb36sv",
+      "timestamp": "2026-01-26T03:46:56.326Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768812581407-6cnogeh",
+      "timestamp": "2026-01-26T03:46:56.327Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.327Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.329Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768812581407-6cnogeh",
+      "timestamp": "2026-01-26T03:46:56.334Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768811553386-l2jo3gy",
+      "timestamp": "2026-01-26T03:46:56.334Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.334Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.342Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768811553386-l2jo3gy",
+      "timestamp": "2026-01-26T03:46:56.343Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768811176042-972ixei",
+      "timestamp": "2026-01-26T03:46:56.343Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.354Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.359Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768811176042-972ixei",
+      "timestamp": "2026-01-26T03:46:56.359Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768810607291-a6axp7r",
+      "timestamp": "2026-01-26T03:46:56.359Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.359Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.372Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768810607291-a6axp7r",
+      "timestamp": "2026-01-26T03:46:56.373Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768797859480-o7n60o0",
+      "timestamp": "2026-01-26T03:46:56.374Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.375Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.375Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768797859480-o7n60o0",
+      "timestamp": "2026-01-26T03:46:56.375Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768797527188-ta4re9g",
+      "timestamp": "2026-01-26T03:46:56.375Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.375Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.375Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768797527188-ta4re9g",
+      "timestamp": "2026-01-26T03:46:56.375Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768797496182-pxopkoi",
+      "timestamp": "2026-01-26T03:46:56.375Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.375Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.403Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768797496182-pxopkoi",
+      "timestamp": "2026-01-26T03:46:56.404Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768797449613-v2t3pzz",
+      "timestamp": "2026-01-26T03:46:56.404Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.404Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.404Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768797449613-v2t3pzz",
+      "timestamp": "2026-01-26T03:46:56.404Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768797398987-i0hh5uj",
+      "timestamp": "2026-01-26T03:46:56.404Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.404Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.404Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768797398987-i0hh5uj",
+      "timestamp": "2026-01-26T03:46:56.404Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768796472233-xl8dtnh",
+      "timestamp": "2026-01-26T03:46:56.405Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.406Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.408Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768796472233-xl8dtnh",
+      "timestamp": "2026-01-26T03:46:56.408Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768796401486-b5dgvpj",
+      "timestamp": "2026-01-26T03:46:56.408Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.408Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.408Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768796401486-b5dgvpj",
+      "timestamp": "2026-01-26T03:46:56.408Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768796196780-isbo56o",
+      "timestamp": "2026-01-26T03:46:56.408Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.409Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.409Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768796196780-isbo56o",
+      "timestamp": "2026-01-26T03:46:56.409Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768795539696-69ebtne",
+      "timestamp": "2026-01-26T03:46:56.409Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.409Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.420Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768795539696-69ebtne",
+      "timestamp": "2026-01-26T03:46:56.420Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768795488889-k2dr5fg",
+      "timestamp": "2026-01-26T03:46:56.420Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.420Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.420Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768795488889-k2dr5fg",
+      "timestamp": "2026-01-26T03:46:56.426Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768795443233-mkb0xk6",
+      "timestamp": "2026-01-26T03:46:56.427Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.427Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.427Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768795443233-mkb0xk6",
+      "timestamp": "2026-01-26T03:46:56.427Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768794893393-j1dycd8",
+      "timestamp": "2026-01-26T03:46:56.434Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.434Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.436Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768794893393-j1dycd8",
+      "timestamp": "2026-01-26T03:46:56.436Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768794573534-lkpmm36",
+      "timestamp": "2026-01-26T03:46:56.436Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.436Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.436Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768794573534-lkpmm36",
+      "timestamp": "2026-01-26T03:46:56.436Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768484211980-8youcmf",
+      "timestamp": "2026-01-26T03:46:56.436Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.436Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.443Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768484211980-8youcmf",
+      "timestamp": "2026-01-26T03:46:56.443Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768482677598-btc2x6i",
+      "timestamp": "2026-01-26T03:46:56.443Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.443Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.443Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768482677598-btc2x6i",
+      "timestamp": "2026-01-26T03:46:56.458Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768482164474-cxguwlt",
+      "timestamp": "2026-01-26T03:46:56.459Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.459Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.461Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768482164474-cxguwlt",
+      "timestamp": "2026-01-26T03:46:56.461Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768482107875-2un8sg0",
+      "timestamp": "2026-01-26T03:46:56.461Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.461Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.461Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768482107875-2un8sg0",
+      "timestamp": "2026-01-26T03:46:56.461Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768481918998-z919snj",
+      "timestamp": "2026-01-26T03:46:56.461Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.461Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.473Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768481918998-z919snj",
+      "timestamp": "2026-01-26T03:46:56.473Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768481194627-gkpye5i",
+      "timestamp": "2026-01-26T03:46:56.473Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.473Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.473Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768481194627-gkpye5i",
+      "timestamp": "2026-01-26T03:46:56.473Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768481006095-vcgsod2",
+      "timestamp": "2026-01-26T03:46:56.473Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.474Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.474Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768481006095-vcgsod2",
+      "timestamp": "2026-01-26T03:46:56.476Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768480898381-c7w6e5q",
+      "timestamp": "2026-01-26T03:46:56.476Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.476Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.479Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768480898381-c7w6e5q",
+      "timestamp": "2026-01-26T03:46:56.479Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768480685904-kq27l82",
+      "timestamp": "2026-01-26T03:46:56.479Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.479Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.487Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768480685904-kq27l82",
+      "timestamp": "2026-01-26T03:46:56.492Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768480312365-7q2gy7u",
+      "timestamp": "2026-01-26T03:46:56.492Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.492Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.493Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768480312365-7q2gy7u",
+      "timestamp": "2026-01-26T03:46:56.493Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768480047638-2603p1g",
+      "timestamp": "2026-01-26T03:46:56.493Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.493Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.494Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768480047638-2603p1g",
+      "timestamp": "2026-01-26T03:46:56.494Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768479501079-pr1hntc",
+      "timestamp": "2026-01-26T03:46:56.495Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.495Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.504Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768479501079-pr1hntc",
+      "timestamp": "2026-01-26T03:46:56.504Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768467003236-mvbabkt",
+      "timestamp": "2026-01-26T03:46:56.504Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.504Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.511Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768467003236-mvbabkt",
+      "timestamp": "2026-01-26T03:46:56.513Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768466853500-a6u2uxo",
+      "timestamp": "2026-01-26T03:46:56.513Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.513Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.514Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768466853500-a6u2uxo",
+      "timestamp": "2026-01-26T03:46:56.514Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768466470303-dlpqufz",
+      "timestamp": "2026-01-26T03:46:56.514Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.519Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.522Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768466470303-dlpqufz",
+      "timestamp": "2026-01-26T03:46:56.522Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768466407346-jwvj08d",
+      "timestamp": "2026-01-26T03:46:56.524Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.524Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.525Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768466407346-jwvj08d",
+      "timestamp": "2026-01-26T03:46:56.525Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768454345360-dm1p611",
+      "timestamp": "2026-01-26T03:46:56.525Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.525Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.539Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768454345360-dm1p611",
+      "timestamp": "2026-01-26T03:46:56.539Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768454159920-ji2x1in",
+      "timestamp": "2026-01-26T03:46:56.544Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.544Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.545Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768454159920-ji2x1in",
+      "timestamp": "2026-01-26T03:46:56.545Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768454010054-noitdqk",
+      "timestamp": "2026-01-26T03:46:56.545Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.545Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.545Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768454010054-noitdqk",
+      "timestamp": "2026-01-26T03:46:56.545Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768452964924-q29m9nw",
+      "timestamp": "2026-01-26T03:46:56.545Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.545Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.545Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768452964924-q29m9nw",
+      "timestamp": "2026-01-26T03:46:56.545Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768452577069-ewske8y",
+      "timestamp": "2026-01-26T03:46:56.545Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.545Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.553Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768452577069-ewske8y",
+      "timestamp": "2026-01-26T03:46:56.554Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768452541632-6yj4lwe",
+      "timestamp": "2026-01-26T03:46:56.554Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.554Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.554Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768452541632-6yj4lwe",
+      "timestamp": "2026-01-26T03:46:56.554Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768451627225-kjleryu",
+      "timestamp": "2026-01-26T03:46:56.554Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.554Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.562Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768451627225-kjleryu",
+      "timestamp": "2026-01-26T03:46:56.562Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768381819411-bzuoj1l",
+      "timestamp": "2026-01-26T03:46:56.562Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.562Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.565Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768381819411-bzuoj1l",
+      "timestamp": "2026-01-26T03:46:56.565Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768381757580-njoara7",
+      "timestamp": "2026-01-26T03:46:56.565Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.565Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.566Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768381757580-njoara7",
+      "timestamp": "2026-01-26T03:46:56.568Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768381538939-0t22w9z",
+      "timestamp": "2026-01-26T03:46:56.570Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.570Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.570Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768381538939-0t22w9z",
+      "timestamp": "2026-01-26T03:46:56.570Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768381379257-c2mioe1",
+      "timestamp": "2026-01-26T03:46:56.570Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.570Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.578Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768381379257-c2mioe1",
+      "timestamp": "2026-01-26T03:46:56.578Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768380163824-oyuh3so",
+      "timestamp": "2026-01-26T03:46:56.578Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.578Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.596Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768380163824-oyuh3so",
+      "timestamp": "2026-01-26T03:46:56.596Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768380123704-hni6gq2",
+      "timestamp": "2026-01-26T03:46:56.596Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.596Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.604Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768380123704-hni6gq2",
+      "timestamp": "2026-01-26T03:46:56.604Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768380091197-vs68bo6",
+      "timestamp": "2026-01-26T03:46:56.604Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.604Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.621Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768380091197-vs68bo6",
+      "timestamp": "2026-01-26T03:46:56.621Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768380056556-8d7icjq",
+      "timestamp": "2026-01-26T03:46:56.628Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.628Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768380056556-8d7icjq",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768379550182-m09444i",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768379550182-m09444i",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768377594833-43smkxs",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768377594833-43smkxs",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768377140592-xldziaz",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768377140592-xldziaz",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768377087989-q6bxq32",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768377087989-q6bxq32",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768376740177-d2d2382",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768376740177-d2d2382",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768373672197-6g0mm5m",
+      "timestamp": "2026-01-26T03:46:56.639Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.642Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.643Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768373672197-6g0mm5m",
+      "timestamp": "2026-01-26T03:46:56.643Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768373587039-w0u5cdg",
+      "timestamp": "2026-01-26T03:46:56.643Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.643Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.643Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768373587039-w0u5cdg",
+      "timestamp": "2026-01-26T03:46:56.644Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768373551063-l4aiasr",
+      "timestamp": "2026-01-26T03:46:56.644Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.644Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.644Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768373551063-l4aiasr",
+      "timestamp": "2026-01-26T03:46:56.644Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768373352909-4zqfbcz",
+      "timestamp": "2026-01-26T03:46:56.644Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.644Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.644Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768373352909-4zqfbcz",
+      "timestamp": "2026-01-26T03:46:56.644Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768373218434-3e6qa81",
+      "timestamp": "2026-01-26T03:46:56.644Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.644Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.648Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768373218434-3e6qa81",
+      "timestamp": "2026-01-26T03:46:56.648Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768372864461-vhfh0fk",
+      "timestamp": "2026-01-26T03:46:56.648Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.661Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.662Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768372864461-vhfh0fk",
+      "timestamp": "2026-01-26T03:46:56.662Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768305310963-cpe7wxo",
+      "timestamp": "2026-01-26T03:46:56.662Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.662Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.662Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768305310963-cpe7wxo",
+      "timestamp": "2026-01-26T03:46:56.662Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768304914958-55bd0sy",
+      "timestamp": "2026-01-26T03:46:56.663Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.663Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.663Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768304914958-55bd0sy",
+      "timestamp": "2026-01-26T03:46:56.663Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768304739440-presxtz",
+      "timestamp": "2026-01-26T03:46:56.663Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.663Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.667Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768304739440-presxtz",
+      "timestamp": "2026-01-26T03:46:56.667Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768304074224-ygvfs58",
+      "timestamp": "2026-01-26T03:46:56.667Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.674Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.674Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768304074224-ygvfs58",
+      "timestamp": "2026-01-26T03:46:56.674Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768303517992-vcd47c4",
+      "timestamp": "2026-01-26T03:46:56.674Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.674Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.674Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768303517992-vcd47c4",
+      "timestamp": "2026-01-26T03:46:56.680Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768302722899-p0fi7vd",
+      "timestamp": "2026-01-26T03:46:56.681Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.681Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.687Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768302722899-p0fi7vd",
+      "timestamp": "2026-01-26T03:46:56.687Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768301823484-vi6uutu",
+      "timestamp": "2026-01-26T03:46:56.687Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.687Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.687Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768301823484-vi6uutu",
+      "timestamp": "2026-01-26T03:46:56.687Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768301570386-1eyo7pt",
+      "timestamp": "2026-01-26T03:46:56.687Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.687Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.691Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768301570386-1eyo7pt",
+      "timestamp": "2026-01-26T03:46:56.692Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768301281375-frgrrxq",
+      "timestamp": "2026-01-26T03:46:56.692Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.692Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.695Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768301281375-frgrrxq",
+      "timestamp": "2026-01-26T03:46:56.695Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768301251072-em9g035",
+      "timestamp": "2026-01-26T03:46:56.695Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.696Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.698Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768301251072-em9g035",
+      "timestamp": "2026-01-26T03:46:56.698Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768300845070-he1ue7z",
+      "timestamp": "2026-01-26T03:46:56.699Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.699Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.705Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768300845070-he1ue7z",
+      "timestamp": "2026-01-26T03:46:56.705Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768300771028-lb2x0e9",
+      "timestamp": "2026-01-26T03:46:56.711Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.711Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.712Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768300771028-lb2x0e9",
+      "timestamp": "2026-01-26T03:46:56.712Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768300463932-mtf19z5",
+      "timestamp": "2026-01-26T03:46:56.712Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.712Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.712Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768300463932-mtf19z5",
+      "timestamp": "2026-01-26T03:46:56.712Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768300267212-2p9okou",
+      "timestamp": "2026-01-26T03:46:56.712Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.712Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.724Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768300267212-2p9okou",
+      "timestamp": "2026-01-26T03:46:56.724Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768293878529-810zahh",
+      "timestamp": "2026-01-26T03:46:56.724Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.724Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.724Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768293878529-810zahh",
+      "timestamp": "2026-01-26T03:46:56.724Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768293744186-uxovqjc",
+      "timestamp": "2026-01-26T03:46:56.724Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.724Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.727Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768293744186-uxovqjc",
+      "timestamp": "2026-01-26T03:46:56.727Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768293660248-xf2chm4",
+      "timestamp": "2026-01-26T03:46:56.727Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.727Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.731Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768293660248-xf2chm4",
+      "timestamp": "2026-01-26T03:46:56.731Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768293521506-66gzvw7",
+      "timestamp": "2026-01-26T03:46:56.731Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.731Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.740Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768293521506-66gzvw7",
+      "timestamp": "2026-01-26T03:46:56.741Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768293366687-xphqcwj",
+      "timestamp": "2026-01-26T03:46:56.741Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.741Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.741Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768293366687-xphqcwj",
+      "timestamp": "2026-01-26T03:46:56.742Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768293258411-9j922pu",
+      "timestamp": "2026-01-26T03:46:56.743Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.743Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.743Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768293258411-9j922pu",
+      "timestamp": "2026-01-26T03:46:56.743Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768292962179-dyhhvnv",
+      "timestamp": "2026-01-26T03:46:56.743Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.743Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.749Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768292962179-dyhhvnv",
+      "timestamp": "2026-01-26T03:46:56.750Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768292920635-jpgxk87",
+      "timestamp": "2026-01-26T03:46:56.750Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.750Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.753Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768292920635-jpgxk87",
+      "timestamp": "2026-01-26T03:46:56.753Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768290965435-6aqm57z",
+      "timestamp": "2026-01-26T03:46:56.753Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.754Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.757Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768290965435-6aqm57z",
+      "timestamp": "2026-01-26T03:46:56.758Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768290881250-0v1ak8q",
+      "timestamp": "2026-01-26T03:46:56.759Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.759Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.767Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768290881250-0v1ak8q",
+      "timestamp": "2026-01-26T03:46:56.768Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768290504782-qczkwn5",
+      "timestamp": "2026-01-26T03:46:56.768Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.770Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.770Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768290504782-qczkwn5",
+      "timestamp": "2026-01-26T03:46:56.771Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768288271871-0a3zzql",
+      "timestamp": "2026-01-26T03:46:56.771Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.771Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.775Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768288271871-0a3zzql",
+      "timestamp": "2026-01-26T03:46:56.776Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768288204765-ryo2bo8",
+      "timestamp": "2026-01-26T03:46:56.776Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.776Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.780Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768288204765-ryo2bo8",
+      "timestamp": "2026-01-26T03:46:56.788Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768288144467-ubkj6rj",
+      "timestamp": "2026-01-26T03:46:56.788Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.788Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.790Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768288144467-ubkj6rj",
+      "timestamp": "2026-01-26T03:46:56.792Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768286234859-gixqo6i",
+      "timestamp": "2026-01-26T03:46:56.792Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.792Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.793Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768286234859-gixqo6i",
+      "timestamp": "2026-01-26T03:46:56.793Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768285469937-ghhvvpa",
+      "timestamp": "2026-01-26T03:46:56.794Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.794Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.794Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768285469937-ghhvvpa",
+      "timestamp": "2026-01-26T03:46:56.794Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768284789578-7f6brno",
+      "timestamp": "2026-01-26T03:46:56.794Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.794Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.796Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768284789578-7f6brno",
+      "timestamp": "2026-01-26T03:46:56.796Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768284761980-8mhryqf",
+      "timestamp": "2026-01-26T03:46:56.796Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.796Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.804Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768284761980-8mhryqf",
+      "timestamp": "2026-01-26T03:46:56.804Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768284159567-tr3n29o",
+      "timestamp": "2026-01-26T03:46:56.804Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.804Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.808Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768284159567-tr3n29o",
+      "timestamp": "2026-01-26T03:46:56.808Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768284115223-p5r39ss",
+      "timestamp": "2026-01-26T03:46:56.808Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.808Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.811Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768284115223-p5r39ss",
+      "timestamp": "2026-01-26T03:46:56.812Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768284062978-e3k1q5g",
+      "timestamp": "2026-01-26T03:46:56.812Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.812Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.821Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768284062978-e3k1q5g",
+      "timestamp": "2026-01-26T03:46:56.821Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768283314312-d286aqs",
+      "timestamp": "2026-01-26T03:46:56.821Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.821Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.822Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768283314312-d286aqs",
+      "timestamp": "2026-01-26T03:46:56.823Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768283240375-66ugqp0",
+      "timestamp": "2026-01-26T03:46:56.823Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.829Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.829Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768283240375-66ugqp0",
+      "timestamp": "2026-01-26T03:46:56.831Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768283042896-pjugz3l",
+      "timestamp": "2026-01-26T03:46:56.837Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.837Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.839Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768283042896-pjugz3l",
+      "timestamp": "2026-01-26T03:46:56.839Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768281012677-rxrr9z8",
+      "timestamp": "2026-01-26T03:46:56.839Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.839Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.839Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768281012677-rxrr9z8",
+      "timestamp": "2026-01-26T03:46:56.840Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768279433079-nf31d8y",
+      "timestamp": "2026-01-26T03:46:56.840Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.840Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.840Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768279433079-nf31d8y",
+      "timestamp": "2026-01-26T03:46:56.840Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/5ae97391-9a42-4d92-bd6c-f0c37b2b7fc0",
+      "timestamp": "2026-01-26T03:46:56.840Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.840Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.851Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan 5ae97391-9a42-4d92-bd6c-f0c37b2b7fc0",
+      "timestamp": "2026-01-26T03:46:56.851Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/f1850671-f069-4a86-88da-630252bd72d9",
+      "timestamp": "2026-01-26T03:46:56.851Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.851Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.855Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan f1850671-f069-4a86-88da-630252bd72d9",
+      "timestamp": "2026-01-26T03:46:56.855Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1768276275892-3cig6cd",
+      "timestamp": "2026-01-26T03:46:56.855Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.857Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.859Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1768276275892-3cig6cd",
+      "timestamp": "2026-01-26T03:46:56.859Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1767282362573-5dun41c",
+      "timestamp": "2026-01-26T03:46:56.859Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.859Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.867Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1767282362573-5dun41c",
+      "timestamp": "2026-01-26T03:46:56.867Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1767282143724-w7lwh78",
+      "timestamp": "2026-01-26T03:46:56.867Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.867Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.871Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1767282143724-w7lwh78",
+      "timestamp": "2026-01-26T03:46:56.871Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1767282034918-ps38mm9",
+      "timestamp": "2026-01-26T03:46:56.871Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.871Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.876Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1767282034918-ps38mm9",
+      "timestamp": "2026-01-26T03:46:56.876Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1767281964636-kblc1it",
+      "timestamp": "2026-01-26T03:46:56.876Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.876Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.881Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1767281964636-kblc1it",
+      "timestamp": "2026-01-26T03:46:56.881Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1767216093373-0dykcpc",
+      "timestamp": "2026-01-26T03:46:56.881Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.881Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.887Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1767216093373-0dykcpc",
+      "timestamp": "2026-01-26T03:46:56.888Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1767214732271-5fvxxhi",
+      "timestamp": "2026-01-26T03:46:56.888Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.888Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.895Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1767214732271-5fvxxhi",
+      "timestamp": "2026-01-26T03:46:56.896Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1767213862739-yzvdgxo",
+      "timestamp": "2026-01-26T03:46:56.896Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.896Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.900Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1767213862739-yzvdgxo",
+      "timestamp": "2026-01-26T03:46:56.900Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1767213795895-7cvybej",
+      "timestamp": "2026-01-26T03:46:56.900Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.900Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.907Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1767213795895-7cvybej",
+      "timestamp": "2026-01-26T03:46:56.907Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1767213421203-es5qrua",
+      "timestamp": "2026-01-26T03:46:56.907Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.907Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.914Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1767213421203-es5qrua",
+      "timestamp": "2026-01-26T03:46:56.915Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1767211413953-t177yls",
+      "timestamp": "2026-01-26T03:46:56.915Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.915Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.924Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1767211413953-t177yls",
+      "timestamp": "2026-01-26T03:46:56.924Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Request URL: http://127.0.0.1:8000/api/scans/desktop-1767210867670-c91ooxt",
+      "timestamp": "2026-01-26T03:46:56.924Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Method: GET",
+      "timestamp": "2026-01-26T03:46:56.924Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Response status: 200 OK",
+      "timestamp": "2026-01-26T03:46:56.924Z"
+    },
+    {
+      "type": "log",
+      "text": "[DASHBOARD DEBUG] fetchScanDetail: Success for scan desktop-1767210867670-c91ooxt",
+      "timestamp": "2026-01-26T03:46:56.924Z"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "passed": true
+}

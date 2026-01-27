@@ -1,0 +1,20 @@
+Dashboard Smoke Test Report
+==================================================
+Timestamp: 2026-01-21T04:26:04.992Z
+Base URL: http://localhost:5173
+
+Tabs Visited:
+  - Ads & Influence (ads): ✓ PASSED
+  - Politics & Worldview (politics): ✓ PASSED
+  - Patterns in Your Feed (patterns): ✓ PASSED
+  - Creators & Voices (creators): ✓ PASSED
+  - What the Algorithm Thinks (algorithm): ✓ PASSED
+
+Console Messages: 3
+Errors: 0
+Warnings: 0
+
+Summary:
+  Overall Status: ✓ PASSED
+  Screenshots saved to: test-artifacts/dashboard-smoke/
+  Full report: C:\Users\jwjwi\Documents\projects\goodish\apps\alg-gemini\test-artifacts\dashboard-smoke\report-1768969582460.json

@@ -1,0 +1,200 @@
+{
+  "meta": {
+    "scan_id": "desktop-1767216093373-0dykcpc",
+    "platform": "TWITTER",
+    "n_items": 41,
+    "window_start": "2025-12-31T21:21:33.373Z",
+    "window_end": "2025-12-31T21:21:33.373Z",
+    "generated_at": "2026-01-06T09:15:29.650049",
+    "coverage": {
+      "n_items_total": 41,
+      "n_items_included": 41,
+      "n_items_excluded": 0,
+      "exclusion_reasons": {},
+      "quality_flags": {
+        "missing_text": 41
+      }
+    }
+  },
+  "observations": {
+    "total_posts_seen": 41,
+    "commercial_exposure_spectrum": {
+      "stacked_bar": {
+        "non_commercial": 33,
+        "labeled_ads": 3,
+        "unlabeled_promotion": 4,
+        "total": 40
+      },
+      "excluded": {
+        "unlabeled_promotion_medium_confidence": 0,
+        "ambiguous": 1
+      },
+      "total_items": 41,
+      "high_confidence_items": 40,
+      "coverage_percent": 97.6
+    },
+    "total_ads_detected": 2,
+    "platform_labeled_ad_evidence": [
+      {
+        "item_position": 2,
+        "method": "PLATFORM_LABEL",
+        "method_reliability": 0.999,
+        "confidence": "high",
+        "sponsored_label_text": "Ad",
+        "advertiser_name": "NFL"
+      },
+      {
+        "item_position": 7,
+        "method": "PLATFORM_LABEL",
+        "method_reliability": 0.999,
+        "confidence": "high",
+        "sponsored_label_text": "Ad",
+        "advertiser_name": "FOX One"
+      }
+    ],
+    "platform_labeled_ad_evidence_count": 2,
+    "unlabeled_promotions_high_confidence": 4,
+    "total_promotional_content": 7,
+    "promo_signals": {
+      "n_high_confidence": 0,
+      "n_medium_confidence": 4,
+      "n_low_confidence": 5,
+      "n_unlabeled_promo": 0,
+      "signal_types_detected": [
+        "discount_code",
+        "cta_verb",
+        "price_mention"
+      ],
+      "signal_type_counts": {
+        "discount_code": 4,
+        "cta_verb": 1,
+        "price_mention": 4
+      }
+    },
+    "ocr_extraction_rate_percent": 0.0,
+    "items_with_ocr_text": 0,
+    "ad_rate_percent": 4.9,
+    "ad_rate_percent_ci": {
+      "lower": 1.0,
+      "upper": 16.5,
+      "confidence_level": 0.95,
+      "method": "wilson"
+    },
+    "ad_rate_estimate_type": "INTERVAL",
+    "promotional_rate_percent": 17.1,
+    "promotional_rate_percent_ci": {
+      "lower": 8.0,
+      "upper": 31.8,
+      "confidence_level": 0.95,
+      "method": "wilson"
+    },
+    "promotional_rate_estimate_type": "INTERVAL",
+    "top_companies": [
+      {
+        "name": "ad.doubleclick.net",
+        "count": 2,
+        "high_confidence": 2
+      }
+    ],
+    "unique_companies_surfaced": 1,
+    "_company_exclusion_stats": {
+      "below_count_threshold": 2,
+      "no_high_confidence_evidence": 0
+    },
+    "top_advertisers": [
+      {
+        "name": "NFL",
+        "count": 1
+      },
+      {
+        "name": "FOX One",
+        "count": 1
+      }
+    ],
+    "top1_advertiser_share_percent": 50.0,
+    "top3_advertiser_share_percent": 100.0,
+    "unique_advertisers_count": 2
+  },
+  "measurements": {
+    "unlabeled_promotions": {
+      "value": {
+        "high_confidence": 4,
+        "medium_confidence": 0,
+        "ambiguous": 1
+      },
+      "method": "classifier:commercial_intent_pipeline",
+      "quality": "ok",
+      "notes": "Unlabeled promotions detected via disclosure tokens, CTA patterns, and entity references. Only high-confidence items counted in metrics. 1 items excluded as ambiguous."
+    },
+    "possible_unlabeled_promotions": {
+      "value": 4,
+      "method": "classifier:commercial_intent_pipeline",
+      "quality": "ok",
+      "notes": "High confidence: 4, Medium confidence: 0. Only high-confidence items are included in primary metrics."
+    },
+    "possible_promo_rate_percent": {
+      "value": 10.5,
+      "method": "classifier:commercial_intent_pipeline",
+      "quality": "ok",
+      "notes": "Percentage of non-ad posts with high-confidence promotional signals."
+    },
+    "promotion_topics": {
+      "value": [],
+      "method": "classifier:topic_keyword_matching",
+      "quality": "ok",
+      "notes": "3 topics detected from 7 promotional items but none met surfacing threshold (count >= 2 AND high_confidence >= 1).",
+      "threshold_rule": "count >= 2 AND high_confidence >= 1",
+      "detected_but_excluded_count": 3
+    },
+    "promotion_topics_excluded": {
+      "value": [
+        {
+          "topic": "fitness",
+          "count": 1,
+          "reason": "below_threshold"
+        },
+        {
+          "topic": "education",
+          "count": 1,
+          "reason": "below_threshold"
+        },
+        {
+          "topic": "tech",
+          "count": 1,
+          "reason": "below_threshold"
+        }
+      ],
+      "method": "classifier:topic_keyword_matching",
+      "quality": "model_low_confidence",
+      "notes": "Topics that did not meet the threshold for reliable surfacing."
+    }
+  },
+  "limits": {
+    "sample_size_limitations": [
+      "Sample of 41 posts from a single scan session."
+    ],
+    "commercial_analysis_exclusions": [
+      "1 items had ambiguous commercial signals and were excluded from metrics."
+    ],
+    "threshold_exclusions": [
+      "Topics excluded (below threshold): fitness, education, tech",
+      "2 companies appeared only once and are not shown individually."
+    ],
+    "missing_metadata_limitations": [
+      "No significant metadata gaps detected."
+    ],
+    "ad_detection_limitations": [
+      "Ad detection relies on platform labels. Native ads or influencer promotions without disclosure may not be detected.",
+      "Unlabeled promotion detection uses pattern matching on disclosure tokens, CTAs, and keywords."
+    ],
+    "ocr_extraction_limitations": [
+      "No significant OCR issues detected."
+    ],
+    "epistemic_boundaries": [
+      "We cannot know why the algorithm showed this content.",
+      "We cannot know your intent or interest level in any content shown.",
+      "We cannot predict future ad targeting based on this single scan.",
+      "Advertiser intent and targeting criteria are not visible to us."
+    ]
+  }
+}
