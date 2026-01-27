@@ -23,7 +23,7 @@ const Navbar = () => {
     );
     
     return (
-        <nav className="fixed top-0 left-0 w-full z-50 h-14 md:h-16 px-4 md:px-6 lg:px-12 flex items-center justify-between bg-bg-page/90 backdrop-blur-none border-b border-transparent" aria-label="Main navigation">
+        <nav className="fixed top-0 left-0 w-full z-50 h-14 md:h-16 px-4 md:px-6 lg:px-12 flex items-center justify-between bg-bg-page border-b border-transparent" aria-label="Main navigation">
             <div className="flex items-center gap-4 md:gap-8">
                 <Link to="/" className="flex items-center">
                     <Logo variant="nav" />

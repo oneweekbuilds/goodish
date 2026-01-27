@@ -17,7 +17,7 @@ const ComingSoonBanner = () => {
   };
 
   return (
-    <div className="sticky top-14 md:top-16 w-full bg-primary-blue/10 border-b border-primary-blue/20 py-3 px-4 z-40">
+    <div className="sticky top-14 md:top-16 w-full bg-bg-page border-b border-primary-blue/20 py-3 px-4 z-40">
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 text-center">
         <p className="text-sm font-medium text-text-main">
           AlgorithmLens is coming soon. Join the waitlist for early access.

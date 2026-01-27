@@ -2,12 +2,23 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, ChevronDown } from 'lucide-react';
+import { isComingSoon } from '../../config/comingSoon';
 
 const HeroSection = () => {
     const navigate = useNavigate();
+    const comingSoonMode = isComingSoon();
 
-    const handleStartScan = () => {
-        navigate('/start');
+    const handleCTAClick = () => {
+        if (comingSoonMode) {
+            // Scroll to first waitlist block
+            const waitlistBlock = document.getElementById('waitlist');
+            if (waitlistBlock) {
+                waitlistBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        } else {
+            // Navigate to scan page
+            navigate('/start');
+        }
     };
 
     return (
@@ -48,11 +59,11 @@ const HeroSection = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                 >
-                    <button 
-                        onClick={handleStartScan}
+                    <button
+                        onClick={handleCTAClick}
                         className="group relative px-8 py-4 bg-primary-blue text-white rounded-full font-semibold text-lg shadow-glow hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 flex items-center gap-2"
                     >
-                        Start a Scan
+                        {comingSoonMode ? 'Join the Waitlist' : 'Start a Scan'}
                         <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </button>
                 </motion.div>

@@ -15,7 +15,7 @@ const VARIANT_DEFAULTS = {
   },
   loop: {
     className: 'w-72 max-w-[300px]',
-    style: { filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.08))' },
+    style: { filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.08))', mixBlendMode: 'multiply' },
   },
 };
 
