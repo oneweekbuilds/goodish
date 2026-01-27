@@ -23,6 +23,7 @@ import {
   aggregateCreators,
   aggregateEmotions,
   aggregateProducts,
+  aggregateAdThemes,
   calculateStability,
   calculateDiscoveryRate,
   calculateEchoRisk,
@@ -371,29 +372,58 @@ export function getAdsVsPromoData(scans, scanDetails) {
 }
 
 /**
- * View 4: Products mentioned most often
- * PHASE 5: Uses aggregateProducts for deduplication
+ * View 4: Ad themes (what the ads were mostly about)
+ * Uses aggregateAdThemes to summarize ad narratives from multiple text sources:
+ * - ad_metadata.product_or_service
+ * - content_text.captions
+ * - content_text.on_screen_labels
+ * Groups ads into neutral, readable themes based on keyword patterns.
  */
 export function getProductMentionsData(scans, scanDetails) {
-  const productsData = aggregateProducts(scans, scanDetails);
+  const themesData = aggregateAdThemes(scans, scanDetails);
 
-  if (productsData.scansUsed === 0 || productsData.sortedProducts.length === 0) {
+  if (themesData.scansUsed === 0 || themesData.totalAds === 0) {
     return createResponse(
       false,
       null,
-      'No product data extracted from ads yet. Run more scans with ad content.',
+      'No ad data found in scans yet.',
       0,
       []
     );
   }
 
-  // Return top 10 products
+  // If no themes detected (ads didn't repeat enough)
+  if (!themesData.hasThemes) {
+    return createResponse(
+      true,
+      {
+        themes: [],
+        totalAds: themesData.totalAds,
+        message: 'Ads in this window did not repeat strongly enough to form clear themes.',
+      },
+      null,
+      themesData.scansUsed,
+      themesData.scansWithData
+    );
+  }
+
+  // Return top themes with examples
+  const themes = themesData.themesArray.slice(0, 8).map(t => ({
+    label: t.theme,
+    value: t.percentage,
+    count: t.count,
+    examples: [...t.advertisers, ...t.domains].slice(0, 2), // Mix advertisers and domains, max 2
+  }));
+
   return createResponse(
     true,
-    productsData.sortedProducts.slice(0, 10),
+    {
+      themes,
+      totalAds: themesData.totalAds,
+    },
     null,
-    productsData.scansUsed,
-    productsData.scansWithData
+    themesData.scansUsed,
+    themesData.scansWithData
   );
 }
 
@@ -588,10 +618,11 @@ export function getPlatformPromoData(scans, scanDetails) {
 /**
  * View 10: What advertisers seem to want from you
  * PHASE 9 (Trust): Threshold of 50 signals AND 3 categories
+ * Updated to use theme-based ad aggregation
  */
 export function getAdvertiserInsightsData(scans, scanDetails) {
-  const products = getProductMentionsData(scans, scanDetails);
-  if (!products.hasData) {
+  const themes = getProductMentionsData(scans, scanDetails);
+  if (!themes.hasData) {
     return createResponse(
       false,
       null,
@@ -601,27 +632,39 @@ export function getAdvertiserInsightsData(scans, scanDetails) {
     );
   }
 
-  // PHASE 9: Require ≥50 brand/product signals AND ≥3 categories
-  const totalSignals = products.data.reduce((sum, p) => sum + p.value, 0);
-  const categoryCount = products.data.length;
-
-  if (totalSignals < 50 || categoryCount < 3) {
+  // Handle case where themes exist but no clear patterns
+  if (themes.data?.message || !themes.data?.themes || themes.data.themes.length === 0) {
     return createResponse(
       false,
       null,
       'Not enough data to identify a pattern yet.',
-      products.scansUsed,
-      products.scansWithData
+      themes.scansUsed,
+      themes.scansWithData
     );
   }
 
-  const topProducts = products.data.slice(0, 3).map(p => p.label);
+  // PHASE 9: Require ≥50 ads AND ≥3 theme categories
+  const totalAds = themes.data.totalAds || 0;
+  const themeArray = themes.data.themes || [];
+  const categoryCount = themeArray.length;
+
+  if (totalAds < 50 || categoryCount < 3) {
+    return createResponse(
+      false,
+      null,
+      'Not enough data to identify a pattern yet.',
+      themes.scansUsed,
+      themes.scansWithData
+    );
+  }
+
+  const topThemes = themeArray.slice(0, 3).map(t => t.label);
   return createResponse(
     true,
-    { interests: topProducts },
+    { interests: topThemes },
     null,
-    products.scansUsed,
-    products.scansWithData
+    themes.scansUsed,
+    themes.scansWithData
   );
 }
 

@@ -633,6 +633,133 @@ export function aggregateProducts(scans, scanDetails) {
   return result;
 }
 
+/**
+ * Aggregate ad themes from ad content across all scans.
+ *
+ * Uses multi-source text analysis:
+ * - ad_metadata.product_or_service
+ * - content_text.captions (array)
+ * - content_text.on_screen_labels (array)
+ * - ad_metadata.advertiser_name
+ * - ad_metadata.advertiser_domain
+ *
+ * Groups ads into themes using keyword matching (not ML).
+ * Each theme must represent 2+ ads to avoid surfacing single instances.
+ *
+ * @param {Array} scans
+ * @param {Object} scanDetails
+ * @returns {Object} Theme summary with examples
+ */
+export function aggregateAdThemes(scans, scanDetails) {
+  const result = {
+    themes: {},        // theme -> { count, advertisers: Set(), domains: Set() }
+    totalAds: 0,
+    scansUsed: 0,
+    scansWithData: [],
+  };
+
+  if (!scans || scans.length === 0) {
+    return result;
+  }
+
+  for (const scan of scans) {
+    const detail = scanDetails[scan.id];
+    if (!detail) continue;
+
+    const feedItems = getFeedItems(detail);
+    let hasAdData = false;
+
+    for (const item of feedItems) {
+      if (!item.is_ad) continue;
+
+      hasAdData = true;
+      result.totalAds++;
+
+      // Collect all text from ad
+      const textSources = [
+        item.ad_metadata?.product_or_service || '',
+        ...(item.content_text?.captions || []),
+        ...(item.content_text?.on_screen_labels || []),
+      ];
+      const allText = textSources.join(' ').toLowerCase();
+
+      // Skip if no meaningful text
+      if (!allText.trim()) continue;
+
+      // Match against theme keywords (same as PROMO_THEME_KEYWORDS but expanded)
+      let matchedTheme = null;
+      const themeKeywords = {
+        'Beauty and skincare': ['makeup', 'skincare', 'beauty', 'cosmetic', 'lipstick', 'foundation', 'serum', 'moisturizer', 'cleanser'],
+        'Fitness and wellness': ['workout', 'fitness', 'protein', 'supplement', 'gym', 'weight loss', 'diet', 'exercise', 'nutrition'],
+        'Finance and investing': ['invest', 'crypto', 'trading', 'stock', 'money', 'finance', 'loan', 'credit', 'bank', 'savings'],
+        'Food and dining': ['food', 'recipe', 'restaurant', 'meal', 'cooking', 'snack', 'drink', 'delivery', 'dining'],
+        'Technology products': ['app', 'software', 'tech', 'device', 'phone', 'computer', 'gadget', 'laptop', 'tablet'],
+        'Home and lifestyle': ['home', 'decor', 'furniture', 'interior', 'household'],
+        'Travel and hospitality': ['travel', 'vacation', 'hotel', 'flight', 'booking', 'destination'],
+        'Fashion and apparel': ['fashion', 'clothing', 'outfit', 'dress', 'shoes', 'accessories', 'style', 'wear'],
+        'Gaming and entertainment': ['game', 'gaming', 'console', 'esports', 'stream', 'play'],
+        'Education and courses': ['course', 'learn', 'education', 'training', 'class', 'tutorial'],
+        'E-commerce and shopping': ['shop', 'buy', 'sale', 'discount', 'deal', 'store', 'purchase'],
+      };
+
+      for (const [theme, keywords] of Object.entries(themeKeywords)) {
+        for (const keyword of keywords) {
+          if (allText.includes(keyword)) {
+            matchedTheme = theme;
+            break;
+          }
+        }
+        if (matchedTheme) break;
+      }
+
+      // Only track if we found a theme
+      if (matchedTheme) {
+        if (!result.themes[matchedTheme]) {
+          result.themes[matchedTheme] = {
+            count: 0,
+            advertisers: new Set(),
+            domains: new Set(),
+          };
+        }
+
+        const theme = result.themes[matchedTheme];
+        theme.count++;
+
+        if (item.ad_metadata?.advertiser_name) {
+          theme.advertisers.add(item.ad_metadata.advertiser_name);
+        }
+        if (item.ad_metadata?.advertiser_domain) {
+          theme.domains.add(item.ad_metadata.advertiser_domain);
+        }
+      }
+    }
+
+    if (hasAdData) {
+      result.scansUsed++;
+      result.scansWithData.push(scan.id);
+    }
+  }
+
+  // Convert Sets to arrays and calculate percentages
+  // Filter out themes with only 1 ad (not enough for a pattern)
+  const themesArray = Object.entries(result.themes)
+    .filter(([_, data]) => data.count >= 2) // Must have 2+ ads
+    .map(([theme, data]) => ({
+      theme,
+      count: data.count,
+      percentage: result.totalAds > 0 ? Math.round((data.count / result.totalAds) * 100) : 0,
+      advertisers: Array.from(data.advertisers).slice(0, 2), // Max 2 examples
+      domains: Array.from(data.domains).slice(0, 2), // Max 2 examples
+    }))
+    .sort((a, b) => b.count - a.count);
+
+  return {
+    ...result,
+    themesArray,
+    hasThemes: themesArray.length > 0,
+  };
+}
+
 // ============================================
 // DERIVED CALCULATIONS
 // ============================================

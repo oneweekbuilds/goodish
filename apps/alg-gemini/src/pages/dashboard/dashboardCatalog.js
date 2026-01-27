@@ -208,32 +208,35 @@ export const dashboardCatalog = [
   {
     tab: 'ads',
     id: 'ads-products',
-    title: 'What the ads are pitching',
-    description: 'Top product themes in your ads during this window so you can see what\'s being emphasized.',
+    title: 'What the ads were mostly about',
+    description: 'Summarizes repeated themes in ad language from the selected date range.',
     outputType: 'bar',
     dataFn: 'getProductMentionsData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     collapsedByDefault: true,
-    confidenceDisclaimer: true,
-    whyExplanation: 'Matched keywords in labeled ads. Does not indicate your interests.',
+    confidenceDisclaimer: false,
+    whyExplanation: 'Grouped labeled ads by shared keywords in ad text, captions, and on-screen labels. Based on repeated patterns, not single instances.',
     takeaway: (data) => {
-      // FIX A9: Add context to low-signal copy
-      if (!Array.isArray(data) || data.length === 0) return null;
-      const totalMatches = data.reduce((sum, item) => sum + (item.value || 0), 0);
-      const [first, second] = data;
-      if (totalMatches < 10) {
-        // Provide calm context about what low signal means
-        return `Low signal: Found ${totalMatches} product keyword matches. This may mean ads were subtle, or few ads appeared.`;
+      // Handle message-only response (no themes detected)
+      if (data?.message) return data.message;
+
+      // Handle themes array
+      if (!data?.themes || data.themes.length === 0) return null;
+
+      const themes = data.themes;
+      const totalAds = data.totalAds || 0;
+      const [first, second] = themes;
+
+      if (themes.length === 1) {
+        return `${first.label} dominated (${first.value}% of ads in this window).`;
       }
-      
+
       if (first && second) {
-        return `${first.label} (${first.value} ads) and ${second.label} (${second.value} ads) lead.`;
+        return `${first.label} (${first.value}%) and ${second.label} (${second.value}%) led ad themes in this window.`;
       }
-      if (first) {
-        return `${first.label} dominates (${first.value} ads).`;
-      }
-      return 'A few product themes recur.';
+
+      return `${themes.length} ad themes detected across ${totalAds} ads.`;
     },
     action: null,
   },

@@ -308,8 +308,18 @@ const ViewCard = ({
   const renderBar = (data) => {
     if (!data) return null;
 
-    // PHASE 6A: Handle bars field for promo themes
-    const bars = data.bars || data;
+    // Special handling for ads-products: show message if no themes
+    const isAdProducts = view?.id === 'ads-products';
+    if (isAdProducts && data.message) {
+      return (
+        <div className="space-y-3">
+          <p className="text-sm text-slate-600">{data.message}</p>
+        </div>
+      );
+    }
+
+    // PHASE 6A: Handle bars field for promo themes, or themes array for ads-products
+    const bars = data.bars || data.themes || data;
     if (!Array.isArray(bars)) return null;
 
     // Special handling for ads-by-platform: show denominator explanation
@@ -323,9 +333,38 @@ const ViewCard = ({
             Percent shown is ads out of total posts on that platform in your scans.
           </p>
         )}
+        {/* Denominator explanation for ads-products */}
+        {isAdProducts && (
+          <p className="text-xs text-slate-600 mt-2 mb-2">
+            Percent of ads in the selected date range
+          </p>
+        )}
         <div className={deemphasizeCharts ? 'opacity-80' : ''}>
           <BarChartSimple data={bars} valueLabel="%" />
         </div>
+        {/* Show examples for ads-products themes */}
+        {isAdProducts && bars.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            <p className="text-xs font-medium text-slate-600 mb-3">Examples from your scans</p>
+            <div className="space-y-3">
+              {bars.slice(0, 3).map((theme, idx) => (
+                theme.examples && theme.examples.length > 0 && (
+                  <div key={idx}>
+                    <p className="text-xs font-medium text-slate-500 mb-1">{theme.label}</p>
+                    <ul className="space-y-0.5">
+                      {theme.examples.map((example, exIdx) => (
+                        <li key={exIdx} className="text-xs text-slate-600 flex items-center gap-2">
+                          <span className="text-slate-400">•</span>
+                          <span>{example}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )
+              ))}
+            </div>
+          </div>
+        )}
         {/* PHASE 6A: Show note if present */}
         {data.note && (
           <p className="text-xs text-slate-400 italic">{data.note}</p>
