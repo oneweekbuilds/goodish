@@ -16,7 +16,7 @@ const Navbar = () => {
             role="link"
         >
             {children}
-            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-bg-page border border-primary-blue/30 rounded text-xs text-text-main whitespace-nowrap opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity pointer-events-none shadow-lg">
+            <span className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-bg-page border border-primary-blue/30 rounded text-xs text-text-main whitespace-nowrap opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity pointer-events-none shadow-lg">
                 Coming soon
             </span>
         </span>
