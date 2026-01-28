@@ -66,8 +66,8 @@ const WaitlistSignup = ({ id }) => {
   };
 
   return (
-    <div className="max-w-xl mx-auto" id={id}>
-      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
+    <div className="max-w-xl mx-auto w-full px-4" id={id}>
+      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 sm:gap-4">
         <div className="flex-1">
           <label htmlFor={`waitlist-email-${id}`} className="sr-only">
             Email address for AlgorithmLens waitlist
@@ -79,7 +79,7 @@ const WaitlistSignup = ({ id }) => {
             onChange={(e) => setEmail(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Enter your email"
-            className="w-full px-6 py-4 rounded-full border-2 border-primary-blue/30 bg-bg-page text-text-main placeholder:text-text-muted focus:outline-none focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 transition-all shadow-sm"
+            className="w-full px-4 sm:px-6 py-3 sm:py-4 rounded-full border-2 border-primary-blue/30 bg-bg-page text-text-main placeholder:text-text-muted focus:outline-none focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 transition-all shadow-sm text-sm sm:text-base"
             disabled={isSubmitting}
             aria-label="Email address for AlgorithmLens waitlist"
             aria-required="true"
@@ -89,7 +89,7 @@ const WaitlistSignup = ({ id }) => {
         </div>
         <button
           type="submit"
-          className="px-8 py-4 bg-primary-blue text-white rounded-full font-bold text-base shadow-glow hover:shadow-lg hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 whitespace-nowrap"
+          className="px-6 sm:px-8 py-3 sm:py-4 bg-primary-blue text-white rounded-full font-bold text-sm sm:text-base shadow-glow hover:shadow-lg hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 whitespace-nowrap w-full sm:w-auto"
           disabled={isSubmitting}
           aria-label="Join the AlgorithmLens waitlist"
         >

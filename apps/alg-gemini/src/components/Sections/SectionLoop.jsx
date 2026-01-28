@@ -4,17 +4,17 @@ import Logo from '../Logo';
 
 const SectionLoop = () => {
     return (
-        <section className="py-24 bg-bg-page overflow-hidden">
+        <section className="py-12 sm:py-24 bg-bg-page overflow-hidden">
             {/* Section Heading - Unchanged */}
-            <div className="max-w-6xl mx-auto px-6 text-center mb-16">
-                <h2 className="text-4xl md:text-5xl font-bold text-text-main mb-6">The Feedback Loop</h2>
-                <p className="text-lg text-text-muted max-w-2xl mx-auto">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center mb-12 sm:mb-16">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-main mb-4 sm:mb-6">The Feedback Loop</h2>
+                <p className="text-base sm:text-lg text-text-muted max-w-2xl mx-auto px-2">
                     It's a cycle designed to keep you engaged. Your behavior trains the model, which refines the content, which shapes your behavior.
                 </p>
             </div>
 
             {/* Loop Container - 3x3 Grid */}
-            <div className="relative max-w-5xl mx-auto mt-16 px-6">
+            <div className="relative max-w-5xl mx-auto mt-8 sm:mt-16 px-4 sm:px-6">
                 <div className="hidden md:grid gap-4 items-center justify-items-center"
                     style={{
                         gridTemplateColumns: '1fr 1fr 1fr',
@@ -101,7 +101,7 @@ const SectionLoop = () => {
                 </div>
 
                 {/* Mobile Layout - Vertical Stack */}
-                <div className="flex flex-col gap-6 md:hidden items-center">
+                <div className="flex flex-col gap-4 sm:gap-6 md:hidden items-center w-full">
                     <LoopCard number={1} title="Your behavior" desc="Every tap, scroll, and pause teaches the algorithm." delay={0.2} />
                     <LoopCard number={2} title="The algorithm's view" desc="You are categorized into hidden labels." delay={0.4} />
                     <LoopCard number={3} title="Tailored content" desc="Your feed shifts to reinforce your inferred identity." delay={0.6} />
@@ -119,13 +119,13 @@ const LoopCard = ({ number, title, desc, delay }) => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay, duration: 0.5 }}
-            className="bg-white rounded-3xl shadow-soft p-6 w-full max-w-sm border border-border-light h-full flex flex-col justify-center items-center text-center"
+            className="bg-white rounded-2xl sm:rounded-3xl shadow-soft p-5 sm:p-6 w-full max-w-sm border border-border-light h-full flex flex-col justify-center items-center text-center"
         >
-            <div className="flex items-center gap-3 mb-3 justify-center">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary-blue/10 text-sm font-bold text-primary-blue shrink-0">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3 justify-center">
+                <span className="inline-flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-primary-blue/10 text-xs sm:text-sm font-bold text-primary-blue shrink-0">
                     {number}
                 </span>
-                <h3 className="text-lg font-bold text-text-main leading-tight">
+                <h3 className="text-base sm:text-lg font-bold text-text-main leading-tight">
                     {title}
                 </h3>
             </div>

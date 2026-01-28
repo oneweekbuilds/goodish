@@ -95,12 +95,12 @@ function App() {
 
                 {/* Waitlist Block #1 - Immediately after hero section (Coming Soon mode only) */}
                 {comingSoonMode && (
-                  <section className="py-20 bg-bg-page">
-                    <div className="max-w-4xl mx-auto px-6 text-center">
-                      <h3 className="text-3xl md:text-4xl font-bold text-text-main mb-3">
+                  <section className="py-12 sm:py-20 bg-bg-page">
+                    <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+                      <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-text-main mb-3">
                         Join the Waitlist
                       </h3>
-                      <p className="text-lg text-text-muted mb-10">
+                      <p className="text-base sm:text-lg text-text-muted mb-8 sm:mb-10 px-2">
                         Get early access when AlgorithmLens launches
                       </p>
                       <WaitlistSignup id="waitlist" />
@@ -116,12 +116,12 @@ function App() {
 
                 {/* Waitlist Block #2 - Near bottom, before final CTA (Coming Soon mode only) */}
                 {comingSoonMode && (
-                  <section className="py-20 bg-bg-page/50">
-                    <div className="max-w-4xl mx-auto px-6 text-center">
-                      <h3 className="text-3xl md:text-4xl font-bold text-text-main mb-3">
+                  <section className="py-12 sm:py-20 bg-bg-page/50">
+                    <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+                      <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-text-main mb-3">
                         Join the Waitlist
                       </h3>
-                      <p className="text-lg text-text-muted mb-10">
+                      <p className="text-base sm:text-lg text-text-muted mb-8 sm:mb-10 px-2">
                         Get early access when AlgorithmLens launches
                       </p>
                       <WaitlistSignup id="waitlist-footer" />
@@ -130,18 +130,18 @@ function App() {
                 )}
 
                 {!comingSoonMode && (
-                  <section className="py-26 mt-20 bg-bg-page text-center">
-                    <div className="max-w-4xl mx-auto px-6">
-                      <h2 className="text-4xl md:text-5xl font-bold text-text-main mb-8">
+                  <section className="py-12 sm:py-26 mt-12 sm:mt-20 bg-bg-page text-center">
+                    <div className="max-w-4xl mx-auto px-4 sm:px-6">
+                      <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-main mb-6 sm:mb-8">
                         Ready to see your profile?
                       </h2>
-                      <p className="text-lg text-text-muted mb-12 max-w-xl mx-auto">
+                      <p className="text-base sm:text-lg text-text-muted mb-8 sm:mb-12 max-w-xl mx-auto px-2">
                         Upload a screen recording of your feed to generate your AlgorithmLens dashboard. Private and secure.
                       </p>
 
                       <Link
                         to="/start"
-                        className="inline-block px-10 py-4 bg-primary-blue text-white rounded-full font-bold text-lg shadow-glow hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                        className="inline-block px-8 sm:px-10 py-3 sm:py-4 bg-primary-blue text-white rounded-full font-bold text-base sm:text-lg shadow-glow hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                       >
                         Start a Scan
                       </Link>

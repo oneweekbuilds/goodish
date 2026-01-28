@@ -15,14 +15,14 @@ const SectionTracking = () => {
     const cardHeight = "h-[110px]"; // Fixed height for both feed items and signal cards
 
     return (
-        <section ref={containerRef} className="py-24 bg-bg-page relative overflow-hidden">
-            <div className="max-w-6xl mx-auto px-6">
-                <div className="text-center mb-20">
+        <section ref={containerRef} className="py-12 sm:py-24 bg-bg-page relative overflow-hidden">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6">
+                <div className="text-center mb-12 sm:mb-20">
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="text-4xl md:text-5xl font-bold text-text-main mb-6"
+                        className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-main mb-4 sm:mb-6"
                     >
                         Algorithms track everything you do.
                     </motion.h2>
@@ -31,13 +31,13 @@ const SectionTracking = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.1 }}
-                        className="text-lg text-text-muted max-w-2xl mx-auto"
+                        className="text-base sm:text-lg text-text-muted max-w-2xl mx-auto px-2"
                     >
                         Every scroll is a signal. Your interactions are meticulously logged to build a digital model of your psyche.
                     </motion.p>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start relative">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-16 items-start relative">
 
                     {/* Left: Phone Mockup with Header */}
                     <div className="relative mx-auto lg:mx-0 order-2 lg:order-1 flex flex-col">
@@ -48,8 +48,8 @@ const SectionTracking = () => {
                             viewport={{ once: true }}
                             className="mb-6 text-center"
                         >
-                            <h3 className="text-2xl md:text-3xl font-bold text-text-main mb-2">Your Feeds</h3>
-                            <p className="text-sm text-text-muted">Algorithms learn who you are from your actions</p>
+                            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-text-main mb-2">Your Feeds</h3>
+                            <p className="text-xs sm:text-sm text-text-muted px-2">Algorithms learn who you are from your actions</p>
                         </motion.div>
 
                         {/* Phone Container */}
@@ -90,8 +90,8 @@ const SectionTracking = () => {
                             viewport={{ once: true }}
                             className="mb-6 text-center"
                         >
-                            <h3 className="text-2xl md:text-3xl font-bold text-text-main mb-2">Signals Extracted</h3>
-                            <p className="text-sm text-text-muted">Key takeaways algorithms gather from your behavior</p>
+                            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-text-main mb-2">Signals Extracted</h3>
+                            <p className="text-xs sm:text-sm text-text-muted px-2">Key takeaways algorithms gather from your behavior</p>
                         </motion.div>
 
                         <div className="space-y-3.5" style={{ marginTop: '72px' }}>
