@@ -40,7 +40,7 @@ const SectionTracking = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-16 items-start relative">
 
                     {/* Left: Phone Mockup with Header */}
-                    <div className="relative mx-auto lg:mx-0 order-2 lg:order-1 flex flex-col">
+                    <div className="relative mx-auto lg:mx-0 order-1 flex flex-col">
                         {/* Header matching right side */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -82,7 +82,7 @@ const SectionTracking = () => {
                     </div>
 
                     {/* Right: Signals Extracted */}
-                    <div className="relative order-1 lg:order-2 space-y-5 flex flex-col">
+                    <div className="relative order-2 space-y-5 flex flex-col">
                         {/* Header for takeaways */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
