@@ -129,23 +129,25 @@ function App() {
                   </section>
                 )}
 
-                <section className="py-26 mt-20 bg-bg-page text-center">
-                  <div className="max-w-4xl mx-auto px-6">
-                    <h2 className="text-4xl md:text-5xl font-bold text-text-main mb-8">
-                      Ready to see your profile?
-                    </h2>
-                    <p className="text-lg text-text-muted mb-12 max-w-xl mx-auto">
-                      Upload a screen recording of your feed to generate your AlgorithmLens dashboard. Private and secure.
-                    </p>
+                {!comingSoonMode && (
+                  <section className="py-26 mt-20 bg-bg-page text-center">
+                    <div className="max-w-4xl mx-auto px-6">
+                      <h2 className="text-4xl md:text-5xl font-bold text-text-main mb-8">
+                        Ready to see your profile?
+                      </h2>
+                      <p className="text-lg text-text-muted mb-12 max-w-xl mx-auto">
+                        Upload a screen recording of your feed to generate your AlgorithmLens dashboard. Private and secure.
+                      </p>
 
-                    <Link
-                      to="/start"
-                      className="inline-block px-10 py-4 bg-primary-blue text-white rounded-full font-bold text-lg shadow-glow hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-                    >
-                      Start a Scan
-                    </Link>
-                  </div>
-                </section>
+                      <Link
+                        to="/start"
+                        className="inline-block px-10 py-4 bg-primary-blue text-white rounded-full font-bold text-lg shadow-glow hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                      >
+                        Start a Scan
+                      </Link>
+                    </div>
+                  </section>
+                )}
               </>
             }
           />
