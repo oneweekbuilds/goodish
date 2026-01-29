@@ -39,6 +39,11 @@ export default async function handler(req, res) {
     return res.status(500).json({ ok: false, error: 'Server configuration error' });
   }
 
+  // Redact email for logging (first 3 chars + domain)
+  const redactedEmail = trimmedEmail.length > 3
+    ? trimmedEmail.substring(0, 3) + '***@' + trimmedEmail.split('@')[1]
+    : '***@' + trimmedEmail.split('@')[1];
+
   try {
     // Call Beehiiv API v2 subscriptions endpoint
     const beehiivUrl = `https://api.beehiiv.com/v2/publications/${publicationId}/subscriptions`;
@@ -51,32 +56,51 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         email: trimmedEmail,
-        reactivate_existing: false,
+        reactivate_existing: true,
         send_welcome_email: true,
         utm_source: 'algorithmlens',
         utm_medium: 'waitlist',
         utm_campaign: 'coming_soon',
+        referring_site: 'https://www.algorithmlens.com',
       }),
+    });
+
+    const beehiivStatus = beehiivResponse.status;
+    let beehiivBody;
+
+    // Parse response body
+    try {
+      beehiivBody = await beehiivResponse.json();
+    } catch (parseError) {
+      // If JSON parsing fails, get text
+      beehiivBody = await beehiivResponse.text();
+    }
+
+    // Log for debugging
+    console.log('Beehiiv API response:', {
+      status: beehiivStatus,
+      email: redactedEmail,
+      body: beehiivBody,
     });
 
     // Handle Beehiiv response
     if (!beehiivResponse.ok) {
-      const errorText = await beehiivResponse.text();
-      console.error('Beehiiv API error:', beehiivResponse.status, errorText);
-
-      // Check if subscriber already exists
-      if (beehiivResponse.status === 400 || beehiivResponse.status === 409) {
-        // Subscriber might already exist - treat as success
-        return res.status(200).json({ ok: true, message: 'Already subscribed' });
-      }
-
-      return res.status(500).json({ ok: false, error: 'Failed to subscribe' });
+      console.error('Beehiiv API error:', beehiivStatus, beehiivBody);
+      return res.status(beehiivStatus).json({
+        ok: false,
+        error: 'beehiiv_error',
+        beehiiv_status: beehiivStatus,
+        beehiiv_body: beehiivBody,
+      });
     }
 
-    const data = await beehiivResponse.json();
-    console.log('Beehiiv subscription successful:', data);
-
-    return res.status(200).json({ ok: true });
+    // Success
+    console.log('Beehiiv subscription successful for:', redactedEmail);
+    return res.status(200).json({
+      ok: true,
+      beehiiv_status: beehiivStatus,
+      beehiiv_body: beehiivBody,
+    });
   } catch (error) {
     console.error('Subscription error:', error);
     return res.status(500).json({ ok: false, error: 'Internal server error' });
