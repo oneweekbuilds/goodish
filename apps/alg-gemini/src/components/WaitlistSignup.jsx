@@ -27,7 +27,7 @@ const WaitlistSignup = ({ id }) => {
     return emailRegex.test(email);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
     setIsSuccess(false);
@@ -46,42 +46,29 @@ const WaitlistSignup = ({ id }) => {
     // Show loading state
     setIsSubmitting(true);
 
-    try {
-      // Build Beehiiv Magic Link URL with UTM parameters
-      const beehiivBaseUrl = 'https://magic.beehiiv.com/v1/607214bf-384d-41dc-bc24-ac0c304c62b4';
-      const params = new URLSearchParams({
-        email: email.trim(),
-        utm_source: 'algorithmlens',
-        utm_medium: 'waitlist',
-        utm_campaign: 'coming_soon',
-        redirect_url: window.location.href, // Keep user on current page
-      });
+    // Build Beehiiv Magic Link URL with UTM parameters
+    const beehiivBaseUrl = 'https://magic.beehiiv.com/v1/607214bf-384d-41dc-bc24-ac0c304c62b4';
+    const params = new URLSearchParams({
+      email: email.trim(),
+      utm_source: 'algorithmlens',
+      utm_medium: 'waitlist',
+      utm_campaign: 'coming_soon',
+    });
 
-      const subscriptionUrl = `${beehiivBaseUrl}?${params.toString()}`;
+    const subscriptionUrl = `${beehiivBaseUrl}?${params.toString()}`;
 
-      // Submit to Beehiiv API instead of redirecting
-      const response = await fetch(subscriptionUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        // Success - show confirmation message
-        setIsSuccess(true);
-        setEmail(''); // Clear email field
-      } else {
-        // Handle error response
-        setError('Something went wrong. Please try again.');
-      }
-    } catch (err) {
-      // Network or other error
-      console.error('Waitlist submission error:', err);
-      setError('Unable to connect. Please check your internet connection.');
-    } finally {
-      setIsSubmitting(false);
+    // Submit via hidden iframe to avoid CORS and redirect
+    const iframe = document.getElementById(`beehiiv-submit-${id}`);
+    if (iframe) {
+      iframe.src = subscriptionUrl;
     }
+
+    // Optimistically show success (cannot read cross-origin iframe response)
+    setTimeout(() => {
+      setIsSuccess(true);
+      setEmail('');
+      setIsSubmitting(false);
+    }, 500);
   };
 
   const handleKeyPress = (e) => {
@@ -92,6 +79,13 @@ const WaitlistSignup = ({ id }) => {
 
   return (
     <div className="max-w-xl mx-auto w-full px-4" id={id}>
+      {/* Hidden iframe for Beehiiv submission */}
+      <iframe
+        id={`beehiiv-submit-${id}`}
+        title="beehiiv-submit"
+        style={{ display: 'none' }}
+        aria-hidden="true"
+      />
       {isSuccess ? (
         <div
           className="text-center py-8 px-6 bg-primary-blue/10 border border-primary-blue/30 rounded-2xl"
