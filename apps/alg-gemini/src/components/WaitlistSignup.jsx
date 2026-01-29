@@ -4,12 +4,9 @@ import React, { useState } from 'react';
  * WaitlistSignup Component
  *
  * Minimal waitlist signup for Coming Soon mode.
- * Uses Beehiiv Magic Link for subscription (no backend needed).
+ * Submits to /api/subscribe serverless function which proxies to Beehiiv API v2.
  *
- * Beehiiv Magic Link:
- * https://magic.beehiiv.com/v1/607214bf-384d-41dc-bc24-ac0c304c62b4
- *
- * UTM Parameters:
+ * UTM Parameters (added server-side):
  * - utm_source=algorithmlens
  * - utm_medium=waitlist
  * - utm_campaign=coming_soon
@@ -27,7 +24,7 @@ const WaitlistSignup = ({ id }) => {
     return emailRegex.test(email);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsSuccess(false);
@@ -46,29 +43,35 @@ const WaitlistSignup = ({ id }) => {
     // Show loading state
     setIsSubmitting(true);
 
-    // Build Beehiiv Magic Link URL with UTM parameters
-    const beehiivBaseUrl = 'https://magic.beehiiv.com/v1/607214bf-384d-41dc-bc24-ac0c304c62b4';
-    const params = new URLSearchParams({
-      email: email.trim(),
-      utm_source: 'algorithmlens',
-      utm_medium: 'waitlist',
-      utm_campaign: 'coming_soon',
-    });
+    try {
+      // Submit to same-origin API proxy (avoids CORS)
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+        }),
+      });
 
-    const subscriptionUrl = `${beehiivBaseUrl}?${params.toString()}`;
+      const data = await response.json();
 
-    // Submit via hidden iframe to avoid CORS and redirect
-    const iframe = document.getElementById(`beehiiv-submit-${id}`);
-    if (iframe) {
-      iframe.src = subscriptionUrl;
-    }
-
-    // Optimistically show success (cannot read cross-origin iframe response)
-    setTimeout(() => {
-      setIsSuccess(true);
-      setEmail('');
+      if (response.ok && data.ok) {
+        // Success - show confirmation message
+        setIsSuccess(true);
+        setEmail('');
+      } else {
+        // Server returned error
+        setError(data.error || 'Something went wrong. Please try again.');
+      }
+    } catch (err) {
+      // Network or other error
+      console.error('Waitlist submission error:', err);
+      setError('Unable to connect. Please try again.');
+    } finally {
       setIsSubmitting(false);
-    }, 500);
+    }
   };
 
   const handleKeyPress = (e) => {
@@ -79,13 +82,6 @@ const WaitlistSignup = ({ id }) => {
 
   return (
     <div className="max-w-xl mx-auto w-full px-4" id={id}>
-      {/* Hidden iframe for Beehiiv submission */}
-      <iframe
-        id={`beehiiv-submit-${id}`}
-        title="beehiiv-submit"
-        style={{ display: 'none' }}
-        aria-hidden="true"
-      />
       {isSuccess ? (
         <div
           className="text-center py-8 px-6 bg-primary-blue/10 border border-primary-blue/30 rounded-2xl"
