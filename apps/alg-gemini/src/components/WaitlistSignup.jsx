@@ -128,6 +128,14 @@ const WaitlistSignup = ({ id }) => {
             </button>
           </form>
 
+          {/* MIT Credibility */}
+          <div className="mt-4 text-center">
+            <p className="text-sm font-semibold text-text-main">Built at MIT</p>
+            <p className="text-xs text-text-muted mt-1">
+              Developed with support from the MIT Sandbox Innovation Fund.
+            </p>
+          </div>
+
           {error && (
             <div
               id={`waitlist-error-${id}`}
