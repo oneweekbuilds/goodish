@@ -35,7 +35,6 @@ import {
   summarizeInfluence,
   classifyPromoThemes,
   aggregatePoliticalLeaning,
-  aggregateManipulativePatterns,
   UNCLASSIFIED_TOPIC,
   normalizeTopicLabel,
   formatDateLabel,
@@ -2462,92 +2461,3 @@ export function getAlgoChangeAdviceData() {
   return createResponse(true, { tips }, null, 0, []);
 }
 
-// =====================================================
-// MANIPULATIVE PATTERNS METRIC
-// =====================================================
-
-/**
- * Get manipulative patterns data (attention tactics)
- * A post is flagged if wellbeing.themes.length > 0 OR engagement_drivers.hooks_detected.length > 0
- *
- * Returns:
- * - primaryValue: count string like "14 posts"
- * - percent: numeric 0-1
- * - percentDisplay: integer percentage (no decimals)
- * - insight: plain-English insight line
- * - status: 'good' | 'neutral' | 'attention' based on percentage thresholds
- */
-export function getManipulativePatternsData(scans, scanDetails) {
-  const patternsData = aggregateManipulativePatterns(scans, scanDetails);
-
-  if (patternsData.scansUsed === 0 || patternsData.totalItems === 0) {
-    return createResponse(
-      false,
-      null,
-      'Need scan data with feed items to analyze attention tactics.',
-      0,
-      []
-    );
-  }
-
-  const flaggedCount = patternsData.flaggedItems;
-  const totalItems = patternsData.totalItems;
-  const percent = patternsData.percentage;
-  const percentDisplay = Math.round(percent * 100);
-
-  // Determine status based on thresholds
-  let status = 'good';
-  if (percentDisplay >= 12) {
-    status = 'attention';
-  } else if (percentDisplay >= 5) {
-    status = 'neutral';
-  }
-
-  // Generate insight text
-  let insight;
-  if (flaggedCount === 0) {
-    insight = 'No posts contained patterns often associated with attention-grabbing tactics.';
-  } else if (totalItems < 20) {
-    insight = `${flaggedCount} of ${totalItems} posts contained patterns often associated with attention-grabbing tactics.`;
-  } else if (percentDisplay < 5) {
-    insight = `A small portion (${percentDisplay}%) of posts contained patterns often associated with attention-grabbing tactics.`;
-  } else if (percentDisplay < 12) {
-    insight = `Some posts (${percentDisplay}%) contained patterns often associated with attention-grabbing tactics.`;
-  } else {
-    insight = `A notable portion (${percentDisplay}%) of posts contained patterns often associated with attention-grabbing tactics.`;
-  }
-
-  // Collect examples: top accounts using attention tactics (up to 5)
-  const examples = [];
-  if (patternsData.byCreator && Object.keys(patternsData.byCreator).length > 0) {
-    const sortedCreators = Object.entries(patternsData.byCreator)
-      .map(([_, stats]) => ({
-        name: stats.displayName,
-        count: stats.count,
-      }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
-    
-    examples.push(...sortedCreators.map(c => c.name));
-  }
-
-  const response = createResponse(
-    true,
-    {
-      currentPercent: percentDisplay,
-      flaggedCount,
-      totalPosts: totalItems,
-      insight,
-      status,
-      examples: examples.length > 0 ? examples : null,
-    },
-    null,
-    patternsData.scansUsed,
-    patternsData.scansWithData
-  );
-  response.micro = {
-    type: 'bar',
-    value: percentDisplay,
-  };
-  return response;
-}

@@ -731,38 +731,6 @@ export const dashboardCatalog = [
       : null,
     action: null,
   },
-  {
-    tab: 'patterns',
-    id: 'manipulative-patterns',
-    title: 'How often attention tactics appeared',
-    description: 'Attention tactics are patterns like urgency, outrage, or clickbait phrasing that try to pull focus.',
-    outputType: 'number_line',
-    dataFn: 'getManipulativePatternsData',
-    emptyStateType: 'needs_more_scans',
-    sortOrder: 'supporting',
-    whyExplanation: 'Detected wellbeing themes or engagement hooks. Context matters.',
-    takeaway: (data) => {
-      // FIX PA5: Lead with interpretation, make low-signal clearer
-      if (!data) return null;
-      const pct = data.currentPercent || 0;
-      const total = data.totalPosts || 0;
-
-      if (total < 20) {
-        return 'Need more posts to assess attention tactics reliably.';
-      }
-      if (pct === 0) {
-        return 'Attention-grabbing patterns were absent during this window.';
-      }
-      if (pct < 10) {
-        return 'Attention tactics appeared lightly. Present but not a dominant pattern.';
-      }
-      if (pct < 25) {
-        return 'Attention tactics surfaced regularly. A noticeable presence in the feed.';
-      }
-      return 'Attention tactics recurred heavily. A consistent thread throughout.';
-    },
-    action: null, // FIX X3, PA9: Removed generic advice
-  },
 
   // --- HIDDEN: Removed for cognitive load reduction ---
   {
