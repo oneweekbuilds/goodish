@@ -62,7 +62,7 @@ export const TABS = [
   { id: 'politics', label: 'Politics & Worldview' },
   { id: 'patterns', label: 'Patterns in Your Feed' },
   { id: 'creators', label: 'Creators & Voices' },
-  { id: 'algorithm', label: 'Observed Patterns' },
+  { id: 'algorithm', label: 'What Surfaced' },
   { id: 'talk', label: 'Talk' },
 ];
 
@@ -1055,16 +1055,16 @@ export const dashboardCatalog = [
   },
 
   // ==========================================
-  // TAB 5: OBSERVED PATTERNS
-  // Core question: "What patterns appeared in my scans?"
+  // TAB 5: WHAT SURFACED
+  // Core question: "What content themes surfaced in my scans?"
   // NOTE: We CANNOT know what the algorithm "thinks" - only what appeared
-  // Primary (1): Topics observed - the single clearest answer
+  // Primary (1): Topics that appeared most - the single clearest answer
   // Secondary (2): Topic breadth, Recurring themes
   // Collapsed (1): Possible future content
-  // Summary (1): Possible experiments
+  // Summary (1): Recurring themes
   // ==========================================
 
-  // --- PRIMARY: The single most important pattern metric ---
+  // --- PRIMARY: The single most important view ---
   {
     tab: 'algorithm',
     id: 'algo-topics-liked',
@@ -1230,18 +1230,17 @@ export const dashboardCatalog = [
   },
 
   // --- SUMMARY: What this means for you ---
-  // FIX W9: Improved header to match actual content (list of observed patterns)
   {
     tab: 'algorithm',
     id: 'algo-change-advice',
-    title: 'Observed Pattern Summary',
+    title: 'Recurring Themes Summary',
     description: 'Themes that appeared consistently during this window.',
     outputType: 'list',
     dataFn: 'getAlgoChangeAdviceData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'summary',
     isSummaryCard: true,
-    whyExplanation: 'Based on observed patterns. Reflects what appeared, not your interests or identity.',
+    whyExplanation: 'Based on what surfaced in your scans. Reflects what appeared, not your interests or identity.',
     takeaway: (data) => {
       if (data?.experiments?.length > 0) {
         return 'These themes appeared persistently across your scans.';

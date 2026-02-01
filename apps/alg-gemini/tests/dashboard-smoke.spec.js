@@ -14,7 +14,7 @@ const TABS = [
   { id: 'politics', label: 'Politics & Worldview' },
   { id: 'patterns', label: 'Patterns in Your Feed' },
   { id: 'creators', label: 'Creators & Voices' },
-  { id: 'algorithm', label: 'Observed Patterns' },
+  { id: 'algorithm', label: 'What Surfaced' },
   { id: 'talk', label: 'Talk' },
 ];
 
