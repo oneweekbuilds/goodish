@@ -404,7 +404,7 @@ const ViewCard = ({
             {hasAnyExamples ? (
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs font-medium text-slate-500 mb-1.5">More positive or neutral</p>
+                  <p className="text-xs font-medium text-slate-500 mb-1.5">Positive</p>
                   {data.positiveExamples && data.positiveExamples.length > 0 ? (
                     <ul className="space-y-1">
                       {data.positiveExamples.map((example, idx) => (
@@ -416,12 +416,12 @@ const ViewCard = ({
                     </ul>
                   ) : (
                     <p className="text-xs text-slate-500">
-                      No clear positive or neutral examples in your scanned posts yet.
+                      No positive tone examples in your scanned posts yet.
                     </p>
                   )}
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-slate-500 mb-1.5">More negative or tense</p>
+                  <p className="text-xs font-medium text-slate-500 mb-1.5">Negative</p>
                   {data.negativeExamples && data.negativeExamples.length > 0 ? (
                     <ul className="space-y-1">
                       {data.negativeExamples.map((example, idx) => (
@@ -433,7 +433,7 @@ const ViewCard = ({
                     </ul>
                   ) : (
                     <p className="text-xs text-slate-500">
-                      No clear negative or tense examples in your scanned posts yet.
+                      No negative tone examples in your scanned posts yet.
                     </p>
                   )}
                 </div>

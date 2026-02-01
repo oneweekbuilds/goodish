@@ -718,17 +718,32 @@ export const dashboardCatalog = [
   {
     tab: 'patterns',
     id: 'patterns-emotional-weight',
-    title: 'Tone Distribution (Rough Estimate)',
-    description: 'Broad estimate of emotional tone patterns during this window.',
+    title: 'Tone Distribution',
+    description: 'Distribution of positive, neutral, and negative tone in posts.',
     outputType: 'stacked100',
     dataFn: 'getEmotionalWeightData',
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     collapsedByDefault: true,
     whyExplanation: 'Based on keyword patterns. Sentiment detection has major limitations and cannot capture context or nuance.',
-    takeaway: (data) => data?.intensity
-      ? `Content showed a ${data.intensity.toLowerCase()} tone mix (very rough estimate).`
-      : null,
+    takeaway: (data) => {
+      if (!data?.segments || data.segments.length === 0) return null;
+
+      const positive = data.segments.find(s => s.label === 'Positive')?.value || 0;
+      const neutral = data.segments.find(s => s.label === 'Neutral')?.value || 0;
+      const negative = data.segments.find(s => s.label === 'Negative')?.value || 0;
+
+      if (negative >= 40) {
+        return 'Negative tone was prevalent in the content.';
+      }
+      if (positive >= 40) {
+        return 'Positive tone was prevalent in the content.';
+      }
+      if (neutral >= 40) {
+        return 'Neutral tone was prevalent in the content.';
+      }
+      return 'Tone was distributed across positive, neutral, and negative.';
+    },
     action: null,
   },
 

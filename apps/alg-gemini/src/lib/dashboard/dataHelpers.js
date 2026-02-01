@@ -1211,52 +1211,55 @@ export function getEmotionalWeightData(scans, scanDetails) {
     );
   }
 
-  // Return semantic categories without presentation colors
-  // Colors are applied in presentation layer (StackedBar100.jsx)
-  // Combine positive and neutral into "Mostly positive or neutral" for clarity
+  // Strict 3-category distribution: Positive, Neutral, Negative
   const segments = [
-    { label: 'Mostly positive or neutral', value: emotionsData.valencePercentages.POSITIVE + emotionsData.valencePercentages.NEUTRAL, category: 'positive' },
-    { label: 'More negative or tense', value: emotionsData.valencePercentages.NEGATIVE, category: 'negative' },
+    { label: 'Positive', value: emotionsData.valencePercentages.POSITIVE, category: 'positive' },
+    { label: 'Neutral', value: emotionsData.valencePercentages.NEUTRAL, category: 'neutral' },
+    { label: 'Negative', value: emotionsData.valencePercentages.NEGATIVE, category: 'negative' },
   ];
 
-  // Get creator tone examples if available
+  // Get creator tone examples by post count (not percentage)
   const creatorTones = aggregateCreatorTones(scans, scanDetails);
   let positiveExamples = null;
   let negativeExamples = null;
 
-  if (creatorTones.hasPerItemData && creatorTones.topCreatorsByTone.length > 0) {
-    // Get top creators by positive/neutral (lowest negative percent, highest positive+neutral)
-    const creatorsByPositive = creatorTones.topCreatorsByTone
-      .map(c => ({
-        displayName: c.displayName,
-        positiveNeutralPercent: 100 - c.negativePercent,
-        totalPosts: c.totalPosts,
+  if (creatorTones.hasPerItemData && Object.keys(creatorTones.creatorTones).length > 0) {
+    // Top 5 creators by POSITIVE post count
+    const creatorsByPositiveCount = Object.entries(creatorTones.creatorTones)
+      .map(([id, data]) => ({
+        displayName: data.displayName,
+        positiveCount: data.valences.POSITIVE,
       }))
-      .filter(c => c.totalPosts >= 3)
-      .sort((a, b) => b.positiveNeutralPercent - a.positiveNeutralPercent)
+      .filter(c => c.positiveCount > 0)
+      .sort((a, b) => b.positiveCount - a.positiveCount)
       .slice(0, 5);
-    
-    positiveExamples = creatorsByPositive.length > 0 
-      ? creatorsByPositive.map(c => c.displayName).filter(name => name && name.trim())
+
+    positiveExamples = creatorsByPositiveCount.length > 0
+      ? creatorsByPositiveCount.map(c => c.displayName).filter(name => name && name.trim())
       : null;
 
-    // Get top creators by negative (already sorted by negativePercent)
-    const creatorsByNegative = creatorTones.topCreatorsByTone
-      .filter(c => c.negativePercent > 0 && c.totalPosts >= 3)
+    // Top 5 creators by NEGATIVE post count
+    const creatorsByNegativeCount = Object.entries(creatorTones.creatorTones)
+      .map(([id, data]) => ({
+        displayName: data.displayName,
+        negativeCount: data.valences.NEGATIVE,
+      }))
+      .filter(c => c.negativeCount > 0)
+      .sort((a, b) => b.negativeCount - a.negativeCount)
       .slice(0, 5);
-    
-    negativeExamples = creatorsByNegative.length > 0
-      ? creatorsByNegative.map(c => c.displayName).filter(name => name && name.trim())
+
+    negativeExamples = creatorsByNegativeCount.length > 0
+      ? creatorsByNegativeCount.map(c => c.displayName).filter(name => name && name.trim())
       : null;
   }
 
   return createResponse(
     true,
-    { 
-      segments, 
-      intensity: emotionsData.intensity,
+    {
+      segments,
       positiveExamples,
       negativeExamples,
+      totalPosts: emotionsData.totalPostsAnalyzed,
     },
     null,
     emotionsData.scansUsed,
