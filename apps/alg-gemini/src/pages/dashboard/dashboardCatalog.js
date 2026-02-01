@@ -534,43 +534,6 @@ export const dashboardCatalog = [
     action: () => 'Feeds shift quickly based on what you pause on and share.',
   },
 
-  // --- SUMMARY: What this means for you ---
-  {
-    tab: 'politics',
-    id: 'politics-profile',
-    title: 'Political Exposure Pattern',
-    description: 'Summary of where political keywords came from and how they concentrated.',
-    outputType: 'text',
-    dataFn: 'getPoliticalProfileData',
-    emptyStateType: 'needs_more_scans',
-    sortOrder: 'summary',
-    isSummaryCard: true,
-    whyExplanation: 'Based on political keywords during this window. This measures exposure patterns, not your beliefs.',
-    takeaway: (data) => {
-      // FIX P10: Instead of repeating hero's percentage assessment, provide distinct insight
-      // NOTE: getPoliticalProfileData only returns politicalPercent, not source details
-      // So we provide a synthesis that doesn't repeat the hero's light/moderate/heavy labels
-      if (data?.politicalPercent === undefined) return null;
-      const pct = data.politicalPercent;
-      
-      if (pct === 0) {
-        return 'No political exposure detected during this window.';
-      }
-      
-      // Provide synthesis about what political content means, not repeating percentage ranges
-      if (pct < 10) {
-        return 'Political keywords appeared occasionally but weren\'t a dominant theme.';
-      }
-      
-      if (pct < 25) {
-        return 'Political keywords formed a visible but not overwhelming presence in your feed.';
-      }
-      
-      return 'Political keywords were a sustained and recurring element throughout your feed.';
-    },
-    action: null,
-  },
-
   // ==========================================
   // TAB 3: PATTERNS IN YOUR FEED
   // Core question: "Is my feed varied or repetitive?"

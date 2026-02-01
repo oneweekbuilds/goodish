@@ -1034,28 +1034,6 @@ export function getCrossPlatformPoliticalData(scans, scanDetails) {
   );
 }
 
-export function getPoliticalProfileData(scans, scanDetails) {
-  const politicsData = aggregatePolitics(scans, scanDetails);
-
-  if (politicsData.scansUsed === 0) {
-    return createResponse(
-      false,
-      null,
-      'Need political content data to generate insights.',
-      0,
-      []
-    );
-  }
-
-  return createResponse(
-    true,
-    { politicalPercent: politicsData.politicalPercentageOverall },
-    null,
-    politicsData.scansUsed,
-    politicsData.scansWithData
-  );
-}
-
 // =====================================================
 // TAB 3: PATTERNS IN YOUR FEED
 // Phase 5: Uses aggregateTopics and aggregateEmotions
