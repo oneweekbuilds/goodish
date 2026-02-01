@@ -1948,26 +1948,16 @@ export function getCrossplatformCreatorData(scans, scanDetails) {
     );
   }
 
-  const overlapping = creatorsData.crossPlatformCreators
+  const rows = creatorsData.crossPlatformCreators
     .slice(0, 10)
     .map(c => ({
       creator: normalizeCreatorName(c.displayName), // FIX C2
       platforms: c.platforms.join(', '),
     }));
 
-  if (overlapping.length === 0) {
-    return createResponse(
-      true,
-      { overlapping: [], message: 'No creators found across multiple platforms.' },
-      null,
-      creatorsData.scansUsed,
-      creatorsData.scansWithData
-    );
-  }
-
   return createResponse(
     true,
-    { overlapping },
+    rows,
     null,
     creatorsData.scansUsed,
     creatorsData.scansWithData

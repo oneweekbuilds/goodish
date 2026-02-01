@@ -948,13 +948,16 @@ export const dashboardCatalog = [
     collapsedByDefault: true,
     whyExplanation: 'Matched handles across scanned platforms.',
     takeaway: (data) => {
-      // FIX C8: Make empty state educational, not a dead end
       if (!Array.isArray(data) || data.length === 0) {
-        return 'No accounts appeared on multiple platforms during this window. If they did, we\'d show voices that reached you in different spaces.';
+        return 'No creators appeared across multiple platforms during this window.';
       }
-      if (data.length === 1) return 'One account appeared across multiple platforms. A recurring voice in different spaces.';
-      if (data.length <= 3) return `A small set of accounts (${data.length}) appeared across platforms. Recurring voices with broad reach.`;
-      return `${data.length} accounts appeared across multiple platforms. A recurring set of voices shaping what you saw in different spaces.`;
+      if (data.length === 1) {
+        return 'One creator appeared across multiple platforms. A recurring voice in different spaces.';
+      }
+      if (data.length <= 3) {
+        return `${data.length} creators appeared across multiple platforms. Recurring voices with broad reach.`;
+      }
+      return `${data.length} creators appeared across multiple platforms. A recurring set of voices shaping what you saw in different spaces.`;
     },
     action: () => 'Accounts appearing on multiple platforms may have outsized influence on what you see.',
   },
