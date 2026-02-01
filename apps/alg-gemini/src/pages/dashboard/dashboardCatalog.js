@@ -449,6 +449,42 @@ export const dashboardCatalog = [
     },
     action: null,
   },
+  {
+    tab: 'politics',
+    id: 'politics-ideology-distribution',
+    title: 'Ideological distribution',
+    description: 'Breakdown of political content by inferred ideological leaning.',
+    outputType: 'bar',
+    dataFn: 'getPoliticalIdeologyDistributionData',
+    emptyStateType: 'needs_more_scans',
+    sortOrder: 'supporting',
+    whyExplanation: 'Ideological leaning is inferred from language patterns in political posts. Neutral includes content without a clear directional signal.',
+    takeaway: (data) => {
+      if (!Array.isArray(data) || data.length === 0) return null;
+
+      const left = data.find(d => d.label === 'Left leaning')?.value || 0;
+      const neutral = data.find(d => d.label === 'Neutral')?.value || 0;
+      const right = data.find(d => d.label === 'Right leaning')?.value || 0;
+
+      // Find dominant category
+      const max = Math.max(left, neutral, right);
+
+      if (max < 40) {
+        return 'Political content was distributed across ideological perspectives.';
+      }
+
+      if (left === max) {
+        return 'Most political content leaned left based on language patterns.';
+      }
+
+      if (right === max) {
+        return 'Most political content leaned right based on language patterns.';
+      }
+
+      return 'Most political content appeared neutral or mixed.';
+    },
+    action: null,
+  },
 
   // --- COLLAPSED BY DEFAULT: Low confidence, opt-in required ---
   {

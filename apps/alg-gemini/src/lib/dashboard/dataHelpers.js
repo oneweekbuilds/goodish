@@ -792,6 +792,44 @@ export function getPoliticalLeaningData(scans, scanDetails, options = {}) {
 }
 
 /**
+ * Ideological distribution of political content
+ * Shows left/neutral/right breakdown of political posts
+ */
+export function getPoliticalIdeologyDistributionData(scans, scanDetails) {
+  const leaning = aggregatePoliticalLeaning(scans, scanDetails);
+
+  // Need at least 10 political posts to show distribution
+  if (leaning.totalPolitical < 10) {
+    return createResponse(
+      false,
+      null,
+      'Political content volume was too low to show a reliable ideological distribution.',
+      leaning.scansUsed,
+      []
+    );
+  }
+
+  // Create bars for left, neutral, right (exclude unknown)
+  const bars = [
+    { label: 'Left leaning', value: leaning.percentages.left },
+    { label: 'Neutral', value: leaning.percentages.neutral },
+    { label: 'Right leaning', value: leaning.percentages.right },
+  ];
+
+  return createResponse(
+    true,
+    bars,
+    null,
+    leaning.scansUsed,
+    [],
+    {
+      denominator: `Percent of political posts in the selected date range (${leaning.totalPolitical} posts)`,
+      methodology: 'Ideological leaning is inferred from language patterns in political posts. Neutral includes content without a clear directional signal.',
+    }
+  );
+}
+
+/**
  * View 13: Balance vs imbalance
  * PHASE 6A: Uses heuristic political leaning data (opt-in)
  * PHASE 9 (Trust): Qualitative only, raised threshold to 30
