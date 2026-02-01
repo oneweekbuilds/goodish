@@ -1116,25 +1116,6 @@ export function getTopicVarietyData(scans, scanDetails) {
     );
   }
 
-  // PHASE 9: Require ≥25 posts with topics (use uniqueTopicCount as proxy)
-  // If we have fewer than 3 unique topics, we likely don't have enough data
-  if (topicsData.uniqueTopicCount < 3) {
-    return createResponse(
-      false,
-      null,
-      'Not enough topics detected yet.',
-      topicsData.scansUsed,
-      topicsData.scansWithData,
-      {
-        n_items: totalItems,
-        windowStart,
-        windowEnd,
-        quality: QUALITY_FLAGS.LOW_SAMPLE,
-        quality_reason: 'Need more topic variety to show meaningful distribution.',
-      }
-    );
-  }
-
   // Sort topics by aggregated percentage
   const sortedTopics = Object.entries(topicsData.topics)
     .map(([category, percentage]) => ({ category, percentage }))
