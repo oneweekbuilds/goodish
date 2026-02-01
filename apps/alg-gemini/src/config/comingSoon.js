@@ -10,8 +10,8 @@
 const isComingSoonMode = import.meta.env.VITE_COMING_SOON_MODE === 'true';
 
 export const comingSoonConfig = {
-  // Main feature flag
-  isEnabled: isComingSoonMode,
+  // Main feature flag - forced to false for local development
+  isEnabled: false,
 
   // Message shown when users try to access gated routes
   redirectMessage: 'AlgorithmLens is coming soon. Join the waitlist.',
