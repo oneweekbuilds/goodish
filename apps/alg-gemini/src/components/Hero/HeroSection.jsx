@@ -49,9 +49,18 @@ const HeroSection = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-                    className="text-base sm:text-lg md:text-xl text-text-muted mb-8 sm:mb-12 max-w-2xl mx-auto leading-relaxed font-medium px-2"
+                    className="text-base sm:text-lg md:text-xl text-text-muted mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed font-medium px-2"
                 >
-                    Algorithms shape what you see, think, and do. AlgorithmLens reveals the hidden profile guiding your feed so you can reclaim clarity, awareness, and control.
+                    Algorithms shape what you see and believe. AlgorithmLens reveals the hidden profile guiding your feed so you can take back clarity and control.
+                </motion.p>
+
+                <motion.p
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                    className="text-lg sm:text-xl font-extrabold text-text-main mb-8 sm:mb-12"
+                >
+                    Built at MIT
                 </motion.p>
 
                 <motion.div
