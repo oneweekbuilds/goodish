@@ -1217,26 +1217,6 @@ export const dashboardCatalog = [
     action: () => 'Engage consistently with what you want to see more of.',
   },
 
-  // --- SUMMARY: What this means for you ---
-  {
-    tab: 'algorithm',
-    id: 'algo-change-advice',
-    title: 'Recurring Themes Summary',
-    description: 'Themes that appeared consistently during this window.',
-    outputType: 'list',
-    dataFn: 'getAlgoChangeAdviceData',
-    emptyStateType: 'needs_more_scans',
-    sortOrder: 'summary',
-    isSummaryCard: true,
-    whyExplanation: 'Based on what surfaced in your scans. Reflects what appeared, not your interests or identity.',
-    takeaway: (data) => {
-      if (data?.experiments?.length > 0) {
-        return 'These themes appeared persistently across your scans.';
-      }
-      return null;
-    },
-    action: null,
-  },
 ];
 
 // Sort order priority (for narrative flow)

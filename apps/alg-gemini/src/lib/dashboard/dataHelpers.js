@@ -2424,20 +2424,4 @@ export function getFutureRecommendationsData(scans, scanDetails) {
   );
 }
 
-/**
- * View 50: How to change what the algorithm thinks about you
- * Always available - no data required
- */
-export function getAlgoChangeAdviceData() {
-  const tips = [
-    'Follow creators outside your usual interests',
-    'Search for new topics you want to see more of',
-    'Mute or unfollow accounts that drive unwanted content',
-    'Spend less time on content you want less of',
-    'Like and save content you want more of',
-  ];
-
-  // This view doesn't depend on scan data
-  return createResponse(true, { tips }, null, 0, []);
-}
 
