@@ -1068,35 +1068,23 @@ export const dashboardCatalog = [
   {
     tab: 'algorithm',
     id: 'algo-topics-liked',
-    title: 'Topics that appeared most',
-    description: 'Based on what surfaced repeatedly in your scans.',
-    outputType: 'list',
+    title: 'Content themes detected',
+    description: 'The number of distinct content themes that surfaced in your scans.',
+    outputType: 'text',
     dataFn: 'getAlgoTopicsLikedData',
     emptyStateType: 'needs_more_scans',
     hero: true,
     isPrimary: true,
     sortOrder: 'primary',
-    whyExplanation: 'Counted topic occurrences. Observation only, not a platform classification.',
+    whyExplanation: 'Counted distinct topic categories across your scans. Narrative-level claims cannot be reliably extracted without engagement data.',
     counterfactual: 'This reflects what appeared in your scans, not who you are. These are observations, not predictions.',
     takeaway: (data) => {
-      // FIX W2: Use "surfaced" language to avoid identity labeling
-      const { labels, hadExcluded } = pickHeadlineSafeLabels(data, {
-        getLabel: (t) => t?.topic,
-        limit: 2,
-      });
-      const [top, second] = labels;
-
-      if (!top) {
-        return hadExcluded ? FALLBACK_MIX_TOPICS_HEADLINE : 'Multiple themes surfaced in your feed.';
+      if (!data?.message) {
+        return 'Multiple content themes were detected.';
       }
-
-      if (second) {
-        return `${top} and ${second} surfaced most often in your feed.`;
-      }
-
-      return `${top} surfaced most often in your feed.`;
+      return data.message;
     },
-    action: null, // FIX X3, W8: Removed generic advice
+    action: null,
   },
 
   // --- SECONDARY: Supporting details ---

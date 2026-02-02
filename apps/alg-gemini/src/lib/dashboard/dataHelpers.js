@@ -2062,44 +2062,31 @@ export function getAlgoTopicsLikedData(scans, scanDetails) {
     return createResponse(false, null, 'No topic data available.', 0, []);
   }
 
-  const sorted = Object.entries(topicsData.topics)
-    .map(([topic, score]) => ({
-      topic,
-      score,
-      isUnclassified: topic === UNCLASSIFIED_TOPIC,
-    }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 10);
+  // Count distinct topics (excluding unclassified)
+  const distinctTopics = Object.keys(topicsData.topics)
+    .filter(topic => topic !== UNCLASSIFIED_TOPIC)
+    .length;
 
-  const hasUnclassified = sorted.some(t => t.isUnclassified);
+  if (distinctTopics === 0) {
+    return createResponse(
+      false,
+      null,
+      'Content in your scans could not be reliably categorized into themes.',
+      topicsData.scansUsed,
+      topicsData.scansWithData
+    );
+  }
 
-  // Return with additional metadata for the view
-  const result = createResponse(
+  // PATH B: Honest fallback message instead of bare topic labels
+  const message = `The algorithm surfaced ${distinctTopics} distinct content ${distinctTopics === 1 ? 'theme' : 'themes'} during this window, but we cannot reliably extract specific narratives without access to detailed engagement data.`;
+
+  return createResponse(
     true,
-    sorted,
+    { message, distinctTopics },
     null,
     topicsData.scansUsed,
     topicsData.scansWithData
   );
-  result.hasUnclassified = hasUnclassified;
-  result.unclassifiedNote = hasUnclassified ? "Some content can't be reliably categorized yet." : null;
-
-  const microSegments = sorted
-    .filter(t => !t.isUnclassified)
-    .slice(0, 3)
-    .map(t => ({
-      label: normalizeTopicLabel ? normalizeTopicLabel(t.topic) : t.topic,
-      value: Math.round((t.score || 0) * 100),
-    }))
-    .filter(s => s.label && s.value > 0);
-  if (microSegments.length > 0) {
-    result.micro = {
-      type: 'segments',
-      segments: microSegments,
-    };
-  }
-
-  return result;
 }
 
 /**
