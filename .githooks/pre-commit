@@ -1,0 +1,45 @@
+#!/bin/bash
+# Pre-commit hook to prevent secrets from being committed
+# This hook is REQUIRED and will block commits if gitleaks is not installed
+
+set -e
+
+# Try to find gitleaks in PATH or common Windows locations
+GITLEAKS=""
+if command -v gitleaks &> /dev/null; then
+    GITLEAKS="gitleaks"
+elif [ -f "$LOCALAPPDATA/Microsoft/WinGet/Packages/Gitleaks.Gitleaks_Microsoft.Winget.Source_8wekyb3d8bbwe/gitleaks.exe" ]; then
+    GITLEAKS="$LOCALAPPDATA/Microsoft/WinGet/Packages/Gitleaks.Gitleaks_Microsoft.Winget.Source_8wekyb3d8bbwe/gitleaks.exe"
+fi
+
+# If gitleaks is not found, FAIL the commit
+if [ -z "$GITLEAKS" ]; then
+    echo ""
+    echo "❌ ERROR: gitleaks is not installed"
+    echo ""
+    echo "Secret scanning is REQUIRED for this repository."
+    echo ""
+    echo "Install gitleaks now:"
+    echo "  • Via winget:  winget install gitleaks"
+    echo "  • Via scoop:   scoop install gitleaks"
+    echo "  • Manual:      https://github.com/gitleaks/gitleaks/releases"
+    echo ""
+    echo "After installation, restart your terminal and try committing again."
+    echo ""
+    exit 1
+fi
+
+# Run gitleaks on staged changes
+echo "🔍 Scanning staged changes for secrets..."
+if "$GITLEAKS" protect --staged --verbose --redact; then
+    echo "✅ No secrets detected - commit allowed"
+    exit 0
+else
+    echo ""
+    echo "❌ SECRET(S) DETECTED - COMMIT BLOCKED"
+    echo ""
+    echo "Remove the secret(s) from staged files and try again."
+    echo "Run 'git reset HEAD <file>' to unstage a file."
+    echo ""
+    exit 1
+fi

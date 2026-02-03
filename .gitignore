@@ -19,6 +19,9 @@ node_modules/
 dist/
 build/
 
+# Backup snapshots
+snapshots/
+
 # Chrome extension build output (if you ever build it)
 apps/alg-gemini-extension/dist/
 
