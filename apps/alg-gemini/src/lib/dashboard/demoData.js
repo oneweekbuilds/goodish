@@ -121,11 +121,18 @@ function generateFeedItem(globalIndex, scanId, scanIndex) {
   const isPolitical = POLITICAL_INDICES.includes(globalIndex);
   const isUnlabeledPromo = UNLABELED_PROMO_INDICES.includes(globalIndex);
 
+  // Source origin: 55% suggested, 45% followed (deterministic pattern)
+  // Pattern: if (globalIndex % 20) < 11, then "suggested", else "followed"
+  // This gives: 11/20 = 55% suggested, 9/20 = 45% followed
+  const sourceOrigin = (globalIndex % 20) < 11 ? 'suggested' : 'followed';
+
   const item = {
     id: `${scanId}_item_${globalIndex}`,
     is_ad: isAd,
     position_in_feed: globalIndex % 50, // For post key generation
     created_at: new Date(Date.now() - globalIndex * 3600000).toISOString(), // 1 hour apart
+    // Source origin (Suggested vs Followed tab)
+    sourceOrigin: sourceOrigin,
     // Creator fields (multiple formats for compatibility)
     creator: {
       handle: creatorHandle,
@@ -313,6 +320,7 @@ export function generateDemoData() {
   const valenceCounts = { POSITIVE: 0, NEUTRAL: 0, NEGATIVE: 0 };
   const alignmentCounts = { left: 0, neutral: 0, right: 0 };
   const politicalToneCounts = { POSITIVE: 0, NEUTRAL: 0, NEGATIVE: 0 };
+  const sourceOriginCounts = { suggested: 0, followed: 0 };
   const creatorSet = new Set();
   const creatorPostCounts = {};
 
@@ -359,6 +367,11 @@ export function generateDemoData() {
         // Track overall tone
         if (item.emotions?.valence && valenceCounts[item.emotions.valence] !== undefined) {
           valenceCounts[item.emotions.valence]++;
+        }
+
+        // Track source origin (Suggested vs Followed)
+        if (item.sourceOrigin && sourceOriginCounts[item.sourceOrigin] !== undefined) {
+          sourceOriginCounts[item.sourceOrigin]++;
         }
 
         // Track creators
@@ -437,6 +450,10 @@ export function generateDemoData() {
     console.log(`  Selling posts: ${totalAds + unlabeledPromoDetected} (39 commercial posts)`);
     console.log(`  Not selling posts: ${totalPosts - (totalAds + unlabeledPromoDetected)} (121 non-commercial posts)`);
     console.log('');
+    console.log('SOURCE ORIGIN (SUGGESTED VS FOLLOWED):');
+    console.log(`  Suggested posts: ${sourceOriginCounts.suggested} (${((sourceOriginCounts.suggested / totalPosts) * 100).toFixed(1)}%)`);
+    console.log(`  Followed posts: ${sourceOriginCounts.followed} (${((sourceOriginCounts.followed / totalPosts) * 100).toFixed(1)}%)`);
+    console.log('');
     console.log('SOURCE CONCENTRATION:');
     console.log(`  Top 5 creators: ${top5Percent}% (target: 60-75%)`);
     console.log(`  Top 10 creators: ${top10Percent}%`);
@@ -461,6 +478,8 @@ export function generateDemoData() {
     console.log(`  ${valenceCounts.NEUTRAL === 53 ? '✓' : '✗'} Overall neutral tone: ${valenceCounts.NEUTRAL} === 53`);
     console.log(`  ${valenceCounts.NEGATIVE === 53 ? '✓' : '✗'} Overall negative tone: ${valenceCounts.NEGATIVE} === 53`);
     console.log(`  ${top5Percent >= 60 && top5Percent <= 75 ? '✓' : '✗'} Top 5 concentration: ${top5Percent}% in range 60-75%`);
+    console.log(`  ${sourceOriginCounts.suggested === 88 ? '✓' : '✗'} Suggested posts: ${sourceOriginCounts.suggested} === 88`);
+    console.log(`  ${sourceOriginCounts.followed === 72 ? '✓' : '✗'} Followed posts: ${sourceOriginCounts.followed} === 72`);
     console.log('');
     console.log('='.repeat(80));
   }
