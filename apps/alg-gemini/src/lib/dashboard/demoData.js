@@ -7,9 +7,6 @@
  * DO NOT USE IN PRODUCTION. This is a dev-only helper.
  */
 
-// Module-level flag to prevent duplicate self-check logs in React Strict Mode
-let hasLoggedSelfCheck = false;
-
 // 15 creators with SKEWED distribution (top 5 will account for 60-75%)
 const CREATORS = [
   // Top 5 (will get more posts each)
@@ -374,21 +371,36 @@ export function generateDemoData() {
     }
   }
 
-  // Calculate top 5 and top 10 concentration
+  // Calculate top 5 and top 10 concentration (matching SourcesTab logic exactly)
   const sortedCreators = Object.entries(creatorPostCounts).sort((a, b) => b[1] - a[1]);
   const top5Count = sortedCreators.slice(0, 5).reduce((sum, [_, count]) => sum + count, 0);
   const top10Count = sortedCreators.slice(0, 10).reduce((sum, [_, count]) => sum + count, 0);
-  const top5Percent = totalPosts > 0 ? Math.round((top5Count / totalPosts) * 100) : 0;
-  const top10Percent = totalPosts > 0 ? Math.round((top10Count / totalPosts) * 100) : 0;
+
+  // Calculate and round percentages
+  let top5Percent = totalPosts > 0 ? Math.round((top5Count / totalPosts) * 100) : 0;
+  let top10Percent = totalPosts > 0 ? Math.round((top10Count / totalPosts) * 100) : 0;
+  let othersPercent = 100 - top10Percent;
+  othersPercent = Math.round(othersPercent);
+
+  // Ensure top10 + others = 100 (same adjustment as SourcesTab)
+  const sum = top10Percent + othersPercent;
+  if (sum !== 100) {
+    const diff = 100 - sum;
+    if (top10Percent >= othersPercent) {
+      top10Percent += diff;
+    } else {
+      othersPercent += diff;
+    }
+  }
 
   const knownValenceTotal = valenceCounts.POSITIVE + valenceCounts.NEUTRAL + valenceCounts.NEGATIVE;
   const knownAlignmentTotal = alignmentCounts.left + alignmentCounts.neutral + alignmentCounts.right;
   const politicalToneTotal = politicalToneCounts.POSITIVE + politicalToneCounts.NEUTRAL + politicalToneCounts.NEGATIVE;
 
   // Dev-only self-check (console log only visible when demo mode active)
-  // Guard against duplicate logs in React Strict Mode (dev only)
-  if (!hasLoggedSelfCheck) {
-    hasLoggedSelfCheck = true;
+  // Guard against duplicate logs in React Strict Mode using globalThis
+  if (!globalThis.__AL_DEMO_SELF_CHECK_LOGGED__) {
+    globalThis.__AL_DEMO_SELF_CHECK_LOGGED__ = true;
     console.log('='.repeat(80));
     console.log('[Demo Mode] Data Generation Self-Check');
     console.log('='.repeat(80));

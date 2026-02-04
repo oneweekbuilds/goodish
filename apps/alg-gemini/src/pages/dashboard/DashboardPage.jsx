@@ -2212,7 +2212,7 @@ const DashboardPage = () => {
   const isOnAlgorithmTab = activeTab === 'algorithm';
 
   return (
-    <div className="bg-bg-page pt-24 md:pt-28 pb-16 px-4 md:px-6">
+    <div className="bg-bg-page pt-24 md:pt-28 pb-6 px-4 md:px-6">
       <div className="max-w-7xl mx-auto px-6">
         {/* Page Header - reduced on Algorithm tab to let hero be the star */}
         <div className={`flex flex-col md:flex-row md:items-center md:justify-between gap-4 ${isOnAlgorithmTab ? 'mb-4' : 'mb-8'}`}>
@@ -2506,7 +2506,7 @@ const DashboardPage = () => {
         )}
 
         {/* Phase 8: Minimal footer - Softer, less competing */}
-        <div className="text-center py-6 mt-8">
+        <div className="text-center py-4 mt-6">
           <p
             className="text-[11px] italic"
             style={{ color: 'rgba(148, 163, 184, 0.7)' }}
