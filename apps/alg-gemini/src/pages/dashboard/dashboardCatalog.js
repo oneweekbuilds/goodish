@@ -58,12 +58,12 @@ export const TAB_TRUST_SENTENCES = {
 };
 
 export const TABS = [
-  { id: 'ads', label: 'Ads & Influence' },
-  { id: 'politics', label: 'Politics & Worldview' },
-  { id: 'patterns', label: 'Patterns in Your Feed' },
-  { id: 'creators', label: 'Creators & Voices' },
-  { id: 'algorithm', label: 'What Surfaced' },
-  { id: 'talk', label: 'Talk to your Algorithm (coming soon)' },
+  { id: 'overview', label: 'Overview' },
+  { id: 'sources', label: 'Sources' },
+  { id: 'ads', label: 'Ads' },
+  { id: 'politics', label: 'Politics' },
+  { id: 'tone', label: 'Tone' },
+  { id: 'suggested_vs_followed', label: 'Suggested vs Followed' },
 ];
 
 export const dashboardCatalog = [

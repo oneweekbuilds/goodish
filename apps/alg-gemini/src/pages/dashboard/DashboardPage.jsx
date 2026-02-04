@@ -3,7 +3,14 @@ import { Link } from 'react-router-dom';
 import { Loader2, RefreshCw, BarChart3, Clock, Globe, Database, ChevronDown, ChevronUp, Compass, RefreshCcw, Lock, Sparkles, ExternalLink, ShieldCheck, MessageSquare, EyeOff } from 'lucide-react';
 import { TABS, getViewsForTab, getVisibleViewCount, EMPTY_STATE_TYPES, TAB_TRUST_SENTENCES } from './dashboardCatalog';
 import ViewCard from '../../components/dashboard/ViewCard';
+import OverviewTab from './tabs/OverviewTab';
+import SourcesTab from './tabs/SourcesTab';
+import AdsTab from './tabs/AdsTab';
+import PoliticsTab from './tabs/PoliticsTab';
+import ToneTab from './tabs/ToneTab';
+import SuggestedVsFollowedTab from './tabs/SuggestedVsFollowedTab';
 import { useDashboardData } from '../../lib/dashboard/useDashboardData';
+import { generateDemoData } from '../../lib/dashboard/demoData';
 import * as dataHelpers from '../../lib/dashboard/dataHelpers';
 import { isHeadlineExcludedLabel } from '../../lib/dashboard/headlineSafety';
 import { submitWaitlistEmail } from '../../lib/waitlist/submitWaitlistEmail';
@@ -1844,7 +1851,10 @@ const DashboardPage = () => {
   
   // Premium gating placeholder, wire to real auth later
   const isPremiumUser = false;
-  
+
+  // User tier (hardcoded for now, will be wired to real auth later)
+  const userTier = 'free';
+
   // Global filter state (for premium users)
   const [platformFilter, setPlatformFilter] = useState('all');
   const [dateRange, setDateRange] = useState({
@@ -1854,17 +1864,34 @@ const DashboardPage = () => {
   
   // Date filter preset state
   const [datePreset, setDatePreset] = useState('all');
-  
+
+  // Reset date preset to valid option for free users
+  useEffect(() => {
+    if (userTier === 'free') {
+      const allowedPresets = ['today', 'all'];
+      if (!allowedPresets.includes(datePreset)) {
+        // Reset to 'all' if current preset is not allowed
+        setDatePreset('all');
+        setDateRange({ startDate: '', endDate: '' });
+      }
+    }
+  }, [userTier, datePreset]);
+
   // Helper function to compute date ranges from presets
   const computeDateRangeFromPreset = (preset) => {
     const today = new Date();
     today.setHours(23, 59, 59, 999); // End of today
     const endDate = today.toISOString().split('T')[0]; // YYYY-MM-DD
-    
+
     if (preset === 'all') {
       return { startDate: '', endDate: '' };
     }
-    
+
+    if (preset === 'today') {
+      // Today only - start and end date are both today
+      return { startDate: endDate, endDate: endDate };
+    }
+
     const startDate = new Date(today);
     if (preset === '7days') {
       startDate.setDate(today.getDate() - 6); // Last 7 days (today + 6 previous)
@@ -1875,7 +1902,7 @@ const DashboardPage = () => {
     } else {
       return { startDate: '', endDate: '' };
     }
-    
+
     return {
       startDate: startDate.toISOString().split('T')[0],
       endDate: endDate,
@@ -1918,7 +1945,24 @@ const DashboardPage = () => {
       ? ''
       : dateRange.endDate,
   };
-  
+
+  // Check for demo mode via ?demo=1 query parameter
+  const isDemoMode = new URLSearchParams(window.location.search).get('demo') === '1';
+
+  // Generate demo data only once (memoized to avoid re-creating on every render)
+  const demoData = useMemo(() => {
+    if (isDemoMode) {
+      return generateDemoData();
+    }
+    return null;
+  }, [isDemoMode]);
+
+  // Use real data hook only when not in demo mode
+  const realData = useDashboardData(
+    !isDemoMode && filtersActive ? { filters: activeFilters } : {}
+  );
+
+  // Select data source based on mode
   const {
     scans,
     scanDetails,
@@ -1930,7 +1974,10 @@ const DashboardPage = () => {
     platforms,
     totalScanCount,
     unfilteredScanCount,
-  } = useDashboardData(filtersActive ? { filters: activeFilters } : {});
+  } = isDemoMode ? demoData : realData;
+
+  // Calculate remaining scans for free tier quota
+  const remainingScans = Math.max(0, 5 - scans.length);
 
   // Track which scan details we've loaded
   const [detailsLoading, setDetailsLoading] = useState(false);
@@ -2199,16 +2246,32 @@ const DashboardPage = () => {
                 onChange={(e) => handlePresetChange(e.target.value)}
                 className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg bg-white text-text-main hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-primary-blue"
               >
+                <option value="today">Today</option>
                 <option value="all">All time</option>
-                <option value="7days">Last 7 days</option>
-                <option value="30days">Last 30 days</option>
-                <option value="90days">Last 90 days</option>
-                <option value="custom">Custom</option>
+                <option value="7days" disabled={userTier === 'free'}>
+                  Last 7 days{userTier === 'free' ? ' (Premium)' : ''}
+                </option>
+                <option value="30days" disabled={userTier === 'free'}>
+                  Last 30 days{userTier === 'free' ? ' (Premium)' : ''}
+                </option>
+                <option value="90days" disabled={userTier === 'free'}>
+                  Last 90 days{userTier === 'free' ? ' (Premium)' : ''}
+                </option>
+                <option value="custom" disabled={userTier === 'free'}>
+                  Custom{userTier === 'free' ? ' (Premium)' : ''}
+                </option>
               </select>
             </div>
-            
+
+            {/* Premium hint for free users */}
+            {userTier === 'free' && (
+              <span className="text-xs text-slate-500">
+                Upgrade to Premium to unlock 7, 30, 90-day and custom date ranges.
+              </span>
+            )}
+
             {/* Custom date inputs (shown when Custom is selected) */}
-            {datePreset === 'custom' && (
+            {datePreset === 'custom' && userTier !== 'free' && (
               <div className="flex items-center gap-2">
                 <input
                   type="date"
@@ -2232,7 +2295,22 @@ const DashboardPage = () => {
                 )}
               </div>
             )}
-            
+
+            {/* Free tier quota display */}
+            {userTier === 'free' && (
+              <>
+                {remainingScans === 0 ? (
+                  <span className="text-xs text-slate-600">
+                    You have used your 5 snapshot scans for this month.
+                  </span>
+                ) : (
+                  <span className="text-xs text-slate-500">
+                    Snapshot scans remaining this month: {remainingScans} of 5
+                  </span>
+                )}
+              </>
+            )}
+
             <button
               onClick={() => {
                 setDetailsLoaded(false);
@@ -2244,12 +2322,31 @@ const DashboardPage = () => {
               <RefreshCw size={16} className={detailsLoading ? 'animate-spin' : ''} />
               <span>Refresh</span>
             </button>
-            <Link
-              to="/start"
-              className="flex items-center gap-2 px-3 py-1.5 bg-primary-blue text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm"
-            >
-              New Scan
-            </Link>
+            {userTier === 'free' && remainingScans === 0 ? (
+              <button
+                disabled
+                onClick={(e) => {
+                  // Guard: prevent any action if quota exhausted
+                  e.preventDefault();
+                }}
+                className="flex items-center gap-2 px-3 py-1.5 bg-slate-300 text-slate-500 rounded-lg font-semibold cursor-not-allowed text-sm"
+              >
+                New Scan
+              </button>
+            ) : (
+              <Link
+                to="/start"
+                onClick={(e) => {
+                  // Guard: double-check quota even if DOM is manipulated
+                  if (userTier === 'free' && remainingScans === 0) {
+                    e.preventDefault();
+                  }
+                }}
+                className="flex items-center gap-2 px-3 py-1.5 bg-primary-blue text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm"
+              >
+                New Scan
+              </Link>
+            )}
           </div>
         </div>
 
@@ -2303,6 +2400,18 @@ const DashboardPage = () => {
         <div className="mb-8" role="tabpanel" id={`tabpanel-${activeTab}`} aria-labelledby={`tab-${activeTab}`}>
           {activeTab === 'talk' ? (
             <TalkTabPanel />
+          ) : activeTab === 'overview' ? (
+            <OverviewTab scans={scans} scanDetails={scanDetails} />
+          ) : activeTab === 'sources' ? (
+            <SourcesTab scans={scans} scanDetails={scanDetails} />
+          ) : activeTab === 'ads' ? (
+            <AdsTab scans={scans} scanDetails={scanDetails} />
+          ) : activeTab === 'politics' ? (
+            <PoliticsTab scans={scans} scanDetails={scanDetails} />
+          ) : activeTab === 'tone' ? (
+            <ToneTab scans={scans} scanDetails={scanDetails} />
+          ) : activeTab === 'suggested_vs_followed' ? (
+            <SuggestedVsFollowedTab scans={scans} scanDetails={scanDetails} />
           ) : (
             <>
               {/* Feature Moment - Editorial centerpiece for ALL tabs (Part 2: Design System Application) */}
@@ -2379,7 +2488,8 @@ const DashboardPage = () => {
         </div>
 
         {/* Master count line - single source of truth per tab */}
-        {activeTab !== 'talk' && (
+        {/* Exclude all 6 locked-spec tabs (overview, sources, ads, politics, tone, suggested_vs_followed) and talk tab - they have their own MasterNumbersLine */}
+        {activeTab !== 'talk' && activeTab !== 'overview' && activeTab !== 'sources' && activeTab !== 'ads' && activeTab !== 'politics' && activeTab !== 'tone' && activeTab !== 'suggested_vs_followed' && (
           <div className="mt-8 mb-4 text-center">
             {masterCounts.postCount > 0 ? (
               <p className="text-sm text-slate-500">
