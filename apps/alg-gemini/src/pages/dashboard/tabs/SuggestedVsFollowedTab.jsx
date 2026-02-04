@@ -25,11 +25,8 @@ const SuggestedVsFollowedTab = ({ scans, scanDetails }) => {
           <p className="text-slate-600 mb-4">
             This section will show how much of your feed comes from accounts you follow versus content suggested by the platform.
           </p>
-          <p className="text-slate-600 mb-4">
+          <p className="text-slate-600">
             Right now, AlgorithmLens can't reliably tell which posts were suggested and which came from accounts you follow, so this view is intentionally unavailable.
-          </p>
-          <p className="text-sm text-slate-500">
-            These insights show patterns in what you're shown, not who you are.
           </p>
         </div>
       </section>

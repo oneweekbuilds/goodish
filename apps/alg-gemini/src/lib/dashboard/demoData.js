@@ -415,6 +415,10 @@ export function generateDemoData() {
   console.log(`    Neutral: ${valenceCounts.NEUTRAL} (target: 53, ${((valenceCounts.NEUTRAL / knownValenceTotal) * 100).toFixed(1)}%)`);
   console.log(`    Negative: ${valenceCounts.NEGATIVE} (target: 53, ${((valenceCounts.NEGATIVE / knownValenceTotal) * 100).toFixed(1)}%)`);
   console.log('');
+  console.log('SELLING VS NOT SELLING:');
+  console.log(`  Selling posts: ${totalAds + unlabeledPromoDetected} (39 commercial posts)`);
+  console.log(`  Not selling posts: ${totalPosts - (totalAds + unlabeledPromoDetected)} (121 non-commercial posts)`);
+  console.log('');
   console.log('SOURCE CONCENTRATION:');
   console.log(`  Top 5 creators: ${top5Percent}% (target: 60-75%)`);
   console.log(`  Top 10 creators: ${top10Percent}%`);
@@ -426,8 +430,9 @@ export function generateDemoData() {
   console.log('THRESHOLD VALIDATION:');
   console.log(`  ${totalPosts === 160 ? '✓' : '✗'} Total posts: ${totalPosts} === 160`);
   console.log(`  ${totalAds === 23 ? '✓' : '✗'} Labeled ads: ${totalAds} === 23`);
-  console.log(`  ${totalPolitical === 27 ? '✓' : '✗'} Political posts: ${totalPolitical} === 27`);
   console.log(`  ${unlabeledPromoDetected === 16 ? '✓' : '✗'} Unlabeled promo: ${unlabeledPromoDetected} === 16`);
+  console.log(`  ${totalAds + unlabeledPromoDetected === 39 ? '✓' : '✗'} Total commercial/selling: ${totalAds + unlabeledPromoDetected} === 39`);
+  console.log(`  ${totalPolitical === 27 ? '✓' : '✗'} Political posts: ${totalPolitical} === 27`);
   console.log(`  ${alignmentCounts.left === 9 ? '✓' : '✗'} Left stance: ${alignmentCounts.left} === 9`);
   console.log(`  ${alignmentCounts.neutral === 9 ? '✓' : '✗'} Neutral stance: ${alignmentCounts.neutral} === 9`);
   console.log(`  ${alignmentCounts.right === 9 ? '✓' : '✗'} Right stance: ${alignmentCounts.right} === 9`);

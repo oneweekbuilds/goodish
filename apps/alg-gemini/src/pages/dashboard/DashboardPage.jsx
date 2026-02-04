@@ -2504,7 +2504,7 @@ const DashboardPage = () => {
         )}
 
         {/* Phase 8: Minimal footer - Softer, less competing */}
-        <div className="text-center py-8 mt-12">
+        <div className="text-center py-6 mt-8">
           <p
             className="text-[11px] italic"
             style={{ color: 'rgba(148, 163, 184, 0.7)' }}

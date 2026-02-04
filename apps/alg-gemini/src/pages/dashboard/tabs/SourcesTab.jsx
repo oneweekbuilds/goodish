@@ -107,7 +107,7 @@ const SourcesTab = ({ scans, scanDetails }) => {
                 { key: 'sharePercent', label: 'Share of posts (%)', width: '25%' },
                 { key: 'postCount', label: 'Posts (count)', width: '20%' },
               ]}
-              data={topSourcesTableData}
+              rows={topSourcesTableData}
             />
           </>
         ) : (
