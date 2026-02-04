@@ -1693,6 +1693,104 @@ export function aggregatePoliticalLeaning(scans, scanDetails) {
   };
 }
 
+/**
+ * Aggregate sourceOrigin data across scans (Suggested vs Followed).
+ *
+ * Returns:
+ * - totalSuggested: count of suggested posts
+ * - totalFollowed: count of followed posts
+ * - totalPosts: total posts analyzed
+ * - suggestedPercentage: percentage of suggested posts
+ * - followedPercentage: percentage of followed posts
+ * - byPlatform: sourceOrigin breakdown by platform
+ * - scansUsed: number of scans with sourceOrigin data
+ *
+ * @param {Array} scans
+ * @param {Object} scanDetails
+ * @returns {Object} Aggregated sourceOrigin data
+ */
+export function aggregateSourceOrigin(scans, scanDetails) {
+  const result = {
+    totalSuggested: 0,
+    totalFollowed: 0,
+    totalPosts: 0,
+    suggestedPercentage: 0,
+    followedPercentage: 0,
+    byPlatform: {}, // platform -> { suggested, followed, total, suggestedPercent, followedPercent }
+    scansUsed: 0,
+    scansWithData: [],
+    hasData: false,
+  };
+
+  if (!scans || scans.length === 0) {
+    return result;
+  }
+
+  for (const scan of scans) {
+    const detail = scanDetails[scan.id];
+    if (!detail) continue;
+
+    const feedItems = getFeedItems(detail);
+    if (feedItems.length === 0) continue;
+
+    const platform = (scan.platform || 'unknown').toLowerCase();
+    let scanHasData = false;
+
+    // Initialize platform data if needed
+    if (!result.byPlatform[platform]) {
+      result.byPlatform[platform] = {
+        suggested: 0,
+        followed: 0,
+        total: 0,
+        suggestedPercent: 0,
+        followedPercent: 0,
+      };
+    }
+
+    for (const item of feedItems) {
+      const origin = item.sourceOrigin;
+
+      // Count posts with valid sourceOrigin
+      if (origin === 'suggested' || origin === 'followed') {
+        scanHasData = true;
+        result.totalPosts++;
+        result.byPlatform[platform].total++;
+
+        if (origin === 'suggested') {
+          result.totalSuggested++;
+          result.byPlatform[platform].suggested++;
+        } else if (origin === 'followed') {
+          result.totalFollowed++;
+          result.byPlatform[platform].followed++;
+        }
+      }
+    }
+
+    if (scanHasData) {
+      result.scansUsed++;
+      result.scansWithData.push(scan.id);
+    }
+  }
+
+  // Calculate overall percentages
+  if (result.totalPosts > 0) {
+    result.suggestedPercentage = Math.round((result.totalSuggested / result.totalPosts) * 100);
+    result.followedPercentage = Math.round((result.totalFollowed / result.totalPosts) * 100);
+    result.hasData = true;
+  }
+
+  // Calculate per-platform percentages
+  for (const platform of Object.keys(result.byPlatform)) {
+    const p = result.byPlatform[platform];
+    if (p.total > 0) {
+      p.suggestedPercent = Math.round((p.suggested / p.total) * 100);
+      p.followedPercent = Math.round((p.followed / p.total) * 100);
+    }
+  }
+
+  return result;
+}
+
 // ============================================
 // UTILITY FUNCTIONS
 // ============================================
