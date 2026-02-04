@@ -119,7 +119,7 @@ function generateFeedItem(globalIndex, scanId, scanIndex) {
   // EXACT post type assignment using position arrays
   const isAd = AD_INDICES.includes(globalIndex);
   const isPolitical = POLITICAL_INDICES.includes(globalIndex);
-  const isUnlabeledPromo = UNLABELED_PROMO_INDICES.includes(globalIndex)
+  const isUnlabeledPromo = UNLABELED_PROMO_INDICES.includes(globalIndex);
 
   const item = {
     id: `${scanId}_item_${globalIndex}`,
