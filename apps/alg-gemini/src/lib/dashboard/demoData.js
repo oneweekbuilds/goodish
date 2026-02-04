@@ -7,6 +7,9 @@
  * DO NOT USE IN PRODUCTION. This is a dev-only helper.
  */
 
+// Module-level flag to prevent duplicate self-check logs in React Strict Mode
+let hasLoggedSelfCheck = false;
+
 // 15 creators with SKEWED distribution (top 5 will account for 60-75%)
 const CREATORS = [
   // Top 5 (will get more posts each)
@@ -383,68 +386,72 @@ export function generateDemoData() {
   const politicalToneTotal = politicalToneCounts.POSITIVE + politicalToneCounts.NEUTRAL + politicalToneCounts.NEGATIVE;
 
   // Dev-only self-check (console log only visible when demo mode active)
-  console.log('='.repeat(80));
-  console.log('[Demo Mode] Data Generation Self-Check');
-  console.log('='.repeat(80));
-  console.log('');
-  console.log('CORE METRICS:');
-  console.log(`  Total scans: ${scans.length} (target: 8)`);
-  console.log(`  Total posts: ${totalPosts} (target: 160)`);
-  console.log(`  Platforms: ${platforms.length} (instagram, tiktok)`);
-  console.log(`  Unique creators: ${creatorSet.size} (target: 15)`);
-  console.log('');
-  console.log('COMMERCIAL CONTENT:');
-  console.log(`  Labeled ads: ${totalAds} (target: 23, ${((totalAds / totalPosts) * 100).toFixed(1)}%)`);
-  console.log(`  Unlabeled promo detected: ${unlabeledPromoDetected} (target: 16, ${((unlabeledPromoDetected / totalPosts) * 100).toFixed(1)}%)`);
-  console.log(`  Total commercial: ${totalAds + unlabeledPromoDetected} (${(((totalAds + unlabeledPromoDetected) / totalPosts) * 100).toFixed(1)}%)`);
-  console.log('');
-  console.log('POLITICAL CONTENT:');
-  console.log(`  Political posts: ${totalPolitical} (target: 27, ${((totalPolitical / totalPosts) * 100).toFixed(1)}%)`);
-  console.log(`  Ideological split (${knownAlignmentTotal} with known stance):`);
-  console.log(`    Left: ${alignmentCounts.left} (target: 9, ${knownAlignmentTotal > 0 ? ((alignmentCounts.left / knownAlignmentTotal) * 100).toFixed(0) : 0}%)`);
-  console.log(`    Neutral: ${alignmentCounts.neutral} (target: 9, ${knownAlignmentTotal > 0 ? ((alignmentCounts.neutral / knownAlignmentTotal) * 100).toFixed(0) : 0}%)`);
-  console.log(`    Right: ${alignmentCounts.right} (target: 9, ${knownAlignmentTotal > 0 ? ((alignmentCounts.right / knownAlignmentTotal) * 100).toFixed(0) : 0}%)`);
-  console.log(`  Political tone (${politicalToneTotal} political posts with tone):`);
-  console.log(`    Positive: ${politicalToneCounts.POSITIVE} (target: 9, ${politicalToneTotal > 0 ? ((politicalToneCounts.POSITIVE / politicalToneTotal) * 100).toFixed(0) : 0}%)`);
-  console.log(`    Neutral: ${politicalToneCounts.NEUTRAL} (target: 9, ${politicalToneTotal > 0 ? ((politicalToneCounts.NEUTRAL / politicalToneTotal) * 100).toFixed(0) : 0}%)`);
-  console.log(`    Negative: ${politicalToneCounts.NEGATIVE} (target: 9, ${politicalToneTotal > 0 ? ((politicalToneCounts.NEGATIVE / politicalToneTotal) * 100).toFixed(0) : 0}%)`);
-  console.log('');
-  console.log('OVERALL TONE:');
-  console.log(`  Total with tone: ${knownValenceTotal} (target: 160)`);
-  console.log(`    Positive: ${valenceCounts.POSITIVE} (target: 54, ${((valenceCounts.POSITIVE / knownValenceTotal) * 100).toFixed(1)}%)`);
-  console.log(`    Neutral: ${valenceCounts.NEUTRAL} (target: 53, ${((valenceCounts.NEUTRAL / knownValenceTotal) * 100).toFixed(1)}%)`);
-  console.log(`    Negative: ${valenceCounts.NEGATIVE} (target: 53, ${((valenceCounts.NEGATIVE / knownValenceTotal) * 100).toFixed(1)}%)`);
-  console.log('');
-  console.log('SELLING VS NOT SELLING:');
-  console.log(`  Selling posts: ${totalAds + unlabeledPromoDetected} (39 commercial posts)`);
-  console.log(`  Not selling posts: ${totalPosts - (totalAds + unlabeledPromoDetected)} (121 non-commercial posts)`);
-  console.log('');
-  console.log('SOURCE CONCENTRATION:');
-  console.log(`  Top 5 creators: ${top5Percent}% (target: 60-75%)`);
-  console.log(`  Top 10 creators: ${top10Percent}%`);
-  console.log(`  Top 10 details:`);
-  sortedCreators.slice(0, 10).forEach(([handle, count], i) => {
-    console.log(`    ${i + 1}. @${handle}: ${count} posts (${((count / totalPosts) * 100).toFixed(1)}%)`);
-  });
-  console.log('');
-  console.log('THRESHOLD VALIDATION:');
-  console.log(`  ${totalPosts === 160 ? '✓' : '✗'} Total posts: ${totalPosts} === 160`);
-  console.log(`  ${totalAds === 23 ? '✓' : '✗'} Labeled ads: ${totalAds} === 23`);
-  console.log(`  ${unlabeledPromoDetected === 16 ? '✓' : '✗'} Unlabeled promo: ${unlabeledPromoDetected} === 16`);
-  console.log(`  ${totalAds + unlabeledPromoDetected === 39 ? '✓' : '✗'} Total commercial/selling: ${totalAds + unlabeledPromoDetected} === 39`);
-  console.log(`  ${totalPolitical === 27 ? '✓' : '✗'} Political posts: ${totalPolitical} === 27`);
-  console.log(`  ${alignmentCounts.left === 9 ? '✓' : '✗'} Left stance: ${alignmentCounts.left} === 9`);
-  console.log(`  ${alignmentCounts.neutral === 9 ? '✓' : '✗'} Neutral stance: ${alignmentCounts.neutral} === 9`);
-  console.log(`  ${alignmentCounts.right === 9 ? '✓' : '✗'} Right stance: ${alignmentCounts.right} === 9`);
-  console.log(`  ${politicalToneCounts.POSITIVE === 9 ? '✓' : '✗'} Political positive tone: ${politicalToneCounts.POSITIVE} === 9`);
-  console.log(`  ${politicalToneCounts.NEUTRAL === 9 ? '✓' : '✗'} Political neutral tone: ${politicalToneCounts.NEUTRAL} === 9`);
-  console.log(`  ${politicalToneCounts.NEGATIVE === 9 ? '✓' : '✗'} Political negative tone: ${politicalToneCounts.NEGATIVE} === 9`);
-  console.log(`  ${valenceCounts.POSITIVE === 54 ? '✓' : '✗'} Overall positive tone: ${valenceCounts.POSITIVE} === 54`);
-  console.log(`  ${valenceCounts.NEUTRAL === 53 ? '✓' : '✗'} Overall neutral tone: ${valenceCounts.NEUTRAL} === 53`);
-  console.log(`  ${valenceCounts.NEGATIVE === 53 ? '✓' : '✗'} Overall negative tone: ${valenceCounts.NEGATIVE} === 53`);
-  console.log(`  ${top5Percent >= 60 && top5Percent <= 75 ? '✓' : '✗'} Top 5 concentration: ${top5Percent}% in range 60-75%`);
-  console.log('');
-  console.log('='.repeat(80));
+  // Guard against duplicate logs in React Strict Mode (dev only)
+  if (!hasLoggedSelfCheck) {
+    hasLoggedSelfCheck = true;
+    console.log('='.repeat(80));
+    console.log('[Demo Mode] Data Generation Self-Check');
+    console.log('='.repeat(80));
+    console.log('');
+    console.log('CORE METRICS:');
+    console.log(`  Total scans: ${scans.length} (target: 8)`);
+    console.log(`  Total posts: ${totalPosts} (target: 160)`);
+    console.log(`  Platforms: ${platforms.length} (instagram, tiktok)`);
+    console.log(`  Unique creators: ${creatorSet.size} (target: 15)`);
+    console.log('');
+    console.log('COMMERCIAL CONTENT:');
+    console.log(`  Labeled ads: ${totalAds} (target: 23, ${((totalAds / totalPosts) * 100).toFixed(1)}%)`);
+    console.log(`  Unlabeled promo detected: ${unlabeledPromoDetected} (target: 16, ${((unlabeledPromoDetected / totalPosts) * 100).toFixed(1)}%)`);
+    console.log(`  Total commercial: ${totalAds + unlabeledPromoDetected} (${(((totalAds + unlabeledPromoDetected) / totalPosts) * 100).toFixed(1)}%)`);
+    console.log('');
+    console.log('POLITICAL CONTENT:');
+    console.log(`  Political posts: ${totalPolitical} (target: 27, ${((totalPolitical / totalPosts) * 100).toFixed(1)}%)`);
+    console.log(`  Ideological split (${knownAlignmentTotal} with known stance):`);
+    console.log(`    Left: ${alignmentCounts.left} (target: 9, ${knownAlignmentTotal > 0 ? ((alignmentCounts.left / knownAlignmentTotal) * 100).toFixed(0) : 0}%)`);
+    console.log(`    Neutral: ${alignmentCounts.neutral} (target: 9, ${knownAlignmentTotal > 0 ? ((alignmentCounts.neutral / knownAlignmentTotal) * 100).toFixed(0) : 0}%)`);
+    console.log(`    Right: ${alignmentCounts.right} (target: 9, ${knownAlignmentTotal > 0 ? ((alignmentCounts.right / knownAlignmentTotal) * 100).toFixed(0) : 0}%)`);
+    console.log(`  Political tone (${politicalToneTotal} political posts with tone):`);
+    console.log(`    Positive: ${politicalToneCounts.POSITIVE} (target: 9, ${politicalToneTotal > 0 ? ((politicalToneCounts.POSITIVE / politicalToneTotal) * 100).toFixed(0) : 0}%)`);
+    console.log(`    Neutral: ${politicalToneCounts.NEUTRAL} (target: 9, ${politicalToneTotal > 0 ? ((politicalToneCounts.NEUTRAL / politicalToneTotal) * 100).toFixed(0) : 0}%)`);
+    console.log(`    Negative: ${politicalToneCounts.NEGATIVE} (target: 9, ${politicalToneTotal > 0 ? ((politicalToneCounts.NEGATIVE / politicalToneTotal) * 100).toFixed(0) : 0}%)`);
+    console.log('');
+    console.log('OVERALL TONE:');
+    console.log(`  Total with tone: ${knownValenceTotal} (target: 160)`);
+    console.log(`    Positive: ${valenceCounts.POSITIVE} (target: 54, ${((valenceCounts.POSITIVE / knownValenceTotal) * 100).toFixed(1)}%)`);
+    console.log(`    Neutral: ${valenceCounts.NEUTRAL} (target: 53, ${((valenceCounts.NEUTRAL / knownValenceTotal) * 100).toFixed(1)}%)`);
+    console.log(`    Negative: ${valenceCounts.NEGATIVE} (target: 53, ${((valenceCounts.NEGATIVE / knownValenceTotal) * 100).toFixed(1)}%)`);
+    console.log('');
+    console.log('SELLING VS NOT SELLING:');
+    console.log(`  Selling posts: ${totalAds + unlabeledPromoDetected} (39 commercial posts)`);
+    console.log(`  Not selling posts: ${totalPosts - (totalAds + unlabeledPromoDetected)} (121 non-commercial posts)`);
+    console.log('');
+    console.log('SOURCE CONCENTRATION:');
+    console.log(`  Top 5 creators: ${top5Percent}% (target: 60-75%)`);
+    console.log(`  Top 10 creators: ${top10Percent}%`);
+    console.log(`  Top 10 details:`);
+    sortedCreators.slice(0, 10).forEach(([handle, count], i) => {
+      console.log(`    ${i + 1}. @${handle}: ${count} posts (${((count / totalPosts) * 100).toFixed(1)}%)`);
+    });
+    console.log('');
+    console.log('THRESHOLD VALIDATION:');
+    console.log(`  ${totalPosts === 160 ? '✓' : '✗'} Total posts: ${totalPosts} === 160`);
+    console.log(`  ${totalAds === 23 ? '✓' : '✗'} Labeled ads: ${totalAds} === 23`);
+    console.log(`  ${unlabeledPromoDetected === 16 ? '✓' : '✗'} Unlabeled promo: ${unlabeledPromoDetected} === 16`);
+    console.log(`  ${totalAds + unlabeledPromoDetected === 39 ? '✓' : '✗'} Total commercial/selling: ${totalAds + unlabeledPromoDetected} === 39`);
+    console.log(`  ${totalPolitical === 27 ? '✓' : '✗'} Political posts: ${totalPolitical} === 27`);
+    console.log(`  ${alignmentCounts.left === 9 ? '✓' : '✗'} Left stance: ${alignmentCounts.left} === 9`);
+    console.log(`  ${alignmentCounts.neutral === 9 ? '✓' : '✗'} Neutral stance: ${alignmentCounts.neutral} === 9`);
+    console.log(`  ${alignmentCounts.right === 9 ? '✓' : '✗'} Right stance: ${alignmentCounts.right} === 9`);
+    console.log(`  ${politicalToneCounts.POSITIVE === 9 ? '✓' : '✗'} Political positive tone: ${politicalToneCounts.POSITIVE} === 9`);
+    console.log(`  ${politicalToneCounts.NEUTRAL === 9 ? '✓' : '✗'} Political neutral tone: ${politicalToneCounts.NEUTRAL} === 9`);
+    console.log(`  ${politicalToneCounts.NEGATIVE === 9 ? '✓' : '✗'} Political negative tone: ${politicalToneCounts.NEGATIVE} === 9`);
+    console.log(`  ${valenceCounts.POSITIVE === 54 ? '✓' : '✗'} Overall positive tone: ${valenceCounts.POSITIVE} === 54`);
+    console.log(`  ${valenceCounts.NEUTRAL === 53 ? '✓' : '✗'} Overall neutral tone: ${valenceCounts.NEUTRAL} === 53`);
+    console.log(`  ${valenceCounts.NEGATIVE === 53 ? '✓' : '✗'} Overall negative tone: ${valenceCounts.NEGATIVE} === 53`);
+    console.log(`  ${top5Percent >= 60 && top5Percent <= 75 ? '✓' : '✗'} Top 5 concentration: ${top5Percent}% in range 60-75%`);
+    console.log('');
+    console.log('='.repeat(80));
+  }
 
   return {
     scans,

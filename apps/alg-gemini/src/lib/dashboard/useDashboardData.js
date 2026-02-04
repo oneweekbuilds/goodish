@@ -5,15 +5,16 @@ const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000';
 /**
  * Custom hook to fetch and process scan data for the dashboard.
  * Reuses the same API endpoints as HistoryPage and ResultsPage.
- * 
+ *
  * @param {Object} options - Optional configuration
  * @param {Object} options.filters - Filter configuration (premium feature)
  * @param {string} options.filters.platform - Platform filter: 'all' | 'instagram' | 'tiktok' | 'youtube' | 'x' | 'other'
  * @param {string} options.filters.startDate - Start date filter (YYYY-MM-DD)
  * @param {string} options.filters.endDate - End date filter (YYYY-MM-DD)
+ * @param {boolean} options.skipFetch - If true, skip all API calls (for demo mode)
  */
 export function useDashboardData(options = {}) {
-  const { filters = null } = options;
+  const { filters = null, skipFetch = false } = options;
   const [allScans, setAllScans] = useState([]); // Unfiltered scans from API
   const [scanDetails, setScanDetails] = useState({}); // Map of scanId -> detail
   const [loading, setLoading] = useState(true);
@@ -100,15 +101,19 @@ export function useDashboardData(options = {}) {
     return details;
   }, [scanDetails, fetchScanDetail]);
 
-  // Initial fetch
+  // Initial fetch (skip if in demo mode)
   useEffect(() => {
+    if (skipFetch) {
+      setLoading(false);
+      return;
+    }
     const init = async () => {
       setLoading(true);
       await fetchScans();
       setLoading(false);
     };
     init();
-  }, [fetchScans]);
+  }, [fetchScans, skipFetch]);
 
   // Apply filters to scans (premium feature) - memoized for performance
   const scans = useMemo(() => {

@@ -1957,9 +1957,11 @@ const DashboardPage = () => {
     return null;
   }, [isDemoMode]);
 
-  // Use real data hook only when not in demo mode
+  // Use real data hook (skip fetch in demo mode to prevent CORS errors)
   const realData = useDashboardData(
-    !isDemoMode && filtersActive ? { filters: activeFilters } : {}
+    !isDemoMode && filtersActive
+      ? { filters: activeFilters, skipFetch: isDemoMode }
+      : { skipFetch: isDemoMode }
   );
 
   // Select data source based on mode
@@ -2210,7 +2212,7 @@ const DashboardPage = () => {
   const isOnAlgorithmTab = activeTab === 'algorithm';
 
   return (
-    <div className="min-h-screen bg-bg-page pt-24 md:pt-28 pb-16 px-4 md:px-6">
+    <div className="bg-bg-page pt-24 md:pt-28 pb-16 px-4 md:px-6">
       <div className="max-w-7xl mx-auto px-6">
         {/* Page Header - reduced on Algorithm tab to let hero be the star */}
         <div className={`flex flex-col md:flex-row md:items-center md:justify-between gap-4 ${isOnAlgorithmTab ? 'mb-4' : 'mb-8'}`}>
