@@ -2,6 +2,7 @@ import React from 'react';
 import {
   MasterNumbersLine,
   CompositionBar100WithCounts,
+  DenominatorLine,
 } from '../../../components/dashboard/primitives';
 import { aggregateSourceOrigin } from '../../../lib/dashboard/scanAggregator';
 
@@ -25,6 +26,13 @@ const SuggestedVsFollowedTab = ({ scans, scanDetails }) => {
   const totalPosts = sourceData.totalPosts || 0;
   const scanCount = scans.length;
   const platformCount = Object.keys(sourceData.byPlatform || {}).length;
+
+  // Helper to extract feed items (matches ToneTab pattern)
+  const getFeedItems = (scanDetail) => {
+    if (!scanDetail) return [];
+    const data = scanDetail.result || scanDetail.scan || scanDetail;
+    return data?.feed_items || [];
+  };
 
   // ===========================================
   // COMPUTE UI DATA
@@ -70,6 +78,109 @@ const SuggestedVsFollowedTab = ({ scans, scanDetails }) => {
       }
     }
   }
+
+  // ===========================================
+  // COMPUTE TONE BY SOURCE ORIGIN
+  // (Matches ToneTab pattern exactly)
+  // ===========================================
+
+  const computeToneBySourceOrigin = () => {
+    // Count tone for suggested vs followed posts
+    let suggestedPos = 0;
+    let suggestedNeut = 0;
+    let suggestedNeg = 0;
+
+    let followedPos = 0;
+    let followedNeut = 0;
+    let followedNeg = 0;
+
+    for (const scan of scans) {
+      const detail = scanDetails[scan.id];
+      if (!detail) continue;
+
+      const feedItems = getFeedItems(detail);
+      for (const item of feedItems) {
+        const valence = item.emotions?.valence;
+        const origin = item.sourceOrigin;
+
+        if (valence === 'POSITIVE' || valence === 'NEUTRAL' || valence === 'NEGATIVE') {
+          if (origin === 'suggested') {
+            if (valence === 'POSITIVE') suggestedPos++;
+            else if (valence === 'NEUTRAL') suggestedNeut++;
+            else if (valence === 'NEGATIVE') suggestedNeg++;
+          } else if (origin === 'followed') {
+            if (valence === 'POSITIVE') followedPos++;
+            else if (valence === 'NEUTRAL') followedNeut++;
+            else if (valence === 'NEGATIVE') followedNeg++;
+          }
+        }
+      }
+    }
+
+    const suggestedTotal = suggestedPos + suggestedNeut + suggestedNeg;
+    const followedTotal = followedPos + followedNeut + followedNeg;
+
+    // Must have at least 10 posts in BOTH groups
+    if (suggestedTotal < 10 || followedTotal < 10) {
+      return { hasData: false };
+    }
+
+    // Calculate percentages for suggested posts
+    let sugPosPercent = Math.round((suggestedPos / suggestedTotal) * 100);
+    let sugNeutPercent = Math.round((suggestedNeut / suggestedTotal) * 100);
+    let sugNegPercent = Math.round((suggestedNeg / suggestedTotal) * 100);
+
+    const sugSum = sugPosPercent + sugNeutPercent + sugNegPercent;
+    if (sugSum !== 100) {
+      const diff = 100 - sugSum;
+      if (suggestedPos >= suggestedNeut && suggestedPos >= suggestedNeg) {
+        sugPosPercent += diff;
+      } else if (suggestedNeut >= suggestedNeg) {
+        sugNeutPercent += diff;
+      } else {
+        sugNegPercent += diff;
+      }
+    }
+
+    // Calculate percentages for followed posts
+    let folPosPercent = Math.round((followedPos / followedTotal) * 100);
+    let folNeutPercent = Math.round((followedNeut / followedTotal) * 100);
+    let folNegPercent = Math.round((followedNeg / followedTotal) * 100);
+
+    const folSum = folPosPercent + folNeutPercent + folNegPercent;
+    if (folSum !== 100) {
+      const diff = 100 - folSum;
+      if (followedPos >= followedNeut && followedPos >= followedNeg) {
+        folPosPercent += diff;
+      } else if (followedNeut >= followedNeg) {
+        folNeutPercent += diff;
+      } else {
+        folNegPercent += diff;
+      }
+    }
+
+    return {
+      hasData: true,
+      suggested: {
+        segments: [
+          { label: 'Positive or happy tone', percentage: sugPosPercent, count: suggestedPos, color: '#86EFAC' },
+          { label: 'Neutral or balanced tone', percentage: sugNeutPercent, count: suggestedNeut, color: '#CBD5E1' },
+          { label: 'Negative or outrage tone', percentage: sugNegPercent, count: suggestedNeg, color: '#FCA5A5' },
+        ],
+        total: suggestedTotal,
+      },
+      followed: {
+        segments: [
+          { label: 'Positive or happy tone', percentage: folPosPercent, count: followedPos, color: '#86EFAC' },
+          { label: 'Neutral or balanced tone', percentage: folNeutPercent, count: followedNeut, color: '#CBD5E1' },
+          { label: 'Negative or outrage tone', percentage: folNegPercent, count: followedNeg, color: '#FCA5A5' },
+        ],
+        total: followedTotal,
+      },
+    };
+  };
+
+  const toneBySourceOrigin = computeToneBySourceOrigin();
 
   // ===========================================
   // RENDER
@@ -142,7 +253,36 @@ const SuggestedVsFollowedTab = ({ scans, scanDetails }) => {
         </section>
       )}
 
-      {/* Section 4: What You Can Do */}
+      {/* Section 4: Tone Split by Source Origin (matches ToneTab pattern) */}
+      <section>
+        <h2 className="text-lg font-semibold text-slate-800 mb-3">Tone: suggested vs followed</h2>
+
+        {toneBySourceOrigin.hasData ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Suggested Posts */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-slate-700">Suggested posts</h3>
+              <CompositionBar100WithCounts segments={toneBySourceOrigin.suggested.segments} />
+              <DenominatorLine text={`Percent of suggested posts (${toneBySourceOrigin.suggested.total} posts)`} />
+            </div>
+
+            {/* Followed Posts */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-slate-700">Followed posts</h3>
+              <CompositionBar100WithCounts segments={toneBySourceOrigin.followed.segments} />
+              <DenominatorLine text={`Percent of followed posts (${toneBySourceOrigin.followed.total} posts)`} />
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white border border-slate-200 rounded-lg p-6 text-center">
+            <p className="text-sm text-slate-400 italic">
+              Not enough posts in both suggested and followed groups to compare tone.
+            </p>
+          </div>
+        )}
+      </section>
+
+      {/* Section 6: What You Can Do */}
       <section>
         <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-4">
           <h3 className="text-lg font-medium text-slate-800">What you can do</h3>
