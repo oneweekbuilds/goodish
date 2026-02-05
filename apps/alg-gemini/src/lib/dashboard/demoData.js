@@ -126,11 +126,46 @@ function generateFeedItem(globalIndex, scanId, scanIndex) {
   // This gives: 11/20 = 55% suggested, 9/20 = 45% followed
   const sourceOrigin = (globalIndex % 20) < 11 ? 'suggested' : 'followed';
 
+  // Media type: 70% visual (image/video), 30% text-only
+  // Pattern: if (globalIndex % 10) < 7, then visual, else text
+  // This gives: 7/10 = 70% visual, 3/10 = 30% text
+  const isVisual = (globalIndex % 10) < 7;
+  const mediaType = isVisual ? (globalIndex % 2 === 0 ? 'image' : 'video') : 'text';
+
+  // AI visual signals: ONLY for visual posts
+  // Target distribution for visual posts: 18% LIKELY_AI, 12% POSSIBLY_AI, 70% NO_STRONG_SIGNALS
+  // Pattern based on position within visual posts:
+  // - First 18% of visual posts (indices where globalIndex % 10 < 7 and visualIndex < 20) = LIKELY_AI
+  // - Next 12% (visualIndex 20-32) = POSSIBLY_AI
+  // - Remaining 70% = NO_STRONG_SIGNALS
+  let aiVisualSignals = null;
+  if (isVisual) {
+    // Count how many visual posts came before this one
+    // Visual posts occur at indices: 0,1,2,3,4,5,6, 10,11,12,13,14,15,16, 20,21,22,23,24,25,26, ...
+    // Calculate visual post index deterministically
+    const visualIndex = Math.floor(globalIndex / 10) * 7 + Math.min(globalIndex % 10, 6);
+
+    // Total visual posts = 160 * 0.7 = 112
+    // LIKELY_AI: first 20 visual posts (18% of 112)
+    // POSSIBLY_AI: next 13 visual posts (12% of 112)
+    // NO_STRONG_SIGNALS: remaining 79 visual posts (70% of 112)
+    if (visualIndex < 20) {
+      aiVisualSignals = 'LIKELY_AI';
+    } else if (visualIndex < 33) {
+      aiVisualSignals = 'POSSIBLY_AI';
+    } else {
+      aiVisualSignals = 'NO_STRONG_SIGNALS';
+    }
+  }
+
   const item = {
     id: `${scanId}_item_${globalIndex}`,
     is_ad: isAd,
     position_in_feed: globalIndex % 50, // For post key generation
     created_at: new Date(Date.now() - globalIndex * 3600000).toISOString(), // 1 hour apart
+    // Media type and AI visual signals
+    media_type: mediaType,
+    ...(aiVisualSignals && { aiVisualSignals }), // Only add if visual post
     // Source origin (Suggested vs Followed tab)
     sourceOrigin: sourceOrigin,
     // Creator fields (multiple formats for compatibility)
@@ -323,6 +358,9 @@ export function generateDemoData() {
   const sourceOriginCounts = { suggested: 0, followed: 0 };
   const creatorSet = new Set();
   const creatorPostCounts = {};
+  const aiVisualCounts = { LIKELY_AI: 0, POSSIBLY_AI: 0, NO_STRONG_SIGNALS: 0 };
+  const mediaTypeCounts = { image: 0, video: 0, text: 0 };
+  let totalVisualPosts = 0;
 
   for (const scan of scans) {
     const detail = scanDetails[scan.id];
@@ -345,6 +383,21 @@ export function generateDemoData() {
           const stance = item.political.stance_or_alignment;
           if (stance && alignmentCounts[stance] !== undefined) {
             alignmentCounts[stance]++;
+          }
+        }
+
+        // Track media types
+        if (item.media_type && mediaTypeCounts[item.media_type] !== undefined) {
+          mediaTypeCounts[item.media_type]++;
+        }
+
+        // Track AI visual signals (only for visual posts)
+        const isVisual = item.media_type === 'image' || item.media_type === 'video';
+        if (isVisual) {
+          totalVisualPosts++;
+          const aiSignal = item.aiVisualSignals || 'NO_STRONG_SIGNALS';
+          if (aiVisualCounts[aiSignal] !== undefined) {
+            aiVisualCounts[aiSignal]++;
           }
         }
 
@@ -454,6 +507,14 @@ export function generateDemoData() {
     console.log(`  Suggested posts: ${sourceOriginCounts.suggested} (${((sourceOriginCounts.suggested / totalPosts) * 100).toFixed(1)}%)`);
     console.log(`  Followed posts: ${sourceOriginCounts.followed} (${((sourceOriginCounts.followed / totalPosts) * 100).toFixed(1)}%)`);
     console.log('');
+    console.log('AI VISUAL SIGNALS:');
+    console.log(`  Total visual posts: ${totalVisualPosts} (${((totalVisualPosts / totalPosts) * 100).toFixed(1)}%) [images: ${mediaTypeCounts.image}, videos: ${mediaTypeCounts.video}]`);
+    console.log(`  Text-only posts: ${mediaTypeCounts.text} (${((mediaTypeCounts.text / totalPosts) * 100).toFixed(1)}%)`);
+    console.log(`  Visual posts with AI signals (${totalVisualPosts} visual posts):`);
+    console.log(`    Likely AI-generated: ${aiVisualCounts.LIKELY_AI} (target: 20, ${totalVisualPosts > 0 ? ((aiVisualCounts.LIKELY_AI / totalVisualPosts) * 100).toFixed(1) : 0}%)`);
+    console.log(`    Possibly AI-assisted: ${aiVisualCounts.POSSIBLY_AI} (target: 13, ${totalVisualPosts > 0 ? ((aiVisualCounts.POSSIBLY_AI / totalVisualPosts) * 100).toFixed(1) : 0}%)`);
+    console.log(`    No strong AI signals: ${aiVisualCounts.NO_STRONG_SIGNALS} (target: 79, ${totalVisualPosts > 0 ? ((aiVisualCounts.NO_STRONG_SIGNALS / totalVisualPosts) * 100).toFixed(1) : 0}%)`);
+    console.log('');
     console.log('SOURCE CONCENTRATION:');
     console.log(`  Top 5 creators: ${top5Percent}% (target: 60-75%)`);
     console.log(`  Top 10 creators: ${top10Percent}%`);
@@ -480,6 +541,11 @@ export function generateDemoData() {
     console.log(`  ${top5Percent >= 60 && top5Percent <= 75 ? '✓' : '✗'} Top 5 concentration: ${top5Percent}% in range 60-75%`);
     console.log(`  ${sourceOriginCounts.suggested === 88 ? '✓' : '✗'} Suggested posts: ${sourceOriginCounts.suggested} === 88`);
     console.log(`  ${sourceOriginCounts.followed === 72 ? '✓' : '✗'} Followed posts: ${sourceOriginCounts.followed} === 72`);
+    console.log(`  ${totalVisualPosts === 112 ? '✓' : '✗'} Total visual posts: ${totalVisualPosts} === 112`);
+    console.log(`  ${mediaTypeCounts.text === 48 ? '✓' : '✗'} Text-only posts: ${mediaTypeCounts.text} === 48`);
+    console.log(`  ${aiVisualCounts.LIKELY_AI === 20 ? '✓' : '✗'} Likely AI visual: ${aiVisualCounts.LIKELY_AI} === 20`);
+    console.log(`  ${aiVisualCounts.POSSIBLY_AI === 13 ? '✓' : '✗'} Possibly AI visual: ${aiVisualCounts.POSSIBLY_AI} === 13`);
+    console.log(`  ${aiVisualCounts.NO_STRONG_SIGNALS === 79 ? '✓' : '✗'} No AI signals visual: ${aiVisualCounts.NO_STRONG_SIGNALS} === 79`);
     console.log('');
     console.log('='.repeat(80));
   }

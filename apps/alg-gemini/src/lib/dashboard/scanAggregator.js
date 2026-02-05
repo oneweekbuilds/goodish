@@ -1694,6 +1694,139 @@ export function aggregatePoliticalLeaning(scans, scanDetails) {
 }
 
 /**
+ * Aggregate AI visual signals data across scans.
+ *
+ * Returns:
+ * - totalVisualPosts: count of visual posts (images and videos)
+ * - counts: { likelyAi, possiblyAi, noSignals }
+ * - percentages: rounded integers that sum to 100
+ * - hasEnoughData: true if totalVisualPosts >= 20
+ * - segments: array for CompositionBar100WithCounts
+ * - scansUsed: number of scans with visual content
+ *
+ * @param {Array} scans
+ * @param {Object} scanDetails
+ * @returns {Object} Aggregated AI visual signals data
+ */
+export function aggregateAiVisualSignals(scans, scanDetails) {
+  const result = {
+    totalVisualPosts: 0,
+    counts: {
+      likelyAi: 0,
+      possiblyAi: 0,
+      noSignals: 0,
+    },
+    percentages: {
+      likelyAi: 0,
+      possiblyAi: 0,
+      noSignals: 0,
+    },
+    hasEnoughData: false,
+    segments: [],
+    scansUsed: 0,
+    scansWithData: [],
+  };
+
+  if (!scans || scans.length === 0) {
+    return result;
+  }
+
+  for (const scan of scans) {
+    const detail = scanDetails[scan.id];
+    if (!detail) continue;
+
+    const feedItems = getFeedItems(detail);
+    if (feedItems.length === 0) continue;
+
+    let scanHasVisualData = false;
+
+    for (const item of feedItems) {
+      // Only consider visual posts (images and videos)
+      const mediaType = item.media_type || item.content_type || item.type;
+      const isVisual = mediaType === 'image' || mediaType === 'video';
+
+      if (!isVisual) continue;
+
+      scanHasVisualData = true;
+      result.totalVisualPosts++;
+
+      // Get AI visual signals classification
+      // Default to NO_STRONG_SIGNALS if field is missing (do not guess)
+      const aiSignal = item.aiVisualSignals || 'NO_STRONG_SIGNALS';
+
+      // Count by classification
+      if (aiSignal === 'LIKELY_AI') {
+        result.counts.likelyAi++;
+      } else if (aiSignal === 'POSSIBLY_AI') {
+        result.counts.possiblyAi++;
+      } else {
+        // Default to NO_STRONG_SIGNALS for any other value
+        result.counts.noSignals++;
+      }
+    }
+
+    if (scanHasVisualData) {
+      result.scansUsed++;
+      result.scansWithData.push(scan.id);
+    }
+  }
+
+  // Determine if we have enough data
+  result.hasEnoughData = result.totalVisualPosts >= 20;
+
+  // Calculate percentages (rounded to integers that sum to 100)
+  if (result.totalVisualPosts > 0) {
+    let likelyAiPercent = Math.round((result.counts.likelyAi / result.totalVisualPosts) * 100);
+    let possiblyAiPercent = Math.round((result.counts.possiblyAi / result.totalVisualPosts) * 100);
+    let noSignalsPercent = Math.round((result.counts.noSignals / result.totalVisualPosts) * 100);
+
+    // Ensure percentages sum to exactly 100
+    const sum = likelyAiPercent + possiblyAiPercent + noSignalsPercent;
+    if (sum !== 100) {
+      const diff = 100 - sum;
+      // Adjust largest segment
+      if (result.counts.noSignals >= result.counts.likelyAi && result.counts.noSignals >= result.counts.possiblyAi) {
+        noSignalsPercent += diff;
+      } else if (result.counts.likelyAi >= result.counts.possiblyAi) {
+        likelyAiPercent += diff;
+      } else {
+        possiblyAiPercent += diff;
+      }
+    }
+
+    result.percentages = {
+      likelyAi: likelyAiPercent,
+      possiblyAi: possiblyAiPercent,
+      noSignals: noSignalsPercent,
+    };
+
+    // Build segments for CompositionBar100WithCounts
+    result.segments = [
+      {
+        label: 'Likely AI-generated',
+        percentage: likelyAiPercent,
+        count: result.counts.likelyAi,
+        color: '#F59E0B', // Amber
+      },
+      {
+        label: 'Possibly AI-assisted',
+        percentage: possiblyAiPercent,
+        count: result.counts.possiblyAi,
+        color: '#94A3B8', // Slate
+      },
+      {
+        label: 'No strong AI signals detected',
+        percentage: noSignalsPercent,
+        count: result.counts.noSignals,
+        color: '#10B981', // Green
+      },
+    ];
+  }
+
+  return result;
+}
+
+/**
  * Aggregate sourceOrigin data across scans (Suggested vs Followed).
  *
  * Returns:

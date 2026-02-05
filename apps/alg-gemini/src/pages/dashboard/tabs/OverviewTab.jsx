@@ -8,8 +8,9 @@ import {
   ExperimentSuggestionCard,
 } from '../../../components/dashboard/primitives';
 import InsightHero from '../../../components/dashboard/InsightHero';
+import SectionHeader from '../../../components/dashboard/SectionHeader';
 import { buildOverviewHero } from '../../../lib/dashboard/insightBuilders';
-import { aggregateCreators, aggregateAds, aggregatePolitics, aggregateEmotions, summarizeInfluence } from '../../../lib/dashboard/scanAggregator';
+import { aggregateCreators, aggregateAds, aggregatePolitics, aggregateEmotions, summarizeInfluence, aggregateAiVisualSignals } from '../../../lib/dashboard/scanAggregator';
 
 /**
  * OverviewTab - Tab 1 of locked spec
@@ -27,6 +28,7 @@ const OverviewTab = ({ scans, scanDetails }) => {
   const politicsData = aggregatePolitics(scans, scanDetails);
   const emotionsData = aggregateEmotions(scans, scanDetails);
   const influenceData = summarizeInfluence(scans, scanDetails);
+  const aiVisualData = aggregateAiVisualSignals(scans, scanDetails);
 
   const totalPosts = adsData.totalPosts || 0;
   const scanCount = scans.length;
@@ -307,6 +309,44 @@ const OverviewTab = ({ scans, scanDetails }) => {
     <div className="space-y-8">
       {/* Insight Hero */}
       <InsightHero {...hero} />
+
+      {/* AI Visual Signals Section */}
+      <section>
+        <SectionHeader>AI visual signals</SectionHeader>
+
+        {aiVisualData.hasEnoughData ? (
+          <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-3">
+            <p className="text-sm text-slate-600">
+              This estimates how often image and video posts show signals consistent with AI generation.
+            </p>
+
+            <CompositionBar100WithCounts segments={aiVisualData.segments} />
+
+            <p className="text-xs text-slate-500 italic mt-2">
+              Each segment shows what percentage of visual posts fall into that category.
+            </p>
+
+            <div className="mt-3">
+              <DenominatorLine text={`Based on ${aiVisualData.totalVisualPosts} visual posts (images and videos)`} />
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-slate-100">
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Signals are not definitive proof. Results may miss AI content or flag non-AI edits.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white border border-slate-200 rounded-lg p-6 text-center space-y-2">
+            <p className="text-sm text-slate-400 italic">
+              Not enough visual posts to assess AI signals yet.
+            </p>
+            <p className="text-xs text-slate-500">
+              This becomes available once more image or video posts are captured in scans.
+            </p>
+          </div>
+        )}
+      </section>
 
       {/* Section 1.1 - Topline Summary (4 cards in 2x2 grid) */}
       <section>
