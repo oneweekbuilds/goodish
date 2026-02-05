@@ -132,13 +132,14 @@ function generateFeedItem(globalIndex, scanId, scanIndex) {
   const isVisual = (globalIndex % 10) < 7;
   const mediaType = isVisual ? (globalIndex % 2 === 0 ? 'image' : 'video') : 'text';
 
-  // AI visual signals: ONLY for visual posts
-  // Target distribution for visual posts: 18% LIKELY_AI, 12% POSSIBLY_AI, 70% NO_STRONG_SIGNALS
-  // Pattern based on position within visual posts:
-  // - First 18% of visual posts (indices where globalIndex % 10 < 7 and visualIndex < 20) = LIKELY_AI
-  // - Next 12% (visualIndex 20-32) = POSSIBLY_AI
-  // - Remaining 70% = NO_STRONG_SIGNALS
-  let aiVisualSignals = null;
+  // AI disclosure fields: ONLY for visual posts
+  // Target distribution for visual posts:
+  // - C2PA verified: ~5% (6 posts out of 112 visual posts) - rare, cutting-edge
+  // - Platform labeled AI: ~15% (17 posts) - more common on platforms
+  // - No disclosure: ~80% (89 posts) - most common
+  let aiDisclosure = null;
+  let c2paDisclosure = null;
+
   if (isVisual) {
     // Count how many visual posts came before this one
     // Visual posts occur at indices: 0,1,2,3,4,5,6, 10,11,12,13,14,15,16, 20,21,22,23,24,25,26, ...
@@ -146,15 +147,18 @@ function generateFeedItem(globalIndex, scanId, scanIndex) {
     const visualIndex = Math.floor(globalIndex / 10) * 7 + Math.min(globalIndex % 10, 6);
 
     // Total visual posts = 160 * 0.7 = 112
-    // LIKELY_AI: first 20 visual posts (18% of 112)
-    // POSSIBLY_AI: next 13 visual posts (12% of 112)
-    // NO_STRONG_SIGNALS: remaining 79 visual posts (70% of 112)
-    if (visualIndex < 20) {
-      aiVisualSignals = 'LIKELY_AI';
-    } else if (visualIndex < 33) {
-      aiVisualSignals = 'POSSIBLY_AI';
+    // C2PA verified: first 6 visual posts (~5% of 112)
+    // Platform labeled AI: next 17 visual posts (~15% of 112)
+    // No disclosure: remaining 89 visual posts (~80% of 112)
+    if (visualIndex < 6) {
+      aiDisclosure = 'NOT_LABELED'; // Has C2PA, so doesn't need platform label
+      c2paDisclosure = 'HAS_C2PA';
+    } else if (visualIndex < 23) {
+      aiDisclosure = 'LABELED_AI';
+      c2paDisclosure = 'NO_C2PA';
     } else {
-      aiVisualSignals = 'NO_STRONG_SIGNALS';
+      aiDisclosure = 'NOT_LABELED';
+      c2paDisclosure = 'NO_C2PA';
     }
   }
 
@@ -163,9 +167,11 @@ function generateFeedItem(globalIndex, scanId, scanIndex) {
     is_ad: isAd,
     position_in_feed: globalIndex % 50, // For post key generation
     created_at: new Date(Date.now() - globalIndex * 3600000).toISOString(), // 1 hour apart
-    // Media type and AI visual signals
-    media_type: mediaType,
-    ...(aiVisualSignals && { aiVisualSignals }), // Only add if visual post
+    // Content type (replaces old media_type, matches backend schema)
+    content_type: mediaType.toUpperCase(), // "IMAGE", "VIDEO", "TEXT"
+    // AI disclosure fields (platform-disclosed AI labels and C2PA)
+    ...(aiDisclosure !== null && { ai_disclosure: aiDisclosure }),
+    ...(c2paDisclosure !== null && { c2pa_disclosure: c2paDisclosure }),
     // Source origin (Suggested vs Followed tab)
     sourceOrigin: sourceOrigin,
     // Creator fields (multiple formats for compatibility)
@@ -358,8 +364,8 @@ export function generateDemoData() {
   const sourceOriginCounts = { suggested: 0, followed: 0 };
   const creatorSet = new Set();
   const creatorPostCounts = {};
-  const aiVisualCounts = { LIKELY_AI: 0, POSSIBLY_AI: 0, NO_STRONG_SIGNALS: 0 };
-  const mediaTypeCounts = { image: 0, video: 0, text: 0 };
+  const aiDisclosureCounts = { HAS_C2PA: 0, LABELED_AI: 0, NO_DISCLOSURE: 0 };
+  const contentTypeCounts = { IMAGE: 0, VIDEO: 0, TEXT: 0 };
   let totalVisualPosts = 0;
 
   for (const scan of scans) {
@@ -386,18 +392,24 @@ export function generateDemoData() {
           }
         }
 
-        // Track media types
-        if (item.media_type && mediaTypeCounts[item.media_type] !== undefined) {
-          mediaTypeCounts[item.media_type]++;
+        // Track content types
+        const contentType = (item.content_type || '').toUpperCase();
+        if (contentTypeCounts[contentType] !== undefined) {
+          contentTypeCounts[contentType]++;
         }
 
-        // Track AI visual signals (only for visual posts)
-        const isVisual = item.media_type === 'image' || item.media_type === 'video';
+        // Track AI disclosure (only for visual posts)
+        const isVisual = contentType === 'IMAGE' || contentType === 'VIDEO';
         if (isVisual) {
           totalVisualPosts++;
-          const aiSignal = item.aiVisualSignals || 'NO_STRONG_SIGNALS';
-          if (aiVisualCounts[aiSignal] !== undefined) {
-            aiVisualCounts[aiSignal]++;
+
+          // Classify by disclosure signal (prioritize C2PA over platform label)
+          if (item.c2pa_disclosure === 'HAS_C2PA') {
+            aiDisclosureCounts.HAS_C2PA++;
+          } else if (item.ai_disclosure === 'LABELED_AI') {
+            aiDisclosureCounts.LABELED_AI++;
+          } else {
+            aiDisclosureCounts.NO_DISCLOSURE++;
           }
         }
 
@@ -507,13 +519,13 @@ export function generateDemoData() {
     console.log(`  Suggested posts: ${sourceOriginCounts.suggested} (${((sourceOriginCounts.suggested / totalPosts) * 100).toFixed(1)}%)`);
     console.log(`  Followed posts: ${sourceOriginCounts.followed} (${((sourceOriginCounts.followed / totalPosts) * 100).toFixed(1)}%)`);
     console.log('');
-    console.log('AI VISUAL SIGNALS:');
-    console.log(`  Total visual posts: ${totalVisualPosts} (${((totalVisualPosts / totalPosts) * 100).toFixed(1)}%) [images: ${mediaTypeCounts.image}, videos: ${mediaTypeCounts.video}]`);
-    console.log(`  Text-only posts: ${mediaTypeCounts.text} (${((mediaTypeCounts.text / totalPosts) * 100).toFixed(1)}%)`);
-    console.log(`  Visual posts with AI signals (${totalVisualPosts} visual posts):`);
-    console.log(`    Likely AI-generated: ${aiVisualCounts.LIKELY_AI} (target: 20, ${totalVisualPosts > 0 ? ((aiVisualCounts.LIKELY_AI / totalVisualPosts) * 100).toFixed(1) : 0}%)`);
-    console.log(`    Possibly AI-assisted: ${aiVisualCounts.POSSIBLY_AI} (target: 13, ${totalVisualPosts > 0 ? ((aiVisualCounts.POSSIBLY_AI / totalVisualPosts) * 100).toFixed(1) : 0}%)`);
-    console.log(`    No strong AI signals: ${aiVisualCounts.NO_STRONG_SIGNALS} (target: 79, ${totalVisualPosts > 0 ? ((aiVisualCounts.NO_STRONG_SIGNALS / totalVisualPosts) * 100).toFixed(1) : 0}%)`);
+    console.log('AI-LABELED VISUALS (PLATFORM-DISCLOSED):');
+    console.log(`  Total visual posts: ${totalVisualPosts} (${((totalVisualPosts / totalPosts) * 100).toFixed(1)}%) [images: ${contentTypeCounts.IMAGE}, videos: ${contentTypeCounts.VIDEO}]`);
+    console.log(`  Text-only posts: ${contentTypeCounts.TEXT} (${((contentTypeCounts.TEXT / totalPosts) * 100).toFixed(1)}%)`);
+    console.log(`  Visual posts with platform disclosure (${totalVisualPosts} visual posts):`);
+    console.log(`    C2PA verified: ${aiDisclosureCounts.HAS_C2PA} (target: 6, ${totalVisualPosts > 0 ? ((aiDisclosureCounts.HAS_C2PA / totalVisualPosts) * 100).toFixed(1) : 0}%)`);
+    console.log(`    Platform labeled AI: ${aiDisclosureCounts.LABELED_AI} (target: 17, ${totalVisualPosts > 0 ? ((aiDisclosureCounts.LABELED_AI / totalVisualPosts) * 100).toFixed(1) : 0}%)`);
+    console.log(`    No disclosure: ${aiDisclosureCounts.NO_DISCLOSURE} (target: 89, ${totalVisualPosts > 0 ? ((aiDisclosureCounts.NO_DISCLOSURE / totalVisualPosts) * 100).toFixed(1) : 0}%)`);
     console.log('');
     console.log('SOURCE CONCENTRATION:');
     console.log(`  Top 5 creators: ${top5Percent}% (target: 60-75%)`);
@@ -542,10 +554,10 @@ export function generateDemoData() {
     console.log(`  ${sourceOriginCounts.suggested === 88 ? '✓' : '✗'} Suggested posts: ${sourceOriginCounts.suggested} === 88`);
     console.log(`  ${sourceOriginCounts.followed === 72 ? '✓' : '✗'} Followed posts: ${sourceOriginCounts.followed} === 72`);
     console.log(`  ${totalVisualPosts === 112 ? '✓' : '✗'} Total visual posts: ${totalVisualPosts} === 112`);
-    console.log(`  ${mediaTypeCounts.text === 48 ? '✓' : '✗'} Text-only posts: ${mediaTypeCounts.text} === 48`);
-    console.log(`  ${aiVisualCounts.LIKELY_AI === 20 ? '✓' : '✗'} Likely AI visual: ${aiVisualCounts.LIKELY_AI} === 20`);
-    console.log(`  ${aiVisualCounts.POSSIBLY_AI === 13 ? '✓' : '✗'} Possibly AI visual: ${aiVisualCounts.POSSIBLY_AI} === 13`);
-    console.log(`  ${aiVisualCounts.NO_STRONG_SIGNALS === 79 ? '✓' : '✗'} No AI signals visual: ${aiVisualCounts.NO_STRONG_SIGNALS} === 79`);
+    console.log(`  ${contentTypeCounts.TEXT === 48 ? '✓' : '✗'} Text-only posts: ${contentTypeCounts.TEXT} === 48`);
+    console.log(`  ${aiDisclosureCounts.HAS_C2PA === 6 ? '✓' : '✗'} C2PA verified: ${aiDisclosureCounts.HAS_C2PA} === 6`);
+    console.log(`  ${aiDisclosureCounts.LABELED_AI === 17 ? '✓' : '✗'} Platform labeled AI: ${aiDisclosureCounts.LABELED_AI} === 17`);
+    console.log(`  ${aiDisclosureCounts.NO_DISCLOSURE === 89 ? '✓' : '✗'} No disclosure: ${aiDisclosureCounts.NO_DISCLOSURE} === 89`);
     console.log('');
     console.log('SAMPLE FEED ITEMS (for media field inspection):');
     console.log('');
@@ -559,10 +571,11 @@ export function generateDemoData() {
       if (detail?.result?.feed_items) {
         const items = detail.result.feed_items;
         for (const item of items) {
-          if (!sampleImage && item.media_type === 'image') {
+          const contentType = (item.content_type || '').toUpperCase();
+          if (!sampleImage && contentType === 'IMAGE') {
             sampleImage = item;
           }
-          if (!sampleVideo && item.media_type === 'video') {
+          if (!sampleVideo && contentType === 'VIDEO') {
             sampleVideo = item;
           }
           if (sampleImage && sampleVideo) break;

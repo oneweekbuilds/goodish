@@ -117,6 +117,11 @@ export interface FeedItem {
     content_type: string;
     is_ad: boolean;
 
+    // AI disclosure fields (platform-disclosed AI labels and C2PA indicators)
+    // These capture EXPLICIT platform disclosure signals, NOT AI generation detection
+    ai_disclosure?: string | null;  // Platform AI labels: "LABELED_AI" | "NOT_LABELED" | null
+    c2pa_disclosure?: string | null;  // C2PA/Content Credentials: "HAS_C2PA" | "NO_C2PA" | null
+
     ad_metadata?: AdMetadata | null;
     account?: AccountInfo | null;
     content_text: ContentText;

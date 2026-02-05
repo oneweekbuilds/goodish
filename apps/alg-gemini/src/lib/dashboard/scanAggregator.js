@@ -1694,49 +1694,42 @@ export function aggregatePoliticalLeaning(scans, scanDetails) {
 }
 
 /**
- * Aggregate AI visual signals data across scans.
+ * Aggregate AI-labeled visuals (platform-disclosed) across scans.
  *
- * IMPORTANT LIMITATION:
- * This function only works in demo mode where aiVisualSignals field is synthetically added.
- * Real scans do not contain the metadata required for AI generation detection:
- * - No C2PA / Content Credentials
- * - No platform AI labels
- * - No EXIF metadata
- * - No media URLs or bytes for analysis
+ * This aggregator counts visual posts with EXPLICIT platform disclosure signals:
+ * - Platform AI labels (Instagram "Made with AI", TikTok "AI generated", etc.)
+ * - C2PA / Content Credentials indicators
  *
- * For real scans, this function will always return hasEnoughData: false
- * because the aiVisualSignals field does not exist in the actual scan schema.
- *
- * This is an honest limitation shown transparently to users.
+ * IMPORTANT: This is NOT AI generation detection. It ONLY reports what platforms
+ * explicitly disclose via labels or Content Credentials.
  *
  * Returns:
- * - totalVisualPosts: count of visual posts (images and videos) if detectable
- * - counts: { likelyAi, possiblyAi, noSignals }
- * - percentages: rounded integers that sum to 100
- * - hasEnoughData: true ONLY if aiVisualSignals field exists (demo mode only)
- * - isRealScan: true if this is a real scan (not demo), indicating detection is unavailable
- * - segments: array for CompositionBar100WithCounts
- * - scansUsed: number of scans with visual content
+ * - totalVisualPosts: count of all visual posts (image/video)
+ * - counts: { labeled, hasC2pa, noDisclosure }
+ * - percentages: { labeled, hasC2pa, noDisclosure }
+ * - hasEnoughData: true if >= 20 visual posts analyzed
+ * - segments: composition bar data
+ * - scansUsed: number of scans processed
+ * - scansWithData: array of scan IDs that contributed data
  *
- * @param {Array} scans
- * @param {Object} scanDetails
- * @returns {Object} Aggregated AI visual signals data
+ * @param {Array} scans - Array of scan objects
+ * @param {Object} scanDetails - Map of scan ID to full scan details
+ * @returns {Object} Aggregated AI disclosure data
  */
-export function aggregateAiVisualSignals(scans, scanDetails) {
+export function aggregateAiDisclosures(scans, scanDetails) {
   const result = {
     totalVisualPosts: 0,
     counts: {
-      likelyAi: 0,
-      possiblyAi: 0,
-      noSignals: 0,
+      labeled: 0,      // LABELED_AI
+      hasC2pa: 0,      // HAS_C2PA
+      noDisclosure: 0, // NOT_LABELED or NO_C2PA or null
     },
     percentages: {
-      likelyAi: 0,
-      possiblyAi: 0,
-      noSignals: 0,
+      labeled: 0,
+      hasC2pa: 0,
+      noDisclosure: 0,
     },
     hasEnoughData: false,
-    isRealScan: false, // Will be set to true if this is a real scan (not demo)
     segments: [],
     scansUsed: 0,
     scansWithData: [],
@@ -1746,8 +1739,6 @@ export function aggregateAiVisualSignals(scans, scanDetails) {
     return result;
   }
 
-  let hasAnyAiSignalsField = false; // Track if any items have the aiVisualSignals field
-
   for (const scan of scans) {
     const detail = scanDetails[scan.id];
     if (!detail) continue;
@@ -1755,102 +1746,92 @@ export function aggregateAiVisualSignals(scans, scanDetails) {
     const feedItems = getFeedItems(detail);
     if (feedItems.length === 0) continue;
 
-    let scanHasVisualData = false;
+    let scanHasVisualPosts = false;
 
     for (const item of feedItems) {
-      // Check if this is demo mode by looking for the media_type field (demo-only)
-      // Real scans use content_type, demo scans use media_type
-      const isDemoMode = item.hasOwnProperty('media_type');
-
-      // Only consider visual posts (images and videos)
-      const mediaType = item.media_type || item.content_type || item.type;
-      const isVisual = mediaType === 'image' || mediaType === 'video';
+      // Only count visual content (image/video)
+      const contentType = (item.content_type || '').toLowerCase();
+      const isVisual = contentType === 'image' || contentType === 'video';
 
       if (!isVisual) continue;
 
-      scanHasVisualData = true;
       result.totalVisualPosts++;
+      scanHasVisualPosts = true;
 
-      // Check if aiVisualSignals field exists (demo mode only)
-      if (item.hasOwnProperty('aiVisualSignals')) {
-        hasAnyAiSignalsField = true;
-        const aiSignal = item.aiVisualSignals;
+      // Check for platform AI label disclosure
+      const aiDisclosure = item.ai_disclosure;
+      const c2paDisclosure = item.c2pa_disclosure;
 
-        // Count by classification
-        if (aiSignal === 'LIKELY_AI') {
-          result.counts.likelyAi++;
-        } else if (aiSignal === 'POSSIBLY_AI') {
-          result.counts.possiblyAi++;
-        } else {
-          result.counts.noSignals++;
-        }
+      // Prioritize classification:
+      // 1. If has C2PA, count as hasC2pa (highest confidence signal)
+      // 2. Else if labeled AI by platform, count as labeled
+      // 3. Else count as noDisclosure
+      if (c2paDisclosure === 'HAS_C2PA') {
+        result.counts.hasC2pa++;
+      } else if (aiDisclosure === 'LABELED_AI') {
+        result.counts.labeled++;
       } else {
-        // Real scan: no aiVisualSignals field exists
-        result.isRealScan = true;
-        result.counts.noSignals++;
+        result.counts.noDisclosure++;
       }
     }
 
-    if (scanHasVisualData) {
+    if (scanHasVisualPosts) {
       result.scansUsed++;
       result.scansWithData.push(scan.id);
     }
   }
 
-  // Only set hasEnoughData if:
-  // 1. We have enough visual posts (>= 20)
-  // 2. AND the aiVisualSignals field actually exists (demo mode only)
-  result.hasEnoughData = result.totalVisualPosts >= 20 && hasAnyAiSignalsField && !result.isRealScan;
+  // Calculate percentages (rounded to whole numbers, ensuring they sum to 100)
+  if (result.totalVisualPosts > 0) {
+    const total = result.totalVisualPosts;
 
-  // Calculate percentages (rounded to integers that sum to 100)
-  // Only do this if we're in demo mode with AI signals field
-  if (result.totalVisualPosts > 0 && hasAnyAiSignalsField) {
-    let likelyAiPercent = Math.round((result.counts.likelyAi / result.totalVisualPosts) * 100);
-    let possiblyAiPercent = Math.round((result.counts.possiblyAi / result.totalVisualPosts) * 100);
-    let noSignalsPercent = Math.round((result.counts.noSignals / result.totalVisualPosts) * 100);
-
-    // Ensure percentages sum to exactly 100
-    const sum = likelyAiPercent + possiblyAiPercent + noSignalsPercent;
-    if (sum !== 100) {
-      const diff = 100 - sum;
-      // Adjust largest segment
-      if (result.counts.noSignals >= result.counts.likelyAi && result.counts.noSignals >= result.counts.possiblyAi) {
-        noSignalsPercent += diff;
-      } else if (result.counts.likelyAi >= result.counts.possiblyAi) {
-        likelyAiPercent += diff;
-      } else {
-        possiblyAiPercent += diff;
-      }
-    }
-
-    result.percentages = {
-      likelyAi: likelyAiPercent,
-      possiblyAi: possiblyAiPercent,
-      noSignals: noSignalsPercent,
+    // Raw percentages
+    const rawPercentages = {
+      hasC2pa: (result.counts.hasC2pa / total) * 100,
+      labeled: (result.counts.labeled / total) * 100,
+      noDisclosure: (result.counts.noDisclosure / total) * 100,
     };
 
-    // Build segments for CompositionBar100WithCounts
+    // Round and adjust to ensure sum = 100
+    result.percentages = roundPercentagesToSum100([
+      rawPercentages.hasC2pa,
+      rawPercentages.labeled,
+      rawPercentages.noDisclosure,
+    ]).reduce(
+      (acc, val, idx) => {
+        if (idx === 0) acc.hasC2pa = val;
+        if (idx === 1) acc.labeled = val;
+        if (idx === 2) acc.noDisclosure = val;
+        return acc;
+      },
+      { hasC2pa: 0, labeled: 0, noDisclosure: 0 }
+    );
+
+    // Build segments for composition bar (order by disclosure confidence)
     result.segments = [
       {
-        label: 'Likely AI-generated',
-        percentage: likelyAiPercent,
-        count: result.counts.likelyAi,
-        color: '#F59E0B', // Amber
+        label: 'C2PA verified',
+        count: result.counts.hasC2pa,
+        percentage: result.percentages.hasC2pa,
+        color: '#8B5CF6', // Purple - highest confidence
       },
       {
-        label: 'Possibly AI-assisted',
-        percentage: possiblyAiPercent,
-        count: result.counts.possiblyAi,
-        color: '#94A3B8', // Slate
+        label: 'Platform labeled AI',
+        count: result.counts.labeled,
+        percentage: result.percentages.labeled,
+        color: '#3B82F6', // Blue - explicit platform disclosure
       },
       {
-        label: 'No strong AI signals detected',
-        percentage: noSignalsPercent,
-        count: result.counts.noSignals,
-        color: '#10B981', // Green
+        label: 'No disclosure',
+        count: result.counts.noDisclosure,
+        percentage: result.percentages.noDisclosure,
+        color: '#94A3B8', // Gray - no disclosure signal
       },
     ];
   }
+
+  // Require at least 20 visual posts for reliable analysis
+  result.hasEnoughData = result.totalVisualPosts >= 20;
 
   return result;
 }

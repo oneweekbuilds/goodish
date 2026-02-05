@@ -128,6 +128,11 @@ class FeedItem(BaseModel):
     content_type: str = "VIDEO"
     is_ad: bool = False
 
+    # AI disclosure fields (platform-disclosed AI labels and C2PA indicators)
+    # These capture EXPLICIT platform disclosure signals, NOT AI generation detection
+    ai_disclosure: Optional[str] = None  # Platform AI labels: "LABELED_AI" | "NOT_LABELED" | None
+    c2pa_disclosure: Optional[str] = None  # C2PA/Content Credentials: "HAS_C2PA" | "NO_C2PA" | None
+
     ad_metadata: Optional[AdMetadata] = None
     account: Optional[AccountInfo] = None
     content_text: ContentText = Field(default_factory=ContentText)
