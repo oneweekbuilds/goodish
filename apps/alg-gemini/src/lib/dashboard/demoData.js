@@ -547,6 +547,42 @@ export function generateDemoData() {
     console.log(`  ${aiVisualCounts.POSSIBLY_AI === 13 ? '✓' : '✗'} Possibly AI visual: ${aiVisualCounts.POSSIBLY_AI} === 13`);
     console.log(`  ${aiVisualCounts.NO_STRONG_SIGNALS === 79 ? '✓' : '✗'} No AI signals visual: ${aiVisualCounts.NO_STRONG_SIGNALS} === 79`);
     console.log('');
+    console.log('SAMPLE FEED ITEMS (for media field inspection):');
+    console.log('');
+
+    // Find and log one example IMAGE and one example VIDEO
+    let sampleImage = null;
+    let sampleVideo = null;
+
+    for (const scan of scans) {
+      const detail = scanDetails[scan.id];
+      if (detail?.result?.feed_items) {
+        const items = detail.result.feed_items;
+        for (const item of items) {
+          if (!sampleImage && item.media_type === 'image') {
+            sampleImage = item;
+          }
+          if (!sampleVideo && item.media_type === 'video') {
+            sampleVideo = item;
+          }
+          if (sampleImage && sampleVideo) break;
+        }
+      }
+      if (sampleImage && sampleVideo) break;
+    }
+
+    if (sampleImage) {
+      console.log('SAMPLE_IMAGE_ITEM:');
+      console.log(JSON.stringify(sampleImage, null, 2));
+      console.log('');
+    }
+
+    if (sampleVideo) {
+      console.log('SAMPLE_VIDEO_ITEM:');
+      console.log(JSON.stringify(sampleVideo, null, 2));
+      console.log('');
+    }
+
     console.log('='.repeat(80));
   }
 

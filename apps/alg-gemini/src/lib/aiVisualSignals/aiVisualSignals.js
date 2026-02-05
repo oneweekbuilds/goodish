@@ -1,23 +1,32 @@
 /**
  * AI Visual Signals Detection Module
  *
- * Detects signals consistent with AI-generated visual content in feed items.
+ * ⚠️ CRITICAL LIMITATION - THIS MODULE CANNOT CURRENTLY BE USED ⚠️
  *
- * CRITICAL HONESTY RULE:
- * - We detect "signals consistent with AI generation", NOT certainty
- * - Default behavior is CONSERVATIVE: if unsure, return NO_STRONG_SIGNALS
- * - Never guess or speculate
+ * The AlgorithmLens scan schema (see types/algorithmLensScan.ts) does NOT include
+ * the metadata fields required for AI detection:
+ * - NO c2pa_manifest or content_credentials
+ * - NO platform_labels, content_labels, or labels
+ * - NO exif_metadata or metadata
+ * - NO image_url, video_url, or media_bytes
  *
- * Signal sources (in order of reliability):
+ * This module was created to demonstrate what WOULD be possible if these fields existed,
+ * but it CANNOT be integrated into production until the backend scan processing adds them.
+ *
+ * Current status: ILLUSTRATIVE ONLY, NOT FUNCTIONAL IN PRODUCTION
+ *
+ * What this module checks for (hypothetically):
  * 1. C2PA / Content Credentials (explicit AI generation metadata)
  * 2. Platform AI labels (Instagram/TikTok/X explicit AI tags)
  * 3. EXIF metadata with AI tool signatures
  * 4. (Future) Visual analysis if bytes available
  *
- * DO NOT:
- * - Fetch remote media URLs (privacy + CORS issues)
- * - Attempt visual analysis without explicit opt-in
- * - Make assumptions based on style or aesthetics
+ * HONESTY RULES:
+ * - We detect "signals consistent with AI generation", NOT certainty
+ * - Default behavior is CONSERVATIVE: if unsure, return NO_STRONG_SIGNALS
+ * - Never guess or speculate
+ * - Never fetch remote media URLs (privacy + CORS issues)
+ * - Never make assumptions based on visual style or aesthetics
  */
 
 /**

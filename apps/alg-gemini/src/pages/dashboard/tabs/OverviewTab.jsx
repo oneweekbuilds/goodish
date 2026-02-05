@@ -316,8 +316,14 @@ const OverviewTab = ({ scans, scanDetails }) => {
 
         {aiVisualData.hasEnoughData ? (
           <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-3">
+            {/* Demo mode badge */}
+            <div className="inline-flex items-center gap-2 px-2 py-1 bg-amber-50 border border-amber-200 rounded text-xs font-medium text-amber-800">
+              <span>⚠️</span>
+              <span>Illustrative example — not real detection</span>
+            </div>
+
             <p className="text-sm text-slate-600">
-              This estimates how often image and video posts show signals consistent with AI generation.
+              This shows what AI visual signal detection would look like if the necessary metadata were available.
             </p>
 
             <CompositionBar100WithCounts segments={aiVisualData.segments} />
@@ -327,22 +333,57 @@ const OverviewTab = ({ scans, scanDetails }) => {
             </p>
 
             <div className="mt-3">
-              <DenominatorLine text={`Based on ${aiVisualData.totalVisualPosts} visual posts (images and videos)`} />
+              <DenominatorLine text={`Based on ${aiVisualData.totalVisualPosts} visual posts (demo data)`} />
             </div>
 
             <div className="mt-4 pt-3 border-t border-slate-100">
               <p className="text-xs text-slate-500 leading-relaxed">
-                Signals are not definitive proof. Results may miss AI content or flag non-AI edits.
+                This chart uses synthetic data for demonstration only. Real scans do not currently capture the metadata required for AI detection.
+              </p>
+            </div>
+          </div>
+        ) : aiVisualData.isRealScan ? (
+          <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-4">
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-slate-700">
+                AI-generated visuals cannot be detected with current scan data
+              </p>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Detecting AI generation signals requires metadata that AlgorithmLens scans do not currently capture:
+              </p>
+              <ul className="text-sm text-slate-600 space-y-1 ml-4 list-disc">
+                <li>C2PA / Content Credentials (industry standard for content provenance)</li>
+                <li>Platform AI labels (Instagram, TikTok, X explicit tags)</li>
+                <li>EXIF metadata with AI tool signatures</li>
+                <li>Access to raw image/video bytes for analysis</li>
+              </ul>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 space-y-2">
+              <p className="text-xs font-medium text-slate-700">
+                Why this matters
+              </p>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                AlgorithmLens does not guess or infer AI generation from visual style or aesthetics.
+                We show this limitation transparently because epistemic honesty is a core value.
+                If we cannot measure something reliably, we say so directly.
+              </p>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100">
+              <p className="text-xs text-slate-500 leading-relaxed">
+                To enable this feature, future scan versions would need to extract content provenance metadata
+                from platform APIs or embedded media fields. This is technically feasible but not currently implemented.
               </p>
             </div>
           </div>
         ) : (
           <div className="bg-white border border-slate-200 rounded-lg p-6 text-center space-y-2">
             <p className="text-sm text-slate-400 italic">
-              Not enough visual posts to assess AI signals yet.
+              Not enough visual posts to show AI signal analysis.
             </p>
             <p className="text-xs text-slate-500">
-              This becomes available once more image or video posts are captured in scans.
+              This section requires at least 20 image or video posts.
             </p>
           </div>
         )}

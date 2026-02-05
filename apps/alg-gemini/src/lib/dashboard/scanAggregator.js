@@ -1696,11 +1696,25 @@ export function aggregatePoliticalLeaning(scans, scanDetails) {
 /**
  * Aggregate AI visual signals data across scans.
  *
+ * IMPORTANT LIMITATION:
+ * This function only works in demo mode where aiVisualSignals field is synthetically added.
+ * Real scans do not contain the metadata required for AI generation detection:
+ * - No C2PA / Content Credentials
+ * - No platform AI labels
+ * - No EXIF metadata
+ * - No media URLs or bytes for analysis
+ *
+ * For real scans, this function will always return hasEnoughData: false
+ * because the aiVisualSignals field does not exist in the actual scan schema.
+ *
+ * This is an honest limitation shown transparently to users.
+ *
  * Returns:
- * - totalVisualPosts: count of visual posts (images and videos)
+ * - totalVisualPosts: count of visual posts (images and videos) if detectable
  * - counts: { likelyAi, possiblyAi, noSignals }
  * - percentages: rounded integers that sum to 100
- * - hasEnoughData: true if totalVisualPosts >= 20
+ * - hasEnoughData: true ONLY if aiVisualSignals field exists (demo mode only)
+ * - isRealScan: true if this is a real scan (not demo), indicating detection is unavailable
  * - segments: array for CompositionBar100WithCounts
  * - scansUsed: number of scans with visual content
  *
@@ -1722,6 +1736,7 @@ export function aggregateAiVisualSignals(scans, scanDetails) {
       noSignals: 0,
     },
     hasEnoughData: false,
+    isRealScan: false, // Will be set to true if this is a real scan (not demo)
     segments: [],
     scansUsed: 0,
     scansWithData: [],
@@ -1730,6 +1745,8 @@ export function aggregateAiVisualSignals(scans, scanDetails) {
   if (!scans || scans.length === 0) {
     return result;
   }
+
+  let hasAnyAiSignalsField = false; // Track if any items have the aiVisualSignals field
 
   for (const scan of scans) {
     const detail = scanDetails[scan.id];
@@ -1741,6 +1758,10 @@ export function aggregateAiVisualSignals(scans, scanDetails) {
     let scanHasVisualData = false;
 
     for (const item of feedItems) {
+      // Check if this is demo mode by looking for the media_type field (demo-only)
+      // Real scans use content_type, demo scans use media_type
+      const isDemoMode = item.hasOwnProperty('media_type');
+
       // Only consider visual posts (images and videos)
       const mediaType = item.media_type || item.content_type || item.type;
       const isVisual = mediaType === 'image' || mediaType === 'video';
@@ -1750,17 +1771,22 @@ export function aggregateAiVisualSignals(scans, scanDetails) {
       scanHasVisualData = true;
       result.totalVisualPosts++;
 
-      // Get AI visual signals classification
-      // Default to NO_STRONG_SIGNALS if field is missing (do not guess)
-      const aiSignal = item.aiVisualSignals || 'NO_STRONG_SIGNALS';
+      // Check if aiVisualSignals field exists (demo mode only)
+      if (item.hasOwnProperty('aiVisualSignals')) {
+        hasAnyAiSignalsField = true;
+        const aiSignal = item.aiVisualSignals;
 
-      // Count by classification
-      if (aiSignal === 'LIKELY_AI') {
-        result.counts.likelyAi++;
-      } else if (aiSignal === 'POSSIBLY_AI') {
-        result.counts.possiblyAi++;
+        // Count by classification
+        if (aiSignal === 'LIKELY_AI') {
+          result.counts.likelyAi++;
+        } else if (aiSignal === 'POSSIBLY_AI') {
+          result.counts.possiblyAi++;
+        } else {
+          result.counts.noSignals++;
+        }
       } else {
-        // Default to NO_STRONG_SIGNALS for any other value
+        // Real scan: no aiVisualSignals field exists
+        result.isRealScan = true;
         result.counts.noSignals++;
       }
     }
@@ -1771,11 +1797,14 @@ export function aggregateAiVisualSignals(scans, scanDetails) {
     }
   }
 
-  // Determine if we have enough data
-  result.hasEnoughData = result.totalVisualPosts >= 20;
+  // Only set hasEnoughData if:
+  // 1. We have enough visual posts (>= 20)
+  // 2. AND the aiVisualSignals field actually exists (demo mode only)
+  result.hasEnoughData = result.totalVisualPosts >= 20 && hasAnyAiSignalsField && !result.isRealScan;
 
   // Calculate percentages (rounded to integers that sum to 100)
-  if (result.totalVisualPosts > 0) {
+  // Only do this if we're in demo mode with AI signals field
+  if (result.totalVisualPosts > 0 && hasAnyAiSignalsField) {
     let likelyAiPercent = Math.round((result.counts.likelyAi / result.totalVisualPosts) * 100);
     let possiblyAiPercent = Math.round((result.counts.possiblyAi / result.totalVisualPosts) * 100);
     let noSignalsPercent = Math.round((result.counts.noSignals / result.totalVisualPosts) * 100);

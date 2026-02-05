@@ -1,8 +1,30 @@
 # AI Visual Signals Detection - Backend Integration Guide
 
-This module detects signals consistent with AI-generated visual content in feed items.
+⚠️ **CRITICAL: THIS FEATURE IS NOT CURRENTLY FUNCTIONAL IN PRODUCTION** ⚠️
 
-## Integration Point (Backend)
+## Status: Illustrative Only
+
+The AlgorithmLens scan schema **does not include the metadata fields** required for AI detection.
+
+### What's Missing (All of These):
+- ❌ `c2pa_manifest` / `content_credentials` - C2PA content provenance
+- ❌ `platform_labels` / `content_labels` - Platform AI tags
+- ❌ `exif_metadata` - EXIF data with tool signatures
+- ❌ `image_url` / `video_url` / `media_bytes` - Media access
+
+### What This Means:
+- **Demo mode**: Works with synthetic `aiVisualSignals` field added by `demoData.js`
+- **Production**: Always shows honest empty state explaining limitation
+- **Backend module**: Cannot be integrated until scan schema is extended
+
+## Why This Limitation Is Shown Transparently
+
+AlgorithmLens prioritizes **epistemic honesty** over feature completeness.
+We show users what we cannot measure rather than guessing or inferring AI generation.
+
+This limitation is displayed clearly in the dashboard UI with detailed explanation.
+
+## Integration Point (Future Backend Work)
 
 The `enrichFeedItemsWithAiSignals()` function should be called **in the backend API** when processing scan results, before saving to the database or returning to the frontend.
 
