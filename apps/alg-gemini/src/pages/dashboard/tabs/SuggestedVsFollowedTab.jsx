@@ -5,6 +5,7 @@ import {
   DenominatorLine,
 } from '../../../components/dashboard/primitives';
 import InsightHero from '../../../components/dashboard/InsightHero';
+import SectionHeader from '../../../components/dashboard/SectionHeader';
 import { buildSuggestedVsFollowedHero } from '../../../lib/dashboard/insightBuilders';
 import { aggregateSourceOrigin } from '../../../lib/dashboard/scanAggregator';
 
@@ -298,7 +299,7 @@ const SuggestedVsFollowedTab = ({ scans, scanDetails }) => {
       {/* Section 2: Overall Breakdown */}
       <section>
         <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-4">
-          <h3 className="text-lg font-medium text-slate-800">Overall breakdown</h3>
+          <SectionHeader>Overall breakdown</SectionHeader>
           <CompositionBar100WithCounts segments={mainSegments} />
           <p className="text-xs text-slate-500 italic">Each segment shows what percentage of posts come from that source type.</p>
         </div>
@@ -308,7 +309,7 @@ const SuggestedVsFollowedTab = ({ scans, scanDetails }) => {
       {platformCount > 1 && Object.keys(platformSegments).length > 0 && (
         <section>
           <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-5">
-            <h3 className="text-lg font-medium text-slate-800">By platform</h3>
+            <SectionHeader>By platform</SectionHeader>
 
             {/* Platform bars */}
             <div className="space-y-4">
@@ -379,7 +380,7 @@ const SuggestedVsFollowedTab = ({ scans, scanDetails }) => {
       {/* Section 4: Tone Split by Source Origin (matches ToneTab pattern) */}
       <section>
         <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-4">
-          <h3 className="text-lg font-medium text-slate-800">Tone: suggested vs followed</h3>
+          <SectionHeader>Tone: suggested vs followed</SectionHeader>
 
           {toneBySourceOrigin.hasData ? (
             <>
@@ -418,8 +419,8 @@ const SuggestedVsFollowedTab = ({ scans, scanDetails }) => {
 
       {/* Section 6: What You Can Do */}
       <section>
-        <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-4">
-          <h3 className="text-lg font-medium text-slate-800">What you can do</h3>
+        <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-4" style={{ backgroundColor: 'rgba(16, 185, 129, 0.02)' }}>
+          <SectionHeader>What you can do</SectionHeader>
           <ul className="space-y-3 text-slate-700">
             <li className="flex items-start gap-3">
               <span className="text-slate-400 mt-0.5">•</span>

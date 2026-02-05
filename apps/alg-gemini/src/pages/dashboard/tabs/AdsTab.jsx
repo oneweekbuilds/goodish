@@ -5,6 +5,7 @@ import {
   CompositionBar100WithCounts,
 } from '../../../components/dashboard/primitives';
 import InsightHero from '../../../components/dashboard/InsightHero';
+import SectionHeader from '../../../components/dashboard/SectionHeader';
 import { buildAdsHero } from '../../../lib/dashboard/insightBuilders';
 import { aggregateAds, summarizeInfluence } from '../../../lib/dashboard/scanAggregator';
 
@@ -406,7 +407,7 @@ const AdsTab = ({ scans, scanDetails }) => {
 
       {/* Section 3.1 - Commercial Composition */}
       <section>
-        <h2 className="text-lg font-semibold text-slate-800 mb-3">Commercial composition</h2>
+        <SectionHeader>Commercial composition</SectionHeader>
 
         {commercialComposition.hasData ? (
           <>
@@ -427,7 +428,7 @@ const AdsTab = ({ scans, scanDetails }) => {
 
       {/* Section 3.2 - Top Advertised Companies */}
       <section>
-        <h2 className="text-lg font-semibold text-slate-800 mb-3">Top advertised companies</h2>
+        <SectionHeader>Top advertised companies</SectionHeader>
 
         {topAdvertisers.hasData ? (
           <>
@@ -466,7 +467,7 @@ const AdsTab = ({ scans, scanDetails }) => {
 
       {/* Section 3.3 - Top Advertised Product Types */}
       <section>
-        <h2 className="text-lg font-semibold text-slate-800 mb-3">Top advertised product types</h2>
+        <SectionHeader>Top advertised product types</SectionHeader>
 
         {topProductTypes.hasData ? (
           <>
@@ -507,7 +508,7 @@ const AdsTab = ({ scans, scanDetails }) => {
 
       {/* Section 3.4 - Unlabeled Promotional Content */}
       <section>
-        <h2 className="text-lg font-semibold text-slate-800 mb-3">Unlabeled promotional content</h2>
+        <SectionHeader>Unlabeled promotional content</SectionHeader>
 
         {unlabeledPromo.hasData ? (
           <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
@@ -552,7 +553,7 @@ const AdsTab = ({ scans, scanDetails }) => {
       {/* Section 3.5 - Tone Split: Selling vs Not Selling */}
       {toneSplit.hasData && (
         <section>
-          <h2 className="text-lg font-semibold text-slate-800 mb-3">Tone split: selling vs not selling</h2>
+          <SectionHeader>Tone split: selling vs not selling</SectionHeader>
 
           <div className="space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

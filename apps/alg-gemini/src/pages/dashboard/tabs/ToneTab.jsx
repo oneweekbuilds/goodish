@@ -5,6 +5,7 @@ import {
   CompositionBar100WithCounts,
 } from '../../../components/dashboard/primitives';
 import InsightHero from '../../../components/dashboard/InsightHero';
+import SectionHeader from '../../../components/dashboard/SectionHeader';
 import { buildToneHero } from '../../../lib/dashboard/insightBuilders';
 import { aggregateEmotions, aggregateAds, aggregatePolitics, summarizeInfluence } from '../../../lib/dashboard/scanAggregator';
 
@@ -345,7 +346,7 @@ const ToneTab = ({ scans, scanDetails }) => {
 
       {/* Section 5.1 - Tone Distribution */}
       <section>
-        <h2 className="text-lg font-semibold text-slate-800 mb-3">Tone distribution</h2>
+        <SectionHeader>Tone distribution</SectionHeader>
 
         {toneDistribution.hasData ? (
           <div className="space-y-4">
@@ -394,7 +395,7 @@ const ToneTab = ({ scans, scanDetails }) => {
 
       {/* Section 5.2 - Tone: Political vs Non-Political */}
       <section>
-        <h2 className="text-lg font-semibold text-slate-800 mb-3">Tone: political vs non-political</h2>
+        <SectionHeader>Tone: political vs non-political</SectionHeader>
 
         {politicalVsNonPoliticalTone.hasData ? (
           <div className="space-y-4">
@@ -426,7 +427,7 @@ const ToneTab = ({ scans, scanDetails }) => {
 
       {/* Section 5.3 - Tone: Selling vs Not Selling */}
       <section>
-        <h2 className="text-lg font-semibold text-slate-800 mb-3">Tone: selling vs not selling</h2>
+        <SectionHeader>Tone: selling vs not selling</SectionHeader>
 
         {sellingVsNotSellingTone.hasData ? (
           <div className="space-y-4">

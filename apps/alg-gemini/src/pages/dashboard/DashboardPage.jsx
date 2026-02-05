@@ -2372,11 +2372,12 @@ const DashboardPage = () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`
-                  px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors
+                  px-4 py-3 text-sm font-semibold whitespace-nowrap transition-all
                   border-b-2 -mb-px
+                  focus:outline-none focus:ring-2 focus:ring-primary-blue focus:ring-offset-2 rounded-t-sm
                   ${activeTab === tab.id
                     ? 'border-primary-blue text-primary-blue'
-                    : 'border-transparent text-text-muted hover:text-text-main hover:border-border-card'
+                    : 'border-transparent text-text-muted hover:text-primary-blue hover:border-slate-300'
                   }
                 `}
                 aria-selected={activeTab === tab.id}

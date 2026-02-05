@@ -5,6 +5,7 @@ import {
   CompositionBar100WithCounts,
 } from '../../../components/dashboard/primitives';
 import InsightHero from '../../../components/dashboard/InsightHero';
+import SectionHeader from '../../../components/dashboard/SectionHeader';
 import { buildPoliticsHero } from '../../../lib/dashboard/insightBuilders';
 import { aggregatePolitics, aggregateCreators, aggregateAds } from '../../../lib/dashboard/scanAggregator';
 
@@ -188,7 +189,7 @@ const PoliticsTab = ({ scans, scanDetails }) => {
 
       {/* Section 4.1 - Political Share */}
       <section>
-        <h2 className="text-lg font-semibold text-slate-800 mb-3">Political share</h2>
+        <SectionHeader>Political share</SectionHeader>
 
         {politicalShare.hasData ? (
           <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-3">
@@ -211,7 +212,7 @@ const PoliticsTab = ({ scans, scanDetails }) => {
 
       {/* Section 4.2 - Top Political Source */}
       <section>
-        <h2 className="text-lg font-semibold text-slate-800 mb-3">Top political source</h2>
+        <SectionHeader>Top political source</SectionHeader>
 
         {topPoliticalSource.hasData ? (
           <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-3">
@@ -237,7 +238,7 @@ const PoliticsTab = ({ scans, scanDetails }) => {
 
       {/* Section 4.3 - Ideological Distribution */}
       <section>
-        <h2 className="text-lg font-semibold text-slate-800 mb-3">Ideological distribution</h2>
+        <SectionHeader>Ideological distribution</SectionHeader>
 
         {ideologicalDistribution.hasData ? (
           <div className="space-y-3">

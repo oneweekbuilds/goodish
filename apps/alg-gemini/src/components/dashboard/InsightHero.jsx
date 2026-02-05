@@ -1,4 +1,5 @@
 import React from 'react';
+import { themeTokens } from '../../lib/theme/tokens';
 
 /**
  * InsightHero - Data-grounded hero card for dashboard tabs
@@ -21,7 +22,27 @@ import React from 'react';
 const InsightHero = ({ title, meaning, whyCare, meta }) => {
   return (
     <section>
-      <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-3">
+      <div
+        className="bg-white border rounded-lg p-6 space-y-3 relative"
+        style={{
+          borderLeft: `3px solid ${themeTokens.brandPrimary}`,
+          backgroundColor: themeTokens.brandTintBg,
+          borderColor: themeTokens.brandTintBorder
+        }}
+      >
+        {/* Label chip */}
+        <div className="inline-flex items-center">
+          <span
+            className="text-xs font-medium px-2 py-0.5 rounded"
+            style={{
+              color: themeTokens.brandPrimary,
+              backgroundColor: 'rgba(37, 99, 235, 0.08)'
+            }}
+          >
+            Key Takeaway
+          </span>
+        </div>
+
         {/* Title: Large, bold, data-grounded */}
         <h2 className="text-2xl font-bold text-slate-900">
           {title}
