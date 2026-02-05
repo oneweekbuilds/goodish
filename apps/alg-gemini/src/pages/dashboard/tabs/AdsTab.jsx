@@ -4,6 +4,8 @@ import {
   DenominatorLine,
   CompositionBar100WithCounts,
 } from '../../../components/dashboard/primitives';
+import InsightHero from '../../../components/dashboard/InsightHero';
+import { buildAdsHero } from '../../../lib/dashboard/insightBuilders';
 import { aggregateAds, summarizeInfluence } from '../../../lib/dashboard/scanAggregator';
 
 /**
@@ -384,11 +386,24 @@ const AdsTab = ({ scans, scanDetails }) => {
   const toneSplit = computeToneSplit();
 
   // ===========================================
+  // BUILD INSIGHT HERO
+  // ===========================================
+
+  const hero = buildAdsHero({
+    commercialComposition,
+    totalPosts,
+    platformCount,
+  });
+
+  // ===========================================
   // RENDER
   // ===========================================
 
   return (
     <div className="space-y-8">
+      {/* Insight Hero */}
+      <InsightHero {...hero} />
+
       {/* Section 3.1 - Commercial Composition */}
       <section>
         <h2 className="text-lg font-semibold text-slate-800 mb-3">Commercial composition</h2>
@@ -396,6 +411,7 @@ const AdsTab = ({ scans, scanDetails }) => {
         {commercialComposition.hasData ? (
           <>
             <CompositionBar100WithCounts segments={commercialComposition.segments} />
+            <p className="text-xs text-slate-500 italic mt-2">Each segment shows what percentage of posts fall into that category.</p>
             <div className="mt-3">
               <DenominatorLine text={`Percent of posts in the selected date range (${totalPosts} posts)`} />
             </div>
@@ -538,20 +554,23 @@ const AdsTab = ({ scans, scanDetails }) => {
         <section>
           <h2 className="text-lg font-semibold text-slate-800 mb-3">Tone split: selling vs not selling</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Selling posts */}
-            <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-3">
-              <h3 className="text-sm font-medium text-slate-700">Selling posts</h3>
-              <CompositionBar100WithCounts segments={toneSplit.selling.segments} />
-              <DenominatorLine text={`Percent of posts in this group (${toneSplit.selling.totalKnownValence} selling)`} />
-            </div>
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Selling posts */}
+              <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-3">
+                <h3 className="text-sm font-medium text-slate-700">Selling posts</h3>
+                <CompositionBar100WithCounts segments={toneSplit.selling.segments} />
+                <DenominatorLine text={`Percent of posts in this group (${toneSplit.selling.totalKnownValence} selling)`} />
+              </div>
 
-            {/* Not selling posts */}
-            <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-3">
-              <h3 className="text-sm font-medium text-slate-700">Not selling posts</h3>
-              <CompositionBar100WithCounts segments={toneSplit.notSelling.segments} />
-              <DenominatorLine text={`Percent of posts in this group (${toneSplit.notSelling.totalKnownValence} not selling)`} />
+              {/* Not selling posts */}
+              <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-3">
+                <h3 className="text-sm font-medium text-slate-700">Not selling posts</h3>
+                <CompositionBar100WithCounts segments={toneSplit.notSelling.segments} />
+                <DenominatorLine text={`Percent of posts in this group (${toneSplit.notSelling.totalKnownValence} not selling)`} />
+              </div>
             </div>
+            <p className="text-xs text-slate-500 italic">Compares emotional tone between commercial and non-commercial content in your feed.</p>
           </div>
         </section>
       )}

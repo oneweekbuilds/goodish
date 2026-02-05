@@ -4,6 +4,8 @@ import {
   DenominatorLine,
   CompositionBar100WithCounts,
 } from '../../../components/dashboard/primitives';
+import InsightHero from '../../../components/dashboard/InsightHero';
+import { buildToneHero } from '../../../lib/dashboard/insightBuilders';
 import { aggregateEmotions, aggregateAds, aggregatePolitics, summarizeInfluence } from '../../../lib/dashboard/scanAggregator';
 
 /**
@@ -323,11 +325,24 @@ const ToneTab = ({ scans, scanDetails }) => {
   const sellingVsNotSellingTone = computeSellingVsNotSellingTone();
 
   // ===========================================
+  // BUILD INSIGHT HERO
+  // ===========================================
+
+  const hero = buildToneHero({
+    toneDistribution,
+    totalPosts,
+    platformCount,
+  });
+
+  // ===========================================
   // RENDER
   // ===========================================
 
   return (
     <div className="space-y-8">
+      {/* Insight Hero */}
+      <InsightHero {...hero} />
+
       {/* Section 5.1 - Tone Distribution */}
       <section>
         <h2 className="text-lg font-semibold text-slate-800 mb-3">Tone distribution</h2>
@@ -335,6 +350,7 @@ const ToneTab = ({ scans, scanDetails }) => {
         {toneDistribution.hasData ? (
           <div className="space-y-4">
             <CompositionBar100WithCounts segments={toneDistribution.segments} />
+            <p className="text-xs text-slate-500 italic">Each segment shows what percentage of posts fall into that emotional category.</p>
             <DenominatorLine text={`Percent of posts in the selected date range (${toneDistribution.knownValenceTotal} posts)`} />
 
             {/* Top 5 Positive Sources */}
@@ -381,20 +397,23 @@ const ToneTab = ({ scans, scanDetails }) => {
         <h2 className="text-lg font-semibold text-slate-800 mb-3">Tone: political vs non-political</h2>
 
         {politicalVsNonPoliticalTone.hasData ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Political Posts */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-slate-700">Political posts</h3>
-              <CompositionBar100WithCounts segments={politicalVsNonPoliticalTone.political.segments} />
-              <DenominatorLine text={`Percent of political posts (${politicalVsNonPoliticalTone.political.total} posts)`} />
-            </div>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Political Posts */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-slate-700">Political posts</h3>
+                <CompositionBar100WithCounts segments={politicalVsNonPoliticalTone.political.segments} />
+                <DenominatorLine text={`Percent of political posts (${politicalVsNonPoliticalTone.political.total} posts)`} />
+              </div>
 
-            {/* Non-Political Posts */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-slate-700">Non-political posts</h3>
-              <CompositionBar100WithCounts segments={politicalVsNonPoliticalTone.nonPolitical.segments} />
-              <DenominatorLine text={`Percent of non-political posts (${politicalVsNonPoliticalTone.nonPolitical.total} posts)`} />
+              {/* Non-Political Posts */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-slate-700">Non-political posts</h3>
+                <CompositionBar100WithCounts segments={politicalVsNonPoliticalTone.nonPolitical.segments} />
+                <DenominatorLine text={`Percent of non-political posts (${politicalVsNonPoliticalTone.nonPolitical.total} posts)`} />
+              </div>
             </div>
+            <p className="text-xs text-slate-500 italic">Compares emotional tone between political and non-political content in your feed.</p>
           </div>
         ) : (
           <div className="bg-white border border-slate-200 rounded-lg p-6 text-center">
@@ -410,20 +429,23 @@ const ToneTab = ({ scans, scanDetails }) => {
         <h2 className="text-lg font-semibold text-slate-800 mb-3">Tone: selling vs not selling</h2>
 
         {sellingVsNotSellingTone.hasData ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Selling Posts */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-slate-700">Selling posts</h3>
-              <CompositionBar100WithCounts segments={sellingVsNotSellingTone.selling.segments} />
-              <DenominatorLine text={`Percent of selling posts (${sellingVsNotSellingTone.selling.total} posts)`} />
-            </div>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Selling Posts */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-slate-700">Selling posts</h3>
+                <CompositionBar100WithCounts segments={sellingVsNotSellingTone.selling.segments} />
+                <DenominatorLine text={`Percent of selling posts (${sellingVsNotSellingTone.selling.total} posts)`} />
+              </div>
 
-            {/* Not Selling Posts */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-slate-700">Not selling posts</h3>
-              <CompositionBar100WithCounts segments={sellingVsNotSellingTone.notSelling.segments} />
-              <DenominatorLine text={`Percent of not selling posts (${sellingVsNotSellingTone.notSelling.total} posts)`} />
+              {/* Not Selling Posts */}
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-slate-700">Not selling posts</h3>
+                <CompositionBar100WithCounts segments={sellingVsNotSellingTone.notSelling.segments} />
+                <DenominatorLine text={`Percent of not selling posts (${sellingVsNotSellingTone.notSelling.total} posts)`} />
+              </div>
             </div>
+            <p className="text-xs text-slate-500 italic">Compares emotional tone between commercial and non-commercial content in your feed.</p>
           </div>
         ) : (
           <div className="bg-white border border-slate-200 rounded-lg p-6 text-center">

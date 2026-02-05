@@ -4,6 +4,8 @@ import {
   DenominatorLine,
   CompositionBar100WithCounts,
 } from '../../../components/dashboard/primitives';
+import InsightHero from '../../../components/dashboard/InsightHero';
+import { buildPoliticsHero } from '../../../lib/dashboard/insightBuilders';
 import { aggregatePolitics, aggregateCreators, aggregateAds } from '../../../lib/dashboard/scanAggregator';
 
 /**
@@ -166,11 +168,24 @@ const PoliticsTab = ({ scans, scanDetails }) => {
   const ideologicalDistribution = computeIdeologicalDistribution();
 
   // ===========================================
+  // BUILD INSIGHT HERO
+  // ===========================================
+
+  const hero = buildPoliticsHero({
+    politicalShare,
+    totalPosts,
+    platformCount,
+  });
+
+  // ===========================================
   // RENDER
   // ===========================================
 
   return (
     <div className="space-y-8">
+      {/* Insight Hero */}
+      <InsightHero {...hero} />
+
       {/* Section 4.1 - Political Share */}
       <section>
         <h2 className="text-lg font-semibold text-slate-800 mb-3">Political share</h2>
@@ -227,6 +242,7 @@ const PoliticsTab = ({ scans, scanDetails }) => {
         {ideologicalDistribution.hasData ? (
           <div className="space-y-3">
             <CompositionBar100WithCounts segments={ideologicalDistribution.segments} />
+            <p className="text-xs text-slate-500 italic">Each segment shows what percentage of political posts lean in that direction.</p>
             <DenominatorLine text={`Percent of political posts in the selected date range (${ideologicalDistribution.knownAlignmentTotal} political posts)`} />
           </div>
         ) : (

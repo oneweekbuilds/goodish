@@ -4,6 +4,8 @@ import {
   DenominatorLine,
   ConcentrationSummary,
 } from '../../../components/dashboard/primitives';
+import InsightHero from '../../../components/dashboard/InsightHero';
+import { buildSourcesHero } from '../../../lib/dashboard/insightBuilders';
 import { SimpleTable } from '../../../components/dashboard/charts';
 import { aggregateCreators, aggregateAds } from '../../../lib/dashboard/scanAggregator';
 
@@ -85,11 +87,25 @@ const SourcesTab = ({ scans, scanDetails }) => {
   }
 
   // ===========================================
+  // BUILD INSIGHT HERO
+  // ===========================================
+
+  const hero = buildSourcesHero({
+    top5Percent,
+    totalPosts,
+    platformCount,
+    hasData: hasSourcesData,
+  });
+
+  // ===========================================
   // RENDER
   // ===========================================
 
   return (
     <div className="space-y-8">
+      {/* Insight Hero */}
+      <InsightHero {...hero} />
+
       {/* Section 2.1 - Top Sources Table */}
       <section>
         {hasSourcesData ? (
@@ -122,12 +138,13 @@ const SourcesTab = ({ scans, scanDetails }) => {
       {/* Section 2.2 - Concentration Summary */}
       {hasSourcesData && (
         <section>
-          <div className="bg-white border border-slate-200 rounded-lg p-5">
+          <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-3">
             <ConcentrationSummary
               top5Percent={top5Percent}
               top10Percent={top10Percent}
               othersPercent={othersPercent}
             />
+            <p className="text-xs text-slate-500 italic">Higher values for top sources indicate a more concentrated feed.</p>
           </div>
         </section>
       )}

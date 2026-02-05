@@ -4,6 +4,8 @@ import {
   CompositionBar100WithCounts,
   DenominatorLine,
 } from '../../../components/dashboard/primitives';
+import InsightHero from '../../../components/dashboard/InsightHero';
+import { buildSuggestedVsFollowedHero } from '../../../lib/dashboard/insightBuilders';
 import { aggregateSourceOrigin } from '../../../lib/dashboard/scanAggregator';
 
 /**
@@ -34,11 +36,46 @@ const SuggestedVsFollowedTab = ({ scans, scanDetails }) => {
     return data?.feed_items || [];
   };
 
+  // Platform name normalization for display
+  const normalizePlatformName = (platform) => {
+    const normalized = {
+      'instagram': 'Instagram',
+      'tiktok': 'TikTok',
+      'youtube': 'YouTube',
+      'x': 'X',
+      'twitter': 'X',
+    };
+    return normalized[platform.toLowerCase()] || platform.charAt(0).toUpperCase() + platform.slice(1);
+  };
+
+  // Platform sort order (Instagram first, TikTok second, then alphabetical)
+  const sortPlatforms = (platforms) => {
+    const order = ['instagram', 'tiktok'];
+    return platforms.sort((a, b) => {
+      const aLower = a.toLowerCase();
+      const bLower = b.toLowerCase();
+      const aIndex = order.indexOf(aLower);
+      const bIndex = order.indexOf(bLower);
+
+      if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+      if (aIndex !== -1) return -1;
+      if (bIndex !== -1) return 1;
+      return aLower.localeCompare(bLower);
+    });
+  };
+
   // ===========================================
   // COMPUTE UI DATA
   // ===========================================
 
   const hasData = sourceData.hasData && totalPosts > 0;
+
+  // Get platform list for hero card
+  const platformList = Object.keys(sourceData.byPlatform || {});
+  const sortedPlatforms = sortPlatforms([...platformList]);
+  const platformDisplayText = sortedPlatforms.length > 0
+    ? sortedPlatforms.map(normalizePlatformName).join(' + ')
+    : '';
 
   // Main stacked bar segments
   const mainSegments = hasData ? [
@@ -159,8 +196,36 @@ const SuggestedVsFollowedTab = ({ scans, scanDetails }) => {
       }
     }
 
+    // Compute tone deltas (followed - suggested)
+    const deltaPositive = folPosPercent - sugPosPercent;
+    const deltaNeutral = folNeutPercent - sugNeutPercent;
+    const deltaNegative = folNegPercent - sugNegPercent;
+
+    // Find the largest absolute delta
+    const deltas = [
+      { type: 'positive', value: deltaPositive, label: 'positive or happy' },
+      { type: 'neutral', value: deltaNeutral, label: 'neutral or balanced' },
+      { type: 'negative', value: deltaNegative, label: 'negative or outrage' },
+    ];
+    const largestDelta = deltas.reduce((max, current) =>
+      Math.abs(current.value) > Math.abs(max.value) ? current : max
+    );
+
+    // Generate insight sentence
+    let deltaInsight = '';
+    if (Math.abs(largestDelta.value) >= 5) {
+      const absDelta = Math.abs(largestDelta.value);
+      const points = absDelta === 1 ? 'point' : 'points';
+      if (largestDelta.value > 0) {
+        deltaInsight = `Biggest difference: Followed posts are +${absDelta} ${points} more ${largestDelta.label}.`;
+      } else {
+        deltaInsight = `Biggest difference: Suggested posts are +${absDelta} ${points} more ${largestDelta.label}.`;
+      }
+    }
+
     return {
       hasData: true,
+      deltaInsight,
       suggested: {
         segments: [
           { label: 'Positive or happy tone', percentage: sugPosPercent, count: suggestedPos, color: '#86EFAC' },
@@ -181,6 +246,17 @@ const SuggestedVsFollowedTab = ({ scans, scanDetails }) => {
   };
 
   const toneBySourceOrigin = computeToneBySourceOrigin();
+
+  // ===========================================
+  // BUILD INSIGHT HERO
+  // ===========================================
+
+  const hero = buildSuggestedVsFollowedHero({
+    sourceData,
+    toneBySourceOrigin,
+    totalPosts,
+    platformCount,
+  });
 
   // ===========================================
   // RENDER
@@ -215,71 +291,129 @@ const SuggestedVsFollowedTab = ({ scans, scanDetails }) => {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Section 1: Top Insight Card */}
-      <section>
-        <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-4">
-          <h2 className="text-2xl font-semibold text-slate-800">
-            Suggested content: {sourceData.suggestedPercentage}% of your feed
-          </h2>
-          <p className="text-sm text-slate-500">
-            Based on {scanCount} scan{scanCount !== 1 ? 's' : ''} across {platformCount} platform{platformCount !== 1 ? 's' : ''} and {totalPosts} posts.
-          </p>
-        </div>
-      </section>
+    <div className="space-y-8 lg:pr-24">
+      {/* Insight Hero */}
+      <InsightHero {...hero} />
 
       {/* Section 2: Overall Breakdown */}
       <section>
         <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-4">
           <h3 className="text-lg font-medium text-slate-800">Overall breakdown</h3>
           <CompositionBar100WithCounts segments={mainSegments} />
+          <p className="text-xs text-slate-500 italic">Each segment shows what percentage of posts come from that source type.</p>
         </div>
       </section>
 
       {/* Section 3: Platform Breakdown (if multiple platforms) */}
       {platformCount > 1 && Object.keys(platformSegments).length > 0 && (
         <section>
-          <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-6">
+          <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-5">
             <h3 className="text-lg font-medium text-slate-800">By platform</h3>
-            {Object.entries(platformSegments).map(([platform, segments]) => (
-              <div key={platform} className="space-y-3">
-                <h4 className="text-sm font-medium text-slate-700 capitalize">
-                  {platform}
-                </h4>
-                <CompositionBar100WithCounts segments={segments} />
+
+            {/* Platform bars */}
+            <div className="space-y-4">
+              {sortPlatforms(Object.keys(platformSegments)).map((platform) => {
+                const segments = platformSegments[platform];
+                return (
+                  <div key={platform} className="space-y-2">
+                    <h4 className="text-sm font-medium text-slate-700">
+                      {normalizePlatformName(platform)}
+                    </h4>
+
+                    {/* Bar only (no legend) */}
+                    <div className="h-8 bg-slate-100 rounded-full overflow-hidden flex">
+                      {segments.map((segment, index) => (
+                        <div
+                          key={index}
+                          className="h-full transition-all duration-300 flex items-center justify-center"
+                          style={{
+                            width: `${segment.percentage}%`,
+                            backgroundColor: segment.color,
+                            minWidth: segment.percentage > 0 ? '2px' : '0',
+                          }}
+                          title={`${segment.label}: ${Math.round(segment.percentage)}% (${segment.count})`}
+                        >
+                          {segment.percentage >= 10 && (
+                            <span className="text-xs font-medium text-white drop-shadow-sm">
+                              {Math.round(segment.percentage)}%
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Simple count line */}
+                    <p className="text-xs text-slate-600">
+                      {segments.map((seg, i) => (
+                        <span key={i}>
+                          {i > 0 && ' · '}
+                          {seg.label.split(' ')[0]}: {seg.count} ({Math.round(seg.percentage)}%)
+                        </span>
+                      ))}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Single legend at bottom */}
+            <div className="pt-3 border-t border-slate-200">
+              <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center">
+                {mainSegments.map((segment, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <div
+                      className="w-3.5 h-3.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: segment.color }}
+                    />
+                    <span className="text-[13px] leading-relaxed text-slate-700 font-medium">
+                      {segment.label}
+                    </span>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         </section>
       )}
 
       {/* Section 4: Tone Split by Source Origin (matches ToneTab pattern) */}
       <section>
-        <h2 className="text-lg font-semibold text-slate-800 mb-3">Tone: suggested vs followed</h2>
+        <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-4">
+          <h3 className="text-lg font-medium text-slate-800">Tone: suggested vs followed</h3>
 
-        {toneBySourceOrigin.hasData ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Suggested Posts */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-slate-700">Suggested posts</h3>
-              <CompositionBar100WithCounts segments={toneBySourceOrigin.suggested.segments} />
-              <DenominatorLine text={`Percent of suggested posts (${toneBySourceOrigin.suggested.total} posts)`} />
-            </div>
+          {toneBySourceOrigin.hasData ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Suggested Posts */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold text-slate-700">Suggested posts</h4>
+                  <CompositionBar100WithCounts segments={toneBySourceOrigin.suggested.segments} />
+                  <DenominatorLine text={`Percent of suggested posts (${toneBySourceOrigin.suggested.total} posts)`} />
+                </div>
 
-            {/* Followed Posts */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-slate-700">Followed posts</h3>
-              <CompositionBar100WithCounts segments={toneBySourceOrigin.followed.segments} />
-              <DenominatorLine text={`Percent of followed posts (${toneBySourceOrigin.followed.total} posts)`} />
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white border border-slate-200 rounded-lg p-6 text-center">
-            <p className="text-sm text-slate-400 italic">
+                {/* Followed Posts */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold text-slate-700">Followed posts</h4>
+                  <CompositionBar100WithCounts segments={toneBySourceOrigin.followed.segments} />
+                  <DenominatorLine text={`Percent of followed posts (${toneBySourceOrigin.followed.total} posts)`} />
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-500 italic">Compares emotional tone between suggested and followed content in your feed.</p>
+
+              {/* Delta Insight */}
+              {toneBySourceOrigin.deltaInsight && (
+                <p className="text-sm text-slate-600 pt-2">
+                  {toneBySourceOrigin.deltaInsight}
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="text-sm text-slate-400 italic text-center py-4">
               Not enough posts in both suggested and followed groups to compare tone.
             </p>
-          </div>
-        )}
+          )}
+        </div>
       </section>
 
       {/* Section 6: What You Can Do */}

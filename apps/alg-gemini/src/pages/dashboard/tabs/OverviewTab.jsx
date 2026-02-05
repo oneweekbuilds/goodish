@@ -7,6 +7,8 @@ import {
   ToplineMetricCard,
   ExperimentSuggestionCard,
 } from '../../../components/dashboard/primitives';
+import InsightHero from '../../../components/dashboard/InsightHero';
+import { buildOverviewHero } from '../../../lib/dashboard/insightBuilders';
 import { aggregateCreators, aggregateAds, aggregatePolitics, aggregateEmotions, summarizeInfluence } from '../../../lib/dashboard/scanAggregator';
 
 /**
@@ -288,11 +290,24 @@ const OverviewTab = ({ scans, scanDetails }) => {
   const suggestions = generateSuggestions();
 
   // ===========================================
+  // BUILD INSIGHT HERO
+  // ===========================================
+
+  const hero = buildOverviewHero({
+    sourceConcentration,
+    totalPosts,
+    platformCount,
+  });
+
+  // ===========================================
   // RENDER
   // ===========================================
 
   return (
     <div className="space-y-8">
+      {/* Insight Hero */}
+      <InsightHero {...hero} />
+
       {/* Section 1.1 - Topline Summary (4 cards in 2x2 grid) */}
       <section>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -326,7 +341,10 @@ const OverviewTab = ({ scans, scanDetails }) => {
             microLine={undefined}
             valueNode={
               commercialComposition.hasData ? (
-                <CompositionBar100WithCounts segments={commercialComposition.segments} />
+                <div className="space-y-2">
+                  <CompositionBar100WithCounts segments={commercialComposition.segments} />
+                  <p className="text-xs text-slate-500 italic">Each segment shows what percentage of posts fall into that category.</p>
+                </div>
               ) : null
             }
             denominatorText={denominatorText}
@@ -364,7 +382,10 @@ const OverviewTab = ({ scans, scanDetails }) => {
             microLine={undefined}
             valueNode={
               toneComposition.hasData ? (
-                <CompositionBar100WithCounts segments={toneComposition.segments} />
+                <div className="space-y-2">
+                  <CompositionBar100WithCounts segments={toneComposition.segments} />
+                  <p className="text-xs text-slate-500 italic">Each segment shows what percentage of posts fall into that emotional category.</p>
+                </div>
               ) : null
             }
             denominatorText={denominatorText}
@@ -377,20 +398,26 @@ const OverviewTab = ({ scans, scanDetails }) => {
       {/* Section 1.2 - Mini Calculators (2 side-by-side) */}
       <section>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white border border-slate-200 rounded-lg p-5">
+          <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-2">
             <MiniCalculator
               label="Minutes per day advertised to"
               percent={adMinutesPercent}
               disabledMessage="Not available for this window."
             />
+            {adMinutesPercent !== null && (
+              <p className="text-xs text-slate-500 italic">Estimates time spent on commercial content if you scroll 60 minutes per day.</p>
+            )}
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-lg p-5">
+          <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-2">
             <MiniCalculator
               label="Minutes per day on political content"
               percent={politicalMinutesPercent}
               disabledMessage="Not available for this window."
             />
+            {politicalMinutesPercent !== null && (
+              <p className="text-xs text-slate-500 italic">Estimates time spent on political content if you scroll 60 minutes per day.</p>
+            )}
           </div>
         </div>
       </section>
