@@ -1719,15 +1719,23 @@ export function aggregatePoliticalLeaning(scans, scanDetails) {
 export function aggregateAiDisclosures(scans, scanDetails) {
   const result = {
     totalVisualPosts: 0,
-    counts: {
-      labeled: 0,      // LABELED_AI
-      hasC2pa: 0,      // HAS_C2PA
-      noDisclosure: 0, // NOT_LABELED or NO_C2PA or null
+    // Raw counts (can overlap)
+    rawCounts: {
+      aiLabelPresent: 0,  // Posts with LABELED_AI
+      c2paPresent: 0,     // Posts with HAS_C2PA
+    },
+    // Mutually exclusive buckets for display
+    buckets: {
+      both: 0,        // Has both AI label AND C2PA
+      aiOnly: 0,      // Has AI label but NOT C2PA
+      c2paOnly: 0,    // Has C2PA but NOT AI label
+      none: 0,        // Has neither
     },
     percentages: {
-      labeled: 0,
-      hasC2pa: 0,
-      noDisclosure: 0,
+      both: 0,
+      aiOnly: 0,
+      c2paOnly: 0,
+      none: 0,
     },
     hasEnoughData: false,
     segments: [],
@@ -1758,20 +1766,23 @@ export function aggregateAiDisclosures(scans, scanDetails) {
       result.totalVisualPosts++;
       scanHasVisualPosts = true;
 
-      // Check for platform AI label disclosure
-      const aiDisclosure = item.ai_disclosure;
-      const c2paDisclosure = item.c2pa_disclosure;
+      // Check for disclosure signals
+      const hasAiLabel = item.ai_disclosure === 'LABELED_AI';
+      const hasC2pa = item.c2pa_disclosure === 'HAS_C2PA';
 
-      // Prioritize classification:
-      // 1. If has C2PA, count as hasC2pa (highest confidence signal)
-      // 2. Else if labeled AI by platform, count as labeled
-      // 3. Else count as noDisclosure
-      if (c2paDisclosure === 'HAS_C2PA') {
-        result.counts.hasC2pa++;
-      } else if (aiDisclosure === 'LABELED_AI') {
-        result.counts.labeled++;
+      // Track raw counts (can overlap)
+      if (hasAiLabel) result.rawCounts.aiLabelPresent++;
+      if (hasC2pa) result.rawCounts.c2paPresent++;
+
+      // Classify into mutually exclusive buckets
+      if (hasAiLabel && hasC2pa) {
+        result.buckets.both++;
+      } else if (hasAiLabel && !hasC2pa) {
+        result.buckets.aiOnly++;
+      } else if (!hasAiLabel && hasC2pa) {
+        result.buckets.c2paOnly++;
       } else {
-        result.counts.noDisclosure++;
+        result.buckets.none++;
       }
     }
 
@@ -1781,50 +1792,55 @@ export function aggregateAiDisclosures(scans, scanDetails) {
     }
   }
 
-  // Calculate percentages (rounded to whole numbers, ensuring they sum to 100)
+  // Calculate percentages for mutually exclusive buckets
   if (result.totalVisualPosts > 0) {
     const total = result.totalVisualPosts;
 
-    // Raw percentages
+    // Calculate raw percentages for 4 buckets
     const rawPercentages = {
-      hasC2pa: (result.counts.hasC2pa / total) * 100,
-      labeled: (result.counts.labeled / total) * 100,
-      noDisclosure: (result.counts.noDisclosure / total) * 100,
+      both: (result.buckets.both / total) * 100,
+      c2paOnly: (result.buckets.c2paOnly / total) * 100,
+      aiOnly: (result.buckets.aiOnly / total) * 100,
+      none: (result.buckets.none / total) * 100,
     };
 
     // Round and adjust to ensure sum = 100
-    result.percentages = roundPercentagesToSum100([
-      rawPercentages.hasC2pa,
-      rawPercentages.labeled,
-      rawPercentages.noDisclosure,
-    ]).reduce(
-      (acc, val, idx) => {
-        if (idx === 0) acc.hasC2pa = val;
-        if (idx === 1) acc.labeled = val;
-        if (idx === 2) acc.noDisclosure = val;
-        return acc;
-      },
-      { hasC2pa: 0, labeled: 0, noDisclosure: 0 }
-    );
+    const rounded = roundPercentagesToSum100([
+      rawPercentages.both,
+      rawPercentages.c2paOnly,
+      rawPercentages.aiOnly,
+      rawPercentages.none,
+    ]);
 
-    // Build segments for composition bar (order by disclosure confidence)
+    result.percentages = {
+      both: rounded[0],
+      c2paOnly: rounded[1],
+      aiOnly: rounded[2],
+      none: rounded[3],
+    };
+
+    // Build 3-segment composition bar (merge both+c2paOnly into one C2PA segment)
+    // This keeps UI clean while preserving correctness in the data
+    const c2paCount = result.buckets.both + result.buckets.c2paOnly;
+    const c2paPercent = result.percentages.both + result.percentages.c2paOnly;
+
     result.segments = [
       {
-        label: 'C2PA verified',
-        count: result.counts.hasC2pa,
-        percentage: result.percentages.hasC2pa,
+        label: 'C2PA indicator observed',
+        count: c2paCount,
+        percentage: c2paPercent,
         color: '#8B5CF6', // Purple - highest confidence
       },
       {
         label: 'Platform labeled AI',
-        count: result.counts.labeled,
-        percentage: result.percentages.labeled,
+        count: result.buckets.aiOnly,
+        percentage: result.percentages.aiOnly,
         color: '#3B82F6', // Blue - explicit platform disclosure
       },
       {
-        label: 'No disclosure',
-        count: result.counts.noDisclosure,
-        percentage: result.percentages.noDisclosure,
+        label: 'No disclosure observed',
+        count: result.buckets.none,
+        percentage: result.percentages.none,
         color: '#94A3B8', // Gray - no disclosure signal
       },
     ];
@@ -1832,6 +1848,17 @@ export function aggregateAiDisclosures(scans, scanDetails) {
 
   // Require at least 20 visual posts for reliable analysis
   result.hasEnoughData = result.totalVisualPosts >= 20;
+
+  // Dev-only validation log (only runs in non-production builds)
+  if (process.env.NODE_ENV !== 'production' && result.totalVisualPosts > 0) {
+    console.info('[AI Disclosure Validation]', {
+      totalVisualPosts: result.totalVisualPosts,
+      rawCounts: result.rawCounts,
+      buckets: result.buckets,
+      percentages: result.percentages,
+      scansUsed: result.scansUsed,
+    });
+  }
 
   return result;
 }

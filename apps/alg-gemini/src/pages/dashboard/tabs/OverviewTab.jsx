@@ -337,16 +337,14 @@ const OverviewTab = ({ scans, scanDetails }) => {
                 What this measures
               </p>
               <p className="text-xs text-slate-600 leading-relaxed">
-                <strong>C2PA verified:</strong> Posts with Content Credentials (cryptographic proof of origin and editing history).
+                <strong>C2PA indicator observed:</strong> On-screen text mentioning Content Credentials or C2PA detected in video scans. This does NOT verify cryptographic signatures - it only reports visible text.
                 <br />
-                <strong>Platform labeled AI:</strong> Posts with explicit platform AI labels like Instagram's "Made with AI" or TikTok's "AI generated" badge.
+                <strong>Platform labeled AI:</strong> On-screen text matching known platform AI disclosure phrases (Instagram "Made with AI", TikTok "AI generated", etc.) detected via OCR.
                 <br />
-                <strong>No disclosure:</strong> Visual posts without explicit platform AI disclosure signals.
+                <strong>No disclosure observed:</strong> Visual posts without detectable disclosure text in OCR.
               </p>
               <p className="text-xs text-slate-500 leading-relaxed mt-2">
-                Note: Absence of disclosure does not mean content is NOT AI-generated.
-                Many platforms do not require creators to label AI content, and detection from visual
-                analysis alone is unreliable.
+                <strong>Important:</strong> This is OCR-based text detection from mobile video scans, not metadata extraction or cryptographic verification. Absence of disclosure does not mean content is NOT AI-generated. Many platforms do not require AI labeling.
               </p>
             </div>
           </div>

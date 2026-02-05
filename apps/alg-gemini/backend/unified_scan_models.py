@@ -132,6 +132,8 @@ class FeedItem(BaseModel):
     # These capture EXPLICIT platform disclosure signals, NOT AI generation detection
     ai_disclosure: Optional[str] = None  # Platform AI labels: "LABELED_AI" | "NOT_LABELED" | None
     c2pa_disclosure: Optional[str] = None  # C2PA/Content Credentials: "HAS_C2PA" | "NO_C2PA" | None
+    ai_disclosure_source: Optional[str] = None  # Source: "ocr_text" (from video OCR) | "platform_label" (from API metadata) | None
+    ai_disclosure_text: Optional[str] = None  # Exact matched phrase if detected, null otherwise
 
     ad_metadata: Optional[AdMetadata] = None
     account: Optional[AccountInfo] = None

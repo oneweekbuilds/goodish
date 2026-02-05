@@ -121,6 +121,8 @@ export interface FeedItem {
     // These capture EXPLICIT platform disclosure signals, NOT AI generation detection
     ai_disclosure?: string | null;  // Platform AI labels: "LABELED_AI" | "NOT_LABELED" | null
     c2pa_disclosure?: string | null;  // C2PA/Content Credentials: "HAS_C2PA" | "NO_C2PA" | null
+    ai_disclosure_source?: string | null;  // Source: "ocr_text" (from video OCR) | "platform_label" (from API metadata) | null
+    ai_disclosure_text?: string | null;  // Exact matched phrase if detected, null otherwise
 
     ad_metadata?: AdMetadata | null;
     account?: AccountInfo | null;

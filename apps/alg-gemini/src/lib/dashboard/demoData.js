@@ -134,9 +134,9 @@ function generateFeedItem(globalIndex, scanId, scanIndex) {
 
   // AI disclosure fields: ONLY for visual posts
   // Target distribution for visual posts:
-  // - C2PA verified: ~5% (6 posts out of 112 visual posts) - rare, cutting-edge
+  // - C2PA indicator observed: ~5% (6 posts out of 112 visual posts) - rare, cutting-edge
   // - Platform labeled AI: ~15% (17 posts) - more common on platforms
-  // - No disclosure: ~80% (89 posts) - most common
+  // - No disclosure observed: ~80% (89 posts) - most common
   let aiDisclosure = null;
   let c2paDisclosure = null;
 
@@ -147,9 +147,9 @@ function generateFeedItem(globalIndex, scanId, scanIndex) {
     const visualIndex = Math.floor(globalIndex / 10) * 7 + Math.min(globalIndex % 10, 6);
 
     // Total visual posts = 160 * 0.7 = 112
-    // C2PA verified: first 6 visual posts (~5% of 112)
+    // C2PA indicator observed: first 6 visual posts (~5% of 112)
     // Platform labeled AI: next 17 visual posts (~15% of 112)
-    // No disclosure: remaining 89 visual posts (~80% of 112)
+    // No disclosure observed: remaining 89 visual posts (~80% of 112)
     if (visualIndex < 6) {
       aiDisclosure = 'NOT_LABELED'; // Has C2PA, so doesn't need platform label
       c2paDisclosure = 'HAS_C2PA';
@@ -523,9 +523,9 @@ export function generateDemoData() {
     console.log(`  Total visual posts: ${totalVisualPosts} (${((totalVisualPosts / totalPosts) * 100).toFixed(1)}%) [images: ${contentTypeCounts.IMAGE}, videos: ${contentTypeCounts.VIDEO}]`);
     console.log(`  Text-only posts: ${contentTypeCounts.TEXT} (${((contentTypeCounts.TEXT / totalPosts) * 100).toFixed(1)}%)`);
     console.log(`  Visual posts with platform disclosure (${totalVisualPosts} visual posts):`);
-    console.log(`    C2PA verified: ${aiDisclosureCounts.HAS_C2PA} (target: 6, ${totalVisualPosts > 0 ? ((aiDisclosureCounts.HAS_C2PA / totalVisualPosts) * 100).toFixed(1) : 0}%)`);
+    console.log(`    C2PA indicator observed: ${aiDisclosureCounts.HAS_C2PA} (target: 6, ${totalVisualPosts > 0 ? ((aiDisclosureCounts.HAS_C2PA / totalVisualPosts) * 100).toFixed(1) : 0}%)`);
     console.log(`    Platform labeled AI: ${aiDisclosureCounts.LABELED_AI} (target: 17, ${totalVisualPosts > 0 ? ((aiDisclosureCounts.LABELED_AI / totalVisualPosts) * 100).toFixed(1) : 0}%)`);
-    console.log(`    No disclosure: ${aiDisclosureCounts.NO_DISCLOSURE} (target: 89, ${totalVisualPosts > 0 ? ((aiDisclosureCounts.NO_DISCLOSURE / totalVisualPosts) * 100).toFixed(1) : 0}%)`);
+    console.log(`    No disclosure observed: ${aiDisclosureCounts.NO_DISCLOSURE} (target: 89, ${totalVisualPosts > 0 ? ((aiDisclosureCounts.NO_DISCLOSURE / totalVisualPosts) * 100).toFixed(1) : 0}%)`);
     console.log('');
     console.log('SOURCE CONCENTRATION:');
     console.log(`  Top 5 creators: ${top5Percent}% (target: 60-75%)`);
@@ -555,9 +555,9 @@ export function generateDemoData() {
     console.log(`  ${sourceOriginCounts.followed === 72 ? '✓' : '✗'} Followed posts: ${sourceOriginCounts.followed} === 72`);
     console.log(`  ${totalVisualPosts === 112 ? '✓' : '✗'} Total visual posts: ${totalVisualPosts} === 112`);
     console.log(`  ${contentTypeCounts.TEXT === 48 ? '✓' : '✗'} Text-only posts: ${contentTypeCounts.TEXT} === 48`);
-    console.log(`  ${aiDisclosureCounts.HAS_C2PA === 6 ? '✓' : '✗'} C2PA verified: ${aiDisclosureCounts.HAS_C2PA} === 6`);
+    console.log(`  ${aiDisclosureCounts.HAS_C2PA === 6 ? '✓' : '✗'} C2PA indicator observed: ${aiDisclosureCounts.HAS_C2PA} === 6`);
     console.log(`  ${aiDisclosureCounts.LABELED_AI === 17 ? '✓' : '✗'} Platform labeled AI: ${aiDisclosureCounts.LABELED_AI} === 17`);
-    console.log(`  ${aiDisclosureCounts.NO_DISCLOSURE === 89 ? '✓' : '✗'} No disclosure: ${aiDisclosureCounts.NO_DISCLOSURE} === 89`);
+    console.log(`  ${aiDisclosureCounts.NO_DISCLOSURE === 89 ? '✓' : '✗'} No disclosure observed: ${aiDisclosureCounts.NO_DISCLOSURE} === 89`);
     console.log('');
     console.log('SAMPLE FEED ITEMS (for media field inspection):');
     console.log('');
