@@ -30,6 +30,9 @@ const getFeedItems = (scanDetail) => {
  * - Section 3.6: Master numbers line
  */
 const AdsTab = ({ scans, scanDetails }) => {
+  // TODO: Replace with actual Plus subscription check
+  const isPlusUser = false;
+
   // Aggregate data from all filtered scans
   const adsData = aggregateAds(scans, scanDetails);
   const influenceData = summarizeInfluence(scans, scanDetails);
@@ -404,6 +407,15 @@ const AdsTab = ({ scans, scanDetails }) => {
     <div className="space-y-8">
       {/* Insight Hero */}
       <InsightHero {...hero} />
+
+      {/* Plus awareness for free users */}
+      {!isPlusUser && commercialComposition.hasData && (
+        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+          <p className="text-sm text-slate-600">
+            🔒 Monitor whether ad exposure is growing or shrinking with AlgorithmLens Plus.
+          </p>
+        </div>
+      )}
 
       {/* Section 3.1 - Commercial Composition */}
       <section>

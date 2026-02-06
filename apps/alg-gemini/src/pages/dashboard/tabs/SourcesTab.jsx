@@ -19,6 +19,9 @@ import { aggregateCreators, aggregateAds } from '../../../lib/dashboard/scanAggr
  * - Section 2.4: Master numbers line
  */
 const SourcesTab = ({ scans, scanDetails }) => {
+  // TODO: Replace with actual Plus subscription check
+  const isPlusUser = false;
+
   // Aggregate data from all filtered scans
   const creatorsData = aggregateCreators(scans, scanDetails);
   const adsData = aggregateAds(scans, scanDetails);
@@ -105,6 +108,15 @@ const SourcesTab = ({ scans, scanDetails }) => {
     <div className="space-y-8">
       {/* Insight Hero */}
       <InsightHero {...hero} />
+
+      {/* Plus awareness for free users */}
+      {!isPlusUser && hasSourcesData && (
+        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+          <p className="text-sm text-slate-600">
+            🔒 Track which sources gain or lose prominence over time with AlgorithmLens Plus.
+          </p>
+        </div>
+      )}
 
       {/* Section 2.1 - Top Sources Table */}
       <section>

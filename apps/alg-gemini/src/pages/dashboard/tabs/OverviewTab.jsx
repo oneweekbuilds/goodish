@@ -22,6 +22,9 @@ import { aggregateCreators, aggregateAds, aggregatePolitics, aggregateEmotions, 
  * - Section 1.4: Master numbers line
  */
 const OverviewTab = ({ scans, scanDetails }) => {
+  // TODO: Replace with actual Plus subscription check
+  const isPlusUser = false;
+
   // Aggregate data from all filtered scans
   const creatorsData = aggregateCreators(scans, scanDetails);
   const adsData = aggregateAds(scans, scanDetails);
@@ -322,6 +325,13 @@ const OverviewTab = ({ scans, scanDetails }) => {
                 ? `AI disclosures were observed on ${Math.round(((aiDisclosureData.rawCounts.aiLabelPresent + aiDisclosureData.rawCounts.c2paPresent) / aiDisclosureData.totalVisualPosts) * 100)}% of visual posts`
                 : `No AI disclosures were observed in these scans`}
             </p>
+
+            {/* Plus awareness for free users */}
+            {!isPlusUser && (
+              <p className="text-xs text-slate-500 mt-1">
+                🔒 See how AI disclosure rates shift scan-to-scan with AlgorithmLens Plus.
+              </p>
+            )}
 
             <CompositionBar100WithCounts segments={aiDisclosureData.segments} />
 

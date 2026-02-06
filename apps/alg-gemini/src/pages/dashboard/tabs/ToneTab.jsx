@@ -19,6 +19,9 @@ import { aggregateEmotions, aggregateAds, aggregatePolitics, summarizeInfluence 
  * - Section 5.4: Master numbers line
  */
 const ToneTab = ({ scans, scanDetails }) => {
+  // TODO: Replace with actual Plus subscription check
+  const isPlusUser = false;
+
   // Aggregate data from all filtered scans
   const emotionsData = aggregateEmotions(scans, scanDetails);
   const adsData = aggregateAds(scans, scanDetails);
@@ -343,6 +346,15 @@ const ToneTab = ({ scans, scanDetails }) => {
     <div className="space-y-8">
       {/* Insight Hero */}
       <InsightHero {...hero} />
+
+      {/* Plus awareness for free users */}
+      {!isPlusUser && toneDistribution.hasData && (
+        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+          <p className="text-sm text-slate-600">
+            🔒 See whether emotional tone in your feed is stable or changing with AlgorithmLens Plus.
+          </p>
+        </div>
+      )}
 
       {/* Section 5.1 - Tone Distribution */}
       <section>

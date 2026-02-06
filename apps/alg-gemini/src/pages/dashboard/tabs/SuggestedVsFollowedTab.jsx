@@ -23,6 +23,9 @@ import { aggregateSourceOrigin } from '../../../lib/dashboard/scanAggregator';
  * - What you can do card
  */
 const SuggestedVsFollowedTab = ({ scans, scanDetails }) => {
+  // TODO: Replace with actual Plus subscription check
+  const isPlusUser = false;
+
   // Aggregate data from all filtered scans
   const sourceData = aggregateSourceOrigin(scans, scanDetails);
 
@@ -295,6 +298,15 @@ const SuggestedVsFollowedTab = ({ scans, scanDetails }) => {
     <div className="space-y-8 lg:pr-24">
       {/* Insight Hero */}
       <InsightHero {...hero} />
+
+      {/* Plus awareness for free users */}
+      {!isPlusUser && hasData && (
+        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+          <p className="text-sm text-slate-600">
+            🔒 Discover whether the algorithm is suggesting more or less over time with AlgorithmLens Plus.
+          </p>
+        </div>
+      )}
 
       {/* Section 2: Overall Breakdown */}
       <section>
