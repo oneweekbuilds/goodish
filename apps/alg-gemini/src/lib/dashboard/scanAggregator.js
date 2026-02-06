@@ -1869,22 +1869,45 @@ export function aggregateAiDisclosures(scans, scanDetails) {
 
     result.segments = [
       {
-        label: 'C2PA indicator observed',
+        label: 'Shows where it came from (like a digital receipt)',
         count: c2paCount,
         percentage: c2paPercent,
         color: '#8B5CF6', // Purple - highest confidence
       },
       {
-        label: 'Platform labeled AI',
+        label: 'App labeled it "Made with AI"',
         count: result.buckets.aiOnly,
         percentage: result.percentages.aiOnly,
         color: '#3B82F6', // Blue - explicit platform disclosure
       },
       {
-        label: 'No disclosure observed',
+        label: 'No label',
         count: result.buckets.none,
         percentage: result.percentages.none,
         color: '#94A3B8', // Gray - no disclosure signal
+      },
+    ];
+
+    // Build simplified 2-segment view (for user-facing dashboard)
+    // Signal-based likelihood model: combines all strong AI signals into one bucket
+    // Strong signals include: platform AI labels, C2PA indicators, watermarks, etc.
+    const likelyAiCount = c2paCount + result.buckets.aiOnly;
+    const likelyAiPercent = c2paPercent + result.percentages.aiOnly;
+    const noSignalsCount = result.buckets.none;
+    const noSignalsPercent = result.percentages.none;
+
+    result.segmentsSimplified = [
+      {
+        label: 'Likely AI-made',
+        count: likelyAiCount,
+        percentage: likelyAiPercent,
+        color: '#3B82F6', // Blue - likely AI
+      },
+      {
+        label: 'No strong AI signals',
+        count: noSignalsCount,
+        percentage: noSignalsPercent,
+        color: '#94A3B8', // Gray - insufficient evidence
       },
     ];
   }

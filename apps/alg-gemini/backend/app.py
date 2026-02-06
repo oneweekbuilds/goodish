@@ -57,15 +57,19 @@ app = FastAPI(title="AlgorithmLens Backend")
 def startup_event():
     init_database()
 
-# CORS
+# CORS - dev-only permissive origins
+_env = os.getenv("ENV", "").lower()
+_is_dev = _env in ("dev", "development", "local", "")
+_allowed_origins = ["*"] if _is_dev else [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5175",
+    "http://127.0.0.1:5175",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:5175",
-        "http://127.0.0.1:5175",
-    ],
+    allow_origins=_allowed_origins,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],

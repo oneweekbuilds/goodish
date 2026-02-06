@@ -313,59 +313,101 @@ const OverviewTab = ({ scans, scanDetails }) => {
       {/* Insight Hero */}
       <InsightHero {...hero} />
 
-      {/* AI-Labeled Visuals (Platform-Disclosed) Section */}
+      {/* AI Likelihood Section */}
       <section>
-        <SectionHeader>AI-labeled visuals (platform-disclosed)</SectionHeader>
+        <SectionHeader>How much of your feed is likely AI-made?</SectionHeader>
 
         {aiDisclosureData.hasEnoughData ? (
           <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-3">
-            {/* Data-grounded headline */}
-            <p className="text-sm font-medium text-slate-700">
-              {aiDisclosureData.rawCounts.aiLabelPresent + aiDisclosureData.rawCounts.c2paPresent > 0
-                ? `AI disclosures were observed on ${Math.round(((aiDisclosureData.rawCounts.aiLabelPresent + aiDisclosureData.rawCounts.c2paPresent) / aiDisclosureData.totalVisualPosts) * 100)}% of visual posts`
-                : `No AI disclosures were observed in these scans`}
-            </p>
+            {/* Data-grounded headline - dynamic based on percentage */}
+            {(() => {
+              const likelyAiCount = aiDisclosureData.rawCounts.aiLabelPresent + aiDisclosureData.rawCounts.c2paPresent;
+              const likelyAiPercent = Math.round((likelyAiCount / aiDisclosureData.totalVisualPosts) * 100);
+
+              if (likelyAiPercent === 0) {
+                return (
+                  <p className="text-sm font-medium text-slate-700">
+                    Very little content in your feed shows strong signs of being AI-made (0% of images and videos)
+                  </p>
+                );
+              } else if (likelyAiPercent >= 40) {
+                return (
+                  <p className="text-sm font-medium text-slate-700">
+                    About {likelyAiPercent}% of images and videos show strong signs of being AI-made
+                  </p>
+                );
+              } else if (likelyAiPercent >= 15) {
+                return (
+                  <p className="text-sm font-medium text-slate-700">
+                    About {likelyAiPercent}% of images and videos show strong signs of being AI-made
+                  </p>
+                );
+              } else {
+                return (
+                  <p className="text-sm font-medium text-slate-700">
+                    Very little content in your feed shows strong signs of being AI-made ({likelyAiPercent}% of images and videos)
+                  </p>
+                );
+              }
+            })()}
 
             {/* Plus awareness for free users */}
             {!isPlusUser && (
               <p className="text-xs text-slate-500 mt-1">
-                🔒 See how AI disclosure rates shift scan-to-scan with AlgorithmLens Plus.
+                🔒 Track how AI-made content in your feed changes over time with AlgorithmLens Plus.
               </p>
             )}
 
-            <CompositionBar100WithCounts segments={aiDisclosureData.segments} />
+            <CompositionBar100WithCounts segments={aiDisclosureData.segmentsSimplified} />
+
+            {/* One-line explainer directly under chart */}
+            <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+              Posts are marked as "likely AI-made" when we see clear signals like AI watermarks or app-provided labels. Everything else falls into "no strong AI signals."
+            </p>
 
             <div className="mt-3">
               <DenominatorLine text={`Based on ${aiDisclosureData.totalVisualPosts} visual posts`} />
             </div>
 
-            <div className="mt-4 pt-3 border-t border-slate-100 space-y-2">
-              <p className="text-xs font-medium text-slate-700">
-                What this means
-              </p>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                We only report AI labels and Content Credentials that platforms explicitly disclose. Lack of disclosure is itself meaningful: most platforms do not require creators to label AI-generated content, so many AI-made visuals have no label at all.
-              </p>
+            <div className="mt-4 pt-3 border-t border-slate-100 space-y-3">
+              <div>
+                <p className="text-xs font-medium text-slate-700">
+                  What this means
+                </p>
+                <p className="text-xs text-slate-600 leading-relaxed mt-1">
+                  Many creators don't say when they use AI. This view helps you understand how often AI-made content shows up in your feed, even when it isn't clearly labeled.
+                </p>
+              </div>
 
-              <p className="text-xs font-medium text-slate-700 mt-3">
-                Why you should care
-              </p>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Platform disclosures help you understand what content creators and platforms are choosing to label as AI-generated. The absence of labels tells you how rare transparency is, not that content is authentic.
-              </p>
+              <div>
+                <p className="text-xs font-medium text-slate-700">
+                  Why you should care
+                </p>
+                <p className="text-xs text-slate-600 leading-relaxed mt-1">
+                  AI-made content can shape trust, creativity, and expectations. Knowing how much of it appears in your feed helps you better interpret what you're seeing.
+                </p>
+              </div>
 
-              <p className="text-xs font-medium text-slate-700 mt-3">
-                How this works
-              </p>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                Captured from on-screen text in mobile video scans using platform-specific phrase matching. This is not AI detection or cryptographic verification. Posts with both an AI label and a Content Credentials indicator are counted in the Content Credentials segment.
-              </p>
+              <div>
+                <p className="text-xs font-medium text-slate-700">
+                  How AlgorithmLens decides this
+                </p>
+                <p className="text-xs text-slate-600 leading-relaxed mt-1">
+                  We look for clear signs such as AI labels shown by the app, visible AI watermarks, or other strong signals. When multiple signals appear together, we count the post as likely AI-made.
+                </p>
+                <p className="text-xs text-slate-600 leading-relaxed mt-1">
+                  If we don't see strong signals, we don't guess.
+                </p>
+                <p className="text-xs text-slate-500 italic mt-2">
+                  "No strong AI signals" does not mean human-made. It means we didn't see enough evidence.
+                </p>
+              </div>
             </div>
           </div>
         ) : (
           <div className="bg-white border border-slate-200 rounded-lg p-6 text-center space-y-2">
             <p className="text-sm text-slate-400 italic">
-              Not enough visual posts to show AI disclosure analysis.
+              Not enough strong signals yet to assess AI-made content in your feed.
             </p>
             <p className="text-xs text-slate-500">
               This section requires at least 20 image or video posts. Current count: {aiDisclosureData.totalVisualPosts}
