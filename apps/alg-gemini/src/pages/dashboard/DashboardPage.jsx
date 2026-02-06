@@ -14,6 +14,7 @@ import { generateDemoData } from '../../lib/dashboard/demoData';
 import * as dataHelpers from '../../lib/dashboard/dataHelpers';
 import { isHeadlineExcludedLabel } from '../../lib/dashboard/headlineSafety';
 import { submitWaitlistEmail } from '../../lib/waitlist/submitWaitlistEmail';
+import { getCurrentPlanTier } from '../../lib/plan';
 
 /**
  * THEME CONSTANTS - Part 1 Color System
@@ -1948,6 +1949,15 @@ const DashboardPage = () => {
 
   // Check for demo mode via ?demo=1 query parameter
   const isDemoMode = new URLSearchParams(window.location.search).get('demo') === '1';
+
+  // Plan tier state (foundation for gating, not yet enforced)
+  // Supports demo overrides via ?demoPlan=plus|free|anon (demo mode only)
+  // Defaults: demo mode → "free", non-demo → stored tier or "anon"
+  const searchParams = useMemo(() => new URLSearchParams(window.location.search), []);
+  const planTier = useMemo(
+    () => getCurrentPlanTier(isDemoMode, searchParams),
+    [isDemoMode, searchParams]
+  );
 
   // Generate demo data only once (memoized to avoid re-creating on every render)
   const demoData = useMemo(() => {
