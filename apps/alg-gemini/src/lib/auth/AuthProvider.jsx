@@ -36,6 +36,32 @@ export const AuthProvider = ({ children }) => {
   const prevSessionRef = useRef(null);
   const syncInProgressRef = useRef(false);
 
+  // Sync plan tier from backend entitlements
+  const syncPlanTier = useCallback(async (currentSession) => {
+    // Guard against duplicate syncs during rapid auth transitions
+    if (syncInProgressRef.current) {
+      return;
+    }
+
+    syncInProgressRef.current = true;
+
+    try {
+      const isDemoMode = typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('demo') === '1'
+        : false;
+
+      const hasSession = Boolean(currentSession);
+
+      await syncPlanTierFromEntitlements({
+        isDemoMode,
+        authReady,
+        hasSession
+      });
+    } finally {
+      syncInProgressRef.current = false;
+    }
+  }, [authReady]);
+
   // Initialize session and subscribe to auth changes
   useEffect(() => {
     // SSR guard
@@ -88,32 +114,6 @@ export const AuthProvider = ({ children }) => {
       subscription?.unsubscribe();
     };
   }, [syncPlanTier]);
-
-  // Sync plan tier from backend entitlements
-  const syncPlanTier = useCallback(async (currentSession) => {
-    // Guard against duplicate syncs during rapid auth transitions
-    if (syncInProgressRef.current) {
-      return;
-    }
-
-    syncInProgressRef.current = true;
-
-    try {
-      const isDemoMode = typeof window !== 'undefined'
-        ? new URLSearchParams(window.location.search).get('demo') === '1'
-        : false;
-
-      const hasSession = Boolean(currentSession);
-
-      await syncPlanTierFromEntitlements({
-        isDemoMode,
-        authReady,
-        hasSession
-      });
-    } finally {
-      syncInProgressRef.current = false;
-    }
-  }, [authReady]);
 
   // Send magic link wrapper
   const handleSendMagicLink = async (email) => {
