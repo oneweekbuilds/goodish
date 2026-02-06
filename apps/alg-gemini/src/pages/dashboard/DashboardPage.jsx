@@ -14,7 +14,8 @@ import { generateDemoData } from '../../lib/dashboard/demoData';
 import * as dataHelpers from '../../lib/dashboard/dataHelpers';
 import { isHeadlineExcludedLabel } from '../../lib/dashboard/headlineSafety';
 import { submitWaitlistEmail } from '../../lib/waitlist/submitWaitlistEmail';
-import { getCurrentPlanTier } from '../../lib/plan';
+import { getCurrentPlanTier, PLAN_TIERS } from '../../lib/plan';
+import { LockedOverlayCard, PaywallModal } from '../../components/plan';
 
 /**
  * THEME CONSTANTS - Part 1 Color System
@@ -1959,6 +1960,9 @@ const DashboardPage = () => {
     [isDemoMode, searchParams]
   );
 
+  // Paywall modal state (for demo preview and later gating flows)
+  const [paywallModalOpen, setPaywallModalOpen] = useState(false);
+
   // Generate demo data only once (memoized to avoid re-creating on every render)
   const demoData = useMemo(() => {
     if (isDemoMode) {
@@ -2560,6 +2564,62 @@ const DashboardPage = () => {
             )}
           </div>
         )}
+
+        {/* Demo-only preview: Plan UI primitives (not visible to real users) */}
+        {isDemoMode && (
+          <div className="mt-12 mb-8 max-w-4xl mx-auto px-4">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+              <p className="text-xs text-amber-800 font-medium">
+                Demo Mode: Plan UI Preview (only visible with ?demo=1)
+              </p>
+              <p className="text-xs text-amber-600 mt-1">
+                Current plan tier: <span className="font-mono font-semibold">{planTier}</span>
+              </p>
+            </div>
+
+            {/* Locked overlay card preview */}
+            <LockedOverlayCard
+              locked={planTier !== PLAN_TIERS.PLUS}
+              title="Trends over time"
+              body="Your snapshot is free. Plus adds trends, changes, and explanations across scans."
+              ctaLabel="Start Plus free trial"
+              onUpgrade={() => setPaywallModalOpen(true)}
+            >
+              <div className="bg-white border border-slate-200 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-slate-900 mb-3">
+                  Sample Trend Chart
+                </h3>
+                <div className="h-40 bg-slate-100 rounded flex items-center justify-center text-slate-400">
+                  [Trend visualization preview]
+                </div>
+                <p className="text-sm text-slate-600 mt-3">
+                  This card shows {planTier === PLAN_TIERS.PLUS ? 'unlocked' : 'locked'} state
+                </p>
+              </div>
+            </LockedOverlayCard>
+
+            {/* Button to test modal */}
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => setPaywallModalOpen(true)}
+                className="text-sm text-primary-blue hover:underline"
+              >
+                Open Paywall Modal (test)
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Paywall Modal (globally available) */}
+        <PaywallModal
+          open={paywallModalOpen}
+          onClose={() => setPaywallModalOpen(false)}
+          onStartTrial={(params) => {
+            console.log('Trial started (demo):', params);
+            setPaywallModalOpen(false);
+          }}
+          source="demo_preview"
+        />
 
         {/* Phase 8: Minimal footer - Softer, less competing */}
         <div className="text-center py-4 mt-6">

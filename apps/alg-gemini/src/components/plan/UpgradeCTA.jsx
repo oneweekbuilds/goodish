@@ -1,0 +1,33 @@
+import React from 'react';
+
+/**
+ * UpgradeCTA - Consistent upgrade button across the app
+ *
+ * Props:
+ * - onClick: callback function
+ * - variant: "primary" (default) or "secondary"
+ * - label: button text (default: "See trends over time")
+ */
+const UpgradeCTA = ({
+  onClick,
+  variant = 'primary',
+  label = 'See trends over time',
+}) => {
+  const variantClasses = {
+    primary:
+      'bg-primary-blue text-white hover:bg-blue-700 border-primary-blue',
+    secondary:
+      'bg-white text-primary-blue border-primary-blue hover:bg-primary-blue/5',
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className={`px-6 py-3 rounded-full font-semibold text-sm md:text-base border transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue/60 focus-visible:ring-offset-2 ${variantClasses[variant]}`}
+    >
+      {label}
+    </button>
+  );
+};
+
+export default UpgradeCTA;
