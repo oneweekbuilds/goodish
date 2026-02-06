@@ -112,6 +112,96 @@ function calculateCreatorConcentration(creatorsData) {
 }
 
 /**
+ * Parse a formatted metric value back to a number
+ * @param {string} value - Formatted value (e.g., "1,234" or "12.3%")
+ * @returns {number|null} Numeric value or null if unparseable
+ */
+function parseMetricValue(value) {
+  if (typeof value === 'number') return value;
+  if (typeof value !== 'string') return null;
+
+  // Remove commas and percentage signs, then parse
+  const cleaned = value.replace(/,/g, '').replace(/%/g, '');
+  const num = parseFloat(cleaned);
+
+  return isNaN(num) ? null : num;
+}
+
+/**
+ * Generate a plain-English summary for a single comparison metric
+ * @param {Object} metric - Comparison metric object
+ * @returns {string|null} Plain-English summary or null if not applicable
+ */
+function generateMetricSummary(metric) {
+  const { label, baseline, compare, absoluteDelta } = metric;
+
+  if (absoluteDelta === 0) return null;
+
+  // Parse baseline and compare values
+  const baselineNum = parseMetricValue(baseline);
+  const compareNum = parseMetricValue(compare);
+
+  if (baselineNum === null || compareNum === null) return null;
+
+  const isIncrease = compareNum > baselineNum;
+  const direction = isIncrease ? 'increased' : 'decreased';
+  const absDiff = Math.abs(compareNum - baselineNum);
+
+  // Generate summary based on metric type
+  switch (label) {
+    case 'Total posts':
+      return `Total posts ${direction} by ${formatNumber(absDiff)}.`;
+
+    case 'Ad percentage':
+      return `Ad content ${direction} by ${absDiff.toFixed(1)} percentage points.`;
+
+    case 'Political content':
+      return `Political content ${direction} by ${absDiff.toFixed(1)} percentage points.`;
+
+    case 'Unique creators':
+      return `You saw posts from ${formatNumber(absDiff)} ${isIncrease ? 'more' : 'fewer'} unique creators.`;
+
+    case 'Top 5 creator share':
+      return `Content from your top 5 sources ${direction} by ${absDiff.toFixed(1)} percentage points.`;
+
+    case 'Suggested content':
+      return `Suggested posts made up a ${isIncrease ? 'larger' : 'smaller'} share of your feed.`;
+
+    case 'Unique topics':
+      return `Posts covered ${formatNumber(absDiff)} ${isIncrease ? 'more' : 'fewer'} unique topics.`;
+
+    case 'Positive tone':
+      return `Positive-toned posts ${direction} by ${absDiff.toFixed(1)} percentage points.`;
+
+    case 'Negative tone':
+      return `Negative-toned posts ${direction} by ${absDiff.toFixed(1)} percentage points.`;
+
+    default:
+      return null;
+  }
+}
+
+/**
+ * Generate plain-English summaries for top comparison metrics
+ * @param {Array} metrics - Sorted comparison metrics (already sorted by absoluteDelta)
+ * @param {number} maxSummaries - Maximum number of summaries to generate (default 4)
+ * @returns {Array<string>} Array of plain-English summaries
+ */
+export function generateChangeSummaries(metrics, maxSummaries = 4) {
+  const summaries = [];
+  const metricsToSummarize = metrics.slice(0, maxSummaries);
+
+  for (const metric of metricsToSummarize) {
+    const summary = generateMetricSummary(metric);
+    if (summary) {
+      summaries.push(summary);
+    }
+  }
+
+  return summaries;
+}
+
+/**
  * Compare two scans and return comparison metrics
  * @param {Object} baselineScan - Scan object for baseline
  * @param {Object} compareScan - Scan object for comparison

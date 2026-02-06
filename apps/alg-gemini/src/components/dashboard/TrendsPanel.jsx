@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { TrendingUp, X, ArrowLeftRight } from 'lucide-react';
-import { compareTwoScans } from '../../lib/dashboard/trendsComparison';
+import { compareTwoScans, generateChangeSummaries } from '../../lib/dashboard/trendsComparison';
 
 /**
  * TrendsPanel - Real scan-to-scan comparison panel
@@ -71,6 +71,11 @@ const TrendsPanel = ({ scans, scanDetails, onClose }) => {
     const feedMakeup = comparisonMetrics.filter(m => m.category === 'feed_makeup');
     const whoWhat = comparisonMetrics.filter(m => m.category === 'who_what');
     return { feedMakeup, whoWhat };
+  }, [comparisonMetrics]);
+
+  // Generate plain-English summaries for top changes
+  const changeSummaries = useMemo(() => {
+    return generateChangeSummaries(comparisonMetrics);
   }, [comparisonMetrics]);
 
   // Handle Escape key
@@ -292,6 +297,21 @@ const TrendsPanel = ({ scans, scanDetails, onClose }) => {
           </div>
         )}
       </div>
+
+      {/* What Changed Summary */}
+      {changeSummaries.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-sm font-semibold text-slate-900">What changed</h4>
+          <p className="text-xs text-slate-500">Based on the largest differences between these two scans.</p>
+          <ul className="space-y-1.5 text-sm text-slate-700">
+            {changeSummaries.map((summary, index) => (
+              <li key={index} className="leading-relaxed">
+                • {summary}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Comparison Results */}
       <div className="min-h-[200px]">
