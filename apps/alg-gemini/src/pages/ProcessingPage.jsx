@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Loader2, CheckCircle, Circle } from 'lucide-react';
 import { track, EVENTS } from '../lib/analytics';
-import { authenticatedFetch } from '../lib/api/authenticatedFetch';
+import { authenticatedFetch, isUnauthorized } from '../lib/api/authenticatedFetch';
 import { getApiBaseUrl } from '../lib/apiConfig';
+import SignInPrompt from '../components/auth/SignInPrompt';
 
 // Processing steps for mobile (video-based) scans
 const PROCESSING_STEPS_MOBILE = [
@@ -30,6 +31,7 @@ const ProcessingPage = () => {
   const [error, setError] = useState(null);
   const [pollCount, setPollCount] = useState(0);
   const [isDesktopScan, setIsDesktopScan] = useState(false);
+  const [showSignInPrompt, setShowSignInPrompt] = useState(false);
 
   // Determine if this is a desktop scan by fetching scan data
   useEffect(() => {
@@ -91,6 +93,11 @@ const ProcessingPage = () => {
             setPollCount((prev) => prev + 1);
             return;
           }
+          if (isUnauthorized(response)) {
+            // 401 Unauthorized - show sign-in prompt
+            setShowSignInPrompt(true);
+            return;
+          }
           throw new Error(`Failed to fetch scan status: ${response.status}`);
         }
 
@@ -138,6 +145,21 @@ const ProcessingPage = () => {
     // Cleanup
     return () => clearInterval(pollInterval);
   }, [scanId, navigate, pollCount]);
+
+  // Show sign-in prompt if 401 error
+  if (showSignInPrompt) {
+    return (
+      <div className="min-h-screen bg-bg-page pt-24 md:pt-28 pb-16">
+        <SignInPrompt
+          title="Please sign in to continue"
+          body="Sign in to view the status of your scan. Your scans are saved to your account."
+          source="processing_401"
+          onBack={() => navigate('/start')}
+          backLabel="Back to platforms"
+        />
+      </div>
+    );
+  }
 
   if (error) {
     return (

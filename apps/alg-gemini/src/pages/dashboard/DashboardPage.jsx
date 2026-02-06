@@ -18,6 +18,7 @@ import { getCurrentPlanTier, PLAN_TIERS, isAnon } from '../../lib/plan';
 import { LockedOverlayCard } from '../../components/plan';
 import { usePaywall } from '../../lib/plan/PaywallProvider';
 import { ResultsGate } from '../../components/auth';
+import SignInPrompt from '../../components/auth/SignInPrompt';
 import { useAuth } from '../../lib/auth/useAuth';
 import { track, EVENTS } from '../../lib/analytics';
 
@@ -2239,6 +2240,22 @@ const DashboardPage = () => {
   // Error state - show calm empty state for network errors, loud error for other errors
   if (error && !isDemoMode) {
     const isNetworkError = error === 'network';
+    const isAuthError = error === 'auth';
+
+    // For auth errors (401), show sign-in prompt
+    if (isAuthError && authReady) {
+      return (
+        <div className="min-h-screen bg-bg-page pt-24 md:pt-28 pb-16">
+          <SignInPrompt
+            title="Sign in to view your results"
+            body="Your scans are saved to your account. Sign in to see your dashboard."
+            source="dashboard_401"
+            onBack={() => window.location.href = '/'}
+            backLabel="Back to home"
+          />
+        </div>
+      );
+    }
 
     // For network errors, show a calm empty state with troubleshooting section
     if (isNetworkError) {

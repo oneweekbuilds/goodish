@@ -16,6 +16,7 @@ import PlatformBadge, { getPlatformConfig } from '../components/PlatformBadge';
 import { track, EVENTS } from '../lib/analytics';
 import { authenticatedFetch, isUnauthorized } from '../lib/api/authenticatedFetch';
 import { getApiBaseUrl } from '../lib/apiConfig';
+import SignInPrompt from '../components/auth/SignInPrompt';
 
 // Platform display names
 const PLATFORM_NAMES = {
@@ -37,6 +38,7 @@ const ScanPlatformPage = () => {
   const [uploadError, setUploadError] = useState(null);
   const [dragActive, setDragActive] = useState(false);
   const [showRecordingHelp, setShowRecordingHelp] = useState(false);
+  const [showSignInPrompt, setShowSignInPrompt] = useState(false);
 
   const platformName = PLATFORM_NAMES[platform] || platform;
   const platformConfig = getPlatformConfig(platform);
@@ -162,10 +164,8 @@ const ScanPlatformPage = () => {
       if (!response.ok) {
         // Check for 401 Unauthorized
         if (isUnauthorized(response)) {
-          setUploadError('Please sign in to run a scan.');
           setUploading(false);
-          // Navigate to dashboard where ResultsGate can handle sign-in
-          setTimeout(() => navigate('/dashboard'), 2000);
+          setShowSignInPrompt(true);
           return;
         }
         throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
@@ -210,6 +210,21 @@ const ScanPlatformPage = () => {
       console.error('Failed to start desktop scan:', e);
     }
   };
+
+  // Show sign-in prompt if 401 error
+  if (showSignInPrompt) {
+    return (
+      <div className="min-h-screen bg-bg-page pt-24 md:pt-28 pb-16">
+        <SignInPrompt
+          title="Please sign in to run a scan"
+          body="Sign in to start analyzing your social media feeds. Your scans will be saved to your account."
+          source="upload_401"
+          onBack={() => navigate('/start')}
+          backLabel="Back to platforms"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-bg-page py-24 px-6">
