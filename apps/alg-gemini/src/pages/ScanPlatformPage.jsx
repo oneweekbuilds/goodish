@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import PlatformBadge, { getPlatformConfig } from '../components/PlatformBadge';
 import { track, EVENTS } from '../lib/analytics';
+import { authenticatedFetch, isUnauthorized } from '../lib/api/authenticatedFetch';
+import { getApiBaseUrl } from '../lib/apiConfig';
 
 // Platform display names
 const PLATFORM_NAMES = {
@@ -146,16 +148,26 @@ const ScanPlatformPage = () => {
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('userId', 'demo-user');
     formData.append('platform', platform);
+    // Note: userId is now extracted from JWT on backend
+
+    const apiBase = getApiBaseUrl();
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/scan/upload', {
+      const response = await authenticatedFetch(`${apiBase}/api/scan/upload`, {
         method: 'POST',
         body: formData,
       });
 
       if (!response.ok) {
+        // Check for 401 Unauthorized
+        if (isUnauthorized(response)) {
+          setUploadError('Please sign in to run a scan.');
+          setUploading(false);
+          // Navigate to dashboard where ResultsGate can handle sign-in
+          setTimeout(() => navigate('/dashboard'), 2000);
+          return;
+        }
         throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
       }
 

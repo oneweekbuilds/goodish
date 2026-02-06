@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { getApiBaseUrl } from '../apiConfig';
+import { authenticatedFetch, isUnauthorized } from '../api/authenticatedFetch';
 
 /**
  * Custom hook to fetch and process scan data for the dashboard.
@@ -17,15 +18,21 @@ export function useDashboardData(options = {}) {
   const [allScans, setAllScans] = useState([]); // Unfiltered scans from API
   const [scanDetails, setScanDetails] = useState({}); // Map of scanId -> detail
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); // null | 'network' | 'other'
+  const [error, setError] = useState(null); // null | 'network' | 'other' | 'auth'
   const [errorMessage, setErrorMessage] = useState(null); // Detailed error for debugging
 
   // Fetch scan list
   const fetchScans = useCallback(async () => {
     const apiBase = getApiBaseUrl();
     try {
-      const response = await fetch(`${apiBase}/api/scans`);
+      const response = await authenticatedFetch(`${apiBase}/api/scans`);
       if (!response.ok) {
+        // Check for 401 Unauthorized
+        if (isUnauthorized(response)) {
+          setError('auth');
+          setErrorMessage('Please sign in to view your scans');
+          return [];
+        }
         throw new Error(`Failed to fetch scans: ${response.status} ${response.statusText}`);
       }
       const data = await response.json();
@@ -60,7 +67,7 @@ export function useDashboardData(options = {}) {
 
     const apiBase = getApiBaseUrl();
     try {
-      const response = await fetch(`${apiBase}/api/scans/${scanId}`);
+      const response = await authenticatedFetch(`${apiBase}/api/scans/${scanId}`);
       if (!response.ok) {
         throw new Error(`Failed to fetch scan ${scanId}: ${response.status} ${response.statusText}`);
       }

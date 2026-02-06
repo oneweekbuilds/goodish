@@ -9,3 +9,5 @@ requests
 google-generativeai
 httpx
 python-dotenv
+pyjwt
+cryptography

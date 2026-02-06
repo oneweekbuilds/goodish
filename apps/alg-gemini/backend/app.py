@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Query, BackgroundTasks
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Query, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 import shutil
@@ -15,8 +15,10 @@ from models import ScanResult  # Keeping for backward compat if needed, but not 
 from unified_scan_models import UnifiedScanResult
 from database import (
     init_database, save_scan, get_all_scans, get_scan_by_id, delete_scan,
-    create_pending_scan, update_scan_result, update_scan_error, get_scan_status
+    create_pending_scan, update_scan_result, update_scan_error, get_scan_status,
+    get_scans_by_user, get_scan_by_id_for_user
 )
+from auth import get_current_user, get_jwt_secret
 from evidence_bundle import (
     build_ads_evidence_bundle,
     generate_ads_analysis_copy,
@@ -56,6 +58,17 @@ app = FastAPI(title="AlgorithmLens Backend")
 @app.on_event("startup")
 def startup_event():
     init_database()
+
+    # Verify JWT secret is set (fail loudly in dev if missing)
+    env = os.getenv("ENV", "").lower()
+    is_dev = env in ("dev", "development", "local", "")
+    if is_dev:
+        try:
+            get_jwt_secret()
+            print("[auth] SUPABASE_JWT_SECRET is set")
+        except RuntimeError as e:
+            print(f"[auth] STARTUP ERROR: {e}")
+            raise
 
 # CORS - dev-only permissive origins
 _env = os.getenv("ENV", "").lower()
@@ -132,14 +145,17 @@ def ocr_status():
 
 
 @app.get("/api/scans/{scan_id}/ocr-diagnostics")
-def get_scan_ocr_diagnostics(scan_id: str):
+def get_scan_ocr_diagnostics(scan_id: str, current_user: dict = Depends(get_current_user)):
     """
     Get OCR diagnostics for a specific scan.
 
     Returns detailed OCR extraction metrics for MOBILE_VIDEO scans.
     Useful for verifying OCR is working correctly.
+
+    Requires: Authorization header with valid Supabase JWT
     """
-    scan = get_scan_by_id(scan_id)
+    user_id = current_user["user_id"]
+    scan = get_scan_by_id_for_user(scan_id, user_id)
     if scan is None:
         raise HTTPException(status_code=404, detail=f"Scan {scan_id} not found")
 
@@ -230,8 +246,8 @@ def _process_video_background(scan_id: str, file_path: str, user_id: str, platfo
 @app.post("/api/scan/upload")
 async def upload_scan(
     file: UploadFile = File(...),
-    userId: str = Form("demo-user"),
-    platform: str = Form("tiktok")
+    platform: str = Form("tiktok"),
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Upload a mobile screen recording for analysis.
@@ -239,11 +255,14 @@ async def upload_scan(
     Returns immediately with scan_id. Processing runs in background.
     Frontend should poll /api/scans/{scan_id} for status.
 
+    Requires: Authorization header with valid Supabase JWT
+
     Returns:
         scan_id: Unique identifier for this scan
         status: 'processing' (will become 'completed' or 'failed')
     """
-    print(f"[upload] Received upload request: file={file.filename}, platform={platform}")
+    user_id = current_user["user_id"]
+    print(f"[upload] Received upload request: file={file.filename}, platform={platform}, user_id={user_id}")
 
     # Generate unique scan_id and filename
     scan_id = str(uuid.uuid4())
@@ -263,14 +282,14 @@ async def upload_scan(
         file_size = os.path.getsize(temp_file_path)
         print(f"[upload] File saved: {file_size} bytes")
 
-        # Create pending scan record in database
-        create_pending_scan(scan_id, platform, userId)
+        # Create pending scan record in database (use authenticated user_id)
+        create_pending_scan(scan_id, platform, user_id)
 
         # Start background processing in a thread
         # Using threading instead of BackgroundTasks because process_video is CPU-bound
         thread = threading.Thread(
             target=_process_video_background,
-            args=(scan_id, temp_file_path, userId, platform),
+            args=(scan_id, temp_file_path, user_id, platform),
             daemon=True
         )
         thread.start()
@@ -300,7 +319,7 @@ async def upload_scan(
 # ============================================
 
 @app.get("/api/scans/{scan_id}/status")
-def get_scan_status_endpoint(scan_id: str):
+def get_scan_status_endpoint(scan_id: str, current_user: dict = Depends(get_current_user)):
     """
     Lightweight status check for scan processing.
 
@@ -312,12 +331,19 @@ def get_scan_status_endpoint(scan_id: str):
         - completed: Analysis finished, result available
         - failed: Processing error occurred
 
+    Requires: Authorization header with valid Supabase JWT
+
     Returns:
         scan_id, status, error_message (if failed), total_items, total_ads
     """
-    status = get_scan_status(scan_id)
-    if status is None:
+    # Verify ownership before returning status
+    user_id = current_user["user_id"]
+    scan = get_scan_by_id_for_user(scan_id, user_id)
+    if scan is None:
         raise HTTPException(status_code=404, detail=f"Scan {scan_id} not found")
+
+    # Return lightweight status (could optimize this to not fetch full scan)
+    status = get_scan_status(scan_id)
     return status
 
 
@@ -326,21 +352,30 @@ def get_scan_status_endpoint(scan_id: str):
 # ============================================
 
 @app.get("/api/scans")
-def list_scans():
+def list_scans(current_user: dict = Depends(get_current_user)):
     """
-    Get list of all past scans (without full result JSON).
+    Get list of scans for the authenticated user (without full result JSON).
     Returns scans sorted by created_at descending (newest first).
+
+    Requires: Authorization header with valid Supabase JWT
     """
-    scans = get_all_scans()
+    user_id = current_user["user_id"]
+    scans = get_scans_by_user(user_id)
     return {"scans": scans}
 
 
 @app.get("/api/scans/{scan_id}")
-def get_scan(scan_id: str):
+def get_scan(scan_id: str, current_user: dict = Depends(get_current_user)):
     """
     Get a single scan by ID, including the full UnifiedScanResult.
+
+    Returns 404 if scan doesn't exist OR doesn't belong to authenticated user.
+    This prevents leaking scan existence to unauthorized users.
+
+    Requires: Authorization header with valid Supabase JWT
     """
-    scan = get_scan_by_id(scan_id)
+    user_id = current_user["user_id"]
+    scan = get_scan_by_id_for_user(scan_id, user_id)
     if scan is None:
         raise HTTPException(status_code=404, detail=f"Scan {scan_id} not found")
     return scan
@@ -362,7 +397,7 @@ def remove_scan(scan_id: str):
 # ============================================
 
 @app.post("/api/scan/desktop")
-async def desktop_scan(scan_result: dict):
+async def desktop_scan(scan_result: dict, current_user: dict = Depends(get_current_user)):
     """
     Receive a desktop extension scan result (UnifiedScanResult) and save it to the database.
 
@@ -377,10 +412,15 @@ async def desktop_scan(scan_result: dict):
         - Also requires GEMINI_API_KEY environment variable to be set
         - If consent not given or key not set, fields remain NOT_ANALYZED/null
 
+    Requires: Authorization header with valid Supabase JWT
+
     Returns:
         Summary with scan_id, created_at, platform, total_items, total_ads, ad_percentage, ai_analyzed
     """
     try:
+        # Get authenticated user_id (override any user_identifier in scan_metadata)
+        user_id = current_user["user_id"]
+
         # Extract consent flag from payload (default: False for safety)
         gemini_consent = scan_result.pop("gemini_consent", False)
 
@@ -388,7 +428,10 @@ async def desktop_scan(scan_result: dict):
         scan_metadata = scan_result.get("scan_metadata", {})
         aggregates = scan_result.get("aggregates", {})
         feed_items = scan_result.get("feed_items", [])
-        
+
+        # Override user_identifier with authenticated user_id
+        scan_metadata["user_identifier"] = user_id
+
         scan_id = scan_metadata.get("scan_id")
         platform = scan_metadata.get("platform", "UNKNOWN")
         payload_size = len(str(scan_result))
@@ -501,7 +544,8 @@ async def desktop_scan(scan_result: dict):
 @app.get("/api/scans/{scan_id}/evidence-bundle/ads")
 def get_ads_evidence_bundle(
     scan_id: str,
-    debug: Optional[bool] = Query(False, description="Include raw bundle in response for debugging")
+    debug: Optional[bool] = Query(False, description="Include raw bundle in response for debugging"),
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Get the Evidence Bundle for the Ads & Influence tab.
@@ -512,11 +556,14 @@ def get_ads_evidence_bundle(
     Query params:
         debug: If true, includes the raw bundle JSON in the response
 
+    Requires: Authorization header with valid Supabase JWT
+
     Returns:
         Evidence Bundle with meta, observations, measurements, limits,
         plus generated analysis copy and Talk response structure.
     """
-    scan = get_scan_by_id(scan_id)
+    user_id = current_user["user_id"]
+    scan = get_scan_by_id_for_user(scan_id, user_id)
     if scan is None:
         raise HTTPException(status_code=404, detail=f"Scan {scan_id} not found")
 
@@ -573,7 +620,7 @@ def get_ads_evidence_bundle(
 
 
 @app.get("/api/scans/{scan_id}/evidence-bundle/ads/debug")
-def get_ads_evidence_bundle_debug(scan_id: str):
+def get_ads_evidence_bundle_debug(scan_id: str, current_user: dict = Depends(get_current_user)):
     """
     Dev-only debug endpoint to inspect bundle computation vs serialization.
     
@@ -587,7 +634,8 @@ def get_ads_evidence_bundle_debug(scan_id: str):
     if env not in ("dev", "development", "local", ""):
         raise HTTPException(status_code=404, detail="Debug endpoint not available")
     
-    scan = get_scan_by_id(scan_id)
+    user_id = current_user["user_id"]
+    scan = get_scan_by_id_for_user(scan_id, user_id)
     if scan is None:
         raise HTTPException(status_code=404, detail=f"Scan {scan_id} not found")
     
@@ -629,7 +677,8 @@ def get_ads_evidence_bundle_debug(scan_id: str):
 @app.post("/api/scans/{scan_id}/talk/ads")
 def talk_to_algorithm_ads(
     scan_id: str,
-    question: str = Form(..., description="The user's question")
+    question: str = Form(..., description="The user's question"),
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Generate a Talk-to-Algorithm response for the Ads & Influence tab.
@@ -643,6 +692,8 @@ def talk_to_algorithm_ads(
     3. What we cannot know (cites limits)
     4. What you can try (2-4 non-judgmental actions)
 
+    Requires: Authorization header with valid Supabase JWT
+
     Args:
         scan_id: The scan ID to generate response for
         question: The user's question
@@ -650,7 +701,8 @@ def talk_to_algorithm_ads(
     Returns:
         Structured response with all four sections
     """
-    scan = get_scan_by_id(scan_id)
+    user_id = current_user["user_id"]
+    scan = get_scan_by_id_for_user(scan_id, user_id)
     if scan is None:
         raise HTTPException(status_code=404, detail=f"Scan {scan_id} not found")
 
@@ -685,7 +737,8 @@ def talk_to_algorithm_ads(
 @app.get("/api/scans/{scan_id}/evidence-bundle/politics")
 def get_politics_evidence_bundle(
     scan_id: str,
-    debug: Optional[bool] = Query(False, description="Include raw bundle in response for debugging")
+    debug: Optional[bool] = Query(False, description="Include raw bundle in response for debugging"),
+    current_user: dict = Depends(get_current_user)
 ):
     """
     Get the Evidence Bundle for the Politics & Worldview tab.
@@ -702,11 +755,14 @@ def get_politics_evidence_bundle(
     Query params:
         debug: If true, includes the raw bundle JSON in the response
 
+    Requires: Authorization header with valid Supabase JWT
+
     Returns:
         Evidence Bundle with meta, observations, measurements, limits,
         plus generated analysis copy.
     """
-    scan = get_scan_by_id(scan_id)
+    user_id = current_user["user_id"]
+    scan = get_scan_by_id_for_user(scan_id, user_id)
     if scan is None:
         raise HTTPException(status_code=404, detail=f"Scan {scan_id} not found")
 
@@ -761,7 +817,8 @@ def talk_to_algorithm_politics(
     Returns:
         Structured response with all four sections
     """
-    scan = get_scan_by_id(scan_id)
+    user_id = current_user["user_id"]
+    scan = get_scan_by_id_for_user(scan_id, user_id)
     if scan is None:
         raise HTTPException(status_code=404, detail=f"Scan {scan_id} not found")
 
@@ -817,7 +874,8 @@ def get_patterns_evidence_bundle(
         Evidence Bundle with meta, observations, measurements, limits,
         plus generated analysis copy.
     """
-    scan = get_scan_by_id(scan_id)
+    user_id = current_user["user_id"]
+    scan = get_scan_by_id_for_user(scan_id, user_id)
     if scan is None:
         raise HTTPException(status_code=404, detail=f"Scan {scan_id} not found")
 
@@ -872,7 +930,8 @@ def talk_to_algorithm_patterns(
     Returns:
         Structured response with all four sections
     """
-    scan = get_scan_by_id(scan_id)
+    user_id = current_user["user_id"]
+    scan = get_scan_by_id_for_user(scan_id, user_id)
     if scan is None:
         raise HTTPException(status_code=404, detail=f"Scan {scan_id} not found")
 
@@ -928,7 +987,8 @@ def get_creators_evidence_bundle(
         Evidence Bundle with meta, observations, measurements, limits,
         plus generated analysis copy.
     """
-    scan = get_scan_by_id(scan_id)
+    user_id = current_user["user_id"]
+    scan = get_scan_by_id_for_user(scan_id, user_id)
     if scan is None:
         raise HTTPException(status_code=404, detail=f"Scan {scan_id} not found")
 
@@ -983,7 +1043,8 @@ def talk_to_algorithm_creators(
     Returns:
         Structured response with all four sections
     """
-    scan = get_scan_by_id(scan_id)
+    user_id = current_user["user_id"]
+    scan = get_scan_by_id_for_user(scan_id, user_id)
     if scan is None:
         raise HTTPException(status_code=404, detail=f"Scan {scan_id} not found")
 
@@ -1043,7 +1104,8 @@ def get_inferences_evidence_bundle(
         measurements (thresholds), limits (epistemic boundaries),
         plus generated analysis copy.
     """
-    scan = get_scan_by_id(scan_id)
+    user_id = current_user["user_id"]
+    scan = get_scan_by_id_for_user(scan_id, user_id)
     if scan is None:
         raise HTTPException(status_code=404, detail=f"Scan {scan_id} not found")
 
@@ -1122,7 +1184,8 @@ def talk_to_algorithm_inferences(
     Returns:
         Structured response with all four sections
     """
-    scan = get_scan_by_id(scan_id)
+    user_id = current_user["user_id"]
+    scan = get_scan_by_id_for_user(scan_id, user_id)
     if scan is None:
         raise HTTPException(status_code=404, detail=f"Scan {scan_id} not found")
 

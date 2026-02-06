@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Loader2, CheckCircle, Circle } from 'lucide-react';
 import { track, EVENTS } from '../lib/analytics';
+import { authenticatedFetch } from '../lib/api/authenticatedFetch';
+import { getApiBaseUrl } from '../lib/apiConfig';
 
 // Processing steps for mobile (video-based) scans
 const PROCESSING_STEPS_MOBILE = [
@@ -34,8 +36,9 @@ const ProcessingPage = () => {
     if (!scanId) return;
 
     const checkScanSource = async () => {
+      const apiBase = getApiBaseUrl();
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/scans/${scanId}`);
+        const response = await authenticatedFetch(`${apiBase}/api/scans/${scanId}`);
         if (response.ok) {
           const data = await response.json();
           const scanData = data.result || data.scan || data;
@@ -77,9 +80,10 @@ const ProcessingPage = () => {
     }
 
     const pollStatus = async () => {
+      const apiBase = getApiBaseUrl();
       try {
         // Use lightweight status endpoint for efficient polling
-        const response = await fetch(`http://127.0.0.1:8000/api/scans/${scanId}/status`);
+        const response = await authenticatedFetch(`${apiBase}/api/scans/${scanId}/status`);
 
         if (!response.ok) {
           if (response.status === 404) {

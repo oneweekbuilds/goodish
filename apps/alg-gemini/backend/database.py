@@ -199,19 +199,22 @@ def get_all_scans() -> List[Dict[str, Any]]:
     Get list of all scans (without full result JSON for efficiency).
     Returns list sorted by created_at descending (newest first).
     Includes source_type extracted from result_json for UI display logic.
+
+    WARNING: This returns ALL scans regardless of user.
+    Use get_scans_by_user() for user-scoped queries.
     """
     conn = get_connection()
     cursor = conn.cursor()
-    
+
     cursor.execute("""
         SELECT id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, result_json
         FROM scans
         ORDER BY created_at DESC
     """)
-    
+
     rows = cursor.fetchall()
     conn.close()
-    
+
     scans = []
     for row in rows:
         # Extract source_type from the stored result JSON
@@ -221,7 +224,7 @@ def get_all_scans() -> List[Dict[str, Any]]:
             source_type = result_data.get("scan_metadata", {}).get("source_type", None)
         except (json.JSONDecodeError, TypeError):
             pass
-        
+
         scans.append({
             "id": row["id"],
             "created_at": row["created_at"],
@@ -233,13 +236,66 @@ def get_all_scans() -> List[Dict[str, Any]]:
             "ad_percentage": row["ad_percentage"],
             "source_type": source_type
         })
-    
+
+    return scans
+
+
+def get_scans_by_user(user_id: str) -> List[Dict[str, Any]]:
+    """
+    Get list of scans for a specific user (without full result JSON for efficiency).
+    Returns list sorted by created_at descending (newest first).
+    Includes source_type extracted from result_json for UI display logic.
+
+    Args:
+        user_id: Supabase user UUID or other user identifier
+
+    Returns:
+        List of scan metadata dicts owned by this user
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, result_json
+        FROM scans
+        WHERE user_id = ?
+        ORDER BY created_at DESC
+    """, (user_id,))
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    scans = []
+    for row in rows:
+        # Extract source_type from the stored result JSON
+        source_type = None
+        try:
+            result_data = json.loads(row["result_json"])
+            source_type = result_data.get("scan_metadata", {}).get("source_type", None)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+        scans.append({
+            "id": row["id"],
+            "created_at": row["created_at"],
+            "platform": row["platform"],
+            "user_id": row["user_id"],
+            "duration_seconds": row["duration_seconds"],
+            "total_items": row["total_items"],
+            "total_ads": row["total_ads"],
+            "ad_percentage": row["ad_percentage"],
+            "source_type": source_type
+        })
+
     return scans
 
 
 def get_scan_by_id(scan_id: str) -> Optional[Dict[str, Any]]:
     """
     Get a single scan by ID, including the full result JSON and status.
+
+    WARNING: This does NOT check user ownership.
+    Use get_scan_by_id_for_user() for user-scoped queries.
     """
     conn = get_connection()
     cursor = conn.cursor()
@@ -249,6 +305,50 @@ def get_scan_by_id(scan_id: str) -> Optional[Dict[str, Any]]:
         FROM scans
         WHERE id = ?
     """, (scan_id,))
+
+    row = cursor.fetchone()
+    conn.close()
+
+    if row is None:
+        return None
+
+    return {
+        "id": row["id"],
+        "created_at": row["created_at"],
+        "platform": row["platform"],
+        "user_id": row["user_id"],
+        "duration_seconds": row["duration_seconds"],
+        "total_items": row["total_items"],
+        "total_ads": row["total_ads"],
+        "ad_percentage": row["ad_percentage"],
+        "status": row["status"] or "completed",
+        "error_message": row["error_message"],
+        "result": json.loads(row["result_json"])
+    }
+
+
+def get_scan_by_id_for_user(scan_id: str, user_id: str) -> Optional[Dict[str, Any]]:
+    """
+    Get a single scan by ID for a specific user, including the full result JSON and status.
+
+    Returns None if scan doesn't exist OR doesn't belong to the user.
+    This prevents leaking scan existence to unauthorized users.
+
+    Args:
+        scan_id: Scan UUID
+        user_id: Supabase user UUID or other user identifier
+
+    Returns:
+        Scan dict with full result, or None if not found/unauthorized
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, status, error_message, result_json
+        FROM scans
+        WHERE id = ? AND user_id = ?
+    """, (scan_id, user_id))
 
     row = cursor.fetchone()
     conn.close()
