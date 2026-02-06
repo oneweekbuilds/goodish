@@ -44,6 +44,15 @@ function safeGetNumber(obj, paths) {
 }
 
 /**
+ * Format a number with thousands separators
+ * @param {number} num - Number to format
+ * @returns {string} Formatted number (e.g., "1,234")
+ */
+function formatNumber(num) {
+  return num.toLocaleString('en-US');
+}
+
+/**
  * Format a percentage delta for display
  * @param {number} baseline - Baseline value (0-100)
  * @param {number} compare - Compare value (0-100)
@@ -58,17 +67,28 @@ function formatPercentageDelta(baseline, compare) {
 }
 
 /**
- * Format an absolute delta for display
+ * Format an absolute delta for display with optional percent change
  * @param {number} baseline - Baseline value
  * @param {number} compare - Compare value
- * @returns {string} Formatted delta (e.g., "+12", "-5", "0")
+ * @param {boolean} showPercentChange - Whether to show percent change
+ * @returns {string} Formatted delta (e.g., "+12 (+15%)", "-5 (-10%)", "0")
  */
-function formatAbsoluteDelta(baseline, compare) {
+function formatAbsoluteDelta(baseline, compare, showPercentChange = false) {
   if (baseline == null || compare == null) return 'N/A';
   const delta = compare - baseline;
   if (delta === 0) return '0';
   const sign = delta > 0 ? '+' : '';
-  return `${sign}${delta}`;
+
+  let result = `${sign}${formatNumber(Math.abs(delta))}`;
+
+  // Add percent change if requested and baseline is not zero
+  if (showPercentChange && baseline !== 0) {
+    const percentChange = ((delta / baseline) * 100);
+    const percentSign = percentChange > 0 ? '+' : '';
+    result += ` (${percentSign}${percentChange.toFixed(1)}%)`;
+  }
+
+  return result;
 }
 
 /**
@@ -123,11 +143,14 @@ export function compareTwoScans(baselineScan, compareScan, scanDetails) {
 
     // Only show if both scans have posts
     if (baselineFeedItems != null && compareFeedItems != null && baselineFeedItems > 0 && compareFeedItems > 0) {
+      const delta = compareFeedItems - baselineFeedItems;
       metrics.push({
         label: 'Total posts',
-        baseline: baselineFeedItems.toString(),
-        compare: compareFeedItems.toString(),
-        delta: formatAbsoluteDelta(baselineFeedItems, compareFeedItems),
+        baseline: formatNumber(baselineFeedItems),
+        compare: formatNumber(compareFeedItems),
+        delta: formatAbsoluteDelta(baselineFeedItems, compareFeedItems, true),
+        absoluteDelta: Math.abs(delta),
+        category: 'feed_makeup',
       });
     }
   } catch (err) {
@@ -144,11 +167,14 @@ export function compareTwoScans(baselineScan, compareScan, scanDetails) {
 
     // Only show if both scans have valid ad data
     if (baselineAds.scansUsed > 0 && compareAds.scansUsed > 0 && baselinePercent != null && comparePercent != null) {
+      const delta = comparePercent - baselinePercent;
       metrics.push({
         label: 'Ad percentage',
-        baseline: `${baselinePercent}%`,
-        compare: `${comparePercent}%`,
+        baseline: `${baselinePercent.toFixed(1)}%`,
+        compare: `${comparePercent.toFixed(1)}%`,
         delta: formatPercentageDelta(baselinePercent, comparePercent),
+        absoluteDelta: Math.abs(delta),
+        category: 'feed_makeup',
       });
     }
   } catch (err) {
@@ -165,11 +191,14 @@ export function compareTwoScans(baselineScan, compareScan, scanDetails) {
 
     // Only show if both scans have valid political data
     if (baselinePolitics.scansUsed > 0 && comparePolitics.scansUsed > 0 && baselinePercent != null && comparePercent != null) {
+      const delta = comparePercent - baselinePercent;
       metrics.push({
         label: 'Political content',
-        baseline: `${baselinePercent}%`,
-        compare: `${comparePercent}%`,
+        baseline: `${baselinePercent.toFixed(1)}%`,
+        compare: `${comparePercent.toFixed(1)}%`,
         delta: formatPercentageDelta(baselinePercent, comparePercent),
+        absoluteDelta: Math.abs(delta),
+        category: 'feed_makeup',
       });
     }
   } catch (err) {
@@ -186,11 +215,14 @@ export function compareTwoScans(baselineScan, compareScan, scanDetails) {
 
     // Only show if both scans have creator data
     if (baselineCount != null && compareCount != null && baselineCount > 0 && compareCount > 0) {
+      const delta = compareCount - baselineCount;
       metrics.push({
         label: 'Unique creators',
-        baseline: baselineCount.toString(),
-        compare: compareCount.toString(),
-        delta: formatAbsoluteDelta(baselineCount, compareCount),
+        baseline: formatNumber(baselineCount),
+        compare: formatNumber(compareCount),
+        delta: formatAbsoluteDelta(baselineCount, compareCount, true),
+        absoluteDelta: Math.abs(delta),
+        category: 'who_what',
       });
     }
   } catch (err) {
@@ -206,11 +238,14 @@ export function compareTwoScans(baselineScan, compareScan, scanDetails) {
     const compareConcentration = calculateCreatorConcentration(compareCreators);
 
     if (baselineConcentration != null && compareConcentration != null) {
+      const delta = compareConcentration - baselineConcentration;
       metrics.push({
         label: 'Top 5 creator share',
-        baseline: `${baselineConcentration}%`,
-        compare: `${compareConcentration}%`,
+        baseline: `${baselineConcentration.toFixed(1)}%`,
+        compare: `${compareConcentration.toFixed(1)}%`,
         delta: formatPercentageDelta(baselineConcentration, compareConcentration),
+        absoluteDelta: Math.abs(delta),
+        category: 'who_what',
       });
     }
   } catch (err) {
@@ -227,11 +262,14 @@ export function compareTwoScans(baselineScan, compareScan, scanDetails) {
 
     // Only show if both scans have source origin data
     if (baselineOrigin.scansUsed > 0 && compareOrigin.scansUsed > 0 && baselinePercent != null && comparePercent != null) {
+      const delta = comparePercent - baselinePercent;
       metrics.push({
         label: 'Suggested content',
-        baseline: `${baselinePercent}%`,
-        compare: `${comparePercent}%`,
+        baseline: `${baselinePercent.toFixed(1)}%`,
+        compare: `${comparePercent.toFixed(1)}%`,
         delta: formatPercentageDelta(baselinePercent, comparePercent),
+        absoluteDelta: Math.abs(delta),
+        category: 'feed_makeup',
       });
     }
   } catch (err) {
@@ -248,11 +286,14 @@ export function compareTwoScans(baselineScan, compareScan, scanDetails) {
 
     // Only show if both scans have topic data
     if (baselineCount != null && compareCount != null && baselineCount > 0 && compareCount > 0) {
+      const delta = compareCount - baselineCount;
       metrics.push({
         label: 'Unique topics',
-        baseline: baselineCount.toString(),
-        compare: compareCount.toString(),
-        delta: formatAbsoluteDelta(baselineCount, compareCount),
+        baseline: formatNumber(baselineCount),
+        compare: formatNumber(compareCount),
+        delta: formatAbsoluteDelta(baselineCount, compareCount, true),
+        absoluteDelta: Math.abs(delta),
+        category: 'who_what',
       });
     }
   } catch (err) {
@@ -269,11 +310,14 @@ export function compareTwoScans(baselineScan, compareScan, scanDetails) {
 
     // Only show if both scans have valid positive tone data
     if (baselineEmotions.scansUsed > 0 && compareEmotions.scansUsed > 0 && baselinePositive != null && comparePositive != null) {
+      const delta = comparePositive - baselinePositive;
       metrics.push({
         label: 'Positive tone',
-        baseline: `${baselinePositive}%`,
-        compare: `${comparePositive}%`,
+        baseline: `${baselinePositive.toFixed(1)}%`,
+        compare: `${comparePositive.toFixed(1)}%`,
         delta: formatPercentageDelta(baselinePositive, comparePositive),
+        absoluteDelta: Math.abs(delta),
+        category: 'who_what',
       });
     }
   } catch (err) {
@@ -290,11 +334,14 @@ export function compareTwoScans(baselineScan, compareScan, scanDetails) {
 
     // Only show if both scans have valid negative tone data
     if (baselineEmotions.scansUsed > 0 && compareEmotions.scansUsed > 0 && baselineNegative != null && compareNegative != null) {
+      const delta = compareNegative - baselineNegative;
       metrics.push({
         label: 'Negative tone',
-        baseline: `${baselineNegative}%`,
-        compare: `${compareNegative}%`,
+        baseline: `${baselineNegative.toFixed(1)}%`,
+        compare: `${compareNegative.toFixed(1)}%`,
         delta: formatPercentageDelta(baselineNegative, compareNegative),
+        absoluteDelta: Math.abs(delta),
+        category: 'who_what',
       });
     }
   } catch (err) {

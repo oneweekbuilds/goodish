@@ -51,12 +51,27 @@ const TrendsPanel = ({ scans, scanDetails, onClose }) => {
     }
 
     try {
-      return compareTwoScans(baselineScan, compareScan, scanDetails);
+      const metrics = compareTwoScans(baselineScan, compareScan, scanDetails);
+
+      // Sort by absolute impact (largest first), with stable order for ties
+      return metrics.sort((a, b) => {
+        const deltaComparison = b.absoluteDelta - a.absoluteDelta;
+        if (deltaComparison !== 0) return deltaComparison;
+        // Stable tie-breaker: maintain original order
+        return 0;
+      });
     } catch (err) {
       console.error('Error comparing scans:', err);
       return [];
     }
   }, [baselineScanId, compareScanId, scans, scanDetails]);
+
+  // Group metrics by category
+  const groupedMetrics = useMemo(() => {
+    const feedMakeup = comparisonMetrics.filter(m => m.category === 'feed_makeup');
+    const whoWhat = comparisonMetrics.filter(m => m.category === 'who_what');
+    return { feedMakeup, whoWhat };
+  }, [comparisonMetrics]);
 
   // Handle Escape key
   useEffect(() => {
@@ -151,11 +166,14 @@ const TrendsPanel = ({ scans, scanDetails, onClose }) => {
           </p>
 
           {/* Scan count status */}
-          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-2">
             <p className="text-sm text-slate-700">
               <span className="font-medium">You currently have {scans.length} saved scan{scans.length !== 1 ? 's' : ''}.</span>
               {' '}
               Comparisons require at least 2 scans.
+            </p>
+            <p className="text-sm text-slate-600">
+              Run and save another scan to enable comparisons.
             </p>
           </div>
         </div>
@@ -207,12 +225,14 @@ const TrendsPanel = ({ scans, scanDetails, onClose }) => {
           {/* Baseline Scan */}
           <div>
             <label htmlFor="baseline-scan" className="block text-xs font-medium text-slate-700 mb-2">
-              Baseline scan
-              {baselineScanId && baselineScanId === getNewerScanId() && (
-                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800">
-                  Newer
-                </span>
-              )}
+              <span className="inline-flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700">Baseline</span>
+                {baselineScanId && baselineScanId === getNewerScanId() && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800">
+                    Newer
+                  </span>
+                )}
+              </span>
             </label>
             <select
               id="baseline-scan"
@@ -232,12 +252,14 @@ const TrendsPanel = ({ scans, scanDetails, onClose }) => {
           {/* Compare Scan */}
           <div>
             <label htmlFor="compare-scan" className="block text-xs font-medium text-slate-700 mb-2">
-              Compare scan
-              {compareScanId && compareScanId === getNewerScanId() && (
-                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800">
-                  Newer
-                </span>
-              )}
+              <span className="inline-flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700">Compare</span>
+                {compareScanId && compareScanId === getNewerScanId() && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800">
+                    Newer
+                  </span>
+                )}
+              </span>
             </label>
             <select
               id="compare-scan"
@@ -262,6 +284,7 @@ const TrendsPanel = ({ scans, scanDetails, onClose }) => {
               onClick={handleSwap}
               className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue/60 focus-visible:ring-offset-2"
               aria-label="Swap baseline and compare scans"
+              title="Swap baseline and compare scans"
             >
               <ArrowLeftRight size={14} />
               Swap scans
@@ -273,42 +296,87 @@ const TrendsPanel = ({ scans, scanDetails, onClose }) => {
       {/* Comparison Results */}
       <div className="min-h-[200px]">
         {comparisonMetrics.length > 0 ? (
-          <div className="space-y-3">
-            <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
-              Comparison Summary
-            </h4>
-            <div className="bg-slate-50 border border-slate-200 rounded-lg overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 bg-slate-100">
-                  <th className="text-left py-2 px-3 font-medium text-slate-700">Metric</th>
-                  <th className="text-right py-2 px-3 font-medium text-slate-700">Baseline</th>
-                  <th className="text-right py-2 px-3 font-medium text-slate-700">Compare</th>
-                  <th className="text-right py-2 px-3 font-medium text-slate-700">Change</th>
-                </tr>
-              </thead>
-              <tbody>
-                {comparisonMetrics.map((metric, index) => (
-                  <tr
-                    key={index}
-                    className={index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}
-                  >
-                    <td className="py-2 px-3 text-slate-900">{metric.label}</td>
-                    <td className="py-2 px-3 text-right text-slate-700 font-mono text-xs">{metric.baseline}</td>
-                    <td className="py-2 px-3 text-right text-slate-700 font-mono text-xs">{metric.compare}</td>
-                    <td className={`py-2 px-3 text-right font-mono text-xs font-medium ${
-                      metric.delta.startsWith('+') ? 'text-emerald-600' :
-                      metric.delta.startsWith('-') ? 'text-red-600' :
-                      'text-slate-500'
-                    }`}>
-                      {metric.delta}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="space-y-4">
+            {/* Feed Makeup Section */}
+            {groupedMetrics.feedMakeup.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+                  Feed makeup
+                </h4>
+                <div className="bg-slate-50 border border-slate-200 rounded-lg overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 bg-slate-100">
+                        <th className="text-left py-2 px-3 font-medium text-slate-700">Metric</th>
+                        <th className="text-right py-2 px-3 font-medium text-slate-700">Baseline</th>
+                        <th className="text-right py-2 px-3 font-medium text-slate-700">Compare</th>
+                        <th className="text-right py-2 px-3 font-medium text-slate-700">Change</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {groupedMetrics.feedMakeup.map((metric, index) => (
+                        <tr
+                          key={index}
+                          className={index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}
+                        >
+                          <td className="py-2 px-3 text-slate-900">{metric.label}</td>
+                          <td className="py-2 px-3 text-right text-slate-700 font-mono text-xs">{metric.baseline}</td>
+                          <td className="py-2 px-3 text-right text-slate-700 font-mono text-xs">{metric.compare}</td>
+                          <td className={`py-2 px-3 text-right font-mono text-xs font-medium ${
+                            metric.delta.startsWith('+') ? 'text-emerald-600' :
+                            metric.delta.startsWith('-') ? 'text-red-600' :
+                            'text-slate-500'
+                          }`}>
+                            {metric.delta}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Who and What Section */}
+            {groupedMetrics.whoWhat.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+                  Who and what you saw
+                </h4>
+                <div className="bg-slate-50 border border-slate-200 rounded-lg overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 bg-slate-100">
+                        <th className="text-left py-2 px-3 font-medium text-slate-700">Metric</th>
+                        <th className="text-right py-2 px-3 font-medium text-slate-700">Baseline</th>
+                        <th className="text-right py-2 px-3 font-medium text-slate-700">Compare</th>
+                        <th className="text-right py-2 px-3 font-medium text-slate-700">Change</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {groupedMetrics.whoWhat.map((metric, index) => (
+                        <tr
+                          key={index}
+                          className={index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}
+                        >
+                          <td className="py-2 px-3 text-slate-900">{metric.label}</td>
+                          <td className="py-2 px-3 text-right text-slate-700 font-mono text-xs">{metric.baseline}</td>
+                          <td className="py-2 px-3 text-right text-slate-700 font-mono text-xs">{metric.compare}</td>
+                          <td className={`py-2 px-3 text-right font-mono text-xs font-medium ${
+                            metric.delta.startsWith('+') ? 'text-emerald-600' :
+                            metric.delta.startsWith('-') ? 'text-red-600' :
+                            'text-slate-500'
+                          }`}>
+                            {metric.delta}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
         ) : baselineScanId && compareScanId && baselineScanId === compareScanId ? (
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
             <p className="text-sm text-amber-800">
@@ -316,9 +384,12 @@ const TrendsPanel = ({ scans, scanDetails, onClose }) => {
             </p>
           </div>
         ) : baselineScanId && compareScanId ? (
-          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-2">
+            <p className="text-sm text-slate-700 font-medium">
+              We could not find overlapping metrics between these two scans yet.
+            </p>
             <p className="text-sm text-slate-600">
-              Loading comparison...
+              Try comparing two more recent scans.
             </p>
           </div>
         ) : (
