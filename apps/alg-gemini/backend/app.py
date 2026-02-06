@@ -19,7 +19,8 @@ from database import (
     init_database, save_scan, get_all_scans, get_scan_by_id, delete_scan,
     create_pending_scan, update_scan_result, update_scan_error, get_scan_status,
     get_scans_by_user, get_scan_by_id_for_user, upsert_subscription,
-    get_subscription_by_user_id, get_subscription_by_customer_id, is_user_plus
+    get_subscription_by_user_id, get_subscription_by_customer_id, is_user_plus,
+    was_stripe_event_processed, mark_stripe_event_processed, get_recent_webhook_events
 )
 from auth import get_current_user, get_jwt_secret
 from evidence_bundle import (
@@ -1342,9 +1343,10 @@ def create_checkout_session(
 @app.post("/api/stripe/webhook")
 async def stripe_webhook(request: Request):
     """
-    Handle Stripe webhook events.
+    Handle Stripe webhook events with idempotency and robust status handling.
 
     Verifies webhook signature and processes subscription events.
+    Deduplicates events, handles out-of-order delivery, and fetches real subscription status.
     No authentication required (signature verification instead).
     """
     payload = await request.body()
@@ -1366,96 +1368,183 @@ async def stripe_webhook(request: Request):
         print("[stripe] Invalid webhook signature")
         raise HTTPException(status_code=400, detail="Invalid signature")
 
+    event_id = event["id"]
     event_type = event["type"]
     data = event["data"]["object"]
 
-    print(f"[stripe] Received webhook: {event_type}")
+    # Check idempotency: if event already processed, return early
+    if was_stripe_event_processed(event_id):
+        print(f"[stripe] Duplicate event {event_id} ({event_type}) - already processed")
+        return {"status": "duplicate_ignored"}
 
-    # Handle checkout.session.completed
-    if event_type == "checkout.session.completed":
-        session = data
-        user_id = session.get("client_reference_id")
-        customer_id = session.get("customer")
-        subscription_id = session.get("subscription")
+    print(f"[stripe] Received webhook: {event_type} ({event_id})")
 
-        if not user_id:
-            print("[stripe] Warning: checkout.session.completed missing client_reference_id")
-            return {"status": "ignored"}
+    try:
+        # Handle checkout.session.completed
+        if event_type == "checkout.session.completed":
+            session = data
+            user_id = session.get("client_reference_id")
+            customer_id = session.get("customer")
+            subscription_id = session.get("subscription")
 
-        # Create initial subscription record
-        upsert_subscription(
-            user_id=user_id,
-            stripe_customer_id=customer_id,
-            stripe_subscription_id=subscription_id,
-            status="trialing",  # Assumes trial is active
-        )
+            if not user_id:
+                print("[stripe] Warning: checkout.session.completed missing client_reference_id")
+                mark_stripe_event_processed(event_id, event_type)
+                return {"status": "ignored"}
 
-        print(f"[stripe] Checkout completed for user {user_id}, subscription {subscription_id}")
+            # Fetch real subscription status from Stripe API
+            if subscription_id:
+                try:
+                    subscription_obj = stripe.Subscription.retrieve(subscription_id)
+                    status = subscription_obj["status"]
+                    trial_end = subscription_obj.get("trial_end")
+                    current_period_end = subscription_obj.get("current_period_end")
 
-    # Handle customer.subscription.updated
-    elif event_type == "customer.subscription.updated":
-        subscription = data
-        subscription_id = subscription["id"]
-        customer_id = subscription["customer"]
-        status = subscription["status"]
-        trial_end = subscription.get("trial_end")
-        current_period_end = subscription.get("current_period_end")
+                    # Determine plan type
+                    plan_type = None
+                    if subscription_obj.get("items") and subscription_obj["items"]["data"]:
+                        price_id = subscription_obj["items"]["data"][0]["price"]["id"]
+                        monthly_price = os.getenv("STRIPE_PRICE_MONTHLY")
+                        annual_price = os.getenv("STRIPE_PRICE_ANNUAL")
+                        if price_id == monthly_price:
+                            plan_type = "monthly"
+                        elif price_id == annual_price:
+                            plan_type = "annual"
 
-        # Lookup user by customer ID
-        sub_record = get_subscription_by_customer_id(customer_id)
-        if not sub_record:
-            print(f"[stripe] Warning: subscription.updated for unknown customer {customer_id}")
-            return {"status": "ignored"}
+                    # Create subscription record with real status
+                    upsert_subscription(
+                        user_id=user_id,
+                        stripe_customer_id=customer_id,
+                        stripe_subscription_id=subscription_id,
+                        status=status,
+                        plan_type=plan_type,
+                        trial_end=trial_end,
+                        current_period_end=current_period_end,
+                    )
 
-        user_id = sub_record["user_id"]
+                    print(f"[stripe] Checkout completed for user {user_id}, subscription {subscription_id}, status={status}")
+                except stripe.error.StripeError as e:
+                    print(f"[stripe] Failed to retrieve subscription {subscription_id}: {e}")
+                    # Fallback: create with minimal data
+                    upsert_subscription(
+                        user_id=user_id,
+                        stripe_customer_id=customer_id,
+                        stripe_subscription_id=subscription_id,
+                    )
+            else:
+                # No subscription ID (one-time payment or incomplete)
+                upsert_subscription(
+                    user_id=user_id,
+                    stripe_customer_id=customer_id,
+                )
 
-        # Determine plan type from subscription items
-        plan_type = None
-        if subscription.get("items") and subscription["items"]["data"]:
-            price_id = subscription["items"]["data"][0]["price"]["id"]
-            monthly_price = os.getenv("STRIPE_PRICE_MONTHLY")
-            annual_price = os.getenv("STRIPE_PRICE_ANNUAL")
-            if price_id == monthly_price:
-                plan_type = "monthly"
-            elif price_id == annual_price:
-                plan_type = "annual"
+        # Handle customer.subscription.updated
+        elif event_type == "customer.subscription.updated":
+            subscription = data
+            subscription_id = subscription["id"]
+            customer_id = subscription["customer"]
+            status = subscription["status"]
+            trial_end = subscription.get("trial_end")
+            current_period_end = subscription.get("current_period_end")
 
-        # Update subscription record
-        upsert_subscription(
-            user_id=user_id,
-            stripe_subscription_id=subscription_id,
-            status=status,
-            plan_type=plan_type,
-            trial_end=trial_end,
-            current_period_end=current_period_end,
-        )
+            # Determine plan type from subscription items
+            plan_type = None
+            if subscription.get("items") and subscription["items"]["data"]:
+                price_id = subscription["items"]["data"][0]["price"]["id"]
+                monthly_price = os.getenv("STRIPE_PRICE_MONTHLY")
+                annual_price = os.getenv("STRIPE_PRICE_ANNUAL")
+                if price_id == monthly_price:
+                    plan_type = "monthly"
+                elif price_id == annual_price:
+                    plan_type = "annual"
 
-        print(f"[stripe] Subscription {subscription_id} updated: status={status}")
+            # Lookup user by customer ID
+            sub_record = get_subscription_by_customer_id(customer_id)
+            if sub_record:
+                user_id = sub_record["user_id"]
+            else:
+                # Out-of-order event: try to get user_id from metadata
+                user_id = None
+                try:
+                    customer_obj = stripe.Customer.retrieve(customer_id)
+                    user_id = customer_obj.get("metadata", {}).get("supabase_user_id")
+                except stripe.error.StripeError:
+                    pass
 
-    # Handle customer.subscription.deleted
-    elif event_type == "customer.subscription.deleted":
-        subscription = data
-        subscription_id = subscription["id"]
-        customer_id = subscription["customer"]
+                if not user_id:
+                    # Try subscription metadata
+                    user_id = subscription.get("metadata", {}).get("supabase_user_id")
 
-        # Lookup user by customer ID
-        sub_record = get_subscription_by_customer_id(customer_id)
-        if not sub_record:
-            print(f"[stripe] Warning: subscription.deleted for unknown customer {customer_id}")
-            return {"status": "ignored"}
+                if not user_id:
+                    print(f"[stripe] Warning: subscription.updated for unmapped customer {customer_id}")
+                    mark_stripe_event_processed(event_id, event_type)
+                    return {"status": "ignored_unmapped_customer"}
 
-        user_id = sub_record["user_id"]
+            # Upsert subscription record (creates if doesn't exist, updates if exists)
+            upsert_subscription(
+                user_id=user_id,
+                stripe_customer_id=customer_id,
+                stripe_subscription_id=subscription_id,
+                status=status,
+                plan_type=plan_type,
+                trial_end=trial_end,
+                current_period_end=current_period_end,
+            )
 
-        # Mark subscription as canceled
-        upsert_subscription(
-            user_id=user_id,
-            stripe_subscription_id=subscription_id,
-            status="canceled",
-        )
+            print(f"[stripe] Subscription {subscription_id} updated: status={status}")
 
-        print(f"[stripe] Subscription {subscription_id} canceled for user {user_id}")
+        # Handle customer.subscription.deleted
+        elif event_type == "customer.subscription.deleted":
+            subscription = data
+            subscription_id = subscription["id"]
+            customer_id = subscription["customer"]
+            current_period_end = subscription.get("current_period_end")
+
+            # Lookup user by customer ID
+            sub_record = get_subscription_by_customer_id(customer_id)
+            if not sub_record:
+                print(f"[stripe] Warning: subscription.deleted for unknown customer {customer_id}")
+                mark_stripe_event_processed(event_id, event_type)
+                return {"status": "ignored"}
+
+            user_id = sub_record["user_id"]
+
+            # Mark subscription as canceled, keep period_end
+            upsert_subscription(
+                user_id=user_id,
+                stripe_subscription_id=subscription_id,
+                status="canceled",
+                current_period_end=current_period_end,
+            )
+
+            print(f"[stripe] Subscription {subscription_id} canceled for user {user_id}")
+
+        # Mark event as processed after successful handling
+        mark_stripe_event_processed(event_id, event_type)
+
+    except Exception as e:
+        print(f"[stripe] Error processing webhook {event_id} ({event_type}): {e}")
+        raise HTTPException(status_code=500, detail="Webhook processing failed")
 
     return {"status": "success"}
+
+
+# Dev diagnostic endpoint for webhook events
+
+@app.get("/api/dev/stripe/webhook-events")
+def get_webhook_events():
+    """
+    Dev-only diagnostic endpoint: shows recent webhook events for debugging.
+    Returns last 50 processed events.
+    """
+    env = os.getenv("ENV", "").lower()
+    is_dev = env in ("dev", "development", "local", "")
+
+    if not is_dev:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    events = get_recent_webhook_events(limit=50)
+    return {"events": events}
 
 
 # User entitlements endpoint

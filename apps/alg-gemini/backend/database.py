@@ -121,6 +121,15 @@ def init_database():
         )
     """)
 
+    # Create stripe_webhook_events table for idempotency
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS stripe_webhook_events (
+            event_id TEXT PRIMARY KEY,
+            event_type TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        )
+    """)
+
     conn.commit()
     conn.close()
     print(f"[database] Initialized database at {DB_PATH}")
@@ -656,4 +665,72 @@ def is_user_plus(user_id: str) -> bool:
 
     status = subscription.get("status")
     return status in ("active", "trialing")
+
+
+# Stripe webhook idempotency functions
+
+def was_stripe_event_processed(event_id: str) -> bool:
+    """
+    Check if a Stripe webhook event has already been processed.
+    Returns True if event_id exists in stripe_webhook_events table.
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT event_id FROM stripe_webhook_events WHERE event_id = ?
+    """, (event_id,))
+
+    exists = cursor.fetchone() is not None
+    conn.close()
+
+    return exists
+
+
+def mark_stripe_event_processed(event_id: str, event_type: str) -> None:
+    """
+    Mark a Stripe webhook event as processed.
+    Inserts event_id, event_type, and current timestamp into stripe_webhook_events table.
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    now = datetime.now().isoformat()
+
+    cursor.execute("""
+        INSERT INTO stripe_webhook_events (event_id, event_type, created_at)
+        VALUES (?, ?, ?)
+    """, (event_id, event_type, now))
+
+    conn.commit()
+    conn.close()
+
+
+def get_recent_webhook_events(limit: int = 50) -> List[Dict[str, Any]]:
+    """
+    Get recent webhook events for debugging/diagnostics.
+    Returns last N events ordered by created_at descending.
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT event_id, event_type, created_at
+        FROM stripe_webhook_events
+        ORDER BY created_at DESC
+        LIMIT ?
+    """, (limit,))
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    events = []
+    for row in rows:
+        events.append({
+            "event_id": row["event_id"],
+            "event_type": row["event_type"],
+            "created_at": row["created_at"]
+        })
+
+    return events
 
