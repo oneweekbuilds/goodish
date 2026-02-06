@@ -7,10 +7,12 @@ import { X, Check } from 'lucide-react';
  * Props:
  * - open: boolean
  * - onClose: callback
- * - onStartTrial: callback when user clicks start trial (later wired to Stripe)
+ * - onStartTrial: callback when user clicks start trial
  * - source: optional metadata string for analytics
+ * - checkoutError: optional error message to display
+ * - isProcessing: optional boolean to show loading state
  */
-const PaywallModal = ({ open, onClose, onStartTrial, source }) => {
+const PaywallModal = ({ open, onClose, onStartTrial, source, checkoutError, isProcessing }) => {
   const [billingCycle, setBillingCycle] = useState('annual');
   const modalRef = useRef(null);
   const previousActiveElement = useRef(null);
@@ -245,17 +247,26 @@ const PaywallModal = ({ open, onClose, onStartTrial, source }) => {
             </p>
           </div>
 
+          {/* Error message */}
+          {checkoutError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-sm text-red-700">{checkoutError}</p>
+            </div>
+          )}
+
           {/* CTA buttons */}
           <div className="flex flex-col gap-3">
             <button
               onClick={handleStartTrial}
-              className="w-full py-3 px-6 bg-primary-blue text-white rounded-full font-semibold text-base hover:bg-blue-700 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue/60 focus-visible:ring-offset-2"
+              disabled={isProcessing}
+              className="w-full py-3 px-6 bg-primary-blue text-white rounded-full font-semibold text-base hover:bg-blue-700 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue/60 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Start 14-day free trial
+              {isProcessing ? 'Loading...' : 'Start 14-day free trial'}
             </button>
             <button
               onClick={onClose}
-              className="w-full py-3 px-6 bg-white text-slate-600 rounded-full font-medium text-base hover:bg-slate-50 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:ring-offset-2"
+              disabled={isProcessing}
+              className="w-full py-3 px-6 bg-white text-slate-600 rounded-full font-medium text-base hover:bg-slate-50 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Not now
             </button>

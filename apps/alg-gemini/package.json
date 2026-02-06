@@ -14,6 +14,7 @@
     "test:smoke:ui": "playwright test tests/dashboard-smoke.spec.js --ui"
   },
   "dependencies": {
+    "@stripe/stripe-js": "^2.0.0",
     "@supabase/supabase-js": "^2.95.3",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.24",

@@ -1,8 +1,12 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { loadStripe } from '@stripe/stripe-js';
 import PaywallModal from '../../components/plan/PaywallModal';
 import { track } from '../analytics/analyticsClient';
 import { EVENTS } from '../analytics/events';
 import { getCurrentPlanTier } from './planTier';
+import { authenticatedFetch, isUnauthorized } from '../api/authenticatedFetch';
+import { getApiBaseUrl } from '../apiConfig';
 
 /**
  * PaywallProvider - Global PaywallModal management
@@ -26,8 +30,11 @@ import { getCurrentPlanTier } from './planTier';
 const PaywallContext = createContext(null);
 
 export const PaywallProvider = ({ children }) => {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [source, setSource] = useState('');
+  const [checkoutError, setCheckoutError] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const paywallViewedRef = useRef(false);
 
   // Check for demo mode
@@ -43,18 +50,95 @@ export const PaywallProvider = ({ children }) => {
   const openPaywall = useCallback((sourceString) => {
     setSource(sourceString || '');
     setIsOpen(true);
+    setCheckoutError(null); // Reset error when opening
   }, []);
 
   const closePaywall = useCallback(() => {
     setIsOpen(false);
     setSource('');
+    setCheckoutError(null);
+    setIsProcessing(false);
   }, []);
 
-  const handleStartTrial = useCallback((params) => {
-    // Placeholder for future Stripe integration
-    console.log('Trial started:', params);
-    closePaywall();
-  }, [closePaywall]);
+  const handleStartTrial = useCallback(async (params) => {
+    const { billingCycle } = params;
+
+    // Demo mode: show message, don't call Stripe
+    if (isDemoMode) {
+      setCheckoutError('Checkout is disabled in demo mode.');
+      return;
+    }
+
+    setIsProcessing(true);
+    setCheckoutError(null);
+
+    try {
+      // Get Stripe publishable key
+      const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+      if (!stripePublishableKey) {
+        setCheckoutError('Stripe is not configured. Please contact support.');
+        setIsProcessing(false);
+        return;
+      }
+
+      // Call backend to create checkout session
+      const apiBase = getApiBaseUrl();
+      const response = await authenticatedFetch(`${apiBase}/api/stripe/create-checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          billingCycle,
+          successUrl: `${window.location.origin}/dashboard?checkout=success`,
+          cancelUrl: `${window.location.origin}/plus?checkout=canceled`,
+        }),
+      });
+
+      // Handle 401 Unauthorized
+      if (isUnauthorized(response)) {
+        closePaywall();
+        navigate('/dashboard');
+        return;
+      }
+
+      // Handle other errors
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        setCheckoutError(errorData.detail || 'Failed to start checkout. Please try again.');
+        setIsProcessing(false);
+        return;
+      }
+
+      // Parse response
+      const data = await response.json();
+      const { sessionId } = data;
+
+      if (!sessionId) {
+        setCheckoutError('Invalid checkout session. Please try again.');
+        setIsProcessing(false);
+        return;
+      }
+
+      // Redirect to Stripe Checkout
+      const stripe = await loadStripe(stripePublishableKey);
+      if (!stripe) {
+        setCheckoutError('Failed to load Stripe. Please refresh and try again.');
+        setIsProcessing(false);
+        return;
+      }
+
+      const { error } = await stripe.redirectToCheckout({ sessionId });
+      if (error) {
+        setCheckoutError(error.message || 'Failed to redirect to checkout. Please try again.');
+        setIsProcessing(false);
+      }
+      // If redirect succeeds, user leaves the page (no need to update state)
+
+    } catch (err) {
+      console.error('Checkout error:', err);
+      setCheckoutError('An unexpected error occurred. Please try again.');
+      setIsProcessing(false);
+    }
+  }, [isDemoMode, closePaywall, navigate]);
 
   // Track paywall viewed when modal opens (fire once per session, skip in demo mode)
   useEffect(() => {
@@ -81,11 +165,14 @@ export const PaywallProvider = ({ children }) => {
         onClose={closePaywall}
         onStartTrial={handleStartTrial}
         source={source}
+        checkoutError={checkoutError}
+        isProcessing={isProcessing}
       />
     </PaywallContext.Provider>
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const usePaywall = () => {
   const context = useContext(PaywallContext);
   if (!context) {
