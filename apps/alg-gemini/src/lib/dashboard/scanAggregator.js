@@ -45,6 +45,41 @@ function getFeedItems(scanDetail) {
 }
 
 /**
+ * Round percentages and adjust to ensure they sum to exactly 100
+ * @param {number[]} rawPercentages - Array of raw percentage values
+ * @param {number[]} counts - Array of counts corresponding to each percentage (to determine largest bucket)
+ * @returns {number[]} Array of rounded percentages that sum to 100
+ */
+function roundPercentagesToSum100(rawPercentages, counts) {
+  // Round each percentage
+  const rounded = rawPercentages.map(p => Math.round(p));
+
+  // Calculate sum
+  const sum = rounded.reduce((a, b) => a + b, 0);
+
+  // If sum is already 100, we're done
+  if (sum === 100) {
+    return rounded;
+  }
+
+  // Find index of largest bucket by count
+  let largestIndex = 0;
+  let largestCount = counts[0];
+  for (let i = 1; i < counts.length; i++) {
+    if (counts[i] > largestCount) {
+      largestCount = counts[i];
+      largestIndex = i;
+    }
+  }
+
+  // Adjust largest bucket to make sum = 100
+  const diff = 100 - sum;
+  rounded[largestIndex] += diff;
+
+  return rounded;
+}
+
+/**
  * Extract scan metadata
  */
 function getScanMeta(scanDetail) {
@@ -1805,12 +1840,20 @@ export function aggregateAiDisclosures(scans, scanDetails) {
     };
 
     // Round and adjust to ensure sum = 100
-    const rounded = roundPercentagesToSum100([
-      rawPercentages.both,
-      rawPercentages.c2paOnly,
-      rawPercentages.aiOnly,
-      rawPercentages.none,
-    ]);
+    const rounded = roundPercentagesToSum100(
+      [
+        rawPercentages.both,
+        rawPercentages.c2paOnly,
+        rawPercentages.aiOnly,
+        rawPercentages.none,
+      ],
+      [
+        result.buckets.both,
+        result.buckets.c2paOnly,
+        result.buckets.aiOnly,
+        result.buckets.none,
+      ]
+    );
 
     result.percentages = {
       both: rounded[0],
