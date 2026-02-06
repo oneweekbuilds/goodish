@@ -15,7 +15,8 @@ import * as dataHelpers from '../../lib/dashboard/dataHelpers';
 import { isHeadlineExcludedLabel } from '../../lib/dashboard/headlineSafety';
 import { submitWaitlistEmail } from '../../lib/waitlist/submitWaitlistEmail';
 import { getCurrentPlanTier, PLAN_TIERS, isAnon } from '../../lib/plan';
-import { LockedOverlayCard, PaywallModal } from '../../components/plan';
+import { LockedOverlayCard } from '../../components/plan';
+import { usePaywall } from '../../lib/plan/PaywallProvider';
 import { ResultsGate } from '../../components/auth';
 import { useAuth } from '../../lib/auth/useAuth';
 import { track, EVENTS } from '../../lib/analytics';
@@ -1963,10 +1964,8 @@ const DashboardPage = () => {
     [isDemoMode, searchParams]
   );
 
-  // Paywall modal state (for demo preview and later gating flows)
-  const [paywallModalOpen, setPaywallModalOpen] = useState(false);
-  const [paywallSource, setPaywallSource] = useState('');
-  const paywallViewedRef = React.useRef(false);
+  // Paywall modal management (global via PaywallProvider)
+  const { openPaywall } = usePaywall();
 
   // Trends panel state (which tab has trends panel open)
   const [trendsOpenTab, setTrendsOpenTab] = useState(null);
@@ -1991,27 +1990,9 @@ const DashboardPage = () => {
       setTrendsOpenTab(trendsOpenTab === tab ? null : tab);
     } else {
       // Free users: open paywall modal
-      setPaywallSource(`${tab}_${placement}`);
-      setPaywallModalOpen(true);
+      openPaywall(`${tab}_${placement}`);
     }
   };
-
-  // Track paywall viewed when modal opens (fire once per session, skip in demo mode)
-  useEffect(() => {
-    if (paywallModalOpen && !isDemoMode && paywallSource && !paywallViewedRef.current) {
-      track(EVENTS.PAYWALL_VIEWED, {
-        source: paywallSource,
-        planTier,
-        isDemo: false,
-      });
-      paywallViewedRef.current = true;
-    }
-
-    // Reset the ref when modal closes
-    if (!paywallModalOpen && paywallViewedRef.current) {
-      paywallViewedRef.current = false;
-    }
-  }, [paywallModalOpen, isDemoMode, paywallSource, planTier]);
 
   // Close trends panel when switching tabs
   useEffect(() => {
@@ -2720,7 +2701,7 @@ const DashboardPage = () => {
               title="Trends over time"
               body="Your snapshot is free. Plus adds trends, changes, and explanations across scans."
               ctaLabel="Start Plus free trial"
-              onUpgrade={() => setPaywallModalOpen(true)}
+              onUpgrade={() => openPaywall('demo_preview')}
             >
               <div className="bg-white border border-slate-200 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-3">
@@ -2738,7 +2719,7 @@ const DashboardPage = () => {
             {/* Button to test modal */}
             <div className="mt-4 text-center">
               <button
-                onClick={() => setPaywallModalOpen(true)}
+                onClick={() => openPaywall('demo_preview')}
                 className="text-sm text-primary-blue hover:underline"
               >
                 Open Paywall Modal (test)
@@ -2746,21 +2727,6 @@ const DashboardPage = () => {
             </div>
           </div>
         )}
-
-        {/* Paywall Modal (globally available) */}
-        <PaywallModal
-          open={paywallModalOpen}
-          onClose={() => {
-            setPaywallModalOpen(false);
-            setPaywallSource('');
-          }}
-          onStartTrial={(params) => {
-            console.log('Trial started (demo):', params);
-            setPaywallModalOpen(false);
-            setPaywallSource('');
-          }}
-          source={paywallSource || 'demo_preview'}
-        />
 
         {/* Phase 8: Minimal footer - Softer, less competing */}
         <div className="text-center py-4 mt-6">

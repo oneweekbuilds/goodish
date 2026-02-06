@@ -23,9 +23,15 @@ import HistoryPage from './pages/HistoryPage';
 // Dashboard
 import DashboardPage from './pages/dashboard/DashboardPage';
 
+// Plus page
+import PlusPage from './pages/plus/PlusPage';
+
 // Auth
 import AuthCallbackPage from './pages/auth/AuthCallbackPage';
 import { AuthProvider } from './lib/auth';
+
+// Plan
+import { PaywallProvider } from './lib/plan/PaywallProvider';
 
 // Dev pages
 import EventsDebugPage from './pages/dev/EventsDebugPage';
@@ -66,7 +72,8 @@ function App() {
 
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-bg-page font-sans text-text-main selection:bg-primary-blue/20">
+      <PaywallProvider>
+        <div className="min-h-screen bg-bg-page font-sans text-text-main selection:bg-primary-blue/20">
         {/* Coming Soon Banner - Only shows when Coming Soon mode is enabled */}
         {comingSoonMode && <ComingSoonBanner />}
 
@@ -185,6 +192,9 @@ function App() {
           {/* Dashboard - catalog-driven analytics views */}
           <Route path="/dashboard" element={<DashboardPage />} />
 
+          {/* Plus page - conversion-optimized upgrade page */}
+          <Route path="/plus" element={<PlusPage />} />
+
           {/* ========================================
               AUTH ROUTES
               ======================================== */}
@@ -225,7 +235,8 @@ function App() {
             </p>
           </div>
         </footer>
-      </div>
+        </div>
+      </PaywallProvider>
     </AuthProvider>
   );
 }
