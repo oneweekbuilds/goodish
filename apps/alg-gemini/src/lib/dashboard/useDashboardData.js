@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000';
+import { getApiBaseUrl } from '../apiConfig';
 
 /**
  * Custom hook to fetch and process scan data for the dashboard.
@@ -18,12 +17,14 @@ export function useDashboardData(options = {}) {
   const [allScans, setAllScans] = useState([]); // Unfiltered scans from API
   const [scanDetails, setScanDetails] = useState({}); // Map of scanId -> detail
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(null); // null | 'network' | 'other'
+  const [errorMessage, setErrorMessage] = useState(null); // Detailed error for debugging
 
   // Fetch scan list
   const fetchScans = useCallback(async () => {
+    const apiBase = getApiBaseUrl();
     try {
-      const response = await fetch(`${API_BASE}/api/scans`);
+      const response = await fetch(`${apiBase}/api/scans`);
       if (!response.ok) {
         throw new Error(`Failed to fetch scans: ${response.status} ${response.statusText}`);
       }
@@ -33,17 +34,19 @@ export function useDashboardData(options = {}) {
       scanList.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       setAllScans(scanList);
       setError(null);
+      setErrorMessage(null);
       return scanList;
     } catch (err) {
       console.error('Error fetching scans:', err);
-      // Improve error message for network failures (Failed to fetch, TypeError from fetch, etc.)
+      // Classify error type for better UI handling
       const isNetworkError = err.message === 'Failed to fetch' ||
         (typeof err.message === 'string' && err.message.toLowerCase().includes('fetch') && (err.name === 'TypeError' || err.name === 'DOMException'));
       if (isNetworkError) {
-        const friendlyError = `Couldn't reach the AlgorithmLens API at ${API_BASE}. Start the backend: cd apps/alg-gemini/backend && python -m uvicorn app:app --reload --port 8000`;
-        setError(friendlyError);
+        setError('network');
+        setErrorMessage(`Could not reach API at ${apiBase}`);
       } else {
-        setError(err.message);
+        setError('other');
+        setErrorMessage(err.message);
       }
       return [];
     }
@@ -55,8 +58,9 @@ export function useDashboardData(options = {}) {
       return scanDetails[scanId];
     }
 
+    const apiBase = getApiBaseUrl();
     try {
-      const response = await fetch(`${API_BASE}/api/scans/${scanId}`);
+      const response = await fetch(`${apiBase}/api/scans/${scanId}`);
       if (!response.ok) {
         throw new Error(`Failed to fetch scan ${scanId}: ${response.status} ${response.statusText}`);
       }
@@ -193,7 +197,8 @@ export function useDashboardData(options = {}) {
     allScans, // Unfiltered scans (for reference)
     scanDetails,
     loading,
-    error,
+    error, // null | 'network' | 'other'
+    errorMessage, // Detailed error message for debugging
     fetchScans,
     fetchScanDetail,
     fetchAllScanDetails,

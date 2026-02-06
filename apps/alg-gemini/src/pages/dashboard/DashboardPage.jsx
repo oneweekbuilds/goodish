@@ -1970,6 +1970,7 @@ const DashboardPage = () => {
     scanDetails,
     loading,
     error,
+    errorMessage,
     fetchScans,
     fetchAllScanDetails,
     hasScans,
@@ -2148,31 +2149,75 @@ const DashboardPage = () => {
     );
   }
 
-  // Error state
-  if (error) {
-    // Check if this is a backend connection error
-    const isBackendError = error.includes("Couldn't reach the AlgorithmLens API") || 
-                          error.includes("fetch") || 
-                          error.includes("Failed to fetch");
-    
+  // Error state - show calm empty state for network errors, loud error for other errors
+  if (error && !isDemoMode) {
+    const isNetworkError = error === 'network';
+
+    // For network errors, show a calm empty state with troubleshooting section
+    if (isNetworkError) {
+      return (
+        <div className="min-h-screen bg-bg-page pt-24 md:pt-28 pb-16 px-4 md:px-6">
+          <div className="max-w-2xl mx-auto px-6">
+            <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-12 text-center">
+              <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <BarChart3 size={40} className="text-slate-400" />
+              </div>
+              <h1 className="text-2xl font-bold text-text-main mb-2">No Scans Yet</h1>
+              <p className="text-text-muted mb-8 max-w-md mx-auto">
+                Run your first scan to see insights about your social media feeds.
+                The dashboard will populate as you scan different platforms.
+              </p>
+              <Link
+                to="/start"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-primary-blue text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl mb-8"
+              >
+                Start Your First Scan
+              </Link>
+
+              {/* Troubleshooting section (collapsed by default) */}
+              <details className="mt-8 text-left max-w-lg mx-auto">
+                <summary className="text-sm text-slate-500 cursor-pointer hover:text-slate-700 mb-2">
+                  Troubleshooting: Backend not responding
+                </summary>
+                <div className="mt-3 p-4 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-600 space-y-2">
+                  <p>
+                    If you have scans but they are not showing, the backend server may not be running.
+                  </p>
+                  <p className="font-mono text-xs bg-white p-2 rounded border border-slate-200">
+                    cd apps/alg-gemini/backend && python -m uvicorn app:app --reload --port 8000
+                  </p>
+                  <button
+                    onClick={() => {
+                      setDetailsLoaded(false);
+                      fetchScans();
+                    }}
+                    className="mt-3 px-4 py-2 bg-slate-600 text-white rounded-lg text-sm font-medium hover:bg-slate-700 transition-colors"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // For other errors, show a clear error message
     return (
       <div className="min-h-screen bg-bg-page pt-24 md:pt-28 pb-16 px-4 md:px-6">
         <div className="max-w-2xl mx-auto px-6">
-          <div className={`${isBackendError ? 'bg-slate-50 border border-slate-200' : 'bg-red-50 border border-red-200'} rounded-xl p-8 text-center`}>
-            <h2 className={`text-xl font-bold mb-2 ${isBackendError ? 'text-slate-800' : 'text-red-800'}`}>
-              {isBackendError ? 'Backend Not Available' : 'Error Loading Dashboard'}
+          <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
+            <h2 className="text-xl font-bold mb-2 text-red-800">
+              Error Loading Dashboard
             </h2>
-            <p className={`mb-6 ${isBackendError ? 'text-slate-600' : 'text-red-600'}`}>{error}</p>
+            <p className="mb-6 text-red-600">{errorMessage || 'An unexpected error occurred'}</p>
             <button
               onClick={() => {
                 setDetailsLoaded(false);
                 fetchScans();
               }}
-              className={`px-6 py-3 rounded-xl font-semibold transition-colors ${
-                isBackendError 
-                  ? 'bg-slate-600 text-white hover:bg-slate-700' 
-                  : 'bg-red-600 text-white hover:bg-red-700'
-              }`}
+              className="px-6 py-3 rounded-xl font-semibold transition-colors bg-red-600 text-white hover:bg-red-700"
             >
               Try Again
             </button>
