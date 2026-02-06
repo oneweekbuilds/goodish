@@ -13,6 +13,7 @@ import {
   ChevronUp
 } from 'lucide-react';
 import PlatformBadge, { getPlatformConfig } from '../components/PlatformBadge';
+import { track, EVENTS } from '../lib/analytics';
 
 // Platform display names
 const PLATFORM_NAMES = {
@@ -135,6 +136,13 @@ const ScanPlatformPage = () => {
 
     setUploading(true);
     setUploadError(null);
+
+    // Track scan started
+    track(EVENTS.SCAN_STARTED, {
+      platform,
+      fileSize: file.size,
+      fileType: file.type,
+    });
 
     const formData = new FormData();
     formData.append('file', file);

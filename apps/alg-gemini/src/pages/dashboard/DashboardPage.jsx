@@ -18,6 +18,7 @@ import { getCurrentPlanTier, PLAN_TIERS, isAnon } from '../../lib/plan';
 import { LockedOverlayCard, PaywallModal } from '../../components/plan';
 import { ResultsGate } from '../../components/auth';
 import { useAuth } from '../../lib/auth/useAuth';
+import { track, EVENTS } from '../../lib/analytics';
 
 /**
  * THEME CONSTANTS - Part 1 Color System
@@ -2009,6 +2010,30 @@ const DashboardPage = () => {
   // Wait for authReady to avoid flash during initial auth check
   const shouldShowGate = !isDemoMode && authReady && isAnon(planTier) && resultsReady;
 
+  // Analytics: Track gate shown and results viewed (fire once each)
+  const gateShownFired = React.useRef(false);
+  const resultsViewedFired = React.useRef(false);
+
+  // Fire results_gate_shown once when gate becomes visible
+  useEffect(() => {
+    if (shouldShowGate && !gateShownFired.current && !isDemoMode) {
+      track(EVENTS.RESULTS_GATE_SHOWN, {
+        scanCount: scans.length,
+      });
+      gateShownFired.current = true;
+    }
+  }, [shouldShowGate, isDemoMode, scans.length]);
+
+  // Fire results_viewed once when results become visible
+  useEffect(() => {
+    if (resultsReady && !shouldShowGate && !resultsViewedFired.current && !isDemoMode) {
+      track(EVENTS.RESULTS_VIEWED, {
+        scanCount: scans.length,
+      });
+      resultsViewedFired.current = true;
+    }
+  }, [resultsReady, shouldShowGate, isDemoMode, scans.length]);
+
   // Track which scan details we've loaded
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [detailsLoaded, setDetailsLoaded] = useState(false);
@@ -2286,7 +2311,7 @@ const DashboardPage = () => {
   return (
     <div className="bg-bg-page pt-24 md:pt-28 pb-6 px-4 md:px-6">
       {/* Results gate overlay for anonymous users */}
-      {shouldShowGate && <ResultsGate />}
+      {shouldShowGate && <ResultsGate scanCount={scans.length} />}
 
       <div className="max-w-7xl mx-auto px-6">
         {/* Page Header - reduced on Algorithm tab to let hero be the star */}

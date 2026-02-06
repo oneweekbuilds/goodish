@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Loader2, CheckCircle, Circle } from 'lucide-react';
+import { track, EVENTS } from '../lib/analytics';
 
 // Processing steps for mobile (video-based) scans
 const PROCESSING_STEPS_MOBILE = [
@@ -95,6 +96,13 @@ const ProcessingPage = () => {
         // Check if scan is complete (status field is authoritative)
         if (data.status === 'completed') {
           console.log('[ProcessingPage] Scan completed, navigating to results');
+
+          // Track scan completion
+          track(EVENTS.SCAN_COMPLETE, {
+            scanId,
+            pollCount,
+          });
+
           navigate(`/scan/results/${scanId}`);
           return;
         }

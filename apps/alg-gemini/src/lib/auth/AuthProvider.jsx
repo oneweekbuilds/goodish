@@ -1,6 +1,7 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useRef } from 'react';
 import { getSession, onAuthStateChange, sendMagicLink as sendMagicLinkHelper, signOut as signOutHelper } from './authSession';
 import { setStoredPlanTier, getStoredPlanTier, PLAN_TIERS } from '../plan';
+import { track, EVENTS } from '../analytics';
 
 /**
  * AuthProvider - Manages auth session and syncs plan tier
@@ -30,6 +31,7 @@ export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   const [user, setUser] = useState(null);
   const [authReady, setAuthReady] = useState(false);
+  const prevSessionRef = useRef(null);
 
   // Initialize session and subscribe to auth changes
   useEffect(() => {
@@ -52,8 +54,27 @@ export const AuthProvider = ({ children }) => {
 
     // Subscribe to auth state changes
     const { data: { subscription } } = onAuthStateChange((_event, newSession) => {
+      const prevSession = prevSessionRef.current;
+
       setSession(newSession);
       setUser(newSession?.user || null);
+
+      // Track login success (only when transitioning from no session to session)
+      if (!prevSession && newSession) {
+        // Check if not in demo mode
+        const isDemoMode = typeof window !== 'undefined'
+          ? new URLSearchParams(window.location.search).get('demo') === '1'
+          : false;
+
+        if (!isDemoMode) {
+          track(EVENTS.LOGIN_SUCCESS, {
+            userId: newSession.user?.id || null,
+          });
+        }
+      }
+
+      // Update ref for next comparison
+      prevSessionRef.current = newSession;
 
       // Sync plan tier when auth state changes
       syncPlanTier(newSession);

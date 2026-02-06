@@ -27,6 +27,9 @@ import DashboardPage from './pages/dashboard/DashboardPage';
 import AuthCallbackPage from './pages/auth/AuthCallbackPage';
 import { AuthProvider } from './lib/auth';
 
+// Dev pages
+import EventsDebugPage from './pages/dev/EventsDebugPage';
+
 // Coming Soon Mode - Minimal Overlay
 import { isComingSoon } from './config/comingSoon';
 import ComingSoonBanner from './components/ComingSoonBanner';
@@ -201,6 +204,13 @@ function App() {
 
           {/* INTERNAL TEST ROUTE */}
           <Route path="/scan-test" element={<ScanTestPage />} />
+
+          {/* ========================================
+              DEV ROUTES
+              ======================================== */}
+
+          {/* Analytics event viewer (dev only) */}
+          <Route path="/dev/events" element={<EventsDebugPage />} />
         </Routes>
       </main>
 

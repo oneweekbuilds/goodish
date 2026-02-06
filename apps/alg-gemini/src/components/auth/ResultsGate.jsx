@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Lock, Mail, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../lib/auth/useAuth';
+import { track, extractEmailDomain, EVENTS } from '../../lib/analytics';
 
 /**
  * ResultsGate - Email capture gate for anonymous users
@@ -15,8 +16,11 @@ import { useAuth } from '../../lib/auth/useAuth';
  * - sending: sending magic link
  * - sent: confirmation (email sent successfully)
  * - error: show error, allow retry
+ *
+ * Props:
+ * - scanCount: number of scans (for analytics)
  */
-const ResultsGate = () => {
+const ResultsGate = ({ scanCount = 0 }) => {
   const { sendMagicLink } = useAuth();
   const [email, setEmail] = useState('');
   const [state, setState] = useState('idle'); // idle | sending | sent | error
@@ -44,6 +48,13 @@ const ResultsGate = () => {
     setState('sending');
     setError(null);
 
+    // Track email submission (before sending link)
+    const emailDomain = extractEmailDomain(email);
+    track(EVENTS.EMAIL_SUBMITTED, {
+      emailDomain,
+      scanCount,
+    });
+
     // Store email in localStorage
     try {
       localStorage.setItem('alg_pending_email', email);
@@ -59,6 +70,13 @@ const ResultsGate = () => {
       setError(magicLinkError.message || 'Failed to send sign-in link');
       return;
     }
+
+    // Track successful magic link send
+    track(EVENTS.MAGIC_LINK_SENT, {
+      emailDomain,
+      redirectTo: '/auth/callback',
+      scanCount,
+    });
 
     // Success
     setState('sent');
