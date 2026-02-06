@@ -316,17 +316,14 @@ const OverviewTab = ({ scans, scanDetails }) => {
 
         {aiDisclosureData.hasEnoughData ? (
           <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-3">
-            <p className="text-sm text-slate-600 leading-relaxed">
-              This shows explicit platform disclosure signals found in your feed — AI labels or Content Credentials
-              that platforms added to indicate AI-generated content. This is <strong>not</strong> AI detection;
-              it only reports what platforms explicitly disclose.
+            {/* Data-grounded headline */}
+            <p className="text-sm font-medium text-slate-700">
+              {aiDisclosureData.rawCounts.aiLabelPresent + aiDisclosureData.rawCounts.c2paPresent > 0
+                ? `AI disclosures were observed on ${Math.round(((aiDisclosureData.rawCounts.aiLabelPresent + aiDisclosureData.rawCounts.c2paPresent) / aiDisclosureData.totalVisualPosts) * 100)}% of visual posts`
+                : `No AI disclosures were observed in these scans`}
             </p>
 
             <CompositionBar100WithCounts segments={aiDisclosureData.segments} />
-
-            <p className="text-xs text-slate-500 italic mt-2">
-              Each segment shows what percentage of visual posts have platform disclosure signals.
-            </p>
 
             <div className="mt-3">
               <DenominatorLine text={`Based on ${aiDisclosureData.totalVisualPosts} visual posts`} />
@@ -334,17 +331,24 @@ const OverviewTab = ({ scans, scanDetails }) => {
 
             <div className="mt-4 pt-3 border-t border-slate-100 space-y-2">
               <p className="text-xs font-medium text-slate-700">
-                What this measures
+                What this means
               </p>
               <p className="text-xs text-slate-600 leading-relaxed">
-                <strong>C2PA indicator observed:</strong> On-screen text mentioning Content Credentials or C2PA detected in video scans. This does NOT verify cryptographic signatures - it only reports visible text.
-                <br />
-                <strong>Platform labeled AI:</strong> On-screen text matching known platform AI disclosure phrases (Instagram "Made with AI", TikTok "AI generated", etc.) detected via OCR.
-                <br />
-                <strong>No disclosure observed:</strong> Visual posts without detectable disclosure text in OCR.
+                We only report AI labels and Content Credentials that platforms explicitly disclose. Lack of disclosure is itself meaningful: most platforms do not require creators to label AI-generated content, so many AI-made visuals have no label at all.
               </p>
-              <p className="text-xs text-slate-500 leading-relaxed mt-2">
-                <strong>Important:</strong> This is OCR-based text detection from mobile video scans, not metadata extraction or cryptographic verification. Absence of disclosure does not mean content is NOT AI-generated. Many platforms do not require AI labeling.
+
+              <p className="text-xs font-medium text-slate-700 mt-3">
+                Why you should care
+              </p>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Platform disclosures help you understand what content creators and platforms are choosing to label as AI-generated. The absence of labels tells you how rare transparency is, not that content is authentic.
+              </p>
+
+              <p className="text-xs font-medium text-slate-700 mt-3">
+                How this works
+              </p>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Captured from on-screen text in mobile video scans using platform-specific phrase matching. This is not AI detection or cryptographic verification. Posts with both an AI label and a Content Credentials indicator are counted in the Content Credentials segment.
               </p>
             </div>
           </div>

@@ -1849,15 +1849,30 @@ export function aggregateAiDisclosures(scans, scanDetails) {
   // Require at least 20 visual posts for reliable analysis
   result.hasEnoughData = result.totalVisualPosts >= 20;
 
-  // Dev-only validation log (only runs in non-production builds)
+  // Dev-only validation log (only runs in non-production builds, once per page load)
+  // Skip in demo mode since demo data already has self-check logging
   if (process.env.NODE_ENV !== 'production' && result.totalVisualPosts > 0) {
-    console.info('[AI Disclosure Validation]', {
-      totalVisualPosts: result.totalVisualPosts,
-      rawCounts: result.rawCounts,
-      buckets: result.buckets,
-      percentages: result.percentages,
-      scansUsed: result.scansUsed,
-    });
+    // Initialize global guard if not exists
+    if (!globalThis.__AL_AI_DISCLOSURE_LOGGED__) {
+      globalThis.__AL_AI_DISCLOSURE_LOGGED__ = false;
+    }
+
+    // Log once per page load only (not on every render/aggregation)
+    if (!globalThis.__AL_AI_DISCLOSURE_LOGGED__) {
+      // Check if this is demo mode by looking for demo scan IDs
+      const isDemoMode = scans.length > 0 && scans[0].id?.startsWith('demo-');
+
+      if (!isDemoMode) {
+        console.info('[AI Disclosure Validation]', {
+          totalVisualPosts: result.totalVisualPosts,
+          rawCounts: result.rawCounts,
+          buckets: result.buckets,
+          percentages: result.percentages,
+          scansUsed: result.scansUsed,
+        });
+        globalThis.__AL_AI_DISCLOSURE_LOGGED__ = true;
+      }
+    }
   }
 
   return result;
