@@ -14,8 +14,9 @@ import { generateDemoData } from '../../lib/dashboard/demoData';
 import * as dataHelpers from '../../lib/dashboard/dataHelpers';
 import { isHeadlineExcludedLabel } from '../../lib/dashboard/headlineSafety';
 import { submitWaitlistEmail } from '../../lib/waitlist/submitWaitlistEmail';
-import { getCurrentPlanTier, PLAN_TIERS } from '../../lib/plan';
+import { getCurrentPlanTier, PLAN_TIERS, isAnon } from '../../lib/plan';
 import { LockedOverlayCard, PaywallModal } from '../../components/plan';
+import { ResultsGate } from '../../components/auth';
 
 /**
  * THEME CONSTANTS - Part 1 Color System
@@ -1996,6 +1997,20 @@ const DashboardPage = () => {
   // Calculate remaining scans for free tier quota
   const remainingScans = Math.max(0, 5 - scans.length);
 
+  // Results ready state: used for gating anonymous users
+  // Results are ready when we have scans loaded, no loading state, and no error
+  const resultsReady = !loading && !error && scans.length > 0;
+
+  // Gate anonymous users from viewing results until they provide email
+  const shouldShowGate = !isDemoMode && isAnon(planTier) && resultsReady;
+
+  // Email submission handler (for ResultsGate)
+  const handleEmailSubmit = async ({ email, wantsUpdates }) => {
+    // Store email for future use (magic link will be sent in Prompt 4)
+    console.log('[ResultsGate] Email captured:', email, 'Updates:', wantsUpdates);
+    // In Prompt 4, this will trigger magic link sending
+  };
+
   // Track which scan details we've loaded
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [detailsLoaded, setDetailsLoaded] = useState(false);
@@ -2272,6 +2287,9 @@ const DashboardPage = () => {
 
   return (
     <div className="bg-bg-page pt-24 md:pt-28 pb-6 px-4 md:px-6">
+      {/* Results gate overlay for anonymous users */}
+      {shouldShowGate && <ResultsGate onEmailSubmit={handleEmailSubmit} />}
+
       <div className="max-w-7xl mx-auto px-6">
         {/* Page Header - reduced on Algorithm tab to let hero be the star */}
         <div className={`flex flex-col md:flex-row md:items-center md:justify-between gap-4 ${isOnAlgorithmTab ? 'mb-4' : 'mb-8'}`}>
