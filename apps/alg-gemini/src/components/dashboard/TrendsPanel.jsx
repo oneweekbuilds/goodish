@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { TrendingUp, X } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { TrendingUp, X, ArrowLeftRight } from 'lucide-react';
 import { compareTwoScans } from '../../lib/dashboard/trendsComparison';
 
 /**
@@ -16,43 +16,45 @@ import { compareTwoScans } from '../../lib/dashboard/trendsComparison';
 const TrendsPanel = ({ scans, scanDetails, onClose }) => {
   const [baselineScanId, setBaselineScanId] = useState(null);
   const [compareScanId, setCompareScanId] = useState(null);
-  const [comparisonMetrics, setComparisonMetrics] = useState([]);
+  const [isAutoSelected, setIsAutoSelected] = useState(false);
+  const hasAutoSelected = useRef(false);
 
   // Auto-select most recent two scans on mount
   useEffect(() => {
-    if (scans.length >= 2) {
+    if (scans.length >= 2 && !hasAutoSelected.current && !baselineScanId && !compareScanId) {
       // scans should already be sorted by date descending
-      setCompareScanId(scans[0].id); // Most recent
-      setBaselineScanId(scans[1].id); // Second most recent
+      hasAutoSelected.current = true;
+      // Use queueMicrotask to avoid synchronous setState in effect
+      queueMicrotask(() => {
+        setCompareScanId(scans[0].id); // Most recent
+        setBaselineScanId(scans[1].id); // Second most recent
+        setIsAutoSelected(true);
+      });
     }
-  }, [scans]);
+  }, [scans, baselineScanId, compareScanId]);
 
-  // Calculate comparison when both scans selected
-  useEffect(() => {
+  // Calculate comparison when both scans selected (using useMemo for derived state)
+  const comparisonMetrics = useMemo(() => {
     if (!baselineScanId || !compareScanId) {
-      setComparisonMetrics([]);
-      return;
+      return [];
     }
 
     if (baselineScanId === compareScanId) {
-      setComparisonMetrics([]);
-      return;
+      return [];
     }
 
     const baselineScan = scans.find(s => s.id === baselineScanId);
     const compareScan = scans.find(s => s.id === compareScanId);
 
     if (!baselineScan || !compareScan) {
-      setComparisonMetrics([]);
-      return;
+      return [];
     }
 
     try {
-      const metrics = compareTwoScans(baselineScan, compareScan, scanDetails);
-      setComparisonMetrics(metrics);
+      return compareTwoScans(baselineScan, compareScan, scanDetails);
     } catch (err) {
       console.error('Error comparing scans:', err);
-      setComparisonMetrics([]);
+      return [];
     }
   }, [baselineScanId, compareScanId, scans, scanDetails]);
 
@@ -67,6 +69,38 @@ const TrendsPanel = ({ scans, scanDetails, onClose }) => {
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [onClose]);
+
+  // Handle swap button
+  const handleSwap = () => {
+    const temp = baselineScanId;
+    setBaselineScanId(compareScanId);
+    setCompareScanId(temp);
+    setIsAutoSelected(false); // User manually changed selection
+  };
+
+  // Handle manual scan selection
+  const handleBaselineChange = (scanId) => {
+    setBaselineScanId(scanId);
+    setIsAutoSelected(false);
+  };
+
+  const handleCompareChange = (scanId) => {
+    setCompareScanId(scanId);
+    setIsAutoSelected(false);
+  };
+
+  // Determine which scan is newer
+  const getNewerScanId = () => {
+    if (!baselineScanId || !compareScanId) return null;
+    const baselineScan = scans.find(s => s.id === baselineScanId);
+    const compareScan = scans.find(s => s.id === compareScanId);
+    if (!baselineScan || !compareScan) return null;
+
+    const baselineDate = new Date(baselineScan.created_at);
+    const compareDate = new Date(compareScan.created_at);
+
+    return compareDate > baselineDate ? compareScanId : baselineScanId;
+  };
 
   // Format scan label for dropdown
   const formatScanLabel = (scan) => {
@@ -158,56 +192,92 @@ const TrendsPanel = ({ scans, scanDetails, onClose }) => {
         Compare how key metrics changed between two saved scans.
       </p>
 
-      {/* Scan Selectors */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Baseline Scan */}
-        <div>
-          <label htmlFor="baseline-scan" className="block text-xs font-medium text-slate-700 mb-2">
-            Baseline scan
-          </label>
-          <select
-            id="baseline-scan"
-            value={baselineScanId || ''}
-            onChange={(e) => setBaselineScanId(e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/60 focus:border-primary-blue"
-          >
-            <option value="">Select baseline...</option>
-            {scans.map(scan => (
-              <option key={scan.id} value={scan.id}>
-                {formatScanLabel(scan)}
-              </option>
-            ))}
-          </select>
+      {/* Auto-select helper text */}
+      {isAutoSelected && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+          <p className="text-xs text-blue-700">
+            Auto-selected your two most recent scans.
+          </p>
+        </div>
+      )}
+
+      {/* Scan Selectors with Swap Button */}
+      <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+          {/* Baseline Scan */}
+          <div>
+            <label htmlFor="baseline-scan" className="block text-xs font-medium text-slate-700 mb-2">
+              Baseline scan
+              {baselineScanId && baselineScanId === getNewerScanId() && (
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800">
+                  Newer
+                </span>
+              )}
+            </label>
+            <select
+              id="baseline-scan"
+              value={baselineScanId || ''}
+              onChange={(e) => handleBaselineChange(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/60 focus:border-primary-blue"
+            >
+              <option value="">Select baseline...</option>
+              {scans.map(scan => (
+                <option key={scan.id} value={scan.id}>
+                  {formatScanLabel(scan)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Compare Scan */}
+          <div>
+            <label htmlFor="compare-scan" className="block text-xs font-medium text-slate-700 mb-2">
+              Compare scan
+              {compareScanId && compareScanId === getNewerScanId() && (
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800">
+                  Newer
+                </span>
+              )}
+            </label>
+            <select
+              id="compare-scan"
+              value={compareScanId || ''}
+              onChange={(e) => handleCompareChange(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/60 focus:border-primary-blue"
+            >
+              <option value="">Select compare...</option>
+              {scans.map(scan => (
+                <option key={scan.id} value={scan.id}>
+                  {formatScanLabel(scan)}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        {/* Compare Scan */}
-        <div>
-          <label htmlFor="compare-scan" className="block text-xs font-medium text-slate-700 mb-2">
-            Compare scan
-          </label>
-          <select
-            id="compare-scan"
-            value={compareScanId || ''}
-            onChange={(e) => setCompareScanId(e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/60 focus:border-primary-blue"
-          >
-            <option value="">Select compare...</option>
-            {scans.map(scan => (
-              <option key={scan.id} value={scan.id}>
-                {formatScanLabel(scan)}
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* Swap Button */}
+        {baselineScanId && compareScanId && baselineScanId !== compareScanId && (
+          <div className="flex justify-center">
+            <button
+              onClick={handleSwap}
+              className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue/60 focus-visible:ring-offset-2"
+              aria-label="Swap baseline and compare scans"
+            >
+              <ArrowLeftRight size={14} />
+              Swap scans
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Comparison Results */}
-      {comparisonMetrics.length > 0 ? (
-        <div className="space-y-3">
-          <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
-            Comparison Summary
-          </h4>
-          <div className="bg-slate-50 border border-slate-200 rounded-lg overflow-hidden">
+      <div className="min-h-[200px]">
+        {comparisonMetrics.length > 0 ? (
+          <div className="space-y-3">
+            <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+              Comparison Summary
+            </h4>
+            <div className="bg-slate-50 border border-slate-200 rounded-lg overflow-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-100">
@@ -239,25 +309,26 @@ const TrendsPanel = ({ scans, scanDetails, onClose }) => {
             </table>
           </div>
         </div>
-      ) : baselineScanId && compareScanId && baselineScanId === compareScanId ? (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <p className="text-sm text-amber-800">
-            Please select two different scans to compare.
-          </p>
-        </div>
-      ) : baselineScanId && compareScanId ? (
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-          <p className="text-sm text-slate-600">
-            Loading comparison...
-          </p>
-        </div>
-      ) : (
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-          <p className="text-sm text-slate-600">
-            Select two scans above to see the comparison.
-          </p>
-        </div>
-      )}
+        ) : baselineScanId && compareScanId && baselineScanId === compareScanId ? (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <p className="text-sm text-amber-800">
+              Please select two different scans to compare.
+            </p>
+          </div>
+        ) : baselineScanId && compareScanId ? (
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+            <p className="text-sm text-slate-600">
+              Loading comparison...
+            </p>
+          </div>
+        ) : (
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+            <p className="text-sm text-slate-600">
+              Select two scans above to see the comparison.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
