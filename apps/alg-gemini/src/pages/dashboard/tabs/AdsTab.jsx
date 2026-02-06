@@ -21,6 +21,64 @@ const getFeedItems = (scanDetail) => {
 };
 
 /**
+ * Generate plain-English summary bullets for ads
+ * @param {Object} params
+ * @returns {Array<string>} Array of summary bullets
+ */
+function generateAdsSummary({
+  labeledAds,
+  totalPosts,
+  topAdvertisers,
+}) {
+  const summaries = [];
+
+  // Edge case: no ads detected
+  if (labeledAds === 0) {
+    summaries.push('No ad content was detected in this scan.');
+    return summaries;
+  }
+
+  const adPercent = (labeledAds / totalPosts) * 100;
+
+  // Edge case: very low ad share (< 1%)
+  if (adPercent < 1) {
+    summaries.push('Very little ad content appeared in this scan.');
+    summaries.push(`You saw ${labeledAds} ad post${labeledAds !== 1 ? 's' : ''}.`);
+    return summaries;
+  }
+
+  // 1. Overall presence bullet
+  summaries.push(
+    `Ad content made up ${adPercent.toFixed(1)}% of posts in this scan.`
+  );
+
+  // 2. Volume bullet
+  summaries.push(
+    `You saw ${labeledAds.toLocaleString('en-US')} ad post${labeledAds !== 1 ? 's' : ''}.`
+  );
+
+  // 3. Optional composition bullet (advertiser diversity)
+  if (topAdvertisers.hasData && topAdvertisers.advertisers.length > 0) {
+    const uniqueAdvertiserCount = topAdvertisers.advertisers.length;
+    const topAdvertiserPercent = topAdvertisers.advertisers[0].percent;
+
+    // Check if ads are concentrated (top advertiser has > 40% of ads)
+    if (topAdvertiserPercent > 40) {
+      summaries.push(
+        `Most ad posts came from ${topAdvertisers.advertisers[0].name} (${topAdvertiserPercent}% of ads).`
+      );
+    } else if (uniqueAdvertiserCount >= 5) {
+      // Wide range of advertisers (at least 5 in top list)
+      summaries.push(
+        'Ad posts came from a wide range of advertisers.'
+      );
+    }
+  }
+
+  return summaries;
+}
+
+/**
  * AdsTab - Tab 3 of locked spec
  *
  * Provides commercial content analysis with:
@@ -146,6 +204,16 @@ const AdsTab = ({
   };
 
   const topAdvertisers = computeTopAdvertisers();
+
+  // ===========================================
+  // GENERATE ADS SUMMARY
+  // ===========================================
+
+  const adsSummary = generateAdsSummary({
+    labeledAds: influenceData.labeledAds || 0,
+    totalPosts,
+    topAdvertisers,
+  });
 
   // ===========================================
   // SECTION 3.3 - Top Advertised Product Types
@@ -423,6 +491,29 @@ const AdsTab = ({
           scanDetails={scanDetails}
           onClose={onCloseTrendsPanel}
         />
+      )}
+
+      {/* Ads Summary */}
+      {adsSummary.length > 0 && (
+        <section>
+          <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-3">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 mb-1">
+                Ads summary
+              </h3>
+              <p className="text-xs text-slate-500">
+                Based on posts in this scan.
+              </p>
+            </div>
+            <ul className="space-y-2 text-sm text-slate-700" role="list">
+              {adsSummary.map((summary, index) => (
+                <li key={index} className="leading-relaxed">
+                  • {summary}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
       )}
 
       {/* Section 3.1 - Commercial Composition */}
