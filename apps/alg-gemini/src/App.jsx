@@ -35,6 +35,7 @@ import { PaywallProvider } from './lib/plan/PaywallProvider';
 
 // Dev pages
 import EventsDebugPage from './pages/dev/EventsDebugPage';
+import EntitlementsDebugPage from './pages/dev/EntitlementsDebugPage';
 
 // Coming Soon Mode - Minimal Overlay
 import { isComingSoon } from './config/comingSoon';
@@ -221,6 +222,9 @@ function App() {
 
           {/* Analytics event viewer (dev only) */}
           <Route path="/dev/events" element={<EventsDebugPage />} />
+
+          {/* Entitlements debug viewer (dev only) */}
+          <Route path="/dev/entitlements" element={<EntitlementsDebugPage />} />
         </Routes>
       </main>
 

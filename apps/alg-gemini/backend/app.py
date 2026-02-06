@@ -1547,6 +1547,39 @@ def get_webhook_events():
     return {"events": events}
 
 
+@app.get("/api/dev/subscription")
+def get_dev_subscription(current_user: dict = Depends(get_current_user)):
+    """
+    Dev-only diagnostic endpoint: shows subscription details for authenticated user.
+    Returns sanitized subscription fields (no Stripe IDs).
+    Requires authentication.
+    """
+    env = os.getenv("ENV", "").lower()
+    is_dev = env in ("dev", "development", "local", "")
+
+    if not is_dev:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    user_id = current_user["user_id"]
+    subscription = get_subscription_by_user_id(user_id)
+
+    if not subscription:
+        return {
+            "status": None,
+            "plan_type": None,
+            "trial_end": None,
+            "current_period_end": None
+        }
+
+    # Return sanitized data (no Stripe IDs)
+    return {
+        "status": subscription.get("status"),
+        "plan_type": subscription.get("plan_type"),
+        "trial_end": subscription.get("trial_end"),
+        "current_period_end": subscription.get("current_period_end")
+    }
+
+
 # User entitlements endpoint
 
 @app.get("/api/user/entitlements")

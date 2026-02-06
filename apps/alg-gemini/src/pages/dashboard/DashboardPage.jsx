@@ -2078,31 +2078,54 @@ const DashboardPage = () => {
     }
 
     const syncEntitlements = async () => {
-      try {
-        const entitlements = await fetchEntitlements();
+      // Poll with backoff: 1s, 2s, 4s, 6s, 8s, 9s (up to 6 attempts over ~30s)
+      const delays = [1000, 2000, 4000, 6000, 8000, 9000];
+      let attempt = 0;
 
-        if (!entitlements) {
-          // 401 Unauthorized - user is not logged in (should not happen here since authReady=true)
+      const tryFetch = async () => {
+        try {
+          const entitlements = await fetchEntitlements();
+
+          if (!entitlements) {
+            // 401 Unauthorized - user is not logged in
+            setCheckoutSuccess('error');
+            setCheckoutErrorMessage('Please sign in to complete checkout.');
+            return true; // Stop polling
+          }
+
+          if (entitlements.is_plus) {
+            // Success! User is now Plus
+            setStoredPlanTier(PLAN_TIERS.PLUS);
+            setCheckoutSuccess('plus_unlocked');
+            return true; // Stop polling
+          }
+
+          // Not plus yet
+          attempt++;
+
+          if (attempt < delays.length) {
+            // Schedule next poll
+            setTimeout(tryFetch, delays[attempt]);
+            return false; // Continue polling
+          } else {
+            // Max attempts reached, show pending with refresh option
+            setCheckoutSuccess('pending');
+            return true; // Stop polling
+          }
+
+        } catch (err) {
+          console.error('Failed to sync entitlements:', err);
           setCheckoutSuccess('error');
-          setCheckoutErrorMessage('Please sign in to complete checkout.');
-          return;
+          setCheckoutErrorMessage(typeof err === 'string' ? err : 'Unable to verify subscription. Please refresh.');
+          return true; // Stop polling on error
         }
+      };
 
-        if (entitlements.is_plus) {
-          // Success! User is now Plus
-          setStoredPlanTier(PLAN_TIERS.PLUS);
-          setCheckoutSuccess('plus_unlocked');
-        } else {
-          // Checkout completed but Plus not active yet (rare edge case)
-          setCheckoutSuccess('pending');
-        }
+      // Start first attempt
+      const shouldStop = await tryFetch();
 
-      } catch (err) {
-        console.error('Failed to sync entitlements:', err);
-        setCheckoutSuccess('error');
-        setCheckoutErrorMessage(typeof err === 'string' ? err : 'Unable to verify subscription. Please refresh.');
-      } finally {
-        // Always strip checkout param after handling
+      // Strip checkout param after first attempt (regardless of result)
+      if (shouldStop || attempt === 0) {
         params.delete('checkout');
         const newSearch = params.toString();
         navigate({
@@ -2463,7 +2486,23 @@ const DashboardPage = () => {
           <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
             <Sparkles size={20} className="text-blue-600 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm text-blue-900">Checkout completed, but Plus is not active yet. Refresh in a moment.</p>
+              <p className="text-sm text-blue-900 mb-2">Checkout completed, but Plus is not active yet. Refresh in a moment.</p>
+              <button
+                onClick={async () => {
+                  try {
+                    const entitlements = await fetchEntitlements();
+                    if (entitlements && entitlements.is_plus) {
+                      setStoredPlanTier(PLAN_TIERS.PLUS);
+                      setCheckoutSuccess('plus_unlocked');
+                    }
+                  } catch (err) {
+                    console.error('Refresh failed:', err);
+                  }
+                }}
+                className="text-xs text-blue-700 hover:text-blue-800 underline"
+              >
+                Refresh now
+              </button>
             </div>
             <button
               onClick={() => setCheckoutSuccess(null)}
