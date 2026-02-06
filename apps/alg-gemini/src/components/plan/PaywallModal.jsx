@@ -78,6 +78,9 @@ const PaywallModal = ({ open, onClose, onStartTrial, source }) => {
     }
   };
 
+  // Detect if this paywall was opened from a Trends CTA
+  const isTrendsSource = source && source.includes('_hero_trends');
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
@@ -106,10 +109,57 @@ const PaywallModal = ({ open, onClose, onStartTrial, source }) => {
 
         {/* Content */}
         <div className="px-6 py-6 space-y-6">
-          {/* Promise sentence */}
-          <p className="text-lg text-slate-700 leading-relaxed">
-            See how your feed changes over time, what shifted, and why it likely happened.
-          </p>
+          {/* Promise sentence - Trends-specific or generic */}
+          {isTrendsSource ? (
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold text-slate-900">
+                See how your feed changes over time
+              </h3>
+              <ul className="space-y-2 text-sm text-slate-700">
+                <li className="flex items-start gap-2">
+                  <Check size={18} className="text-primary-blue mt-0.5 flex-shrink-0" />
+                  <span>Compare two saved scans side by side</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check size={18} className="text-primary-blue mt-0.5 flex-shrink-0" />
+                  <span>See what changed between scans</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check size={18} className="text-primary-blue mt-0.5 flex-shrink-0" />
+                  <span>Track shifts in ads, topics, and sources over time</span>
+                </li>
+              </ul>
+
+              {/* Label-only preview */}
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-2">
+                <p className="text-xs font-medium text-slate-600 mb-3">
+                  What you'd see with Trends
+                </p>
+                <div className="space-y-1.5" role="presentation" aria-hidden="true">
+                  <div className="flex items-center justify-between text-xs text-slate-400 py-1.5 px-2 bg-white/50 rounded">
+                    <span>Total posts</span>
+                    <span className="text-[10px] italic">(locked)</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-slate-400 py-1.5 px-2 bg-white/50 rounded">
+                    <span>Ad content share</span>
+                    <span className="text-[10px] italic">(locked)</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-slate-400 py-1.5 px-2 bg-white/50 rounded">
+                    <span>Political content share</span>
+                    <span className="text-[10px] italic">(locked)</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-slate-400 py-1.5 px-2 bg-white/50 rounded">
+                    <span>Unique creators</span>
+                    <span className="text-[10px] italic">(locked)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-lg text-slate-700 leading-relaxed">
+              See how your feed changes over time, what shifted, and why it likely happened.
+            </p>
+          )}
 
           {/* Billing cycle toggle */}
           <div className="flex justify-center">
