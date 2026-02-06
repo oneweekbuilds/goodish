@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, X, TrendingUp, Sparkles } from 'lucide-react';
 import { usePaywall } from '../../lib/plan/PaywallProvider';
@@ -32,6 +32,22 @@ const PlusPage = () => {
     () => getCurrentPlanTier(isDemoMode, searchParams),
     [isDemoMode, searchParams]
   );
+
+  // Checkout canceled state - initialize from URL param
+  const [checkoutCanceled, setCheckoutCanceled] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('checkout') === 'canceled';
+  });
+
+  // Strip checkout param from URL on mount if present
+  useEffect(() => {
+    if (checkoutCanceled) {
+      const params = new URLSearchParams(window.location.search);
+      params.delete('checkout');
+      const newSearch = params.toString();
+      navigate({ search: newSearch ? `?${newSearch}` : '' }, { replace: true });
+    }
+  }, [checkoutCanceled, navigate]);
 
   // Track page view (optional, not required in spec but useful)
   useEffect(() => {
@@ -184,6 +200,24 @@ const PlusPage = () => {
               <p className="text-sm text-slate-500">Cancel anytime</p>
             </div>
           </div>
+
+          {/* Checkout canceled message */}
+          {checkoutCanceled && (
+            <div className="mb-6 bg-slate-50 border border-slate-200 rounded-lg p-4 flex items-start gap-3">
+              <div className="flex-1">
+                <p className="text-sm text-slate-700">
+                  Checkout canceled. You can try again anytime.
+                </p>
+              </div>
+              <button
+                onClick={() => setCheckoutCanceled(false)}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+                aria-label="Dismiss"
+              >
+                <X size={18} />
+              </button>
+            </div>
+          )}
 
           {/* CTA buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

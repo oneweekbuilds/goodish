@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { Loader2, RefreshCw, BarChart3, Clock, Globe, Database, ChevronDown, ChevronUp, Compass, RefreshCcw, Lock, Sparkles, ExternalLink, ShieldCheck, MessageSquare, EyeOff } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Loader2, RefreshCw, BarChart3, Clock, Globe, Database, ChevronDown, ChevronUp, Compass, RefreshCcw, Lock, Sparkles, ExternalLink, ShieldCheck, MessageSquare, EyeOff, CheckCircle, X } from 'lucide-react';
 import { TABS, getViewsForTab, getVisibleViewCount, EMPTY_STATE_TYPES, TAB_TRUST_SENTENCES } from './dashboardCatalog';
 import ViewCard from '../../components/dashboard/ViewCard';
 import OverviewTab from './tabs/OverviewTab';
@@ -14,13 +14,14 @@ import { generateDemoData } from '../../lib/dashboard/demoData';
 import * as dataHelpers from '../../lib/dashboard/dataHelpers';
 import { isHeadlineExcludedLabel } from '../../lib/dashboard/headlineSafety';
 import { submitWaitlistEmail } from '../../lib/waitlist/submitWaitlistEmail';
-import { getCurrentPlanTier, PLAN_TIERS, isAnon } from '../../lib/plan';
+import { getCurrentPlanTier, PLAN_TIERS, isAnon, setStoredPlanTier } from '../../lib/plan';
 import { LockedOverlayCard } from '../../components/plan';
 import { usePaywall } from '../../lib/plan/PaywallProvider';
 import { ResultsGate } from '../../components/auth';
 import SignInPrompt from '../../components/auth/SignInPrompt';
 import { useAuth } from '../../lib/auth/useAuth';
 import { track, EVENTS } from '../../lib/analytics';
+import { fetchEntitlements } from '../../lib/plan/entitlements';
 
 /**
  * THEME CONSTANTS - Part 1 Color System
@@ -1851,16 +1852,22 @@ const TalkTabPanel = () => {
 };
 
 const DashboardPage = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(TABS[0].id);
   // PHASE 6A: Political leaning toggle state (default OFF)
   // Slice 2: Hero evidence expansion state (per-tab + per-hero-view)
   const [heroEvidenceExpanded, setHeroEvidenceExpanded] = useState({});
-  
+
   // Premium gating placeholder, wire to real auth later
   const isPremiumUser = false;
 
   // User tier (hardcoded for now, will be wired to real auth later)
   const userTier = 'free';
+
+  // Checkout success state
+  const [checkoutSuccess, setCheckoutSuccess] = useState(null); // 'plus_unlocked' | 'pending' | 'error' | null
+  const [checkoutErrorMessage, setCheckoutErrorMessage] = useState(null);
+  const checkoutSyncedRef = useRef(false); // Guard to run once per page load
 
   // Global filter state (for premium users)
   const [platformFilter, setPlatformFilter] = useState('all');
@@ -2037,6 +2044,60 @@ const DashboardPage = () => {
 
   // Get auth state
   const { authReady } = useAuth();
+
+  // Handle checkout success: sync entitlements when returning from Stripe
+  useEffect(() => {
+    // Only run once per page load, when auth is ready, and checkout=success is present
+    if (checkoutSyncedRef.current || !authReady || isDemoMode) {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const hasCheckoutSuccess = params.get('checkout') === 'success';
+
+    if (!hasCheckoutSuccess) {
+      return;
+    }
+
+    // Mark as synced to prevent re-running
+    checkoutSyncedRef.current = true;
+
+    const syncEntitlements = async () => {
+      try {
+        const entitlements = await fetchEntitlements();
+
+        if (!entitlements) {
+          // 401 Unauthorized - user is not logged in (should not happen here since authReady=true)
+          setCheckoutSuccess('error');
+          setCheckoutErrorMessage('Please sign in to complete checkout.');
+          return;
+        }
+
+        if (entitlements.is_plus) {
+          // Success! User is now Plus
+          setStoredPlanTier(PLAN_TIERS.PLUS);
+          setCheckoutSuccess('plus_unlocked');
+        } else {
+          // Checkout completed but Plus not active yet (rare edge case)
+          setCheckoutSuccess('pending');
+        }
+
+      } catch (err) {
+        console.error('Failed to sync entitlements:', err);
+        setCheckoutSuccess('error');
+        setCheckoutErrorMessage(typeof err === 'string' ? err : 'Unable to verify subscription. Please refresh.');
+      } finally {
+        // Always strip checkout param after handling
+        params.delete('checkout');
+        const newSearch = params.toString();
+        navigate({
+          search: newSearch ? `?${newSearch}` : '',
+        }, { replace: true });
+      }
+    };
+
+    syncEntitlements();
+  }, [authReady, isDemoMode, navigate]);
 
   // Results ready state: used for gating anonymous users
   // Results are ready when we have scans loaded, no loading state, and no error
@@ -2366,6 +2427,55 @@ const DashboardPage = () => {
       {shouldShowGate && <ResultsGate scanCount={scans.length} />}
 
       <div className="max-w-7xl mx-auto px-6">
+        {/* Checkout success banner */}
+        {checkoutSuccess === 'plus_unlocked' && (
+          <div className="mb-6 bg-emerald-50 border border-emerald-200 rounded-lg p-4 flex items-start gap-3">
+            <CheckCircle size={20} className="text-emerald-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-emerald-900">Plus is unlocked. Trends are now available.</p>
+            </div>
+            <button
+              onClick={() => setCheckoutSuccess(null)}
+              className="text-emerald-600 hover:text-emerald-700"
+              aria-label="Dismiss"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        )}
+
+        {checkoutSuccess === 'pending' && (
+          <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+            <Sparkles size={20} className="text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm text-blue-900">Checkout completed, but Plus is not active yet. Refresh in a moment.</p>
+            </div>
+            <button
+              onClick={() => setCheckoutSuccess(null)}
+              className="text-blue-600 hover:text-blue-700"
+              aria-label="Dismiss"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        )}
+
+        {checkoutSuccess === 'error' && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+            <X size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm text-red-900">{checkoutErrorMessage || 'Unable to verify subscription. Please refresh.'}</p>
+            </div>
+            <button
+              onClick={() => setCheckoutSuccess(null)}
+              className="text-red-600 hover:text-red-700"
+              aria-label="Dismiss"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        )}
+
         {/* Page Header - reduced on Algorithm tab to let hero be the star */}
         <div className={`flex flex-col md:flex-row md:items-center md:justify-between gap-4 ${isOnAlgorithmTab ? 'mb-4' : 'mb-8'}`}>
           <div>
