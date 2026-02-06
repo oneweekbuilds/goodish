@@ -6,7 +6,7 @@ import {
 } from '../../../components/dashboard/primitives';
 import InsightHero from '../../../components/dashboard/InsightHero';
 import TrendsCTA from '../../../components/dashboard/TrendsCTA';
-import TrendsStubPanel from '../../../components/dashboard/TrendsStubPanel';
+import TrendsPanel from '../../../components/dashboard/TrendsPanel';
 import { buildSourcesHero } from '../../../lib/dashboard/insightBuilders';
 import { SimpleTable } from '../../../components/dashboard/charts';
 import { aggregateCreators, aggregateAds } from '../../../lib/dashboard/scanAggregator';
@@ -124,8 +124,9 @@ const SourcesTab = ({
 
       {/* Trends Panel (Plus users only) */}
       {showTrendsPanel && (
-        <TrendsStubPanel
-          scanCount={scans.length}
+        <TrendsPanel
+          scans={scans}
+          scanDetails={scanDetails}
           onClose={onCloseTrendsPanel}
         />
       )}

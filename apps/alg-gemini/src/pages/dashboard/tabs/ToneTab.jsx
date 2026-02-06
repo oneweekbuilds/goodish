@@ -7,9 +7,9 @@ import {
 import InsightHero from '../../../components/dashboard/InsightHero';
 import SectionHeader from '../../../components/dashboard/SectionHeader';
 import TrendsCTA from '../../../components/dashboard/TrendsCTA';
-import TrendsStubPanel from '../../../components/dashboard/TrendsStubPanel';
+import TrendsPanel from '../../../components/dashboard/TrendsPanel';
 import { buildToneHero } from '../../../lib/dashboard/insightBuilders';
-import { aggregateEmotions, aggregateAds, aggregatePolitics, summarizeInfluence } from '../../../lib/dashboard/scanAggregator';
+import { aggregateEmotions, aggregateAds } from '../../../lib/dashboard/scanAggregator';
 
 /**
  * ToneTab - Tab 5 of locked spec
@@ -32,8 +32,6 @@ const ToneTab = ({
   // Aggregate data from all filtered scans
   const emotionsData = aggregateEmotions(scans, scanDetails);
   const adsData = aggregateAds(scans, scanDetails);
-  const politicsData = aggregatePolitics(scans, scanDetails);
-  const influenceData = summarizeInfluence(scans, scanDetails);
 
   const totalPosts = adsData.totalPosts || 0;
   const scanCount = scans.length;
@@ -362,8 +360,9 @@ const ToneTab = ({
 
       {/* Trends Panel (Plus users only) */}
       {showTrendsPanel && (
-        <TrendsStubPanel
-          scanCount={scans.length}
+        <TrendsPanel
+          scans={scans}
+          scanDetails={scanDetails}
           onClose={onCloseTrendsPanel}
         />
       )}

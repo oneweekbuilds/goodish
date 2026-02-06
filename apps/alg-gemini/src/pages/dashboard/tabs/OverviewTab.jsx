@@ -10,7 +10,7 @@ import {
 import InsightHero from '../../../components/dashboard/InsightHero';
 import SectionHeader from '../../../components/dashboard/SectionHeader';
 import TrendsCTA from '../../../components/dashboard/TrendsCTA';
-import TrendsStubPanel from '../../../components/dashboard/TrendsStubPanel';
+import TrendsPanel from '../../../components/dashboard/TrendsPanel';
 import { buildOverviewHero } from '../../../lib/dashboard/insightBuilders';
 import { aggregateCreators, aggregateAds, aggregatePolitics, aggregateEmotions, summarizeInfluence, aggregateAiDisclosures } from '../../../lib/dashboard/scanAggregator';
 
@@ -157,7 +157,7 @@ const OverviewTab = ({
 
     if (creatorsData.creators) {
       const politicalCreators = Object.entries(creatorsData.creators)
-        .filter(([_, creator]) => creator.political > 0)
+        .filter(([, creator]) => creator.political > 0)
         .map(([id, creator]) => ({ id, ...creator }))
         .sort((a, b) => b.political - a.political);
 
@@ -328,8 +328,9 @@ const OverviewTab = ({
 
       {/* Trends Panel (Plus users only) */}
       {showTrendsPanel && (
-        <TrendsStubPanel
-          scanCount={scans.length}
+        <TrendsPanel
+          scans={scans}
+          scanDetails={scanDetails}
           onClose={onCloseTrendsPanel}
         />
       )}

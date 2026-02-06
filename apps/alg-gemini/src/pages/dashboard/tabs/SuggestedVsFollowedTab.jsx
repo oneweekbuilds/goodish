@@ -7,7 +7,7 @@ import {
 import InsightHero from '../../../components/dashboard/InsightHero';
 import SectionHeader from '../../../components/dashboard/SectionHeader';
 import TrendsCTA from '../../../components/dashboard/TrendsCTA';
-import TrendsStubPanel from '../../../components/dashboard/TrendsStubPanel';
+import TrendsPanel from '../../../components/dashboard/TrendsPanel';
 import { buildSuggestedVsFollowedHero } from '../../../lib/dashboard/insightBuilders';
 import { aggregateSourceOrigin } from '../../../lib/dashboard/scanAggregator';
 
@@ -82,11 +82,9 @@ const SuggestedVsFollowedTab = ({
   const hasData = sourceData.hasData && totalPosts > 0;
 
   // Get platform list for hero card
-  const platformList = Object.keys(sourceData.byPlatform || {});
-  const sortedPlatforms = sortPlatforms([...platformList]);
-  const platformDisplayText = sortedPlatforms.length > 0
-    ? sortedPlatforms.map(normalizePlatformName).join(' + ')
-    : '';
+  // Platform list for potential future use
+  // const platformList = Object.keys(sourceData.byPlatform || {});
+  // const sortedPlatforms = sortPlatforms([...platformList]);
 
   // Main stacked bar segments
   const mainSegments = hasData ? [
@@ -314,8 +312,9 @@ const SuggestedVsFollowedTab = ({
 
       {/* Trends Panel (Plus users only) */}
       {showTrendsPanel && (
-        <TrendsStubPanel
-          scanCount={scans.length}
+        <TrendsPanel
+          scans={scans}
+          scanDetails={scanDetails}
           onClose={onCloseTrendsPanel}
         />
       )}

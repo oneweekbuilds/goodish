@@ -7,7 +7,7 @@ import {
 import InsightHero from '../../../components/dashboard/InsightHero';
 import SectionHeader from '../../../components/dashboard/SectionHeader';
 import TrendsCTA from '../../../components/dashboard/TrendsCTA';
-import TrendsStubPanel from '../../../components/dashboard/TrendsStubPanel';
+import TrendsPanel from '../../../components/dashboard/TrendsPanel';
 import { buildAdsHero } from '../../../lib/dashboard/insightBuilders';
 import { aggregateAds, summarizeInfluence } from '../../../lib/dashboard/scanAggregator';
 
@@ -266,11 +266,6 @@ const AdsTab = ({
   // ===========================================
 
   const computeToneSplit = () => {
-    const labeledAds = influenceData.labeledAds || 0;
-    const unlabeledPromo = influenceData.possibleInfluence || 0;
-    const sellingCount = labeledAds + unlabeledPromo;
-    const notSellingCount = totalPosts - sellingCount;
-
     // Collect tone data for each group
     const sellingTones = { positive: 0, neutral: 0, negative: 0 };
     const notSellingTones = { positive: 0, neutral: 0, negative: 0 };
@@ -423,8 +418,9 @@ const AdsTab = ({
 
       {/* Trends Panel (Plus users only) */}
       {showTrendsPanel && (
-        <TrendsStubPanel
-          scanCount={scans.length}
+        <TrendsPanel
+          scans={scans}
+          scanDetails={scanDetails}
           onClose={onCloseTrendsPanel}
         />
       )}
