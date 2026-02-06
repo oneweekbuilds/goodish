@@ -19,7 +19,7 @@ from database import (
     init_database, save_scan, get_all_scans, get_scan_by_id, delete_scan,
     create_pending_scan, update_scan_result, update_scan_error, get_scan_status,
     get_scans_by_user, get_scan_by_id_for_user, upsert_subscription,
-    get_subscription_by_user_id, get_subscription_by_customer_id
+    get_subscription_by_user_id, get_subscription_by_customer_id, is_user_plus
 )
 from auth import get_current_user, get_jwt_secret
 from evidence_bundle import (
@@ -1456,6 +1456,60 @@ async def stripe_webhook(request: Request):
         print(f"[stripe] Subscription {subscription_id} canceled for user {user_id}")
 
     return {"status": "success"}
+
+
+# User entitlements endpoint
+
+@app.get("/api/user/entitlements")
+def get_user_entitlements(current_user: dict = Depends(get_current_user)):
+    """
+    Get current user's subscription entitlements.
+
+    Returns Plus subscription status and subscription details.
+    This is the backend source of truth for entitlements.
+
+    Requires: Authorization header with valid Supabase JWT
+
+    Returns:
+        {
+            "is_plus": boolean,
+            "subscription": {
+                "status": string | null,
+                "plan_type": "monthly" | "annual" | null,
+                "trial_end": number | null,
+                "current_period_end": number | null
+            }
+        }
+    """
+    user_id = current_user["user_id"]
+
+    # Check if user has Plus subscription
+    is_plus = is_user_plus(user_id)
+
+    # Get subscription details
+    subscription = get_subscription_by_user_id(user_id)
+
+    # Build response (omit Stripe IDs for privacy)
+    if subscription:
+        subscription_data = {
+            "status": subscription.get("status"),
+            "plan_type": subscription.get("plan_type"),
+            "trial_end": subscription.get("trial_end"),
+            "current_period_end": subscription.get("current_period_end"),
+        }
+    else:
+        # No subscription record exists
+        subscription_data = {
+            "status": None,
+            "plan_type": None,
+            "trial_end": None,
+            "current_period_end": None,
+        }
+
+    return {
+        "is_plus": is_plus,
+        "subscription": subscription_data,
+    }
 
 
 if __name__ == "__main__":
