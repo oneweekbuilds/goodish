@@ -605,6 +605,7 @@ export function generateDemoData() {
     scanDetails,
     loading: false,
     error: null,
+    errorMessage: null, // Added to match useDashboardData return type
     fetchScans: () => {},
     fetchScanDetail: async (scanId) => scanDetails[scanId] || null,
     fetchAllScanDetails: async () => scanDetails,
