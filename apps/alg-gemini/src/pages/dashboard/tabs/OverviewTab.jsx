@@ -12,7 +12,70 @@ import SectionHeader from '../../../components/dashboard/SectionHeader';
 import TrendsCTA from '../../../components/dashboard/TrendsCTA';
 import TrendsPanel from '../../../components/dashboard/TrendsPanel';
 import { buildOverviewHero } from '../../../lib/dashboard/insightBuilders';
-import { aggregateCreators, aggregateAds, aggregatePolitics, aggregateEmotions, summarizeInfluence, aggregateAiDisclosures } from '../../../lib/dashboard/scanAggregator';
+import { aggregateCreators, aggregateAds, aggregatePolitics, aggregateEmotions, summarizeInfluence, aggregateAiDisclosures, aggregateSourceOrigin } from '../../../lib/dashboard/scanAggregator';
+
+/**
+ * Generate plain-English feed summary bullets for overview
+ * @param {Object} params
+ * @returns {Array<string>} Array of summary bullets
+ */
+function generateOverviewSummary({
+  totalPosts,
+  sourceConcentration,
+  commercialComposition,
+  politicalShare,
+  sourceOriginData,
+}) {
+  const summaries = [];
+
+  // Edge case: not enough data
+  if (totalPosts === 0) {
+    return summaries;
+  }
+
+  // 1. Source concentration (top 5)
+  if (sourceConcentration.hasData && sourceConcentration.top5Percent != null) {
+    summaries.push(
+      `Your top 5 sources accounted for ${sourceConcentration.top5Percent}% of posts.`
+    );
+  }
+
+  // 2. Ad content
+  if (commercialComposition.hasData) {
+    const labeledAdsSegment = commercialComposition.segments.find(s => s.label === 'Ads clearly labeled as ads');
+    if (labeledAdsSegment && labeledAdsSegment.percentage > 0) {
+      summaries.push(
+        `Ad content made up ${labeledAdsSegment.percentage}% of posts.`
+      );
+    } else {
+      summaries.push('No ad content was detected.');
+    }
+  }
+
+  // 3. Suggested content (if available)
+  if (sourceOriginData && sourceOriginData.scansUsed > 0 && sourceOriginData.suggestedPercentage != null) {
+    const suggestedPercent = Math.round(sourceOriginData.suggestedPercentage);
+    if (suggestedPercent > 0) {
+      summaries.push(
+        `Suggested posts made up ${suggestedPercent}% of your feed.`
+      );
+    }
+  }
+
+  // 4. Political content
+  if (politicalShare.hasData && politicalShare.politicalPercent > 0) {
+    summaries.push(
+      `Political content made up ${politicalShare.politicalPercent}% of posts.`
+    );
+  }
+
+  // 5. Volume (always show if we have posts)
+  summaries.push(
+    `This scan included ${totalPosts.toLocaleString('en-US')} post${totalPosts !== 1 ? 's' : ''} total.`
+  );
+
+  return summaries;
+}
 
 /**
  * OverviewTab - Tab 1 of locked spec
@@ -39,6 +102,7 @@ const OverviewTab = ({
   const emotionsData = aggregateEmotions(scans, scanDetails);
   const influenceData = summarizeInfluence(scans, scanDetails);
   const aiDisclosureData = aggregateAiDisclosures(scans, scanDetails);
+  const sourceOriginData = aggregateSourceOrigin(scans, scanDetails);
 
   const totalPosts = adsData.totalPosts || 0;
   const scanCount = scans.length;
@@ -312,6 +376,18 @@ const OverviewTab = ({
   });
 
   // ===========================================
+  // GENERATE OVERVIEW SUMMARY
+  // ===========================================
+
+  const overviewSummary = generateOverviewSummary({
+    totalPosts,
+    sourceConcentration,
+    commercialComposition,
+    politicalShare,
+    sourceOriginData,
+  });
+
+  // ===========================================
   // RENDER
   // ===========================================
 
@@ -333,6 +409,41 @@ const OverviewTab = ({
           scanDetails={scanDetails}
           onClose={onCloseTrendsPanel}
         />
+      )}
+
+      {/* Feed Summary */}
+      {overviewSummary.length > 0 && (
+        <section>
+          <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-3">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 mb-1">
+                Feed summary
+              </h3>
+              <p className="text-xs text-slate-500">
+                Based on posts in this scan.
+              </p>
+            </div>
+            <ul className="space-y-2 text-sm text-slate-700" role="list">
+              {overviewSummary.map((summary, index) => (
+                <li key={index} className="leading-relaxed">
+                  • {summary}
+                </li>
+              ))}
+            </ul>
+
+            {/* How to read this (collapsed by default) */}
+            <details className="mt-3">
+              <summary className="cursor-pointer text-xs font-medium text-slate-600 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue/60 focus-visible:ring-offset-2 rounded">
+                How to read this
+              </summary>
+              <div className="mt-2 pl-3">
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  This summary describes what appeared in this feed snapshot. It does not explain why content appeared.
+                </p>
+              </div>
+            </details>
+          </div>
+        </section>
       )}
 
       {/* AI Likelihood Section */}
