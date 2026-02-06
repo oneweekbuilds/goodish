@@ -12,9 +12,59 @@ import { SimpleTable } from '../../../components/dashboard/charts';
 import { aggregateCreators, aggregateAds } from '../../../lib/dashboard/scanAggregator';
 
 /**
+ * Generate plain-English summary bullets for sources
+ * @param {Object} params
+ * @returns {Array<string>} Array of summary bullets
+ */
+function generateSourcesSummary({
+  topSourcesTableData,
+  top5Percent,
+  uniqueCreatorCount,
+  totalPosts,
+}) {
+  const summaries = [];
+
+  if (!topSourcesTableData || topSourcesTableData.length === 0) {
+    return summaries;
+  }
+
+  // 1. Concentration bullet (top 5)
+  if (top5Percent != null && top5Percent > 0) {
+    summaries.push(
+      `Your top 5 sources accounted for ${Math.round(top5Percent)}% of posts.`
+    );
+  }
+
+  // 2. Dominant source bullet
+  const topSource = topSourcesTableData[0];
+  if (topSource) {
+    const topSourcePercent = (topSource.postCount / totalPosts) * 100;
+
+    // Edge case: no single dominant source (< 10%)
+    if (topSourcePercent < 10) {
+      summaries.push('No single source dominated this scan.');
+    } else {
+      summaries.push(
+        `Your top source was ${topSource.handle} (${topSourcePercent.toFixed(1)}%).`
+      );
+    }
+  }
+
+  // 3. Long tail bullet (total unique sources)
+  if (uniqueCreatorCount != null && uniqueCreatorCount > 0) {
+    summaries.push(
+      `You saw posts from ${uniqueCreatorCount.toLocaleString('en-US')} source${uniqueCreatorCount !== 1 ? 's' : ''} overall.`
+    );
+  }
+
+  return summaries;
+}
+
+/**
  * SourcesTab - Tab 2 of locked spec
  *
  * Provides a breakdown of source concentration with:
+ * - Sources summary (plain-English bullets)
  * - Section 2.1: Top sources table (Top 10)
  * - Section 2.2: Concentration summary
  * - Section 2.3: Suggested vs Followed share (HIDDEN - capability missing)
@@ -60,13 +110,16 @@ const SourcesTab = ({
     // Top 10 (or fewer if less than 10 exist)
     const top10 = sortedCreators.slice(0, 10);
 
-    // Build table data
-    topSourcesTableData = top10.map((creator, index) => ({
-      rank: index + 1,
-      handle: `@${creator.id}`, // Use id (normalized handle) with @ prefix
-      sharePercent: Math.round((creator.totalPosts / totalPosts) * 100),
-      postCount: creator.totalPosts,
-    }));
+    // Build table data (sorted by post count descending)
+    topSourcesTableData = top10.map((creator, index) => {
+      const sharePercent = (creator.totalPosts / totalPosts) * 100;
+      return {
+        rank: index + 1,
+        handle: `@${creator.id}`, // Use id (normalized handle) with @ prefix
+        sharePercent: sharePercent.toFixed(1) + '%', // Decimal precision (e.g., "12.3%")
+        postCount: creator.totalPosts,
+      };
+    });
 
     // Calculate concentration percentages
     const top5 = sortedCreators.slice(0, 5);
@@ -108,6 +161,19 @@ const SourcesTab = ({
   });
 
   // ===========================================
+  // GENERATE SOURCES SUMMARY
+  // ===========================================
+
+  const sourcesSummary = hasSourcesData
+    ? generateSourcesSummary({
+        topSourcesTableData,
+        top5Percent,
+        uniqueCreatorCount: creatorsData.uniqueCreatorCount,
+        totalPosts,
+      })
+    : [];
+
+  // ===========================================
   // RENDER
   // ===========================================
 
@@ -131,6 +197,29 @@ const SourcesTab = ({
         />
       )}
 
+      {/* Sources Summary */}
+      {sourcesSummary.length > 0 && (
+        <section>
+          <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-3">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 mb-1">
+                Sources summary
+              </h3>
+              <p className="text-xs text-slate-500">
+                Based on posts in this scan.
+              </p>
+            </div>
+            <ul className="space-y-2 text-sm text-slate-700" role="list">
+              {sourcesSummary.map((summary, index) => (
+                <li key={index} className="leading-relaxed">
+                  • {summary}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
       {/* Section 2.1 - Top Sources Table */}
       <section>
         {hasSourcesData ? (
@@ -143,10 +232,10 @@ const SourcesTab = ({
             {/* Table */}
             <SimpleTable
               columns={[
-                { key: 'rank', label: 'Rank', width: '15%' },
-                { key: 'handle', label: 'Source handle', width: '40%' },
-                { key: 'sharePercent', label: 'Share of posts (%)', width: '25%' },
-                { key: 'postCount', label: 'Posts (count)', width: '20%' },
+                { key: 'rank', label: 'Rank', width: '15%', align: 'left' },
+                { key: 'handle', label: 'Source handle', width: '40%', align: 'left' },
+                { key: 'sharePercent', label: 'Share', width: '25%', align: 'right' },
+                { key: 'postCount', label: 'Posts', width: '20%', align: 'right' },
               ]}
               rows={topSourcesTableData}
             />
