@@ -1,7 +1,8 @@
-import React, { createContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useState, useEffect, useRef, useCallback } from 'react';
 import { getSession, onAuthStateChange, sendMagicLink as sendMagicLinkHelper, signOut as signOutHelper } from './authSession';
-import { setStoredPlanTier, getStoredPlanTier, PLAN_TIERS } from '../plan';
+import { PLAN_TIERS } from '../plan';
 import { track, EVENTS } from '../analytics';
+import { syncPlanTierFromEntitlements } from '../plan/entitlements';
 
 /**
  * AuthProvider - Manages auth session and syncs plan tier
@@ -14,9 +15,10 @@ import { track, EVENTS } from '../analytics';
  * - signOut(): sign out current user
  *
  * Plan tier sync rules (non-demo only):
- * - If session exists: set to "free" (unless already "plus")
+ * - Syncs plan tier from backend entitlements (backend is source of truth)
+ * - If session exists: fetches entitlements and sets tier (free/plus)
  * - If no session: set to "anon"
- * - Never set "plus" here (comes later via Stripe)
+ * - Fails closed: if entitlements fetch fails, sets to "free" (not "plus")
  */
 
 export const AuthContext = createContext({
@@ -32,6 +34,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [authReady, setAuthReady] = useState(false);
   const prevSessionRef = useRef(null);
+  const syncInProgressRef = useRef(false);
 
   // Initialize session and subscribe to auth changes
   useEffect(() => {
@@ -84,32 +87,33 @@ export const AuthProvider = ({ children }) => {
     return () => {
       subscription?.unsubscribe();
     };
-  }, []);
+  }, [syncPlanTier]);
 
-  // Sync plan tier based on session state
-  const syncPlanTier = (currentSession) => {
-    // Skip if in demo mode (check URL)
-    if (typeof window !== 'undefined') {
-      const isDemoMode = new URLSearchParams(window.location.search).get('demo') === '1';
-      if (isDemoMode) {
-        return; // Don't sync in demo mode
-      }
+  // Sync plan tier from backend entitlements
+  const syncPlanTier = useCallback(async (currentSession) => {
+    // Guard against duplicate syncs during rapid auth transitions
+    if (syncInProgressRef.current) {
+      return;
     }
 
-    const currentTier = getStoredPlanTier();
+    syncInProgressRef.current = true;
 
-    if (currentSession) {
-      // User is logged in
-      // Set to "free" unless already "plus"
-      if (currentTier !== PLAN_TIERS.PLUS) {
-        setStoredPlanTier(PLAN_TIERS.FREE);
-      }
-    } else {
-      // User is not logged in
-      // Set to "anon"
-      setStoredPlanTier(PLAN_TIERS.ANON);
+    try {
+      const isDemoMode = typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('demo') === '1'
+        : false;
+
+      const hasSession = Boolean(currentSession);
+
+      await syncPlanTierFromEntitlements({
+        isDemoMode,
+        authReady,
+        hasSession
+      });
+    } finally {
+      syncInProgressRef.current = false;
     }
-  };
+  }, [authReady]);
 
   // Send magic link wrapper
   const handleSendMagicLink = async (email) => {

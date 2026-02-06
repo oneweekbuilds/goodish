@@ -2047,8 +2047,8 @@ const DashboardPage = () => {
 
   // Handle checkout success: sync entitlements when returning from Stripe
   useEffect(() => {
-    // Only run once per page load, when auth is ready, and checkout=success is present
-    if (checkoutSyncedRef.current || !authReady || isDemoMode) {
+    // Only run once per page load
+    if (checkoutSyncedRef.current) {
       return;
     }
 
@@ -2061,6 +2061,21 @@ const DashboardPage = () => {
 
     // Mark as synced to prevent re-running
     checkoutSyncedRef.current = true;
+
+    // Demo mode: strip param silently without showing banner or calling entitlements
+    if (isDemoMode) {
+      params.delete('checkout');
+      const newSearch = params.toString();
+      navigate({
+        search: newSearch ? `?${newSearch}` : '',
+      }, { replace: true });
+      return;
+    }
+
+    // Non-demo mode: wait for auth ready, then sync entitlements
+    if (!authReady) {
+      return;
+    }
 
     const syncEntitlements = async () => {
       try {
