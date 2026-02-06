@@ -102,8 +102,23 @@ def init_database():
 
     # Create index on aggregate_buckets for faster queries
     cursor.execute("""
-        CREATE INDEX IF NOT EXISTS idx_aggregate_buckets_platform_week 
+        CREATE INDEX IF NOT EXISTS idx_aggregate_buckets_platform_week
         ON aggregate_buckets(platform, week_bucket)
+    """)
+
+    # Create subscriptions table for Stripe entitlements
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS subscriptions (
+            user_id TEXT PRIMARY KEY,
+            stripe_customer_id TEXT,
+            stripe_subscription_id TEXT,
+            status TEXT,
+            plan_type TEXT,
+            trial_end REAL,
+            current_period_end REAL,
+            created_at TEXT,
+            updated_at TEXT
+        )
     """)
 
     conn.commit()
@@ -509,4 +524,136 @@ def get_scan_status(scan_id: str) -> Optional[Dict[str, Any]]:
         "total_items": row["total_items"],
         "total_ads": row["total_ads"]
     }
+
+
+# Subscription entitlement functions
+
+def upsert_subscription(
+    user_id: str,
+    stripe_customer_id: Optional[str] = None,
+    stripe_subscription_id: Optional[str] = None,
+    status: Optional[str] = None,
+    plan_type: Optional[str] = None,
+    trial_end: Optional[float] = None,
+    current_period_end: Optional[float] = None
+) -> bool:
+    """
+    Create or update subscription record for a user.
+    Uses COALESCE to preserve existing non-null values when None is passed.
+    Always updates updated_at. Sets created_at on first insert.
+    Returns True if row was affected.
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    now = datetime.now().isoformat()
+
+    # Check if record exists
+    cursor.execute("SELECT user_id FROM subscriptions WHERE user_id = ?", (user_id,))
+    exists = cursor.fetchone() is not None
+
+    if exists:
+        # Update existing record, using COALESCE to preserve non-null values
+        cursor.execute("""
+            UPDATE subscriptions
+            SET stripe_customer_id = COALESCE(?, stripe_customer_id),
+                stripe_subscription_id = COALESCE(?, stripe_subscription_id),
+                status = COALESCE(?, status),
+                plan_type = COALESCE(?, plan_type),
+                trial_end = COALESCE(?, trial_end),
+                current_period_end = COALESCE(?, current_period_end),
+                updated_at = ?
+            WHERE user_id = ?
+        """, (stripe_customer_id, stripe_subscription_id, status, plan_type,
+              trial_end, current_period_end, now, user_id))
+    else:
+        # Insert new record
+        cursor.execute("""
+            INSERT INTO subscriptions
+            (user_id, stripe_customer_id, stripe_subscription_id, status, plan_type,
+             trial_end, current_period_end, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (user_id, stripe_customer_id, stripe_subscription_id, status, plan_type,
+              trial_end, current_period_end, now, now))
+
+    affected = cursor.rowcount > 0
+    conn.commit()
+    conn.close()
+
+    return affected
+
+
+def get_subscription_by_user_id(user_id: str) -> Optional[Dict[str, Any]]:
+    """Get subscription record for a user. Returns None if not found."""
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT user_id, stripe_customer_id, stripe_subscription_id, status, plan_type,
+               trial_end, current_period_end, created_at, updated_at
+        FROM subscriptions
+        WHERE user_id = ?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+    conn.close()
+
+    if row is None:
+        return None
+
+    return {
+        "user_id": row["user_id"],
+        "stripe_customer_id": row["stripe_customer_id"],
+        "stripe_subscription_id": row["stripe_subscription_id"],
+        "status": row["status"],
+        "plan_type": row["plan_type"],
+        "trial_end": row["trial_end"],
+        "current_period_end": row["current_period_end"],
+        "created_at": row["created_at"],
+        "updated_at": row["updated_at"]
+    }
+
+
+def get_subscription_by_customer_id(stripe_customer_id: str) -> Optional[Dict[str, Any]]:
+    """Get subscription record by Stripe customer ID. Returns None if not found."""
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT user_id, stripe_customer_id, stripe_subscription_id, status, plan_type,
+               trial_end, current_period_end, created_at, updated_at
+        FROM subscriptions
+        WHERE stripe_customer_id = ?
+    """, (stripe_customer_id,))
+
+    row = cursor.fetchone()
+    conn.close()
+
+    if row is None:
+        return None
+
+    return {
+        "user_id": row["user_id"],
+        "stripe_customer_id": row["stripe_customer_id"],
+        "stripe_subscription_id": row["stripe_subscription_id"],
+        "status": row["status"],
+        "plan_type": row["plan_type"],
+        "trial_end": row["trial_end"],
+        "current_period_end": row["current_period_end"],
+        "created_at": row["created_at"],
+        "updated_at": row["updated_at"]
+    }
+
+
+def is_user_plus(user_id: str) -> bool:
+    """
+    Check if user has active Plus subscription.
+    Returns True only if status is 'active' or 'trialing'.
+    """
+    subscription = get_subscription_by_user_id(user_id)
+    if subscription is None:
+        return False
+
+    status = subscription.get("status")
+    return status in ("active", "trialing")
 
