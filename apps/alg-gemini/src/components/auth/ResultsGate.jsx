@@ -19,7 +19,6 @@ import { useAuth } from '../../lib/auth/useAuth';
 const ResultsGate = () => {
   const { sendMagicLink } = useAuth();
   const [email, setEmail] = useState('');
-  const [wantsUpdates, setWantsUpdates] = useState(false);
   const [state, setState] = useState('idle'); // idle | sending | sent | error
   const [error, setError] = useState(null);
 
@@ -48,9 +47,6 @@ const ResultsGate = () => {
     // Store email in localStorage
     try {
       localStorage.setItem('alg_pending_email', email);
-      if (wantsUpdates) {
-        localStorage.setItem('alg_wants_updates', 'true');
-      }
     } catch (err) {
       // localStorage unavailable - continue anyway
     }
@@ -189,21 +185,6 @@ const ResultsGate = () => {
               />
             </div>
 
-            {/* Optional updates checkbox */}
-            <div className="flex items-start gap-3">
-              <input
-                id="updates"
-                type="checkbox"
-                checked={wantsUpdates}
-                onChange={(e) => setWantsUpdates(e.target.checked)}
-                disabled={state === 'sending'}
-                className="mt-1 w-4 h-4 text-primary-blue border-slate-300 rounded focus:ring-2 focus:ring-primary-blue/60 disabled:opacity-50"
-              />
-              <label htmlFor="updates" className="text-sm text-slate-600">
-                Send me occasional product updates (optional)
-              </label>
-            </div>
-
             {/* Submit button */}
             <button
               type="submit"
@@ -212,12 +193,12 @@ const ResultsGate = () => {
             >
               {state === 'sending' ? 'Sending sign-in link...' : 'View my results'}
             </button>
-          </form>
 
-          {/* Privacy line */}
-          <p className="text-xs text-slate-500 text-center mt-6 leading-relaxed">
-            We only use your email to give you access to your results. We respect your privacy.
-          </p>
+            {/* Email consent note */}
+            <p className="text-xs text-slate-500 text-center leading-relaxed">
+              We will email you your sign-in link and occasional product updates. No spam, unsubscribe anytime.
+            </p>
+          </form>
         </div>
       </div>
     </div>
