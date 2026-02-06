@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "lint:changed": "node scripts/lint-changed.mjs",
     "preview": "vite preview",
     "test:smoke": "playwright test tests/dashboard-smoke.spec.js",
     "test:smoke:ui": "playwright test tests/dashboard-smoke.spec.js --ui"
