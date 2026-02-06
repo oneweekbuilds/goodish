@@ -11,7 +11,9 @@
     "lint:all": "eslint .",
     "preview": "vite preview",
     "test:smoke": "playwright test tests/dashboard-smoke.spec.js",
-    "test:smoke:ui": "playwright test tests/dashboard-smoke.spec.js --ui"
+    "test:smoke:ui": "playwright test tests/dashboard-smoke.spec.js --ui",
+    "env:setup": "node scripts/setup-env.mjs",
+    "env:verify": "node scripts/verify-env.mjs"
   },
   "dependencies": {
     "@stripe/stripe-js": "^2.0.0",
