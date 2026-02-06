@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Query, BackgroundTasks, Depends
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Query, BackgroundTasks, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 import shutil
@@ -6,6 +6,8 @@ import os
 import uuid
 import threading
 from datetime import datetime
+import stripe
+from pydantic import BaseModel
 
 # Load environment variables from .env.local (for GEMINI_API_KEY, etc.)
 from dotenv import load_dotenv
@@ -16,7 +18,8 @@ from unified_scan_models import UnifiedScanResult
 from database import (
     init_database, save_scan, get_all_scans, get_scan_by_id, delete_scan,
     create_pending_scan, update_scan_result, update_scan_error, get_scan_status,
-    get_scans_by_user, get_scan_by_id_for_user
+    get_scans_by_user, get_scan_by_id_for_user, upsert_subscription,
+    get_subscription_by_user_id, get_subscription_by_customer_id
 )
 from auth import get_current_user, get_jwt_secret
 from evidence_bundle import (
@@ -69,6 +72,23 @@ def startup_event():
         except RuntimeError as e:
             print(f"[auth] STARTUP ERROR: {e}")
             raise
+
+        # Verify Stripe environment variables (fail loudly in dev if missing)
+        required_stripe_vars = [
+            "STRIPE_SECRET_KEY",
+            "STRIPE_WEBHOOK_SECRET",
+            "STRIPE_PRICE_MONTHLY",
+            "STRIPE_PRICE_ANNUAL",
+        ]
+        missing_vars = [var for var in required_stripe_vars if not os.getenv(var)]
+        if missing_vars:
+            error_msg = f"Missing required Stripe environment variables: {', '.join(missing_vars)}"
+            print(f"[stripe] STARTUP ERROR: {error_msg}")
+            raise RuntimeError(error_msg)
+
+        # Initialize Stripe with secret key
+        stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+        print("[stripe] Stripe API configured")
 
 # CORS - dev-only permissive origins
 _env = os.getenv("ENV", "").lower()
@@ -1223,6 +1243,219 @@ def talk_to_algorithm_inferences(
         "cited_fields": structured_response.get("what_we_observed", {}).get("cited_fields", []) +
                        structured_response.get("what_we_cannot_know", {}).get("cited_fields", [])
     }
+
+
+# Stripe helper functions
+
+def get_or_create_stripe_customer(user_id: str, email: str) -> str:
+    """
+    Get existing Stripe customer ID for user, or create new customer.
+    Returns Stripe customer ID.
+    """
+    # Check if user already has a Stripe customer
+    subscription = get_subscription_by_user_id(user_id)
+    if subscription and subscription.get("stripe_customer_id"):
+        return subscription["stripe_customer_id"]
+
+    # Create new Stripe customer
+    customer = stripe.Customer.create(
+        email=email,
+        metadata={"supabase_user_id": user_id}
+    )
+    customer_id = customer.id
+
+    # Store customer ID in database
+    upsert_subscription(user_id=user_id, stripe_customer_id=customer_id)
+
+    print(f"[stripe] Created new customer {customer_id} for user {user_id}")
+    return customer_id
+
+
+# Stripe API models
+
+class CreateCheckoutRequest(BaseModel):
+    billingCycle: str  # 'monthly' | 'annual'
+    successUrl: str
+    cancelUrl: str
+
+
+# Stripe endpoints
+
+@app.post("/api/stripe/create-checkout")
+def create_checkout_session(
+    request: CreateCheckoutRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Create a Stripe Checkout session for Plus subscription.
+
+    Requires: Authorization header with valid Supabase JWT
+    """
+    user_id = current_user["user_id"]
+    email = current_user.get("email", "")
+
+    # Map billing cycle to price ID
+    price_id = None
+    if request.billingCycle == "monthly":
+        price_id = os.getenv("STRIPE_PRICE_MONTHLY")
+    elif request.billingCycle == "annual":
+        price_id = os.getenv("STRIPE_PRICE_ANNUAL")
+    else:
+        raise HTTPException(status_code=400, detail="Invalid billingCycle. Must be 'monthly' or 'annual'.")
+
+    if not price_id:
+        raise HTTPException(status_code=500, detail="Stripe price ID not configured")
+
+    # Get or create Stripe customer
+    customer_id = get_or_create_stripe_customer(user_id, email)
+
+    # Create Checkout Session
+    try:
+        session = stripe.checkout.Session.create(
+            customer=customer_id,
+            mode="subscription",
+            payment_method_types=["card"],
+            line_items=[{
+                "price": price_id,
+                "quantity": 1,
+            }],
+            subscription_data={
+                "trial_period_days": 14,
+            },
+            success_url=request.successUrl,
+            cancel_url=request.cancelUrl,
+            client_reference_id=user_id,  # Critical: ties checkout to user
+            customer_email=email,
+        )
+
+        print(f"[stripe] Created checkout session {session.id} for user {user_id}")
+
+        return {
+            "sessionId": session.id,
+        }
+
+    except stripe.error.StripeError as e:
+        print(f"[stripe] Error creating checkout session: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create checkout session")
+
+
+@app.post("/api/stripe/webhook")
+async def stripe_webhook(request: Request):
+    """
+    Handle Stripe webhook events.
+
+    Verifies webhook signature and processes subscription events.
+    No authentication required (signature verification instead).
+    """
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature")
+    webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
+
+    if not webhook_secret:
+        raise HTTPException(status_code=500, detail="Webhook secret not configured")
+
+    # Verify webhook signature
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, webhook_secret
+        )
+    except ValueError:
+        print("[stripe] Invalid webhook payload")
+        raise HTTPException(status_code=400, detail="Invalid payload")
+    except stripe.error.SignatureVerificationError:
+        print("[stripe] Invalid webhook signature")
+        raise HTTPException(status_code=400, detail="Invalid signature")
+
+    event_type = event["type"]
+    data = event["data"]["object"]
+
+    print(f"[stripe] Received webhook: {event_type}")
+
+    # Handle checkout.session.completed
+    if event_type == "checkout.session.completed":
+        session = data
+        user_id = session.get("client_reference_id")
+        customer_id = session.get("customer")
+        subscription_id = session.get("subscription")
+
+        if not user_id:
+            print("[stripe] Warning: checkout.session.completed missing client_reference_id")
+            return {"status": "ignored"}
+
+        # Create initial subscription record
+        upsert_subscription(
+            user_id=user_id,
+            stripe_customer_id=customer_id,
+            stripe_subscription_id=subscription_id,
+            status="trialing",  # Assumes trial is active
+        )
+
+        print(f"[stripe] Checkout completed for user {user_id}, subscription {subscription_id}")
+
+    # Handle customer.subscription.updated
+    elif event_type == "customer.subscription.updated":
+        subscription = data
+        subscription_id = subscription["id"]
+        customer_id = subscription["customer"]
+        status = subscription["status"]
+        trial_end = subscription.get("trial_end")
+        current_period_end = subscription.get("current_period_end")
+
+        # Lookup user by customer ID
+        sub_record = get_subscription_by_customer_id(customer_id)
+        if not sub_record:
+            print(f"[stripe] Warning: subscription.updated for unknown customer {customer_id}")
+            return {"status": "ignored"}
+
+        user_id = sub_record["user_id"]
+
+        # Determine plan type from subscription items
+        plan_type = None
+        if subscription.get("items") and subscription["items"]["data"]:
+            price_id = subscription["items"]["data"][0]["price"]["id"]
+            monthly_price = os.getenv("STRIPE_PRICE_MONTHLY")
+            annual_price = os.getenv("STRIPE_PRICE_ANNUAL")
+            if price_id == monthly_price:
+                plan_type = "monthly"
+            elif price_id == annual_price:
+                plan_type = "annual"
+
+        # Update subscription record
+        upsert_subscription(
+            user_id=user_id,
+            stripe_subscription_id=subscription_id,
+            status=status,
+            plan_type=plan_type,
+            trial_end=trial_end,
+            current_period_end=current_period_end,
+        )
+
+        print(f"[stripe] Subscription {subscription_id} updated: status={status}")
+
+    # Handle customer.subscription.deleted
+    elif event_type == "customer.subscription.deleted":
+        subscription = data
+        subscription_id = subscription["id"]
+        customer_id = subscription["customer"]
+
+        # Lookup user by customer ID
+        sub_record = get_subscription_by_customer_id(customer_id)
+        if not sub_record:
+            print(f"[stripe] Warning: subscription.deleted for unknown customer {customer_id}")
+            return {"status": "ignored"}
+
+        user_id = sub_record["user_id"]
+
+        # Mark subscription as canceled
+        upsert_subscription(
+            user_id=user_id,
+            stripe_subscription_id=subscription_id,
+            status="canceled",
+        )
+
+        print(f"[stripe] Subscription {subscription_id} canceled for user {user_id}")
+
+    return {"status": "success"}
 
 
 if __name__ == "__main__":
