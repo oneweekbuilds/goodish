@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Logo from './components/Logo';
 import HeroSection from './components/Hero/HeroSection';
@@ -8,7 +8,7 @@ import LabelsPreviewSection from './components/Sections/LabelsPreviewSection';
 import SectionLoop from './components/Sections/SectionLoop';
 import HeroDashboardPreview from './components/Hero/HeroDashboardPreview';
 import HowItWorksSection from './components/Sections/HowItWorksSection';
-import PricingPage from './components/PricingPage';
+// PricingPage removed — /pricing now redirects to /plus
 import ScanTestPage from './pages/ScanTestPage';
 import ScanPage from './pages/ScanPage';
 import ScanHistoryPage from './pages/ScanHistoryPage';
@@ -57,7 +57,7 @@ function App() {
         '/start',
         '/scan',
         '/history',
-        '/pricing',
+        '/plus',
       ].some(route => location.pathname.startsWith(route));
 
       if (isGated) {
@@ -168,8 +168,8 @@ function App() {
             }
           />
 
-          {/* PRICING ROUTE */}
-          <Route path="/pricing" element={<PricingPage />} />
+          {/* PRICING REDIRECT — canonical pricing is /plus */}
+          <Route path="/pricing" element={<Navigate to="/plus" replace />} />
 
           {/* ========================================
               PHASE 3: UNIFIED SCAN FLOW ROUTES

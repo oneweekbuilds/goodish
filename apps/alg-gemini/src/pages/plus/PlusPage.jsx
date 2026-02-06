@@ -33,6 +33,9 @@ const PlusPage = () => {
     [isDemoMode, searchParams]
   );
 
+  // Billing cycle selection
+  const [billingCycle, setBillingCycle] = useState('annual');
+
   // Checkout canceled state - initialize from URL param
   const [checkoutCanceled, setCheckoutCanceled] = useState(() => {
     const params = new URLSearchParams(window.location.search);
@@ -175,7 +178,14 @@ const PlusPage = () => {
 
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto mb-8">
             {/* Monthly card */}
-            <div className="border-2 border-slate-200 rounded-xl p-6 hover:border-emerald-300 transition-colors">
+            <div
+              className={`border-2 rounded-xl p-6 cursor-pointer transition-all ${
+                billingCycle === 'monthly'
+                  ? 'border-emerald-500 bg-emerald-50/50 ring-1 ring-emerald-500/30'
+                  : 'border-slate-200 hover:border-slate-300'
+              }`}
+              onClick={() => setBillingCycle('monthly')}
+            >
               <div className="flex items-baseline gap-2 mb-3">
                 <span className="text-4xl font-bold text-slate-900">$10</span>
                 <span className="text-lg text-slate-600">/month</span>
@@ -185,7 +195,14 @@ const PlusPage = () => {
             </div>
 
             {/* Annual card */}
-            <div className="border-2 border-emerald-300 bg-emerald-50/50 rounded-xl p-6 relative">
+            <div
+              className={`border-2 rounded-xl p-6 relative cursor-pointer transition-all ${
+                billingCycle === 'annual'
+                  ? 'border-emerald-500 bg-emerald-50/50 ring-1 ring-emerald-500/30'
+                  : 'border-slate-200 hover:border-slate-300'
+              }`}
+              onClick={() => setBillingCycle('annual')}
+            >
               <div className="absolute top-3 right-3">
                 <span className="inline-block px-2 py-1 bg-emerald-100 border border-emerald-300 rounded text-xs font-bold text-emerald-700">
                   Best value
@@ -225,7 +242,7 @@ const PlusPage = () => {
               onClick={handleStartTrial}
               className="w-full sm:w-auto px-8 py-4 bg-emerald-600 text-white rounded-full font-bold text-lg hover:bg-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
             >
-              Start 14-day free trial
+              Start 14-day free trial — {billingCycle === 'annual' ? '$96/year' : '$10/month'}
             </button>
             <button
               onClick={handleNotNow}
@@ -305,19 +322,16 @@ const PlusPage = () => {
           </div>
         </div>
 
-        {/* Bottom CTA */}
+        {/* Bottom soft CTA */}
         <div className="text-center mt-16 pt-12 border-t border-slate-200">
-          <h2 className="text-3xl font-bold text-slate-900 mb-4">
+          <p className="text-lg text-slate-600 mb-4">
             Ready to track your feed over time?
-          </h2>
-          <p className="text-lg text-slate-600 mb-8">
-            Start your 14-day free trial today
           </p>
           <button
-            onClick={handleStartTrial}
-            className="px-8 py-4 bg-emerald-600 text-white rounded-full font-bold text-lg hover:bg-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="text-emerald-600 hover:text-emerald-700 font-semibold text-base hover:underline transition-colors"
           >
-            Start 14-day free trial
+            Choose your plan above &uarr;
           </button>
         </div>
       </div>

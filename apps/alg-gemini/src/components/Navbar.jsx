@@ -37,7 +37,7 @@ const Navbar = () => {
                             <DisabledNavLink>Dashboard</DisabledNavLink>
                             <DisabledNavLink>Scan</DisabledNavLink>
                             <DisabledNavLink>History</DisabledNavLink>
-                            <DisabledNavLink>Pricing</DisabledNavLink>
+                            <DisabledNavLink>Plus</DisabledNavLink>
                         </>
                     ) : (
                         <>
@@ -50,8 +50,8 @@ const Navbar = () => {
                             <Link to="/history" className="text-sm font-medium text-text-main hover:text-primary-blue transition-colors" aria-label="View scan history">
                                 History
                             </Link>
-                            <Link to="/pricing" className="text-sm font-medium text-text-main hover:text-primary-blue transition-colors" aria-label="View pricing">
-                                Pricing
+                            <Link to="/plus" className="text-sm font-medium text-text-main hover:text-primary-blue transition-colors" aria-label="View Plus plans">
+                                Plus
                             </Link>
                         </>
                     )}
