@@ -6,6 +6,8 @@ import {
 } from '../../../components/dashboard/primitives';
 import InsightHero from '../../../components/dashboard/InsightHero';
 import SectionHeader from '../../../components/dashboard/SectionHeader';
+import TrendsCTA from '../../../components/dashboard/TrendsCTA';
+import TrendsStubPanel from '../../../components/dashboard/TrendsStubPanel';
 import { buildSuggestedVsFollowedHero } from '../../../lib/dashboard/insightBuilders';
 import { aggregateSourceOrigin } from '../../../lib/dashboard/scanAggregator';
 
@@ -22,9 +24,14 @@ import { aggregateSourceOrigin } from '../../../lib/dashboard/scanAggregator';
  * - Platform breakdown (if multiple platforms)
  * - What you can do card
  */
-const SuggestedVsFollowedTab = ({ scans, scanDetails }) => {
-  // TODO: Replace with actual Plus subscription check
-  const isPlusUser = false;
+const SuggestedVsFollowedTab = ({
+  scans,
+  scanDetails,
+  onOpenTrends,
+  isPlusUser,
+  showTrendsPanel,
+  onCloseTrendsPanel,
+}) => {
 
   // Aggregate data from all filtered scans
   const sourceData = aggregateSourceOrigin(scans, scanDetails);
@@ -299,13 +306,18 @@ const SuggestedVsFollowedTab = ({ scans, scanDetails }) => {
       {/* Insight Hero */}
       <InsightHero {...hero} />
 
-      {/* Plus awareness for free users */}
-      {!isPlusUser && hasData && (
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-          <p className="text-sm text-slate-600">
-            🔒 Discover whether the algorithm is suggesting more or less over time with AlgorithmLens Plus.
-          </p>
-        </div>
+      {/* Trends CTA */}
+      <TrendsCTA
+        onClick={() => onOpenTrends({ tab: 'suggested_vs_followed', placement: 'hero_trends' })}
+        isPlusUser={isPlusUser}
+      />
+
+      {/* Trends Panel (Plus users only) */}
+      {showTrendsPanel && (
+        <TrendsStubPanel
+          scanCount={scans.length}
+          onClose={onCloseTrendsPanel}
+        />
       )}
 
       {/* Section 2: Overall Breakdown */}

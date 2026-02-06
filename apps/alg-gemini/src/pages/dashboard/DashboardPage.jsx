@@ -1965,6 +1965,46 @@ const DashboardPage = () => {
 
   // Paywall modal state (for demo preview and later gating flows)
   const [paywallModalOpen, setPaywallModalOpen] = useState(false);
+  const [paywallSource, setPaywallSource] = useState('');
+
+  // Trends panel state (which tab has trends panel open)
+  const [trendsOpenTab, setTrendsOpenTab] = useState(null);
+
+  // Determine if user is Plus
+  const isPlusUser = planTier === PLAN_TIERS.PLUS;
+
+  // Handle trends CTA click
+  const handleOpenTrends = ({ tab, placement }) => {
+    // Track click event (skip in demo mode)
+    if (!isDemoMode) {
+      track(EVENTS.UPGRADE_CTA_CLICKED, {
+        tab,
+        placement,
+        planTier,
+        isDemo: false,
+      });
+    }
+
+    if (isPlusUser) {
+      // Plus users: toggle trends panel for this tab
+      setTrendsOpenTab(trendsOpenTab === tab ? null : tab);
+    } else {
+      // Free users: open paywall modal
+      setPaywallSource(`${tab}_${placement}`);
+      setPaywallModalOpen(true);
+    }
+  };
+
+  // Track paywall viewed when modal opens (skip in demo mode)
+  useEffect(() => {
+    if (paywallModalOpen && !isDemoMode && paywallSource) {
+      track(EVENTS.PAYWALL_VIEWED, {
+        source: paywallSource,
+        planTier,
+        isDemo: false,
+      });
+    }
+  }, [paywallModalOpen, isDemoMode, paywallSource, planTier]);
 
   // Generate demo data only once (memoized to avoid re-creating on every render)
   const demoData = useMemo(() => {
@@ -2504,17 +2544,59 @@ const DashboardPage = () => {
           {activeTab === 'talk' ? (
             <TalkTabPanel />
           ) : activeTab === 'overview' ? (
-            <OverviewTab scans={scans} scanDetails={scanDetails} />
+            <OverviewTab
+              scans={scans}
+              scanDetails={scanDetails}
+              onOpenTrends={handleOpenTrends}
+              isPlusUser={isPlusUser}
+              showTrendsPanel={trendsOpenTab === 'overview'}
+              onCloseTrendsPanel={() => setTrendsOpenTab(null)}
+            />
           ) : activeTab === 'sources' ? (
-            <SourcesTab scans={scans} scanDetails={scanDetails} />
+            <SourcesTab
+              scans={scans}
+              scanDetails={scanDetails}
+              onOpenTrends={handleOpenTrends}
+              isPlusUser={isPlusUser}
+              showTrendsPanel={trendsOpenTab === 'sources'}
+              onCloseTrendsPanel={() => setTrendsOpenTab(null)}
+            />
           ) : activeTab === 'ads' ? (
-            <AdsTab scans={scans} scanDetails={scanDetails} />
+            <AdsTab
+              scans={scans}
+              scanDetails={scanDetails}
+              onOpenTrends={handleOpenTrends}
+              isPlusUser={isPlusUser}
+              showTrendsPanel={trendsOpenTab === 'ads'}
+              onCloseTrendsPanel={() => setTrendsOpenTab(null)}
+            />
           ) : activeTab === 'politics' ? (
-            <PoliticsTab scans={scans} scanDetails={scanDetails} />
+            <PoliticsTab
+              scans={scans}
+              scanDetails={scanDetails}
+              onOpenTrends={handleOpenTrends}
+              isPlusUser={isPlusUser}
+              showTrendsPanel={trendsOpenTab === 'politics'}
+              onCloseTrendsPanel={() => setTrendsOpenTab(null)}
+            />
           ) : activeTab === 'tone' ? (
-            <ToneTab scans={scans} scanDetails={scanDetails} />
+            <ToneTab
+              scans={scans}
+              scanDetails={scanDetails}
+              onOpenTrends={handleOpenTrends}
+              isPlusUser={isPlusUser}
+              showTrendsPanel={trendsOpenTab === 'tone'}
+              onCloseTrendsPanel={() => setTrendsOpenTab(null)}
+            />
           ) : activeTab === 'suggested_vs_followed' ? (
-            <SuggestedVsFollowedTab scans={scans} scanDetails={scanDetails} />
+            <SuggestedVsFollowedTab
+              scans={scans}
+              scanDetails={scanDetails}
+              onOpenTrends={handleOpenTrends}
+              isPlusUser={isPlusUser}
+              showTrendsPanel={trendsOpenTab === 'suggested_vs_followed'}
+              onCloseTrendsPanel={() => setTrendsOpenTab(null)}
+            />
           ) : (
             <>
               {/* Feature Moment - Editorial centerpiece for ALL tabs (Part 2: Design System Application) */}
@@ -2654,12 +2736,16 @@ const DashboardPage = () => {
         {/* Paywall Modal (globally available) */}
         <PaywallModal
           open={paywallModalOpen}
-          onClose={() => setPaywallModalOpen(false)}
+          onClose={() => {
+            setPaywallModalOpen(false);
+            setPaywallSource('');
+          }}
           onStartTrial={(params) => {
             console.log('Trial started (demo):', params);
             setPaywallModalOpen(false);
+            setPaywallSource('');
           }}
-          source="demo_preview"
+          source={paywallSource || 'demo_preview'}
         />
 
         {/* Phase 8: Minimal footer - Softer, less competing */}

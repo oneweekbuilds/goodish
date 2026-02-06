@@ -5,6 +5,8 @@ import {
   ConcentrationSummary,
 } from '../../../components/dashboard/primitives';
 import InsightHero from '../../../components/dashboard/InsightHero';
+import TrendsCTA from '../../../components/dashboard/TrendsCTA';
+import TrendsStubPanel from '../../../components/dashboard/TrendsStubPanel';
 import { buildSourcesHero } from '../../../lib/dashboard/insightBuilders';
 import { SimpleTable } from '../../../components/dashboard/charts';
 import { aggregateCreators, aggregateAds } from '../../../lib/dashboard/scanAggregator';
@@ -18,9 +20,14 @@ import { aggregateCreators, aggregateAds } from '../../../lib/dashboard/scanAggr
  * - Section 2.3: Suggested vs Followed share (HIDDEN - capability missing)
  * - Section 2.4: Master numbers line
  */
-const SourcesTab = ({ scans, scanDetails }) => {
-  // TODO: Replace with actual Plus subscription check
-  const isPlusUser = false;
+const SourcesTab = ({
+  scans,
+  scanDetails,
+  onOpenTrends,
+  isPlusUser,
+  showTrendsPanel,
+  onCloseTrendsPanel,
+}) => {
 
   // Aggregate data from all filtered scans
   const creatorsData = aggregateCreators(scans, scanDetails);
@@ -109,13 +116,18 @@ const SourcesTab = ({ scans, scanDetails }) => {
       {/* Insight Hero */}
       <InsightHero {...hero} />
 
-      {/* Plus awareness for free users */}
-      {!isPlusUser && hasSourcesData && (
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-          <p className="text-sm text-slate-600">
-            🔒 Track which sources gain or lose prominence over time with AlgorithmLens Plus.
-          </p>
-        </div>
+      {/* Trends CTA */}
+      <TrendsCTA
+        onClick={() => onOpenTrends({ tab: 'sources', placement: 'hero_trends' })}
+        isPlusUser={isPlusUser}
+      />
+
+      {/* Trends Panel (Plus users only) */}
+      {showTrendsPanel && (
+        <TrendsStubPanel
+          scanCount={scans.length}
+          onClose={onCloseTrendsPanel}
+        />
       )}
 
       {/* Section 2.1 - Top Sources Table */}

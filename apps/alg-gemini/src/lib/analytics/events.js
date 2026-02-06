@@ -15,5 +15,9 @@ export const EVENTS = {
   LOGIN_SUCCESS: 'login_success',
   RESULTS_VIEWED: 'results_viewed',
 
-  // Future: upgrade and Stripe events
+  // Upgrade funnel
+  UPGRADE_CTA_CLICKED: 'upgrade_cta_clicked',
+  PAYWALL_VIEWED: 'paywall_viewed',
+
+  // Future: Stripe events
 };

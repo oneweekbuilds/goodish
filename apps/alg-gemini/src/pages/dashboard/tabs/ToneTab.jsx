@@ -6,6 +6,8 @@ import {
 } from '../../../components/dashboard/primitives';
 import InsightHero from '../../../components/dashboard/InsightHero';
 import SectionHeader from '../../../components/dashboard/SectionHeader';
+import TrendsCTA from '../../../components/dashboard/TrendsCTA';
+import TrendsStubPanel from '../../../components/dashboard/TrendsStubPanel';
 import { buildToneHero } from '../../../lib/dashboard/insightBuilders';
 import { aggregateEmotions, aggregateAds, aggregatePolitics, summarizeInfluence } from '../../../lib/dashboard/scanAggregator';
 
@@ -18,9 +20,14 @@ import { aggregateEmotions, aggregateAds, aggregatePolitics, summarizeInfluence 
  * - Section 5.3: Tone split: selling vs not selling
  * - Section 5.4: Master numbers line
  */
-const ToneTab = ({ scans, scanDetails }) => {
-  // TODO: Replace with actual Plus subscription check
-  const isPlusUser = false;
+const ToneTab = ({
+  scans,
+  scanDetails,
+  onOpenTrends,
+  isPlusUser,
+  showTrendsPanel,
+  onCloseTrendsPanel,
+}) => {
 
   // Aggregate data from all filtered scans
   const emotionsData = aggregateEmotions(scans, scanDetails);
@@ -347,13 +354,18 @@ const ToneTab = ({ scans, scanDetails }) => {
       {/* Insight Hero */}
       <InsightHero {...hero} />
 
-      {/* Plus awareness for free users */}
-      {!isPlusUser && toneDistribution.hasData && (
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-          <p className="text-sm text-slate-600">
-            🔒 See whether emotional tone in your feed is stable or changing with AlgorithmLens Plus.
-          </p>
-        </div>
+      {/* Trends CTA */}
+      <TrendsCTA
+        onClick={() => onOpenTrends({ tab: 'tone', placement: 'hero_trends' })}
+        isPlusUser={isPlusUser}
+      />
+
+      {/* Trends Panel (Plus users only) */}
+      {showTrendsPanel && (
+        <TrendsStubPanel
+          scanCount={scans.length}
+          onClose={onCloseTrendsPanel}
+        />
       )}
 
       {/* Section 5.1 - Tone Distribution */}

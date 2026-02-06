@@ -9,6 +9,8 @@ import {
 } from '../../../components/dashboard/primitives';
 import InsightHero from '../../../components/dashboard/InsightHero';
 import SectionHeader from '../../../components/dashboard/SectionHeader';
+import TrendsCTA from '../../../components/dashboard/TrendsCTA';
+import TrendsStubPanel from '../../../components/dashboard/TrendsStubPanel';
 import { buildOverviewHero } from '../../../lib/dashboard/insightBuilders';
 import { aggregateCreators, aggregateAds, aggregatePolitics, aggregateEmotions, summarizeInfluence, aggregateAiDisclosures } from '../../../lib/dashboard/scanAggregator';
 
@@ -21,9 +23,14 @@ import { aggregateCreators, aggregateAds, aggregatePolitics, aggregateEmotions, 
  * - Section 1.3: Experiment suggestions
  * - Section 1.4: Master numbers line
  */
-const OverviewTab = ({ scans, scanDetails }) => {
-  // TODO: Replace with actual Plus subscription check
-  const isPlusUser = false;
+const OverviewTab = ({
+  scans,
+  scanDetails,
+  onOpenTrends,
+  isPlusUser,
+  showTrendsPanel,
+  onCloseTrendsPanel,
+}) => {
 
   // Aggregate data from all filtered scans
   const creatorsData = aggregateCreators(scans, scanDetails);
@@ -312,6 +319,20 @@ const OverviewTab = ({ scans, scanDetails }) => {
     <div className="space-y-8">
       {/* Insight Hero */}
       <InsightHero {...hero} />
+
+      {/* Trends CTA */}
+      <TrendsCTA
+        onClick={() => onOpenTrends({ tab: 'overview', placement: 'hero_trends' })}
+        isPlusUser={isPlusUser}
+      />
+
+      {/* Trends Panel (Plus users only) */}
+      {showTrendsPanel && (
+        <TrendsStubPanel
+          scanCount={scans.length}
+          onClose={onCloseTrendsPanel}
+        />
+      )}
 
       {/* AI Likelihood Section */}
       <section>

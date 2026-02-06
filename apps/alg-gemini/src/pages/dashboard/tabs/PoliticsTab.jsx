@@ -6,6 +6,8 @@ import {
 } from '../../../components/dashboard/primitives';
 import InsightHero from '../../../components/dashboard/InsightHero';
 import SectionHeader from '../../../components/dashboard/SectionHeader';
+import TrendsCTA from '../../../components/dashboard/TrendsCTA';
+import TrendsStubPanel from '../../../components/dashboard/TrendsStubPanel';
 import { buildPoliticsHero } from '../../../lib/dashboard/insightBuilders';
 import { aggregatePolitics, aggregateCreators, aggregateAds } from '../../../lib/dashboard/scanAggregator';
 
@@ -18,9 +20,14 @@ import { aggregatePolitics, aggregateCreators, aggregateAds } from '../../../lib
  * - Section 4.3: Ideological distribution (100% split)
  * - Section 4.5: Master numbers line
  */
-const PoliticsTab = ({ scans, scanDetails }) => {
-  // TODO: Replace with actual Plus subscription check
-  const isPlusUser = false;
+const PoliticsTab = ({
+  scans,
+  scanDetails,
+  onOpenTrends,
+  isPlusUser,
+  showTrendsPanel,
+  onCloseTrendsPanel,
+}) => {
 
   // Aggregate data from all filtered scans
   const politicsData = aggregatePolitics(scans, scanDetails);
@@ -190,13 +197,18 @@ const PoliticsTab = ({ scans, scanDetails }) => {
       {/* Insight Hero */}
       <InsightHero {...hero} />
 
-      {/* Plus awareness for free users */}
-      {!isPlusUser && politicalShare.hasData && (
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-          <p className="text-sm text-slate-600">
-            🔒 Watch political exposure trends across multiple scans with AlgorithmLens Plus.
-          </p>
-        </div>
+      {/* Trends CTA */}
+      <TrendsCTA
+        onClick={() => onOpenTrends({ tab: 'politics', placement: 'hero_trends' })}
+        isPlusUser={isPlusUser}
+      />
+
+      {/* Trends Panel (Plus users only) */}
+      {showTrendsPanel && (
+        <TrendsStubPanel
+          scanCount={scans.length}
+          onClose={onCloseTrendsPanel}
+        />
       )}
 
       {/* Section 4.1 - Political Share */}

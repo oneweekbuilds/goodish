@@ -6,6 +6,8 @@ import {
 } from '../../../components/dashboard/primitives';
 import InsightHero from '../../../components/dashboard/InsightHero';
 import SectionHeader from '../../../components/dashboard/SectionHeader';
+import TrendsCTA from '../../../components/dashboard/TrendsCTA';
+import TrendsStubPanel from '../../../components/dashboard/TrendsStubPanel';
 import { buildAdsHero } from '../../../lib/dashboard/insightBuilders';
 import { aggregateAds, summarizeInfluence } from '../../../lib/dashboard/scanAggregator';
 
@@ -29,9 +31,14 @@ const getFeedItems = (scanDetail) => {
  * - Section 3.5: Tone split: selling vs not selling (conditional)
  * - Section 3.6: Master numbers line
  */
-const AdsTab = ({ scans, scanDetails }) => {
-  // TODO: Replace with actual Plus subscription check
-  const isPlusUser = false;
+const AdsTab = ({
+  scans,
+  scanDetails,
+  onOpenTrends,
+  isPlusUser,
+  showTrendsPanel,
+  onCloseTrendsPanel,
+}) => {
 
   // Aggregate data from all filtered scans
   const adsData = aggregateAds(scans, scanDetails);
@@ -408,13 +415,18 @@ const AdsTab = ({ scans, scanDetails }) => {
       {/* Insight Hero */}
       <InsightHero {...hero} />
 
-      {/* Plus awareness for free users */}
-      {!isPlusUser && commercialComposition.hasData && (
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-          <p className="text-sm text-slate-600">
-            🔒 Monitor whether ad exposure is growing or shrinking with AlgorithmLens Plus.
-          </p>
-        </div>
+      {/* Trends CTA */}
+      <TrendsCTA
+        onClick={() => onOpenTrends({ tab: 'ads', placement: 'hero_trends' })}
+        isPlusUser={isPlusUser}
+      />
+
+      {/* Trends Panel (Plus users only) */}
+      {showTrendsPanel && (
+        <TrendsStubPanel
+          scanCount={scans.length}
+          onClose={onCloseTrendsPanel}
+        />
       )}
 
       {/* Section 3.1 - Commercial Composition */}
