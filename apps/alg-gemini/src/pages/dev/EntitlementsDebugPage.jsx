@@ -18,7 +18,7 @@ const EntitlementsDebugPage = () => {
 
   // Check if dev mode is enabled
   useEffect(() => {
-    const isDev = import.meta.env.DEV || new URLSearchParams(window.location.search).get('dev') === '1';
+    const isDev = import.meta.env.DEV;
     setIsAuthorized(isDev);
   }, []);
 

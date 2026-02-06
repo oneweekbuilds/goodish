@@ -2122,16 +2122,14 @@ const DashboardPage = () => {
       };
 
       // Start first attempt
-      const shouldStop = await tryFetch();
+      await tryFetch();
 
       // Strip checkout param after first attempt (regardless of result)
-      if (shouldStop || attempt === 0) {
-        params.delete('checkout');
-        const newSearch = params.toString();
-        navigate({
-          search: newSearch ? `?${newSearch}` : '',
-        }, { replace: true });
-      }
+      params.delete('checkout');
+      const newSearch = params.toString();
+      navigate({
+        search: newSearch ? `?${newSearch}` : '',
+      }, { replace: true });
     };
 
     syncEntitlements();
