@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
+    "lint": "node scripts/lint-changed.mjs",
     "lint:changed": "node scripts/lint-changed.mjs",
+    "lint:all": "eslint .",
     "preview": "vite preview",
     "test:smoke": "playwright test tests/dashboard-smoke.spec.js",
     "test:smoke:ui": "playwright test tests/dashboard-smoke.spec.js --ui"

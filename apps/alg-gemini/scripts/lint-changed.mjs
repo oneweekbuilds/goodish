@@ -6,7 +6,13 @@
  * Lints only files changed in git (staged + unstaged).
  * Filters to JS/JSX/TS/TSX files under src/
  *
- * Usage: node scripts/lint-changed.mjs
+ * Usage:
+ *   npm run lint          → Fast day-to-day lint (changed files only) [RECOMMENDED]
+ *   npm run lint:changed  → Alias for above
+ *   npm run lint:all      → Full codebase audit (reports all pre-existing errors)
+ *
+ * Why: The full codebase has ~138 pre-existing lint errors. This script
+ * lets you verify your new changes are clean without noise from legacy code.
  */
 
 import { execSync } from 'child_process';
