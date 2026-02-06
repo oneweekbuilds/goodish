@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { TrendingUp, X, ArrowLeftRight } from 'lucide-react';
-import { compareTwoScans, generateChangeSummaries } from '../../lib/dashboard/trendsComparison';
+import { compareTwoScans, generateChangeSummaries, generatePossibleFactors } from '../../lib/dashboard/trendsComparison';
 
 /**
  * TrendsPanel - Real scan-to-scan comparison panel
@@ -76,6 +76,11 @@ const TrendsPanel = ({ scans, scanDetails, onClose }) => {
   // Generate plain-English summaries for top changes
   const changeSummaries = useMemo(() => {
     return generateChangeSummaries(comparisonMetrics);
+  }, [comparisonMetrics]);
+
+  // Generate possible factors for changes (optional, non-causal)
+  const possibleFactors = useMemo(() => {
+    return generatePossibleFactors(comparisonMetrics);
   }, [comparisonMetrics]);
 
   // Handle Escape key
@@ -310,6 +315,27 @@ const TrendsPanel = ({ scans, scanDetails, onClose }) => {
               </li>
             ))}
           </ul>
+
+          {/* Possible Factors (Optional, Collapsed by Default) */}
+          {possibleFactors.length > 0 && (
+            <details className="mt-3">
+              <summary className="cursor-pointer text-xs font-medium text-slate-600 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue/60 focus-visible:ring-offset-2 rounded">
+                Possible factors (optional)
+              </summary>
+              <div className="mt-2 pl-3 space-y-2">
+                <p className="text-xs text-slate-500 italic">
+                  The following are common factors that can influence feeds. They may or may not apply here.
+                </p>
+                <ul className="space-y-1.5 text-xs text-slate-600">
+                  {possibleFactors.map((factor, index) => (
+                    <li key={index} className="leading-relaxed">
+                      • {factor}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </details>
+          )}
         </div>
       )}
 

@@ -202,6 +202,45 @@ export function generateChangeSummaries(metrics, maxSummaries = 4) {
 }
 
 /**
+ * Generate possible factor explanations for metric changes
+ * Maps metric types to generic, non-causal explanations
+ * @param {Array} metrics - Comparison metrics
+ * @returns {Array<string>} Array of possible factor explanations (max 4)
+ */
+export function generatePossibleFactors(metrics) {
+  const factors = [];
+  const maxFactors = 4;
+
+  // Map of metric labels to their possible factors (tentative, non-judgmental)
+  const factorMap = {
+    'Total posts': 'Feed length can vary based on viewing time and scrolling depth.',
+    'Ad percentage': 'Advertising campaigns can vary over time.',
+    'Political content': 'Major news events can affect topic prevalence.',
+    'Unique creators': 'The number of creators shown can vary naturally.',
+    'Top 5 creator share': 'Posting frequency from individual accounts can vary.',
+    'Suggested content': 'Platform recommendation systems can shift over time.',
+    'Unique topics': 'Topic variety can be influenced by current events and trending content.',
+    'Positive tone': 'Tone in content can fluctuate with news cycles and ongoing discussions.',
+    'Negative tone': 'Tone in content can fluctuate with news cycles and ongoing discussions.',
+  };
+
+  // Collect unique factors for metrics that changed
+  const seenFactors = new Set();
+
+  for (const metric of metrics) {
+    if (factors.length >= maxFactors) break;
+
+    const factor = factorMap[metric.label];
+    if (factor && !seenFactors.has(factor)) {
+      seenFactors.add(factor);
+      factors.push(factor);
+    }
+  }
+
+  return factors;
+}
+
+/**
  * Compare two scans and return comparison metrics
  * @param {Object} baselineScan - Scan object for baseline
  * @param {Object} compareScan - Scan object for comparison
