@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { TrendingUp, X } from 'lucide-react';
 
 /**
@@ -12,8 +12,24 @@ import { TrendingUp, X } from 'lucide-react';
  * - onClose: callback to close panel
  */
 const TrendsStubPanel = ({ scanCount, onClose }) => {
+  // Handle Escape key
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [onClose]);
+
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4">
+    <div
+      className="bg-white border border-slate-200 rounded-xl p-6 space-y-4"
+      role="region"
+      aria-label="Trends panel"
+    >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">

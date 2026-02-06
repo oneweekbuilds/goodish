@@ -1966,6 +1966,7 @@ const DashboardPage = () => {
   // Paywall modal state (for demo preview and later gating flows)
   const [paywallModalOpen, setPaywallModalOpen] = useState(false);
   const [paywallSource, setPaywallSource] = useState('');
+  const paywallViewedRef = React.useRef(false);
 
   // Trends panel state (which tab has trends panel open)
   const [trendsOpenTab, setTrendsOpenTab] = useState(null);
@@ -1995,16 +1996,29 @@ const DashboardPage = () => {
     }
   };
 
-  // Track paywall viewed when modal opens (skip in demo mode)
+  // Track paywall viewed when modal opens (fire once per session, skip in demo mode)
   useEffect(() => {
-    if (paywallModalOpen && !isDemoMode && paywallSource) {
+    if (paywallModalOpen && !isDemoMode && paywallSource && !paywallViewedRef.current) {
       track(EVENTS.PAYWALL_VIEWED, {
         source: paywallSource,
         planTier,
         isDemo: false,
       });
+      paywallViewedRef.current = true;
+    }
+
+    // Reset the ref when modal closes
+    if (!paywallModalOpen && paywallViewedRef.current) {
+      paywallViewedRef.current = false;
     }
   }, [paywallModalOpen, isDemoMode, paywallSource, planTier]);
+
+  // Close trends panel when switching tabs
+  useEffect(() => {
+    if (trendsOpenTab && trendsOpenTab !== activeTab) {
+      setTrendsOpenTab(null);
+    }
+  }, [activeTab, trendsOpenTab]);
 
   // Generate demo data only once (memoized to avoid re-creating on every render)
   const demoData = useMemo(() => {

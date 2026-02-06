@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Check } from 'lucide-react';
 
 /**
@@ -12,6 +12,63 @@ import { X, Check } from 'lucide-react';
  */
 const PaywallModal = ({ open, onClose, onStartTrial, source }) => {
   const [billingCycle, setBillingCycle] = useState('annual');
+  const modalRef = useRef(null);
+  const previousActiveElement = useRef(null);
+
+  // Handle Escape key
+  useEffect(() => {
+    if (!open) return;
+
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [open, onClose]);
+
+  // Focus management
+  useEffect(() => {
+    if (open) {
+      previousActiveElement.current = document.activeElement;
+      // Focus the modal container after a brief delay
+      setTimeout(() => {
+        modalRef.current?.focus();
+      }, 100);
+    } else if (previousActiveElement.current) {
+      // Return focus when closing
+      previousActiveElement.current.focus();
+      previousActiveElement.current = null;
+    }
+  }, [open]);
+
+  // Basic focus trap
+  useEffect(() => {
+    if (!open) return;
+
+    const handleTabKey = (e) => {
+      if (e.key !== 'Tab' || !modalRef.current) return;
+
+      const focusableElements = modalRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (e.shiftKey && document.activeElement === firstElement) {
+        e.preventDefault();
+        lastElement.focus();
+      } else if (!e.shiftKey && document.activeElement === lastElement) {
+        e.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleTabKey);
+    return () => document.removeEventListener('keydown', handleTabKey);
+  }, [open]);
 
   if (!open) return null;
 
@@ -25,14 +82,19 @@ const PaywallModal = ({ open, onClose, onStartTrial, source }) => {
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="paywall-title"
     >
       <div
+        ref={modalRef}
         className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
+        tabIndex={-1}
       >
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
-          <h2 className="text-2xl font-bold text-slate-900">Unlock Plus</h2>
+          <h2 id="paywall-title" className="text-2xl font-bold text-slate-900">Unlock Plus</h2>
           <button
             onClick={onClose}
             className="text-slate-400 hover:text-slate-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue/60 focus-visible:ring-offset-2 rounded"
@@ -51,7 +113,7 @@ const PaywallModal = ({ open, onClose, onStartTrial, source }) => {
 
           {/* Billing cycle toggle */}
           <div className="flex justify-center">
-            <div className="bg-slate-100 rounded-full p-1 flex items-center relative">
+            <div className="bg-slate-100 rounded-full p-1 flex items-center relative" role="group" aria-label="Billing cycle">
               <button
                 onClick={() => setBillingCycle('monthly')}
                 className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 relative z-10 ${
@@ -59,6 +121,7 @@ const PaywallModal = ({ open, onClose, onStartTrial, source }) => {
                     ? 'text-white'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
+                aria-pressed={billingCycle === 'monthly'}
               >
                 Monthly
               </button>
@@ -69,6 +132,7 @@ const PaywallModal = ({ open, onClose, onStartTrial, source }) => {
                     ? 'text-white'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
+                aria-pressed={billingCycle === 'annual'}
               >
                 Annual
               </button>
