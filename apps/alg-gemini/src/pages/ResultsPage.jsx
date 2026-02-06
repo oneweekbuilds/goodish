@@ -791,7 +791,7 @@ const ResultsPage = () => {
                     {/* Fallback mode notice for desktop scans */}
                     {processedItem.fallbackMode && (
                       <div className="mt-2 text-xs text-slate-500 italic text-center">
-                        Captured via fallback mode — platform provided minimal metadata.
+                        Captured via fallback mode. Platform provided minimal metadata.
                       </div>
                     )}
                   </div>

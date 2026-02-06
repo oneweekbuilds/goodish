@@ -14,7 +14,7 @@ const LabelsPreviewSection = () => {
             <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center mb-10 sm:mb-14">
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-main mb-4 sm:mb-6">Algorithms infer hidden labels about you.</h2>
                 <p className="text-base sm:text-lg text-text-muted max-w-2xl mx-auto px-2">
-                    From thousands of tiny signals, algorithms build a portrait of who you are — categorizing you into clusters that determine what you see next.
+                    From thousands of tiny signals, algorithms build a portrait of who you are, categorizing you into clusters that determine what you see next.
                 </p>
             </div>
 

@@ -597,7 +597,7 @@ const AdsTab = ({
                       <td className="px-4 py-3 text-sm text-slate-800">{theme.theme}</td>
                       <td className="px-4 py-3 text-sm text-slate-600 text-right">{theme.percent}%</td>
                       <td className="px-4 py-3 text-xs text-slate-500">
-                        {theme.examples.length > 0 ? theme.examples.join(', ') : '—'}
+                        {theme.examples.length > 0 ? theme.examples.join(', ') : 'N/A'}
                       </td>
                     </tr>
                   ))}

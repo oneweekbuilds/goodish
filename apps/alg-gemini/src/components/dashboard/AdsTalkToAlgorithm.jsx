@@ -272,7 +272,7 @@ const PremiumInvitationCard = ({ onStartConversation, onSelectPrompt }) => {
           maxWidth: '540px',
         }}
       >
-        Ask questions about your ad exposure. Responses are generated strictly from your scan data—no guessing, no generic explanations.
+        Ask questions about your ad exposure. Responses are generated strictly from your scan data, no guessing, no generic explanations.
       </p>
 
       {/* Example prompts */}
@@ -618,7 +618,7 @@ const ReflectiveNote = ({ hasMessages }) => {
           opacity: 0.7,
         }}
       >
-        These responses are generated strictly from your Evidence Bundle—
+        These responses are generated strictly from your Evidence Bundle,
         based only on what we can observe in your scan data.
       </p>
     </div>

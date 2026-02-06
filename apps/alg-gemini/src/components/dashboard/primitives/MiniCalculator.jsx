@@ -58,7 +58,7 @@ const MiniCalculator = ({ label, percent, disabledMessage }) => {
 
       {/* Formula */}
       <div className="text-xs text-slate-600 font-mono bg-slate-50 px-3 py-2 rounded">
-        {minutesPerDay} × {percent !== null ? `${percent.toFixed(1)}%` : '—'} = {isDisabled ? '—' : calculatedMinutes}
+        {minutesPerDay} × {percent !== null ? `${percent.toFixed(1)}%` : 'N/A'} = {isDisabled ? 'N/A' : calculatedMinutes}
       </div>
 
       {/* Output or Disabled Message */}

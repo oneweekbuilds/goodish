@@ -570,14 +570,14 @@ const TalkToAlgorithmSection = ({ feedData, tabId }) => {
   const generateResponse = (question) => {
     // Placeholder responses grounded in observation, not intent
     const responses = {
-      default: "In this scan, we observed certain topics appearing more frequently than others. We cannot know why these appeared — platform algorithms are opaque. You could try engaging with different content to see if patterns shift over time.",
+      default: "In this scan, we observed certain topics appearing more frequently than others. We cannot know why these appeared. Platform algorithms are opaque. You could try engaging with different content to see if patterns shift over time.",
       topics: "In this scan, we detected specific topics that appeared multiple times. This may indicate topic clustering, but we cannot know why. You could try searching for different topics to see if variety increases.",
-      reinforce: "We observed certain topics recurring in this scan. We cannot know whether the platform deliberately reinforces patterns — only what appeared. You could try sustained engagement with different content to see if topics shift.",
+      reinforce: "We observed certain topics recurring in this scan. We cannot know whether the platform deliberately reinforces patterns, only what appeared. You could try sustained engagement with different content to see if topics shift.",
       change: "We can only observe what appeared in this scan. Changes across scans may indicate shifts, but we cannot predict future content. You could try changing engagement patterns to see if content responds.",
-      fitness: "In this scan, fitness and wellness content appeared frequently. We cannot know why this content was shown — only that it appeared. You could try engaging with other topics to see if the mix changes.",
-      political: "In this scan, political content showed a certain distribution. We cannot determine actual balance or bias from keyword matching alone — this is a rough estimate. You could try following diverse sources.",
-      diverse: "You could try actively engaging with new topics to see if content variety changes over time. We cannot predict whether this will work — only observe what currently appears.",
-      interests: "In this scan, certain topics appeared frequently. This does not indicate what you are interested in — only what showed up. We cannot infer your preferences from what platforms display.",
+      fitness: "In this scan, fitness and wellness content appeared frequently. We cannot know why this content was shown, only that it appeared. You could try engaging with other topics to see if the mix changes.",
+      political: "In this scan, political content showed a certain distribution. We cannot determine actual balance or bias from keyword matching alone. This is a rough estimate. You could try following diverse sources.",
+      diverse: "You could try actively engaging with new topics to see if content variety changes over time. We cannot predict whether this will work, only observe what currently appears.",
+      interests: "In this scan, certain topics appeared frequently. This does not indicate what you are interested in, only what showed up. We cannot infer your preferences from what platforms display.",
     };
 
     const lowerQuestion = question.toLowerCase();
