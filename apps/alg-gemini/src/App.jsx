@@ -23,6 +23,10 @@ import HistoryPage from './pages/HistoryPage';
 // Dashboard
 import DashboardPage from './pages/dashboard/DashboardPage';
 
+// Auth
+import AuthCallbackPage from './pages/auth/AuthCallbackPage';
+import { AuthProvider } from './lib/auth';
+
 // Coming Soon Mode - Minimal Overlay
 import { isComingSoon } from './config/comingSoon';
 import ComingSoonBanner from './components/ComingSoonBanner';
@@ -58,9 +62,10 @@ function App() {
   }, [location.pathname, comingSoonMode, navigate]);
 
   return (
-    <div className="min-h-screen bg-bg-page font-sans text-text-main selection:bg-primary-blue/20">
-      {/* Coming Soon Banner - Only shows when Coming Soon mode is enabled */}
-      {comingSoonMode && <ComingSoonBanner />}
+    <AuthProvider>
+      <div className="min-h-screen bg-bg-page font-sans text-text-main selection:bg-primary-blue/20">
+        {/* Coming Soon Banner - Only shows when Coming Soon mode is enabled */}
+        {comingSoonMode && <ComingSoonBanner />}
 
       {/* Redirect Message - Shows when user tries to access gated route */}
       {showRedirectMessage && (
@@ -178,6 +183,13 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
 
           {/* ========================================
+              AUTH ROUTES
+              ======================================== */}
+
+          {/* Magic link callback - completes authentication */}
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
+
+          {/* ========================================
               LEGACY ROUTES (kept for backwards compatibility)
               ======================================== */}
           
@@ -192,18 +204,19 @@ function App() {
         </Routes>
       </main>
 
-      {/* Footer */}
-      <footer className="py-12 bg-bg-page">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-2">
-            <Logo variant="footer" />
+        {/* Footer */}
+        <footer className="py-12 bg-bg-page">
+          <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-2">
+              <Logo variant="footer" />
+            </div>
+            <p className="text-sm text-text-muted font-medium">
+              © {new Date().getFullYear()} AlgorithmLens. All rights reserved.
+            </p>
           </div>
-          <p className="text-sm text-text-muted font-medium">
-            © {new Date().getFullYear()} AlgorithmLens. All rights reserved.
-          </p>
-        </div>
-      </footer>
-    </div>
+        </footer>
+      </div>
+    </AuthProvider>
   );
 }
 

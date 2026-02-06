@@ -1,0 +1,3 @@
+# Gitleaks ignore file
+# Public anon keys for Supabase (safe for client-side use)
+apps/alg-gemini/src/lib/auth/supabaseClient.js:jwt:10
