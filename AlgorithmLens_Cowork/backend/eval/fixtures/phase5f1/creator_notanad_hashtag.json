@@ -1,0 +1,61 @@
+{
+  "fixture_id": "creator_notanad_hashtag",
+  "phase": "5F1",
+  "description": "Creator uses #notanad hashtag while platform shows paid partnership label",
+  "conflict_type": "CREATOR_DENIAL",
+  "items": [
+    {
+      "item_index": 0,
+      "platform": "instagram",
+      "signals": {
+        "platform_label": {
+          "is_ad": true,
+          "label_text": "Paid partnership with @BrandName",
+          "detection_method": "PLATFORM_LABEL",
+          "reliability": 0.999
+        },
+        "ocr_text": "Loving this product! #notanad #organic #gifted #blessed",
+        "hashtags": ["notanad", "organic", "gifted", "blessed"],
+        "denial_signal": {
+          "type": "hashtag_denial",
+          "text": "#notanad",
+          "detection_method": "KEYWORD_MATCH",
+          "reliability": 0.70
+        }
+      },
+      "evidence_items": [
+        {
+          "evidence_id": "ev-ads-platform-001",
+          "signal_type": "platform_labeled_ad",
+          "detection_method": "PLATFORM_LABEL",
+          "method_reliability": {"method": "PLATFORM_LABEL", "value": 0.999}
+        },
+        {
+          "evidence_id": "ev-ads-denial-001",
+          "signal_type": "creator_denial_hashtag",
+          "detection_method": "KEYWORD_MATCH",
+          "method_reliability": {"method": "KEYWORD_MATCH", "value": 0.70}
+        }
+      ]
+    }
+  ],
+  "expected": {
+    "conflict_detected": true,
+    "conflict_type": "CREATOR_DENIAL",
+    "conflict_severity": "CRITICAL",
+    "resolution_type": "PRECEDENCE",
+    "winning_method": "PLATFORM_LABEL",
+    "winning_evidence_id": "ev-ads-platform-001",
+    "losing_methods": ["KEYWORD_MATCH"],
+    "losing_evidence_ids": ["ev-ads-denial-001"],
+    "classification": "LABELED_AD",
+    "claim_status": "FINAL",
+    "confidence_penalty": 0.0,
+    "metadata": {
+      "creator_denial_noted": true,
+      "denial_type": "hashtag"
+    },
+    "rationale_contains": "Platform ad label (reliability=0.999) overrides creator denial"
+  },
+  "notes": "Common pattern: creators use #notanad or similar hashtags to maintain perceived authenticity while actually having a paid partnership. Platform label is authoritative."
+}

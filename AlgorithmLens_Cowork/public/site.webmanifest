@@ -1,0 +1,19 @@
+{
+  "name": "Algorithm Lens",
+  "short_name": "Algorithm Lens",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#fdfaf4",
+  "background_color": "#fdfaf4",
+  "display": "standalone"
+}

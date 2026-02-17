@@ -1,0 +1,737 @@
+{
+  "schema_version": "1.0.0",
+  "scan_metadata": {
+    "scan_id": "eval_twitter_1dd8abebb50c",
+    "created_at": "2026-02-15T17:24:13.232394+00:00",
+    "source_type": "DESKTOP_EXTENSION",
+    "platform": "TWITTER",
+    "user_identifier": null,
+    "app_scan_version": "eval-1.0.0",
+    "insights_engine_version": "eval-1.0.0"
+  },
+  "environment": {
+    "device_type": "DESKTOP",
+    "device_os": "LINUX",
+    "browser_name": "Chrome",
+    "browser_version": null,
+    "screen_resolution": null,
+    "video_capture": null,
+    "extension_capture": {
+      "is_dom_based": true,
+      "dom_capture_strategy": "VISIBLE_FEED_ONLY"
+    }
+  },
+  "feed_items": [
+    {
+      "position_in_feed": 0,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "IMAGE",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "espaborern",
+        "account_display_name": "ESPN",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "BREAKING: Patrick Mahomes leads Chiefs to another comeback victory in overtime! Final score: 31-28. #NFL #ChiefsKingdom"
+        ],
+        "hashtags": [
+          "#NFL",
+          "#ChiefsKingdom"
+        ],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "1890001",
+          "post_url": "https://x.com/espaborern/status/1890001",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 1,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "VIDEO",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "foodnetwork",
+        "account_display_name": "Food Network",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "The ULTIMATE chocolate lava cake recipe. Gooey, rich, and ready in 30 minutes. Save this one!"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "1890002",
+          "post_url": "https://x.com/foodnetwork/status/1890002",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 2,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "IMAGE",
+      "is_ad": true,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": {
+        "ad_detected_reason": "promoted_label",
+        "sponsored_label_text": "Promoted",
+        "advertiser_name": "samsung",
+        "advertiser_domain": null,
+        "product_or_service": null
+      },
+      "account": {
+        "account_handle": "samsung",
+        "account_display_name": "Samsung",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Introducing the all-new Galaxy S26 Ultra. AI-powered camera. All-day battery. Pre-order now and get $200 off."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "1890003",
+          "post_url": "https://x.com/samsung/status/1890003",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 3,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "TEXT",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "elonmusk",
+        "account_display_name": "Elon Musk",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Working on something exciting with the Starship team. More details soon."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "1890004",
+          "post_url": "https://x.com/elonmusk/status/1890004",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 4,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "LINK",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "nytimes",
+        "account_display_name": "The New York Times",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Congress passes bipartisan infrastructure bill with $1.2 trillion in funding for roads, bridges, and broadband expansion."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "1890005",
+          "post_url": "https://x.com/nytimes/status/1890005",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 5,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "TEXT",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "mkbhd",
+        "account_display_name": "Marques Brownlee",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Just finished my full review of the Vision Pro 2. Apple made some big improvements this year. Video dropping tomorrow."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "1890006",
+          "post_url": "https://x.com/mkbhd/status/1890006",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 6,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "IMAGE",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "jenniferaniston",
+        "account_display_name": "Jennifer Aniston",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Sunday morning yoga with my rescue pup. Nothing better. #SundayVibes #DogMom"
+        ],
+        "hashtags": [
+          "#SundayVibes",
+          "#DogMom"
+        ],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "1890007",
+          "post_url": "https://x.com/jenniferaniston/status/1890007",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 7,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "LINK",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "washingtonpost",
+        "account_display_name": "Washington Post",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Federal Reserve signals potential interest rate cuts in Q2 as inflation continues to moderate. Markets respond positively."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "1890008",
+          "post_url": "https://x.com/washingtonpost/status/1890008",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 8,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "VIDEO",
+      "is_ad": true,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": {
+        "ad_detected_reason": "promoted_label",
+        "sponsored_label_text": "Promoted",
+        "advertiser_name": "nike",
+        "advertiser_domain": null,
+        "product_or_service": null
+      },
+      "account": {
+        "account_handle": "nike",
+        "account_display_name": "Nike",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Just Do It. New Air Max collection drops February 20th. Sign up for early access."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "1890009",
+          "post_url": "https://x.com/nike/status/1890009",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 9,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "TEXT",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "pewdiepie",
+        "account_display_name": "PewDiePie",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "This new indie game is actually insane. Full playthrough going up on the channel tonight. Trust me on this one."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "1890010",
+          "post_url": "https://x.com/pewdiepie/status/1890010",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    }
+  ],
+  "aggregates": {
+    "total_feed_items": 10,
+    "total_ads": 2,
+    "ad_percentage": 20.0,
+    "topic_distribution": [],
+    "wellbeing_summary": {
+      "high_relevance_items": 0,
+      "potential_risk_items": 0,
+      "valence_distribution": {
+        "POSITIVE": 0,
+        "NEUTRAL": 0,
+        "NEGATIVE": 0,
+        "MIXED": 0
+      }
+    },
+    "political_content_summary": {
+      "political_items": 0,
+      "political_percentage": 0.0
+    },
+    "repetition_summary": {
+      "items_in_repetition_clusters": 0,
+      "largest_cluster_size": 0
+    },
+    "engagement_pattern_summary": {
+      "top_hooks": []
+    }
+  },
+  "privacy": {
+    "user_identifiers_stored": false,
+    "profile_photos_stored": false,
+    "raw_text_stored": true,
+    "retention_policy_key": "SHORT",
+    "redacted_fields": []
+  },
+  "debug": {
+    "processing_time_seconds": null,
+    "frames_extracted": null,
+    "frames_sampled_for_ocr": null,
+    "errors": [],
+    "warnings": [],
+    "raw_backend_payload": null
+  },
+  "_eval_metadata": {
+    "capture_snapshot_summary": "[twitter] 10 posts from 10 authors (2 ads) | types: image: 3, text: 3, video: 2, link: 2 | feed: for_you",
+    "ground_truth_post_count": 10,
+    "ground_truth_content_types": {
+      "IMAGE": 3,
+      "VIDEO": 2,
+      "TEXT": 3,
+      "LINK": 2
+    },
+    "capture_timestamp": "2026-02-15T17:30:00Z"
+  }
+}

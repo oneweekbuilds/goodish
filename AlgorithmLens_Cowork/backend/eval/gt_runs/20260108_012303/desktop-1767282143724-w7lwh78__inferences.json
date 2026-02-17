@@ -1,0 +1,192 @@
+{
+  "scan_id": "desktop-1767282143724-w7lwh78",
+  "tab": "inferences",
+  "bundle": {
+    "meta": {
+      "scan_id": "desktop-1767282143724-w7lwh78",
+      "platform": "TWITTER",
+      "n_items": 28,
+      "window_start": "2026-01-01T15:42:23.724Z",
+      "window_end": "2026-01-01T15:42:23.724Z",
+      "generated_at": "2026-01-08T01:23:03.960246",
+      "source_bundles": {
+        "ads": true,
+        "politics": true,
+        "patterns": true,
+        "creators": true
+      },
+      "coverage": {
+        "n_items_total": 28,
+        "n_items_included": 28,
+        "n_items_excluded": 0,
+        "exclusion_reasons": {},
+        "quality_flags": {}
+      }
+    },
+    "observations": {
+      "total_posts_analyzed": 28,
+      "surfaced_inferences": [
+        {
+          "signal": "Dominant content type",
+          "detail": "POST content (100.0%)",
+          "source": "patterns",
+          "evidence_count": 28,
+          "confidence": "high"
+        }
+      ],
+      "surfaced_count": 1,
+      "below_threshold": [],
+      "below_threshold_count": 0
+    },
+    "measurements": {
+      "inference_sources": {
+        "value": {
+          "patterns": 1
+        },
+        "method": "aggregation_from_evidence_bundles",
+        "quality": "ok",
+        "notes": "1 inferences surfaced from 1 sources."
+      },
+      "surfacing_threshold": {
+        "value": {
+          "min_evidence_count": 2,
+          "confidence_required": "medium or high"
+        },
+        "method": "threshold_gating",
+        "quality": "ok",
+        "notes": "Inferences require at least 2 supporting items to surface."
+      },
+      "confidence_breakdown": {
+        "value": {
+          "high_confidence": 1,
+          "medium_confidence": 0,
+          "below_threshold": 0
+        },
+        "method": "confidence_classification",
+        "quality": "ok",
+        "notes": "1 high-confidence, 0 medium-confidence inferences."
+      }
+    },
+    "limits": {
+      "sample_size_limitations": [
+        "Sample size of 28 posts. Treat inferences as tentative."
+      ],
+      "epistemic_boundaries": [
+        "These are signals IN THE CONTENT, not inferences about YOU.",
+        "We CANNOT infer your identity, beliefs, intent, or demographics.",
+        "We CANNOT know what targeting criteria were used.",
+        "We CANNOT know why this content was shown to you.",
+        "We CANNOT infer causal influence on your behavior or views.",
+        "Content signals do not indicate your agreement, interest, or preferences.",
+        "The presence of commercial/political content is not evidence of targeting."
+      ],
+      "detection_limitations": [
+        "Inferences are aggregated from other evidence bundles.",
+        "Each source bundle has its own detection limitations.",
+        "Surfacing threshold (2+ items) may exclude valid single-item signals.",
+        "Signal detection depends on keyword matching and metadata availability."
+      ],
+      "explicit_non_claims": [
+        "We do NOT claim to know your demographic profile.",
+        "We do NOT claim to know your political views or leanings.",
+        "We do NOT claim to know your purchase intent.",
+        "We do NOT claim to predict algorithm behavior.",
+        "We do NOT claim these signals were used for targeting."
+      ]
+    },
+    "evidence_items": {
+      "alg-inf-000": {
+        "evidence_id": "alg-inf-000",
+        "source_item_index": 0,
+        "signal_type": "intent_signal",
+        "signal_subtype": "Dominant content type",
+        "detection_method": "CLASSIFIER_OUTPUT",
+        "method_reliability": {
+          "method": "CLASSIFIER_OUTPUT",
+          "base_reliability": 0.8,
+          "effective_reliability": 0.8
+        },
+        "detection_rationale": "POST content (100.0%)",
+        "conflicts_with": [],
+        "source": "patterns",
+        "item_context": {
+          "item_index": 0,
+          "platform": "TWITTER",
+          "modality": "DESKTOP_EXTENSION",
+          "item_type": "inference"
+        }
+      }
+    },
+    "insights": [
+      {
+        "insight_id": "algorithm-surfaced-signals",
+        "claim_type": "algorithm_signals",
+        "claim_text": "High-confidence signals surfaced across tabs.",
+        "claim_status": "PRELIMINARY",
+        "evidence_ids": [
+          "alg-inf-000"
+        ],
+        "abstention_flag": false,
+        "preliminary_upgrade_path": "Surface additional high-confidence signals",
+        "threshold_gates": []
+      }
+    ],
+    "evidence_chain_metrics": {
+      "evidence_linking_rate": 1.0,
+      "missing_evidence_rate": 0.0,
+      "orphan_evidence_rate": 0.0,
+      "metadata_completeness_rate": 1.0,
+      "validation_passed": true
+    },
+    "conflict_resolutions": {},
+    "conflict_metrics": {
+      "total_conflicts_detected": 0,
+      "conflicts_by_type": {},
+      "conflicts_by_severity": {},
+      "conflicts_resolved": 0,
+      "conflicts_abstained": 0,
+      "conflict_resolution_rate": 0.0,
+      "precedence_resolutions": 0,
+      "majority_resolutions": 0,
+      "avg_confidence_penalty": 0.0,
+      "platform_label_override_count": 0,
+      "platform_label_override_rate": 0.0,
+      "validation_passed": true,
+      "validation_errors": []
+    },
+    "critic_metrics": {
+      "downgraded_final_to_preliminary": 0,
+      "downgraded_final_to_abstain": 0,
+      "downgraded_reasons": [],
+      "metadata_incomplete_count": 0,
+      "contract_violations": [],
+      "validation_passed": true,
+      "validation_errors": []
+    }
+  },
+  "analysis": {
+    "primary_insight": {
+      "text": "In this scan of 28 posts, 1 content signals were detected (1 with high confidence).",
+      "cited_fields": [
+        "meta.n_items",
+        "observations.surfaced_count",
+        "measurements.confidence_breakdown"
+      ],
+      "quality": "ok"
+    },
+    "signals_summary": {
+      "text": "Detected signals: Dominant content type.",
+      "cited_fields": [
+        "observations.surfaced_inferences"
+      ],
+      "quality": "ok"
+    },
+    "limitations_summary": {
+      "text": "Important: These are signals present in the content, NOT inferences about you. We cannot determine why this content was shown or what targeting was used.",
+      "cited_fields": [
+        "limits.epistemic_boundaries"
+      ],
+      "quality": "ok"
+    }
+  }
+}

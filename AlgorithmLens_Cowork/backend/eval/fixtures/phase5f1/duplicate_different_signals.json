@@ -1,0 +1,72 @@
+{
+  "fixture_id": "duplicate_different_signals",
+  "phase": "5F1",
+  "description": "Same post appears twice in feed with different signals (scrollback artifact where ad label appears on second view)",
+  "conflict_type": "DUPLICATE_ITEM",
+  "items": [
+    {
+      "item_index": 0,
+      "platform": "tiktok",
+      "content_hash": "abc123def456",
+      "signals": {
+        "platform_label": {
+          "is_ad": false,
+          "detection_method": "PLATFORM_LABEL",
+          "reliability": 0.999
+        },
+        "ocr_text": "Check out my morning routine with @SkincareBrand"
+      },
+      "evidence_items": [
+        {
+          "evidence_id": "ev-ads-platform-001",
+          "signal_type": "platform_no_label",
+          "detection_method": "PLATFORM_LABEL",
+          "method_reliability": {"method": "PLATFORM_LABEL", "value": 0.999}
+        }
+      ]
+    },
+    {
+      "item_index": 5,
+      "platform": "tiktok",
+      "content_hash": "abc123def456",
+      "signals": {
+        "platform_label": {
+          "is_ad": true,
+          "label_text": "Sponsored",
+          "detection_method": "PLATFORM_LABEL",
+          "reliability": 0.999
+        },
+        "ocr_text": "Check out my morning routine with @SkincareBrand"
+      },
+      "evidence_items": [
+        {
+          "evidence_id": "ev-ads-platform-005",
+          "signal_type": "platform_labeled_ad",
+          "detection_method": "PLATFORM_LABEL",
+          "method_reliability": {"method": "PLATFORM_LABEL", "value": 0.999}
+        }
+      ]
+    }
+  ],
+  "expected": {
+    "conflict_detected": true,
+    "conflict_type": "DUPLICATE_ITEM",
+    "conflict_severity": "MINOR",
+    "resolution_type": "PRECEDENCE",
+    "winning_method": "PLATFORM_LABEL",
+    "winning_evidence_id": "ev-ads-platform-005",
+    "winning_evidence_source": "second_occurrence",
+    "losing_methods": ["PLATFORM_LABEL"],
+    "losing_evidence_ids": ["ev-ads-platform-001"],
+    "classification": "LABELED_AD",
+    "claim_status": "FINAL",
+    "confidence_penalty": 0.02,
+    "rationale_contains": "Duplicate detected with signal mismatch",
+    "metadata": {
+      "duplicate_count": 2,
+      "content_hash": "abc123def456",
+      "signal_mismatch": true
+    }
+  },
+  "notes": "When same content appears with different signals, prefer the occurrence WITH the platform ad label. This handles scrollback artifacts where ad labels may load asynchronously. The presence of a platform label is more informative than its absence."
+}

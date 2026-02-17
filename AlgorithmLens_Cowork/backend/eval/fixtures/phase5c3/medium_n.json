@@ -1,0 +1,31 @@
+{
+  "name": "medium_n",
+  "description": "60 items, 6 ads (10%) on Instagram - prior influence diminishing",
+  "platform": "instagram",
+  "n_total": 60,
+  "n_ads": 6,
+  "observed_rate": 0.10,
+  "prior": {
+    "alpha": 2.5,
+    "beta": 17.5,
+    "mean": 0.125,
+    "effective_n": 20
+  },
+  "expected": {
+    "wilson_ci": {
+      "lower": 0.037,
+      "upper": 0.195,
+      "width": 0.158
+    },
+    "bayesian_ci": {
+      "lower": 0.051,
+      "upper": 0.169,
+      "width": 0.118
+    },
+    "bayesian_point_estimate": 0.106,
+    "prior_used": true,
+    "prior_influence_percent": 25.0,
+    "interval_width_reduction": 0.25
+  },
+  "notes": "At n=60, prior contributes only 25% of effective sample. Estimate is data-dominated but prior still provides modest interval narrowing."
+}

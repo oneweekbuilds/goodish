@@ -1,0 +1,25 @@
+============================================================
+EVAL RUN SUMMARY — TWITTER
+============================================================
+Run ID:      test_e2e_001
+Started:     2026-02-15T17:28:53.897481+00:00
+Completed:   2026-02-15T17:28:53.897483+00:00
+Threshold:   ±5.0%
+Max cycles:  10
+Total cycles: 1
+Final result: PASSED ✓
+
+--- Cycle 1 [PASS] ---
+  Passed: 10/10 criteria
+    ✓ post_count_exact (100.0%)
+    ✓ content_type_distribution (100.0%)
+    ✓ engagement_ranges (100.0%)
+    ✓ source_diversity (100.0%)
+    ✓ epistemic_restraint
+    ✓ theme_accuracy
+    ✓ content_references_valid
+    ✓ no_missing_posts
+    ✓ no_phantom_posts
+    ✓ all_tabs_populated
+
+============================================================

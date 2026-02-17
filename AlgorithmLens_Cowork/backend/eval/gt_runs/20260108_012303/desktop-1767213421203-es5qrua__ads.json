@@ -1,0 +1,1022 @@
+{
+  "scan_id": "desktop-1767213421203-es5qrua",
+  "tab": "ads",
+  "bundle": {
+    "meta": {
+      "scan_id": "desktop-1767213421203-es5qrua",
+      "platform": "TWITTER",
+      "n_items": 31,
+      "window_start": "2025-12-31T20:37:01.203Z",
+      "window_end": "2025-12-31T20:37:01.203Z",
+      "generated_at": "2026-01-08T01:23:03.645368",
+      "coverage": {
+        "n_items_total": 31,
+        "n_items_included": 31,
+        "n_items_excluded": 0,
+        "exclusion_reasons": {},
+        "quality_flags": {
+          "missing_text": 31
+        }
+      }
+    },
+    "observations": {
+      "total_posts_seen": 31,
+      "commercial_exposure_spectrum": {
+        "stacked_bar": {
+          "non_commercial": 0,
+          "labeled_ads": 31,
+          "unlabeled_promotion": 0,
+          "total": 31
+        },
+        "excluded": {
+          "unlabeled_promotion_medium_confidence": 0,
+          "ambiguous": 0
+        },
+        "total_items": 31,
+        "high_confidence_items": 31,
+        "coverage_percent": 100.0
+      },
+      "total_ads_detected": 31,
+      "platform_labeled_ad_evidence": [
+        {
+          "item_position": 1,
+          "method": "PLATFORM_LABEL",
+          "method_reliability": 0.999,
+          "confidence": "high",
+          "sponsored_label_text": "Sponsored",
+          "advertiser_name": "Gusti Ayu"
+        },
+        {
+          "item_position": 2,
+          "method": "PLATFORM_LABEL",
+          "method_reliability": 0.999,
+          "confidence": "high",
+          "sponsored_label_text": "Sponsored",
+          "advertiser_name": "NAD"
+        },
+        {
+          "item_position": 3,
+          "method": "PLATFORM_LABEL",
+          "method_reliability": 0.999,
+          "confidence": "high",
+          "sponsored_label_text": "Sponsored",
+          "advertiser_name": "Eric Djavid"
+        },
+        {
+          "item_position": 4,
+          "method": "PLATFORM_LABEL",
+          "method_reliability": 0.999,
+          "confidence": "high",
+          "sponsored_label_text": "Sponsored",
+          "advertiser_name": "Cole Jaczko"
+        },
+        {
+          "item_position": 5,
+          "method": "PLATFORM_LABEL",
+          "method_reliability": 0.999,
+          "confidence": "high",
+          "sponsored_label_text": "Sponsored",
+          "advertiser_name": "cole"
+        },
+        {
+          "item_position": 6,
+          "method": "PLATFORM_LABEL",
+          "method_reliability": 0.999,
+          "confidence": "high",
+          "sponsored_label_text": "Sponsored",
+          "advertiser_name": "Amjad Masad"
+        },
+        {
+          "item_position": 7,
+          "method": "PLATFORM_LABEL",
+          "method_reliability": 0.999,
+          "confidence": "high",
+          "sponsored_label_text": "Sponsored",
+          "advertiser_name": "Queen Primis"
+        },
+        {
+          "item_position": 8,
+          "method": "PLATFORM_LABEL",
+          "method_reliability": 0.999,
+          "confidence": "high",
+          "sponsored_label_text": "Sponsored",
+          "advertiser_name": "𝐌𝐨𝐢𝐬é𝐬 𝐂𝐚𝐢𝐜𝐞𝐝𝐨"
+        },
+        {
+          "item_position": 9,
+          "method": "PLATFORM_LABEL",
+          "method_reliability": 0.999,
+          "confidence": "high",
+          "sponsored_label_text": "Sponsored",
+          "advertiser_name": "Simone Canc"
+        },
+        {
+          "item_position": 10,
+          "method": "PLATFORM_LABEL",
+          "method_reliability": 0.999,
+          "confidence": "high",
+          "sponsored_label_text": "Sponsored",
+          "advertiser_name": "Melvyn • Builder"
+        }
+      ],
+      "platform_labeled_ad_evidence_count": 31,
+      "unlabeled_promotions_high_confidence": 0,
+      "total_promotional_content": 31,
+      "promo_signals": {
+        "n_high_confidence": 0,
+        "n_medium_confidence": 3,
+        "n_low_confidence": 3,
+        "n_unlabeled_promo": 0,
+        "signal_types_detected": [
+          "price_mention",
+          "discount_code"
+        ],
+        "signal_type_counts": {
+          "price_mention": 3,
+          "discount_code": 3
+        }
+      },
+      "ocr_extraction_rate_percent": 0.0,
+      "items_with_ocr_text": 0,
+      "ad_rate_percent": 100.0,
+      "ad_rate_percent_ci": {
+        "lower": 88.6,
+        "upper": 100.0,
+        "confidence_level": 0.95,
+        "method": "wilson"
+      },
+      "ad_rate_estimate_type": "INTERVAL",
+      "ad_rate_percent_ci_bayesian": {
+        "lower": 35.1,
+        "upper": 58.1,
+        "confidence_level": 0.95,
+        "method": "bayesian_beta",
+        "point_estimate": 46.5,
+        "prior_used": true,
+        "prior_info": {
+          "platform": "twitter",
+          "source": "learned",
+          "alpha": 2.0,
+          "beta": 38.0,
+          "effective_prior_n": 40.0
+        }
+      },
+      "ad_rate_percent_bayesian": 46.5,
+      "ad_rate_estimate_method": "bayesian_beta",
+      "prior_used": true,
+      "promotional_rate_percent": 100.0,
+      "promotional_rate_percent_ci": {
+        "lower": 88.6,
+        "upper": 100.0,
+        "confidence_level": 0.95,
+        "method": "wilson"
+      },
+      "promotional_rate_estimate_type": "INTERVAL",
+      "top_companies": [
+        {
+          "name": "x.com",
+          "count": 31,
+          "high_confidence": 31
+        }
+      ],
+      "unique_companies_surfaced": 1,
+      "_company_exclusion_stats": {
+        "below_count_threshold": 31,
+        "no_high_confidence_evidence": 0
+      },
+      "top_advertisers": [
+        {
+          "name": "Gusti Ayu",
+          "count": 1
+        },
+        {
+          "name": "NAD",
+          "count": 1
+        },
+        {
+          "name": "Eric Djavid",
+          "count": 1
+        },
+        {
+          "name": "Cole Jaczko",
+          "count": 1
+        },
+        {
+          "name": "cole",
+          "count": 1
+        }
+      ],
+      "top1_advertiser_share_percent": 3.2,
+      "top3_advertiser_share_percent": 9.7,
+      "unique_advertisers_count": 31
+    },
+    "measurements": {
+      "unlabeled_promotions": {
+        "value": {
+          "high_confidence": 0,
+          "medium_confidence": 0,
+          "ambiguous": 0
+        },
+        "method": "classifier:commercial_intent_pipeline",
+        "quality": "ok",
+        "notes": "Unlabeled promotions detected via disclosure tokens, CTA patterns, and entity references. Only high-confidence items counted in metrics. 0 items excluded as ambiguous."
+      },
+      "possible_unlabeled_promotions": {
+        "value": 0,
+        "method": "classifier:commercial_intent_pipeline",
+        "quality": "ok",
+        "notes": "High confidence: 0, Medium confidence: 0. Only high-confidence items are included in primary metrics."
+      },
+      "promotion_topics": {
+        "value": [],
+        "method": "classifier:topic_keyword_matching",
+        "quality": "ok",
+        "notes": "4 topics detected from 31 promotional items but none met surfacing threshold (count >= 2 AND high_confidence >= 1).",
+        "threshold_rule": "count >= 2 AND high_confidence >= 1",
+        "detected_but_excluded_count": 4
+      },
+      "promotion_topics_excluded": {
+        "value": [
+          {
+            "topic": "tech",
+            "count": 6,
+            "reason": "below_threshold"
+          },
+          {
+            "topic": "fitness",
+            "count": 1,
+            "reason": "below_threshold"
+          },
+          {
+            "topic": "health",
+            "count": 1,
+            "reason": "below_threshold"
+          },
+          {
+            "topic": "education",
+            "count": 1,
+            "reason": "below_threshold"
+          }
+        ],
+        "method": "classifier:topic_keyword_matching",
+        "quality": "model_low_confidence",
+        "notes": "Topics that did not meet the threshold for reliable surfacing."
+      }
+    },
+    "limits": {
+      "sample_size_limitations": [
+        "Sample of 31 posts from a single scan session."
+      ],
+      "commercial_analysis_exclusions": [
+        "All items classified with high confidence."
+      ],
+      "threshold_exclusions": [
+        "Topics excluded (below threshold): tech, fitness, health, education",
+        "31 companies appeared only once and are not shown individually."
+      ],
+      "missing_metadata_limitations": [
+        "No significant metadata gaps detected."
+      ],
+      "ad_detection_limitations": [
+        "Ad detection relies on platform labels. Native ads or influencer promotions without disclosure may not be detected.",
+        "Unlabeled promotion detection uses pattern matching on disclosure tokens, CTAs, and keywords."
+      ],
+      "ocr_extraction_limitations": [
+        "No significant OCR issues detected."
+      ],
+      "epistemic_boundaries": [
+        "We cannot know why the algorithm showed this content.",
+        "We cannot know your intent or interest level in any content shown.",
+        "We cannot predict future ad targeting based on this single scan.",
+        "Advertiser intent and targeting criteria are not visible to us."
+      ],
+      "bayesian_prior_limitations": {
+        "applies": true,
+        "explanation": "The ad rate estimate uses a statistical prior based on typical twitter ad patterns. This helps provide more stable estimates for small samples, but assumes your feed is broadly similar to typical feeds. The prior has minimal influence on estimates from larger scans (50+ items).",
+        "prior_source": "learned",
+        "prior_influence_percent": 56.3
+      }
+    },
+    "evidence_items": {
+      "ev-ads-platform-000": {
+        "evidence_id": "ev-ads-platform-000",
+        "source_item_index": 1,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 1,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-001": {
+        "evidence_id": "ev-ads-platform-001",
+        "source_item_index": 2,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 2,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-002": {
+        "evidence_id": "ev-ads-platform-002",
+        "source_item_index": 3,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 3,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-003": {
+        "evidence_id": "ev-ads-platform-003",
+        "source_item_index": 4,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 4,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-004": {
+        "evidence_id": "ev-ads-platform-004",
+        "source_item_index": 5,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 5,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-005": {
+        "evidence_id": "ev-ads-platform-005",
+        "source_item_index": 6,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 6,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-006": {
+        "evidence_id": "ev-ads-platform-006",
+        "source_item_index": 7,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 7,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-007": {
+        "evidence_id": "ev-ads-platform-007",
+        "source_item_index": 8,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 8,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-008": {
+        "evidence_id": "ev-ads-platform-008",
+        "source_item_index": 9,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 9,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-009": {
+        "evidence_id": "ev-ads-platform-009",
+        "source_item_index": 10,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 10,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-010": {
+        "evidence_id": "ev-ads-platform-010",
+        "source_item_index": 11,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 11,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-011": {
+        "evidence_id": "ev-ads-platform-011",
+        "source_item_index": 12,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 12,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-012": {
+        "evidence_id": "ev-ads-platform-012",
+        "source_item_index": 13,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 13,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-013": {
+        "evidence_id": "ev-ads-platform-013",
+        "source_item_index": 14,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 14,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-014": {
+        "evidence_id": "ev-ads-platform-014",
+        "source_item_index": 15,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 15,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-015": {
+        "evidence_id": "ev-ads-platform-015",
+        "source_item_index": 16,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 16,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-016": {
+        "evidence_id": "ev-ads-platform-016",
+        "source_item_index": 17,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 17,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-017": {
+        "evidence_id": "ev-ads-platform-017",
+        "source_item_index": 18,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 18,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-018": {
+        "evidence_id": "ev-ads-platform-018",
+        "source_item_index": 19,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 19,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-019": {
+        "evidence_id": "ev-ads-platform-019",
+        "source_item_index": 20,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 20,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-020": {
+        "evidence_id": "ev-ads-platform-020",
+        "source_item_index": 21,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 21,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-021": {
+        "evidence_id": "ev-ads-platform-021",
+        "source_item_index": 22,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 22,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-022": {
+        "evidence_id": "ev-ads-platform-022",
+        "source_item_index": 23,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 23,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-023": {
+        "evidence_id": "ev-ads-platform-023",
+        "source_item_index": 24,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 24,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-024": {
+        "evidence_id": "ev-ads-platform-024",
+        "source_item_index": 25,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 25,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-025": {
+        "evidence_id": "ev-ads-platform-025",
+        "source_item_index": 26,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 26,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-026": {
+        "evidence_id": "ev-ads-platform-026",
+        "source_item_index": 27,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 27,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-027": {
+        "evidence_id": "ev-ads-platform-027",
+        "source_item_index": 28,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 28,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-028": {
+        "evidence_id": "ev-ads-platform-028",
+        "source_item_index": 29,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 29,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-029": {
+        "evidence_id": "ev-ads-platform-029",
+        "source_item_index": 30,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 30,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-platform-030": {
+        "evidence_id": "ev-ads-platform-030",
+        "source_item_index": 31,
+        "signal_type": "platform_labeled_ad",
+        "detection_method": "PLATFORM_LABEL",
+        "method_reliability": {
+          "method": "PLATFORM_LABEL",
+          "base_reliability": 0.999,
+          "effective_reliability": 0.999
+        },
+        "conflicts_with": [],
+        "source": "platform_label",
+        "item_context": {
+          "item_index": 31,
+          "platform": "twitter",
+          "modality": "desktop_extension",
+          "item_type": "ad"
+        }
+      },
+      "ev-ads-aggregate-adrate": {
+        "evidence_id": "ev-ads-aggregate-adrate",
+        "signal_type": "aggregate_computation",
+        "detection_method": "BAYESIAN_BETA",
+        "method_reliability": {
+          "method": "BAYESIAN_BETA",
+          "base_reliability": 0.9,
+          "effective_reliability": 0.9
+        },
+        "conflicts_with": [],
+        "source": "aggregate"
+      }
+    },
+    "insights": [
+      {
+        "insight_id": "ads-commercial-spectrum",
+        "claim_type": "aggregate_observation",
+        "claim_text": "Ad rate: 100.0% (31 ads in 31 posts)",
+        "claim_status": "FINAL",
+        "numeric_confidence": 0.95,
+        "point_estimate": 100.0,
+        "evidence_ids": [
+          "ev-ads-aggregate-adrate",
+          "ev-ads-platform-000",
+          "ev-ads-platform-001",
+          "ev-ads-platform-002",
+          "ev-ads-platform-003",
+          "ev-ads-platform-004",
+          "ev-ads-platform-005",
+          "ev-ads-platform-006",
+          "ev-ads-platform-007",
+          "ev-ads-platform-008",
+          "ev-ads-platform-009",
+          "ev-ads-platform-010",
+          "ev-ads-platform-011",
+          "ev-ads-platform-012",
+          "ev-ads-platform-013",
+          "ev-ads-platform-014",
+          "ev-ads-platform-015",
+          "ev-ads-platform-016",
+          "ev-ads-platform-017",
+          "ev-ads-platform-018",
+          "ev-ads-platform-019",
+          "ev-ads-platform-020",
+          "ev-ads-platform-021",
+          "ev-ads-platform-022",
+          "ev-ads-platform-023",
+          "ev-ads-platform-024",
+          "ev-ads-platform-025",
+          "ev-ads-platform-026",
+          "ev-ads-platform-027",
+          "ev-ads-platform-028",
+          "ev-ads-platform-029",
+          "ev-ads-platform-030"
+        ],
+        "abstention_flag": false,
+        "threshold_gates": []
+      }
+    ],
+    "evidence_chain_metrics": {
+      "evidence_linking_rate": 1.0,
+      "missing_evidence_rate": 0.0,
+      "orphan_evidence_rate": 0.0,
+      "validation_passed": true
+    },
+    "conflict_resolutions": {},
+    "conflict_metrics": {
+      "total_conflicts_detected": 0,
+      "conflicts_by_type": {},
+      "conflicts_by_severity": {},
+      "conflicts_resolved": 0,
+      "conflicts_abstained": 0,
+      "conflict_resolution_rate": 0.0,
+      "precedence_resolutions": 0,
+      "majority_resolutions": 0,
+      "avg_confidence_penalty": 0.0,
+      "platform_label_override_count": 0,
+      "platform_label_override_rate": 0.0,
+      "validation_passed": true,
+      "validation_errors": []
+    },
+    "critic_metrics": {
+      "downgraded_final_to_preliminary": 0,
+      "downgraded_final_to_abstain": 0,
+      "downgraded_reasons": [],
+      "metadata_incomplete_count": 0,
+      "contract_violations": [],
+      "validation_passed": true,
+      "validation_errors": []
+    }
+  },
+  "analysis": {
+    "primary_insight": {
+      "text": "In this scan of 31 posts, 31 were labeled ads (100.0% of content).",
+      "cited_fields": [
+        "meta.n_items",
+        "observations.commercial_exposure_spectrum.stacked_bar",
+        "observations.promotional_rate_percent"
+      ],
+      "quality": "ok"
+    },
+    "concentration_insight": {
+      "text": "In this scan, promotional content was dominated by x.com (appeared 31 times).",
+      "cited_fields": [
+        "observations.top_companies"
+      ],
+      "quality": "ok"
+    },
+    "topic_insight": {
+      "text": "Promotional topics could not be reliably determined for this scan.",
+      "cited_fields": [
+        "measurements.promotion_topics"
+      ],
+      "quality": "insufficient_data"
+    },
+    "unlabeled_promo_insight": {
+      "text": "In this scan, no unlabeled promotional signals were detected with high confidence.",
+      "cited_fields": [
+        "measurements.unlabeled_promotions"
+      ],
+      "quality": "ok"
+    },
+    "limitations_summary": {
+      "text": "Sample of 31 posts from a single scan session.",
+      "cited_fields": [
+        "limits.sample_size_limitations",
+        "limits.commercial_analysis_exclusions",
+        "limits.ad_detection_limitations"
+      ],
+      "quality": "ok"
+    }
+  }
+}

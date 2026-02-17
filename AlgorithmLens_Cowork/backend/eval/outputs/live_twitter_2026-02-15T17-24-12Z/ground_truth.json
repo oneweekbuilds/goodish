@@ -1,0 +1,244 @@
+{
+  "platform": "twitter",
+  "capture_timestamp": "2026-02-15T17:30:00Z",
+  "screenshot_path": null,
+  "posts": [
+    {
+      "id": "1890001",
+      "author": "espaborern",
+      "author_display_name": "ESPN",
+      "content_text": "BREAKING: Patrick Mahomes leads Chiefs to another comeback victory in overtime! Final score: 31-28. #NFL #ChiefsKingdom",
+      "content_type": "image",
+      "media_urls": [],
+      "engagement": {
+        "likes": 45200,
+        "comments": 3100,
+        "shares": 12400,
+        "views": 2100000,
+        "bookmarks": 0
+      },
+      "timestamp": "2026-02-15T16:00:00Z",
+      "is_ad": false,
+      "is_repost": false,
+      "original_author": null,
+      "position_in_feed": 0,
+      "hashtags": [
+        "#NFL",
+        "#ChiefsKingdom"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "1890002",
+      "author": "foodnetwork",
+      "author_display_name": "Food Network",
+      "content_text": "The ULTIMATE chocolate lava cake recipe. Gooey, rich, and ready in 30 minutes. Save this one!",
+      "content_type": "video",
+      "media_urls": [],
+      "engagement": {
+        "likes": 8900,
+        "comments": 420,
+        "shares": 5600,
+        "views": 890000,
+        "bookmarks": 0
+      },
+      "timestamp": "2026-02-15T15:30:00Z",
+      "is_ad": false,
+      "is_repost": false,
+      "original_author": null,
+      "position_in_feed": 1,
+      "hashtags": [],
+      "metadata": {}
+    },
+    {
+      "id": "1890003",
+      "author": "samsung",
+      "author_display_name": "Samsung",
+      "content_text": "Introducing the all-new Galaxy S26 Ultra. AI-powered camera. All-day battery. Pre-order now and get $200 off.",
+      "content_type": "image",
+      "media_urls": [],
+      "engagement": {
+        "likes": 12300,
+        "comments": 890,
+        "shares": 3200,
+        "views": 4500000,
+        "bookmarks": 0
+      },
+      "timestamp": "2026-02-15T14:00:00Z",
+      "is_ad": true,
+      "is_repost": false,
+      "original_author": null,
+      "position_in_feed": 2,
+      "hashtags": [],
+      "metadata": {}
+    },
+    {
+      "id": "1890004",
+      "author": "elonmusk",
+      "author_display_name": "Elon Musk",
+      "content_text": "Working on something exciting with the Starship team. More details soon.",
+      "content_type": "text",
+      "media_urls": [],
+      "engagement": {
+        "likes": 234000,
+        "comments": 18000,
+        "shares": 45000,
+        "views": 89000000,
+        "bookmarks": 0
+      },
+      "timestamp": "2026-02-15T13:00:00Z",
+      "is_ad": false,
+      "is_repost": false,
+      "original_author": null,
+      "position_in_feed": 3,
+      "hashtags": [],
+      "metadata": {}
+    },
+    {
+      "id": "1890005",
+      "author": "nytimes",
+      "author_display_name": "The New York Times",
+      "content_text": "Congress passes bipartisan infrastructure bill with $1.2 trillion in funding for roads, bridges, and broadband expansion.",
+      "content_type": "link",
+      "media_urls": [],
+      "engagement": {
+        "likes": 15600,
+        "comments": 4200,
+        "shares": 8900,
+        "views": 3200000,
+        "bookmarks": 0
+      },
+      "timestamp": "2026-02-15T12:00:00Z",
+      "is_ad": false,
+      "is_repost": false,
+      "original_author": null,
+      "position_in_feed": 4,
+      "hashtags": [],
+      "metadata": {}
+    },
+    {
+      "id": "1890006",
+      "author": "mkbhd",
+      "author_display_name": "Marques Brownlee",
+      "content_text": "Just finished my full review of the Vision Pro 2. Apple made some big improvements this year. Video dropping tomorrow.",
+      "content_type": "text",
+      "media_urls": [],
+      "engagement": {
+        "likes": 67000,
+        "comments": 3400,
+        "shares": 9800,
+        "views": 5600000,
+        "bookmarks": 0
+      },
+      "timestamp": "2026-02-15T11:30:00Z",
+      "is_ad": false,
+      "is_repost": false,
+      "original_author": null,
+      "position_in_feed": 5,
+      "hashtags": [],
+      "metadata": {}
+    },
+    {
+      "id": "1890007",
+      "author": "jenniferaniston",
+      "author_display_name": "Jennifer Aniston",
+      "content_text": "Sunday morning yoga with my rescue pup. Nothing better. #SundayVibes #DogMom",
+      "content_type": "image",
+      "media_urls": [],
+      "engagement": {
+        "likes": 890000,
+        "comments": 12000,
+        "shares": 23000,
+        "views": 45000000,
+        "bookmarks": 0
+      },
+      "timestamp": "2026-02-15T10:00:00Z",
+      "is_ad": false,
+      "is_repost": false,
+      "original_author": null,
+      "position_in_feed": 6,
+      "hashtags": [
+        "#SundayVibes",
+        "#DogMom"
+      ],
+      "metadata": {}
+    },
+    {
+      "id": "1890008",
+      "author": "washingtonpost",
+      "author_display_name": "Washington Post",
+      "content_text": "Federal Reserve signals potential interest rate cuts in Q2 as inflation continues to moderate. Markets respond positively.",
+      "content_type": "link",
+      "media_urls": [],
+      "engagement": {
+        "likes": 4500,
+        "comments": 1200,
+        "shares": 3400,
+        "views": 1800000,
+        "bookmarks": 0
+      },
+      "timestamp": "2026-02-15T09:00:00Z",
+      "is_ad": false,
+      "is_repost": false,
+      "original_author": null,
+      "position_in_feed": 7,
+      "hashtags": [],
+      "metadata": {}
+    },
+    {
+      "id": "1890009",
+      "author": "nike",
+      "author_display_name": "Nike",
+      "content_text": "Just Do It. New Air Max collection drops February 20th. Sign up for early access.",
+      "content_type": "video",
+      "media_urls": [],
+      "engagement": {
+        "likes": 34000,
+        "comments": 2100,
+        "shares": 7800,
+        "views": 12000000,
+        "bookmarks": 0
+      },
+      "timestamp": "2026-02-15T08:00:00Z",
+      "is_ad": true,
+      "is_repost": false,
+      "original_author": null,
+      "position_in_feed": 8,
+      "hashtags": [],
+      "metadata": {}
+    },
+    {
+      "id": "1890010",
+      "author": "pewdiepie",
+      "author_display_name": "PewDiePie",
+      "content_text": "This new indie game is actually insane. Full playthrough going up on the channel tonight. Trust me on this one.",
+      "content_type": "text",
+      "media_urls": [],
+      "engagement": {
+        "likes": 120000,
+        "comments": 8900,
+        "shares": 15000,
+        "views": 23000000,
+        "bookmarks": 0
+      },
+      "timestamp": "2026-02-15T07:00:00Z",
+      "is_ad": false,
+      "is_repost": false,
+      "original_author": null,
+      "position_in_feed": 9,
+      "hashtags": [],
+      "metadata": {}
+    }
+  ],
+  "feed_metadata": {
+    "total_posts_captured": 10,
+    "scroll_depth": "10 posts visible",
+    "feed_type": "for_you",
+    "capture_duration_seconds": 15.0
+  },
+  "capture_config": {
+    "platform": "twitter",
+    "account": "@goodish_org",
+    "feed_type": "for_you"
+  }
+}

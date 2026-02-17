@@ -1,0 +1,1375 @@
+{
+  "schema_version": "1.0.0",
+  "scan_metadata": {
+    "scan_id": "eval_twitter_9518e003f949",
+    "created_at": "2026-02-15T18:14:12.909567+00:00",
+    "source_type": "DESKTOP_EXTENSION",
+    "platform": "TWITTER",
+    "user_identifier": null,
+    "app_scan_version": "eval-1.0.0",
+    "insights_engine_version": "eval-1.0.0"
+  },
+  "environment": {
+    "device_type": "DESKTOP",
+    "device_os": "LINUX",
+    "browser_name": "Chrome",
+    "browser_version": null,
+    "screen_resolution": null,
+    "video_capture": null,
+    "extension_capture": {
+      "is_dom_based": true,
+      "dom_capture_strategy": "VISIBLE_FEED_ONLY"
+    }
+  },
+  "feed_items": [
+    {
+      "position_in_feed": 0,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "VIDEO",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "elonmusk",
+        "account_display_name": "Elon Musk",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Starship"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "2022915846398448057",
+          "post_url": "https://x.com/elonmusk/status/2022915846398448057",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 1,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "VIDEO",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "damianplayer",
+        "account_display_name": "Damian Player",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Mark Cubans advice on selling AI agents to SMBs is the MOST underrated clip on the internet right now. Here's the full play he didn't break down (bookmark this): pick one vertical. learn the flows. become the AI team they never hired and wish they had."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "2023015553372139551",
+          "post_url": "https://x.com/damianplayer/status/2023015553372139551",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 2,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "VIDEO",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "rohanpaul_ai",
+        "account_display_name": "Rohan Paul",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Mark Cuban on the next job wave. Customized AI integration for small to mid-sized companies. Software is dead because everything's gonna be customized to your unique utilization."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "2022901841772843245",
+          "post_url": "https://x.com/rohanpaul_ai/status/2022901841772843245",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 3,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "VIDEO",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "BarackObama",
+        "account_display_name": "Barack Obama",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Great sitting down with @BrianTylerCohen to talk about everything from the courage we saw in Minnesota, to how Democrats can be true to our values and get stuff done, to how we're building a community of changemakers at the @ObamaFoundation."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "2022770595239280754",
+          "post_url": "https://x.com/BarackObama/status/2022770595239280754",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 4,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "VIDEO",
+      "is_ad": true,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": {
+        "ad_detected_reason": "promoted_label",
+        "sponsored_label_text": "Promoted",
+        "advertiser_name": "NBCOlympics",
+        "advertiser_domain": null,
+        "product_or_service": null
+      },
+      "account": {
+        "account_handle": "NBCOlympics",
+        "account_display_name": "NBC Olympics",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Precision and details matter when medals are on the line."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "2018382382642971088",
+          "post_url": "https://x.com/NBCOlympics/status/2018382382642971088",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 5,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "VIDEO",
+      "is_ad": true,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": {
+        "ad_detected_reason": "promoted_label",
+        "sponsored_label_text": "Promoted",
+        "advertiser_name": "NASCAR",
+        "advertiser_domain": null,
+        "product_or_service": null
+      },
+      "account": {
+        "account_handle": "NASCAR",
+        "account_display_name": "NASCAR",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "The No. 23 gets spun and the field stacks up!"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "2022117371259781571",
+          "post_url": "https://x.com/NASCAR/status/2022117371259781571",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 6,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "VIDEO",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "KezaSonia198151",
+        "account_display_name": "Keza Sonia",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Be careful when you are walking barefoot on the beach sand"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "2022895732206821679",
+          "post_url": "https://x.com/KezaSonia198151/status/2022895732206821679",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 7,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "VIDEO",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Kimi_Moonshot",
+        "account_display_name": "Kimi.ai",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Introducing Kimi Claw. OpenClaw, now native to kimi.com. Living right in your browser tab, online 24/7. ClawHub Access: 5,000+ community skills."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "2023029674549596301",
+          "post_url": "https://x.com/Kimi_Moonshot/status/2023029674549596301",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 8,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "VIDEO",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "Shelpid_WI3M",
+        "account_display_name": "Shelpid WI3M",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "BREAKING the fastest 5m Polymarket Clawdbot setup just leaked. This is a REAL framework with REAL results. Relevant for ANYONE active on Polymarket. He started with a modest base, let Clawdbot manage execution, and scaled it to nearly ~$150K in returns. No insider access."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "2023038478041116886",
+          "post_url": "https://x.com/Shelpid_WI3M/status/2023038478041116886",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 9,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "VIDEO",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "OnaCarlosX",
+        "account_display_name": "carlostraveler",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "@MikeSchiemer the legend"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "2022855123169354083",
+          "post_url": "https://x.com/OnaCarlosX/status/2022855123169354083",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 10,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "VIDEO",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "LinusEkenstam",
+        "account_display_name": "Linus Ekenstam",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "YouTube intros will go brrrrr"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "2022731059021189427",
+          "post_url": "https://x.com/LinusEkenstam/status/2022731059021189427",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 11,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "VIDEO",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "minchoi",
+        "account_display_name": "Min Choi",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Ryan Reynolds vs Ryan Reynolds. Seedance 2.0 doesn't care about logic."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "2022890086677778812",
+          "post_url": "https://x.com/minchoi/status/2022890086677778812",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 12,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "VIDEO",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "AhmedShahnab",
+        "account_display_name": "SHAHNAB AHMED",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Introducing KinetixHoop Arc. Interactive 3D court viz that maps shots spatially! Hover for zone data @NBA. Animated flight paths for that shooting rhythm feel! Physics-based curves to render the arc, color-coded for baskets and misses. Built with @reactjs for the UI state."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "2023055178811965487",
+          "post_url": "https://x.com/AhmedShahnab/status/2023055178811965487",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 13,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "VIDEO",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "lantianlaoli",
+        "account_display_name": "lantianlaoli",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Never run out of fresh content again. Input an influencer's name, choose from their latest 10 videos, and your way to viral content."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "2022934728450687408",
+          "post_url": "https://x.com/lantianlaoli/status/2022934728450687408",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 14,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "VIDEO",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "r0ck3t23",
+        "account_display_name": "r0ck3t23",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Mark Cuban just pronounced software dead, and the implications will destroy industries before most people understand what happened."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "2022929832196145578",
+          "post_url": "https://x.com/r0ck3t23/status/2022929832196145578",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 15,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "VIDEO",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "SHIVANIGERA5",
+        "account_display_name": "SHIVANI GERA",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Clawdbot + MakeUGC V.2 = 550 videos per day. Fully-realistic UGC ads \u2014 cinematic lighting, human motion, perfect pacing \u2014 powered by AI agents. UGC cost: $0. Production time: minutes. Scale: instant."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "2022973840725553609",
+          "post_url": "https://x.com/SHIVANIGERA5/status/2022973840725553609",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 16,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "VIDEO",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "bballbreakdown",
+        "account_display_name": "BBall Breakdown",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Notice how Dame's index finger comes off of the ball as he gets to set point before wrist flexes into release."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "2022807006109659477",
+          "post_url": "https://x.com/bballbreakdown/status/2022807006109659477",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 17,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "VIDEO",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "theVibeAlchemy",
+        "account_display_name": "The Vibe Alchemy",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Once respect is gone, everything changes"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "2022977684163437040",
+          "post_url": "https://x.com/theVibeAlchemy/status/2022977684163437040",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 18,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "VIDEO",
+      "is_ad": false,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": null,
+      "account": {
+        "account_handle": "txstreetfights2",
+        "account_display_name": "Texas Street Fights",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Dude Punches guy infront of police, immediately gets arrested 6th Street Austin Texas"
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "2022776263249797368",
+          "post_url": "https://x.com/txstreetfights2/status/2022776263249797368",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    },
+    {
+      "position_in_feed": 19,
+      "approx_timestamp_offset_sec": null,
+      "content_type": "IMAGE",
+      "is_ad": true,
+      "ai_disclosure": null,
+      "c2pa_disclosure": null,
+      "ai_disclosure_source": null,
+      "ai_disclosure_text": null,
+      "ad_metadata": {
+        "ad_detected_reason": "promoted_label",
+        "sponsored_label_text": "Promoted",
+        "advertiser_name": "Starlink",
+        "advertiser_domain": null,
+        "product_or_service": null
+      },
+      "account": {
+        "account_handle": "Starlink",
+        "account_display_name": "Starlink",
+        "account_category_guess": null
+      },
+      "content_text": {
+        "captions": [
+          "Fast, affordable internet. Available all around the world! Order in less than 2 minutes by clicking below or, if you live in the US, by calling 1-888-GO-STARLINK to get connected with the Starlink service plan that works best for you."
+        ],
+        "hashtags": [],
+        "on_screen_labels": []
+      },
+      "topics": {
+        "primary_category": null,
+        "secondary_categories": [],
+        "freeform_tags": []
+      },
+      "political": {
+        "is_political": false,
+        "political_subtype": null,
+        "stance_or_alignment_guess": null,
+        "policy_area": null,
+        "geographic_focus": null
+      },
+      "wellbeing": {
+        "wellbeing_relevance": "NONE",
+        "valence": null,
+        "themes": [],
+        "potential_risk_flags": []
+      },
+      "engagement_drivers": {
+        "hooks_detected": [],
+        "call_to_action_patterns": [],
+        "urgency_or_scarcity_signals": []
+      },
+      "repetition": {
+        "similar_to_previous_items": false,
+        "repetition_reasons": [],
+        "repetition_cluster_id": null
+      },
+      "algorithm_inferences": {
+        "suggested_interests": [],
+        "suggested_audience_segments": []
+      },
+      "source_details": {
+        "capture_source_type": "DESKTOP_EXTENSION",
+        "dom_metadata": {
+          "post_id": "2022685547253764391",
+          "post_url": "https://x.com/Starlink/status/2022685547253764391",
+          "account_id": null
+        },
+        "ocr_metadata": null
+      }
+    }
+  ],
+  "aggregates": {
+    "total_feed_items": 20,
+    "total_ads": 3,
+    "ad_percentage": 15.0,
+    "topic_distribution": [],
+    "wellbeing_summary": {
+      "high_relevance_items": 0,
+      "potential_risk_items": 0,
+      "valence_distribution": {
+        "POSITIVE": 0,
+        "NEUTRAL": 0,
+        "NEGATIVE": 0,
+        "MIXED": 0
+      }
+    },
+    "political_content_summary": {
+      "political_items": 0,
+      "political_percentage": 0.0
+    },
+    "repetition_summary": {
+      "items_in_repetition_clusters": 0,
+      "largest_cluster_size": 0
+    },
+    "engagement_pattern_summary": {
+      "top_hooks": []
+    }
+  },
+  "privacy": {
+    "user_identifiers_stored": false,
+    "profile_photos_stored": false,
+    "raw_text_stored": true,
+    "retention_policy_key": "SHORT",
+    "redacted_fields": []
+  },
+  "debug": {
+    "processing_time_seconds": null,
+    "frames_extracted": null,
+    "frames_sampled_for_ocr": null,
+    "errors": [],
+    "warnings": [],
+    "raw_backend_payload": null
+  },
+  "_eval_metadata": {
+    "capture_snapshot_summary": "[twitter] 20 posts from 20 authors (3 ads) | types: video: 19, image: 1 | feed: for_you",
+    "ground_truth_post_count": 20,
+    "ground_truth_content_types": {
+      "VIDEO": 19,
+      "IMAGE": 1
+    },
+    "capture_timestamp": "2026-02-15T17:45:00Z"
+  }
+}

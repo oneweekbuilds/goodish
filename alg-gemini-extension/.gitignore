@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Build output directories
+dist/
+build/
+dist2/
+.vite-build/
+extension/
+output/
+
+# Vite temp files
+vite.config.js.timestamp-*
+
+# Logs
+*.log
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
+
+# FUSE filesystem artifacts
+.fuse_hidden*
+
+# Release archives (build these from CI, not source)
+*.zip
+
+# Test artifacts
+_test_write.txt
+_VERSION_CHECK.html
+test-popup.html

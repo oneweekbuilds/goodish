@@ -1,0 +1,57 @@
+{
+  "description": "Golden Scan Pack for AlgorithmLens Evidence Bundle verification. Contains only supported platforms (Instagram, X/Twitter, YouTube, TikTok). Facebook NOT supported yet.",
+  "version": "2.0.0",
+  "generated": "2024-12-18",
+  "platforms_supported": ["INSTAGRAM", "TWITTER", "X", "YOUTUBE", "TIKTOK"],
+  "platforms_not_supported": ["FACEBOOK"],
+  "scans": [
+    {
+      "scan_id": "desktop-1764455612626-3o417ax",
+      "source_type": "DESKTOP",
+      "platform": "TWITTER",
+      "total_items": 30,
+      "total_ads": 0,
+      "note": "Desktop Twitter scan with good item count"
+    },
+    {
+      "scan_id": "desktop-1764543221023-qmro3dm",
+      "source_type": "DESKTOP",
+      "platform": "TWITTER",
+      "total_items": 17,
+      "total_ads": 5,
+      "note": "Desktop Twitter scan with ads present"
+    },
+    {
+      "scan_id": "11bee9a8-417d-434b-aec0-d7fcd28c952f",
+      "source_type": "MOBILE_VIDEO",
+      "platform": "X",
+      "total_items": 103,
+      "total_ads": 38,
+      "note": "Mobile video X scan with high ad percentage (37%) and OCR text"
+    },
+    {
+      "scan_id": "e6815472-239e-465b-98f3-122b7f824ed0",
+      "source_type": "MOBILE_VIDEO",
+      "platform": "INSTAGRAM",
+      "total_items": 68,
+      "total_ads": 0,
+      "note": "Mobile video Instagram scan without detected ads"
+    },
+    {
+      "scan_id": "d0592cab-2e4a-4080-a4d0-bf494c653888",
+      "source_type": "MOBILE_VIDEO",
+      "platform": "X",
+      "total_items": 103,
+      "total_ads": 0,
+      "note": "Mobile video X scan (additional coverage)"
+    },
+    {
+      "scan_id": "desktop-1764434417031-vlysfj4",
+      "source_type": "DESKTOP",
+      "platform": "INSTAGRAM",
+      "total_items": 5,
+      "total_ads": 0,
+      "note": "Edge case: minimal item count (5 items) for low-sample testing"
+    }
+  ]
+}

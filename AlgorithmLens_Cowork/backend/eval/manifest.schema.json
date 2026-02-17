@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Accuracy Eval Manifest (v3.1 scaffolding)",
+  "description": "Schema for manifests describing golden datasets and fixture collections for the AlgorithmLens accuracy harness.",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Semantic version of the manifest schema (e.g., 1.0.0)."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when this manifest was created."
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when this manifest was last updated."
+    },
+    "dataset_type": {
+      "type": "string",
+      "enum": ["golden", "edge", "adversarial"],
+      "description": "Type of dataset this manifest describes."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name for this dataset or fixture collection."
+    },
+    "description": {
+      "type": "string",
+      "description": "Long-form description of what this dataset covers."
+    },
+    "scans": {
+      "type": "array",
+      "description": "List of scan or fixture entries included in this dataset.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for this scan or fixture (e.g., golden_001, FIX_EMPTY)."
+          },
+          "scenario": {
+            "type": "string",
+            "description": "Short label for the scenario (e.g., high_ad_density, FIX_MINIMAL)."
+          },
+          "platform": {
+            "type": "string",
+            "description": "Platform for this scan (e.g., tiktok, instagram, youtube)."
+          },
+          "modality": {
+            "type": "string",
+            "description": "Capture modality (e.g., DESKTOP_EXTENSION, MOBILE_VIDEO)."
+          },
+          "input_path": {
+            "type": "string",
+            "description": "Relative path to the input JSON for this scan/fixture."
+          },
+          "expected_output_path": {
+            "type": "string",
+            "description": "Relative path to the expected analysis output JSON, if defined."
+          },
+          "notes": {
+            "type": "string",
+            "description": "Freeform notes about this scan/fixture."
+          }
+        },
+        "required": ["id", "input_path"]
+      }
+    }
+  },
+  "required": ["version", "dataset_type", "scans"]
+}
+
+

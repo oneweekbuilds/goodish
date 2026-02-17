@@ -1,0 +1,31 @@
+{
+  "name": "all_ads_extreme",
+  "description": "15 items, 15 ads (100%) on Facebook - extreme rate, strong prior shrinkage",
+  "platform": "facebook",
+  "n_total": 15,
+  "n_ads": 15,
+  "observed_rate": 1.0,
+  "prior": {
+    "alpha": 3.0,
+    "beta": 17.0,
+    "mean": 0.15,
+    "effective_n": 20
+  },
+  "expected": {
+    "wilson_ci": {
+      "lower": 0.782,
+      "upper": 1.0,
+      "width": 0.218
+    },
+    "bayesian_ci": {
+      "lower": 0.358,
+      "upper": 0.698,
+      "width": 0.340
+    },
+    "bayesian_point_estimate": 0.514,
+    "prior_used": true,
+    "prior_influence_percent": 57.1,
+    "interval_width_reduction": -0.56
+  },
+  "notes": "100% observed ads is implausible. Prior strongly pulls estimate down to ~51%. Note: Bayesian CI is WIDER here because it's centered away from the boundary. This is appropriate - the prior expresses skepticism about extreme rates. The interval_width_reduction is negative because Bayesian is wider, which correctly reflects uncertainty about the true rate."
+}

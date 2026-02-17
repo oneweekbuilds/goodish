@@ -1,0 +1,959 @@
+{
+  "version": "v0",
+  "created_at": "2026-01-08T01:59:46.218291",
+  "run_dir": "20260108_012303",
+  "tabs": [
+    "ads",
+    "politics",
+    "patterns",
+    "creators",
+    "inferences"
+  ],
+  "items": [
+    {
+      "scan_id": "desktop-1767216093373-0dykcpc",
+      "tab": "ads",
+      "bundle_file": "desktop-1767216093373-0dykcpc__ads.json",
+      "predicted": {
+        "main_insight_id": "ads-commercial-spectrum",
+        "claim_status": "FINAL",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 3,
+        "evidence_items_count": 3,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "Ads tab with 3 evidence items. Platform labels are highly reliable. Claim likely correct unless evidence chain is broken."
+      }
+    },
+    {
+      "scan_id": "desktop-1767216093373-0dykcpc",
+      "tab": "politics",
+      "bundle_file": "desktop-1767216093373-0dykcpc__politics.json",
+      "predicted": {
+        "main_insight_id": "politics-keyword-presence",
+        "claim_status": "FINAL",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 2,
+        "evidence_items_count": 2,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "metadata_completeness_rate": 1.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "yes",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "scan_id": "desktop-1767216093373-0dykcpc",
+      "tab": "patterns",
+      "bundle_file": "desktop-1767216093373-0dykcpc__patterns.json",
+      "predicted": {
+        "main_insight_id": "patterns-creator-repetition",
+        "claim_status": "FINAL",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 2,
+        "evidence_items_count": 2,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "metadata_completeness_rate": 1.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "scan_id": "desktop-1767216093373-0dykcpc",
+      "tab": "creators",
+      "bundle_file": "desktop-1767216093373-0dykcpc__creators.json",
+      "predicted": {
+        "main_insight_id": "creators-extracted",
+        "claim_status": "FINAL",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 82,
+        "evidence_items_count": 78,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "metadata_completeness_rate": 1.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "Creators tab with 82 evidence items. High coverage suggests claim is correct."
+      }
+    },
+    {
+      "scan_id": "desktop-1767216093373-0dykcpc",
+      "tab": "inferences",
+      "bundle_file": "desktop-1767216093373-0dykcpc__inferences.json",
+      "predicted": {
+        "main_insight_id": "algorithm-surfaced-signals",
+        "claim_status": "FINAL",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 6,
+        "evidence_items_count": 6,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "metadata_completeness_rate": 1.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "FINAL inferences with 6 high-confidence signals from multiple sources. Claim is correct, FINAL status appropriate."
+      }
+    },
+    {
+      "scan_id": "desktop-1767213421203-es5qrua",
+      "tab": "ads",
+      "bundle_file": "desktop-1767213421203-es5qrua__ads.json",
+      "predicted": {
+        "main_insight_id": "ads-commercial-spectrum",
+        "claim_status": "FINAL",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 32,
+        "evidence_items_count": 32,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "Ads tab with 32 evidence items. Platform labels are highly reliable. Claim likely correct unless evidence chain is broken."
+      }
+    },
+    {
+      "scan_id": "desktop-1767213421203-es5qrua",
+      "tab": "politics",
+      "bundle_file": "desktop-1767213421203-es5qrua__politics.json",
+      "predicted": {
+        "main_insight_id": "politics-keyword-presence",
+        "claim_status": "PRELIMINARY",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 1,
+        "evidence_items_count": 1,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "metadata_completeness_rate": 1.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": ""
+      }
+    },
+    {
+      "scan_id": "desktop-1767213421203-es5qrua",
+      "tab": "patterns",
+      "bundle_file": "desktop-1767213421203-es5qrua__patterns.json",
+      "predicted": {
+        "main_insight_id": "patterns-creator-repetition",
+        "claim_status": "ABSTAIN",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 0,
+        "evidence_items_count": 0,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "metadata_completeness_rate": 1.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "yes",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "Model correctly abstained: no repeated creators detected (31 unique creators across 31 posts). Abstention was appropriate."
+      }
+    },
+    {
+      "scan_id": "desktop-1767213421203-es5qrua",
+      "tab": "creators",
+      "bundle_file": "desktop-1767213421203-es5qrua__creators.json",
+      "predicted": {
+        "main_insight_id": "creators-extracted",
+        "claim_status": "FINAL",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 62,
+        "evidence_items_count": 62,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "metadata_completeness_rate": 1.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "Creators tab with 62 evidence items. High coverage suggests claim is correct."
+      }
+    },
+    {
+      "scan_id": "desktop-1767213421203-es5qrua",
+      "tab": "inferences",
+      "bundle_file": "desktop-1767213421203-es5qrua__inferences.json",
+      "predicted": {
+        "main_insight_id": "algorithm-surfaced-signals",
+        "claim_status": "FINAL",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 4,
+        "evidence_items_count": 4,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "metadata_completeness_rate": 1.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "FINAL inferences with 4 high-confidence signals from multiple sources. Claim is correct, FINAL status appropriate."
+      }
+    },
+    {
+      "scan_id": "desktop-1767213795895-7cvybej",
+      "tab": "ads",
+      "bundle_file": "desktop-1767213795895-7cvybej__ads.json",
+      "predicted": {
+        "main_insight_id": "ads-commercial-spectrum",
+        "claim_status": "FINAL",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 30,
+        "evidence_items_count": 30,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "Ads tab with 30 evidence items. Platform labels are highly reliable. Claim likely correct unless evidence chain is broken."
+      }
+    },
+    {
+      "scan_id": "desktop-1767213795895-7cvybej",
+      "tab": "politics",
+      "bundle_file": "desktop-1767213795895-7cvybej__politics.json",
+      "predicted": {
+        "main_insight_id": "politics-keyword-presence",
+        "claim_status": "PRELIMINARY",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 1,
+        "evidence_items_count": 1,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "metadata_completeness_rate": 1.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "PRELIMINARY status appropriate: 1 news keyword detected out of 29 posts (3.4%). Claim is correct but thin evidence justifies PRELIMINARY rather than FINAL."
+      }
+    },
+    {
+      "scan_id": "desktop-1767213795895-7cvybej",
+      "tab": "patterns",
+      "bundle_file": "desktop-1767213795895-7cvybej__patterns.json",
+      "predicted": {
+        "main_insight_id": "patterns-creator-repetition",
+        "claim_status": "ABSTAIN",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 0,
+        "evidence_items_count": 0,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "metadata_completeness_rate": 1.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "yes",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "ABSTAIN patterns with no repetition. Auto-applied: abstention was correct."
+      }
+    },
+    {
+      "scan_id": "desktop-1767213795895-7cvybej",
+      "tab": "creators",
+      "bundle_file": "desktop-1767213795895-7cvybej__creators.json",
+      "predicted": {
+        "main_insight_id": "creators-extracted",
+        "claim_status": "FINAL",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 58,
+        "evidence_items_count": 58,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "metadata_completeness_rate": 1.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "Creators tab with 58 evidence items. High coverage suggests claim is correct."
+      }
+    },
+    {
+      "scan_id": "desktop-1767213795895-7cvybej",
+      "tab": "inferences",
+      "bundle_file": "desktop-1767213795895-7cvybej__inferences.json",
+      "predicted": {
+        "main_insight_id": "algorithm-surfaced-signals",
+        "claim_status": "FINAL",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 4,
+        "evidence_items_count": 4,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "metadata_completeness_rate": 1.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "FINAL inferences with 4 high-confidence signals from multiple sources. Claim is correct, FINAL status appropriate."
+      }
+    },
+    {
+      "scan_id": "desktop-1767282143724-w7lwh78",
+      "tab": "ads",
+      "bundle_file": "desktop-1767282143724-w7lwh78__ads.json",
+      "predicted": {
+        "main_insight_id": "ads-commercial-spectrum",
+        "claim_status": "FINAL",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 1,
+        "evidence_items_count": 1,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "Ads tab with 1 evidence items. Platform labels are highly reliable. Claim likely correct unless evidence chain is broken."
+      }
+    },
+    {
+      "scan_id": "desktop-1767282143724-w7lwh78",
+      "tab": "politics",
+      "bundle_file": "desktop-1767282143724-w7lwh78__politics.json",
+      "predicted": {
+        "main_insight_id": "politics-keyword-presence",
+        "claim_status": "ABSTAIN",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 0,
+        "evidence_items_count": 0,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "metadata_completeness_rate": 1.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "yes",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "ABSTAIN politics with no evidence. Auto-applied: abstention was correct."
+      }
+    },
+    {
+      "scan_id": "desktop-1767282143724-w7lwh78",
+      "tab": "patterns",
+      "bundle_file": "desktop-1767282143724-w7lwh78__patterns.json",
+      "predicted": {
+        "main_insight_id": "patterns-creator-repetition",
+        "claim_status": "ABSTAIN",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 0,
+        "evidence_items_count": 0,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "metadata_completeness_rate": 1.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "yes",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "ABSTAIN patterns with no repetition. Auto-applied: abstention was correct."
+      }
+    },
+    {
+      "scan_id": "desktop-1767282143724-w7lwh78",
+      "tab": "creators",
+      "bundle_file": "desktop-1767282143724-w7lwh78__creators.json",
+      "predicted": {
+        "main_insight_id": "creators-extracted",
+        "claim_status": "FINAL",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 56,
+        "evidence_items_count": 56,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "metadata_completeness_rate": 1.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "Creators tab with 56 evidence items. High coverage suggests claim is correct."
+      }
+    },
+    {
+      "scan_id": "desktop-1767282143724-w7lwh78",
+      "tab": "inferences",
+      "bundle_file": "desktop-1767282143724-w7lwh78__inferences.json",
+      "predicted": {
+        "main_insight_id": "algorithm-surfaced-signals",
+        "claim_status": "PRELIMINARY",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 1,
+        "evidence_items_count": 1,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "metadata_completeness_rate": 1.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "PRELIMINARY inferences with 1 high-confidence signal. Claim is correct but thin evidence justifies PRELIMINARY rather than FINAL."
+      }
+    },
+    {
+      "scan_id": "desktop-1767214732271-5fvxxhi",
+      "tab": "ads",
+      "bundle_file": "desktop-1767214732271-5fvxxhi__ads.json",
+      "predicted": {
+        "main_insight_id": "ads-commercial-spectrum",
+        "claim_status": "FINAL",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 1,
+        "evidence_items_count": 1,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "Ads tab with 1 evidence items. Platform labels are highly reliable. Claim likely correct unless evidence chain is broken."
+      }
+    },
+    {
+      "scan_id": "desktop-1767214732271-5fvxxhi",
+      "tab": "politics",
+      "bundle_file": "desktop-1767214732271-5fvxxhi__politics.json",
+      "predicted": {
+        "main_insight_id": "politics-keyword-presence",
+        "claim_status": "ABSTAIN",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 0,
+        "evidence_items_count": 0,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "metadata_completeness_rate": 1.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "yes",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "ABSTAIN politics with no evidence. Auto-applied: abstention was correct."
+      }
+    },
+    {
+      "scan_id": "desktop-1767214732271-5fvxxhi",
+      "tab": "patterns",
+      "bundle_file": "desktop-1767214732271-5fvxxhi__patterns.json",
+      "predicted": {
+        "main_insight_id": "patterns-creator-repetition",
+        "claim_status": "ABSTAIN",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 0,
+        "evidence_items_count": 0,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "metadata_completeness_rate": 1.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "yes",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "ABSTAIN patterns with no repetition. Auto-applied: abstention was correct."
+      }
+    },
+    {
+      "scan_id": "desktop-1767214732271-5fvxxhi",
+      "tab": "creators",
+      "bundle_file": "desktop-1767214732271-5fvxxhi__creators.json",
+      "predicted": {
+        "main_insight_id": "creators-extracted",
+        "claim_status": "FINAL",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 50,
+        "evidence_items_count": 50,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "metadata_completeness_rate": 1.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "Creators tab with 50 evidence items. High coverage suggests claim is correct."
+      }
+    },
+    {
+      "scan_id": "desktop-1767214732271-5fvxxhi",
+      "tab": "inferences",
+      "bundle_file": "desktop-1767214732271-5fvxxhi__inferences.json",
+      "predicted": {
+        "main_insight_id": "algorithm-surfaced-signals",
+        "claim_status": "FINAL",
+        "title": null,
+        "narrative": null,
+        "evidence_ids_len": 2,
+        "evidence_items_count": 2,
+        "insights_count": 1,
+        "conflict_resolutions_count": 0,
+        "evidence_chain_metrics": {
+          "evidence_linking_rate": 1.0,
+          "missing_evidence_rate": 0.0,
+          "orphan_evidence_rate": 0.0,
+          "metadata_completeness_rate": 1.0,
+          "validation_passed": true
+        },
+        "critic_metrics": {
+          "downgraded_final_to_preliminary": 0,
+          "downgraded_final_to_abstain": 0,
+          "downgraded_reasons": [],
+          "metadata_incomplete_count": 0,
+          "contract_violations": [],
+          "validation_passed": true,
+          "validation_errors": []
+        }
+      },
+      "ground_truth": {
+        "is_main_claim_correct": "yes",
+        "should_have_abstained": "no",
+        "what_is_wrong": "",
+        "expected_evidence": "",
+        "notes": "FINAL inferences with 2 high-confidence signals from multiple sources. Claim is correct, FINAL status appropriate."
+      }
+    }
+  ]
+}

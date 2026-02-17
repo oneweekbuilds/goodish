@@ -1,0 +1,189 @@
+{
+  "run_id": "test_e2e_001",
+  "platform": "twitter",
+  "started_at": "2026-02-15T17:28:53.897481+00:00",
+  "completed_at": "2026-02-15T17:28:53.897483+00:00",
+  "total_cycles": 1,
+  "final_passed": true,
+  "threshold_pct": 5.0,
+  "max_cycles": 10,
+  "grading_reports": [
+    {
+      "cycle_number": 1,
+      "timestamp": "2026-02-15T17:28:53.897454+00:00",
+      "overall_passed": true,
+      "criteria": [
+        {
+          "name": "post_count_exact",
+          "passed": true,
+          "category": "quantitative",
+          "expected": 10,
+          "actual": 10,
+          "accuracy_pct": 100.0,
+          "threshold_pct": 0.0,
+          "error_description": null,
+          "fix_category": null,
+          "evidence": "Ground truth: 10, Analysis: 10"
+        },
+        {
+          "name": "content_type_distribution",
+          "passed": true,
+          "category": "quantitative",
+          "expected": {
+            "image": 30.0,
+            "video": 20.0,
+            "text": 30.0,
+            "link": 20.0
+          },
+          "actual": {
+            "image": 30.0,
+            "video": 20.0,
+            "text": 30.0,
+            "link": 20.0
+          },
+          "accuracy_pct": 100.0,
+          "threshold_pct": 5.0,
+          "error_description": null,
+          "fix_category": null,
+          "evidence": "Max difference: 0.0%, threshold: \u00b15.0%"
+        },
+        {
+          "name": "engagement_ranges",
+          "passed": true,
+          "category": "quantitative",
+          "expected": {
+            "likes": 1431500,
+            "comments": 54210,
+            "shares": 134100
+          },
+          "actual": {
+            "feed_items_count": 10
+          },
+          "accuracy_pct": 100.0,
+          "threshold_pct": 5.0,
+          "error_description": null,
+          "fix_category": null,
+          "evidence": null
+        },
+        {
+          "name": "source_diversity",
+          "passed": true,
+          "category": "quantitative",
+          "expected": {
+            "unique_authors": 10,
+            "diversity_pct": 100.0
+          },
+          "actual": {
+            "unique_authors": 10,
+            "diversity_pct": 100.0
+          },
+          "accuracy_pct": 100.0,
+          "threshold_pct": 5.0,
+          "error_description": null,
+          "fix_category": null,
+          "evidence": null
+        },
+        {
+          "name": "epistemic_restraint",
+          "passed": true,
+          "category": "qualitative",
+          "expected": null,
+          "actual": null,
+          "accuracy_pct": null,
+          "threshold_pct": 5.0,
+          "error_description": null,
+          "fix_category": null,
+          "evidence": "Checked 10 violation patterns against all evidence bundle text"
+        },
+        {
+          "name": "theme_accuracy",
+          "passed": true,
+          "category": "qualitative",
+          "expected": "All themes traceable to post content",
+          "actual": "All themes verified",
+          "accuracy_pct": null,
+          "threshold_pct": 5.0,
+          "error_description": null,
+          "fix_category": null,
+          "evidence": "Checked 8 themes against 10 post texts"
+        },
+        {
+          "name": "content_references_valid",
+          "passed": true,
+          "category": "qualitative",
+          "expected": null,
+          "actual": null,
+          "accuracy_pct": null,
+          "threshold_pct": 5.0,
+          "error_description": null,
+          "fix_category": null,
+          "evidence": "Checked 0 quoted references against 10 ground truth posts"
+        },
+        {
+          "name": "no_missing_posts",
+          "passed": true,
+          "category": "completeness",
+          "expected": 10,
+          "actual": 10,
+          "accuracy_pct": null,
+          "threshold_pct": 5.0,
+          "error_description": null,
+          "fix_category": null,
+          "evidence": null
+        },
+        {
+          "name": "no_phantom_posts",
+          "passed": true,
+          "category": "completeness",
+          "expected": 10,
+          "actual": 10,
+          "accuracy_pct": null,
+          "threshold_pct": 5.0,
+          "error_description": null,
+          "fix_category": null,
+          "evidence": null
+        },
+        {
+          "name": "all_tabs_populated",
+          "passed": true,
+          "category": "completeness",
+          "expected": [
+            "ads",
+            "patterns",
+            "politics",
+            "sources",
+            "suggested-vs-followed",
+            "tone"
+          ],
+          "actual": [
+            "ads",
+            "patterns",
+            "politics",
+            "sources",
+            "suggested-vs-followed",
+            "tone"
+          ],
+          "accuracy_pct": null,
+          "threshold_pct": 5.0,
+          "error_description": null,
+          "fix_category": null,
+          "evidence": "Expected 6 tabs, found 6 (0 with errors)"
+        }
+      ],
+      "total_criteria": 10,
+      "passed_criteria": 10,
+      "failed_criteria": 0,
+      "accuracy_scores": {
+        "post_count_exact": 100.0,
+        "content_type_distribution": 100.0,
+        "engagement_ranges": 100.0,
+        "source_diversity": 100.0
+      },
+      "suggested_fixes": []
+    }
+  ],
+  "fixes_applied": [],
+  "snapshot_path": null,
+  "analysis_output_path": null,
+  "notes": null
+}

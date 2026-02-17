@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlgorithmLens v1.2</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 360px;
+      min-height: 200px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    /* ============================================ */
+    /* Header — text-only wordmark like website     */
+    /* ============================================ */
+
+    .header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .header-logo {
+      height: 24px;
+      width: auto;
+      display: block;
+    }
+
+    .version-tag {
+      font-size: 9px;
+      color: #9ca3af;
+      margin-left: auto;
+      font-weight: 500;
+    }
+
+    /* ============================================ */
+    /* Status States                                  */
+    /* ============================================ */
+
+    .status {
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-bottom: 14px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .status.supported {
+      background: #ecfdf5;
+      color: #065f46;
+    }
+
+    .status.unsupported {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status.loading {
+      background: #eff6ff;
+      color: #1e40af;
+    }
+
+    .status.session-active {
+      background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+    }
+
+    .status.results {
+      background: transparent;
+      color: #1e293b;
+      padding: 0;
+      overflow: visible;
+    }
+
+    .platform-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #fff;
+      border-radius: 5px;
+      font-weight: 600;
+      margin-left: 4px;
+      font-size: 12px;
+      border: 1px solid #e5e7eb;
+    }
+
+    /* ============================================ */
+    /* Session Timer                                  */
+    /* ============================================ */
+
+    .session-timer {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 700;
+      color: #2563eb;
+      margin-bottom: 12px;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 1px;
+    }
+
+    .session-timer small {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      color: #6b7280;
+      margin-top: 3px;
+      letter-spacing: 0;
+    }
+
+    /* ============================================ */
+    /* Scan Button                                    */
+    /* ============================================ */
+
+    .scan-button {
+      width: 100%;
+      padding: 13px 20px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+      letter-spacing: -0.1px;
+    }
+
+    .scan-button:hover:not(:disabled) {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+    }
+
+    .scan-button:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .scan-button.stop {
+      background: #dc2626;
+      box-shadow: 0 4px 14px rgba(220, 38, 38, 0.25);
+    }
+
+    .scan-button.stop:hover:not(:disabled) {
+      background: #b91c1c;
+      box-shadow: 0 6px 20px rgba(220, 38, 38, 0.3);
+    }
+
+    /* ============================================ */
+    /* Result Header                                  */
+    /* ============================================ */
+
+    .result-header {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .result-count {
+      font-size: 26px;
+      font-weight: 700;
+      color: #1e293b;
+      line-height: 1;
+    }
+
+    .result-meta {
+      font-size: 13px;
+      color: #6b7280;
+      font-weight: 400;
+    }
+
+    .scan-result {
+      padding: 0;
+    }
+
+    /* ============================================ */
+    /* Dashboard Preview Cards                       */
+    /* ============================================ */
+
+    .dashboard-preview {
+      margin-top: 4px;
+    }
+
+    .dashboard-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .dash-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 14px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dash-card:hover {
+      border-color: #bfdbfe;
+      box-shadow: 0 3px 12px rgba(37, 99, 235, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .dash-card:active {
+      transform: translateY(0);
+    }
+
+    .dash-card-indicator {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      border-radius: 2px 2px 0 0;
+    }
+
+    /* Card accent colors — ONLY brand blue and green */
+    .dash-card[data-tab="overview"] .dash-card-indicator { background: #2563eb; }
+    .dash-card[data-tab="sources"] .dash-card-indicator { background: #2563eb; }
+    .dash-card[data-tab="ads"] .dash-card-indicator { background: #2563eb; }
+    .dash-card[data-tab="suggested"] .dash-card-indicator { background: #10b981; }
+
+    .dash-card-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: #6b7280;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .dash-card-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1e293b;
+      line-height: 1.1;
+      margin-bottom: 2px;
+    }
+
+    .dash-card-unit {
+      font-size: 12px;
+      font-weight: 500;
+      color: #6b7280;
+    }
+
+    .dash-card-detail {
+      font-size: 11px;
+      color: #9ca3af;
+      line-height: 1.35;
+      font-weight: 400;
+    }
+
+    /* Open arrow on cards */
+    .dash-card-arrow {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      font-size: 11px;
+      color: #d1d5db;
+      transition: all 0.18s ease;
+    }
+
+    .dash-card:hover .dash-card-arrow {
+      color: #2563eb;
+      transform: translateX(2px);
+    }
+
+    /* ============================================ */
+    /* Banners (rate-limit only)                     */
+    /* ============================================ */
+
+    .saved-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      margin-bottom: 14px;
+    }
+
+    .saved-banner.rate-limit {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+    }
+
+    .saved-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .saved-text {
+      flex: 1;
+    }
+
+    .saved-text strong {
+      display: block;
+      font-size: 12px;
+      color: #1e40af;
+      margin-bottom: 1px;
+    }
+
+    .saved-text small {
+      display: block;
+      font-size: 10px;
+      color: #2563eb;
+    }
+
+    /* ============================================ */
+    /* AI Consent Toggle                             */
+    /* ============================================ */
+
+    .ai-consent-section {
+      margin-top: 12px;
+      padding: 12px 14px;
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .toggle-container input {
+      display: none;
+    }
+
+    .toggle-slider {
+      width: 36px;
+      height: 20px;
+      background: #d1d5db;
+      border-radius: 10px;
+      position: relative;
+      transition: background 0.25s ease;
+      flex-shrink: 0;
+    }
+
+    .toggle-slider::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.25s ease;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+
+    .toggle-container input:checked + .toggle-slider {
+      background: #10b981;
+    }
+
+    .toggle-container input:checked + .toggle-slider::after {
+      transform: translateX(16px);
+    }
+
+    .toggle-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .ai-consent-info {
+      margin-top: 6px;
+      font-size: 10px;
+      color: #9ca3af;
+      line-height: 1.5;
+      padding-left: 46px;
+    }
+
+    /* ============================================ */
+    /* Session Hint                                   */
+    /* ============================================ */
+
+    .session-hint {
+      font-size: 11px;
+      color: #9ca3af;
+      line-height: 1.5;
+      margin-top: 12px;
+      text-align: center;
+    }
+
+    /* ============================================ */
+    /* Footer                                        */
+    /* ============================================ */
+
+    .footer {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+      font-size: 10px;
+      color: #9ca3af;
+    }
+
+    .footer a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* ============================================ */
+    /* Results-mode: hide pre-scan elements          */
+    /* ============================================ */
+
+    .status.results ~ .ai-consent-section,
+    .status.results ~ .session-hint {
+      display: none;
+    }
+
+    /* No-post state */
+    .result-detail {
+      font-size: 13px;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+
+    /* ============================================ */
+    /* Dashboard CTA Button                         */
+    /* ============================================ */
+
+    .dashboard-cta {
+      display: block;
+      width: 100%;
+      margin-top: 14px;
+      padding: 12px 20px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+    }
+
+    .dashboard-cta:hover {
+      background: #1d4ed8;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="../icons/logo.png" alt="AlgorithmLens" class="header-logo">
+      <span class="version-tag">v1.2</span>
+    </div>
+
+    <div id="status" class="status loading">
+      Checking current page...
+    </div>
+
+    <div id="sessionTimer" class="session-timer" style="display: none;">
+      00:00
+      <small>Session recording...</small>
+    </div>
+
+    <button id="scanButton" class="scan-button" disabled>
+      Start Session Scan
+    </button>
+
+    <!-- AI Analysis Consent Toggle -->
+    <div id="aiConsentSection" class="ai-consent-section">
+      <label class="toggle-container">
+        <input type="checkbox" id="aiConsentToggle">
+        <span class="toggle-slider"></span>
+        <span class="toggle-label">Include AI analysis</span>
+      </label>
+      <p class="ai-consent-info">
+        Analyzes tone and political signals. Only limited post data is sent.
+      </p>
+    </div>
+
+    <p class="session-hint">
+      Scroll your feed while scanning. Supports TikTok, Instagram, YouTube, Facebook, X, and Reddit.
+    </p>
+
+    <div class="footer">
+      <a href="https://algorithmlens.com" target="_blank">algorithmlens.com</a>
+    </div>
+  </div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

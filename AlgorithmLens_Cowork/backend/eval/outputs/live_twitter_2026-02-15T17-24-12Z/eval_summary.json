@@ -1,0 +1,15 @@
+{
+  "run_id": "eval_twitter_c863745c",
+  "platform": "twitter",
+  "started_at": "2026-02-15T17:24:12.738804+00:00",
+  "completed_at": "2026-02-15T17:24:13.232589+00:00",
+  "total_cycles": 2,
+  "final_passed": false,
+  "threshold_pct": 5.0,
+  "max_cycles": 2,
+  "grading_reports": [],
+  "fixes_applied": [],
+  "snapshot_path": null,
+  "analysis_output_path": null,
+  "notes": null
+}

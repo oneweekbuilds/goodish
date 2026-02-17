@@ -1,0 +1,21 @@
+version: 2
+updates:
+  # npm dependency updates
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+    allow:
+      - dependency-type: "all"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "algorithmlens-team"
+    labels:
+      - "dependencies"
+      - "npm"
+    commit-message:
+      prefix: "chore"
+      prefix-scope: "deps"
+      include: "scope"

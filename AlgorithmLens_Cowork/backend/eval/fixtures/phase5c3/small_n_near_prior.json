@@ -1,0 +1,31 @@
+{
+  "name": "small_n_near_prior",
+  "description": "25 items, 3 ads (12%) on TikTok - rate near prior mean of 10%",
+  "platform": "tiktok",
+  "n_total": 25,
+  "n_ads": 3,
+  "observed_rate": 0.12,
+  "prior": {
+    "alpha": 2.0,
+    "beta": 18.0,
+    "mean": 0.10,
+    "effective_n": 20
+  },
+  "expected": {
+    "wilson_ci": {
+      "lower": 0.025,
+      "upper": 0.302,
+      "width": 0.277
+    },
+    "bayesian_ci": {
+      "lower": 0.067,
+      "upper": 0.192,
+      "width": 0.125
+    },
+    "bayesian_point_estimate": 0.111,
+    "prior_used": true,
+    "prior_influence_percent": 44.4,
+    "interval_width_reduction": 0.55
+  },
+  "notes": "Prior pulls estimate slightly toward 10%. Significant interval narrowing due to prior information."
+}
