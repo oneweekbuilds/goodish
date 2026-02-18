@@ -158,7 +158,6 @@ def get_user_trends(current_user: dict = Depends(get_current_user)) -> dict:
 
     Returns:
         {
-            "user_id": str,
             "total_scans": int,
             "date_range": {
                 "first_scan": str (ISO datetime) | null,
@@ -205,7 +204,6 @@ def get_user_trends(current_user: dict = Depends(get_current_user)) -> dict:
     scans_with_data = len(ad_percentages)
 
     return {
-        "user_id": user_id,
         "total_scans": len(scans),
         "date_range": {
             "first_scan": first_scan,

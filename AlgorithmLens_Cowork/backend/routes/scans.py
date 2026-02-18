@@ -1,8 +1,10 @@
 """Scan management endpoints (upload, list, retrieve, delete, status)."""
+import json
 import logging
 import os
 import shutil
 import signal
+import sys
 import threading
 import uuid
 from datetime import datetime
@@ -17,7 +19,9 @@ from database import (
     get_scans_by_user, get_scan_by_id_for_user, delete_scan
 )
 from auth import get_current_user
+from config import is_dev_environment
 from ocr_utils import get_ocr_debug_enabled
+from validation import validate_scan_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["scans"])
@@ -204,8 +208,10 @@ async def upload_scan(
                 os.remove(temp_file_path)
             except OSError as cleanup_error:
                 logger.warning(f"Failed to clean up file {temp_file_path}: {cleanup_error}")
-        # Always include the actual error detail (pre-launch app; no end-users yet)
-        raise HTTPException(status_code=500, detail=f"Upload error: {type(e).__name__}: {str(e)}")
+        # Hide detailed error messages in production
+        if is_dev_environment():
+            raise HTTPException(status_code=500, detail=f"Upload error: {type(e).__name__}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Upload processing failed")
 
 
 @router.get("/scans/{scan_id}/status")
@@ -226,6 +232,7 @@ def get_scan_status_endpoint(scan_id: str, current_user: dict = Depends(get_curr
     Returns:
         scan_id, status, error_message (if failed), total_items, total_ads
     """
+    validate_scan_id(scan_id)
     # Verify ownership before returning status
     user_id = current_user["user_id"]
     scan = get_scan_by_id_for_user(scan_id, user_id)
@@ -260,6 +267,7 @@ def get_scan(scan_id: str, current_user: dict = Depends(get_current_user)):
 
     Requires: Authorization header with valid Supabase JWT
     """
+    validate_scan_id(scan_id)
     user_id = current_user["user_id"]
     scan = get_scan_by_id_for_user(scan_id, user_id)
     if scan is None:
@@ -275,6 +283,7 @@ def remove_scan(scan_id: str, current_user: dict = Depends(get_current_user)):
     Requires: Authorization header with valid Supabase JWT.
     Only the scan owner can delete their scan.
     """
+    validate_scan_id(scan_id)
     user_id = current_user["user_id"]
     # Verify ownership before deletion
     scan = get_scan_by_id_for_user(scan_id, user_id)
@@ -311,6 +320,20 @@ async def desktop_scan(scan_result: dict, current_user: dict = Depends(get_curre
     from database import save_scan
 
     try:
+        # Validate payload format
+        if not isinstance(scan_result, dict):
+            raise HTTPException(status_code=400, detail="Invalid scan result format")
+
+        # Validate payload size (prevent memory exhaustion from oversized payloads)
+        payload_size = sys.getsizeof(json.dumps(scan_result)) if scan_result else 0
+        if payload_size > 10 * 1024 * 1024:  # 10MB max for desktop scan JSON
+            raise HTTPException(status_code=413, detail="Scan payload too large")
+
+        # Validate required structure
+        scan_metadata = scan_result.get("scan_metadata")
+        if not isinstance(scan_metadata, dict):
+            raise HTTPException(status_code=400, detail="Missing or invalid scan_metadata")
+
         # Get authenticated user_id (override any user_identifier in scan_metadata)
         user_id = current_user["user_id"]
 
@@ -440,6 +463,7 @@ def get_scan_ocr_diagnostics(scan_id: str, current_user: dict = Depends(get_curr
 
     Requires: Authorization header with valid Supabase JWT
     """
+    validate_scan_id(scan_id)
     user_id = current_user["user_id"]
     scan = get_scan_by_id_for_user(scan_id, user_id)
     if scan is None:

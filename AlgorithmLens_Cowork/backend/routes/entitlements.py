@@ -3,12 +3,15 @@ import logging
 import time
 import math
 
-from fastapi import APIRouter, Depends
-from database import is_user_plus, get_subscription_by_user_id
+from fastapi import APIRouter, Depends, HTTPException, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from database import is_user_plus, get_subscription_by_user_id, delete_user_data
 from auth import get_current_user
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["entitlements"])
+limiter = Limiter(key_func=get_remote_address)
 
 
 @router.get("/user/entitlements")
@@ -68,4 +71,31 @@ def get_user_entitlements(current_user: dict = Depends(get_current_user)) -> dic
     return {
         "is_plus": is_plus,
         "subscription": subscription_data,
+    }
+
+
+@router.delete("/user/data")
+@limiter.limit("3/hour")
+def delete_all_user_data(
+    request: Request,
+    current_user: dict = Depends(get_current_user)
+) -> dict:
+    """
+    Delete all user data (GDPR/CCPA data erasure).
+
+    Removes all scans and subscription records for the authenticated user.
+    This action is irreversible.
+
+    Requires: Authorization header with valid Supabase JWT
+    Rate limited to 3 requests per hour to prevent abuse.
+    """
+    user_id = current_user["user_id"]
+
+    result = delete_user_data(user_id)
+
+    logger.info(f"User {user_id} requested data deletion: {result}")
+
+    return {
+        "status": "deleted",
+        "details": result
     }

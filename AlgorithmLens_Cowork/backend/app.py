@@ -54,6 +54,15 @@ async def lifespan(app: FastAPI):
     # Startup logic
     init_database()
 
+    # Cleanup old webhook events (data retention)
+    from database import cleanup_old_webhook_events
+    try:
+        cleaned = cleanup_old_webhook_events(days_to_keep=90)
+        if cleaned > 0:
+            logger.info(f"Startup cleanup: removed {cleaned} old webhook events")
+    except Exception as e:
+        logger.warning(f"Webhook cleanup failed (non-fatal): {e}")
+
     # Verify JWT secret is set (fail loudly in dev if missing)
     is_dev = is_dev_environment()
     if is_dev:
@@ -93,6 +102,21 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
+# Request body size limit middleware (50MB max)
+MAX_REQUEST_BODY_SIZE = 50 * 1024 * 1024  # 50MB
+
+@app.middleware("http")
+async def limit_request_body_size(request: Request, call_next):
+    """Reject requests with bodies exceeding the maximum allowed size."""
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > MAX_REQUEST_BODY_SIZE:
+        return JSONResponse(
+            status_code=413,
+            content={"error": "Request body too large", "max_bytes": MAX_REQUEST_BODY_SIZE}
+        )
+    return await call_next(request)
+
+
 # CORS configuration - restrictive by default, permissive only when ENV is explicitly set to dev
 _is_dev = is_dev_environment()
 _allowed_origins = [
@@ -125,7 +149,10 @@ async def add_security_headers(request: Request, call_next):
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://api.stripe.com https://*.supabase.co"
+    response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://api.stripe.com https://*.supabase.co; frame-ancestors 'none'"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=(self)"
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, private"
+    response.headers["Pragma"] = "no-cache"
     return response
 
 

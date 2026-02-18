@@ -75,7 +75,23 @@
   "web_accessible_resources": [
     {
       "resources": ["popup/*", "chunks/*"],
-      "matches": ["<all_urls>"]
+      "matches": [
+        "https://www.tiktok.com/*",
+        "https://www.instagram.com/*",
+        "https://www.youtube.com/*",
+        "https://www.facebook.com/*",
+        "https://web.facebook.com/*",
+        "https://m.facebook.com/*",
+        "https://x.com/*",
+        "https://www.x.com/*",
+        "https://twitter.com/*",
+        "https://www.twitter.com/*",
+        "https://mobile.twitter.com/*",
+        "https://reddit.com/*",
+        "https://www.reddit.com/*",
+        "https://old.reddit.com/*",
+        "https://new.reddit.com/*"
+      ]
     }
   ]
 }

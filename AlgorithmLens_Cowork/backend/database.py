@@ -763,3 +763,56 @@ def get_recent_webhook_events(limit: int = 50) -> List[Dict[str, Any]]:
 
     return events
 
+
+def cleanup_old_webhook_events(days_to_keep: int = 90) -> int:
+    """
+    Delete webhook events older than the specified number of days.
+    Returns the number of deleted events.
+
+    Called during startup or periodically to prevent unbounded table growth.
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    from datetime import timedelta
+    cutoff = (datetime.now() - timedelta(days=days_to_keep)).isoformat()
+
+    cursor.execute("""
+        DELETE FROM stripe_webhook_events
+        WHERE created_at < ?
+    """, (cutoff,))
+
+    deleted = cursor.rowcount
+    conn.commit()
+
+    if deleted > 0:
+        logger.info(f"Cleaned up {deleted} webhook events older than {days_to_keep} days")
+
+    return deleted
+
+
+def delete_user_data(user_id: str) -> dict:
+    """
+    Delete ALL data for a specific user. Used for account deletion / data erasure requests.
+    Returns counts of deleted records.
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    # Delete scans
+    cursor.execute("DELETE FROM scans WHERE user_id = ?", (user_id,))
+    scans_deleted = cursor.rowcount
+
+    # Delete subscription records
+    cursor.execute("DELETE FROM subscriptions WHERE user_id = ?", (user_id,))
+    subs_deleted = cursor.rowcount
+
+    conn.commit()
+
+    logger.info(f"Deleted user data for {user_id}: {scans_deleted} scans, {subs_deleted} subscription records")
+
+    return {
+        "scans_deleted": scans_deleted,
+        "subscriptions_deleted": subs_deleted
+    }
+

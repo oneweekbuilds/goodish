@@ -8,6 +8,44 @@ import { CAPTURE_DEBUG, debugLog } from '../shared/debug.js';
  */
 
 // ============================================
+// Security Helpers
+// ============================================
+
+/**
+ * Safely set text content to prevent XSS
+ * @param {HTMLElement} element - Target element
+ * @param {string} text - Text to set
+ */
+function safeSetText(element, text) {
+  if (!element) return;
+  element.textContent = text;
+}
+
+/**
+ * Escape HTML special characters to prevent XSS
+ * @param {string} text - Text to escape
+ * @returns {string} Escaped text safe for HTML context
+ */
+function escapeHtml(text) {
+  if (typeof text !== 'string') return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+/**
+ * Safely set HTML with escaped user data
+ * Builds DOM structure using createElement instead of innerHTML with interpolation
+ * @param {HTMLElement} element - Target element
+ * @param {Object} content - Object with text values to safely insert
+ * @param {string} htmlTemplate - HTML template string (no user data should be interpolated)
+ */
+function safeSetHtml(element, htmlTemplate) {
+  if (!element) return;
+  element.innerHTML = htmlTemplate;
+}
+
+// ============================================
 // Feature Flags
 // ============================================
 
@@ -77,7 +115,13 @@ function startTimer() {
 function updateTimerDisplay() {
   if (sessionStartTime) {
     const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
-    sessionTimerEl.innerHTML = `${formatTime(elapsed)}<small>Session recording...</small>`;
+    sessionTimerEl.innerHTML = ''; // Clear previous content
+    const timeSpan = document.createElement('span');
+    timeSpan.textContent = formatTime(elapsed);
+    const smallSpan = document.createElement('small');
+    smallSpan.textContent = 'Session recording...';
+    sessionTimerEl.appendChild(timeSpan);
+    sessionTimerEl.appendChild(smallSpan);
   }
 }
 
@@ -119,6 +163,11 @@ async function checkCurrentTab() {
     const platformResponse = await chrome.runtime.sendMessage({ type: 'CHECK_PLATFORM' });
     if (CAPTURE_DEBUG) debugLog('log', '[AlgorithmLens] Platform check response:', platformResponse);
 
+    // SECURITY: Validate response structure before using it
+    if (!platformResponse || typeof platformResponse !== 'object') {
+      throw new Error('Invalid platform response from background script');
+    }
+
     currentTabId = platformResponse.tabId;
     const platformDetected = platformResponse.platform;
     const isSupportedPlatform = platformDetected && SUPPORTED_SCAN_PLATFORMS.includes(platformDetected);
@@ -153,6 +202,11 @@ async function checkCurrentTab() {
     const sessionResponse = await chrome.runtime.sendMessage({ action: 'GET_SESSION_STATE' });
     if (CAPTURE_DEBUG) debugLog('log', '[AlgorithmLens] Session state response:', sessionResponse);
 
+    // SECURITY: Validate response structure before using it
+    if (!sessionResponse || typeof sessionResponse !== 'object') {
+      throw new Error('Invalid session state response from background script');
+    }
+
     if (sessionResponse.active && sessionResponse.startTime) {
       sessionActive = true;
       sessionStartTime = sessionResponse.startTime;
@@ -176,9 +230,16 @@ async function checkCurrentTab() {
 
 function showReadyState() {
   statusEl.className = 'status supported';
-  statusEl.innerHTML = `
-    Ready to scan <span class="platform-badge">${platformNames[currentPlatform] || currentPlatform}</span>
-  `;
+  statusEl.innerHTML = '';
+
+  const textNode = document.createTextNode('Ready to scan ');
+  const badge = document.createElement('span');
+  badge.className = 'platform-badge';
+  badge.textContent = platformNames[currentPlatform] || currentPlatform;
+
+  statusEl.appendChild(textNode);
+  statusEl.appendChild(badge);
+
   scanButton.textContent = 'Start Session Scan';
   scanButton.className = 'scan-button';
   scanButton.disabled = false;
@@ -187,10 +248,18 @@ function showReadyState() {
 
 function showSessionActiveState() {
   statusEl.className = 'status session-active';
-  statusEl.innerHTML = `
-    <strong>Recording on ${platformNames[currentPlatform] || currentPlatform}</strong><br>
-    <small>Scroll your feed to capture posts. Click "Stop" when ready.</small>
-  `;
+  statusEl.innerHTML = '';
+
+  const strong = document.createElement('strong');
+  strong.textContent = `Recording on ${platformNames[currentPlatform] || currentPlatform}`;
+  const br = document.createElement('br');
+  const small = document.createElement('small');
+  small.textContent = 'Scroll your feed to capture posts. Click "Stop" when ready.';
+
+  statusEl.appendChild(strong);
+  statusEl.appendChild(br);
+  statusEl.appendChild(small);
+
   scanButton.textContent = 'Stop & Analyze Session';
   scanButton.className = 'scan-button stop';
   scanButton.disabled = false;
@@ -269,15 +338,16 @@ function formatUnifiedResults(result, durationSeconds, backendSaved = false, bac
   // --- Build the 6 dashboard cards ---
 
   // Card 1: Overview — show feed diversity insight, not a repeat of the header
+  // SECURITY: Escape user data to prevent XSS
   let overviewValue, overviewUnit, overviewDetail;
   if (topTopic && topTopic.topic) {
-    overviewValue = topTopic.topic;
+    overviewValue = escapeHtml(topTopic.topic);
     overviewUnit = '';
     overviewDetail = topTopics.length > 1
       ? `Top category · ${topTopics.length} topics detected`
       : 'Dominant topic in your feed';
   } else if (topHashtags.length > 0) {
-    overviewValue = `#${topHashtags[0].tag}`;
+    overviewValue = `#${escapeHtml(topHashtags[0].tag)}`;
     overviewUnit = '';
     overviewDetail = `Appeared ${topHashtags[0].count}× · ${topHashtags.length} hashtags total`;
   } else {
@@ -287,13 +357,15 @@ function formatUnifiedResults(result, durationSeconds, backendSaved = false, bac
   }
 
   // Card 2: Sources — unique creators with diversity insight
+  // SECURITY: Escape user data to prevent XSS
   let sourcesDetail;
   if (creatorCount === 0) {
     sourcesDetail = 'Creator data not available';
   } else if (topCreator) {
+    const escapedCreator = escapeHtml(topCreator);
     sourcesDetail = creatorRatio > 0.8
-      ? `High variety · top: ${topCreator}`
-      : `Top creator: ${topCreator}`;
+      ? `High variety · top: ${escapedCreator}`
+      : `Top creator: ${escapedCreator}`;
   } else {
     sourcesDetail = `${creatorCount} unique across ${totalItems} posts`;
   }
@@ -309,6 +381,8 @@ function formatUnifiedResults(result, durationSeconds, backendSaved = false, bac
   } else {
     adsDetail = `${totalAds} sponsored post${totalAds !== 1 ? 's' : ''} found`;
   }
+  // SECURITY: Escape user data to prevent XSS
+  const escapedAdsDetail = escapeHtml(adsDetail);
 
   // Card 4: Suggested vs Followed — always show a number, never "—"
   let suggestedValue, suggestedUnit, suggestedDetail;
@@ -321,6 +395,8 @@ function formatUnifiedResults(result, durationSeconds, backendSaved = false, bac
     suggestedUnit = 'algorithm-suggested';
     suggestedDetail = `${platformLabel} may not expose this signal`;
   }
+  // SECURITY: Escape user data to prevent XSS
+  const escapedSuggestedDetail = escapeHtml(suggestedDetail);
 
   return `
     <div class="scan-result">
@@ -353,7 +429,7 @@ function formatUnifiedResults(result, durationSeconds, backendSaved = false, bac
             <div class="dash-card-indicator"></div>
             <div class="dash-card-name">Ads &amp; Sponsors</div>
             <div class="dash-card-value">${adsValue} <span class="dash-card-unit">${adsUnit}</span></div>
-            <div class="dash-card-detail">${adsDetail}</div>
+            <div class="dash-card-detail">${escapedAdsDetail}</div>
             <span class="dash-card-arrow">›</span>
           </a>
 
@@ -361,7 +437,7 @@ function formatUnifiedResults(result, durationSeconds, backendSaved = false, bac
             <div class="dash-card-indicator"></div>
             <div class="dash-card-name">Suggested vs Followed</div>
             <div class="dash-card-value">${suggestedValue} <span class="dash-card-unit">${suggestedUnit}</span></div>
-            <div class="dash-card-detail">${suggestedDetail}</div>
+            <div class="dash-card-detail">${escapedSuggestedDetail}</div>
             <span class="dash-card-arrow">›</span>
           </a>
         </div>
@@ -451,6 +527,11 @@ async function startSession() {
 
     if (CAPTURE_DEBUG) debugLog('log', '[AlgorithmLens] Start session response:', { response, geminiConsent });
 
+    // SECURITY: Validate response structure before using it
+    if (!response || typeof response !== 'object') {
+      throw new Error('Invalid response from background script');
+    }
+
     if (!response.success) {
       if (response.needsRefresh) {
         statusEl.className = 'status unsupported';
@@ -476,6 +557,7 @@ async function startSession() {
   } catch (error) {
     console.error('[AlgorithmLens] Error starting session:', error);
     statusEl.className = 'status unsupported';
+    statusEl.innerHTML = '';
 
     const errorMessage = error.message || '';
     const isConnectionError =
@@ -483,17 +565,21 @@ async function startSession() {
       errorMessage.includes('Receiving end does not exist') ||
       errorMessage.includes('message port closed');
 
+    const strong = document.createElement('strong');
+    const br = document.createElement('br');
+    const small = document.createElement('small');
+
     if (isConnectionError) {
-      statusEl.innerHTML = `
-        <strong>Page refresh needed</strong><br>
-        <small>Please refresh the page and try again.</small>
-      `;
+      strong.textContent = 'Page refresh needed';
+      small.textContent = 'Please refresh the page and try again.';
     } else {
-      statusEl.innerHTML = `
-        <strong>Error</strong><br>
-        <small>${errorMessage || 'Could not start session'}</small>
-      `;
+      strong.textContent = 'Error';
+      small.textContent = errorMessage || 'Could not start session';
     }
+
+    statusEl.appendChild(strong);
+    statusEl.appendChild(br);
+    statusEl.appendChild(small);
 
     scanButton.disabled = false;
     scanButton.textContent = 'Start Session Scan';
@@ -515,6 +601,11 @@ async function stopSessionAndAnalyze() {
 
     if (CAPTURE_DEBUG) debugLog('log', '[AlgorithmLens] Stop session response:', response);
 
+    // SECURITY: Validate response structure before using it
+    if (!response || typeof response !== 'object') {
+      throw new Error('Invalid response from background script');
+    }
+
     if (!response.success) {
       if (response.alreadyProcessed) {
         if (CAPTURE_DEBUG) debugLog('log', '[AlgorithmLens] Ignoring duplicate stop request');
@@ -525,10 +616,18 @@ async function stopSessionAndAnalyze() {
         sessionActive = false;
         sessionStartTime = null;
         statusEl.className = 'status unsupported';
-        statusEl.innerHTML = `
-          <strong>Connection Lost</strong><br>
-          <small>Lost connection to the page. Please refresh and start a new session.</small>
-        `;
+        statusEl.innerHTML = '';
+
+        const strong = document.createElement('strong');
+        strong.textContent = 'Connection Lost';
+        const br = document.createElement('br');
+        const small = document.createElement('small');
+        small.textContent = 'Lost connection to the page. Please refresh and start a new session.';
+
+        statusEl.appendChild(strong);
+        statusEl.appendChild(br);
+        statusEl.appendChild(small);
+
         scanButton.disabled = false;
         scanButton.textContent = 'Start Session Scan';
         scanButton.className = 'scan-button';
@@ -574,6 +673,7 @@ async function stopSessionAndAnalyze() {
     sessionStartTime = null;
 
     statusEl.className = 'status unsupported';
+    statusEl.innerHTML = '';
 
     const errorMessage = error.message || '';
     const isConnectionError =
@@ -581,17 +681,21 @@ async function stopSessionAndAnalyze() {
       errorMessage.includes('Receiving end does not exist') ||
       errorMessage.includes('message port closed');
 
+    const strong = document.createElement('strong');
+    const br = document.createElement('br');
+    const small = document.createElement('small');
+
     if (isConnectionError) {
-      statusEl.innerHTML = `
-        <strong>Connection Lost</strong><br>
-        <small>Lost connection to the page. Please refresh and start a new session.</small>
-      `;
+      strong.textContent = 'Connection Lost';
+      small.textContent = 'Lost connection to the page. Please refresh and start a new session.';
     } else {
-      statusEl.innerHTML = `
-        <strong>Error Processing Session</strong><br>
-        <small>${errorMessage || 'Could not process session'}</small>
-      `;
+      strong.textContent = 'Error Processing Session';
+      small.textContent = errorMessage || 'Could not process session';
     }
+
+    statusEl.appendChild(strong);
+    statusEl.appendChild(br);
+    statusEl.appendChild(small);
 
     scanButton.disabled = false;
     scanButton.textContent = 'Start Session Scan';

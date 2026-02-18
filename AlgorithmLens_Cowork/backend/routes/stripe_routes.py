@@ -1,6 +1,8 @@
 """Stripe payment and subscription endpoints."""
 import logging
 import os
+import time
+from urllib.parse import urlparse
 
 import stripe
 from fastapi import APIRouter, HTTPException, Request, Depends
@@ -22,12 +24,33 @@ router = APIRouter(prefix="/api", tags=["stripe"])
 
 # Stripe API models and constants
 
-ALLOWED_CHECKOUT_ORIGINS = [
-    "http://localhost",
-    "http://127.0.0.1",
-    "https://algorithmlens.com",
-    "https://www.algorithmlens.com",
-]
+ALLOWED_CHECKOUT_HOSTS = {
+    "localhost",
+    "127.0.0.1",
+    "algorithmlens.com",
+    "www.algorithmlens.com",
+}
+
+ALLOWED_CHECKOUT_SCHEMES = {"http", "https"}
+
+
+def _is_safe_redirect_url(url: str) -> bool:
+    """
+    Validate redirect URL against allowed hosts to prevent open redirect.
+    Uses proper URL parsing to prevent bypass attacks.
+    """
+    try:
+        parsed = urlparse(url)
+        if parsed.scheme not in ALLOWED_CHECKOUT_SCHEMES:
+            return False
+        if parsed.hostname not in ALLOWED_CHECKOUT_HOSTS:
+            return False
+        # Ensure no credentials in URL (prevents credential injection)
+        if parsed.username or parsed.password:
+            return False
+        return True
+    except Exception:
+        return False
 
 
 class CreateCheckoutRequest(BaseModel):
@@ -83,9 +106,9 @@ def create_checkout_session(
     user_id = current_user["user_id"]
     email = current_user.get("email", "")
 
-    # Validate redirect URLs against allowed origins
+    # Validate redirect URLs against allowed hosts (prevent open redirect)
     for url in [request.successUrl, request.cancelUrl]:
-        if not any(url.startswith(origin) for origin in ALLOWED_CHECKOUT_ORIGINS):
+        if not _is_safe_redirect_url(url):
             raise HTTPException(status_code=400, detail="Invalid redirect URL")
 
     # Map billing cycle to price ID
@@ -143,8 +166,10 @@ def create_checkout_session(
 
 
 @router.post("/stripe/create-portal-session")
+@limiter.limit("10/minute")
 def create_portal_session(
     request: CreatePortalSessionRequest,
+    http_request: Request = None,
     current_user: dict = Depends(get_current_user)
 ):
     """
@@ -157,10 +182,9 @@ def create_portal_session(
     """
     user_id = current_user["user_id"]
 
-    # Validate return_url against allowed origins
+    # Validate return_url against allowed hosts (prevent open redirect)
     return_url = request.returnUrl
-    url_valid = any(return_url.startswith(origin) for origin in ALLOWED_CHECKOUT_ORIGINS)
-    if not url_valid:
+    if not _is_safe_redirect_url(return_url):
         raise HTTPException(status_code=400, detail="Invalid return URL")
 
     # Look up user's subscription to get Stripe customer ID
@@ -192,7 +216,11 @@ def create_portal_session(
 
 
 @router.post("/stripe/verify-checkout")
-def verify_checkout(current_user: dict = Depends(get_current_user)):
+@limiter.limit("10/minute")
+def verify_checkout(
+    http_request: Request = None,
+    current_user: dict = Depends(get_current_user)
+):
     """
     Verify and fulfill a completed Stripe checkout session.
 
@@ -276,6 +304,7 @@ def verify_checkout(current_user: dict = Depends(get_current_user)):
 
 
 @router.post("/stripe/webhook")
+@limiter.limit("60/minute")
 async def stripe_webhook(request: Request):
     """
     Handle Stripe webhook events with idempotency and robust status handling.
@@ -449,7 +478,6 @@ async def stripe_webhook(request: Request):
             # immediately by setting current_period_end to now. For paid
             # cancellations, preserve the original period_end so access
             # continues until the end of the billing cycle.
-            import time
             now = time.time()
             was_trial = trial_end is not None and trial_end > now
 

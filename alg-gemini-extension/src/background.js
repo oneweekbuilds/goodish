@@ -16,10 +16,60 @@ import { generateScanId } from './shared/generate-scan-id.js';
 
 if (CAPTURE_DEBUG) debugLog('log', '[AlgorithmLens] Background service worker active');
 
+// ============================================
+// Sanitization & Security Utilities
+// ============================================
 
-// Backend API configuration
-const BACKEND_URL = 'http://127.0.0.1:8000';
-const DASHBOARD_URL = 'http://localhost:5173';
+/**
+ * Sanitize scan result before sending to backend.
+ * Strips any fields that shouldn't leave the extension.
+ */
+function sanitizeScanPayload(result) {
+  // Deep clone to avoid mutating original
+  const sanitized = JSON.parse(JSON.stringify(result));
+
+  // Ensure no browser/system metadata leaks
+  if (sanitized.environment) {
+    delete sanitized.environment.user_agent;
+    delete sanitized.environment.browser_version;
+    delete sanitized.environment.os;
+  }
+
+  // Strip any accidental cookie or auth data
+  if (sanitized.scan_metadata) {
+    delete sanitized.scan_metadata.cookies;
+    delete sanitized.scan_metadata.auth_tokens;
+    delete sanitized.scan_metadata.session_tokens;
+  }
+
+  // Limit feed items text length to prevent exfiltration of excessive content
+  if (sanitized.feed_items && Array.isArray(sanitized.feed_items)) {
+    for (const item of sanitized.feed_items) {
+      if (item.content && item.content.text && item.content.text.length > 5000) {
+        item.content.text = item.content.text.substring(0, 5000) + '... [truncated]';
+      }
+    }
+  }
+
+  return sanitized;
+}
+
+// Backend API configuration - defaults for development
+// Production values should be set via chrome.storage.local
+let BACKEND_URL = 'http://127.0.0.1:8000';
+let DASHBOARD_URL = 'http://localhost:5173';
+
+// Load production URLs from storage if available
+(async () => {
+  try {
+    const config = await chrome.storage.local.get(['backendUrl', 'dashboardUrl']);
+    if (config.backendUrl) BACKEND_URL = config.backendUrl;
+    if (config.dashboardUrl) DASHBOARD_URL = config.dashboardUrl;
+    if (CAPTURE_DEBUG) debugLog('log', `[AlgorithmLens] Config loaded - backend: ${BACKEND_URL}`);
+  } catch (e) {
+    // Use defaults
+  }
+})();
 
 // Platforms that are currently supported for scanning
 const SUPPORTED_SCAN_PLATFORMS = ['tiktok', 'instagram', 'youtube', 'facebook', 'twitter', 'reddit'];
@@ -168,6 +218,13 @@ chrome.runtime.onInstalled.addListener((details) => {
 // ============================================
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  // Security: Validate message sender origin
+  // Only accept messages from our own extension and trusted content scripts
+  if (sender.id !== chrome.runtime.id) {
+    console.warn('[AlgorithmLens] Rejected message from unknown sender:', sender.id);
+    return false;
+  }
+
   if (CAPTURE_DEBUG) console.log('[AlgorithmLens] Background received message:', message.action || message.type);
 
   // ----------------------------------------
@@ -633,8 +690,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         // Send to backend with gemini_consent flag from session state
         const geminiConsent = sessionState?.geminiConsent === true;
+        const sanitizedResult = sanitizeScanPayload(result);
         const payloadWithConsent = {
-          ...result,
+          ...sanitizedResult,
           gemini_consent: geminiConsent
         };
         if (CAPTURE_DEBUG) console.debug(`[AlgorithmLens][Session] Submitting scanId: ${result.scan_metadata?.scan_id}`);
@@ -689,8 +747,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           // All retries failed — save payload to chrome.storage.local for later retry
           try {
             const failedScans = (await chrome.storage.local.get('failedScans'))?.failedScans || [];
+            // Store minimal metadata for retry, not full feed content
+            const retryPayload = {
+              ...payloadWithConsent,
+              feed_items: (payloadWithConsent.feed_items || []).map(item => ({
+                item_id: item.item_id,
+                content: item.content ? { text: (item.content.text || '').substring(0, 200) } : null,
+                ad_info: item.ad_info,
+                creator: item.creator ? { name: item.creator.name } : null
+              }))
+            };
             failedScans.push({
-              payload: payloadWithConsent,
+              payload: retryPayload,
               failedAt: new Date().toISOString(),
               error: lastError.message
             });

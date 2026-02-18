@@ -10,6 +10,7 @@ from slowapi.util import get_remote_address
 from auth import get_current_user
 from config import is_dev_environment
 from database import get_scan_by_id_for_user, is_user_plus
+from validation import validate_scan_id, validate_question
 from evidence_bundle import (
     build_ads_evidence_bundle,
     generate_ads_analysis_copy,
@@ -82,6 +83,7 @@ def get_ads_evidence_bundle(
         Evidence Bundle with meta, observations, measurements, limits,
         plus generated analysis copy and Talk response structure.
     """
+    validate_scan_id(scan_id)
     user_id = current_user["user_id"]
     _require_plus(user_id)
     scan = get_scan_by_id_for_user(scan_id, user_id)
@@ -152,6 +154,7 @@ def get_ads_evidence_bundle_debug(
 
     This endpoint is only available in dev/local environments.
     """
+    validate_scan_id(scan_id)
     if not is_dev_environment():
         raise HTTPException(status_code=404, detail="Debug endpoint not available")
 
@@ -224,6 +227,8 @@ def talk_to_algorithm_ads(
     Returns:
         Structured response with all four sections
     """
+    validate_scan_id(scan_id)
+    question = validate_question(question)
     user_id = current_user["user_id"]
     _require_plus(user_id)
     scan = get_scan_by_id_for_user(scan_id, user_id)
@@ -287,6 +292,7 @@ def get_politics_evidence_bundle(
         Evidence Bundle with meta, observations, measurements, limits,
         plus generated analysis copy.
     """
+    validate_scan_id(scan_id)
     user_id = current_user["user_id"]
     _require_plus(user_id)
     scan = get_scan_by_id_for_user(scan_id, user_id)
@@ -347,6 +353,8 @@ def talk_to_algorithm_politics(
     Returns:
         Structured response with all four sections
     """
+    validate_scan_id(scan_id)
+    question = validate_question(question)
     user_id = current_user["user_id"]
     _require_plus(user_id)
     scan = get_scan_by_id_for_user(scan_id, user_id)
@@ -408,6 +416,7 @@ def get_patterns_evidence_bundle(
         Evidence Bundle with meta, observations, measurements, limits,
         plus generated analysis copy.
     """
+    validate_scan_id(scan_id)
     user_id = current_user["user_id"]
     _require_plus(user_id)
     scan = get_scan_by_id_for_user(scan_id, user_id)
@@ -468,6 +477,8 @@ def talk_to_algorithm_patterns(
     Returns:
         Structured response with all four sections
     """
+    validate_scan_id(scan_id)
+    question = validate_question(question)
     user_id = current_user["user_id"]
     _require_plus(user_id)
     scan = get_scan_by_id_for_user(scan_id, user_id)
@@ -529,6 +540,7 @@ def get_creators_evidence_bundle(
         Evidence Bundle with meta, observations, measurements, limits,
         plus generated analysis copy.
     """
+    validate_scan_id(scan_id)
     user_id = current_user["user_id"]
     _require_plus(user_id)
     scan = get_scan_by_id_for_user(scan_id, user_id)
@@ -589,6 +601,8 @@ def talk_to_algorithm_creators(
     Returns:
         Structured response with all four sections
     """
+    validate_scan_id(scan_id)
+    question = validate_question(question)
     user_id = current_user["user_id"]
     _require_plus(user_id)
     scan = get_scan_by_id_for_user(scan_id, user_id)
@@ -654,6 +668,7 @@ def get_inferences_evidence_bundle(
         measurements (thresholds), limits (epistemic boundaries),
         plus generated analysis copy.
     """
+    validate_scan_id(scan_id)
     user_id = current_user["user_id"]
     _require_plus(user_id)
     scan = get_scan_by_id_for_user(scan_id, user_id)
@@ -738,6 +753,8 @@ def talk_to_algorithm_inferences(
     Returns:
         Structured response with all four sections
     """
+    validate_scan_id(scan_id)
+    question = validate_question(question)
     user_id = current_user["user_id"]
     _require_plus(user_id)
     scan = get_scan_by_id_for_user(scan_id, user_id)
