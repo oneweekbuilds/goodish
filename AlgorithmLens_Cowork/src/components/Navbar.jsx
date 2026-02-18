@@ -48,15 +48,15 @@ const Navbar = () => {
         return () => window.removeEventListener('keydown', handleEsc);
     }, [mobileMenuOpen, showSignInModal]);
 
-    // Focus trap for sign-in modal
+    // Lock body scroll for modals and mobile menu (C4, sign-in modal)
     useEffect(() => {
-        if (showSignInModal) {
+        if (showSignInModal || mobileMenuOpen) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = '';
         }
         return () => { document.body.style.overflow = ''; };
-    }, [showSignInModal]);
+    }, [showSignInModal, mobileMenuOpen]);
 
     // Check if a path is the current route
     const isActive = (path) => {
@@ -165,14 +165,10 @@ const Navbar = () => {
 
                 <div className="flex items-center gap-3">
                     {/* User greeting (desktop only) */}
+                    {/* User greeting (desktop only) - only show when user has a name */}
                     {!comingSoonMode && userProfile?.name && (
                         <span className="text-sm text-text-muted hidden md:block">
                             Hi, {userProfile.name}
-                        </span>
-                    )}
-                    {!comingSoonMode && !userProfile?.name && (
-                        <span className="text-sm text-text-muted hidden md:block">
-                            Hi there
                         </span>
                     )}
 
@@ -276,7 +272,7 @@ const Navbar = () => {
                     <div className="relative bg-white rounded-2xl shadow-strong max-w-md w-full p-6 z-10 max-h-[90vh] overflow-y-auto">
                         <button
                             onClick={() => setShowSignInModal(false)}
-                            className="absolute top-4 right-4 p-1 rounded-lg text-text-muted hover:text-text-main hover:bg-primary-blue/5 transition-colors"
+                            className="absolute top-4 right-4 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-text-muted hover:text-text-main hover:bg-primary-blue/5 transition-colors"
                             aria-label="Close sign in dialog"
                         >
                             <X size={20} />

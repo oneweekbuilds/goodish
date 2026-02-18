@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Check, Circle, TrendingUp, Sparkles, ChevronDown, BarChart3, ArrowRight, Shield, Zap, Eye, MessageCircleQuestion, FileSearch, Clock, Users } from 'lucide-react';
+import { Check, X, Circle, TrendingUp, Sparkles, ChevronDown, BarChart3, ArrowRight, Shield, Zap, Eye, MessageCircleQuestion, FileSearch, Clock, Users } from 'lucide-react';
 import { usePaywall } from '../../lib/plan/PaywallProvider';
 import { track } from '../../lib/analytics/analyticsClient';
 import { EVENTS } from '../../lib/analytics/events';
@@ -323,7 +323,7 @@ const PlusPage = () => {
                       transition={{ duration: 0.5, delay: 0.08 * i }}
                       className={`w-full rounded-t-lg ${i >= 5 ? 'bg-gradient-to-t from-primary-blue to-blue-400' : 'bg-gradient-to-t from-blue-200 to-blue-100'}`}
                     />
-                    <span className="text-[9px] sm:text-[11px] text-text-muted font-medium">{week.label}</span>
+                    <span className="text-[10px] sm:text-[11px] text-text-muted font-medium">{week.label}</span>
                   </div>
                 ))}
               </div>
@@ -605,12 +605,16 @@ const PlusPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-3xl mx-auto mb-10">
                 {/* Monthly */}
                 <div
-                  className={`relative border-2 rounded-2xl p-6 cursor-pointer transition-all duration-300 ${
+                  className={`relative border-2 rounded-2xl p-6 cursor-pointer transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue focus-visible:ring-offset-2 ${
                     billingCycle === 'monthly'
                       ? 'border-primary-blue bg-gradient-to-br from-blue-50/60 to-white ring-1 ring-primary-blue/20 shadow-md shadow-blue-50'
                       : 'border-slate-200 hover:border-slate-300 hover:shadow-sm'
                   }`}
+                  role="radio"
+                  aria-checked={billingCycle === 'monthly'}
+                  tabIndex={0}
                   onClick={() => setBillingCycle('monthly')}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setBillingCycle('monthly'); } }}
                 >
                   <div className="flex items-center gap-3 mb-4">
                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${billingCycle === 'monthly' ? 'border-primary-blue' : 'border-slate-300'}`}>
@@ -627,12 +631,16 @@ const PlusPage = () => {
 
                 {/* Annual */}
                 <div
-                  className={`relative border-2 rounded-2xl p-6 cursor-pointer transition-all duration-300 ${
+                  className={`relative border-2 rounded-2xl p-6 cursor-pointer transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 ${
                     billingCycle === 'annual'
                       ? 'border-emerald-500 bg-gradient-to-br from-emerald-50/60 to-white ring-1 ring-emerald-500/20 shadow-md shadow-emerald-50'
                       : 'border-slate-200 hover:border-slate-300 hover:shadow-sm'
                   }`}
+                  role="radio"
+                  aria-checked={billingCycle === 'annual'}
+                  tabIndex={0}
                   onClick={() => setBillingCycle('annual')}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setBillingCycle('annual'); } }}
                 >
                   <div className="absolute -top-3 right-5">
                     <span className="inline-block px-3 py-1 bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full text-xs font-bold text-white shadow-sm">
@@ -664,10 +672,10 @@ const PlusPage = () => {
                   </div>
                   <button
                     onClick={() => setCheckoutCanceled(false)}
-                    className="text-slate-400 hover:text-slate-600 transition-colors"
+                    className="text-slate-400 hover:text-slate-600 transition-colors p-1"
                     aria-label="Dismiss"
                   >
-                    <Circle size={18} />
+                    <X size={18} />
                   </button>
                 </div>
               )}
@@ -733,9 +741,7 @@ const PlusPage = () => {
                   <button
                     id={`faq-button-${index}`}
                     onClick={() => toggleFaq(index)}
-                    onKeyDown={(e) => handleFaqKeyDown(index, e)}
                     className="w-full flex items-center justify-between p-5 sm:p-6 hover:bg-slate-50/50 transition-colors text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue/50 focus-visible:ring-offset-0"
-                    role="button"
                     aria-expanded={openFaqIndex === index}
                     aria-controls={`faq-answer-${index}`}
                   >

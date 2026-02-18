@@ -61,6 +61,9 @@ export default {
                 'wide-label': '0.05em',
                 'wider-label': '0.1em',
             },
+            backgroundImage: {
+                'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+            },
             keyframes: {
                 scroll: {
                     '0%': { transform: 'translateX(0)' },

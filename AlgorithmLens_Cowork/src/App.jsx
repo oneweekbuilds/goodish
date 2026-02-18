@@ -244,7 +244,7 @@ function App() {
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap gap-x-12 gap-y-6">
+                  <div className="flex flex-wrap gap-x-8 sm:gap-x-12 gap-y-6">
                     <div>
                       <h3 className="text-sm font-semibold text-text-main mb-3">Product</h3>
                       <ul className="space-y-2">
@@ -256,8 +256,8 @@ function App() {
                     <div>
                       <h3 className="text-sm font-semibold text-text-main mb-3">Legal</h3>
                       <ul className="space-y-2">
-                        <li><a href="/privacy" className="text-sm text-text-muted hover:text-primary-blue transition-colors">Privacy Policy</a></li>
-                        <li><a href="/terms" className="text-sm text-text-muted hover:text-primary-blue transition-colors">Terms of Service</a></li>
+                        <li><a href="mailto:legal@algorithmlens.com" className="text-sm text-text-muted hover:text-primary-blue transition-colors">Privacy Policy</a></li>
+                        <li><a href="mailto:legal@algorithmlens.com" className="text-sm text-text-muted hover:text-primary-blue transition-colors">Terms of Service</a></li>
                       </ul>
                     </div>
                     <div>

@@ -120,7 +120,7 @@ const StartPage = () => {
         {/* Onboarding Modal */}
         {!hasCompletedOnboarding && <OnboardingModal />}
 
-      <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto">
         {/* Back link */}
         <BackLink to="/" label="Back to home" />
 
@@ -170,7 +170,7 @@ const StartPage = () => {
             Your data stays private. Videos are processed locally and deleted immediately after analysis.
           </p>
         </div>
-      </div>
+        </div>
       </div>
     </>
   );
@@ -185,7 +185,7 @@ const PlatformCard = ({ platform }) => {
         transition-all duration-300
         ${platform.available
           ? `cursor-pointer hover:shadow-md hover:-translate-y-1 ${platform.hoverBorder}`
-          : 'opacity-60 cursor-not-allowed'
+          : 'opacity-50 cursor-not-allowed grayscale'
         }
       `}
     >

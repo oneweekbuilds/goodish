@@ -62,6 +62,8 @@ const HistoryPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null); // Inline delete confirmation
+  const [deleteError, setDeleteError] = useState(null); // Styled error message
   const [currentPage, setCurrentPage] = useState(1); // (#22) Track current page
 
   // Fetch scans on mount
@@ -89,15 +91,18 @@ const HistoryPage = () => {
     }
   };
 
-  const deleteScan = async (scanId, e) => {
+  const handleDeleteClick = (scanId, e) => {
     e.preventDefault();
     e.stopPropagation();
+    setConfirmDeleteId(scanId);
+    setDeleteError(null);
+  };
 
-    if (!confirm('Are you sure you want to delete this scan?')) {
-      return;
-    }
-
+  const handleConfirmDelete = async (scanId, e) => {
+    e.preventDefault();
+    e.stopPropagation();
     setDeletingId(scanId);
+    setConfirmDeleteId(null);
 
     const API_BASE = getApiBaseUrl();
     try {
@@ -110,10 +115,17 @@ const HistoryPage = () => {
       setScans(scans.filter(s => s.id !== scanId));
     } catch (err) {
       logError('HistoryPage', 'Error deleting scan:', err);
-      alert('Failed to delete scan: ' + err.message);
+      setDeleteError(`Unable to delete scan. Please try again.`);
+      setTimeout(() => setDeleteError(null), 5000);
     } finally {
       setDeletingId(null);
     }
+  };
+
+  const handleCancelDelete = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setConfirmDeleteId(null);
   };
 
   const formatRelativeTime = (dateStr) => {
@@ -159,7 +171,7 @@ const HistoryPage = () => {
   // Loading State (#21 Skeleton Loading)
   if (loading) {
     return (
-      <div className="min-h-screen bg-bg-page py-24 px-6">
+      <div className="min-h-screen bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
         <div className="max-w-4xl mx-auto">
           {/* Header Skeleton */}
           <div className="mb-8">
@@ -231,7 +243,7 @@ const HistoryPage = () => {
             </p>
             <Link
               to="/start"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-primary-blue text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-primary-blue text-white rounded-full font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue focus-visible:ring-offset-2"
             >
               Start Your First Scan
               <ArrowRight size={20} />
@@ -246,8 +258,23 @@ const HistoryPage = () => {
   return (
     <>
       <SEO title="Scan History" description="View your past scans and track how your algorithmic profile has changed over time." path="/history" noIndex={true} />
-      <div className="min-h-screen bg-bg-page py-24 px-6">
+      <div className="min-h-screen bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
         <div className="max-w-4xl mx-auto">
+
+        {/* Delete error banner */}
+        {deleteError && (
+          <div className="mb-4 bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center gap-3">
+            <AlertCircle size={18} className="text-slate-500 flex-shrink-0" />
+            <p className="text-sm text-text-muted flex-1">{deleteError}</p>
+            <button
+              onClick={() => setDeleteError(null)}
+              className="text-slate-400 hover:text-slate-600 transition-colors p-1"
+              aria-label="Dismiss error"
+            >
+              &times;
+            </button>
+          </div>
+        )}
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
@@ -291,7 +318,7 @@ const HistoryPage = () => {
               <Link
                 key={scan.id}
                 to={`/scan/results/${scan.id}`}
-                className={`block bg-white rounded-xl shadow-sm border border-slate-100 p-5 hover:shadow-md hover:border-primary-blue/20 transition-all ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}
+                className={`block bg-white rounded-xl shadow-sm border border-slate-100 p-5 hover:shadow-md hover:border-primary-blue/20 active:shadow-sm active:bg-slate-50 transition-all ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}
               >
                 <div className="flex items-center gap-4">
                   {/* Platform Icon */}
@@ -317,10 +344,10 @@ const HistoryPage = () => {
                         <strong className="text-text-main">{scan.duration_seconds ? `${Math.round(scan.duration_seconds)}s` : 'N/A'}</strong> duration
                       </span>
                       <span className={`font-semibold ${
-                        (scan.ad_percentage || 0) > 0.3 
-                          ? 'text-red-600' 
-                          : (scan.ad_percentage || 0) > 0.15 
-                            ? 'text-amber-600' 
+                        (scan.ad_percentage || 0) > 0.3
+                          ? 'text-primary-blue'
+                          : (scan.ad_percentage || 0) > 0.15
+                            ? 'text-slate-600'
                             : 'text-accent-green'
                       }`}>
                         {formatPercent(scan.ad_percentage)} ads
@@ -330,18 +357,38 @@ const HistoryPage = () => {
 
                   {/* Actions */}
                   <div className="flex-shrink-0 flex items-center gap-2">
-                    <button
-                      onClick={(e) => deleteScan(scan.id, e)}
-                      disabled={isDeleting}
-                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Delete scan"
-                    >
-                      {isDeleting ? (
-                        <Loader2 size={18} className="animate-spin" />
-                      ) : (
-                        <Trash2 size={18} />
-                      )}
-                    </button>
+                    {confirmDeleteId === scan.id ? (
+                      <div className="flex items-center gap-1.5" onClick={e => e.preventDefault()}>
+                        <span className="text-xs text-text-muted mr-1">Delete?</span>
+                        <button
+                          onClick={(e) => handleConfirmDelete(scan.id, e)}
+                          className="px-2.5 py-1 text-xs font-medium text-white bg-slate-600 hover:bg-slate-700 rounded-md transition-colors min-h-[36px]"
+                          aria-label="Confirm delete scan"
+                        >
+                          Yes
+                        </button>
+                        <button
+                          onClick={handleCancelDelete}
+                          className="px-2.5 py-1 text-xs font-medium text-text-muted hover:text-text-main border border-slate-200 rounded-md transition-colors min-h-[36px]"
+                          aria-label="Cancel delete"
+                        >
+                          No
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={(e) => handleDeleteClick(scan.id, e)}
+                        disabled={isDeleting}
+                        className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                        aria-label="Delete this scan"
+                      >
+                        {isDeleting ? (
+                          <Loader2 size={18} className="animate-spin" />
+                        ) : (
+                          <Trash2 size={18} />
+                        )}
+                      </button>
+                    )}
                     <ArrowRight size={20} className="text-slate-400" />
                   </div>
                 </div>
@@ -356,7 +403,7 @@ const HistoryPage = () => {
             <button
               onClick={handlePrevPage}
               disabled={currentPage === 1}
-              className="px-4 py-2 border border-slate-300 rounded-lg font-medium text-text-main hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 border border-slate-300 rounded-lg font-medium text-text-main hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue focus-visible:ring-offset-2"
               aria-label="Previous page"
             >
               Previous
@@ -367,7 +414,7 @@ const HistoryPage = () => {
             <button
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
-              className="px-4 py-2 border border-slate-300 rounded-lg font-medium text-text-main hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 border border-slate-300 rounded-lg font-medium text-text-main hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue focus-visible:ring-offset-2"
               aria-label="Next page"
             >
               Next
@@ -381,7 +428,7 @@ const HistoryPage = () => {
             <h3 className="text-sm font-semibold text-blue-800 uppercase tracking-wider mb-3">
               Quick Summary
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
               <div>
                 <div className="text-2xl font-bold text-text-main">{scans.length}</div>
                 <div className="text-sm text-blue-700">Total Scans</div>

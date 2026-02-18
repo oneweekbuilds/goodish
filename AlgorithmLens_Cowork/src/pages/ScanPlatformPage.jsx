@@ -17,6 +17,7 @@ import { track, EVENTS } from '../lib/analytics';
 import { authenticatedFetch, isUnauthorized } from '../lib/api/authenticatedFetch';
 import { getApiBaseUrl } from '../lib/apiConfig';
 import SignInPrompt from '../components/auth/SignInPrompt';
+import SEO from '../components/SEO';
 import { logError } from '../lib/errorLogger.js';
 
 // Platform display names
@@ -269,7 +270,9 @@ const ScanPlatformPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-bg-page py-24 px-6">
+    <>
+    <SEO title={`Scan ${platformName}`} description={`Analyze your ${platformName} feed with AlgorithmLens.`} path={`/scan/platform/${platform}`} noIndex={true} />
+    <div className="min-h-screen bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
       <div className="max-w-4xl mx-auto">
         {/* Back Button */}
         <Link
@@ -491,18 +494,6 @@ const ScanPlatformPage = () => {
               />
             </div>
 
-            {!file && (
-              <label className="block w-full py-2 text-center text-primary-blue font-medium cursor-pointer hover:underline mb-4">
-                <input
-                  type="file"
-                  accept=".mp4,.mov,.webm,video/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-                Select a file
-              </label>
-            )}
-
             {/* Error Message */}
             {uploadError && (
               <div className="flex items-start gap-2 text-red-600 text-sm bg-red-50 p-3 rounded-lg border border-red-100 mb-4">
@@ -514,9 +505,9 @@ const ScanPlatformPage = () => {
             {/* Upload Button */}
             <button
               onClick={handleUpload}
-              disabled={uploading}
+              disabled={uploading || !file}
               className={`w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
-                !uploading
+                !uploading && file
                   ? 'bg-accent-green text-white hover:bg-emerald-600 shadow-md hover:shadow-lg'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
@@ -599,6 +590,7 @@ const ScanPlatformPage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

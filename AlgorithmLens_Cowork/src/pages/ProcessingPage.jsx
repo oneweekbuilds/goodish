@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { Loader2, CheckCircle, Circle } from 'lucide-react';
+import { Loader2, CheckCircle, Circle, AlertCircle } from 'lucide-react';
 import { track, EVENTS } from '../lib/analytics';
 import { authenticatedFetch, isUnauthorized } from '../lib/api/authenticatedFetch';
 import { getApiBaseUrl } from '../lib/apiConfig';
@@ -180,8 +180,8 @@ const ProcessingPage = () => {
         <SEO title="Processing Scan" noIndex={true} />
         <div className="min-h-screen bg-bg-page py-24 px-6 flex items-center justify-center">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-md border border-border-light p-8 text-center">
-          <div className="w-16 h-16 bg-status-error/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl">⚠️</span>
+          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle size={32} className="text-slate-500" />
           </div>
           <h1 className="text-2xl font-bold text-text-main mb-2">Processing Error</h1>
           <p className="text-text-muted mb-6">{error}</p>
@@ -205,16 +205,14 @@ const ProcessingPage = () => {
         {/* Main Card */}
         <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-8 text-center">
           {/* Animated Spinner */}
-          <div className="relative w-24 h-24 mx-auto mb-8">
-            {/* Outer ring */}
+          <div className="relative w-20 h-20 mx-auto mb-8">
+            {/* Track ring */}
             <div className="absolute inset-0 border-4 border-border-light rounded-full" />
-
-            {/* Animated ring */}
+            {/* Spinning ring */}
             <div className="absolute inset-0 border-4 border-transparent border-t-primary-blue rounded-full animate-spin" />
-
-            {/* Inner icon */}
-            <div className="absolute inset-3 bg-primary-blue/5 rounded-full flex items-center justify-center">
-              <Loader2 size={32} className="text-primary-blue animate-spin" style={{ animationDuration: '3s' }} />
+            {/* Center dot */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-3 h-3 rounded-full bg-primary-blue/40" />
             </div>
           </div>
 
@@ -278,16 +276,11 @@ const ProcessingPage = () => {
             />
           </div>
 
-          {/* Scan ID info */}
-          {scanId && (
-            <p className="text-xs text-text-muted/50 mt-4">
-              Scan ID: {scanId}
-            </p>
-          )}
+          {/* Scan tracking indicator - no raw ID shown to user */}
         </div>
 
         {/* Cancel link */}
-        <Link to="/start" className="block text-center text-sm text-text-muted hover:text-primary-blue transition-colors mt-4">
+        <Link to="/start" className="block text-center text-sm text-text-muted hover:text-primary-blue transition-colors mt-6 py-2">
           Cancel and go back
         </Link>
 
