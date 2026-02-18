@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronLeft, Upload, Smartphone, Play, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { logError } from '../lib/errorLogger.js';
+import { getApiBaseUrl } from '../lib/apiConfig.js';
 
 // Platform options
 const PLATFORMS = [
@@ -112,7 +113,7 @@ const ScanPage = () => {
         formData.append("platform", selectedPlatform.id);
 
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/scan/upload", {
+            const response = await fetch(`${getApiBaseUrl()}/api/scan/upload`, {
                 method: "POST",
                 body: formData,
             });

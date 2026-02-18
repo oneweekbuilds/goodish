@@ -579,8 +579,8 @@ function scanRedditFeed() {
   const posts = [];
   const issues = [];
 
-  console.log('[AlgorithmLens][Reddit] Starting scan...');
-  console.log('[AlgorithmLens][Reddit] URL:', window.location.href);
+  if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Reddit] Starting scan...');
+  if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Reddit] URL:', window.location.href);
 
   // Primary selectors for Reddit posts - ordered by reliability
   // Modern Reddit (2024+) uses shreddit-post web components
@@ -610,7 +610,7 @@ function scanRedditFeed() {
     if (found.length > 0) {
       containers = found;
       usedSelector = selector;
-      console.log(`[AlgorithmLens][Reddit] Using selector: ${selector}, found: ${found.length}`);
+      if (CAPTURE_DEBUG) console.log(`[AlgorithmLens][Reddit] Using selector: ${selector}, found: ${found.length}`);
       break;
     }
   }
@@ -633,10 +633,10 @@ function scanRedditFeed() {
     }
   }
 
-  console.log('[AlgorithmLens][Reddit] Found raw containers:', containers.length, `(${usedSelector})`);
+  if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Reddit] Found raw containers:', containers.length, `(${usedSelector})`);
 
   // Debug: If no containers, log what we can find
-  if (containers.length === 0) {
+  if (containers.length === 0 && CAPTURE_DEBUG) {
     console.log('[AlgorithmLens][Reddit] No containers found. Debug info:');
     console.log('[AlgorithmLens][Reddit]   - shreddit-post count:', document.querySelectorAll('shreddit-post').length);
     console.log('[AlgorithmLens][Reddit]   - article count:', document.querySelectorAll('article').length);
@@ -669,7 +669,7 @@ function scanRedditFeed() {
     return hasContent;
   });
 
-  console.log('[AlgorithmLens][Reddit] After filtering: ', containers.length, 'containers');
+  if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Reddit] After filtering: ', containers.length, 'containers');
 
   // Deduplicate nested containers
   const uniqueContainers = [];
@@ -693,7 +693,7 @@ function scanRedditFeed() {
   }
 
   containers = uniqueContainers;
-  console.log(`[AlgorithmLens][Reddit] After deduplication: ${containers.length} containers`);
+  if (CAPTURE_DEBUG) console.log(`[AlgorithmLens][Reddit] After deduplication: ${containers.length} containers`);
 
   // Track rejection code histogram
   const rejectionCounts = {};

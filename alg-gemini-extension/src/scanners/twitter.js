@@ -495,8 +495,8 @@ function scanTwitterFeed() {
   const posts = [];
   const issues = [];
 
-  console.log('[AlgorithmLens][Twitter] Starting scan...');
-  console.log(`[AlgorithmLens][Twitter] URL: ${window.location.href}`);
+  if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Twitter] Starting scan...');
+  if (CAPTURE_DEBUG) console.log(`[AlgorithmLens][Twitter] URL: ${window.location.href}`);
 
   if (CAPTURE_DEBUG) {
     debugLog('log', `[CaptureDebug][Twitter] Starting scan - URL: ${window.location.href}`);
@@ -542,7 +542,7 @@ function scanTwitterFeed() {
     }
   }
 
-  console.log(`[AlgorithmLens][Twitter] Found raw containers: ${containers.length} (${usedSelector})`);
+  if (CAPTURE_DEBUG) console.log(`[AlgorithmLens][Twitter] Found raw containers: ${containers.length} (${usedSelector})`);
 
   if (CAPTURE_DEBUG) {
     debugLog('log', `[CaptureDebug][Twitter] Selected selector: ${usedSelector || 'NONE'}, Containers: ${containers.length}`);
@@ -569,10 +569,10 @@ function scanTwitterFeed() {
     return isVisibleOrScrolledPast;
   });
 
-  console.log(`[AlgorithmLens][Twitter] Viewport filter: ${beforeViewportFilter} -> ${containers.length} (removed ${beforeViewportFilter - containers.length} below viewport)`);
+  if (CAPTURE_DEBUG) console.log(`[AlgorithmLens][Twitter] Viewport filter: ${beforeViewportFilter} -> ${containers.length} (removed ${beforeViewportFilter - containers.length} below viewport)`);
 
   // Log each container's creator for debugging
-  console.log(`[AlgorithmLens][Twitter] Analyzing ${containers.length} containers:`);
+  if (CAPTURE_DEBUG) console.log(`[AlgorithmLens][Twitter] Analyzing ${containers.length} containers:`);
   containers.forEach((el, i) => {
     // Try to find creator name
     const userNameEl = el.querySelector('div[data-testid="User-Name"] a[href^="/"]');
@@ -580,7 +580,7 @@ function scanTwitterFeed() {
     const statusLink = el.querySelector('a[href*="/status/"]');
     const tweetId = statusLink?.href.match(/\/status\/(\d+)/)?.[1] || 'no-id';
     const rect = el.getBoundingClientRect();
-    console.log(`  [${i}] @${creatorHandle} - tweet ID: ${tweetId} (top: ${Math.round(rect.top)}px)`);
+    if (CAPTURE_DEBUG) console.log(`  [${i}] @${creatorHandle} - tweet ID: ${tweetId} (top: ${Math.round(rect.top)}px)`);
   });
 
   // Deduplicate by tweet status ID - each tweet has a unique /status/ID URL
@@ -615,7 +615,7 @@ function scanTwitterFeed() {
   }
 
   containers = uniqueContainers;
-  console.log(`[AlgorithmLens][Twitter] After tweet ID deduplication: ${containers.length} containers (${seenTweetIds.size} unique IDs)`);
+  if (CAPTURE_DEBUG) console.log(`[AlgorithmLens][Twitter] After tweet ID deduplication: ${containers.length} containers (${seenTweetIds.size} unique IDs)`);
 
   // Track rejection code histogram
   const rejectionCounts = {};
@@ -657,7 +657,7 @@ function scanTwitterFeed() {
   });
 
   // === DETAILED LOGGING ===
-  console.log(`[AlgorithmLens][Twitter] Final posts extracted: ${posts.length}`);
+  if (CAPTURE_DEBUG) console.log(`[AlgorithmLens][Twitter] Final posts extracted: ${posts.length}`);
 
   if (CAPTURE_DEBUG) {
     debugLog('log', `[CaptureDebug][Twitter] Scan complete - Total posts: ${posts.length}, Issues: ${issues.length}`);

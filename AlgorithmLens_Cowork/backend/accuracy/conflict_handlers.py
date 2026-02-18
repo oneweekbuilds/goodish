@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List
 
 from .schema import (
@@ -19,7 +19,7 @@ def resolve_platform_ocr_mismatch(
     platform_ev: EvidenceItem, ocr_ev: EvidenceItem
 ) -> ConflictResolutionRecord:
     """Platform vs OCR text: platform label always wins."""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     return ConflictResolutionRecord(
         conflict_id="",
         conflict_type=ConflictType.PLATFORM_OCR_MISMATCH,
@@ -46,7 +46,7 @@ def resolve_creator_denial(
     platform_ev: EvidenceItem, denial_evs: List[EvidenceItem]
 ) -> ConflictResolutionRecord:
     """Creator denial vs platform label: platform wins, denial noted."""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     losing_methods = [ev.detection_method or "" for ev in denial_evs]
     losing_ids = [ev.evidence_id for ev in denial_evs]
 
@@ -81,7 +81,7 @@ def resolve_label_promo_mismatch(
     promo_evidence: List[EvidenceItem],
 ) -> ConflictResolutionRecord:
     """No platform label but strong promotional signals → UNLABELED_PROMOTION."""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     if not promo_evidence:
         avg_rel = 0.0
     else:
@@ -119,7 +119,7 @@ def resolve_multi_method_conflict(
     evidence_items: List[EvidenceItem],
 ) -> ConflictResolutionRecord:
     """Resolve multi-method disagreement via precedence or majority."""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     if not evidence_items:
         return ConflictResolutionRecord(
             conflict_id="",
@@ -243,7 +243,7 @@ def _majority_classification(evidence_items: List[EvidenceItem]) -> str:
 
 def resolve_duplicate_items(evidence_items: List[EvidenceItem]) -> ConflictResolutionRecord:
     """Handle duplicate items with potentially different signals."""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     if len(evidence_items) < 2:
         return ConflictResolutionRecord(
             conflict_id="",
@@ -331,7 +331,7 @@ def resolve_politics_signal_conflict(
     platform_ev: EvidenceItem, keyword_evs: List[EvidenceItem]
 ) -> ConflictResolutionRecord:
     """Platform/first-party label overrides weaker keyword/classifier signals."""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     losing_methods = [ev.detection_method or "KEYWORD_MATCH" for ev in keyword_evs]
     losing_ids = [ev.evidence_id for ev in keyword_evs]
     return ConflictResolutionRecord(
@@ -360,7 +360,7 @@ def resolve_creator_profile_conflict(
     self_description_ev: EvidenceItem, observed_evs: List[EvidenceItem]
 ) -> ConflictResolutionRecord:
     """Self-described identity wins unless multiple observed conflicts dominate."""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     losing_methods = [ev.detection_method or "" for ev in observed_evs]
     losing_ids = [ev.evidence_id for ev in observed_evs]
     observed_reliabilities = [_get_reliability(ev) for ev in observed_evs] or [0.0]
@@ -405,7 +405,7 @@ def resolve_pattern_inconsistency(
     evidence_items: List[EvidenceItem],
 ) -> ConflictResolutionRecord:
     """Temporal or duplication inconsistency within pattern signals."""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     if not evidence_items:
         return ConflictResolutionRecord(
             conflict_id="",
@@ -455,7 +455,7 @@ def resolve_algorithm_intent_conflict(
     evidence_items: List[EvidenceItem],
 ) -> ConflictResolutionRecord:
     """Resolve conflicting inferred intents with majority weighting."""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     if not evidence_items:
         return ConflictResolutionRecord(
             conflict_id="",

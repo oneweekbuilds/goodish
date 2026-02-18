@@ -511,7 +511,13 @@ def update_scan_result(scan_id: str, scan_result: Dict[str, Any], status: str = 
     aggregates = scan_result.get("aggregates", {})
     total_items = aggregates.get("total_feed_items", 0)
     total_ads = aggregates.get("total_ads", 0)
-    ad_percentage = aggregates.get("ad_percentage", 0.0)
+
+    # Session 9 fix: Recalculate ad_percentage to 0-100 DB scale (matching save_scan behavior)
+    # The incoming payload uses 0-1 decimal scale; DB stores 0-100 percentage scale.
+    if total_items > 0:
+        ad_percentage = round(min(total_ads / total_items, 1.0) * 100, 2)
+    else:
+        ad_percentage = 0.0
 
     # Get duration from environment
     environment = scan_result.get("environment", {}) or {}

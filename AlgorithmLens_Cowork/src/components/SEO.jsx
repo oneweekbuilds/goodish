@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 
 const DEFAULT_TITLE = 'AlgorithmLens';
-const DEFAULT_DESCRIPTION = 'See what your algorithms see in you. Understand ads, themes, and influence across your feed.';
+const DEFAULT_DESCRIPTION = 'See what\u2019s really in your feed. Understand the ads, themes, and patterns that shape what you see.';
 const SITE_URL = 'https://algorithmlens.com';
 const DEFAULT_IMAGE = '/og.png';
 

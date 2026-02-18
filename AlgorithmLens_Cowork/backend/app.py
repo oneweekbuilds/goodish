@@ -102,8 +102,9 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
-# Request body size limit middleware (50MB max)
-MAX_REQUEST_BODY_SIZE = 50 * 1024 * 1024  # 50MB
+# Request body size limit middleware (512MB max)
+# Must be >= MAX_UPLOAD_SIZE_BYTES in scans.py (500MB) to allow video uploads
+MAX_REQUEST_BODY_SIZE = 512 * 1024 * 1024  # 512MB
 
 @app.middleware("http")
 async def limit_request_body_size(request: Request, call_next):

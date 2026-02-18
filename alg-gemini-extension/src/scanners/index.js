@@ -4,6 +4,7 @@
  * so content.js stays slim.
  */
 
+import { CAPTURE_DEBUG } from '../shared/debug.js';
 import { extractTikTokPost, scanTikTokFeed } from './tiktok.js';
 import { extractInstagramPost, scanInstagramFeed } from './instagram.js';
 import { extractYouTubePost, scanYouTubeFeed } from './youtube.js';
@@ -187,5 +188,5 @@ export function logScanResults(platformName, posts, issues, containersSeen = 0, 
     ? `, rejectionCodes: ${JSON.stringify(issueCounts)}`
     : '';
 
-  console.log(`[AlgorithmLens] SCAN_SUMMARY { platform: "${platformName}"${subtypePart}, containersSeen: ${containersCount}, extracted: ${posts.length}, rejected: ${issues.length}${histogramStr} }`);
+  if (CAPTURE_DEBUG) console.log(`[AlgorithmLens] SCAN_SUMMARY { platform: "${platformName}"${subtypePart}, containersSeen: ${containersCount}, extracted: ${posts.length}, rejected: ${issues.length}${histogramStr} }`);
 }
