@@ -56,23 +56,24 @@ const OnboardingModal = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
+      {/* (Audit 8 Cycle 2) Removed aria-label from non-interactive backdrop */}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={handleSkip}
-        aria-label="Close onboarding"
+        aria-hidden="true"
       />
 
       {/* Modal Card */}
+      {/* (Audit 8 Cycle 2) Switched to aria-labelledby for proper heading association */}
       <div
         ref={modalRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Welcome to AlgorithmLens"
+        aria-labelledby="onboarding-title"
         className="relative bg-white rounded-xl shadow-lg max-w-md w-full p-6 z-10"
       >
         {/* Title */}
-        <h2 className="text-2xl font-bold text-text-main mb-2">
+        <h2 id="onboarding-title" className="text-2xl font-bold text-text-main mb-2">
           Welcome to AlgorithmLens
         </h2>
 
@@ -99,7 +100,7 @@ const OnboardingModal = () => {
             className="w-full px-4 py-2.5 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent text-text-main"
           />
           {error && (
-            <p className="mt-2 text-sm text-status-error">{error}</p>
+            <p className="mt-2 text-sm text-status-error" role="alert" aria-live="polite">{error}</p>
           )}
         </div>
 
@@ -127,8 +128,10 @@ const OnboardingModal = () => {
             ))}
           </div>
 
-          {/* Custom Input */}
+          {/* Custom Input — (Audit 8 Cycle 2) Added proper label for accessibility */}
+          <label htmlFor="onboarding-custom-focus" className="sr-only">Custom focus area</label>
           <input
+            id="onboarding-custom-focus"
             type="text"
             value={customFocus}
             onChange={(e) => {
@@ -142,7 +145,9 @@ const OnboardingModal = () => {
 
         {/* Buttons */}
         <div className="flex gap-3">
+          {/* (Audit 8 Cycle 2) Added type="button" to prevent form submission */}
           <button
+            type="button"
             onClick={handleSkip}
             className="flex-1 px-4 py-2.5 text-text-muted font-medium rounded-lg hover:bg-primary-blue/5 transition-colors"
           >

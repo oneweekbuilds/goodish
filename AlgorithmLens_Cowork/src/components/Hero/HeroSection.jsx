@@ -18,7 +18,8 @@ const HeroSection = () => {
             }
         };
 
-        window.addEventListener('scroll', handleScroll);
+        // (Audit 8 H1) Added { passive: true } to prevent scroll jank
+        window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
@@ -106,7 +107,8 @@ const HeroSection = () => {
                     transition={{ delay: 1.5, duration: 1 }}
                     className="absolute bottom-12 left-1/2 -translate-x-1/2 text-text-muted/50 motion-safe:animate-bounce"
                 >
-                    <ChevronDown size={24} />
+                    {/* (Audit 8 M3) Decorative icon hidden from screen readers */}
+                    <ChevronDown size={24} aria-hidden="true" />
                 </motion.div>
             </div>
 

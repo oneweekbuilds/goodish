@@ -60,6 +60,8 @@ const PaywallModal = ({ open, onClose, onStartTrial, source, checkoutError, isPr
       const firstElement = focusableElements[0];
       const lastElement = focusableElements[focusableElements.length - 1];
 
+      // (Audit 8 Cycle 3) Added validation before calling .focus() to prevent errors
+      if (!firstElement || !lastElement) return;
       if (e.shiftKey && document.activeElement === firstElement) {
         e.preventDefault();
         lastElement.focus();
@@ -185,10 +187,14 @@ const PaywallModal = ({ open, onClose, onStartTrial, source, checkoutError, isPr
           </div>
 
           {/* Pricing cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* (Audit 8 Cycle 3) Converted pricing cards from divs to buttons for keyboard accessibility */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4" role="radiogroup" aria-label="Select billing cycle">
             {/* Monthly card */}
-            <div
-              className={`border-2 rounded-xl p-5 transition-all cursor-pointer ${
+            <button
+              type="button"
+              role="radio"
+              aria-checked={billingCycle === 'monthly'}
+              className={`border-2 rounded-xl p-5 transition-all cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue/60 focus-visible:ring-offset-2 ${
                 billingCycle === 'monthly'
                   ? 'border-primary-blue bg-primary-blue/5'
                   : 'border-slate-200 hover:border-slate-300'
@@ -202,11 +208,14 @@ const PaywallModal = ({ open, onClose, onStartTrial, source, checkoutError, isPr
               <p className="text-xs text-slate-500 mb-3">
                 {PRICING.trial.label}
               </p>
-            </div>
+            </button>
 
             {/* Annual card */}
-            <div
-              className={`border-2 rounded-xl p-5 transition-all cursor-pointer relative ${
+            <button
+              type="button"
+              role="radio"
+              aria-checked={billingCycle === 'annual'}
+              className={`border-2 rounded-xl p-5 transition-all cursor-pointer relative text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue/60 focus-visible:ring-offset-2 ${
                 billingCycle === 'annual'
                   ? 'border-primary-blue bg-primary-blue/5'
                   : 'border-slate-200 hover:border-slate-300'
@@ -223,12 +232,12 @@ const PaywallModal = ({ open, onClose, onStartTrial, source, checkoutError, isPr
               <p className="text-xs text-emerald-600 font-medium">
                 (equivalent {PRICING.annual.monthlyEquivalent})
               </p>
-            </div>
+            </button>
           </div>
 
-          {/* Error message */}
+          {/* Error message — (Audit 8 Cycle 3) Added role="alert" for screen readers */}
           {checkoutError && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3" role="alert">
               <p className="text-sm text-red-700">{checkoutError}</p>
             </div>
           )}

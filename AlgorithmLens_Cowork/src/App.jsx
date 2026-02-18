@@ -58,6 +58,7 @@ function App() {
 
   // Route guard: Block direct URL access to gated routes when Coming Soon mode is enabled
   useEffect(() => {
+    let timeoutId;
     if (comingSoonMode && location.pathname !== '/') {
       const isGated = [
         '/dashboard',
@@ -70,9 +71,11 @@ function App() {
       if (isGated) {
         navigate('/', { replace: true });
         setShowRedirectMessage(true);
-        setTimeout(() => setShowRedirectMessage(false), 5000);
+        // (Audit 8 M7) Store timeout ID for cleanup to prevent memory leak
+        timeoutId = setTimeout(() => setShowRedirectMessage(false), 5000);
       }
     }
+    return () => { if (timeoutId) clearTimeout(timeoutId); };
   }, [location.pathname, comingSoonMode, navigate]);
 
   return (
@@ -244,7 +247,8 @@ function App() {
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap gap-x-8 sm:gap-x-12 gap-y-6">
+                  {/* (Audit 8 H5) Added nav landmark for footer navigation */}
+                  <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-8 sm:gap-x-12 gap-y-6">
                     <div>
                       <h3 className="text-sm font-semibold text-text-main mb-3">Product</h3>
                       <ul className="space-y-2">
@@ -256,8 +260,9 @@ function App() {
                     <div>
                       <h3 className="text-sm font-semibold text-text-main mb-3">Legal</h3>
                       <ul className="space-y-2">
-                        <li><a href="mailto:legal@algorithmlens.com" className="text-sm text-text-muted hover:text-primary-blue transition-colors">Privacy Policy</a></li>
-                        <li><a href="mailto:legal@algorithmlens.com" className="text-sm text-text-muted hover:text-primary-blue transition-colors">Terms of Service</a></li>
+                        {/* (Audit 8 H3) Clarified mailto links — screen readers now announce intent correctly */}
+                        <li><a href="mailto:legal@algorithmlens.com?subject=Privacy%20Policy%20Inquiry" className="text-sm text-text-muted hover:text-primary-blue transition-colors" aria-label="Email us about our Privacy Policy">Privacy Policy</a></li>
+                        <li><a href="mailto:legal@algorithmlens.com?subject=Terms%20of%20Service%20Inquiry" className="text-sm text-text-muted hover:text-primary-blue transition-colors" aria-label="Email us about our Terms of Service">Terms of Service</a></li>
                       </ul>
                     </div>
                     <div>
@@ -266,12 +271,12 @@ function App() {
                         <li><a href="mailto:support@algorithmlens.com" className="text-sm text-text-muted hover:text-primary-blue transition-colors">Contact</a></li>
                       </ul>
                     </div>
-                  </div>
+                  </nav>
                 </div>
 
                 <div className="mt-10 pt-6 border-t border-border-light/50 flex flex-col sm:flex-row justify-between items-center gap-4">
                   <p className="text-xs text-text-muted">
-                    © {new Date().getFullYear()} AlgorithmLens. All rights reserved.
+                    © 2026 AlgorithmLens. All rights reserved.
                   </p>
                   <p className="text-sm font-medium text-text-muted">
                     Developed with support from MIT Sandbox Innovation Fund.

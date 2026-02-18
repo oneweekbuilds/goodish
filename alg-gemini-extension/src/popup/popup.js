@@ -35,6 +35,15 @@ function escapeHtml(text) {
 }
 
 /**
+ * (Audit 8 H9) Escape text for use in HTML attribute context (e.g., data-scan-id)
+ * Prevents attribute injection if scanId contains quotes or special chars
+ */
+function escapeAttr(text) {
+  if (typeof text !== 'string') return '';
+  return text.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/**
  * Safely set HTML with escaped user data
  * Builds DOM structure using createElement instead of innerHTML with interpolation
  * @param {HTMLElement} element - Target element
@@ -431,7 +440,7 @@ function formatUnifiedResults(result, durationSeconds, backendSaved = false, bac
 
       <div class="dashboard-preview">
         <div class="dashboard-cards">
-          <a class="dash-card" data-tab="overview" data-scan-id="${scanId}" role="button" tabindex="0" aria-label="View Overview on dashboard">
+          <a class="dash-card" data-tab="overview" data-scan-id="${escapeAttr(scanId)}" role="button" tabindex="0" aria-label="View Overview on dashboard">
             <div class="dash-card-indicator"></div>
             <div class="dash-card-name">Overview</div>
             <div class="dash-card-value">${overviewValue} <span class="dash-card-unit">${overviewUnit}</span></div>
@@ -439,7 +448,7 @@ function formatUnifiedResults(result, durationSeconds, backendSaved = false, bac
             <span class="dash-card-arrow" aria-hidden="true">›</span>
           </a>
 
-          <a class="dash-card" data-tab="sources" data-scan-id="${scanId}" role="button" tabindex="0" aria-label="View Sources on dashboard">
+          <a class="dash-card" data-tab="sources" data-scan-id="${escapeAttr(scanId)}" role="button" tabindex="0" aria-label="View Sources on dashboard">
             <div class="dash-card-indicator"></div>
             <div class="dash-card-name">Sources</div>
             <div class="dash-card-value">${creatorCount} <span class="dash-card-unit">${creatorCount === 1 ? 'creator' : 'creators'}</span></div>
@@ -447,7 +456,7 @@ function formatUnifiedResults(result, durationSeconds, backendSaved = false, bac
             <span class="dash-card-arrow" aria-hidden="true">›</span>
           </a>
 
-          <a class="dash-card" data-tab="ads" data-scan-id="${scanId}" role="button" tabindex="0" aria-label="View Ads and Sponsors on dashboard">
+          <a class="dash-card" data-tab="ads" data-scan-id="${escapeAttr(scanId)}" role="button" tabindex="0" aria-label="View Ads and Sponsors on dashboard">
             <div class="dash-card-indicator"></div>
             <div class="dash-card-name">Ads &amp; Sponsors</div>
             <div class="dash-card-value">${adsValue} <span class="dash-card-unit">${adsUnit}</span></div>
@@ -455,7 +464,7 @@ function formatUnifiedResults(result, durationSeconds, backendSaved = false, bac
             <span class="dash-card-arrow" aria-hidden="true">›</span>
           </a>
 
-          <a class="dash-card" data-tab="suggested" data-scan-id="${scanId}" role="button" tabindex="0" aria-label="View Suggested vs Followed on dashboard">
+          <a class="dash-card" data-tab="suggested" data-scan-id="${escapeAttr(scanId)}" role="button" tabindex="0" aria-label="View Suggested vs Followed on dashboard">
             <div class="dash-card-indicator"></div>
             <div class="dash-card-name">Suggested vs Followed</div>
             <div class="dash-card-value">${suggestedValue} <span class="dash-card-unit">${suggestedUnit}</span></div>
@@ -465,7 +474,7 @@ function formatUnifiedResults(result, durationSeconds, backendSaved = false, bac
         </div>
       </div>
 
-      <a class="dashboard-cta" data-scan-id="${scanId}" role="button" tabindex="0" aria-label="View full dashboard">
+      <a class="dashboard-cta" data-scan-id="${escapeAttr(scanId)}" role="button" tabindex="0" aria-label="View full dashboard">
         View Full Dashboard →
       </a>
     </div>

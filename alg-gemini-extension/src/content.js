@@ -51,6 +51,11 @@ let lastScrollY = 0;
 let forceNextScan = false;
 let lastScrollTime = 0;
 
+// (Audit 8 L3) Module-scoped debounce/heartbeat timers instead of window globals
+let _alScrollDebounceTimer = null;
+let _alSessionDebounceTimer = null;
+let _alCaptureDebugHeartbeatTimer = null;
+
 let sessionRateState = {
   totalNewPostsThisSession: 0,
   sessionStartTimeMs: null,
@@ -241,8 +246,8 @@ function setupSessionObserver() {
       lastThrottledScan = now;
       collectVisiblePosts();
     }
-    clearTimeout(window._alScrollDebounce);
-    window._alScrollDebounce = setTimeout(() => { lastThrottledScan = Date.now(); collectVisiblePosts(); }, SCAN_INTERVAL_SCROLLING_MS);
+    clearTimeout(_alScrollDebounceTimer);
+    _alScrollDebounceTimer = setTimeout(() => { lastThrottledScan = Date.now(); collectVisiblePosts(); }, SCAN_INTERVAL_SCROLLING_MS);
   };
 
   window.addEventListener('scroll', scrollHandler, { passive: true });
@@ -291,7 +296,8 @@ function setupSessionObserver() {
       }
     };
 
-    shortsUrlCheckInterval = setInterval(captureShortsFromUrl, 200);
+    // (Audit 8 C2) Increased from 200ms to 500ms to reduce CPU overhead on host page
+    shortsUrlCheckInterval = setInterval(captureShortsFromUrl, 500);
     const shortsPopstateHandler = () => setTimeout(captureShortsFromUrl, 100);
     window.addEventListener('popstate', shortsPopstateHandler);
     captureShortsFromUrl();
@@ -317,8 +323,8 @@ function startSessionScan() {
   sessionPosts.clear();
   sessionObservers.forEach(obs => { try { obs.disconnect(); } catch {} });
   sessionObservers = [];
-  clearTimeout(window._alSessionDebounce);
-  clearTimeout(window._alScrollDebounce);
+  clearTimeout(_alSessionDebounceTimer);
+  clearTimeout(_alScrollDebounceTimer);
   resetFacebookState();
 
   lastCollectionDelayedUntil = 0;
@@ -342,7 +348,7 @@ function startSessionScan() {
       if (!sessionActive) { clearInterval(heartbeatInterval); return; }
       debugLog('log', `[CaptureDebug][${platform}] Heartbeat — Posts: ${sessionPosts.size}`);
     }, 5000);
-    window._alCaptureDebugHeartbeat = heartbeatInterval;
+    _alCaptureDebugHeartbeatTimer = heartbeatInterval;
   }
 
   return { success: true, platform: sessionPlatform, message: 'Session scan started', initialPostCount: sessionPosts.size };
@@ -354,8 +360,8 @@ function stopSessionScan() {
 
   sessionObservers.forEach(obs => { try { obs.disconnect(); } catch {} });
   sessionObservers = [];
-  clearTimeout(window._alSessionDebounce);
-  clearTimeout(window._alScrollDebounce);
+  clearTimeout(_alSessionDebounceTimer);
+  clearTimeout(_alScrollDebounceTimer);
 
   const posts = Array.from(sessionPosts.values());
   const duration = sessionStartTime ? Math.round((Date.now() - sessionStartTime) / 1000) : 0;
@@ -365,7 +371,7 @@ function stopSessionScan() {
   sessionActive = false;
   if (CAPTURE_DEBUG) {
     debugLog('log', `[CaptureDebug][${currentPlatform}] STOP — ${posts.length} posts, ${duration}s`);
-    if (window._alCaptureDebugHeartbeat) { clearInterval(window._alCaptureDebugHeartbeat); window._alCaptureDebugHeartbeat = null; }
+    if (_alCaptureDebugHeartbeatTimer) { clearInterval(_alCaptureDebugHeartbeatTimer); _alCaptureDebugHeartbeatTimer = null; }
   }
 
   sessionPosts.clear();

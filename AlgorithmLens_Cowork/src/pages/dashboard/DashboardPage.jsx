@@ -2860,6 +2860,7 @@ const DashboardPage = () => {
               return (
                 <button
                   key={tab.id}
+                  id={`tab-${tab.id}`}
                   data-tab-active={isActive}
                   onClick={() => setActiveTab(tab.id)}
                   onKeyDown={handleTabKeyDown}

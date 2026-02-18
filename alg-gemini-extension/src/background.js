@@ -26,8 +26,8 @@ if (CAPTURE_DEBUG) debugLog('log', '[AlgorithmLens] Background service worker ac
  * Strips any fields that shouldn't leave the extension.
  */
 function sanitizeScanPayload(result) {
-  // Deep clone to avoid mutating original
-  const sanitized = JSON.parse(JSON.stringify(result));
+  // (Audit 8 C3/M6) Use structuredClone — faster than JSON round-trip, available Chrome 98+
+  const sanitized = structuredClone(result);
 
   // Ensure no browser/system metadata leaks
   if (sanitized.environment) {

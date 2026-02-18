@@ -83,31 +83,31 @@ export function useDashboardData(options = {}) {
   }, [scanDetails]);
 
   // Fetch details for all scans (for trend views)
+  // (Audit 8 H10) Fetch scan details in parallel batches instead of sequentially
   const fetchAllScanDetails = useCallback(async (scanList) => {
     const details = {};
-    let totalFeedItems = 0;
-    const platformSet = new Set();
+    const BATCH_SIZE = 4; // Limit concurrent requests to avoid overwhelming the server
 
-    for (const scan of scanList) {
-      if (!scanDetails[scan.id]) {
-        const detail = await fetchScanDetail(scan.id);
-        if (detail) {
-          details[scan.id] = detail;
-        }
-      } else {
-        details[scan.id] = scanDetails[scan.id];
-      }
+    // Separate cached vs uncached scans
+    const uncachedScans = scanList.filter(scan => !scanDetails[scan.id]);
+    const cachedScans = scanList.filter(scan => scanDetails[scan.id]);
 
-      // Aggregate stats for debug
-      const scanData = details[scan.id];
-      if (scanData) {
-        const data = scanData.result || scanData.scan || scanData;
-        const items = data?.feed_items || [];
-        totalFeedItems += items.length;
-        if (scan.platform) {
-          platformSet.add(scan.platform.toLowerCase());
+    // Copy cached results
+    for (const scan of cachedScans) {
+      details[scan.id] = scanDetails[scan.id];
+    }
+
+    // Fetch uncached in parallel batches
+    for (let i = 0; i < uncachedScans.length; i += BATCH_SIZE) {
+      const batch = uncachedScans.slice(i, i + BATCH_SIZE);
+      const results = await Promise.allSettled(
+        batch.map(scan => fetchScanDetail(scan.id))
+      );
+      results.forEach((result, idx) => {
+        if (result.status === 'fulfilled' && result.value) {
+          details[batch[idx].id] = result.value;
         }
-      }
+      });
     }
 
     return details;

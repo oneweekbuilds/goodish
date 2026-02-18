@@ -60,11 +60,14 @@ const LineChartSimple = ({ data = [], valueLabel = '', color = '#3B82F6', height
           {title}
         </h4>
       )}
+      {/* (Audit 8 Cycle 2) Added role="img" and aria-label for screen reader accessibility */}
       <svg
         viewBox={`0 0 100 ${height}`}
         className="w-full"
         style={{ height: `${height}px` }}
         preserveAspectRatio="none"
+        role="img"
+        aria-label={`Line chart${title ? `: ${title}` : ''} showing ${displayData.length} data points. Values range from ${Math.min(...values)}${valueLabel} to ${Math.max(...values)}${valueLabel}.`}
       >
         {/* Gradient definition */}
         <defs>

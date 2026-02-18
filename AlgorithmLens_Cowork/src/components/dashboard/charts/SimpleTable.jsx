@@ -33,7 +33,8 @@ const SimpleTable = ({ columns = [], rows = [], maxRows = 10 }) => {
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
       }}
     >
-      <table className="w-full text-sm">
+      {/* (Audit 8 Cycle 2) Added aria-label for screen readers */}
+      <table className="w-full text-sm" aria-label={columns.length > 1 ? `Data table with ${columns.length} columns and ${displayRows.length} rows` : undefined}>
         <thead>
           <tr
             style={{
@@ -44,6 +45,7 @@ const SimpleTable = ({ columns = [], rows = [], maxRows = 10 }) => {
             {columns.map((col, i) => (
               <th
                 key={i}
+                scope="col"
                 className={`py-3 px-3 sm:px-4 font-semibold ${getAlignment(col.align)}`}
                 style={{
                   fontSize: '0.75rem',

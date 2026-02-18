@@ -75,7 +75,8 @@ const WaitlistSignup = ({ id }) => {
     }
   };
 
-  const handleKeyPress = (e) => {
+  // (Audit 8 H2) Replaced deprecated onKeyPress with onKeyDown
+  const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       handleSubmit(e);
     }
@@ -109,7 +110,7 @@ const WaitlistSignup = ({ id }) => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyDown}
                 placeholder="Enter your email"
                 className="w-full px-4 sm:px-6 py-3 sm:py-4 rounded-full border-2 border-primary-blue/30 bg-bg-page text-text-main placeholder:text-text-muted focus:outline-none focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 transition-all shadow-sm text-sm sm:text-base"
                 disabled={isSubmitting}

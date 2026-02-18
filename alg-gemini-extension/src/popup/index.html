@@ -7,7 +7,8 @@
   <!-- [Audit 6 H1] Import Inter font to match web app typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- (Audit 8 Cycle 4 H6) Reduced font weights: removed 500/800, kept 400/600/700 for performance -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -722,7 +723,8 @@
     </p>
 
     <div class="footer">
-      <a href="https://algorithmlens.com" target="_blank">algorithmlens.com</a>
+      <!-- (Audit 8 Cycle 4) Added rel="noopener noreferrer" for security -->
+      <a href="https://algorithmlens.com" target="_blank" rel="noopener noreferrer" aria-label="Visit algorithmlens.com (opens in new tab)">algorithmlens.com</a>
     </div>
   </div>
 

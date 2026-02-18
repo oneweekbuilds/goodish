@@ -84,15 +84,17 @@ const Navbar = () => {
     );
 
     // Disabled nav link for Coming Soon mode
+    // (Audit 8 L2) Added aria-description for screen reader context
     const DisabledNavLink = ({ children }) => (
         <span
             className="text-sm font-medium text-text-muted/40 cursor-not-allowed relative group"
             aria-disabled="true"
+            aria-description="Coming soon"
             tabIndex="0"
             role="link"
         >
             {children}
-            <span className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-bg-page border border-primary-blue/30 rounded text-xs text-text-main whitespace-nowrap opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity pointer-events-none shadow-lg">
+            <span className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-bg-page border border-primary-blue/30 rounded text-xs text-text-main whitespace-nowrap opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity pointer-events-none shadow-lg" aria-hidden="true">
                 Coming soon
             </span>
         </span>

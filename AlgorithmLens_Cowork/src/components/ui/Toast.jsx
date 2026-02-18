@@ -79,9 +79,10 @@ function ToastItem({ toast, onRemove }) {
     >
       <Icon size={20} className={`flex-shrink-0 mt-0.5 ${TOAST_ICON_STYLES[type]}`} />
       <p className="flex-1 text-sm font-medium">{message}</p>
+      {/* (Audit 8 M9) Increased touch target to meet WCAG 44px minimum */}
       <button
         onClick={() => onRemove(id)}
-        className="flex-shrink-0 p-0.5 text-text-muted hover:text-text-main transition-colors rounded"
+        className="flex-shrink-0 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-text-muted hover:text-text-main transition-colors rounded"
         aria-label="Dismiss notification"
       >
         <X size={16} />
