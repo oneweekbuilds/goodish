@@ -2587,7 +2587,7 @@ export function getCreatorFamiliarityData(scans, scanDetails) {
 }
 
 /**
- * View: Content type breakdown — does the algorithm favor certain formats?
+ * View: Content type breakdown — did suggested posts skew toward certain formats?
  * Minimum: 20 posts in each group
  */
 export function getContentTypeByOriginData(scans, scanDetails) {

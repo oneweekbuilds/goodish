@@ -23,7 +23,7 @@ const SectionTracking = () => {
                         viewport={{ once: true }}
                         className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-main mb-4 sm:mb-6"
                     >
-                        Algorithms track more than you think.
+                        Platforms record more than you realize.
                     </motion.h2>
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
@@ -32,7 +32,7 @@ const SectionTracking = () => {
                         transition={{ delay: 0.1 }}
                         className="text-base sm:text-lg text-text-muted max-w-2xl mx-auto px-2"
                     >
-                        Every scroll is a signal. Platforms use your interactions to build a profile of what keeps you engaged.
+                        Every scroll generates data. Platforms log your interactions as behavioral signals.
                     </motion.p>
                 </div>
 
@@ -87,7 +87,7 @@ const SectionTracking = () => {
                             className="mb-6 text-center"
                         >
                             <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-text-main mb-2">Signals Extracted</h3>
-                            <p className="text-xs sm:text-sm text-text-muted px-2">Signals algorithms pick up from your behavior</p>
+                            <p className="text-xs sm:text-sm text-text-muted px-2">Behavioral signals recorded from your activity</p>
                         </motion.div>
 
                         <div className="space-y-3.5" style={{ marginTop: '72px' }}>
@@ -95,7 +95,7 @@ const SectionTracking = () => {
                                 icon={Clock}
                                 title="Paused on fitness content"
                                 meta="Dwell time: 12s"
-                                interpretation="May surface more self-improvement and routine content."
+                                interpretation="Logged as a dwell-time signal on self-improvement content."
                                 tint="blue"
                                 delay={0.2}
                                 heightClass={cardHeight}
@@ -104,7 +104,7 @@ const SectionTracking = () => {
                                 icon={ThumbsUp}
                                 title="Liked 2 political clips"
                                 meta="Engagement signal"
-                                interpretation="May surface more political content with similar viewpoints."
+                                interpretation="Recorded as engagement with political content."
                                 tint="green"
                                 delay={0.3}
                                 heightClass={cardHeight}
@@ -113,7 +113,7 @@ const SectionTracking = () => {
                                 icon={Eye}
                                 title="Rewatched beauty ad"
                                 meta="Completion: 100%"
-                                interpretation="May surface more beauty, lifestyle, and product content."
+                                interpretation="Full view registered on a beauty and lifestyle ad."
                                 tint="blue"
                                 delay={0.4}
                                 heightClass={cardHeight}
@@ -122,7 +122,7 @@ const SectionTracking = () => {
                                 icon={Clock}
                                 title="Paused on anxiety content"
                                 meta="Dwell time: 18s"
-                                interpretation="May surface more emotional-support and anxiety-related content."
+                                interpretation="Logged as extended dwell time on emotional-support content."
                                 tint="green"
                                 delay={0.5}
                                 heightClass={cardHeight}
@@ -131,7 +131,7 @@ const SectionTracking = () => {
                                 icon={Bookmark}
                                 title="Saved relationship advice clip"
                                 meta="Strong intent"
-                                interpretation="May surface more relationship and dating content."
+                                interpretation="Save action recorded on relationship content."
                                 tint="blue"
                                 delay={0.6}
                                 heightClass={cardHeight}

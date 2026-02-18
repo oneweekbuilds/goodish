@@ -84,9 +84,11 @@ export const AuthProvider = ({ children }) => {
       // Sync plan tier based on session (fire and forget — DashboardPage does its own sync)
       syncPlanTier(initialSession, true);
 
-      // Sync auth token to Chrome extension (fire and forget)
+      // Sync auth token to Chrome extension (fire and forget, but log failures)
       if (initialSession?.access_token) {
-        sendAuthTokenToExtension(initialSession.access_token).catch(() => {});
+        sendAuthTokenToExtension(initialSession.access_token).catch((err) => {
+          console.warn('[AlgorithmLens] Failed to push auth token to extension on init:', err.message || err);
+        });
       }
 
       setAuthReady(true);
@@ -110,8 +112,10 @@ export const AuthProvider = ({ children }) => {
       // Sync plan tier when auth state changes
       syncPlanTier(newSession, true);
 
-      // Sync auth token to Chrome extension (fire and forget)
-      sendAuthTokenToExtension(newSession?.access_token || null).catch(() => {});
+      // Sync auth token to Chrome extension (fire and forget, but log failures)
+      sendAuthTokenToExtension(newSession?.access_token || null).catch((err) => {
+        console.warn('[AlgorithmLens] Failed to push auth token to extension on auth change:', err.message || err);
+      });
     });
 
     // Cleanup subscription on unmount
@@ -139,7 +143,9 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       // Plan tier will be synced to "anon" via onAuthStateChange
       // Clear extension auth token
-      sendAuthTokenToExtension(null).catch(() => {});
+      sendAuthTokenToExtension(null).catch((err) => {
+        console.warn('[AlgorithmLens] Failed to clear auth token in extension on sign-out:', err.message || err);
+      });
     }
     return result;
   };

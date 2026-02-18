@@ -2058,7 +2058,7 @@ export function getInfluentialCreatorsData(scans, scanDetails) {
 // =====================================================
 
 /**
- * View 41: Topics the algorithm thinks you like
+ * View 41: Topics that appeared frequently in your feed
  * PHASE 5: Uses aggregateTopics for multi-scan aggregation
  */
 export function getAlgoTopicsLikedData(scans, scanDetails) {
@@ -2096,7 +2096,7 @@ export function getAlgoTopicsLikedData(scans, scanDetails) {
 }
 
 /**
- * View 42: Topics the algorithm thinks you avoid
+ * View 42: Topics that rarely appeared in your feed
  * PHASE 6A: Uses observed topic universe (renamed to "Topics that rarely show up")
  */
 export function getAlgoTopicsAvoidedData(scans, scanDetails) {
@@ -2146,14 +2146,14 @@ export function getAlgoTopicsAvoidedData(scans, scanDetails) {
 }
 
 /**
- * View 43: Products the algorithm thinks you're receptive to
+ * View 43: Product categories that appeared frequently in ads
  */
 export function getAlgoProductsData(scans, scanDetails) {
   return getProductMentionsData(scans, scanDetails);
 }
 
 /**
- * View 44: Political themes the algorithm thinks matter to you
+ * View 44: Political themes that appeared frequently in your feed
  * BLOCKED: Requires political theme extraction
  */
 export function getAlgoPoliticalThemesData() {
@@ -2587,7 +2587,7 @@ export function getCreatorFamiliarityData(scans, scanDetails) {
 }
 
 /**
- * View: Content type breakdown — does the algorithm favor certain formats?
+ * View: Content type breakdown — did suggested posts skew toward certain formats?
  * Minimum: 20 posts in each group
  */
 export function getContentTypeByOriginData(scans, scanDetails) {

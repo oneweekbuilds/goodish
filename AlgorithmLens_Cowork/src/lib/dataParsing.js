@@ -80,8 +80,9 @@ export function getDisplayData(data) {
     // Aggregates
     const aggregates = scanData.aggregates || {};
     const totalPosts = aggregates.total_feed_items || 0;
-    const adPercentage = Math.round((aggregates.ad_percentage || 0) * 100);
-    const adsCount = Math.round(totalPosts * (aggregates.ad_percentage || 0));
+    // ad_percentage from backend is already 0-100 scale
+    const adPercentage = Math.round(aggregates.ad_percentage || 0);
+    const adsCount = Math.round(totalPosts * ((aggregates.ad_percentage || 0) / 100));
     
     // Topics
     const topTopics = (aggregates.topic_distribution || []).slice(0, 6).map(t => ({

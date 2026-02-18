@@ -72,6 +72,7 @@ window.addEventListener('message', async (event) => {
         authenticated: response?.authenticated ?? false,
       }, event.origin);
     } catch (e) {
+      console.warn('[AlgorithmLens] Auth status check error:', e.message);
       window.postMessage({
         type: 'ALGORITHMLENS_AUTH_STATUS_RESPONSE',
         authenticated: false,

@@ -188,11 +188,11 @@ export function aggregateAds(scans, scanDetails) {
     result.byPlatform[platform].totalAds += totalAds;
 
     // Time series data (for trend charts)
-    // Note: adPct from backend is 0-1, convert to 0-100 for display
+    // Note: adPct from backend is already 0-100 scale
     result.byDate.push({
       date: scan.created_at,
       label: formatDateLabel(scan.created_at),
-      value: Math.round(adPct * 100),
+      value: Math.round(adPct),
       platform,
       scanId: scan.id,
     });
@@ -2050,7 +2050,7 @@ export function aggregateSourceOrigin(scans, scanDetails) {
 
 /**
  * Aggregate topics broken down by source origin (suggested vs followed).
- * Answers: "What topics does the algorithm push vs what I chose to follow?"
+ * Answers: "What topics appeared in suggested posts vs posts from followed accounts?"
  *
  * @param {Array} scans
  * @param {Object} scanDetails
@@ -2292,7 +2292,7 @@ export function aggregateCreatorFamiliarityBySourceOrigin(scans, scanDetails) {
 
 /**
  * Aggregate content type breakdown by source origin.
- * Answers: "Does the algorithm favor certain content formats?"
+ * Answers: "Did suggested posts skew toward certain content formats?"
  *
  * @param {Array} scans
  * @param {Object} scanDetails

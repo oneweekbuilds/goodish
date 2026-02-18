@@ -1257,7 +1257,7 @@ export const dashboardCatalog = [
       const novelty = data?.noveltyPercent || 0;
       if (novelty >= 60) return `Most suggested posts (${novelty}%) are from creators you don't follow.`;
       if (novelty >= 40) return `A mix of new (${novelty}%) and familiar (${100 - novelty}%) creators in suggestions.`;
-      return `The algorithm mostly shows familiar creators (${100 - novelty}% already followed).`;
+      return `Most suggested posts came from creators you already follow (${100 - novelty}%).`;
     },
     action: () => 'Engaging with new creators you discover may influence future suggestions.',
     whyExplanation: 'Compares the set of creators appearing in suggested posts against those in followed posts.',
@@ -1282,15 +1282,15 @@ export const dashboardCatalog = [
   {
     tab: 'suggested_vs_followed',
     id: 'suggested-topics',
-    title: 'Topics the algorithm favors',
-    description: 'Which topics appear more in suggested posts vs posts from accounts you follow.',
+    title: 'Topics overrepresented in suggestions',
+    description: 'Which topics appeared more often in suggested posts compared to posts from accounts you follow.',
     outputType: 'table',
     dataFn: 'getSuggestedTopicsData',
     sortOrder: 'supporting',
     collapsedByDefault: true,
     takeaway: (data) => {
       const top = data?.topAlgorithmTopics?.[0];
-      return top ? `Top algorithm topic: ${top.topic} (${top.percent}% of suggested posts).` : null;
+      return top ? `Most common suggested topic: ${top.topic} (${top.percent}% of suggested posts).` : null;
     },
     whyExplanation: 'Groups each post\'s primary topic category by whether it was suggested or from a followed account.',
   },
@@ -1310,7 +1310,7 @@ export const dashboardCatalog = [
     tab: 'suggested_vs_followed',
     id: 'suggested-content-type',
     title: 'Content format preferences',
-    description: 'Does the algorithm favor videos, images, or other formats over what you follow.',
+    description: 'Whether suggested posts skewed toward videos, images, or other formats compared to what you follow.',
     outputType: 'bar',
     dataFn: 'getContentTypeByOriginData',
     sortOrder: 'supporting',

@@ -80,11 +80,14 @@ async function getAuthToken() {
         const payload = JSON.parse(atob(token.split('.')[1]));
         const now = Math.floor(Date.now() / 1000);
         if (payload.exp && payload.exp < now) {
-          console.warn('[AlgorithmLens] Auth token expired. User needs to visit algorithmlens.com to refresh.');
-          // Don't clear the token — let the 401 response trigger re-auth messaging
+          console.warn('[AlgorithmLens] Auth token expired — clearing stored token. User needs to visit algorithmlens.com to re-authenticate.');
+          // Clear the expired token so the extension shows logged-out state
+          // rather than making authenticated requests that will fail with 401
+          await chrome.storage.local.remove('authToken');
           return null;
         }
-      } catch {
+      } catch (decodeErr) {
+        console.warn('[AlgorithmLens] Could not decode JWT for expiry check:', decodeErr.message);
         // If we can't decode the token, let the backend validate it
       }
     }
