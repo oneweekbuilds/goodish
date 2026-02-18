@@ -261,7 +261,7 @@ const PatternsTab = ({ scans, scanDetails }) => {
 
         <div className="bg-white border border-slate-200 rounded-lg p-6">
           <p className="text-sm text-slate-600">
-            These patterns suggest what the algorithm may be prioritizing based on recent activity, not a fixed preference or identity.
+            These are patterns observed during your scans. They reflect what appeared in your feed during this period, not a fixed preference or identity.
           </p>
         </div>
       </section>

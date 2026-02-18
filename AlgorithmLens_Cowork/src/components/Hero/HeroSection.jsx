@@ -52,10 +52,10 @@ const HeroSection = () => {
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                     className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight text-text-main mb-6 sm:mb-8 leading-[1.1] max-w-full"
                 >
-                    <span className="font-bold">See how the</span>
+                    <span className="font-bold">See what's</span>
                     <br />
                     <span className="block sm:inline whitespace-normal sm:whitespace-nowrap tracking-tight-hero font-extrabold">
-                        <span className="text-primary-blue">algorithms</span> <span className="text-accent-green">see you.</span>
+                        <span className="text-primary-blue">really</span> <span className="text-accent-green">in your feed.</span>
                     </span>
                 </motion.h1>
 
@@ -65,7 +65,7 @@ const HeroSection = () => {
                     transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
                     className="text-base sm:text-lg md:text-xl text-text-muted mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed font-medium px-2"
                 >
-                    Algorithms influence what appears in your feed. AlgorithmLens shows you the patterns behind your feed so you can browse with more awareness.
+                    Your feed contains patterns worth understanding. AlgorithmLens shows you the composition of your feed so you can browse with more awareness.
                 </motion.p>
 
                 <motion.p

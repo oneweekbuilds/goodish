@@ -31,7 +31,7 @@ const SectionLoop = () => {
                         <LoopCard
                             number={1}
                             title="Your behavior"
-                            desc="Every tap, scroll, and pause feeds the algorithm."
+                            desc="Every tap, scroll, and pause becomes a data point."
                             delay={0.2}
                         />
                     </div>
@@ -40,8 +40,8 @@ const SectionLoop = () => {
                     <div style={{ gridArea: 'right' }} className="w-full h-full flex justify-center items-center">
                         <LoopCard
                             number={2}
-                            title="The algorithm's view"
-                            desc="You are categorized into inferred labels."
+                            title="Content patterns form"
+                            desc="Your feed content clusters into observable themes."
                             delay={0.5}
                         />
                     </div>
@@ -102,8 +102,8 @@ const SectionLoop = () => {
 
                 {/* Mobile Layout - Vertical Stack */}
                 <div className="flex flex-col gap-4 sm:gap-6 md:hidden items-center w-full">
-                    <LoopCard number={1} title="Your behavior" desc="Every tap, scroll, and pause feeds the algorithm." delay={0.2} />
-                    <LoopCard number={2} title="The algorithm's view" desc="You are categorized into inferred labels." delay={0.4} />
+                    <LoopCard number={1} title="Your behavior" desc="Every tap, scroll, and pause becomes a data point." delay={0.2} />
+                    <LoopCard number={2} title="Content patterns form" desc="Your feed content clusters into observable themes." delay={0.4} />
                     <LoopCard number={3} title="Tailored content" desc="Your feed composition reflects your inferred categories." delay={0.6} />
                     <LoopCard number={4} title="Your media diet evolves" desc="Over time, your feed composition may reflect and reinforce the topics you engage with most." delay={0.8} />
                 </div>

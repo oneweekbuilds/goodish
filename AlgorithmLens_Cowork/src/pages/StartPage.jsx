@@ -130,8 +130,8 @@ const StartPage = () => {
             Choose Your Platform
           </h1>
           <p className="text-lg text-text-muted max-w-2xl mx-auto">
-            Select the social media platform you want to analyze. We'll help you understand
-            what the algorithm shows you.
+            Select the social media platform you want to analyze. We'll show you
+            what patterns appear in your feed.
           </p>
         </div>
 

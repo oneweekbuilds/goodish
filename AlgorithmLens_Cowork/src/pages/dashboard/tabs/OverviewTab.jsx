@@ -676,9 +676,9 @@ const OverviewTab = ({
       {/* Algorithmic Profile (Gap 7) */}
       {algorithmicProfile.hasData && (
         <section>
-          <SectionHeader>What the algorithm may see</SectionHeader>
+          <SectionHeader>Content patterns observed</SectionHeader>
           <p className="text-xs text-slate-500 mb-4">
-            Based on observable patterns in your scans. This is not your identity — it reflects what content appeared and how platforms may categorize you.
+            Based on observable patterns in your scans. This is not your identity — it reflects what content appeared during your scans.
           </p>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {algorithmicProfile.topInterests && (
@@ -888,15 +888,15 @@ const OverviewTab = ({
               <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
                 <span className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold flex items-center justify-center">2</span>
                 <div>
-                  <div className="text-xs font-semibold text-slate-700">The algorithm builds a model</div>
-                  <div className="text-xs text-slate-500">Platforms infer your interests, preferences, and engagement patterns.</div>
+                  <div className="text-xs font-semibold text-slate-700">Patterns accumulate</div>
+                  <div className="text-xs text-slate-500">Over time, recurring topics and content types form observable patterns.</div>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
                 <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-100 text-purple-700 text-xs font-bold flex items-center justify-center">3</span>
                 <div>
                   <div className="text-xs font-semibold text-slate-700">Content is tailored</div>
-                  <div className="text-xs text-slate-500">Your feed is curated based on what the algorithm predicts you will engage with.</div>
+                  <div className="text-xs text-slate-500">Your feed composition reflects what has appeared — we cannot know why specific content was selected.</div>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">

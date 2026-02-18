@@ -2053,12 +2053,12 @@ export function getInfluentialCreatorsData(scans, scanDetails) {
 }
 
 // =====================================================
-// TAB 5: WHAT THE ALGORITHM THINKS ABOUT YOU
+// TAB 5: CONTENT THEMES THAT SURFACED
 // Phase 5: Uses aggregated data from all tabs
 // =====================================================
 
 /**
- * View 41: Topics the algorithm thinks you like
+ * View 41: Content themes that appeared frequently
  * PHASE 5: Uses aggregateTopics for multi-scan aggregation
  */
 export function getAlgoTopicsLikedData(scans, scanDetails) {
@@ -2096,7 +2096,7 @@ export function getAlgoTopicsLikedData(scans, scanDetails) {
 }
 
 /**
- * View 42: Topics the algorithm thinks you avoid
+ * View 42: Topics that rarely appeared in scans
  * PHASE 6A: Uses observed topic universe (renamed to "Topics that rarely show up")
  */
 export function getAlgoTopicsAvoidedData(scans, scanDetails) {
@@ -2146,14 +2146,14 @@ export function getAlgoTopicsAvoidedData(scans, scanDetails) {
 }
 
 /**
- * View 43: Products the algorithm thinks you're receptive to
+ * View 43: Product categories that appeared in ads
  */
 export function getAlgoProductsData(scans, scanDetails) {
   return getProductMentionsData(scans, scanDetails);
 }
 
 /**
- * View 44: Political themes the algorithm thinks matter to you
+ * View 44: Political themes that appeared in feed content
  * BLOCKED: Requires political theme extraction
  */
 export function getAlgoPoliticalThemesData() {
@@ -2432,7 +2432,7 @@ export function getFutureRecommendationsData(scans, scanDetails) {
 
 // =====================================================
 // TAB 6: ALGORITHM'S PICKS (SUGGESTED VS FOLLOWED)
-// Cross-cutting analyses comparing algorithm picks
+// Cross-cutting analyses comparing suggested vs followed content
 // to content from accounts the user follows.
 // =====================================================
 
@@ -2512,7 +2512,7 @@ export function getSuggestedTopicsData(scans, scanDetails) {
 }
 
 /**
- * View: Commercial content comparison — are algorithm picks more commercial?
+ * View: Commercial content comparison — are suggested posts more commercial?
  * Minimum: 20 posts in each group
  */
 export function getSuggestedAdsData(scans, scanDetails) {

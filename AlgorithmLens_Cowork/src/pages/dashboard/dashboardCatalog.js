@@ -11,11 +11,11 @@
  * 6. No moral tone - especially for politics, ads, or emotional content
  *
  * TAB CORE QUESTIONS:
- * - Ads & Influence: "How much is my feed trying to sell to me?"
+ * - Ads & Promotions: "How much commercial content appeared?"
  * - Politics & Worldview: "How much political content am I exposed to?"
  * - Patterns in Your Feed: "Is my feed varied or repetitive?"
  * - Creators & Voices: "Who shapes what I see the most?"
- * - What the Algorithm Thinks: "How might platforms be categorizing me?"
+ * - What Surfaced: "What content themes appeared in scans?"
  *
  * Each view includes:
  * - tab: which tab it belongs to
@@ -54,22 +54,22 @@ export const TAB_TRUST_SENTENCES = {
   politics: "Counts and percentages are based only on the posts included in your scans.",
   patterns: "Counts and percentages are based only on the posts included in your scans.",
   creators: "Counts and percentages are based only on the posts included in your scans.",
-  algorithm: "Patterns observed here. This is system interpretation, not your identity.",
+  algorithm: "These are content themes that appeared in your scans. They do not represent your identity or preferences.",
 };
 
 export const TABS = [
   { id: 'overview', label: 'Overview', accent: '#2563EB' },
   { id: 'sources', label: 'Who Shapes Your Feed', accent: '#6366F1' },
-  { id: 'ads', label: "What's Selling to You", accent: '#D97706' },
+  { id: 'ads', label: "Ads & Promotions", accent: '#D97706' },
   { id: 'politics', label: 'Political Exposure', accent: '#7C3AED' },
   { id: 'tone', label: 'Emotional Tone', accent: '#0D9488' },
-  { id: 'suggested_vs_followed', label: "Algorithm's Picks", accent: '#E11D48' },
+  { id: 'suggested_vs_followed', label: "Suggested vs. Followed", accent: '#E11D48' },
 ];
 
 export const dashboardCatalog = [
   // ==========================================
   // TAB 1: ADS & INFLUENCE
-  // Core question: "How much is my feed trying to sell to me?"
+  // Core question: "How much commercial content appeared?"
   // Primary (1): Ad percentage - the single clearest answer
   // Secondary (2): Ad concentration, Platform comparison
   // Summary (1): Advertiser insights
@@ -97,14 +97,14 @@ export const dashboardCatalog = [
 
       if (pct === 0) {
         return smallSample
-          ? 'The feed wasn\'t selling in this sample.'
-          : 'No selling pressure detected here.';
+          ? 'No commercial content detected in this sample.'
+          : 'No commercial content detected.';
       }
 
       if (pct < 8) {
         return smallSample
           ? 'Early signal: light sponsored touches surfaced.'
-          : 'Selling pressure is light. Promotions appear but don\'t drive the feed.';
+          : 'Commercial content is light. Some promotions appeared but were not frequent.';
       }
 
       if (pct < 18) {
@@ -112,7 +112,7 @@ export const dashboardCatalog = [
         return 'Sponsored content appears regularly. Promotions are present but not dominant.';
       }
 
-      return 'Advertising is a main storyline here. Paid promotions make up a substantial portion of what you see.';
+      return 'Commercial content was frequent. Paid promotions made up a substantial portion of what appeared.';
     },
     action: null,
   },
@@ -121,7 +121,7 @@ export const dashboardCatalog = [
   {
     tab: 'ads',
     id: 'ads-concentration',
-    title: 'Who is driving the selling',
+    title: 'Where commercial content concentrated',
     description: 'Shows whether a handful of repeat advertisers account for most of the commercial content in this window.',
     outputType: 'text',
     dataFn: 'getAdConcentrationData',
@@ -162,21 +162,21 @@ export const dashboardCatalog = [
       if (!top) return null;
 
       if (!second) {
-        return `${top.label} is doing most of the selling right now.`;
+        return `${top.label} had the most commercial content.`;
       }
 
       const gap = (top.value || 0) - (second.value || 0);
       const ratio = (second.value || 0) === 0 ? Infinity : (top.value || 0) / (second.value || 0);
 
       if (ratio >= 1.5 && gap >= 5) {
-        return `${top.label} is driving most sponsored posts; other platforms are quieter.`;
+        return `${top.label} had the most sponsored posts; other platforms are quieter.`;
       }
 
       if (Math.abs(gap) <= 3) {
-        return `Selling pressure is similar on ${top.label} and ${second.label}.`;
+        return `Commercial content levels were similar on ${top.label} and ${second.label}.`;
       }
 
-      return `${top.label} carries more of the selling than ${second.label} right now.`;
+      return `${top.label} had more commercial content than ${second.label} right now.`;
     },
     action: null,
   },
@@ -284,7 +284,7 @@ export const dashboardCatalog = [
     premiumOnly: true,
     collapsedByDefault: true,
     takeaway: () => 'A small set of creators drive most promotions.',
-    action: () => 'Mute or unfollow high-promo creators.',
+    action: null,
   },
   {
     tab: 'ads',
@@ -762,7 +762,7 @@ export const dashboardCatalog = [
     sortOrder: 'supporting',
     hidden: true,
     takeaway: () => 'Content sentiment distribution in your feed.',
-    action: () => 'Interact with uplifting accounts if negative is high.',
+    action: null,
   },
   {
     tab: 'patterns',
@@ -991,8 +991,8 @@ export const dashboardCatalog = [
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     hidden: true,
-    takeaway: () => 'These creators contribute most promotional content.',
-    action: () => 'Mute high-promo creators to reduce ads.',
+    takeaway: () => 'These accounts had the most promotional content in your scans.',
+    action: null,
   },
   {
     tab: 'creators',
@@ -1004,8 +1004,8 @@ export const dashboardCatalog = [
     emptyStateType: 'needs_more_scans',
     sortOrder: 'supporting',
     hidden: true,
-    takeaway: () => 'These creators drive most political exposure.',
-    action: () => 'Unfollow top drivers if you want less politics.',
+    takeaway: () => 'These accounts had the most political content in your scans.',
+    action: null,
   },
   {
     tab: 'creators',
@@ -1236,7 +1236,7 @@ export const dashboardCatalog = [
     sortOrder: 'primary',
     takeaway: (data) => {
       const sug = data?.suggestedPercentage || 0;
-      if (sug >= 60) return `Algorithm-suggested posts dominate your feed (${sug}%).`;
+      if (sug >= 60) return `Suggested posts made up the majority of your feed (${sug}%).`;
       if (sug >= 40) return `Balanced mix of followed (${100 - sug}%) and suggested (${sug}%) content.`;
       return `You mostly see posts from accounts you follow (${100 - sug}%).`;
     },
@@ -1248,14 +1248,14 @@ export const dashboardCatalog = [
     tab: 'suggested_vs_followed',
     id: 'suggested-creator-novelty',
     title: 'Are these new voices?',
-    description: 'What percentage of algorithm picks come from creators you don\'t already follow.',
+    description: 'What percentage of suggested posts come from creators you don\'t already follow.',
     outputType: 'number_line',
     dataFn: 'getCreatorFamiliarityData',
     isPrimary: false,
     sortOrder: 'supporting',
     takeaway: (data) => {
       const novelty = data?.noveltyPercent || 0;
-      if (novelty >= 60) return `Most algorithm picks (${novelty}%) are from creators you don't follow.`;
+      if (novelty >= 60) return `Most suggested posts (${novelty}%) are from creators you don't follow.`;
       if (novelty >= 40) return `A mix of new (${novelty}%) and familiar (${100 - novelty}%) creators in suggestions.`;
       return `The algorithm mostly shows familiar creators (${100 - novelty}% already followed).`;
     },
@@ -1266,7 +1266,7 @@ export const dashboardCatalog = [
     tab: 'suggested_vs_followed',
     id: 'suggested-commercial',
     title: 'Commercial content comparison',
-    description: 'Are algorithm picks more or less commercial than content from accounts you follow.',
+    description: 'Are suggested posts more or less commercial than content from accounts you follow.',
     outputType: 'bar',
     dataFn: 'getSuggestedAdsData',
     isPrimary: false,
@@ -1277,7 +1277,7 @@ export const dashboardCatalog = [
       const more = delta > 0 ? 'more' : 'less';
       return `Suggested posts are ${Math.abs(delta)} points ${more} commercial than followed posts.`;
     },
-    whyExplanation: 'Compares the ad percentage in algorithm-suggested posts vs posts from accounts you follow.',
+    whyExplanation: 'Compares the ad percentage in suggested posts vs posts from accounts you follow.',
   },
   {
     tab: 'suggested_vs_followed',
@@ -1298,7 +1298,7 @@ export const dashboardCatalog = [
     tab: 'suggested_vs_followed',
     id: 'suggested-tone',
     title: 'Emotional tone comparison',
-    description: 'Are algorithm picks more positive, neutral, or negative than posts you follow.',
+    description: 'Are suggested posts more positive, neutral, or negative than posts you follow.',
     outputType: 'stacked100',
     dataFn: null, // Computed inline in the tab
     sortOrder: 'supporting',

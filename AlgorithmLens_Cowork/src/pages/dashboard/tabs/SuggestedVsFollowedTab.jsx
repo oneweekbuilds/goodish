@@ -283,7 +283,7 @@ const SuggestedVsFollowedTab = ({
               This view shows how much of your feed comes from accounts you follow versus content suggested by the platform.
             </p>
             <p className="text-slate-600">
-              <strong>Coming Soon.</strong> This analysis will be available once platform metadata capture is enabled during scans. It will show how much of your feed comes from accounts you follow versus content the algorithm suggests for you.
+              <strong>Coming Soon.</strong> This analysis will be available once platform metadata capture is enabled during scans. It will show how much of your feed comes from accounts you follow versus suggested content.
             </p>
           </div>
         </section>
@@ -406,7 +406,7 @@ const SuggestedVsFollowedTab = ({
 
             <div className="flex items-baseline gap-2">
               <span className="text-3xl font-bold text-slate-900">{creatorFamiliarity.noveltyPercent}%</span>
-              <span className="text-sm text-slate-600">of algorithm picks are from creators you don't follow</span>
+              <span className="text-sm text-slate-600">of suggested posts are from creators you don't follow</span>
             </div>
 
             <div className="grid grid-cols-3 gap-4 pt-2">

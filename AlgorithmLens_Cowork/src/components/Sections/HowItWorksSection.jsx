@@ -17,7 +17,7 @@ const HowItWorksSection = () => {
                     number={1}
                     icon={Database}
                     title="Ingest Activity"
-                    desc="We process your likes, scrolls, and dwell time locally."
+                    desc="We capture a snapshot of your feed content locally."
                     color="blue"
                     delay={0.2}
                 />
@@ -25,15 +25,15 @@ const HowItWorksSection = () => {
                     number={2}
                     icon={Scan}
                     title="Detect Patterns"
-                    desc="Our analysis identifies the content patterns that define your feed."
+                    desc="Our analysis categorizes the content that appeared in your feed snapshot."
                     color="green"
                     delay={0.4}
                 />
                 <StepCard
                     number={3}
                     icon={UserCheck}
-                    title="Reveal Profile"
-                    desc="See your inferred digital profile and decide what to do with it."
+                    title="See Your Patterns"
+                    desc="See the composition of your feed and decide how you want to engage."
                     color="blue"
                     delay={0.6}
                 />

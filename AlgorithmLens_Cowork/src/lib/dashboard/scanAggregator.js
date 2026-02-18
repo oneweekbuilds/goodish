@@ -2133,7 +2133,7 @@ export function aggregateTopicsBySourceOrigin(scans, scanDetails) {
 
 /**
  * Aggregate ad/commercial content broken down by source origin.
- * Answers: "Are algorithm picks more commercial than what I follow?"
+ * Answers: "Are suggested posts more commercial than what I follow?"
  *
  * @param {Array} scans
  * @param {Object} scanDetails
