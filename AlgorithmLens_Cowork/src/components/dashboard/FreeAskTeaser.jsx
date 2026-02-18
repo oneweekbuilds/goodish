@@ -1,6 +1,7 @@
 import React from 'react';
 import { MessageCircleQuestion, Lock } from 'lucide-react';
 import { usePaywall } from '../../lib/plan/PaywallProvider';
+import { PRICING } from '../../lib/plan/pricingConfig';
 
 /**
  * FreeAskTeaser - Teaser card for the "Ask your feed" AI conversation feature
@@ -58,7 +59,7 @@ const FreeAskTeaser = ({ tabName, exampleQuestion }) => {
             boxShadow: '0 2px 6px rgba(16, 185, 129, 0.25)',
           }}
         >
-          Try free for 14 days
+          Try free for {PRICING.trial.days} days
         </button>
       </div>
     </section>

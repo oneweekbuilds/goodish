@@ -132,14 +132,14 @@ const PricingPage = () => {
                             <PlanFeature text='AI-powered "Ask your feed" Q&A' accent="green" />
                             <PlanFeature text="Track trends across scans" accent="green" />
                             <PlanFeature text="Compare scans side by side" accent="green" />
-                            <PlanFeature text="14-day free trial" accent="green" />
+                            <PlanFeature text={PRICING.trial.label} accent="green" />
                         </ul>
 
                         <Link
                             to="/plus"
                             className="w-full py-3 rounded-full bg-accent-green text-white font-semibold text-sm md:text-base hover:bg-accent-green/90 transition-all duration-200 mt-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-green/60 focus-visible:ring-offset-2 shadow-sm block text-center"
                         >
-                            Try Plus Free for 14 Days
+                            Try Plus Free for {PRICING.trial.days} Days
                         </Link>
                     </div>
                 </section>
@@ -230,7 +230,7 @@ const PricingPage = () => {
                             to="/plus"
                             className="w-full sm:w-auto px-8 py-3 rounded-full bg-accent-green text-white font-semibold hover:bg-accent-green/90 shadow-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-green/60 focus-visible:ring-offset-2 text-center"
                         >
-                            Try Plus Free for 14 Days
+                            Try Plus Free for {PRICING.trial.days} Days
                         </Link>
                     </div>
                 </section>

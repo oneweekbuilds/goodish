@@ -1,5 +1,6 @@
 import React from 'react';
 import { TrendingUp, Sparkles, ArrowRight } from 'lucide-react';
+import { PRICING } from '../../lib/plan/pricingConfig';
 
 /**
  * TrendsCTA - Trends over time call-to-action row - PREMIER QUALITY
@@ -126,7 +127,7 @@ const TrendsCTA = ({ onClick, isPlusUser, tabName, scanCount }) => {
           e.currentTarget.style.transform = 'translateY(0)';
         }}
       >
-        {isPlusUser ? 'View Trends' : 'Try free for 14 days'}
+        {isPlusUser ? 'View Trends' : `Try free for ${PRICING.trial.days} days`}
         <ArrowRight size={14} />
       </button>
     </div>

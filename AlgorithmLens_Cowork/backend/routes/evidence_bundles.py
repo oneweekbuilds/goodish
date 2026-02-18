@@ -152,13 +152,15 @@ def get_ads_evidence_bundle_debug(
     Returns both the raw computed bundle and the final response to diagnose
     if CI fields are missing before or during serialization.
 
-    This endpoint is only available in dev/local environments.
+    This endpoint is only available in dev/local environments AND requires Plus subscription.
+    C3 fix: Added Plus check to prevent free users from accessing debug data in dev envs.
     """
     validate_scan_id(scan_id)
     if not is_dev_environment():
         raise HTTPException(status_code=404, detail="Debug endpoint not available")
 
     user_id = current_user["user_id"]
+    _require_plus(user_id)  # C3 fix: Require Plus to prevent debug data leakage
     scan = get_scan_by_id_for_user(scan_id, user_id)
     if scan is None:
         raise HTTPException(status_code=404, detail=f"Scan {scan_id} not found")

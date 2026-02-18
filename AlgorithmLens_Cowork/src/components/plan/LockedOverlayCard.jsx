@@ -1,6 +1,7 @@
 import React from 'react';
 import { Sparkles } from 'lucide-react';
 import UpgradeCTA from './UpgradeCTA';
+import { PRICING } from '../../lib/plan/pricingConfig';
 
 /**
  * LockedOverlayCard - Wrapper that shows locked overlay for free users
@@ -17,7 +18,7 @@ const LockedOverlayCard = ({
   locked = false,
   title = 'Deeper analysis available',
   body = 'Your snapshot shows the headlines. Plus reveals the full picture — evidence-based analysis, AI-powered Q&A, and trend tracking.',
-  ctaLabel = 'Try free for 14 days',
+  ctaLabel = `Try free for ${PRICING.trial.days} days`,
   onUpgrade,
   children,
 }) => {
@@ -51,7 +52,7 @@ const LockedOverlayCard = ({
           {onUpgrade && (
             <div className="pt-2 space-y-2">
               <UpgradeCTA onClick={onUpgrade} label={ctaLabel} />
-              <p className="text-xs text-slate-400">No charge for 14 days. Cancel anytime.</p>
+              <p className="text-xs text-slate-400">No charge for {PRICING.trial.days} days. Cancel anytime.</p>
             </div>
           )}
         </div>

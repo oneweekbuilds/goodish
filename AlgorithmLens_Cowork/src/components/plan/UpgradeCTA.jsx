@@ -1,4 +1,5 @@
 import React from 'react';
+import { PRICING } from '../../lib/plan/pricingConfig';
 
 /**
  * UpgradeCTA - Consistent upgrade button across the app
@@ -6,12 +7,14 @@ import React from 'react';
  * Props:
  * - onClick: callback function
  * - variant: "primary" (default) or "secondary"
- * - label: button text (default: "See trends over time")
+ * - label: button text (default uses PRICING.trial.days from pricingConfig)
+ *
+ * M2 fix: Default label now references PRICING config instead of hardcoded "14 days".
  */
 const UpgradeCTA = ({
   onClick,
   variant = 'primary',
-  label = 'Try free for 14 days',
+  label = `Try free for ${PRICING.trial.days} days`,
 }) => {
   const variantClasses = {
     primary:

@@ -2007,9 +2007,14 @@ const DashboardPage = () => {
   // Plan tier state (foundation for gating, not yet enforced)
   // Supports demo overrides via ?demoPlan=plus|free|anon (demo mode only)
   // Defaults: demo mode → "free", non-demo → stored tier or "anon"
+  // H3 fix: In demo mode, always enforce free tier to prevent localStorage bypass
   const searchParams = useMemo(() => new URLSearchParams(window.location.search), []);
   const [planTier, setPlanTier] = useState(
-    () => getCurrentPlanTier(isDemoMode, searchParams)
+    () => {
+      const tier = getCurrentPlanTier(isDemoMode, searchParams);
+      // Enforce demo mode isolation: never allow Plus in demo mode, even via localStorage
+      return isDemoMode && tier === PLAN_TIERS.PLUS ? PLAN_TIERS.FREE : tier;
+    }
   );
 
   // Re-sync planTier from backend when auth becomes ready
@@ -2222,14 +2227,17 @@ const DashboardPage = () => {
       } catch (err) {
         // Unexpected error — keep optimistic activation
         logError('DashboardPage', '[checkout] Unexpected error during sync:', err);
+      } finally {
+        // M1 fix: Always strip checkout param from URL after processing,
+        // regardless of verification outcome. Previously this only ran in
+        // the "not confirmed" path because early returns skipped it,
+        // leaving ?checkout=success in the URL permanently.
+        params.delete('checkout');
+        const newSearch = params.toString();
+        navigate({
+          search: newSearch ? `?${newSearch}` : '',
+        }, { replace: true });
       }
-
-      // Strip checkout param after first attempt (regardless of result)
-      params.delete('checkout');
-      const newSearch = params.toString();
-      navigate({
-        search: newSearch ? `?${newSearch}` : '',
-      }, { replace: true });
     };
 
     syncEntitlements();

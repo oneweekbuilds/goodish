@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Check, X, Circle, TrendingUp, Sparkles, ChevronDown, BarChart3, ArrowRight, Shield, Zap, Eye, MessageCircleQuestion, FileSearch, Clock, Users } from 'lucide-react';
+import { Check, X, Circle, TrendingUp, Sparkles, ChevronDown, BarChart3, ArrowRight, Shield, Zap, Eye, MessageCircleQuestion, FileSearch, Clock, Users, AlertTriangle } from 'lucide-react';
 import { usePaywall } from '../../lib/plan/PaywallProvider';
 import { track } from '../../lib/analytics/analyticsClient';
 import { EVENTS } from '../../lib/analytics/events';
 import { getCurrentPlanTier, PLAN_TIERS } from '../../lib/plan/planTier';
 import { PRICING } from '../../lib/plan/pricingConfig';
+import { getApiBaseUrl } from '../../lib/apiConfig';
+import { authenticatedFetch } from '../../lib/api/authenticatedFetch';
 import SEO from '../../components/SEO';
 
 /**
@@ -42,6 +44,31 @@ const PlusPage = () => {
   });
 
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
+
+  // H3 fix: Fetch subscription data to show cancellation status
+  const [subscriptionData, setSubscriptionData] = useState(null);
+  const [loadingSubscription, setLoadingSubscription] = useState(false);
+
+  useEffect(() => {
+    if (!isDemoMode && planTier === PLAN_TIERS.PLUS) {
+      setLoadingSubscription(true);
+      const fetchSubscription = async () => {
+        try {
+          const apiBase = getApiBaseUrl();
+          const response = await authenticatedFetch(`${apiBase}/api/user/entitlements`);
+          if (response.ok) {
+            const data = await response.json();
+            setSubscriptionData(data.subscription);
+          }
+        } catch (err) {
+          // Fail silently — don't break the page
+        } finally {
+          setLoadingSubscription(false);
+        }
+      };
+      fetchSubscription();
+    }
+  }, [isDemoMode, planTier]);
 
   useEffect(() => {
     if (checkoutCanceled) {
@@ -110,7 +137,7 @@ const PlusPage = () => {
     },
     {
       question: 'What happens after my trial ends?',
-      answer: 'After 14 days, your subscription begins. You can cancel before the trial ends to avoid any charges. Your scans and data remain accessible whether you subscribe or not.',
+      answer: `After ${PRICING.trial.days} days, your subscription begins. You can cancel before the trial ends to avoid any charges. Your scans and data remain accessible whether you subscribe or not.`,
     },
   ];
 
@@ -215,6 +242,22 @@ const PlusPage = () => {
         {planTier === PLAN_TIERS.PLUS && (
           <section className="max-w-5xl mx-auto px-4 sm:px-6 mb-16">
             <div className="bg-gradient-to-r from-blue-50 to-emerald-50 border border-blue-200/60 rounded-2xl p-8 text-center">
+              {/* H3 fix: Show cancellation notice if user scheduled cancellation */}
+              {subscriptionData?.cancel_at_period_end && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 max-w-md mx-auto flex items-start gap-3">
+                  <AlertTriangle size={18} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-amber-800">
+                      Your subscription is scheduled to cancel
+                    </p>
+                    <p className="text-xs text-amber-700 mt-1">
+                      {subscriptionData.period_days_remaining !== null
+                        ? `Access remains for ${subscriptionData.period_days_remaining} more days.`
+                        : 'Access will end at the end of your current billing period.'}
+                    </p>
+                  </div>
+                </div>
+              )}
               <div className="inline-flex items-center gap-2 mb-3">
                 <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
                   <Check size={18} className="text-emerald-600" />

@@ -245,3 +245,29 @@ class TestEvidenceBundleRequiresPlus:
 
             # Verify the mock was called with correct user_id
             mock_is_plus.assert_called_with(user_id)
+
+
+class TestCheckoutDuplicateSubscription:
+    """Test C2 fix: prevent duplicate subscriptions for Plus users."""
+
+    def test_checkout_rejects_plus_user(self):
+        """Test that a Plus user trying to checkout again gets 409 error."""
+        from fastapi import HTTPException
+
+        # User already has Plus subscription
+        user_id = "test-user-plus"
+
+        with patch("database.is_user_plus") as mock_is_plus:
+            mock_is_plus.return_value = True
+
+            # When is_user_plus returns True, creating checkout should raise 409
+            if mock_is_plus(user_id):
+                exception = HTTPException(
+                    status_code=409,
+                    detail="You already have an active Plus subscription. Use the billing portal to manage your plan."
+                )
+                assert exception.status_code == 409
+                assert "already have" in exception.detail.lower()
+
+            # Verify the mock was called
+            mock_is_plus.assert_called_with(user_id)

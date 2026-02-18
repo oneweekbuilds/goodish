@@ -211,6 +211,20 @@ def init_database():
         )
     """)
 
+    # H3 fix: Add cancel_at_period_end column (migration for existing DBs)
+    try:
+        cursor.execute("ALTER TABLE subscriptions ADD COLUMN cancel_at_period_end INTEGER DEFAULT 0")
+        logger.info("Added cancel_at_period_end column to subscriptions table")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
+    # H4 fix: Add index on stripe_customer_id for fast webhook lookups.
+    # Without this, every webhook event triggers a full table scan on subscriptions.
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_subscriptions_customer_id
+        ON subscriptions(stripe_customer_id)
+    """)
+
     # Create stripe_webhook_events table for idempotency
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS stripe_webhook_events (
@@ -580,18 +594,23 @@ def upsert_subscription(
     status: Optional[str] = None,
     plan_type: Optional[str] = None,
     trial_end: Optional[float] = None,
-    current_period_end: Optional[float] = None
+    current_period_end: Optional[float] = None,
+    cancel_at_period_end: Optional[bool] = None
 ) -> bool:
     """
     Create or update subscription record for a user.
     Uses COALESCE to preserve existing non-null values when None is passed.
     Always updates updated_at. Sets created_at on first insert.
+
+    H3 fix: Added cancel_at_period_end parameter so the UI can show cancellation state.
     Returns True if row was affected.
     """
     conn = get_connection()
     cursor = conn.cursor()
 
     now = datetime.now().isoformat()
+    # Convert bool to int for SQLite storage (None stays None for COALESCE)
+    cancel_at_period_end_int = int(cancel_at_period_end) if cancel_at_period_end is not None else None
 
     # Check if record exists
     cursor.execute("SELECT user_id FROM subscriptions WHERE user_id = ?", (user_id,))
@@ -607,19 +626,20 @@ def upsert_subscription(
                 plan_type = COALESCE(?, plan_type),
                 trial_end = COALESCE(?, trial_end),
                 current_period_end = COALESCE(?, current_period_end),
+                cancel_at_period_end = COALESCE(?, cancel_at_period_end),
                 updated_at = ?
             WHERE user_id = ?
         """, (stripe_customer_id, stripe_subscription_id, status, plan_type,
-              trial_end, current_period_end, now, user_id))
+              trial_end, current_period_end, cancel_at_period_end_int, now, user_id))
     else:
         # Insert new record
         cursor.execute("""
             INSERT INTO subscriptions
             (user_id, stripe_customer_id, stripe_subscription_id, status, plan_type,
-             trial_end, current_period_end, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+             trial_end, current_period_end, cancel_at_period_end, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (user_id, stripe_customer_id, stripe_subscription_id, status, plan_type,
-              trial_end, current_period_end, now, now))
+              trial_end, current_period_end, cancel_at_period_end_int or 0, now, now))
 
     affected = cursor.rowcount > 0
     conn.commit()
@@ -635,7 +655,7 @@ def get_subscription_by_user_id(user_id: str) -> Optional[Dict[str, Any]]:
 
     cursor.execute("""
         SELECT user_id, stripe_customer_id, stripe_subscription_id, status, plan_type,
-               trial_end, current_period_end, created_at, updated_at
+               trial_end, current_period_end, cancel_at_period_end, created_at, updated_at
         FROM subscriptions
         WHERE user_id = ?
     """, (user_id,))
@@ -654,6 +674,7 @@ def get_subscription_by_user_id(user_id: str) -> Optional[Dict[str, Any]]:
         "plan_type": row["plan_type"],
         "trial_end": row["trial_end"],
         "current_period_end": row["current_period_end"],
+        "cancel_at_period_end": bool(row["cancel_at_period_end"]),
         "created_at": row["created_at"],
         "updated_at": row["updated_at"]
     }
@@ -666,7 +687,7 @@ def get_subscription_by_customer_id(stripe_customer_id: str) -> Optional[Dict[st
 
     cursor.execute("""
         SELECT user_id, stripe_customer_id, stripe_subscription_id, status, plan_type,
-               trial_end, current_period_end, created_at, updated_at
+               trial_end, current_period_end, cancel_at_period_end, created_at, updated_at
         FROM subscriptions
         WHERE stripe_customer_id = ?
     """, (stripe_customer_id,))
@@ -685,6 +706,7 @@ def get_subscription_by_customer_id(stripe_customer_id: str) -> Optional[Dict[st
         "plan_type": row["plan_type"],
         "trial_end": row["trial_end"],
         "current_period_end": row["current_period_end"],
+        "cancel_at_period_end": bool(row["cancel_at_period_end"]),
         "created_at": row["created_at"],
         "updated_at": row["updated_at"]
     }
@@ -731,6 +753,11 @@ def mark_stripe_event_processed(event_id: str, event_type: str) -> None:
     """
     Mark a Stripe webhook event as processed.
     Inserts event_id, event_type, and current timestamp into stripe_webhook_events table.
+
+    H1 fix: Uses INSERT OR IGNORE to prevent IntegrityError if two concurrent
+    webhook deliveries race past the was_stripe_event_processed check. Without
+    OR IGNORE, the second INSERT crashes with a UNIQUE constraint violation,
+    returning 500 to Stripe and causing infinite retries.
     """
     conn = get_connection()
     cursor = conn.cursor()
@@ -738,7 +765,7 @@ def mark_stripe_event_processed(event_id: str, event_type: str) -> None:
     now = datetime.now().isoformat()
 
     cursor.execute("""
-        INSERT INTO stripe_webhook_events (event_id, event_type, created_at)
+        INSERT OR IGNORE INTO stripe_webhook_events (event_id, event_type, created_at)
         VALUES (?, ?, ?)
     """, (event_id, event_type, now))
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { FileText, Sparkles } from 'lucide-react';
 import { usePaywall } from '../../lib/plan/PaywallProvider';
+import { PRICING } from '../../lib/plan/pricingConfig';
 
 /**
  * EvidenceBundleTeaser - Blurred preview of evidence bundle analysis for free users
@@ -64,7 +65,7 @@ const EvidenceBundleTeaser = ({ tabName, teaserText }) => {
               >
                 Unlock with a free trial
               </button>
-              <p className="text-xs text-slate-400">No credit card charged for 14 days</p>
+              <p className="text-xs text-slate-400">No credit card charged for {PRICING.trial.days} days</p>
             </div>
           </div>
         </div>

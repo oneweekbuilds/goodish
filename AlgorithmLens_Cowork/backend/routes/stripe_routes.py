@@ -6,6 +6,10 @@ from urllib.parse import urlparse
 
 import stripe
 from fastapi import APIRouter, HTTPException, Request, Depends
+
+# C3 fix: Initialize Stripe API key for all routes in this module
+# This ensures Stripe calls work regardless of app.py lifespan execution
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 from pydantic import BaseModel
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -105,6 +109,15 @@ def create_checkout_session(
     """
     user_id = current_user["user_id"]
     email = current_user.get("email", "")
+
+    # C2 fix: Prevent duplicate subscriptions — reject checkout if user already has Plus.
+    # Without this check, a Plus user completing checkout again creates a second Stripe
+    # subscription, causing double-billing with no way to cancel the orphaned subscription.
+    if is_user_plus(user_id):
+        raise HTTPException(
+            status_code=409,
+            detail="You already have an active Plus subscription. Use the billing portal to manage your plan."
+        )
 
     # Validate redirect URLs against allowed hosts (prevent open redirect)
     for url in [request.successUrl, request.cancelUrl]:
@@ -243,11 +256,13 @@ def verify_checkout(
     customer_id = existing_sub.get("stripe_customer_id") if existing_sub else None
 
     if not customer_id:
-        # Try to find the customer by listing recent checkout sessions
-        # Stripe allows listing sessions by client_reference_id
+        # H2 fix: Try to find the customer by listing recent checkout sessions.
+        # Previously limited to 5 sessions which could miss the user's session
+        # during concurrent checkouts. Increased to 25 and added email-based
+        # customer lookup as a secondary fallback.
         try:
             sessions = stripe.checkout.Session.list(
-                limit=5,
+                limit=25,
             )
             # Find sessions matching this user
             for sess in sessions.data:
@@ -257,6 +272,18 @@ def verify_checkout(
         except stripe.error.StripeError as e:
             logger.error(f"Error listing checkout sessions: {e}")
             raise HTTPException(status_code=500, detail="Failed to verify checkout")
+
+    if not customer_id:
+        # H2 fix: Secondary fallback — search Stripe customers by email
+        email = current_user.get("email")
+        if email:
+            try:
+                customers = stripe.Customer.list(email=email, limit=1)
+                if customers.data:
+                    customer_id = customers.data[0].id
+                    logger.info(f"verify-checkout: Found customer {customer_id} by email for user {user_id}")
+            except stripe.error.StripeError as e:
+                logger.error(f"Error searching customers by email: {e}")
 
     if not customer_id:
         return {"is_plus": False, "message": "No completed checkout found"}
@@ -410,6 +437,8 @@ async def stripe_webhook(request: Request):
             status = subscription["status"]
             trial_end = subscription.get("trial_end")
             current_period_end = subscription.get("current_period_end")
+            # H3 fix: Extract cancel_at_period_end so UI can show cancellation state
+            cancel_at_period_end = subscription.get("cancel_at_period_end", False)
 
             # Determine plan type from subscription items
             plan_type = None
@@ -453,9 +482,10 @@ async def stripe_webhook(request: Request):
                 plan_type=plan_type,
                 trial_end=trial_end,
                 current_period_end=current_period_end,
+                cancel_at_period_end=cancel_at_period_end,
             )
 
-            logger.info(f"Subscription {subscription_id} updated: status={status}")
+            logger.info(f"Subscription {subscription_id} updated: status={status}, cancel_at_period_end={cancel_at_period_end}")
 
         # Handle customer.subscription.deleted
         elif event_type == "customer.subscription.deleted":
