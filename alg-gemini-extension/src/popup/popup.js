@@ -108,10 +108,15 @@ function updateTimerDisplay() {
   if (sessionStartTime) {
     const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
     sessionTimerEl.innerHTML = ''; // Clear previous content
+    // [Audit 6 M6] Add recording pulse dot
+    const recordingDot = document.createElement('span');
+    recordingDot.className = 'recording-dot';
+    recordingDot.setAttribute('aria-hidden', 'true');
     const timeSpan = document.createElement('span');
     timeSpan.textContent = formatTime(elapsed);
     const smallSpan = document.createElement('small');
     smallSpan.textContent = 'Session recording...';
+    sessionTimerEl.appendChild(recordingDot);
     sessionTimerEl.appendChild(timeSpan);
     sessionTimerEl.appendChild(smallSpan);
   }
@@ -426,41 +431,41 @@ function formatUnifiedResults(result, durationSeconds, backendSaved = false, bac
 
       <div class="dashboard-preview">
         <div class="dashboard-cards">
-          <a class="dash-card" data-tab="overview" data-scan-id="${scanId}">
+          <a class="dash-card" data-tab="overview" data-scan-id="${scanId}" role="button" tabindex="0" aria-label="View Overview on dashboard">
             <div class="dash-card-indicator"></div>
             <div class="dash-card-name">Overview</div>
             <div class="dash-card-value">${overviewValue} <span class="dash-card-unit">${overviewUnit}</span></div>
             <div class="dash-card-detail">${overviewDetail}</div>
-            <span class="dash-card-arrow">›</span>
+            <span class="dash-card-arrow" aria-hidden="true">›</span>
           </a>
 
-          <a class="dash-card" data-tab="sources" data-scan-id="${scanId}">
+          <a class="dash-card" data-tab="sources" data-scan-id="${scanId}" role="button" tabindex="0" aria-label="View Sources on dashboard">
             <div class="dash-card-indicator"></div>
             <div class="dash-card-name">Sources</div>
             <div class="dash-card-value">${creatorCount} <span class="dash-card-unit">${creatorCount === 1 ? 'creator' : 'creators'}</span></div>
             <div class="dash-card-detail">${sourcesDetail}</div>
-            <span class="dash-card-arrow">›</span>
+            <span class="dash-card-arrow" aria-hidden="true">›</span>
           </a>
 
-          <a class="dash-card" data-tab="ads" data-scan-id="${scanId}">
+          <a class="dash-card" data-tab="ads" data-scan-id="${scanId}" role="button" tabindex="0" aria-label="View Ads and Sponsors on dashboard">
             <div class="dash-card-indicator"></div>
             <div class="dash-card-name">Ads &amp; Sponsors</div>
             <div class="dash-card-value">${adsValue} <span class="dash-card-unit">${adsUnit}</span></div>
             <div class="dash-card-detail">${escapedAdsDetail}</div>
-            <span class="dash-card-arrow">›</span>
+            <span class="dash-card-arrow" aria-hidden="true">›</span>
           </a>
 
-          <a class="dash-card" data-tab="suggested" data-scan-id="${scanId}">
+          <a class="dash-card" data-tab="suggested" data-scan-id="${scanId}" role="button" tabindex="0" aria-label="View Suggested vs Followed on dashboard">
             <div class="dash-card-indicator"></div>
             <div class="dash-card-name">Suggested vs Followed</div>
             <div class="dash-card-value">${suggestedValue} <span class="dash-card-unit">${suggestedUnit}</span></div>
             <div class="dash-card-detail">${escapedSuggestedDetail}</div>
-            <span class="dash-card-arrow">›</span>
+            <span class="dash-card-arrow" aria-hidden="true">›</span>
           </a>
         </div>
       </div>
 
-      <a class="dashboard-cta" data-scan-id="${scanId}">
+      <a class="dashboard-cta" data-scan-id="${scanId}" role="button" tabindex="0" aria-label="View full dashboard">
         View Full Dashboard →
       </a>
     </div>
@@ -472,27 +477,38 @@ function formatUnifiedResults(result, durationSeconds, backendSaved = false, bac
 // ============================================
 
 function attachDashboardCardHandlers() {
+  // [Audit 6 H4] Helper: open dashboard tab from a card element
+  function openCardDashboard(card) {
+    const tab = card.getAttribute('data-tab');
+    const scanId = card.getAttribute('data-scan-id');
+    if (CAPTURE_DEBUG) debugLog('log', `[AlgorithmLens] Opening dashboard tab: ${tab}, scanId: ${scanId}`);
+    chrome.runtime.sendMessage({
+      action: 'OPEN_DASHBOARD',
+      tab: tab,
+      scanId: scanId
+    });
+  }
+
   // Individual card clicks -> open specific dashboard tab
   const cards = document.querySelectorAll('.dash-card');
   cards.forEach(card => {
     card.addEventListener('click', (e) => {
       e.preventDefault();
-      const tab = card.getAttribute('data-tab');
-      const scanId = card.getAttribute('data-scan-id');
-      if (CAPTURE_DEBUG) debugLog('log', `[AlgorithmLens] Opening dashboard tab: ${tab}, scanId: ${scanId}`);
-      chrome.runtime.sendMessage({
-        action: 'OPEN_DASHBOARD',
-        tab: tab,
-        scanId: scanId
-      });
+      openCardDashboard(card);
+    });
+    // [Audit 6 H4] Keyboard support: Enter/Space activates card
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openCardDashboard(card);
+      }
     });
   });
 
   // CTA button -> open dashboard overview
   const cta = document.querySelector('.dashboard-cta');
   if (cta) {
-    cta.addEventListener('click', (e) => {
-      e.preventDefault();
+    function openFullDashboard() {
       const scanId = cta.getAttribute('data-scan-id');
       if (CAPTURE_DEBUG) debugLog('log', `[AlgorithmLens] Opening full dashboard, scanId: ${scanId}`);
       chrome.runtime.sendMessage({
@@ -500,6 +516,18 @@ function attachDashboardCardHandlers() {
         tab: 'overview',
         scanId: scanId
       });
+    }
+
+    cta.addEventListener('click', (e) => {
+      e.preventDefault();
+      openFullDashboard();
+    });
+    // [Audit 6 H4] Keyboard support for CTA
+    cta.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openFullDashboard();
+      }
     });
   }
 }

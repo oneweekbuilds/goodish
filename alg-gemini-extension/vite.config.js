@@ -46,8 +46,8 @@ function copyExtensionFiles() {
         console.warn('[copy-extension-files] WARNING: popup/index.html not found at', popupSrc);
       }
 
-      // Copy icons
-      for (const icon of ['icon16.png', 'icon48.png', 'icon128.png']) {
+      // Copy icons (including logo.png used by popup header) [Audit 6 C1]
+      for (const icon of ['icon16.png', 'icon48.png', 'icon128.png', 'logo.png']) {
         const iconSrc = join(iconsSource, icon);
         const iconDest = join(iconsDir, icon);
         if (existsSync(iconSrc)) {

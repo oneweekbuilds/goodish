@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AlgorithmLens v1.2</title>
+  <title>AlgorithmLens v1.1</title>
+  <!-- [Audit 6 H1] Import Inter font to match web app typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -14,9 +18,31 @@
     body {
       width: 360px;
       min-height: 200px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-      background: #f8fafc;
+      /* [Audit 6 H1] Match web app font: Inter with system fallbacks */
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      /* [Audit 6] Match app's bg-page color */
+      background: #F7F8FC;
       color: #1e293b;
+    }
+
+    /* [Audit 6 C3-M2] Scrollbar styling matching web app */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 9999px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+      border: 2px solid transparent;
+      background-clip: padding-box;
     }
 
     .container {
@@ -32,7 +58,8 @@
       align-items: center;
       margin-bottom: 18px;
       padding-bottom: 14px;
-      border-bottom: 1px solid #e5e7eb;
+      /* [Audit 6 H7] Match app's border-light color */
+      border-bottom: 1px solid rgba(30, 41, 59, 0.08);
     }
 
     .header-logo {
@@ -45,7 +72,10 @@
       font-size: 9px;
       color: #9ca3af;
       margin-left: auto;
-      font-weight: 500;
+      /* [Audit 6 C4-L1] Match app's label weight and letter-spacing */
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
     }
 
     /* ============================================ */
@@ -54,31 +84,53 @@
 
     .status {
       padding: 12px 14px;
-      border-radius: 10px;
+      /* [Audit 6 H5] Unified border-radius to 12px (app's radius-sm) */
+      border-radius: 12px;
       margin-bottom: 14px;
       font-size: 13px;
       line-height: 1.5;
+      /* [Audit 6 M5] Smooth state transitions */
+      transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
     }
 
     .status.supported {
-      background: #ecfdf5;
-      color: #065f46;
+      /* [Audit 6 C2-H1] Aligned with app's green-50 and success color */
+      background: #ECFDF5;
+      color: #059669;
     }
 
     .status.unsupported {
-      background: #fef3c7;
-      color: #92400e;
+      /* [Audit 6 C2-H1] Use app's warning color instead of amber */
+      background: #FFFBEB;
+      color: #D97706;
     }
 
     .status.loading {
-      background: #eff6ff;
+      background: #EFF6FF;
       color: #1e40af;
     }
 
+    /* [Audit 6 M1] Loading pulse animation */
+    @keyframes loadingPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    .status.loading {
+      animation: loadingPulse 1.8s ease-in-out infinite;
+    }
+
     .status.session-active {
-      background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+      background: linear-gradient(135deg, #EFF6FF 0%, #e0e7ff 100%);
       color: #1e40af;
       border: 1px solid #bfdbfe;
+      /* [Audit 6 C4-M1] Animated border glow for recording state */
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.08), 0 0 12px rgba(37, 99, 235, 0.06);
+      animation: sessionGlow 2.5s ease-in-out infinite;
+    }
+
+    @keyframes sessionGlow {
+      0%, 100% { box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.08), 0 0 12px rgba(37, 99, 235, 0.06); }
+      50% { box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14), 0 0 20px rgba(37, 99, 235, 0.1); }
     }
 
     .status.results {
@@ -86,17 +138,20 @@
       color: #1e293b;
       padding: 0;
       overflow: visible;
+      animation: none;
     }
 
     .platform-badge {
       display: inline-block;
       padding: 2px 8px;
       background: #fff;
-      border-radius: 5px;
+      /* [Audit 6 H5] Unified border-radius */
+      border-radius: 6px;
       font-weight: 600;
       margin-left: 4px;
       font-size: 12px;
-      border: 1px solid #e5e7eb;
+      /* [Audit 6 H7] Match app's border-light */
+      border: 1px solid rgba(30, 41, 59, 0.08);
     }
 
     /* ============================================ */
@@ -110,7 +165,8 @@
       color: #2563eb;
       margin-bottom: 12px;
       font-variant-numeric: tabular-nums;
-      letter-spacing: 1px;
+      /* [Audit 6] Match app's tight-heading letter-spacing */
+      letter-spacing: -0.02em;
     }
 
     .session-timer small {
@@ -120,6 +176,23 @@
       color: #6b7280;
       margin-top: 3px;
       letter-spacing: 0;
+    }
+
+    /* [Audit 6 M6] Recording pulse indicator */
+    .recording-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #dc2626;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+      animation: recordingPulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes recordingPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
     }
 
     /* ============================================ */
@@ -132,23 +205,28 @@
       background: #2563eb;
       color: white;
       border: none;
+      /* [Audit 6 H5] Unified border-radius */
       border-radius: 12px;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
-      letter-spacing: -0.1px;
+      /* [Audit 6 H6] Match app's glow shadow */
+      box-shadow: 0 0 20px rgba(37, 99, 235, 0.15), 0 4px 14px rgba(37, 99, 235, 0.2);
+      letter-spacing: -0.01em;
     }
 
     .scan-button:hover:not(:disabled) {
       background: #1d4ed8;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+      /* [Audit 6 C2-M2] Match app button hover: translateY + scale */
+      transform: translateY(-1px) scale(1.01);
+      box-shadow: 0 0 24px rgba(37, 99, 235, 0.2), 0 6px 20px rgba(37, 99, 235, 0.25);
     }
 
     .scan-button:disabled {
-      background: #94a3b8;
+      /* [Audit 6 C5-L2] Use opacity pattern matching app */
+      background: #2563eb;
+      opacity: 0.5;
       cursor: not-allowed;
       box-shadow: none;
     }
@@ -163,6 +241,16 @@
       box-shadow: 0 6px 20px rgba(220, 38, 38, 0.3);
     }
 
+    /* [Audit 6 H2] Focus-visible styles for accessibility */
+    .scan-button:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.4), 0 4px 14px rgba(37, 99, 235, 0.2);
+    }
+
+    .scan-button.stop:focus-visible {
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.4), 0 4px 14px rgba(220, 38, 38, 0.2);
+    }
+
     /* ============================================ */
     /* Result Header                                  */
     /* ============================================ */
@@ -171,19 +259,23 @@
       display: flex;
       align-items: baseline;
       gap: 8px;
-      margin-bottom: 16px;
+      /* [Audit 6 C3-M3] Improved spacing */
+      margin-bottom: 18px;
     }
 
     .result-count {
-      font-size: 26px;
-      font-weight: 700;
+      /* [Audit 6 C3-M3] Improved visual hierarchy */
+      font-size: 28px;
+      font-weight: 800;
       color: #1e293b;
       line-height: 1;
+      letter-spacing: -0.02em;
     }
 
     .result-meta {
       font-size: 13px;
-      color: #6b7280;
+      /* [Audit 6] Match app's text-muted */
+      color: #4B5563;
       font-weight: 400;
     }
 
@@ -207,21 +299,27 @@
 
     .dash-card {
       background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 10px;
+      /* [Audit 6 H7] Match app's border-light */
+      border: 1px solid rgba(30, 41, 59, 0.08);
+      /* [Audit 6 H5] Unified border-radius */
+      border-radius: 12px;
       padding: 14px;
       cursor: pointer;
-      transition: all 0.18s ease;
+      transition: all 0.2s ease;
       text-decoration: none;
       color: inherit;
       display: block;
       position: relative;
       overflow: hidden;
+      /* [Audit 6 H6] Match app's shadow-card */
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(15, 23, 42, 0.04);
     }
 
     .dash-card:hover {
-      border-color: #bfdbfe;
-      box-shadow: 0 3px 12px rgba(37, 99, 235, 0.08);
+      /* [Audit 6 C2-H2] Match app's card-hover border */
+      border-color: rgba(37, 99, 235, 0.14);
+      /* [Audit 6 H6] Match app's shadow-card-hover */
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 8px 32px rgba(15, 23, 42, 0.06);
       transform: translateY(-1px);
     }
 
@@ -229,11 +327,19 @@
       transform: translateY(0);
     }
 
+    /* [Audit 6 H2] Focus-visible styles for cards */
+    .dash-card:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3), 0 4px 12px rgba(0, 0, 0, 0.06);
+      border-color: rgba(37, 99, 235, 0.3);
+    }
+
     .dash-card-indicator {
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
+      /* [Audit 6 C3-M1] Slightly thicker indicator */
       height: 3px;
       border-radius: 2px 2px 0 0;
     }
@@ -247,10 +353,12 @@
     .dash-card-name {
       font-size: 11px;
       font-weight: 600;
-      color: #6b7280;
+      /* [Audit 6] Match app's text-muted */
+      color: #4B5563;
       margin-bottom: 6px;
       text-transform: uppercase;
-      letter-spacing: 0.4px;
+      /* [Audit 6] Match app's wide-label letter-spacing */
+      letter-spacing: 0.05em;
     }
 
     .dash-card-value {
@@ -259,6 +367,12 @@
       color: #1e293b;
       line-height: 1.1;
       margin-bottom: 2px;
+      /* [Audit 6 M4] Handle text overflow */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      /* [Audit 6] Match app's tight-card letter-spacing */
+      letter-spacing: -0.01em;
     }
 
     .dash-card-unit {
@@ -272,6 +386,10 @@
       color: #9ca3af;
       line-height: 1.35;
       font-weight: 400;
+      /* [Audit 6 M4] Handle text overflow */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     /* Open arrow on cards */
@@ -281,7 +399,7 @@
       right: 12px;
       font-size: 11px;
       color: #d1d5db;
-      transition: all 0.18s ease;
+      transition: all 0.2s ease;
     }
 
     .dash-card:hover .dash-card-arrow {
@@ -290,7 +408,7 @@
     }
 
     /* ============================================ */
-    /* Banners (rate-limit only)                     */
+    /* Banners (rate-limit, auth-error, save-error) */
     /* ============================================ */
 
     .saved-banner {
@@ -298,13 +416,42 @@
       align-items: center;
       gap: 10px;
       padding: 10px 14px;
-      border-radius: 10px;
+      /* [Audit 6 H5] Unified border-radius */
+      border-radius: 12px;
       margin-bottom: 14px;
     }
 
     .saved-banner.rate-limit {
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
+      background: #EFF6FF;
+      border: 1px solid rgba(37, 99, 235, 0.2);
+    }
+
+    /* [Audit 6 C3] Auth error banner — sign in needed */
+    .saved-banner.auth-error {
+      background: #FFFBEB;
+      border: 1px solid rgba(217, 119, 6, 0.2);
+    }
+
+    .saved-banner.auth-error .saved-text strong {
+      color: #D97706;
+    }
+
+    .saved-banner.auth-error .saved-text small {
+      color: #B45309;
+    }
+
+    /* [Audit 6 C3] Save error banner — generic save failure */
+    .saved-banner.save-error {
+      background: #FEF2F2;
+      border: 1px solid rgba(220, 38, 38, 0.15);
+    }
+
+    .saved-banner.save-error .saved-text strong {
+      color: #DC2626;
+    }
+
+    .saved-banner.save-error .saved-text small {
+      color: #B91C1C;
     }
 
     .saved-icon {
@@ -325,7 +472,8 @@
 
     .saved-text small {
       display: block;
-      font-size: 10px;
+      /* [Audit 6 C2-M3] Increase minimum text size for readability */
+      font-size: 11px;
       color: #2563eb;
     }
 
@@ -337,8 +485,12 @@
       margin-top: 12px;
       padding: 12px 14px;
       background: #fff;
-      border-radius: 10px;
-      border: 1px solid #e5e7eb;
+      /* [Audit 6 H5] Unified border-radius */
+      border-radius: 12px;
+      /* [Audit 6 H7] Match app's border-light */
+      border: 1px solid rgba(30, 41, 59, 0.08);
+      /* [Audit 6 H6] Subtle card shadow */
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     }
 
     .toggle-container {
@@ -350,16 +502,21 @@
     }
 
     .toggle-container input {
-      display: none;
+      /* [Audit 6 H3] Position off-screen instead of display:none for accessibility */
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
     }
 
     .toggle-slider {
-      width: 36px;
-      height: 20px;
+      /* [Audit 6 C3-L1] Slightly larger toggle for better touch target */
+      width: 40px;
+      height: 22px;
       background: #d1d5db;
-      border-radius: 10px;
+      border-radius: 11px;
       position: relative;
-      transition: background 0.25s ease;
+      transition: background 0.25s ease, box-shadow 0.2s ease;
       flex-shrink: 0;
     }
 
@@ -368,8 +525,8 @@
       position: absolute;
       top: 2px;
       left: 2px;
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       background: white;
       border-radius: 50%;
       transition: transform 0.25s ease;
@@ -381,7 +538,12 @@
     }
 
     .toggle-container input:checked + .toggle-slider::after {
-      transform: translateX(16px);
+      transform: translateX(18px);
+    }
+
+    /* [Audit 6 H3] Focus-visible ring for toggle */
+    .toggle-container input:focus-visible + .toggle-slider {
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
     }
 
     .toggle-label {
@@ -392,10 +554,12 @@
 
     .ai-consent-info {
       margin-top: 6px;
-      font-size: 10px;
+      /* [Audit 6 C2-M3] Increased from 10px for readability */
+      font-size: 11px;
       color: #9ca3af;
       line-height: 1.5;
-      padding-left: 46px;
+      /* Adjusted padding for larger toggle */
+      padding-left: 50px;
     }
 
     /* ============================================ */
@@ -417,9 +581,11 @@
     .footer {
       margin-top: 14px;
       padding-top: 12px;
-      border-top: 1px solid #e5e7eb;
+      /* [Audit 6 H7] Match app's border-light */
+      border-top: 1px solid rgba(30, 41, 59, 0.08);
       text-align: center;
-      font-size: 10px;
+      /* [Audit 6 L1] Slightly larger footer text */
+      font-size: 11px;
       color: #9ca3af;
     }
 
@@ -427,10 +593,18 @@
       color: #2563eb;
       text-decoration: none;
       font-weight: 500;
+      transition: color 0.15s ease;
     }
 
     .footer a:hover {
       text-decoration: underline;
+    }
+
+    /* [Audit 6 H2] Focus-visible for footer link */
+    .footer a:focus-visible {
+      outline: none;
+      border-radius: 4px;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
     }
 
     /* ============================================ */
@@ -445,7 +619,8 @@
     /* No-post state */
     .result-detail {
       font-size: 13px;
-      color: #6b7280;
+      /* [Audit 6] Match app's text-muted */
+      color: #4B5563;
       line-height: 1.5;
     }
 
@@ -461,20 +636,51 @@
       background: #2563eb;
       color: white;
       border: none;
-      border-radius: 10px;
+      /* [Audit 6 M7/H5] Unified border-radius */
+      border-radius: 12px;
       font-size: 14px;
       font-weight: 600;
       text-align: center;
       text-decoration: none;
       cursor: pointer;
       transition: all 0.2s ease;
-      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+      /* [Audit 6 C4-M2] Match app's glow shadow for CTA */
+      box-shadow: 0 0 20px rgba(37, 99, 235, 0.15), 0 2px 8px rgba(37, 99, 235, 0.2);
+      letter-spacing: -0.01em;
     }
 
     .dashboard-cta:hover {
       background: #1d4ed8;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
-      transform: translateY(-1px);
+      box-shadow: 0 0 24px rgba(37, 99, 235, 0.2), 0 4px 14px rgba(37, 99, 235, 0.25);
+      transform: translateY(-1px) scale(1.01);
+    }
+
+    /* [Audit 6 H2] Focus-visible for CTA */
+    .dashboard-cta:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.4), 0 2px 8px rgba(37, 99, 235, 0.2);
+    }
+
+    /* ============================================ */
+    /* Reduced motion support                       */
+    /* ============================================ */
+
+    @media (prefers-reduced-motion: reduce) {
+      .status.loading {
+        animation: none;
+      }
+      .status.session-active {
+        animation: none;
+      }
+      .recording-dot {
+        animation: none;
+        opacity: 1;
+      }
+      .scan-button:hover:not(:disabled),
+      .dashboard-cta:hover,
+      .dash-card:hover {
+        transform: none;
+      }
     }
   </style>
 </head>
@@ -482,7 +688,8 @@
   <div class="container">
     <div class="header">
       <img src="../icons/logo.png" alt="AlgorithmLens" class="header-logo">
-      <span class="version-tag">v1.2</span>
+      <!-- [Audit 6 C2] Version now matches manifest.json (1.1.0) -->
+      <span class="version-tag">v1.1</span>
     </div>
 
     <div id="status" class="status loading">
