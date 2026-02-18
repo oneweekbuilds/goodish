@@ -130,12 +130,12 @@ async def upload_scan(
     logger.info(f"Received upload request: file={file.filename}, platform={platform}, user_id={user_id}")
 
     # Validate platform
-    SUPPORTED_PLATFORMS = {"tiktok", "instagram", "youtube", "facebook", "twitter", "x", "linkedin", "reddit"}
+    from shared_constants import ALL_ACCEPTED_PLATFORMS
     platform_lower = platform.lower()
-    if platform_lower not in SUPPORTED_PLATFORMS:
+    if platform_lower not in ALL_ACCEPTED_PLATFORMS:
         raise HTTPException(
             status_code=400,
-            detail=f"Unsupported platform '{platform}'. Supported platforms: {', '.join(sorted(SUPPORTED_PLATFORMS))}"
+            detail=f"Unsupported platform '{platform}'. Supported platforms: {', '.join(sorted(ALL_ACCEPTED_PLATFORMS))}"
         )
 
     # Validate content type
@@ -349,6 +349,14 @@ async def desktop_scan(scan_result: dict, current_user: dict = Depends(get_curre
         scan_metadata["user_identifier"] = user_id
 
         scan_id = scan_metadata.get("scan_id")
+
+        # Validate scan_id format
+        if scan_id:
+            try:
+                validate_scan_id(scan_id)
+            except HTTPException:
+                raise HTTPException(status_code=400, detail="Invalid scan_id format in scan_metadata")
+
         platform = scan_metadata.get("platform", "UNKNOWN")
         payload_size = len(str(scan_result))
 

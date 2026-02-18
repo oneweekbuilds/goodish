@@ -13,6 +13,7 @@
 import { mapDesktopPostsToUnifiedResult } from './desktop_mapper.js';
 import { CAPTURE_DEBUG, debugLog } from './shared/debug.js';
 import { generateScanId } from './shared/generate-scan-id.js';
+import { SUPPORTED_SCAN_PLATFORMS } from './shared/constants.js';
 
 if (CAPTURE_DEBUG) debugLog('log', '[AlgorithmLens] Background service worker active');
 
@@ -54,10 +55,73 @@ function sanitizeScanPayload(result) {
   return sanitized;
 }
 
-// Backend API configuration - defaults for development
-// Production values should be set via chrome.storage.local
-let BACKEND_URL = 'http://127.0.0.1:8000';
-let DASHBOARD_URL = 'http://localhost:5173';
+// ============================================
+// Authentication Utilities
+// ============================================
+
+/**
+ * Get stored auth token for API requests.
+ * Token is set when user logs in via the web app and stored via chrome.storage.local.
+ *
+ * Note: Supabase JWT tokens expire (typically after 1 hour). If the token is expired,
+ * the backend will return 401 and the user needs to visit algorithmlens.com to refresh.
+ * The web app's AuthProvider automatically sends refreshed tokens to the extension.
+ *
+ * @returns {Promise<string|null>} The JWT token or null if not authenticated
+ */
+async function getAuthToken() {
+  try {
+    const result = await chrome.storage.local.get(['authToken']);
+    const token = result.authToken || null;
+
+    // Basic JWT expiry check (decode payload without verification)
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const now = Math.floor(Date.now() / 1000);
+        if (payload.exp && payload.exp < now) {
+          console.warn('[AlgorithmLens] Auth token expired. User needs to visit algorithmlens.com to refresh.');
+          // Don't clear the token — let the 401 response trigger re-auth messaging
+          return null;
+        }
+      } catch {
+        // If we can't decode the token, let the backend validate it
+      }
+    }
+
+    return token;
+  } catch (e) {
+    console.warn('[AlgorithmLens] Failed to get auth token:', e);
+    return null;
+  }
+}
+
+/**
+ * Make an authenticated fetch request to the backend.
+ * Includes Authorization header if auth token is available.
+ * @param {string} url - The URL to fetch
+ * @param {object} options - Fetch options
+ * @returns {Promise<Response>} The fetch response
+ */
+async function authenticatedExtensionFetch(url, options = {}) {
+  const token = await getAuthToken();
+  const extensionVersion = chrome.runtime.getManifest().version;
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-Extension-Version': extensionVersion,
+    ...(options.headers || {}),
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return fetch(url, { ...options, headers });
+}
+
+// Backend API configuration
+// Production URL is the default; development overrides via chrome.storage.local
+// To set development URLs: chrome.storage.local.set({ backendUrl: 'http://127.0.0.1:8000', dashboardUrl: 'http://localhost:5173' })
+let BACKEND_URL = 'https://api.algorithmlens.com';
+let DASHBOARD_URL = 'https://algorithmlens.com';
 
 // Load production URLs from storage if available
 (async () => {
@@ -71,8 +135,6 @@ let DASHBOARD_URL = 'http://localhost:5173';
   }
 })();
 
-// Platforms that are currently supported for scanning
-const SUPPORTED_SCAN_PLATFORMS = ['tiktok', 'instagram', 'youtube', 'facebook', 'twitter', 'reddit'];
 
 // ============================================
 // MVP Session Behavior Flag
@@ -226,6 +288,44 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (CAPTURE_DEBUG) console.log('[AlgorithmLens] Background received message:', message.action || message.type);
+
+  // ----------------------------------------
+  // SET AUTH TOKEN (from web app login)
+  // ----------------------------------------
+  if (message.action === 'SET_AUTH_TOKEN') {
+    (async () => {
+      try {
+        if (message.token) {
+          await chrome.storage.local.set({ authToken: message.token });
+          if (CAPTURE_DEBUG) console.log('[AlgorithmLens] Auth token stored');
+          sendResponse({ success: true });
+        } else {
+          await chrome.storage.local.remove('authToken');
+          if (CAPTURE_DEBUG) console.log('[AlgorithmLens] Auth token cleared');
+          sendResponse({ success: true });
+        }
+      } catch (e) {
+        console.error('[AlgorithmLens] Error storing auth token:', e);
+        sendResponse({ success: false, error: e.message });
+      }
+    })();
+    return true;
+  }
+
+  // ----------------------------------------
+  // GET AUTH STATUS (check if user is authenticated)
+  // ----------------------------------------
+  if (message.action === 'GET_AUTH_STATUS') {
+    (async () => {
+      const token = await getAuthToken();
+      sendResponse({
+        success: true,
+        authenticated: !!token,
+        hasToken: !!token
+      });
+    })();
+    return true;
+  }
 
   // ----------------------------------------
   // Debug log relay (forwards content/popup logs to background console)
@@ -712,14 +812,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               console.log(`[CaptureDebug][Background] Sending to backend - URL: ${BACKEND_URL}/api/scan/desktop, Payload size: ${payloadSize} bytes, scanId: ${result.scan_metadata?.scan_id}`);
             }
 
-            const response = await fetch(`${BACKEND_URL}/api/scan/desktop`, {
+            const response = await authenticatedExtensionFetch(`${BACKEND_URL}/api/scan/desktop`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(payloadWithConsent)
             });
 
             if (!response.ok) {
               const errorText = await response.text();
+              // Don't retry auth errors — user needs to re-authenticate
+              if (response.status === 401 || response.status === 403) {
+                lastError = new Error(`Authentication error (${response.status}): Please sign in at algorithmlens.com`);
+                lastError.isAuthError = true;
+                break; // Exit retry loop — retrying won't help
+              }
               throw new Error(`Backend error (${response.status}): ${errorText}`);
             }
 
@@ -781,7 +886,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             console.error(`[CaptureDebug][Background] Backend error after retries: ${lastError.message}`);
           }
 
-          backendResponse = { success: false, error: lastError.message };
+          backendResponse = {
+            success: false,
+            error: lastError.message,
+            isAuthError: lastError.isAuthError || false
+          };
         }
 
         // Clear session state and badge - CRITICAL: ensures next scan gets new scanId
@@ -897,14 +1006,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     (async () => {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/scan/desktop`, {
+        const response = await authenticatedExtensionFetch(`${BACKEND_URL}/api/scan/desktop`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(scanResult)
         });
 
         if (!response.ok) {
           const errorText = await response.text();
+          if (response.status === 401 || response.status === 403) {
+            sendResponse({
+              success: false,
+              error: 'Please sign in at algorithmlens.com to save scans',
+              isAuthError: true
+            });
+            return;
+          }
           throw new Error(`Backend error (${response.status}): ${errorText}`);
         }
 

@@ -129,12 +129,17 @@ _allowed_origins = [
     "https://www.algorithmlens.com",
 ]
 
+# Note: Chrome extension requests from service workers bypass CORS.
+# Extension popup requests may come from chrome-extension:// origin.
+# We handle this via allow_origin_regex for extension contexts.
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_allowed_origins,
+    allow_origin_regex=r"^chrome-extension://.*$",
     allow_credentials=False,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization", "Accept"],
+    allow_headers=["Content-Type", "Authorization", "Accept", "X-Extension-Version"],
 )
 
 

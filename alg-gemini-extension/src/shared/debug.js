@@ -5,7 +5,7 @@
  */
 
 export const CAPTURE_DEBUG = false;
-export const CONTENT_SCRIPT_VERSION = '1.0.0';
+export const CONTENT_SCRIPT_VERSION = '1.1.0';
 
 /**
  * Structured debug logger — only outputs when CAPTURE_DEBUG is true.

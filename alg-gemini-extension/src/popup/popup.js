@@ -1,4 +1,5 @@
 import { CAPTURE_DEBUG, debugLog } from '../shared/debug.js';
+import { SUPPORTED_SCAN_PLATFORMS, PLATFORM_DISPLAY_NAMES } from '../shared/constants.js';
 
 /**
  * AlgorithmLens Popup Script
@@ -78,16 +79,7 @@ let timerInterval = null;
 let lastUnifiedResult = null;
 let lastBackendResponse = null;
 
-const SUPPORTED_SCAN_PLATFORMS = ['tiktok', 'instagram', 'youtube', 'facebook', 'twitter', 'reddit'];
-
-const platformNames = {
-  tiktok: 'TikTok',
-  instagram: 'Instagram',
-  youtube: 'YouTube',
-  facebook: 'Facebook',
-  twitter: 'Twitter/X',
-  reddit: 'Reddit'
-};
+const platformNames = PLATFORM_DISPLAY_NAMES;
 
 // ============================================
 // Timer Functions
@@ -321,7 +313,7 @@ function formatUnifiedResults(result, durationSeconds, backendSaved = false, bac
     ? `${Math.floor(durationSeconds / 60)}m ${durationSeconds % 60}s`
     : `${durationSeconds}s`;
 
-  // Rate limit banner (only banner we show)
+  // Status banners
   let rateLimitBanner = '';
   if (rateLimited) {
     rateLimitBanner = `
@@ -330,6 +322,30 @@ function formatUnifiedResults(result, durationSeconds, backendSaved = false, bac
         <div class="saved-text">
           <strong>Feed moved quickly</strong>
           <small>Scrolling slowly helps capture more posts.</small>
+        </div>
+      </div>
+    `;
+  }
+
+  // Auth error banner — shown when backend save failed due to authentication
+  let authErrorBanner = '';
+  if (!backendSaved && backendResponse?.isAuthError) {
+    authErrorBanner = `
+      <div class="saved-banner auth-error">
+        <div class="saved-icon">🔑</div>
+        <div class="saved-text">
+          <strong>Sign in to save scans</strong>
+          <small>Your scan was captured locally. Sign in at algorithmlens.com to save to your dashboard.</small>
+        </div>
+      </div>
+    `;
+  } else if (!backendSaved && backendResponse && !backendResponse.success) {
+    authErrorBanner = `
+      <div class="saved-banner save-error">
+        <div class="saved-icon">⚠️</div>
+        <div class="saved-text">
+          <strong>Scan not saved to dashboard</strong>
+          <small>Your scan was captured locally but could not be saved. Try again later.</small>
         </div>
       </div>
     `;
@@ -401,6 +417,7 @@ function formatUnifiedResults(result, durationSeconds, backendSaved = false, bac
   return `
     <div class="scan-result">
       ${rateLimitBanner}
+      ${authErrorBanner}
 
       <div class="result-header">
         <span class="result-count">${totalItems}</span>

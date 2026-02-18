@@ -28,6 +28,9 @@ def _row_to_scan_summary(row: sqlite3.Row) -> Dict[str, Any]:
     """
     Convert a database row to a scan summary dict (without full result JSON).
     Extracts source_type from result_json for UI display logic.
+
+    Note: ad_percentage is stored in DB as 0-100 scale but returned as 0-1 decimal
+    to match the frontend convention (frontend multiplies by 100 for display).
     """
     # Extract source_type from the stored result JSON
     source_type = None
@@ -37,6 +40,11 @@ def _row_to_scan_summary(row: sqlite3.Row) -> Dict[str, Any]:
     except (json.JSONDecodeError, TypeError):
         pass
 
+    # Convert ad_percentage from DB scale (0-100) to API scale (0-1 decimal)
+    # Frontend expects 0-1 and multiplies by 100 for display
+    db_ad_pct = row["ad_percentage"] or 0.0
+    api_ad_pct = round(db_ad_pct / 100.0, 4) if db_ad_pct else 0.0
+
     return {
         "id": row["id"],
         "created_at": row["created_at"],
@@ -45,7 +53,7 @@ def _row_to_scan_summary(row: sqlite3.Row) -> Dict[str, Any]:
         "duration_seconds": row["duration_seconds"],
         "total_items": row["total_items"],
         "total_ads": row["total_ads"],
-        "ad_percentage": row["ad_percentage"],
+        "ad_percentage": api_ad_pct,
         "source_type": source_type
     }
 
@@ -246,8 +254,11 @@ def save_scan(scan_result: Dict[str, Any]) -> str:
 
     # Validate ad percentage: total_ads cannot exceed total_items
     total_ads = min(total_ads, total_items)
+
+    # Extension sends ad_percentage as 0-1 decimal; database stores 0-100 percentage.
+    # Always recalculate from total_ads/total_items to ensure consistency.
     if total_items > 0:
-        ad_percentage = min(total_ads / total_items * 100, 100.0)
+        ad_percentage = round(min(total_ads / total_items, 1.0) * 100, 2)
     else:
         ad_percentage = 0.0
     
@@ -283,9 +294,9 @@ def save_scan(scan_result: Dict[str, Any]) -> str:
     
     # Serialize the full result to JSON
     result_json = json.dumps(scan_result)
-    
+
     cursor.execute("""
-        INSERT OR REPLACE INTO scans 
+        INSERT OR REPLACE INTO scans
         (id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, result_json)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (scan_id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, result_json))

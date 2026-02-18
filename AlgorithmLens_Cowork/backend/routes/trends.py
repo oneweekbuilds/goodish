@@ -11,7 +11,9 @@ from auth import get_current_user
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["trends"])
 
-TREND_THRESHOLD_PERCENTAGE_POINTS = 2
+# Threshold for detecting trend changes (in decimal 0-1 scale, i.e. 0.02 = 2 percentage points)
+# Note: ad_percentage in scan summaries is 0-1 decimal (not 0-100)
+TREND_THRESHOLD_PERCENTAGE_POINTS = 0.02
 
 
 def _get_iso_week(date_str: str) -> str:

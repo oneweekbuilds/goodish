@@ -3,6 +3,7 @@ import { getSession, onAuthStateChange, sendMagicLink as sendMagicLinkHelper, si
 import { PLAN_TIERS } from '../plan';
 import { track, EVENTS } from '../analytics';
 import { syncPlanTierFromEntitlements } from '../plan/entitlements';
+import { sendAuthTokenToExtension } from '../extension/extensionBridge';
 
 /**
  * AuthProvider - Manages auth session and syncs plan tier
@@ -75,12 +76,18 @@ export const AuthProvider = ({ children }) => {
     }
 
     // Get initial session
-    getSession().then((initialSession) => {
-      setSession(initialSession);
+    // Note: getSession() returns { data: { session }, error } — unwrap to get session object
+    getSession().then(({ data: { session: initialSession } = {} } = {}) => {
+      setSession(initialSession || null);
       setUser(initialSession?.user || null);
 
       // Sync plan tier based on session (fire and forget — DashboardPage does its own sync)
       syncPlanTier(initialSession, true);
+
+      // Sync auth token to Chrome extension (fire and forget)
+      if (initialSession?.access_token) {
+        sendAuthTokenToExtension(initialSession.access_token).catch(() => {});
+      }
 
       setAuthReady(true);
     });
@@ -102,6 +109,9 @@ export const AuthProvider = ({ children }) => {
 
       // Sync plan tier when auth state changes
       syncPlanTier(newSession, true);
+
+      // Sync auth token to Chrome extension (fire and forget)
+      sendAuthTokenToExtension(newSession?.access_token || null).catch(() => {});
     });
 
     // Cleanup subscription on unmount
@@ -128,6 +138,8 @@ export const AuthProvider = ({ children }) => {
       setSession(null);
       setUser(null);
       // Plan tier will be synced to "anon" via onAuthStateChange
+      // Clear extension auth token
+      sendAuthTokenToExtension(null).catch(() => {});
     }
     return result;
   };

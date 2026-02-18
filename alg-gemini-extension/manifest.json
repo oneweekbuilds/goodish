@@ -32,7 +32,9 @@
     "https://old.reddit.com/*",
     "https://new.reddit.com/*",
     "http://127.0.0.1:8000/*",
-    "http://localhost:8000/*"
+    "http://localhost:8000/*",
+    "https://api.algorithmlens.com/*",
+    "https://*.algorithmlens.com/*"
   ],
   "action": {
     "default_popup": "popup/index.html",
@@ -53,6 +55,7 @@
         "https://www.tiktok.com/*",
         "https://www.instagram.com/*",
         "https://www.youtube.com/*",
+        "https://m.youtube.com/*",
         "https://www.facebook.com/*",
         "https://web.facebook.com/*",
         "https://m.facebook.com/*",
@@ -68,6 +71,18 @@
       ],
       "js": [
         "content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://algorithmlens.com/*",
+        "https://www.algorithmlens.com/*",
+        "http://localhost:5173/*",
+        "http://127.0.0.1:5173/*"
+      ],
+      "js": [
+        "auth_bridge.js"
       ],
       "run_at": "document_idle"
     }
