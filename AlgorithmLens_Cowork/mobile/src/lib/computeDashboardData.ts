@@ -24,6 +24,28 @@ interface RawPost {
   ad_label_text: string | null;
 }
 
+// Political analysis types (from Gemini AI analysis)
+export interface PoliticalAnalysis {
+  politicalPct: number;
+  politicalCount: number;
+  totalAnalyzed: number;
+  ideology: {
+    left: number;
+    center: number;
+    right: number;
+    leftCount: number;
+    centerCount: number;
+    rightCount: number;
+    knownTotal: number;
+  } | null;
+  topPoliticalSource: {
+    handle: string;
+    count: number;
+    pctOfPolitical: number;
+  } | null;
+  lowSample: boolean;
+}
+
 export interface ScanRecord {
   id?: string;
   platform?: string;
@@ -37,8 +59,45 @@ export interface ScanRecord {
     top_creators?: Array<{ name: string; count: number }>;
     scanned_at?: string;
     duration_seconds?: number;
+    // Gemini AI analysis results (enriched after backend processing)
+    analysis?: {
+      feed_items?: AnalyzedFeedItem[];
+      political_content_summary?: {
+        political_items?: number;
+        political_percentage?: number;
+      };
+      ai_analyzed?: boolean;
+    };
   };
   created_at?: string;
+}
+
+// Feed item with Gemini political + tone classification
+interface AnalyzedFeedItem {
+  political?: {
+    is_political?: boolean;
+    stance_or_alignment?: string;
+  };
+  emotions?: {
+    valence?: string; // POSITIVE | NEUTRAL | NEGATIVE | MIXED
+  };
+  creator?: {
+    handle?: string;
+    name?: string;
+  };
+}
+
+// Tone analysis types (from Gemini AI analysis)
+export interface ToneAnalysis {
+  positivePct: number;
+  neutralPct: number;
+  negativePct: number;
+  positiveCount: number;
+  neutralCount: number;
+  negativeCount: number;
+  knownValenceTotal: number;
+  totalAnalyzed: number;
+  lowSample: boolean;
 }
 
 export interface InsightHeroData {
@@ -79,6 +138,12 @@ export interface DashboardData {
   suggestedInsight: InsightHeroData;
   politicsInsight: InsightHeroData;
   toneInsight: InsightHeroData;
+
+  // Political analysis (from Gemini)
+  politicalAnalysis: PoliticalAnalysis | null;
+
+  // Tone analysis (from Gemini)
+  toneAnalysis: ToneAnalysis | null;
 
   // Flags
   hasData: boolean;
@@ -302,22 +367,309 @@ function buildSuggestedInsight(
   }
 }
 
-function buildPoliticsInsight(platform: string, totalPosts: number): InsightHeroData {
+function buildPoliticsInsight(
+  platform: string,
+  totalPosts: number,
+  analysis: PoliticalAnalysis | null,
+): InsightHeroData {
+  // No AI analysis available — show consent prompt
+  if (!analysis) {
+    return {
+      title: 'Political content analysis requires AI',
+      meaning: 'To identify political content in your feed, AlgorithmLens uses Google\'s Gemini AI to analyze post text. This gives you an accurate count of how much political content appears in your feed.',
+      whyCare: 'Enable AI analysis in Settings to unlock this tab. Your data is processed securely — Google does not use it to train models.',
+      meta: `${totalPosts} posts available for analysis from ${platform}`,
+    };
+  }
+
+  // Low sample — show cautious messaging
+  if (analysis.lowSample) {
+    return {
+      title: 'Limited political content appeared in this scan',
+      meaning: 'Fewer than 10 posts contained political keywords, which is not enough to draw reliable conclusions about the political makeup of your feed.',
+      whyCare: 'Scan more content to build a clearer picture. Political signals can vary a lot between sessions.',
+      meta: `Based on ${analysis.totalAnalyzed} analyzed posts from ${platform}`,
+    };
+  }
+
+  const meta = `Based on ${analysis.totalAnalyzed} analyzed posts from ${platform}`;
+
+  if (analysis.politicalPct >= 30) {
+    return {
+      title: `${analysis.politicalPct}% of your feed contained political content`,
+      meaning: `${analysis.politicalCount} of ${analysis.totalAnalyzed} posts showed political keywords or themes. A notable share of what appeared in your feed touched on political topics.`,
+      whyCare: 'This is above typical (5–15%). Political content had a strong presence in this scan window.',
+      meta,
+    };
+  } else if (analysis.politicalPct >= 10) {
+    return {
+      title: `About 1 in ${Math.round(100 / Math.max(analysis.politicalPct, 1))} posts contained political content`,
+      meaning: `${analysis.politicalCount} of ${analysis.totalAnalyzed} posts showed political keywords or themes. A moderate presence in your feed.`,
+      whyCare: 'This falls within the typical range (5–15%).',
+      meta,
+    };
+  } else {
+    return {
+      title: `Political content appeared in ${analysis.politicalPct}% of your feed`,
+      meaning: `Only ${analysis.politicalCount} of ${analysis.totalAnalyzed} posts contained political keywords. Most of your feed focused on other topics.`,
+      whyCare: 'Political content had a light presence in this scan window.',
+      meta,
+    };
+  }
+}
+
+// ─── Political Data Extraction ───────────────────────────
+// Extracts political analysis from Gemini-enriched scan data.
+// Returns null if no AI analysis was performed.
+
+function extractPoliticalAnalysis(raw: ScanRecord['raw_data']): PoliticalAnalysis | null {
+  const analysis = raw?.analysis;
+  if (!analysis?.ai_analyzed || !analysis.feed_items) {
+    return null;
+  }
+
+  const feedItems = analysis.feed_items;
+  const totalAnalyzed = feedItems.length;
+
+  if (totalAnalyzed === 0) return null;
+
+  // Count political posts
+  let politicalCount = 0;
+  let leftCount = 0;
+  let centerCount = 0;
+  let rightCount = 0;
+  const creatorPoliticalCounts: Record<string, { count: number; handle: string }> = {};
+
+  for (const item of feedItems) {
+    if (!item.political?.is_political) continue;
+    politicalCount++;
+
+    // Count stance distribution
+    const stance = (item.political.stance_or_alignment || '').toLowerCase();
+    if (stance === 'left') leftCount++;
+    else if (stance === 'neutral' || stance === 'center') centerCount++;
+    else if (stance === 'right') rightCount++;
+
+    // Track per-creator political counts
+    const handle = item.creator?.handle || item.creator?.name || '';
+    if (handle) {
+      if (!creatorPoliticalCounts[handle]) {
+        creatorPoliticalCounts[handle] = { count: 0, handle };
+      }
+      creatorPoliticalCounts[handle].count++;
+    }
+  }
+
+  const politicalPct = totalAnalyzed > 0 ? Math.round((politicalCount / totalAnalyzed) * 100) : 0;
+  const lowSample = politicalCount < 10;
+
+  // Ideology distribution (only if enough known alignment)
+  const knownTotal = leftCount + centerCount + rightCount;
+  let ideology: PoliticalAnalysis['ideology'] = null;
+
+  if (knownTotal >= 10) {
+    let leftPct = Math.round((leftCount / knownTotal) * 100);
+    let centerPct = Math.round((centerCount / knownTotal) * 100);
+    let rightPct = Math.round((rightCount / knownTotal) * 100);
+
+    // Ensure sum is exactly 100
+    const sum = leftPct + centerPct + rightPct;
+    if (sum !== 100) {
+      const diff = 100 - sum;
+      if (leftCount >= centerCount && leftCount >= rightCount) leftPct += diff;
+      else if (centerCount >= rightCount) centerPct += diff;
+      else rightPct += diff;
+    }
+
+    ideology = {
+      left: leftPct,
+      center: centerPct,
+      right: rightPct,
+      leftCount,
+      centerCount,
+      rightCount,
+      knownTotal,
+    };
+  }
+
+  // Top political source
+  let topPoliticalSource: PoliticalAnalysis['topPoliticalSource'] = null;
+  if (politicalCount >= 10) {
+    const sortedCreators = Object.values(creatorPoliticalCounts)
+      .sort((a, b) => b.count - a.count);
+    if (sortedCreators.length > 0) {
+      const top = sortedCreators[0];
+      topPoliticalSource = {
+        handle: top.handle,
+        count: top.count,
+        pctOfPolitical: Math.round((top.count / politicalCount) * 100),
+      };
+    }
+  }
+
   return {
-    title: 'Political content analysis requires AI',
-    meaning: 'To identify political content in your feed, AlgorithmLens uses Google\'s Gemini AI to analyze post text. This gives you an accurate count of how much political content appears in your feed.',
-    whyCare: 'Enable AI analysis in Settings to unlock this tab. Your data is processed securely — Google does not use it to train models.',
-    meta: `${totalPosts} posts available for analysis from ${platform}`,
+    politicalPct,
+    politicalCount,
+    totalAnalyzed,
+    ideology,
+    topPoliticalSource,
+    lowSample,
   };
 }
 
-function buildToneInsight(platform: string, totalPosts: number): InsightHeroData {
+// ─── Tone Data Extraction ────────────────────────────────
+// Extracts emotional tone analysis from Gemini-enriched scan data.
+// Returns null if no AI analysis was performed.
+
+function extractToneAnalysis(raw: ScanRecord['raw_data']): ToneAnalysis | null {
+  const analysis = raw?.analysis;
+  if (!analysis?.ai_analyzed || !analysis.feed_items) {
+    return null;
+  }
+
+  const feedItems = analysis.feed_items;
+  const totalAnalyzed = feedItems.length;
+
+  if (totalAnalyzed === 0) return null;
+
+  // Count valence categories
+  let positiveCount = 0;
+  let neutralCount = 0;
+  let negativeCount = 0;
+
+  for (const item of feedItems) {
+    const valence = (item.emotions?.valence || '').toUpperCase();
+    if (valence === 'POSITIVE') positiveCount++;
+    else if (valence === 'NEUTRAL') neutralCount++;
+    else if (valence === 'NEGATIVE') negativeCount++;
+    else if (valence === 'MIXED') neutralCount++; // Map MIXED → NEUTRAL to avoid data loss
+  }
+
+  const knownValenceTotal = positiveCount + neutralCount + negativeCount;
+
+  if (knownValenceTotal === 0) return null;
+
+  const lowSample = knownValenceTotal < 10;
+
+  // Calculate percentages with rounding
+  let positivePct = Math.round((positiveCount / knownValenceTotal) * 100);
+  let neutralPct = Math.round((neutralCount / knownValenceTotal) * 100);
+  let negativePct = Math.round((negativeCount / knownValenceTotal) * 100);
+
+  // Ensure percentages sum to exactly 100
+  const sum = positivePct + neutralPct + negativePct;
+  if (sum !== 100) {
+    const diff = 100 - sum;
+    if (positiveCount >= neutralCount && positiveCount >= negativeCount) positivePct += diff;
+    else if (neutralCount >= negativeCount) neutralPct += diff;
+    else negativePct += diff;
+  }
+
   return {
-    title: 'Emotional tone analysis requires AI',
-    meaning: 'To classify the emotional tone of posts (positive, neutral, negative), AlgorithmLens uses Google\'s Gemini AI. This reveals the emotional character of your feed.',
-    whyCare: 'Enable AI analysis in Settings to unlock this tab. Your data is processed securely — Google does not use it to train models.',
-    meta: `${totalPosts} posts available for analysis from ${platform}`,
+    positivePct,
+    neutralPct,
+    negativePct,
+    positiveCount,
+    neutralCount,
+    negativeCount,
+    knownValenceTotal,
+    totalAnalyzed,
+    lowSample,
   };
+}
+
+function buildToneInsight(
+  platform: string,
+  totalPosts: number,
+  analysis: ToneAnalysis | null,
+): InsightHeroData {
+  // No AI analysis available — show consent prompt
+  if (!analysis) {
+    return {
+      title: 'Emotional tone analysis requires AI',
+      meaning: 'To classify the emotional tone of posts (positive, neutral, negative), AlgorithmLens uses Google\'s Gemini AI. This reveals the emotional character of your feed.',
+      whyCare: 'Enable AI analysis in Settings to unlock this tab. Your data is processed securely — Google does not use it to train models.',
+      meta: `${totalPosts} posts available for analysis from ${platform}`,
+    };
+  }
+
+  // Low sample — show cautious messaging
+  if (analysis.lowSample) {
+    return {
+      title: 'Limited tone data in this scan',
+      meaning: 'Fewer than 10 posts had identifiable emotional tone, which is not enough to draw reliable conclusions about the emotional character of your feed.',
+      whyCare: 'Scan more content to build a clearer picture. Emotional tone can vary a lot between sessions.',
+      meta: `Based on ${analysis.knownValenceTotal} posts with tone data from ${platform}`,
+    };
+  }
+
+  const meta = `Based on ${analysis.knownValenceTotal} posts with tone data from ${platform}`;
+  const pos = analysis.positivePct;
+  const neut = analysis.neutralPct;
+  const neg = analysis.negativePct;
+  const max = Math.max(pos, neut, neg);
+  const spread = max - Math.min(pos, neut, neg);
+
+  if (spread < 15) {
+    return {
+      title: `Your feed has a balanced emotional mix (${pos}% positive, ${neut}% neutral, ${neg}% negative)`,
+      meaning: 'No single emotional tone dominates. You encounter a roughly even spread of upbeat, informational, and conflict-focused content.',
+      whyCare: 'A balanced feed means your mood is not being pulled strongly in one direction by the content you consume.',
+      meta,
+    };
+  }
+
+  if (neg === max && neg >= 35) {
+    const negMinutesIn60 = Math.round(60 * neg / 100);
+    return {
+      title: `${neg}% of your feed carried negative or conflict-focused tone`,
+      meaning: `More than 1 in 3 posts appeared framed around conflict, outrage, or negativity. In a 60-minute session, that would be about ${negMinutesIn60} minutes of negative content.`,
+      whyCare: 'Typical negative tone is 20–30%. Above that, sustained exposure to negativity can shape how the world feels.',
+      meta,
+    };
+  }
+
+  if (pos === max && pos >= 35) {
+    return {
+      title: `Your feed skewed positive (${pos}% positive tone)`,
+      meaning: 'More than 1 in 3 posts carried upbeat or happy emotional framing. Your scrolling experience leaned optimistic.',
+      whyCare: 'Positive feeds can boost mood but may also create a highlight reel effect.',
+      meta,
+    };
+  }
+
+  if (neut === max && neut >= 35) {
+    return {
+      title: `Your feed was mostly informational (${neut}% neutral tone)`,
+      meaning: 'Most posts appeared balanced or factual rather than emotionally charged.',
+      whyCare: 'Neutral tone creates space for reflection without strong emotional pulls.',
+      meta,
+    };
+  }
+
+  // Fallback
+  if (neg === max) {
+    return {
+      title: `Negative tone appeared most often in your feed (${neg}%)`,
+      meaning: `Negative or conflict-focused posts slightly outpaced positive (${pos}%) and neutral (${neut}%) content.`,
+      whyCare: 'Even a modest lean toward negativity can shape what problems feel most urgent.',
+      meta,
+    };
+  } else if (pos === max) {
+    return {
+      title: `Positive tone led your feed (${pos}%)`,
+      meaning: `Upbeat content slightly outpaced neutral (${neut}%) and negative (${neg}%) posts.`,
+      whyCare: 'A positive lean can improve mood during scrolling, though it may also filter out important but difficult topics.',
+      meta,
+    };
+  } else {
+    return {
+      title: `Neutral tone led your feed (${neut}%)`,
+      meaning: `Balanced or informational content outpaced positive (${pos}%) and negative (${neg}%) posts.`,
+      whyCare: 'A neutral lean means your feed appeared less emotionally activating.',
+      meta,
+    };
+  }
 }
 
 // ─── Main Computation ────────────────────────────────────
@@ -329,13 +681,21 @@ export function computeDashboardData(scan: ScanRecord): DashboardData {
   const platform = (scan?.platform || 'your platform').charAt(0).toUpperCase() +
     (scan?.platform || 'your platform').slice(1);
 
+  // ── Political analysis (from Gemini AI enrichment) ──
+  const politicalAnalysis = extractPoliticalAnalysis(raw);
+  const hasPoliticsData = politicalAnalysis !== null && politicalAnalysis.politicalCount > 0;
+
+  // ── Tone analysis (from Gemini AI enrichment) ──
+  const toneAnalysis = extractToneAnalysis(raw);
+  const hasToneData = toneAnalysis !== null && toneAnalysis.knownValenceTotal > 0;
+
   // If no raw posts, use top-level aggregates
   if (totalPosts === 0) {
     const fallbackTotal = scan?.post_count || 0;
     const adCount = scan?.ad_count || 0;
     const adPct = Math.round(scan?.ad_percentage || 0);
     const suggestedCount = scan?.suggested_count || 0;
-    const followedCount = fallbackTotal - suggestedCount;
+    const followedCount = Math.max(0, fallbackTotal - suggestedCount);
     const suggestedPct = Math.round(scan?.suggested_percentage || 0);
 
     return {
@@ -353,11 +713,13 @@ export function computeDashboardData(scan: ScanRecord): DashboardData {
       sourcesInsight: buildSourcesInsight([], fallbackTotal, 0, platform),
       adsInsight: buildAdsInsight(adPct, adCount, fallbackTotal, platform),
       suggestedInsight: buildSuggestedInsight(suggestedPct, suggestedCount, followedCount, fallbackTotal, platform),
-      politicsInsight: buildPoliticsInsight(platform, fallbackTotal),
-      toneInsight: buildToneInsight(platform, fallbackTotal),
+      politicsInsight: buildPoliticsInsight(platform, fallbackTotal, politicalAnalysis),
+      toneInsight: buildToneInsight(platform, fallbackTotal, toneAnalysis),
+      politicalAnalysis,
+      toneAnalysis,
       hasData: fallbackTotal > 0,
-      hasPoliticsData: false,
-      hasToneData: false,
+      hasPoliticsData,
+      hasToneData,
     };
   }
 
@@ -367,7 +729,7 @@ export function computeDashboardData(scan: ScanRecord): DashboardData {
 
   // ── Suggested vs followed ──
   const suggestedCount = posts.filter(p => p.is_suggested).length;
-  const followedCount = totalPosts - suggestedCount;
+  const followedCount = Math.max(0, totalPosts - suggestedCount);
   const suggestedPct = Math.round((suggestedCount / totalPosts) * 100);
   const followedPct = 100 - suggestedPct;
 
@@ -405,10 +767,12 @@ export function computeDashboardData(scan: ScanRecord): DashboardData {
     sourcesInsight: buildSourcesInsight(topCreators, totalPosts, top5Pct, platform),
     adsInsight: buildAdsInsight(adPct, adCount, totalPosts, platform),
     suggestedInsight: buildSuggestedInsight(suggestedPct, suggestedCount, followedCount, totalPosts, platform),
-    politicsInsight: buildPoliticsInsight(platform, totalPosts),
-    toneInsight: buildToneInsight(platform, totalPosts),
+    politicsInsight: buildPoliticsInsight(platform, totalPosts, politicalAnalysis),
+    toneInsight: buildToneInsight(platform, totalPosts, toneAnalysis),
+    politicalAnalysis,
+    toneAnalysis,
     hasData: totalPosts > 0,
-    hasPoliticsData: false,
-    hasToneData: false,
+    hasPoliticsData,
+    hasToneData,
   };
 }

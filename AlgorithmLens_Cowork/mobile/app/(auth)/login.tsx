@@ -11,12 +11,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../src/context/AuthContext';
 import { supabase } from '../../src/lib/supabase';
+import { useTheme } from '../../src/context/ThemeContext';
 import { Eye } from 'lucide-react-native';
-import { COLORS, TYPOGRAPHY, SPACING, RADIUS, SHADOWS } from '../../src/lib/theme';
+import { TYPOGRAPHY, SPACING, RADIUS } from '../../src/lib/theme';
 
-// Email validation helper
+// Email validation — checks for user@domain.tld pattern
 const isValidEmail = (email: string): boolean => {
-  return email.includes('@') && email.includes('.');
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  return emailRegex.test(email.trim());
 };
 
 export default function LoginScreen() {
@@ -27,6 +29,7 @@ export default function LoginScreen() {
   const [emailError, setEmailError] = useState('');
   const emailInputRef = useRef<TextInput>(null);
   const { signInWithOAuth } = useAuth();
+  const { colors, shadows } = useTheme();
 
   // Auto-focus email input when switching to email auth method
   useEffect(() => {
@@ -132,7 +135,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.bgPage }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,
@@ -148,21 +151,21 @@ export default function LoginScreen() {
             style={{
               width: 72,
               height: 72,
-              backgroundColor: COLORS.primaryBlue,
+              backgroundColor: colors.primaryBlue,
               borderRadius: RADIUS.xl,
               justifyContent: 'center',
               alignItems: 'center',
               marginBottom: SPACING.lg,
-              ...SHADOWS.hero,
+              ...shadows.hero,
             }}
           >
-            <Eye size={36} color={COLORS.white} strokeWidth={1.5} />
+            <Eye size={36} color={colors.white} strokeWidth={1.5} />
           </View>
           <Text
             style={{
               fontSize: 28,
               fontWeight: '700',
-              color: COLORS.primaryBlue,
+              color: colors.primaryBlue,
               marginBottom: 6,
               letterSpacing: -0.5,
             }}
@@ -172,7 +175,7 @@ export default function LoginScreen() {
           <Text
             style={{
               fontSize: 14,
-              color: COLORS.textMuted,
+              color: colors.textMuted,
               textAlign: 'center',
               letterSpacing: 0.3,
             }}
@@ -187,26 +190,31 @@ export default function LoginScreen() {
             <TouchableOpacity
               onPress={handleGoogleSignIn}
               disabled={loading}
+              accessibilityLabel="Continue with Google"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: loading, busy: loading }}
               style={{
-                backgroundColor: COLORS.bgCard,
+                backgroundColor: colors.bgCard,
                 borderWidth: 1,
-                borderColor: COLORS.borderSlate200,
+                borderColor: colors.borderSlate200,
                 borderRadius: RADIUS.md,
                 paddingVertical: 14,
                 paddingHorizontal: 16,
                 marginBottom: 12,
                 alignItems: 'center',
-                ...SHADOWS.soft,
+                minHeight: 48,
+                justifyContent: 'center',
+                ...shadows.soft,
               }}
             >
               {loading ? (
-                <ActivityIndicator color={COLORS.primaryBlue} />
+                <ActivityIndicator color={colors.primaryBlue} />
               ) : (
                 <Text
                   style={{
                     fontSize: 16,
                     fontWeight: '600',
-                    color: COLORS.textMain,
+                    color: colors.textMain,
                   }}
                 >
                   Continue with Google
@@ -217,26 +225,31 @@ export default function LoginScreen() {
             <TouchableOpacity
               onPress={handleAppleSignIn}
               disabled={loading}
+              accessibilityLabel="Continue with Apple"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: loading, busy: loading }}
               style={{
-                backgroundColor: COLORS.bgCard,
+                backgroundColor: colors.bgCard,
                 borderWidth: 1,
-                borderColor: COLORS.borderSlate200,
+                borderColor: colors.borderSlate200,
                 borderRadius: RADIUS.md,
                 paddingVertical: 14,
                 paddingHorizontal: 16,
                 marginBottom: 24,
                 alignItems: 'center',
-                ...SHADOWS.soft,
+                minHeight: 48,
+                justifyContent: 'center',
+                ...shadows.soft,
               }}
             >
               {loading ? (
-                <ActivityIndicator color={COLORS.primaryBlue} />
+                <ActivityIndicator color={colors.primaryBlue} />
               ) : (
                 <Text
                   style={{
                     fontSize: 16,
                     fontWeight: '600',
-                    color: COLORS.textMain,
+                    color: colors.textMain,
                   }}
                 >
                   Continue with Apple
@@ -252,31 +265,35 @@ export default function LoginScreen() {
                 marginVertical: 20,
               }}
             >
-              <View style={{ flex: 1, height: 1, backgroundColor: COLORS.borderSlate200 }} />
+              <View style={{ flex: 1, height: 1, backgroundColor: colors.borderSlate200 }} />
               <Text
                 style={{
                   marginHorizontal: 12,
-                  color: COLORS.textSecondary,
+                  color: colors.textSecondary,
                   fontSize: 14,
                 }}
               >
                 or
               </Text>
-              <View style={{ flex: 1, height: 1, backgroundColor: COLORS.borderSlate200 }} />
+              <View style={{ flex: 1, height: 1, backgroundColor: colors.borderSlate200 }} />
             </View>
 
             {/* Email/Password Fallback Link */}
             <TouchableOpacity
               onPress={() => setAuthMethod('email')}
+              accessibilityLabel="Sign in with email"
+              accessibilityRole="button"
               style={{
                 paddingVertical: 12,
                 alignItems: 'center',
+                minHeight: 48,
+                justifyContent: 'center',
               }}
             >
               <Text
                 style={{
                   fontSize: 14,
-                  color: COLORS.primaryBlue,
+                  color: colors.primaryBlue,
                   fontWeight: '600',
                 }}
               >
@@ -297,25 +314,30 @@ export default function LoginScreen() {
               }}
               autoCapitalize="none"
               keyboardType="email-address"
+              textContentType="emailAddress"
+              autoComplete="email"
               editable={!loading}
+              accessibilityLabel="Email address"
+              accessibilityHint="Enter your email to sign in or create an account"
               style={{
-                backgroundColor: COLORS.bgCard,
+                backgroundColor: colors.bgCard,
                 borderWidth: 1,
-                borderColor: emailError ? COLORS.error : COLORS.borderSlate200,
+                borderColor: emailError ? colors.error : colors.borderSlate200,
                 borderRadius: RADIUS.md,
                 paddingHorizontal: 14,
                 paddingVertical: 12,
                 marginBottom: emailError ? 6 : 12,
                 fontSize: 16,
-                color: COLORS.textMain,
+                color: colors.textMain,
+                minHeight: 48,
               }}
-              placeholderTextColor={COLORS.textSecondary}
+              placeholderTextColor={colors.textSecondary}
             />
             {emailError ? (
               <Text
                 style={{
                   fontSize: 12,
-                  color: COLORS.error,
+                  color: colors.error,
                   marginBottom: 12,
                   marginLeft: 4,
                 }}
@@ -329,42 +351,51 @@ export default function LoginScreen() {
               value={password}
               onChangeText={setPassword}
               secureTextEntry
+              textContentType="password"
+              autoComplete="password"
               editable={!loading}
+              accessibilityLabel="Password"
               style={{
-                backgroundColor: COLORS.bgCard,
+                backgroundColor: colors.bgCard,
                 borderWidth: 1,
-                borderColor: COLORS.borderSlate200,
+                borderColor: colors.borderSlate200,
                 borderRadius: RADIUS.md,
                 paddingHorizontal: 14,
                 paddingVertical: 12,
                 marginBottom: 20,
                 fontSize: 16,
-                color: COLORS.textMain,
+                color: colors.textMain,
+                minHeight: 48,
               }}
-              placeholderTextColor={COLORS.textSecondary}
+              placeholderTextColor={colors.textSecondary}
             />
 
             {/* Sign In Button */}
             <TouchableOpacity
               onPress={handleEmailSignIn}
               disabled={loading}
+              accessibilityLabel="Sign in"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: loading, busy: loading }}
               style={{
-                backgroundColor: COLORS.primaryBlue,
+                backgroundColor: colors.primaryBlue,
                 borderRadius: RADIUS.md,
                 paddingVertical: 14,
                 marginBottom: 12,
                 alignItems: 'center',
-                ...SHADOWS.medium,
+                minHeight: 48,
+                justifyContent: 'center',
+                ...shadows.medium,
               }}
             >
               {loading ? (
-                <ActivityIndicator color={COLORS.white} />
+                <ActivityIndicator color={colors.white} />
               ) : (
                 <Text
                   style={{
                     fontSize: 16,
                     fontWeight: '600',
-                    color: COLORS.white,
+                    color: colors.white,
                   }}
                 >
                   Sign In
@@ -376,24 +407,29 @@ export default function LoginScreen() {
             <TouchableOpacity
               onPress={handleEmailSignUp}
               disabled={loading}
+              accessibilityLabel="Create account"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: loading, busy: loading }}
               style={{
-                backgroundColor: COLORS.bgCard,
+                backgroundColor: colors.bgCard,
                 borderWidth: 1,
-                borderColor: COLORS.borderSlate200,
+                borderColor: colors.borderSlate200,
                 borderRadius: RADIUS.md,
                 paddingVertical: 14,
                 marginBottom: 24,
                 alignItems: 'center',
+                minHeight: 48,
+                justifyContent: 'center',
               }}
             >
               {loading ? (
-                <ActivityIndicator color={COLORS.primaryBlue} />
+                <ActivityIndicator color={colors.primaryBlue} />
               ) : (
                 <Text
                   style={{
                     fontSize: 16,
                     fontWeight: '600',
-                    color: COLORS.primaryBlue,
+                    color: colors.primaryBlue,
                   }}
                 >
                   Create Account
@@ -404,15 +440,19 @@ export default function LoginScreen() {
             {/* Back to OAuth Link */}
             <TouchableOpacity
               onPress={() => setAuthMethod('oauth')}
+              accessibilityLabel="Other sign-in options"
+              accessibilityRole="button"
               style={{
                 paddingVertical: 12,
                 alignItems: 'center',
+                minHeight: 48,
+                justifyContent: 'center',
               }}
             >
               <Text
                 style={{
                   fontSize: 14,
-                  color: COLORS.primaryBlue,
+                  color: colors.primaryBlue,
                   fontWeight: '600',
                 }}
               >
