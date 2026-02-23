@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { ViewStyle, Animated } from 'react-native';
+import { ViewStyle, Animated, AccessibilityInfo } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
 
 interface SkeletonProps {
   width?: number | `${number}%` | 'auto';
@@ -8,36 +9,49 @@ interface SkeletonProps {
   style?: ViewStyle;
 }
 
-export const Skeleton: React.FC<SkeletonProps> = ({
+const SkeletonComponent: React.FC<SkeletonProps> = ({
   width = '100%',
   height = 20,
   borderRadius = 8,
   style,
 }) => {
+  const { colors } = useTheme();
   // Use useRef to prevent Animated.Value from being recreated on each render
   const opacityRef = useRef(new Animated.Value(0.3));
   const opacity = opacityRef.current;
 
   useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(opacity, {
-          toValue: 0.7,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 0.3,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ])
-    );
+    let animation: Animated.CompositeAnimation;
 
-    animation.start();
+    const initAnimation = async () => {
+      const prefersReducedMotion = await AccessibilityInfo.isReduceMotionEnabled();
+
+      if (!prefersReducedMotion) {
+        animation = Animated.loop(
+          Animated.sequence([
+            Animated.timing(opacity, {
+              toValue: 0.7,
+              duration: 1000,
+              useNativeDriver: true,
+            }),
+            Animated.timing(opacity, {
+              toValue: 0.3,
+              duration: 1000,
+              useNativeDriver: true,
+            }),
+          ])
+        );
+
+        animation.start();
+      }
+    };
+
+    void initAnimation();
 
     return () => {
-      animation.stop();
+      if (animation) {
+        animation.stop();
+      }
     };
   }, [opacity]);
 
@@ -47,12 +61,17 @@ export const Skeleton: React.FC<SkeletonProps> = ({
         {
           width,
           height,
-          backgroundColor: '#E2E8F0',
+          backgroundColor: colors.borderSlate200,
           borderRadius,
           opacity,
         },
         style,
       ]}
+      accessible={true}
+      accessibilityElementsHidden={true}
+      importantForAccessibility="no-hide-descendants"
     />
   );
 };
+
+export const Skeleton = React.memo(SkeletonComponent);

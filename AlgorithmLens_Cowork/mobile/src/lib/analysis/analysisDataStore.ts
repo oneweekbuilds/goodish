@@ -34,13 +34,20 @@ export function storeAnalysisData(data: AnalysisData): void {
 
 /**
  * Retrieves and clears the pending analysis data.
- * Returns null if no data is pending or if it's stale (>10 minutes old).
+ * Returns null if no data is pending or if it's stale (>5 minutes old).
+ * Automatically clears expired data to prevent memory leaks.
  */
 export function consumeAnalysisData(): AnalysisData | null {
   if (!pendingAnalysis) return null;
 
-  // Reject stale data (>10 minutes old)
-  if (Date.now() - pendingAnalysis.storedAt > 10 * 60 * 1000) {
+  // Check TTL/expiry — reject stale data (>5 minutes old)
+  const ageMs = Date.now() - pendingAnalysis.storedAt;
+  const TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+  if (ageMs > TTL_MS) {
+    if (__DEV__) {
+      console.warn(`Analysis data expired after ${Math.round(ageMs / 1000)}s. TTL is ${TTL_MS / 1000}s.`);
+    }
     pendingAnalysis = null;
     return null;
   }

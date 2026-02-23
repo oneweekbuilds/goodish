@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 
 /**
  * SimpleTable - PREMIER QUALITY
  * Features: alternating row tints, rank badges for top 3, refined hover states,
- * better typography, and polished header design.
+ * better typography, polished header design, and mobile scroll affordance.
  *
  * @param {Array} columns - Array of { key: string, label: string, align?: 'left'|'right'|'center', width?: string }
  * @param {Array} rows - Array of objects with keys matching column keys
@@ -13,6 +13,21 @@ const SimpleTable = ({ columns = [], rows = [], maxRows = 10 }) => {
   if (!columns.length || !rows.length) return null;
 
   const displayRows = rows.slice(0, maxRows);
+  const scrollRef = useRef(null);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (el) {
+      setCanScrollRight(el.scrollWidth > el.clientWidth && el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [checkScroll, rows, columns]);
 
   const getAlignment = (align) => {
     switch (align) {
@@ -26,15 +41,14 @@ const SimpleTable = ({ columns = [], rows = [], maxRows = 10 }) => {
   const hasRankColumn = columns[0]?.key === 'rank';
 
   return (
-    <div
-      className="overflow-x-auto rounded-xl"
-      style={{
-        border: '1px solid rgba(37, 99, 235, 0.08)',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
-      }}
-    >
+    <div className="relative rounded-xl" style={{ border: '1px solid rgba(37, 99, 235, 0.08)', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)' }}>
+      <div
+        ref={scrollRef}
+        className="overflow-x-auto rounded-xl"
+        onScroll={checkScroll}
+      >
       {/* (Audit 8 Cycle 2) Added aria-label for screen readers */}
-      <table className="w-full text-sm" aria-label={columns.length > 1 ? `Data table with ${columns.length} columns and ${displayRows.length} rows` : undefined}>
+      <table className="w-full text-sm" style={{ minWidth: '480px' }} aria-label={columns.length > 1 ? `Data table with ${columns.length} columns and ${displayRows.length} rows` : undefined}>
         <thead>
           <tr
             style={{
@@ -131,6 +145,17 @@ const SimpleTable = ({ columns = [], rows = [], maxRows = 10 }) => {
             Showing {maxRows} of {rows.length} rows
           </p>
         </div>
+      )}
+      </div>
+      {/* Scroll affordance: subtle right-edge shadow when table overflows */}
+      {canScrollRight && (
+        <div
+          className="absolute top-0 right-0 bottom-0 w-6 pointer-events-none rounded-r-xl"
+          style={{
+            background: 'linear-gradient(to left, rgba(0,0,0,0.06), transparent)',
+          }}
+          aria-hidden="true"
+        />
       )}
     </div>
   );

@@ -9,6 +9,7 @@ import LabelsPreviewSection from './components/Sections/LabelsPreviewSection';
 import SectionLoop from './components/Sections/SectionLoop';
 import HeroDashboardPreview from './components/Hero/HeroDashboardPreview';
 import HowItWorksSection from './components/Sections/HowItWorksSection';
+import TwoWaysSection from './components/Sections/TwoWaysSection';
 // import SocialProofSection from './components/Sections/SocialProofSection'; // Removed: contained unverified claims
 import SEO from './components/SEO';
 
@@ -34,9 +35,12 @@ const PlusPage = React.lazy(() => import('./pages/plus/PlusPage'));
 const ScanTestPage = React.lazy(() => import('./pages/ScanTestPage'));
 const ScanPage = React.lazy(() => import('./pages/ScanPage'));
 const ScanHistoryPage = React.lazy(() => import('./pages/ScanHistoryPage'));
+const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
 const EventsDebugPage = React.lazy(() => import('./pages/dev/EventsDebugPage'));
 const EntitlementsDebugPage = React.lazy(() => import('./pages/dev/EntitlementsDebugPage'));
 const AuthCallbackPage = React.lazy(() => import('./pages/auth/AuthCallbackPage'));
+const PrivacyPage = React.lazy(() => import('./pages/PrivacyPage'));
+const TermsPage = React.lazy(() => import('./pages/TermsPage'));
 
 // Loading fallback component
 function LoadingFallback() {
@@ -66,6 +70,7 @@ function App() {
         '/scan',
         '/history',
         '/plus',
+        '/settings',
       ].some(route => location.pathname.startsWith(route));
 
       if (isGated) {
@@ -158,6 +163,7 @@ function App() {
                             <SectionLoop />
                             <HeroDashboardPreview />
                             <HowItWorksSection />
+                            <TwoWaysSection />
 
                             {/* Waitlist Block #2 - Differentiated messaging (#10.3) */}
                             {comingSoonMode && (
@@ -212,6 +218,9 @@ function App() {
                       {/* Plus page */}
                       <Route path="/plus" element={<PlusPage />} />
 
+                      {/* Settings */}
+                      <Route path="/settings" element={<SettingsPage />} />
+
                       {/* AUTH ROUTES */}
                       <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
@@ -223,6 +232,10 @@ function App() {
                       {/* DEV ROUTES */}
                       <Route path="/dev/events" element={<EventsDebugPage />} />
                       <Route path="/dev/entitlements" element={<EntitlementsDebugPage />} />
+
+                      {/* LEGAL ROUTES */}
+                      <Route path="/privacy" element={<PrivacyPage />} />
+                      <Route path="/terms" element={<TermsPage />} />
 
                       {/* #4: 404 catch-all route */}
                       <Route path="*" element={<NotFoundPage />} />
@@ -260,9 +273,8 @@ function App() {
                     <div>
                       <h3 className="text-sm font-semibold text-text-main mb-3">Legal</h3>
                       <ul className="space-y-2">
-                        {/* (Audit 8 H3) Clarified mailto links — screen readers now announce intent correctly */}
-                        <li><a href="mailto:legal@algorithmlens.com?subject=Privacy%20Policy%20Inquiry" className="text-sm text-text-muted hover:text-primary-blue transition-colors" aria-label="Email us about our Privacy Policy">Privacy Policy</a></li>
-                        <li><a href="mailto:legal@algorithmlens.com?subject=Terms%20of%20Service%20Inquiry" className="text-sm text-text-muted hover:text-primary-blue transition-colors" aria-label="Email us about our Terms of Service">Terms of Service</a></li>
+                        <li><Link to="/privacy" className="text-sm text-text-muted hover:text-primary-blue transition-colors">Privacy Policy</Link></li>
+                        <li><Link to="/terms" className="text-sm text-text-muted hover:text-primary-blue transition-colors">Terms of Service</Link></li>
                       </ul>
                     </div>
                     <div>

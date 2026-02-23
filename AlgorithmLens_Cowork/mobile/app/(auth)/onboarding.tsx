@@ -1,11 +1,26 @@
-import React, { useState, useRef } from 'react';
+/**
+ * Onboarding — 3-screen flow designed to take 15 seconds max.
+ *
+ * Screen 1: "See what's really in your feed" — value prop with abstract graphic
+ * Screen 2: "How it works" — 3 steps with icons
+ * Screen 3: "Start your first scan" — platform selection with "Let's go" button
+ *
+ * Design principles:
+ * - No walls of text — every screen scannable in 2 seconds
+ * - CTA is always the most visually prominent element
+ * - Epistemically restrained: describes, never accuses
+ */
+
+import React, { useState, useRef, useCallback } from 'react';
+
+// Navigation delays (ms)
+const NAVIGATION_DELAY_MS = 300;
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   Dimensions,
-  Switch,
   NativeScrollEvent,
   NativeSyntheticEvent,
 } from 'react-native';
@@ -13,78 +28,112 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../src/context/AuthContext';
 import { supabase } from '../../src/lib/supabase';
 import { router } from 'expo-router';
-import { Eye, Globe, ChartBar, CircleCheck, TrendingUp } from 'lucide-react-native';
-import { COLORS, TYPOGRAPHY, SPACING, RADIUS, SHADOWS } from '../../src/lib/theme';
+import { useTheme } from '../../src/context/ThemeContext';
+import {
+  Eye,
+  Smartphone,
+  ScrollText,
+  BarChart3,
+  Instagram,
+  Twitter,
+  Youtube,
+  Music,
+  Facebook,
+  MessageCircle,
+} from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
+import { TYPOGRAPHY, SPACING, RADIUS, PLATFORMS } from '../../src/lib/theme';
+import type { SupportedPlatform } from '../../src/types/broadcast';
+import { withAlpha } from '../../src/lib/utils';
 
 const { width } = Dimensions.get('window');
 
+const TOTAL_PAGES = 3;
+
+const PLATFORM_LIST: {
+  slug: SupportedPlatform;
+  name: string;
+  color: string;
+  Icon: React.FC<{ size: number; color: string; strokeWidth?: number }>;
+}[] = [
+  { slug: 'instagram', name: 'Instagram', color: PLATFORMS.instagram.color, Icon: Instagram },
+  { slug: 'twitter', name: 'Twitter / X', color: PLATFORMS.twitter.color, Icon: Twitter },
+  { slug: 'youtube', name: 'YouTube', color: PLATFORMS.youtube.color, Icon: Youtube },
+  // Note: TikTok icon uses Music icon as a placeholder. Lucide doesn't have a TikTok icon.
+  // Trade-off: Music icon is visually similar and recognizable. Consider custom SVG if branding becomes critical.
+  { slug: 'tiktok', name: 'TikTok', color: PLATFORMS.tiktok.color, Icon: Music },
+  { slug: 'facebook', name: 'Facebook', color: PLATFORMS.facebook.color, Icon: Facebook },
+  { slug: 'reddit', name: 'Reddit', color: PLATFORMS.reddit.color, Icon: MessageCircle },
+];
+
 export default function OnboardingScreen() {
   const [currentPage, setCurrentPage] = useState(0);
-  const [aiConsent, setAiConsent] = useState(true);
-  const [showDetails, setShowDetails] = useState<'sent' | 'notSent' | null>(null);
+  const [selectedPlatform, setSelectedPlatform] = useState<SupportedPlatform | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const { user, completeOnboarding } = useAuth();
+  const { colors, shadows } = useTheme();
 
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const position = event.nativeEvent.contentOffset.x;
-    const page = Math.round(position / width);
-    setCurrentPage(page);
-  };
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const position = event.nativeEvent.contentOffset.x;
+      const page = Math.round(position / width);
+      setCurrentPage(page);
+    },
+    []
+  );
 
-  const scrollToPage = (page: number) => {
+  const scrollToPage = useCallback((page: number) => {
     scrollViewRef.current?.scrollTo({
       x: page * width,
       animated: true,
     });
     setCurrentPage(page);
-  };
+  }, []);
 
-  const handleGetStarted = async () => {
+  const handleGetStarted = useCallback(async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     try {
       if (user?.id) {
-        // Try to update user profile with onboarding completion and AI consent
         await supabase
           .from('user_profiles')
-          .upsert({
-            user_id: user.id,
-            has_completed_onboarding: true,
-            ai_analysis_consent: aiConsent,
-          }, { onConflict: 'user_id' });
+          .upsert(
+            {
+              user_id: user.id,
+              has_completed_onboarding: true,
+              ai_analysis_consent: true,
+            },
+            { onConflict: 'user_id' }
+          );
       }
-    } catch (error) {
-      console.warn('Could not save onboarding status:', error);
+    } catch {
+      // Non-blocking — continue to the app
     }
-    // Update local state so navigation doesn't loop back
-    completeOnboarding(aiConsent);
-    // Navigate to main app
-    router.replace('/(tabs)');
-  };
+    completeOnboarding(true);
 
-  const screenData = [
-    {
-      title: 'See what shapes your feed',
-      description:
-        'AlgorithmLens gives you a clear picture of what appears in your social media feed — sources, ads, tone, and more.',
-      icon: 'welcome',
-    },
-    {
-      title: 'Quick scans, real insights',
-      steps: [
-        { icon: 'globe', text: 'Open a platform' },
-        { icon: 'scroll', text: 'Scroll your feed for 10 minutes' },
-        { icon: 'chart', text: 'See your analysis' },
-      ],
-      description:
-        "You don't need to scan every session — just enough to build a meaningful sample.",
-    },
-    {
-      title: 'Help us analyze deeper',
-      isConsent: true,
-    },
-  ];
+    // Navigate to main app, optionally starting a scan
+    if (selectedPlatform) {
+      router.replace('/(tabs)');
+      // Small delay to let the tab mount before pushing scan
+      setTimeout(() => {
+        router.push({
+          pathname: '/broadcast/[platform]',
+          params: { platform: selectedPlatform },
+        });
+      }, NAVIGATION_DELAY_MS);
+    } else {
+      router.replace('/(tabs)');
+    }
+  }, [user, completeOnboarding, selectedPlatform]);
+
+  const handlePlatformTap = useCallback((slug: SupportedPlatform) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setSelectedPlatform((prev) => (prev === slug ? null : slug));
+  }, []);
+
+  const isLastPage = currentPage === TOTAL_PAGES - 1;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.bgPage }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
       <ScrollView
         ref={scrollViewRef}
         horizontal
@@ -95,362 +144,380 @@ export default function OnboardingScreen() {
         bounces={false}
         style={{ flex: 1 }}
       >
-        {/* Screen 1: Welcome */}
+        {/* ── Screen 1: Value Prop ── */}
         <View
           style={{
             width,
-            paddingHorizontal: 20,
-            paddingVertical: 40,
-            justifyContent: 'space-between',
+            paddingHorizontal: SPACING['2xl'],
+            justifyContent: 'center',
           }}
         >
-          <View style={{ flex: 1, justifyContent: 'center' }}>
-            {/* Branded app icon */}
+          {/* Abstract graphic — layered circles representing feed composition */}
+          <View
+            style={{
+              alignSelf: 'center',
+              width: 120,
+              height: 120,
+              marginBottom: SPACING['4xl'],
+            }}
+            accessible
+            accessibilityLabel="Abstract illustration of feed composition"
+          >
             <View
               style={{
-                width: 72,
-                height: 72,
-                backgroundColor: COLORS.primaryBlue,
-                borderRadius: RADIUS.xl,
+                position: 'absolute',
+                width: 120,
+                height: 120,
+                borderRadius: 60,
+                backgroundColor: colors.blue50,
+              }}
+            />
+            <View
+              style={{
+                position: 'absolute',
+                top: 20,
+                left: 20,
+                width: 80,
+                height: 80,
+                borderRadius: 40,
+                backgroundColor: colors.blue100,
+              }}
+            />
+            <View
+              style={{
+                position: 'absolute',
+                top: 36,
+                left: 36,
+                width: 48,
+                height: 48,
+                borderRadius: 24,
+                backgroundColor: colors.primary,
                 justifyContent: 'center',
                 alignItems: 'center',
-                marginBottom: SPACING['3xl'],
-                ...SHADOWS.hero,
               }}
             >
-              <Eye size={36} color={COLORS.white} strokeWidth={1.5} />
-            </View>
-
-            <Text
-              style={{
-                ...TYPOGRAPHY.heroTitle,
-                fontSize: 28,
-                color: COLORS.textMain,
-                marginBottom: SPACING.lg,
-              }}
-            >
-              See what shapes your feed
-            </Text>
-
-            <Text
-              style={{
-                ...TYPOGRAPHY.bodyLarge,
-                color: COLORS.textMuted,
-              }}
-            >
-              AlgorithmLens gives you a clear picture of what appears in your social media feed — sources, ads, tone, and more.
-            </Text>
-
-            {/* Plus teaser */}
-            <View
-              style={{
-                marginTop: SPACING['2xl'],
-                backgroundColor: COLORS.blue50,
-                borderRadius: RADIUS.md,
-                padding: SPACING.lg,
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: SPACING.md,
-              }}
-            >
-              <View
-                style={{
-                  width: 36,
-                  height: 36,
-                  backgroundColor: COLORS.blue100,
-                  borderRadius: 18,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <TrendingUp size={18} color={COLORS.primaryBlue} strokeWidth={2} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ ...TYPOGRAPHY.labelBold, color: COLORS.textMain, marginBottom: 2 }}>
-                  Free to use — Plus available
-                </Text>
-                <Text style={{ ...TYPOGRAPHY.small, color: COLORS.textMuted }}>
-                  All 6 analysis tabs are free. Upgrade to Plus for trend tracking over time.
-                </Text>
-              </View>
+              <Eye size={24} color={colors.textInverse} strokeWidth={1.8} />
             </View>
           </View>
+
+          <Text
+            style={{
+              ...TYPOGRAPHY.display,
+              color: colors.textMain,
+              textAlign: 'center',
+              marginBottom: SPACING.lg,
+            }}
+            accessibilityRole="header"
+          >
+            See what's in{'\n'}your feed
+          </Text>
+
+          <Text
+            style={{
+              ...TYPOGRAPHY.bodyLarge,
+              color: colors.textMuted,
+              textAlign: 'center',
+            }}
+          >
+            A clear picture of what appears — sources, ads, tone, and more.
+          </Text>
         </View>
 
-        {/* Screen 2: How It Works */}
+        {/* ── Screen 2: How It Works ── */}
         <View
           style={{
             width,
-            paddingHorizontal: 20,
-            paddingVertical: 40,
-            justifyContent: 'space-between',
+            paddingHorizontal: SPACING['2xl'],
+            justifyContent: 'center',
           }}
         >
-          <View style={{ flex: 1, justifyContent: 'center' }}>
-            <Text
-              style={{
-                ...TYPOGRAPHY.heroTitle,
-                fontSize: 28,
-                color: COLORS.textMain,
-                marginBottom: SPACING['3xl'],
-              }}
-            >
-              Quick scans, real insights
-            </Text>
+          <Text
+            style={{
+              ...TYPOGRAPHY.display,
+              color: colors.textMain,
+              textAlign: 'center',
+              marginBottom: SPACING['4xl'],
+            }}
+            accessibilityRole="header"
+          >
+            How it works
+          </Text>
 
-            {/* Steps */}
-            <View style={{ marginBottom: SPACING['3xl'], gap: SPACING.xl }}>
-              {[
-                { icon: Globe, label: 'Open a platform' },
-                { icon: ChartBar, label: 'Scroll your feed for 10 minutes' },
-                { icon: CircleCheck, label: 'See your analysis' },
-              ].map((item, idx) => (
-                <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.md }}>
-                  <View
-                    style={{
-                      width: 40,
-                      height: 40,
-                      backgroundColor: COLORS.blue100,
-                      borderRadius: 20,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <item.icon size={20} color={COLORS.primaryBlue} strokeWidth={1.5} />
-                  </View>
+          <View style={{ gap: SPACING['2xl'] }}>
+            {[
+              {
+                Icon: Smartphone,
+                step: '1',
+                label: 'Open',
+                detail: 'Pick a platform',
+              },
+              {
+                Icon: ScrollText,
+                step: '2',
+                label: 'Scroll',
+                detail: 'Browse like you normally would',
+              },
+              {
+                Icon: BarChart3,
+                step: '3',
+                label: 'Discover',
+                detail: 'See what appeared in your feed',
+              },
+            ].map((item) => (
+              <View
+                key={item.step}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: SPACING.lg,
+                }}
+                accessible
+                accessibilityLabel={`Step ${item.step}: ${item.label} — ${item.detail}`}
+              >
+                <View
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: RADIUS['2xl'],
+                    backgroundColor: colors.blue50,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  <item.Icon
+                    size={22}
+                    color={colors.primary}
+                    strokeWidth={1.8}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
                   <Text
                     style={{
-                      ...TYPOGRAPHY.bodyLarge,
-                      fontWeight: '500',
-                      color: COLORS.textMain,
-                      flex: 1,
+                      ...TYPOGRAPHY.h3,
+                      color: colors.textMain,
                     }}
                   >
                     {item.label}
                   </Text>
+                  <Text
+                    style={{
+                      ...TYPOGRAPHY.bodySmall,
+                      color: colors.textMuted,
+                      marginTop: SPACING.xxs,
+                    }}
+                  >
+                    {item.detail}
+                  </Text>
                 </View>
-              ))}
-            </View>
-
-            <Text
-              style={{
-                ...TYPOGRAPHY.bodySmall,
-                color: COLORS.textMuted,
-              }}
-            >
-              You don't need to scan every session — just enough to build a meaningful sample.
-            </Text>
+              </View>
+            ))}
           </View>
         </View>
 
-        {/* Screen 3: AI Consent */}
+        {/* ── Screen 3: Start Your First Scan ── */}
         <View
           style={{
             width,
-            paddingHorizontal: 20,
-            paddingVertical: 40,
-            justifyContent: 'space-between',
+            paddingHorizontal: SPACING['2xl'],
+            justifyContent: 'center',
           }}
         >
-          <View style={{ flex: 1, justifyContent: 'center' }}>
-            <Text
-              style={{
-                ...TYPOGRAPHY.heroTitle,
-                fontSize: 28,
-                color: COLORS.textMain,
-                marginBottom: SPACING['2xl'],
-              }}
-            >
-              Help us analyze deeper
-            </Text>
+          <Text
+            style={{
+              ...TYPOGRAPHY.display,
+              color: colors.textMain,
+              textAlign: 'center',
+              marginBottom: SPACING.md,
+            }}
+            accessibilityRole="header"
+          >
+            Start your first scan
+          </Text>
 
-            <Text
-              style={{
-                ...TYPOGRAPHY.body,
-                color: COLORS.textMuted,
-                marginBottom: SPACING['3xl'],
-              }}
-            >
-              To analyze political content and emotional tone, AlgorithmLens sends post text (not images, not your identity) to Google's Gemini AI for analysis. Google does not use this data to train AI models.
-            </Text>
+          <Text
+            style={{
+              ...TYPOGRAPHY.body,
+              color: colors.textMuted,
+              textAlign: 'center',
+              marginBottom: SPACING['3xl'],
+            }}
+          >
+            Pick a platform to begin
+          </Text>
 
-            {/* Toggle */}
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingHorizontal: SPACING.lg,
-                paddingVertical: 14,
-                backgroundColor: COLORS.bgCard,
-                borderRadius: RADIUS.md,
-                marginBottom: SPACING['2xl'],
-                borderWidth: 1,
-                borderColor: COLORS.borderSlate200,
-              }}
-            >
-              <Text
-                style={{
-                  ...TYPOGRAPHY.h3,
-                  color: COLORS.textMain,
-                }}
-              >
-                Enable AI analysis
-              </Text>
-              <Switch
-                value={aiConsent}
-                onValueChange={setAiConsent}
-                trackColor={{ false: COLORS.borderSlate200, true: COLORS.blue100 }}
-                thumbColor={aiConsent ? COLORS.primaryBlue : COLORS.textSecondary}
-              />
-            </View>
+          {/* Platform grid */}
+          <View
+            style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              gap: SPACING.lg,
+            }}
+          >
+            {PLATFORM_LIST.map((platform) => {
+              const isSelected = selectedPlatform === platform.slug;
 
-            {/* What gets sent */}
-            <TouchableOpacity
-              onPress={() =>
-                setShowDetails(showDetails === 'sent' ? null : 'sent')
-              }
-              style={{
-                paddingHorizontal: SPACING.lg,
-                paddingVertical: SPACING.md,
-                backgroundColor: COLORS.bgCardGradientEnd,
-                borderRadius: RADIUS.sm,
-                marginBottom: SPACING.md,
-              }}
-            >
-              <Text
-                style={{
-                  ...TYPOGRAPHY.bodySmall,
-                  fontWeight: '600',
-                  color: COLORS.textMain,
-                }}
-              >
-                What gets sent
-              </Text>
-              {showDetails === 'sent' && (
-                <Text
+              return (
+                <TouchableOpacity
+                  key={platform.slug}
+                  onPress={() => handlePlatformTap(platform.slug)}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${platform.name}${isSelected ? ', selected' : ''}`}
+                  accessibilityState={{ selected: isSelected }}
                   style={{
-                    ...TYPOGRAPHY.label,
-                    color: COLORS.textMuted,
-                    marginTop: SPACING.sm,
+                    alignItems: 'center',
+                    width: 88,
+                    minHeight: 44,
                   }}
                 >
-                  Post captions and hashtags only. No images, no account info.
-                </Text>
-              )}
-            </TouchableOpacity>
-
-            {/* What doesn't get sent */}
-            <TouchableOpacity
-              onPress={() =>
-                setShowDetails(showDetails === 'notSent' ? null : 'notSent')
-              }
-              style={{
-                paddingHorizontal: SPACING.lg,
-                paddingVertical: SPACING.md,
-                backgroundColor: COLORS.bgCardGradientEnd,
-                borderRadius: RADIUS.sm,
-              }}
-            >
-              <Text
-                style={{
-                  ...TYPOGRAPHY.bodySmall,
-                  fontWeight: '600',
-                  color: COLORS.textMain,
-                }}
-              >
-                What doesn't get sent
-              </Text>
-              {showDetails === 'notSent' && (
-                <Text
-                  style={{
-                    ...TYPOGRAPHY.label,
-                    color: COLORS.textMuted,
-                    marginTop: SPACING.sm,
-                  }}
-                >
-                  Your identity, photos, videos, or browsing history.
-                </Text>
-              )}
-            </TouchableOpacity>
+                  <View
+                    style={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: RADIUS['2xl'],
+                      backgroundColor: isSelected
+                        ? withAlpha(platform.color, 0.09)
+                        : colors.bgCard,
+                      borderWidth: isSelected ? 2 : 1,
+                      borderColor: isSelected
+                        ? platform.color
+                        : colors.borderSoft,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      ...(isSelected ? shadows.soft : {}),
+                    }}
+                  >
+                    <platform.Icon
+                      size={24}
+                      color={isSelected ? platform.color : colors.textMuted}
+                      strokeWidth={1.8}
+                    />
+                  </View>
+                  <Text
+                    style={{
+                      ...TYPOGRAPHY.captionSmall,
+                      fontWeight: isSelected ? '600' : '500',
+                      color: isSelected ? colors.textMain : colors.textMuted,
+                      marginTop: SPACING.sm,
+                      textAlign: 'center',
+                    }}
+                    numberOfLines={1}
+                  >
+                    {platform.name}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
       </ScrollView>
 
-      {/* Footer */}
+      {/* ── Footer ── */}
       <View
         style={{
           paddingHorizontal: SPACING.xl,
-          paddingVertical: SPACING.xl,
-          backgroundColor: COLORS.bgCard,
-          borderTopWidth: 1,
-          borderTopColor: COLORS.borderSlate200,
+          paddingTop: SPACING.lg,
+          paddingBottom: SPACING['2xl'],
         }}
       >
-        {/* Dot Indicator */}
+        {/* Dot indicators */}
         <View
           style={{
             flexDirection: 'row',
             justifyContent: 'center',
             gap: SPACING.sm,
-            marginBottom: SPACING.lg,
+            marginBottom: SPACING.xl,
           }}
+          accessible
+          accessibilityLabel={`Page ${currentPage + 1} of ${TOTAL_PAGES}`}
         >
-          {[0, 1, 2].map((idx) => (
+          {Array.from({ length: TOTAL_PAGES }).map((_, idx) => (
             <View
               key={idx}
               style={{
                 width: currentPage === idx ? 24 : 8,
                 height: 8,
                 backgroundColor:
-                  currentPage === idx ? COLORS.primaryBlue : COLORS.borderSlate300,
-                borderRadius: 4,
+                  currentPage === idx ? colors.primary : colors.borderSlate300,
+                borderRadius: RADIUS.full,
               }}
             />
           ))}
         </View>
 
-        {/* Navigation Buttons */}
-        {currentPage < 2 ? (
+        {/* CTA button */}
+        {isLastPage ? (
           <TouchableOpacity
-            onPress={() => scrollToPage(currentPage + 1)}
+            onPress={handleGetStarted}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel={selectedPlatform ? `Let's go — scan ${selectedPlatform}` : "Let's go"}
             style={{
-              backgroundColor: COLORS.primaryBlue,
-              borderRadius: RADIUS.md,
-              paddingVertical: 14,
+              backgroundColor: colors.primary,
+              borderRadius: RADIUS.lg,
+              paddingVertical: SPACING.lg,
               alignItems: 'center',
-              ...SHADOWS.medium,
+              minHeight: 52,
+              ...shadows.hero,
             }}
           >
             <Text
               style={{
-                fontSize: 16,
-                fontWeight: '600',
-                color: COLORS.white,
+                ...TYPOGRAPHY.buttonLg,
+                color: colors.textInverse,
+              }}
+            >
+              Let's go
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            onPress={() => scrollToPage(currentPage + 1)}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel="Next screen"
+            style={{
+              backgroundColor: colors.primary,
+              borderRadius: RADIUS.lg,
+              paddingVertical: SPACING.lg,
+              alignItems: 'center',
+              minHeight: 52,
+              ...shadows.medium,
+            }}
+          >
+            <Text
+              style={{
+                ...TYPOGRAPHY.buttonLg,
+                color: colors.textInverse,
               }}
             >
               Next
             </Text>
           </TouchableOpacity>
-        ) : (
+        )}
+
+        {/* Skip option (screens 1–2 only) */}
+        {!isLastPage && (
           <TouchableOpacity
-            onPress={handleGetStarted}
+            onPress={() => scrollToPage(TOTAL_PAGES - 1)}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Skip onboarding"
             style={{
-              backgroundColor: COLORS.primaryBlue,
-              borderRadius: RADIUS.md,
-              paddingVertical: 14,
+              marginTop: SPACING.md,
+              paddingVertical: SPACING.sm,
               alignItems: 'center',
-              ...SHADOWS.medium,
+              minHeight: 44,
             }}
           >
             <Text
               style={{
-                fontSize: 16,
-                fontWeight: '600',
-                color: COLORS.white,
+                ...TYPOGRAPHY.label,
+                color: colors.textTertiary,
               }}
             >
-              Get Started
+              Skip
             </Text>
           </TouchableOpacity>
         )}

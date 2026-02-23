@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import {
-  TouchableOpacity,
+  Pressable,
   Text,
   ViewStyle,
   TextStyle,
   ActivityIndicator,
 } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
+import { SPACING, TYPOGRAPHY, RADIUS } from '../../lib/theme';
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps {
@@ -17,49 +19,58 @@ interface ButtonProps {
   size?: ButtonSize;
   disabled?: boolean;
   loading?: boolean;
+  icon?: ReactNode;
   style?: ViewStyle;
+  accessibilityLabel?: string;
 }
 
-export const Button: React.FC<ButtonProps> = ({
+const ButtonComponent: React.FC<ButtonProps> = ({
   title,
   onPress,
   variant = 'primary',
   size = 'md',
   disabled = false,
   loading = false,
+  icon,
   style,
+  accessibilityLabel,
 }) => {
+  const { colors } = useTheme();
+
   const getSizeStyles = (): { container: ViewStyle; text: TextStyle } => {
     switch (size) {
       case 'sm':
         return {
           container: {
-            paddingHorizontal: 16,
-            paddingVertical: 10,
+            paddingHorizontal: SPACING.sm,
+            paddingVertical: SPACING.xs,
+            minHeight: 44,
           },
           text: {
-            fontSize: 14,
+            ...TYPOGRAPHY.buttonSm,
           },
         };
       case 'lg':
         return {
           container: {
-            paddingHorizontal: 32,
-            paddingVertical: 18,
+            paddingHorizontal: SPACING.lg,
+            paddingVertical: SPACING.md,
+            minHeight: 44,
           },
           text: {
-            fontSize: 18,
+            ...TYPOGRAPHY.buttonLg,
           },
         };
       case 'md':
       default:
         return {
           container: {
-            paddingHorizontal: 24,
-            paddingVertical: 14,
+            paddingHorizontal: SPACING.md,
+            paddingVertical: SPACING.sm,
+            minHeight: 44,
           },
           text: {
-            fontSize: 16,
+            ...TYPOGRAPHY.buttonMd,
           },
         };
     }
@@ -70,13 +81,12 @@ export const Button: React.FC<ButtonProps> = ({
       case 'secondary':
         return {
           container: {
-            backgroundColor: '#FFFFFF',
+            backgroundColor: 'transparent',
             borderWidth: 1,
-            borderColor: '#2563EB',
+            borderColor: colors.borderDefault,
           },
           text: {
-            color: '#2563EB',
-            fontWeight: '600',
+            color: colors.textPrimary,
           },
         };
       case 'ghost':
@@ -86,20 +96,28 @@ export const Button: React.FC<ButtonProps> = ({
             borderWidth: 0,
           },
           text: {
-            color: '#2563EB',
-            fontWeight: '600',
+            color: colors.primary,
+          },
+        };
+      case 'danger':
+        return {
+          container: {
+            backgroundColor: colors.errorLight,
+            borderWidth: 0,
+          },
+          text: {
+            color: colors.error,
           },
         };
       case 'primary':
       default:
         return {
           container: {
-            backgroundColor: '#2563EB',
+            backgroundColor: colors.primary,
             borderWidth: 0,
           },
           text: {
-            color: '#FFFFFF',
-            fontWeight: '600',
+            color: colors.textInverse,
           },
         };
     }
@@ -108,40 +126,67 @@ export const Button: React.FC<ButtonProps> = ({
   const sizeStyles = getSizeStyles();
   const variantStyles = getVariantStyles();
 
+  const handlePressIn = (callback?: (pressed: boolean) => void) => {
+    callback?.(true);
+  };
+
+  const handlePressOut = (callback?: (pressed: boolean) => void) => {
+    callback?.(false);
+  };
+
+  const getPressedOpacity = (): number => {
+    if (variant === 'primary' || variant === 'danger') {
+      return 0.85;
+    } else if (variant === 'secondary' || variant === 'ghost') {
+      return 0.7;
+    }
+    return 1;
+  };
+
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={onPress}
       disabled={disabled || loading}
-      style={[
+      accessibilityLabel={accessibilityLabel || title}
+      accessibilityRole="button"
+      accessibilityState={{disabled: disabled || loading}}
+      style={({ pressed }) => [
         {
-          borderRadius: 12,
+          borderRadius: RADIUS.md,
           justifyContent: 'center',
           alignItems: 'center',
-          opacity: disabled ? 0.5 : 1,
+          flexDirection: 'row',
+          opacity: disabled ? 0.4 : pressed ? getPressedOpacity() : 1,
         },
         sizeStyles.container,
         variantStyles.container,
         style,
       ]}
     >
-      {loading ? (
-        <ActivityIndicator
-          color={variantStyles.text.color as string}
-          size="small"
-        />
-      ) : (
-        <Text
-          style={[
-            {
-              fontWeight: '600',
-            },
-            sizeStyles.text,
-            variantStyles.text,
-          ]}
-        >
-          {title}
-        </Text>
+      {({ pressed }) => (
+        <>
+          {loading ? (
+            <ActivityIndicator
+              color={variantStyles.text.color as string}
+              size="small"
+            />
+          ) : (
+            <>
+              {icon && <Text style={{ marginRight: SPACING.xs }}>{icon}</Text>}
+              <Text
+                style={[
+                  sizeStyles.text,
+                  variantStyles.text,
+                ]}
+              >
+                {title}
+              </Text>
+            </>
+          )}
+        </>
       )}
-    </TouchableOpacity>
+    </Pressable>
   );
 };
+
+export const Button = React.memo(ButtonComponent);

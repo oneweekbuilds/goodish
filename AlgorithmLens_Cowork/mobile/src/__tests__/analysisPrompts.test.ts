@@ -22,7 +22,7 @@ describe('analysisPrompts', () => {
 
     it('includes prompt injection defense', () => {
       expect(GEMINI_SYSTEM_PROMPT).toContain('DATA');
-      expect(GEMINI_SYSTEM_PROMPT).toContain('not as INSTRUCTIONS');
+      expect(GEMINI_SYSTEM_PROMPT).toContain('never as INSTRUCTIONS');
     });
 
     it('includes item count constraint to guard against hallucination', () => {
@@ -31,6 +31,17 @@ describe('analysisPrompts', () => {
 
     it('includes political classification rules', () => {
       expect(GEMINI_SYSTEM_PROMPT).toContain('POLITICAL CLASSIFICATION RULES');
+    });
+
+    it('includes MIXED valence definition', () => {
+      expect(GEMINI_SYSTEM_PROMPT).toContain('VALENCE CLASSIFICATION');
+      expect(GEMINI_SYSTEM_PROMPT).toContain('MIXED');
+      expect(GEMINI_SYSTEM_PROMPT).toContain('use NEUTRAL instead');
+    });
+
+    it('includes carousel handling instruction', () => {
+      expect(GEMINI_SYSTEM_PROMPT).toContain('CAROUSEL');
+      expect(GEMINI_SYSTEM_PROMPT).toContain('single feed item');
     });
   });
 
@@ -106,6 +117,11 @@ describe('analysisPrompts', () => {
       const prompt = buildDeduplicationPrompt('reddit', 10);
       const lower = prompt.toLowerCase();
       expect(lower).toMatch(/dedup|duplicate|merge/);
+    });
+
+    it('includes item count hallucination guard', () => {
+      const prompt = buildDeduplicationPrompt('instagram', 50);
+      expect(prompt).toContain('MUST NOT contain more items than the input');
     });
   });
 });

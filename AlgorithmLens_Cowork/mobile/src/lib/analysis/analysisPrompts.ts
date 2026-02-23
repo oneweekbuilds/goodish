@@ -40,6 +40,15 @@ RULES:
 POLITICAL CLASSIFICATION RULES:
 Political content is any post that (a) references a political figure, party, or candidate by name, (b) advocates for or against specific legislation or policy, (c) is about elections, voting, or political campaigns, or (d) takes a clear stance on a partisan issue. News reporting about events with political implications (e.g., natural disasters, crime) is NOT political unless it explicitly frames the event in terms of policy or partisan blame. If political.is_political is true, topics.primary_category MUST be "Politics".
 
+VALENCE CLASSIFICATION:
+- POSITIVE: Content expressing joy, excitement, celebration, gratitude, humor, or encouragement.
+- NEGATIVE: Content expressing anger, sadness, fear, outrage, criticism, or distress.
+- NEUTRAL: Informational content without clear emotional charge (news, tutorials, factual updates).
+- MIXED: Content that combines clearly positive AND negative emotions in the same post (e.g., a bittersweet farewell, a hopeful post about overcoming hardship). Use MIXED only when both poles are clearly present; do not default to MIXED when uncertain — use NEUTRAL instead.
+
+CAROUSEL / MULTI-IMAGE POSTS:
+If a post shows multiple images (carousel dots, swipe indicators, or "1/N" labels), treat it as a single feed item with content_type "photo". Do not create separate items for each image in the carousel.
+
 Screenshots may be in light or dark mode. Ad labels and suggestion indicators appear in both modes.
 
 RESPOND ONLY WITH VALID JSON. No markdown, no code fences, no explanation.`;
@@ -129,10 +138,11 @@ export function buildDeduplicationPrompt(
   return `You previously analyzed ${totalItems} feed items extracted from ${PLATFORM_DISPLAY_NAMES[platform]} screenshots.
 
 Some items may appear in multiple consecutive frames as the user scrolled. Deduplicate them:
-1. Items with the same creator_handle AND similar post_text (>80% overlap) are duplicates — keep the version with higher confidence.
+1. Items with the same creator_handle AND similar post_text are duplicates — keep the version with higher confidence. "Similar" means the shorter text is a substring of the longer text, OR at least 80% of the words in the shorter text also appear in the longer text. When in doubt, prefer to keep items separate rather than merge distinct posts.
 2. Items with the same creator_handle but DIFFERENT post_text are distinct items from the same creator — keep both.
 3. Assign final sequential position_in_feed numbers (1-based) to deduplicated items.
 4. Merge any partial items (is_partial=true) with their complete versions if available.
+5. The deduplicated_items array MUST NOT contain more items than the input. If you are unsure about a merge, keep items separate.
 
 Return the deduplicated items array as JSON:
 {
@@ -165,7 +175,7 @@ function sanitizeOcrForPrompt(ocrText: string): string {
 // Platform-Specific Hints
 // ============================================
 
-const PLATFORM_DISPLAY_NAMES: Record<SupportedPlatform, string> = {
+export const PLATFORM_DISPLAY_NAMES: Record<SupportedPlatform, string> = {
   instagram: 'Instagram',
   twitter: 'Twitter / X',
   youtube: 'YouTube',
@@ -174,7 +184,7 @@ const PLATFORM_DISPLAY_NAMES: Record<SupportedPlatform, string> = {
   reddit: 'Reddit',
 };
 
-const PLATFORM_HINTS: Record<SupportedPlatform, string> = {
+export const PLATFORM_HINTS: Record<SupportedPlatform, string> = {
   instagram: `Instagram-specific hints:
 - Ads show "Sponsored" below the account name
 - Suggested posts show "Suggested for you" header

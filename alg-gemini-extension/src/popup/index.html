@@ -71,7 +71,8 @@
 
     .version-tag {
       font-size: 9px;
-      color: #9ca3af;
+      /* [Accessibility] Fixed contrast: #9ca3af (3.8:1) → #6b7280 (4.7:1) for WCAG AA */
+      color: #6b7280;
       margin-left: auto;
       /* [Audit 6 C4-L1] Match app's label weight and letter-spacing */
       font-weight: 600;
@@ -384,13 +385,47 @@
 
     .dash-card-detail {
       font-size: 11px;
-      color: #9ca3af;
+      /* [Accessibility] Fixed contrast: #9ca3af (3.8:1) → #6b7280 (4.7:1) for WCAG AA */
+      color: #6b7280;
       line-height: 1.35;
       font-weight: 400;
       /* [Audit 6 M4] Handle text overflow */
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+
+    /* ============================================ */
+    /* Micro-Chart Visualizations (Equalization P1) */
+    /* ============================================ */
+
+    .micro-chart {
+      margin: 6px 0 4px 0;
+      line-height: 0;
+    }
+
+    .micro-chart svg {
+      display: block;
+      max-width: 100%;
+    }
+
+    /* Fade-in animation for charts */
+    .micro-chart-fade {
+      opacity: 0;
+      animation: microChartFadeIn 0.4s ease 0.15s forwards;
+    }
+
+    @keyframes microChartFadeIn {
+      from { opacity: 0; transform: translateY(2px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Respect reduced motion preference */
+    @media (prefers-reduced-motion: reduce) {
+      .micro-chart-fade {
+        animation: none;
+        opacity: 1;
+      }
     }
 
     /* Open arrow on cards */
@@ -557,7 +592,8 @@
       margin-top: 6px;
       /* [Audit 6 C2-M3] Increased from 10px for readability */
       font-size: 11px;
-      color: #9ca3af;
+      /* [Accessibility] Fixed contrast: #9ca3af (3.8:1) → #6b7280 (4.7:1) for WCAG AA */
+      color: #6b7280;
       line-height: 1.5;
       /* Adjusted padding for larger toggle */
       padding-left: 50px;
@@ -569,7 +605,8 @@
 
     .session-hint {
       font-size: 11px;
-      color: #9ca3af;
+      /* [Accessibility] Fixed contrast: #9ca3af (3.8:1) → #6b7280 (4.7:1) for WCAG AA */
+      color: #6b7280;
       line-height: 1.5;
       margin-top: 12px;
       text-align: center;
@@ -587,7 +624,12 @@
       text-align: center;
       /* [Audit 6 L1] Slightly larger footer text */
       font-size: 11px;
-      color: #9ca3af;
+      /* [Accessibility] Fixed contrast: #9ca3af (3.8:1) → #6b7280 (4.7:1) for WCAG AA */
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
 
     .footer a {
@@ -606,6 +648,199 @@
       outline: none;
       border-radius: 4px;
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+    }
+
+    /* [Equalization P2] Plan badge in footer */
+    .plan-badge {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .plan-badge.free {
+      background: #F1F5F9;
+      color: #64748B;
+    }
+
+    .plan-badge.plus {
+      background: #EFF6FF;
+      color: #2563EB;
+    }
+
+    .footer-separator {
+      color: #d1d5db;
+      font-size: 10px;
+    }
+
+    /* [Equalization P2] Recent Scans section */
+    .recent-scans-section {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(30, 41, 59, 0.08);
+    }
+
+    .recent-scans-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .recent-scans-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #4B5563;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .recent-scans-toggle {
+      font-size: 10px;
+      color: #94A3B8;
+      transition: transform 0.2s ease;
+    }
+
+    .recent-scans-toggle.expanded {
+      transform: rotate(180deg);
+    }
+
+    .recent-scans-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .recent-scans-list.collapsed {
+      display: none;
+    }
+
+    .scan-history-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      background: #fff;
+      border: 1px solid rgba(30, 41, 59, 0.06);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .scan-history-item:hover {
+      border-color: rgba(37, 99, 235, 0.14);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    }
+
+    .scan-history-item:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+    }
+
+    .scan-history-platform {
+      font-size: 11px;
+      font-weight: 600;
+      color: #1e293b;
+      min-width: 60px;
+    }
+
+    .scan-history-summary {
+      flex: 1;
+      font-size: 11px;
+      color: #6b7280;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .scan-history-date {
+      font-size: 10px;
+      color: #94A3B8;
+      white-space: nowrap;
+    }
+
+    .scan-history-arrow {
+      font-size: 10px;
+      color: #d1d5db;
+      transition: color 0.15s ease;
+    }
+
+    .scan-history-item:hover .scan-history-arrow {
+      color: #2563eb;
+    }
+
+    .scan-history-empty {
+      font-size: 11px;
+      color: #94A3B8;
+      text-align: center;
+      padding: 12px 8px;
+      line-height: 1.5;
+    }
+
+    .scan-history-signin {
+      font-size: 11px;
+      color: #6b7280;
+      text-align: center;
+      padding: 12px 8px;
+      line-height: 1.5;
+    }
+
+    .scan-history-signin a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .scan-history-signin a:hover {
+      text-decoration: underline;
+    }
+
+    /* [Equalization P2] AI toggle Plus tier gating */
+    .ai-plus-badge {
+      display: inline-block;
+      padding: 1px 5px;
+      background: #EFF6FF;
+      color: #2563EB;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      margin-left: 4px;
+    }
+
+    .ai-consent-section.gated {
+      opacity: 0.6;
+      position: relative;
+    }
+
+    .ai-upsell-hint {
+      font-size: 11px;
+      color: #D97706;
+      margin-top: 4px;
+      padding-left: 50px;
+      display: none;
+    }
+
+    .ai-consent-section.gated .ai-upsell-hint {
+      display: block;
+    }
+
+    /* [Accessibility] Universal focus-visible ring for all interactive elements */
+    .toggle-container:focus-within .toggle-slider {
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+    }
+
+    /* [Accessibility] Visible focus ring for scan results container when focused */
+    .scan-result:focus-visible {
+      outline: none;
+      border-radius: 12px;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
     }
 
     /* ============================================ */
@@ -666,6 +901,19 @@
     /* Reduced motion support                       */
     /* ============================================ */
 
+    /* [Accessibility] Screen-reader-only text */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .status.loading {
         animation: none;
@@ -682,18 +930,509 @@
       .dash-card:hover {
         transform: none;
       }
+      .onboarding-slide {
+        transition: none !important;
+      }
+    }
+
+    /* ============================================ */
+    /* Onboarding Flow                              */
+    /* ============================================ */
+
+    .onboarding-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #F7F8FC;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .onboarding-overlay.hidden {
+      display: none;
+    }
+
+    .onboarding-slides {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .onboarding-slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 28px 24px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      opacity: 0;
+      transform: translateX(30px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      pointer-events: none;
+    }
+
+    .onboarding-slide.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    .onboarding-slide.exit-left {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+
+    .onboarding-icon {
+      width: 56px;
+      height: 56px;
+      background: #2563EB;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 0 20px rgba(37, 99, 235, 0.15), 0 4px 14px rgba(37, 99, 235, 0.1);
+    }
+
+    .onboarding-icon svg {
+      width: 28px;
+      height: 28px;
+      color: white;
+      stroke: white;
+      fill: none;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .onboarding-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1e293b;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+
+    .onboarding-description {
+      font-size: 13px;
+      color: #4B5563;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .onboarding-step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .onboarding-step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .onboarding-step-icon {
+      width: 36px;
+      height: 36px;
+      background: #EFF6FF;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .onboarding-step-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: #2563EB;
+      fill: none;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .onboarding-step-text {
+      font-size: 13px;
+      font-weight: 500;
+      color: #1e293b;
+    }
+
+    .onboarding-platform-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .onboarding-platform-tag {
+      display: inline-block;
+      padding: 3px 10px;
+      background: #fff;
+      border: 1px solid rgba(30, 41, 59, 0.08);
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #4B5563;
+    }
+
+    .onboarding-consent-card {
+      padding: 14px 16px;
+      background: #fff;
+      border: 1px solid rgba(30, 41, 59, 0.08);
+      border-radius: 12px;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .onboarding-consent-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .onboarding-consent-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .onboarding-consent-detail {
+      font-size: 11px;
+      color: #6b7280;
+      line-height: 1.5;
+      margin-top: 8px;
+    }
+
+    .onboarding-consent-detail strong {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #4B5563;
+      margin-bottom: 2px;
+      cursor: pointer;
+    }
+
+    .onboarding-consent-detail strong:hover {
+      color: #2563EB;
+    }
+
+    .onboarding-consent-detail .detail-body {
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+
+    /* Onboarding toggle — reuses popup's toggle pattern */
+    .onboarding-toggle-slider {
+      width: 40px;
+      height: 22px;
+      background: #d1d5db;
+      border-radius: 11px;
+      position: relative;
+      transition: background 0.25s ease;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .onboarding-toggle-slider::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.25s ease;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+
+    .onboarding-consent-row input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .onboarding-consent-row input:checked + .onboarding-toggle-slider {
+      background: #10b981;
+    }
+
+    .onboarding-consent-row input:checked + .onboarding-toggle-slider::after {
+      transform: translateX(18px);
+    }
+
+    .onboarding-consent-row input:focus-visible + .onboarding-toggle-slider {
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+    }
+
+    /* Onboarding Footer */
+    .onboarding-footer {
+      padding: 16px 24px 20px;
+      border-top: 1px solid rgba(30, 41, 59, 0.08);
+      background: #fff;
+    }
+
+    .onboarding-dots {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .onboarding-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 4px;
+      background: #d1d5db;
+      transition: width 0.3s ease, background 0.3s ease;
+    }
+
+    .onboarding-dot.active {
+      width: 24px;
+      background: #2563EB;
+    }
+
+    .onboarding-nav-btn {
+      width: 100%;
+      padding: 13px 20px;
+      background: #2563EB;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 0 20px rgba(37, 99, 235, 0.15), 0 4px 14px rgba(37, 99, 235, 0.2);
+      letter-spacing: -0.01em;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .onboarding-nav-btn:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px) scale(1.01);
+      box-shadow: 0 0 24px rgba(37, 99, 235, 0.2), 0 6px 20px rgba(37, 99, 235, 0.25);
+    }
+
+    .onboarding-nav-btn:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.4), 0 4px 14px rgba(37, 99, 235, 0.2);
+    }
+
+    /* ============================================ */
+    /* Improved Unsupported State                   */
+    /* ============================================ */
+
+    .unsupported-content {
+      text-align: left;
+    }
+
+    .unsupported-content strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .unsupported-content .unsupported-hint {
+      font-size: 12px;
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+
+    .unsupported-platforms {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .unsupported-platform-tag {
+      display: inline-block;
+      padding: 3px 10px;
+      background: rgba(217, 119, 6, 0.08);
+      border: 1px solid rgba(217, 119, 6, 0.15);
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #92400E;
+    }
+
+    /* ============================================ */
+    /* Beta tag for AI toggle                       */
+    /* ============================================ */
+
+    .beta-tag {
+      font-size: 10px;
+      font-weight: 500;
+      color: #6b7280;
+    }
+
+    /* ============================================ */
+    /* Methodology tooltip on result cards          */
+    /* ============================================ */
+
+    .dash-card-methodology {
+      display: none;
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 220px;
+      padding: 10px 12px;
+      background: #1e293b;
+      color: #e2e8f0;
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 1.45;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      z-index: 10;
+      pointer-events: none;
+      margin-bottom: 6px;
+    }
+
+    .dash-card-methodology::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: #1e293b;
+    }
+
+    .dash-card:hover .dash-card-methodology,
+    .dash-card:focus-within .dash-card-methodology {
+      display: block;
+    }
+
+    /* Dashboard CTA methodology link */
+    .dashboard-cta-methodology {
+      display: block;
+      text-align: center;
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 8px;
+      line-height: 1.5;
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <!-- ============================================ -->
+  <!-- Onboarding Overlay (shown on first install)  -->
+  <!-- ============================================ -->
+  <div id="onboardingOverlay" class="onboarding-overlay hidden" role="dialog" aria-label="Welcome to AlgorithmLens" aria-modal="true">
+    <div class="onboarding-slides">
+      <!-- Step 1: What AlgorithmLens Does -->
+      <div class="onboarding-slide" data-step="0" aria-label="Step 1: What AlgorithmLens does">
+        <div class="onboarding-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <h1 class="onboarding-title">See what's really in your feed</h1>
+        <p class="onboarding-description">
+          AlgorithmLens analyzes your social media to show you patterns in content, sources, ads, and tone — without judging or making assumptions.
+        </p>
+        <div style="padding: 12px 14px; background: #EFF6FF; border-radius: 12px;">
+          <p style="font-size: 12px; font-weight: 600; color: #1e40af; margin-bottom: 2px;">Free to use — Plus available</p>
+          <p style="font-size: 11px; color: #2563EB; line-height: 1.5;">All 6 analysis tabs are free. Upgrade to Plus for trend tracking over time.</p>
+        </div>
+      </div>
+
+      <!-- Step 2: How Scanning Works -->
+      <div class="onboarding-slide" data-step="1" aria-label="Step 2: How scanning works">
+        <h1 class="onboarding-title">How scanning works</h1>
+        <div class="onboarding-step-list">
+          <div class="onboarding-step">
+            <div class="onboarding-step-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </div>
+            <span class="onboarding-step-text">Visit any supported platform</span>
+          </div>
+          <div class="onboarding-step">
+            <div class="onboarding-step-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>
+            </div>
+            <span class="onboarding-step-text">Click Start Scan, then scroll naturally for 30+ seconds</span>
+          </div>
+          <div class="onboarding-step">
+            <div class="onboarding-step-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+            <span class="onboarding-step-text">See your analysis on the dashboard</span>
+          </div>
+        </div>
+        <p class="onboarding-description" style="margin-bottom: 12px;">
+          We capture what appears in your feed — nothing is stored on our servers until you choose to save.
+        </p>
+        <p style="font-size: 11px; color: #6b7280; font-weight: 600; margin-bottom: 6px;">Supported platforms</p>
+        <div class="onboarding-platform-list">
+          <span class="onboarding-platform-tag">Instagram</span>
+          <span class="onboarding-platform-tag">TikTok</span>
+          <span class="onboarding-platform-tag">YouTube</span>
+          <span class="onboarding-platform-tag">X / Twitter</span>
+          <span class="onboarding-platform-tag">Facebook</span>
+          <span class="onboarding-platform-tag">LinkedIn</span>
+        </div>
+      </div>
+
+      <!-- Step 3: AI Analysis Consent -->
+      <div class="onboarding-slide" data-step="2" aria-label="Step 3: AI analysis consent">
+        <h1 class="onboarding-title">AI analysis (optional)</h1>
+        <p class="onboarding-description">
+          AlgorithmLens can optionally use AI to analyze patterns in your feed — tone, political signals, and more. This is always opt-in, always transparent, and currently in beta with limited accuracy.
+        </p>
+        <div class="onboarding-consent-card">
+          <label class="onboarding-consent-row">
+            <span class="onboarding-consent-label">Enable AI analysis</span>
+            <input type="checkbox" id="onboardingAiToggle" checked>
+            <span class="onboarding-toggle-slider"></span>
+          </label>
+          <div class="onboarding-consent-detail">
+            <strong id="toggleSentDetails">What gets sent ›</strong>
+            <div id="sentDetailsBody" class="detail-body" style="display: none;">Post captions and hashtags only. No images, no account info.</div>
+            <strong id="toggleNotSentDetails">What doesn't get sent ›</strong>
+            <div id="notSentDetailsBody" class="detail-body" style="display: none;">Your identity, photos, videos, or browsing history.</div>
+          </div>
+        </div>
+        <p style="font-size: 11px; color: #6b7280; line-height: 1.5;">
+          You can change this anytime from the extension popup. AI analysis sends post text to Google's Gemini AI for processing. Google does not use this data to train AI models.
+        </p>
+      </div>
+    </div>
+
+    <div class="onboarding-footer">
+      <div class="onboarding-dots" aria-hidden="true">
+        <div class="onboarding-dot active" data-dot="0"></div>
+        <div class="onboarding-dot" data-dot="1"></div>
+        <div class="onboarding-dot" data-dot="2"></div>
+      </div>
+      <button id="onboardingNavBtn" class="onboarding-nav-btn" aria-label="Next step">Next</button>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- Main Popup Content                            -->
+  <!-- ============================================ -->
+  <div id="mainContent" class="container" style="display: none;">
     <div class="header">
       <img src="../icons/logo.png" alt="AlgorithmLens" class="header-logo">
       <!-- [Audit 6 C2] Version now matches manifest.json (1.1.0) -->
       <span class="version-tag">v1.1</span>
     </div>
 
-    <div id="status" class="status loading">
+    <!-- [Accessibility] aria-live="polite" announces status changes to screen readers -->
+    <div id="status" class="status loading" role="status" aria-live="polite" aria-atomic="true">
       Checking current page...
     </div>
 
@@ -711,22 +1450,35 @@
       <label class="toggle-container">
         <input type="checkbox" id="aiConsentToggle">
         <span class="toggle-slider"></span>
-        <span class="toggle-label">Include AI analysis</span>
+        <span class="toggle-label">Include AI analysis <span class="beta-tag">(beta, limited accuracy)</span></span>
       </label>
       <p class="ai-consent-info">
-        Analyzes tone and political signals. Only limited post data is sent.
+        Analyzes tone and political signals using Google Gemini. Classification is approximate and may miss context. Only limited post text is sent.
       </p>
     </div>
 
     <p class="session-hint">
-      Scroll your feed while scanning. Supports TikTok, Instagram, YouTube, Facebook, X, and Reddit.
+      Scroll naturally through your feed for at least 30 seconds. The more you scroll, the more complete your analysis will be.
     </p>
+
+    <!-- [Equalization P2] Recent Scans History -->
+    <div id="recentScansSection" class="recent-scans-section" style="display: none;">
+      <div class="recent-scans-header" id="recentScansHeader" role="button" tabindex="0" aria-expanded="true" aria-controls="recentScansList">
+        <span class="recent-scans-title">Recent Scans</span>
+        <span class="recent-scans-toggle expanded" id="recentScansToggle" aria-hidden="true">&#9660;</span>
+      </div>
+      <div id="recentScansList" class="recent-scans-list" role="list" aria-label="Recent scan history">
+        <!-- Dynamically populated -->
+      </div>
+    </div>
 
     <div class="footer">
       <!-- (Audit 8 Cycle 4) Added rel="noopener noreferrer" for security -->
       <a href="https://algorithmlens.com" target="_blank" rel="noopener noreferrer" aria-label="Visit algorithmlens.com (opens in new tab)">algorithmlens.com</a>
+      <span class="footer-separator">·</span>
+      <span id="planBadge" class="plan-badge free" style="display: none;">Free</span>
     </div>
-  </div>
+  </div> <!-- end mainContent -->
 
   <script type="module" src="popup.js"></script>
 </body>

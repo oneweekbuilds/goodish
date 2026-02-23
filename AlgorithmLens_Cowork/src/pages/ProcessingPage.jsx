@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { Loader2, CheckCircle, Circle, AlertCircle } from 'lucide-react';
+import { CheckCircle, Circle, AlertCircle, RefreshCw, ArrowLeft, Clock } from 'lucide-react';
 import { track, EVENTS } from '../lib/analytics';
 import { authenticatedFetch, isUnauthorized } from '../lib/api/authenticatedFetch';
 import { getApiBaseUrl } from '../lib/apiConfig';
@@ -24,18 +24,59 @@ const PROCESSING_STEPS_DESKTOP = [
   { id: 'generating', label: 'Generating insights', duration: 3000 },
 ];
 
+/**
+ * Overall timeout for the entire processing flow.
+ * After this, the user sees a timeout message with retry/cancel options.
+ * 2 minutes is generous for most scans; large feeds may take longer.
+ */
+const PROCESSING_TIMEOUT_MS = 120000;
+
+/**
+ * Polling interval for scan status checks.
+ * Each individual poll uses maxAttempts: 1 (no per-poll retries) since
+ * the polling loop itself provides retry behavior.
+ */
+const POLL_INTERVAL_MS = 2000;
+
+/**
+ * Number of consecutive poll failures before showing an error.
+ * At 2s intervals, 5 failures = ~10 seconds of unresponsive API.
+ */
+const MAX_CONSECUTIVE_FAILURES = 5;
+
 const ProcessingPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const scanId = searchParams.get('scanId');
-  
+
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [error, setError] = useState(null);
+  const [isTimedOut, setIsTimedOut] = useState(false);
   const [pollCount, setPollCount] = useState(0);
   const [isDesktopScan, setIsDesktopScan] = useState(false);
   const [showSignInPrompt, setShowSignInPrompt] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  // Refs for cleanup
+  const pollIntervalRef = useRef(null);
+  const timeoutRef = useRef(null);
+  const elapsedTimerRef = useRef(null);
+  const consecutiveFailuresRef = useRef(0);
+  const isMountedRef = useRef(true);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+    };
+  }, []);
 
   // Determine if this is a desktop scan by fetching scan data
+  // Uses default retry (3 attempts) since this is a one-time check
   useEffect(() => {
     if (!scanId) return;
 
@@ -47,7 +88,9 @@ const ProcessingPage = () => {
           const data = await response.json();
           const scanData = data.result || data.scan || data;
           const sourceType = scanData?.scan_metadata?.source_type || data?.source_type;
-          setIsDesktopScan(sourceType === 'DESKTOP_EXTENSION');
+          if (isMountedRef.current) {
+            setIsDesktopScan(sourceType === 'DESKTOP_EXTENSION');
+          }
         }
       } catch (err) {
         logError('ProcessingPage', 'Error checking scan source:', err);
@@ -77,12 +120,78 @@ const ProcessingPage = () => {
     return () => clearInterval(stepTimer);
   }, [isDesktopScan]);
 
+  // Track elapsed time for the user-facing timer
+  useEffect(() => {
+    elapsedTimerRef.current = setInterval(() => {
+      if (isMountedRef.current) {
+        setElapsedSeconds(prev => prev + 1);
+      }
+    }, 1000);
+
+    return () => {
+      if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+    };
+  }, []);
+
+  // Overall processing timeout
+  // After PROCESSING_TIMEOUT_MS, show a timeout message with retry/cancel options
+  useEffect(() => {
+    if (!scanId) return;
+
+    timeoutRef.current = setTimeout(() => {
+      if (isMountedRef.current && !error) {
+        setIsTimedOut(true);
+        logError('ProcessingPage', 'Processing timed out', { scanId, pollCount, elapsedSeconds });
+        // Stop polling
+        if (pollIntervalRef.current) {
+          clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = null;
+        }
+      }
+    }, PROCESSING_TIMEOUT_MS);
+
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [scanId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Handle retry: reset all state and restart polling
+  const handleRetry = useCallback(() => {
+    setError(null);
+    setIsTimedOut(false);
+    setCurrentStepIndex(0);
+    setPollCount(0);
+    setElapsedSeconds(0);
+    consecutiveFailuresRef.current = 0;
+
+    // Clear existing timers
+    if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+    // Restart the timeout
+    timeoutRef.current = setTimeout(() => {
+      if (isMountedRef.current) {
+        setIsTimedOut(true);
+        logError('ProcessingPage', 'Processing timed out on retry', { scanId });
+        if (pollIntervalRef.current) {
+          clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = null;
+        }
+      }
+    }, PROCESSING_TIMEOUT_MS);
+
+    // Force a re-render that triggers the polling effect
+    // by setting a unique pollCount seed
+    setPollCount(-1);
+  }, [scanId]);
+
   // Poll backend for real scan status
   // (#20) Real Progress Polling: When scanId is available, the component polls
   // the backend for authoritative status. This is prioritized over simulated timers.
   // Once status='completed', the component navigates to results.
-  // Polling uses exponential backoff principles: starts at 2s, could increase to
-  // reduce server load if needed (currently fixed at 2s for snappy UX).
+  //
+  // Each individual poll uses maxAttempts: 1 because the polling loop itself
+  // provides retry behavior. Adding per-poll retries would cause cascading delays.
   useEffect(() => {
     if (!scanId) {
       // If no scanId, simulate processing and redirect
@@ -94,20 +203,30 @@ const ProcessingPage = () => {
     }
 
     const pollStatus = async () => {
+      if (!isMountedRef.current || isTimedOut) return;
+
       const apiBase = getApiBaseUrl();
       try {
-        // Use lightweight status endpoint for efficient polling
-        const response = await authenticatedFetch(`${apiBase}/api/scans/${scanId}/status`);
+        // Use lightweight status endpoint for efficient polling.
+        // maxAttempts: 1 — no per-poll retries; the polling loop retries naturally.
+        const response = await authenticatedFetch(
+          `${apiBase}/api/scans/${scanId}/status`,
+          {},
+          { maxAttempts: 1, context: 'ProcessingPage:poll' }
+        );
+
+        // Reset consecutive failure counter on any response
+        consecutiveFailuresRef.current = 0;
 
         if (!response.ok) {
           if (response.status === 404) {
             // Scan not found yet, keep polling
-            setPollCount((prev) => prev + 1);
+            if (isMountedRef.current) setPollCount((prev) => prev + 1);
             return;
           }
           if (isUnauthorized(response)) {
             // 401 Unauthorized - show sign-in prompt
-            setShowSignInPrompt(true);
+            if (isMountedRef.current) setShowSignInPrompt(true);
             return;
           }
           throw new Error(`Failed to fetch scan status: ${response.status}`);
@@ -130,31 +249,56 @@ const ProcessingPage = () => {
 
         // Check for error status
         if (data.status === 'error' || data.status === 'failed') {
-          setError(data.error_message || 'Scan processing failed');
+          if (isMountedRef.current) {
+            setError(data.error_message || 'Scan processing failed. Please try again.');
+          }
           return;
         }
 
         // Still processing, continue polling
-        setPollCount((prev) => prev + 1);
+        if (isMountedRef.current) setPollCount((prev) => prev + 1);
       } catch (err) {
         logError('ProcessingPage', 'Error polling scan status:', err);
-        // Don't set error immediately, just log and continue
-        if (pollCount > 60) {
-          // After 120 seconds (60 polls * 2s), show error
-          setError('Your scan is taking longer than expected. This could be due to a slow connection or high server load. Please try again or check your scan history later.');
+
+        // Track consecutive failures
+        consecutiveFailuresRef.current += 1;
+
+        if (consecutiveFailuresRef.current >= MAX_CONSECUTIVE_FAILURES && isMountedRef.current) {
+          setError(
+            'Unable to reach the server. This may be due to a slow connection or high server load. ' +
+            'You can try again or check your scan history later.'
+          );
+          // Stop polling
+          if (pollIntervalRef.current) {
+            clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
+          }
         }
       }
     };
 
-    // Poll every 2 seconds (fixed interval for now, could add exponential backoff)
-    const pollInterval = setInterval(pollStatus, 2000);
+    // Poll every 2 seconds
+    pollIntervalRef.current = setInterval(pollStatus, POLL_INTERVAL_MS);
 
     // Initial poll
     pollStatus();
 
     // Cleanup
-    return () => clearInterval(pollInterval);
-  }, [scanId, navigate, pollCount]);
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    };
+  }, [scanId, navigate, isTimedOut]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Format elapsed time for display
+  const formatElapsed = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    if (mins > 0) return `${mins}m ${secs}s`;
+    return `${secs}s`;
+  };
 
   // Show sign-in prompt if 401 error
   if (showSignInPrompt) {
@@ -174,6 +318,49 @@ const ProcessingPage = () => {
     );
   }
 
+  // Timeout state — friendly message with retry and cancel options
+  if (isTimedOut) {
+    return (
+      <>
+        <SEO title="Processing Scan" noIndex={true} />
+        <div className="min-h-screen bg-bg-page py-24 px-6 flex items-center justify-center">
+          <div className="max-w-md w-full bg-white rounded-2xl shadow-md border border-border-light p-8 text-center">
+            <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Clock size={32} className="text-amber-500" />
+            </div>
+            <h1 className="text-2xl font-bold text-text-main mb-2">Taking Longer Than Expected</h1>
+            <p className="text-text-muted mb-6">
+              Analysis is taking longer than expected. This can happen with large feeds or during high server load.
+              You can wait and try again, or return to the dashboard.
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <button
+                onClick={handleRetry}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-xl font-semibold hover:bg-primary-blue/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue focus-visible:ring-offset-2"
+              >
+                <RefreshCw size={18} />
+                Try Again
+              </button>
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="inline-flex items-center gap-2 px-6 py-3 border border-border-light text-text-main rounded-xl font-semibold hover:bg-primary-blue/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue focus-visible:ring-offset-2"
+              >
+                <ArrowLeft size={18} />
+                Dashboard
+              </button>
+            </div>
+            {scanId && (
+              <p className="text-xs text-text-muted/60 mt-4">
+                Your scan may still be processing. Check your scan history later to see if it completed.
+              </p>
+            )}
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Error state — with retry and cancel options
   if (error) {
     return (
       <>
@@ -185,17 +372,30 @@ const ProcessingPage = () => {
           </div>
           <h1 className="text-2xl font-bold text-text-main mb-2">Processing Error</h1>
           <p className="text-text-muted mb-6">{error}</p>
-          <button
-            onClick={() => navigate('/start')}
-            className="px-6 py-3 bg-primary-blue text-white rounded-xl font-semibold hover:bg-primary-blue/90 transition-colors"
-          >
-            Try Again
-          </button>
+          <div className="flex items-center justify-center gap-3">
+            <button
+              onClick={handleRetry}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-xl font-semibold hover:bg-primary-blue/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue focus-visible:ring-offset-2"
+            >
+              <RefreshCw size={18} />
+              Try Again
+            </button>
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="inline-flex items-center gap-2 px-6 py-3 border border-border-light text-text-main rounded-xl font-semibold hover:bg-primary-blue/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue focus-visible:ring-offset-2"
+            >
+              <ArrowLeft size={18} />
+              Dashboard
+            </button>
+          </div>
         </div>
         </div>
       </>
     );
   }
+
+  const steps = isDesktopScan ? PROCESSING_STEPS_DESKTOP : PROCESSING_STEPS_MOBILE;
+  const progressPercent = Math.min(((currentStepIndex + 1) / steps.length) * 100, 95);
 
   return (
     <>
@@ -222,13 +422,13 @@ const ProcessingPage = () => {
           </h1>
           <p className="text-text-muted mb-8" aria-live="polite">
             {isDesktopScan
-              ? "Processing your desktop scan…"
-              : "Processing your recording…"}
+              ? "Processing your desktop scan\u2026"
+              : "Processing your recording\u2026"}
           </p>
 
           {/* Processing Steps */}
           <div className="space-y-4 text-left mb-8">
-            {(isDesktopScan ? PROCESSING_STEPS_DESKTOP : PROCESSING_STEPS_MOBILE).map((step, index) => {
+            {steps.map((step, index) => {
               const isComplete = index < currentStepIndex;
               const isCurrent = index === currentStepIndex;
 
@@ -265,23 +465,26 @@ const ProcessingPage = () => {
           <div
             className="h-2 bg-border-light rounded-full overflow-hidden"
             role="progressbar"
-            aria-valuenow={Math.min(((currentStepIndex + 1) / (isDesktopScan ? PROCESSING_STEPS_DESKTOP : PROCESSING_STEPS_MOBILE).length) * 100, 95)}
+            aria-valuenow={progressPercent}
             aria-valuemin={0}
             aria-valuemax={100}
             aria-label="Scan progress"
           >
             <div
               className="h-full bg-primary-blue rounded-full transition-all duration-1000 ease-out"
-              style={{ width: `${Math.min(((currentStepIndex + 1) / (isDesktopScan ? PROCESSING_STEPS_DESKTOP : PROCESSING_STEPS_MOBILE).length) * 100, 95)}%` }}
+              style={{ width: `${progressPercent}%` }}
             />
           </div>
 
-          {/* Scan tracking indicator - no raw ID shown to user */}
+          {/* Elapsed time indicator */}
+          <p className="text-xs text-text-muted/60 mt-3">
+            {formatElapsed(elapsedSeconds)} elapsed
+          </p>
         </div>
 
         {/* Cancel link */}
-        <Link to="/start" className="block text-center text-sm text-text-muted hover:text-primary-blue transition-colors mt-6 py-2">
-          Cancel and go back
+        <Link to="/dashboard" className="block text-center text-sm text-text-muted hover:text-primary-blue transition-colors mt-6 py-2">
+          Cancel and return to dashboard
         </Link>
 
         {/* Privacy note - only show for mobile scans */}
@@ -297,5 +500,3 @@ const ProcessingPage = () => {
 };
 
 export default ProcessingPage;
-
-

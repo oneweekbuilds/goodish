@@ -33,6 +33,7 @@ import type {
 import { supabase } from '../supabase';
 import { api } from '../api';
 import { captureError } from '../sentry';
+import { generateUUID } from '../utils';
 
 // ============================================
 // Pipeline Types
@@ -87,7 +88,7 @@ export interface PipelineConfig {
 }
 
 const DEFAULT_CONFIG: Required<Omit<PipelineConfig, 'apiKey'>> = {
-  maxFramesToAnalyze: 0,
+  maxFramesToAnalyze: 200, // Safety cap to bound cost; 0 = no limit
   enableDeduplication: true,
   enablePersistence: true,
   enableBackendEnrichment: true,
@@ -177,12 +178,23 @@ export class BroadcastAnalysisPipeline {
         progress,
       );
 
+      // After analyzing, the getFrameBase64 function still holds references to base64 data,
+      // which is expected and necessary for deduplication and building stages.
+      // This is passed by reference from the parent, so cleanup is handled externally.
+
       if (this.aborted) {
         throw new PipelineError('Pipeline aborted by user', 'ANALYZING');
       }
 
       progress.itemsExtracted = allExtractedItems.length;
 
+      // If no items were extracted from any frame, this is a fatal error
+      if (allExtractedItems.length === 0 && !this.aborted) {
+        throw new PipelineError(
+          "We could not read any posts from the captured frames. This can happen if the feed was not visible during recording, or if the frames were too blurry. Try scrolling more slowly next time.",
+          "ANALYZING",
+        );
+      }
       // ── Stage 3: DEDUPLICATING ──
       let finalItems: GeminiExtractedItem[];
 
@@ -201,7 +213,9 @@ export class BroadcastAnalysisPipeline {
           progress.itemsDeduplicated = finalItems.length;
         } catch (error) {
           // Deduplication failure is non-fatal — use raw items
-          console.warn('Deduplication failed, using raw extracted items:', error);
+          if (__DEV__) {
+            console.warn('Deduplication failed, using raw extracted items:', error);
+          }
           finalItems = allExtractedItems;
           progress.itemsDeduplicated = allExtractedItems.length;
         }
@@ -224,11 +238,26 @@ export class BroadcastAnalysisPipeline {
       );
 
       // ── Stage 5: SAVING ──
+      let saveWarning: string | null = null;
       if (this.config.enablePersistence) {
         progress.stage = 'SAVING';
         this.reportProgress(progress);
 
-        await this.persistScan(scanId, scanResult, userId, platform);
+        try {
+          await this.persistScan(scanId, scanResult, userId, platform);
+        } catch (saveError) {
+          // Saving is non-fatal — show results anyway, warn user
+          const msg = saveError instanceof Error ? saveError.message : String(saveError);
+          if (__DEV__) {
+            console.warn('Failed to save scan to history (non-fatal):', msg);
+          }
+          captureError(
+            saveError instanceof Error ? saveError : new Error(msg),
+            'BroadcastAnalysisPipeline:persistScan',
+            { scanId, platform }
+          );
+          saveWarning = 'Your results are ready, but we couldn\'t save them to your history. They\'ll only be available during this session.';
+        }
       }
 
       // ── Stage 6: COMPLETE ──
@@ -237,12 +266,19 @@ export class BroadcastAnalysisPipeline {
       progress.elapsedMs = Date.now() - this.startTime;
       this.reportProgress(progress);
 
+      // If save failed, the result still includes a warning the UI can show
+      if (saveWarning && scanResult.debug) {
+        scanResult.debug.warnings = [...(scanResult.debug.warnings || []), { code: 'SAVE_FAILED', message: saveWarning }];
+      }
+
       this.callbacks.onComplete(scanId, scanResult);
 
       // Fire-and-forget backend enrichment
       if (this.config.enableBackendEnrichment) {
         this.requestBackendEnrichment(scanId, scanResult).catch((err) => {
-          console.warn('Backend enrichment failed (non-fatal):', err?.message);
+          if (__DEV__) {
+            console.warn('Backend enrichment failed (non-fatal):', err?.message);
+          }
         });
       }
     } catch (error) {
@@ -268,6 +304,7 @@ export class BroadcastAnalysisPipeline {
   /**
    * Analyzes frames with controlled concurrency.
    * Sends `concurrency` frames at a time to Gemini Flash.
+   * Explicitly nulls out processed frame references to help GC release memory after each batch.
    */
   private async analyzeFrames(
     frames: BroadcastFrame[],
@@ -303,6 +340,9 @@ export class BroadcastAnalysisPipeline {
         // Rejected promises are logged inside analyzeSingleFrame
       }
 
+      // Explicitly null out processed batch to help GC release memory
+      batch.length = 0;
+
       // Update progress
       progress.currentFrame = Math.min(i + concurrency, frames.length);
       progress.itemsExtracted = allItems.length;
@@ -329,7 +369,9 @@ export class BroadcastAnalysisPipeline {
       const base64 = getFrameBase64(filename);
 
       if (!base64) {
-        console.warn(`Frame ${frameNumber}: no base64 data available, skipping`);
+        if (__DEV__) {
+          console.warn(`Frame ${frameNumber}: no base64 data available, skipping`);
+        }
         return [];
       }
 
@@ -345,7 +387,9 @@ export class BroadcastAnalysisPipeline {
       return response.items;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.warn(`Frame ${frameNumber}: analysis failed — ${message}`);
+      if (__DEV__) {
+        console.warn(`Frame ${frameNumber}: analysis failed — ${message}`);
+      }
 
       // Non-fatal: skip this frame but continue the pipeline
       if (error instanceof GeminiApiError && !error.retryable) {
@@ -422,7 +466,7 @@ export class BroadcastAnalysisPipeline {
       const cat = item.topics?.primary_category || 'Other';
       topicCounts[cat] = (topicCounts[cat] || 0) + 1;
     });
-    const topicDistribution = Object.entries(topicCounts)
+    const topicDistributionRaw = Object.entries(topicCounts)
       .map(([category, count]) => ({
         category,
         count,
@@ -431,6 +475,9 @@ export class BroadcastAnalysisPipeline {
           : 0,
       }))
       .sort((a, b) => b.count - a.count);
+
+    // Correct rounding so percentages sum to exactly 100%
+    const topicDistribution = correctPercentageRounding(topicDistributionRaw);
 
     const politicalItems = feedItems.filter((i) => i.political?.is_political).length;
 
@@ -571,7 +618,9 @@ export class BroadcastAnalysisPipeline {
     const { error: insertError } = await Promise.race([insertPromise, timeoutPromise]);
 
     if (insertError) {
-      console.warn('Supabase insert error:', insertError.message);
+      if (__DEV__) {
+        console.warn('Supabase insert error:', insertError.message);
+      }
       throw new PipelineError(
         `Failed to save scan: ${insertError.message}`,
         'SAVING',
@@ -637,7 +686,7 @@ export class BroadcastAnalysisPipeline {
   // Helpers
   // ============================================
 
-  private getTopCreators(feedItems: FeedItem[]): string[] {
+  private getTopCreators(feedItems: FeedItem[]): Array<{ name: string; count: number }> {
     const counts: Record<string, number> = {};
     feedItems.forEach((item) => {
       const handle = item.account?.account_handle || 'unknown';
@@ -646,7 +695,7 @@ export class BroadcastAnalysisPipeline {
     return Object.entries(counts)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 10)
-      .map(([handle]) => handle);
+      .map(([name, count]) => ({ name, count }));
   }
 
   private reportProgress(progress: PipelineProgress): void {
@@ -694,16 +743,21 @@ function validateAiDisclosure(value: string | null | undefined): 'LABELED_AI' | 
   return null;
 }
 
-// ============================================
-// Helpers
-// ============================================
+// generateUUID imported from ../utils
 
-function generateUUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
+/**
+ * Adjusts rounded percentages so they sum to exactly 100%.
+ * Uses largest-remainder method to distribute rounding error.
+ */
+function correctPercentageRounding<T extends { percentage: number }>(items: T[]): T[] {
+  if (items.length === 0) return items;
+  const total = items.reduce((sum, item) => sum + item.percentage, 0);
+  if (total === 0 || Math.abs(total - 100) < 0.01) return items;
+  const diff = 100 - total;
+  // Apply the correction to the largest item
+  const result = items.map((item) => ({ ...item }));
+  result[0].percentage = Math.round((result[0].percentage + diff) * 100) / 100;
+  return result;
 }
 
 // ============================================

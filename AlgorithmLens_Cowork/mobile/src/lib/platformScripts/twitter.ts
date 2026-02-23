@@ -25,36 +25,13 @@ export const TWITTER_SCRIPT = `
     const style = document.createElement('style');
     style.id = '__alg_video_blocker';
     style.textContent = [
-      // Prevent videos from going fullscreen
-      'video { max-height: 400px !important; object-fit: cover !important; }',
+      // Only hide fullscreen button — allow normal video playback
       'video::-webkit-media-controls-fullscreen-button { display: none !important; }',
-
-      // Hide fullscreen video overlays and modals
-      '[class*="VideoModal"], [class*="fullscreen"], [role="presentation"][style*="position: fixed"],' +
-      'div[style*="position: fixed"][style*="z-index"][style*="inset: 0"]' +
-      '{ display: none !important; visibility: hidden !important; }',
-
-      // Allow vertical scrolling over videos but block tap/horizontal gestures
-      'article video { touch-action: pan-y !important; }',
     ].join('\\n');
     document.head.appendChild(style);
 
-    // Override fullscreen API to prevent video fullscreen
-    const noop = function() { return Promise.reject('blocked'); };
-    if (Element.prototype.requestFullscreen) {
-      Element.prototype.requestFullscreen = noop;
-    }
-    if (Element.prototype.webkitRequestFullscreen) {
-      Element.prototype.webkitRequestFullscreen = noop;
-    }
-    if (HTMLVideoElement.prototype.webkitEnterFullscreen) {
-      HTMLVideoElement.prototype.webkitEnterFullscreen = noop;
-    }
-
-    // ONLY block navigation that would leave the feed (e.g., Spaces)
-    // Allow normal interaction with tweets, videos, and other UI
+    // Only block navigation to Spaces — allow all other interaction
     document.addEventListener('click', function(e) {
-      // Block navigation to Spaces which could take over the interface
       var spacesLink = e.target.closest('a[href*="/spaces/"]');
       if (spacesLink) {
         e.preventDefault();
@@ -106,7 +83,11 @@ export const TWITTER_SCRIPT = `
   }
 
   suppressBanners();
-  setInterval(suppressBanners, 2000);
+  setTimeout(suppressBanners, 1000);
+  setTimeout(suppressBanners, 3000);
+  setTimeout(suppressBanners, 6000);
+  var bannerObserver = new MutationObserver(function() { suppressBanners(); });
+  setTimeout(function() { bannerObserver.observe(document.body, { childList: true, subtree: true }); }, 6000);
 
   // ── Detect active tab (For you vs Following) ──────────────
   function getActiveTab() {

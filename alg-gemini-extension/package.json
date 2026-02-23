@@ -12,14 +12,12 @@
     "test:utils": "node test/test-all-platforms.js"
   },
   "devDependencies": {
-    "vite": "^5.4.21",
     "@crxjs/vite-plugin": "^2.0.0-beta.25",
+    "jsdom": "^24.0.0",
     "rimraf": "^5.0.5",
-    "jsdom": "^24.0.0"
+    "vite": "^5.4.21"
+  },
+  "dependencies": {
+    "@sentry/browser": "^10.39.0"
   }
 }
-
-
-
-
-

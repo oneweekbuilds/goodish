@@ -637,11 +637,11 @@ function scanRedditFeed() {
 
   // Debug: If no containers, log what we can find
   if (containers.length === 0 && CAPTURE_DEBUG) {
-    console.log('[AlgorithmLens][Reddit] No containers found. Debug info:');
-    console.log('[AlgorithmLens][Reddit]   - shreddit-post count:', document.querySelectorAll('shreddit-post').length);
-    console.log('[AlgorithmLens][Reddit]   - article count:', document.querySelectorAll('article').length);
-    console.log('[AlgorithmLens][Reddit]   - [data-testid] count:', document.querySelectorAll('[data-testid]').length);
-    console.log('[AlgorithmLens][Reddit]   - div.thing.link count:', document.querySelectorAll('div.thing.link').length);
+    if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Reddit] No containers found. Debug info:');
+    if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Reddit]   - shreddit-post count:', document.querySelectorAll('shreddit-post').length);
+    if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Reddit]   - article count:', document.querySelectorAll('article').length);
+    if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Reddit]   - [data-testid] count:', document.querySelectorAll('[data-testid]').length);
+    if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Reddit]   - div.thing.link count:', document.querySelectorAll('div.thing.link').length);
   }
 
   // Filter out non-post containers
@@ -716,7 +716,7 @@ function scanRedditFeed() {
         issues.push({ index, issue: code });
       }
     } catch (err) {
-      console.warn(`[AlgorithmLens][Reddit] Error parsing container ${index}:`, err.message);
+      if (CAPTURE_DEBUG) console.warn(`[AlgorithmLens][Reddit] Error parsing container ${index}:`, err.message);
       const code = 'PARSE_ERROR';
       rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
       issues.push({ index, issue: code, error: err.message });
@@ -729,7 +729,7 @@ function scanRedditFeed() {
   // Reliability > clever filtering. Some noise is OK; 0 items is NOT OK.
   // =========================================================================
   if (posts.length === 0 && containers.length > 0) {
-    console.warn('[AlgorithmLens][Reddit] No posts extracted from', containers.length, 'containers; using fallback extraction.');
+    if (CAPTURE_DEBUG) console.warn('[AlgorithmLens][Reddit] No posts extracted from', containers.length, 'containers; using fallback extraction.');
 
     const fallbackPosts = containers.map((container, index) => {
       const tag = container.tagName?.toLowerCase() || 'unknown';
@@ -831,7 +831,7 @@ function scanRedditFeed() {
   }
 
   if (posts.length === 0) {
-    console.warn('[AlgorithmLens][Reddit] No posts extracted. Issues:', issues);
+    if (CAPTURE_DEBUG) console.warn('[AlgorithmLens][Reddit] No posts extracted. Issues:', issues);
   }
 
   if (CAPTURE_DEBUG) {

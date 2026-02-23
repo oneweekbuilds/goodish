@@ -4,60 +4,88 @@ import {
   Text,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { RFValue } from 'react-native-responsive-fontsize';
+import { useTheme } from '../../context/ThemeContext';
+import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
 
 interface MetricCardProps {
   headline: string;
   value?: string | null;
   microLine?: string | null;
+  /** Contextual insight line — e.g. "That's lower than average" */
+  contextLine?: string | null;
   denominatorText?: string;
   fallbackText?: string;
   hasData: boolean;
+  /** Optional icon rendered to the left of the value */
+  icon?: React.ReactNode;
 }
 
-export const MetricCard: React.FC<MetricCardProps> = ({
+const MetricCardComponent: React.FC<MetricCardProps> = ({
   headline,
   value = null,
   microLine = null,
+  contextLine = null,
   denominatorText = '',
   fallbackText = 'No data',
   hasData,
+  icon,
 }) => {
+  const { colors, shadows } = useTheme();
+  const accessibilityLabel = `${headline}${value ? ': ' + value : ''}${microLine ? '. ' + microLine : ''}${contextLine ? '. ' + contextLine : ''}`;
+
   return (
     <LinearGradient
-      colors={['#FFFFFF', '#FAFBFE']}
+      colors={[colors.bgCard, colors.bgCardGradientEnd]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
       style={{
-        borderRadius: 14,
-        padding: 12,
+        borderRadius: RADIUS.lg,
+        padding: SPACING.lg,
         borderWidth: 1,
-        borderColor: 'rgba(37, 99, 235, 0.08)',
+        borderColor: colors.brandTintBorder,
+        ...shadows.soft,
       }}
       accessible={true}
-      accessibilityLabel={`${headline}${value ? ': ' + value : ''}`}
+      accessibilityLabel={accessibilityLabel}
     >
       {hasData ? (
         <>
-          {/* H4: Reduced from 28px to 22px */}
+          {/* Value row with optional icon */}
           {value && (
-            <Text
-              style={{
-                fontSize: 22,
-                fontWeight: '700',
-                color: '#1E293B',
-                marginBottom: 4,
-              }}
-            >
-              {value}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.xs }}>
+              {icon && (
+                <View
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: RADIUS.md,
+                    backgroundColor: colors.blue50,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  {icon}
+                </View>
+              )}
+              <Text
+                style={{
+                  fontSize: RFValue(22),
+                  fontWeight: '700',
+                  color: colors.textMain,
+                  letterSpacing: -0.5,
+                }}
+              >
+                {value}
+              </Text>
+            </View>
           )}
 
           <Text
             style={{
-              fontSize: 13,
-              color: '#475569',
-              fontWeight: '500',
-              marginBottom: microLine || denominatorText ? 2 : 0,
+              ...TYPOGRAPHY.label,
+              color: colors.textMuted,
+              marginBottom: microLine || denominatorText || contextLine ? SPACING.xxs : 0,
             }}
           >
             {headline}
@@ -66,21 +94,34 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           {microLine && (
             <Text
               style={{
-                fontSize: 11,
-                color: '#94A3B8',
-                fontWeight: '500',
+                ...TYPOGRAPHY.caption,
+                color: colors.textSecondary,
+                marginTop: SPACING.xxs,
               }}
             >
               {microLine}
             </Text>
           )}
 
+          {contextLine && (
+            <Text
+              style={{
+                ...TYPOGRAPHY.caption,
+                color: colors.primary,
+                fontWeight: '500',
+                marginTop: SPACING.xs,
+              }}
+            >
+              {contextLine}
+            </Text>
+          )}
+
           {denominatorText && (
             <Text
               style={{
-                fontSize: 11,
-                color: '#94A3B8',
-                marginTop: 4,
+                ...TYPOGRAPHY.caption,
+                color: colors.textSecondary,
+                marginTop: SPACING.xs,
               }}
             >
               {denominatorText}
@@ -90,11 +131,11 @@ export const MetricCard: React.FC<MetricCardProps> = ({
       ) : (
         <Text
           style={{
-            fontSize: 13,
-            color: '#94A3B8',
+            ...TYPOGRAPHY.bodySmall,
+            color: colors.textSecondary,
             fontStyle: 'italic',
             textAlign: 'center',
-            paddingVertical: 12,
+            paddingVertical: SPACING.md,
           }}
         >
           {fallbackText}
@@ -103,3 +144,5 @@ export const MetricCard: React.FC<MetricCardProps> = ({
     </LinearGradient>
   );
 };
+
+export const MetricCard = React.memo(MetricCardComponent);

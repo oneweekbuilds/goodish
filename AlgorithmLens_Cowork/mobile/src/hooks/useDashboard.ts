@@ -8,6 +8,13 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { captureError, captureMessage } from '../lib/sentry';
+
+// Supabase PostgreSQL error code for table not found
+const SUPABASE_RELATION_NOT_FOUND = '42P01';
+
+// Timeout for Supabase queries (ms)
+const SUPABASE_QUERY_TIMEOUT_MS = 10000;
 
 export interface ScanDetail {
   id: string;
@@ -19,8 +26,12 @@ export interface ScanDetail {
   ad_percentage: number;
   suggested_count: number;
   suggested_percentage: number;
-  raw_data: any;
+  raw_data: Record<string, unknown>;
   user_id: string;
+  /** Source type: 'MOBILE_APP' (WebView), 'MOBILE_BROADCAST', etc. */
+  source_type?: string;
+  /** Duration of broadcast recording in seconds, if applicable. */
+  duration_seconds?: number;
 }
 
 interface UseDashboardReturn {
@@ -49,16 +60,22 @@ export const useDashboard = (): UseDashboardReturn => {
     setError(null);
 
     try {
-      const { data, error: fetchError } = await supabase
+      const queryPromise = supabase
         .from('scans')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(50);
 
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Supabase query timed out')), SUPABASE_QUERY_TIMEOUT_MS)
+      );
+
+      const { data, error: fetchError } = await Promise.race([queryPromise, timeoutPromise]);
+
       if (fetchError) {
         // If the table doesn't exist yet, just show empty state
-        if (fetchError.code === '42P01' || fetchError.message?.includes('relation')) {
+        if (fetchError.code === SUPABASE_RELATION_NOT_FOUND || fetchError.message?.includes('relation')) {
           setScans([]);
           setError(null);
         } else {
@@ -67,10 +84,16 @@ export const useDashboard = (): UseDashboardReturn => {
       } else {
         setScans(data || []);
       }
-    } catch (err: any) {
-      const errorMessage = err?.message || 'Could not load scan history';
-      console.warn('useDashboard fetch error:', errorMessage);
-      setError(errorMessage);
+    } catch (err: unknown) {
+      const rawMessage = err instanceof Error ? err.message : (typeof err === 'string' ? err : 'Unknown error');
+      captureMessage('useDashboard fetch error', 'warning', { error: rawMessage, userId: user.id });
+      captureError(
+        err instanceof Error ? err : new Error(rawMessage),
+        'useDashboard:fetchScans',
+        { userId: user.id }
+      );
+      // User-friendly error — never show technical details
+      setError('We couldn\'t load your scan history right now. Pull down to try again.');
       setScans([]);
     } finally {
       setLoading(false);
@@ -79,7 +102,7 @@ export const useDashboard = (): UseDashboardReturn => {
 
   const refresh = useCallback(async () => {
     await fetchScans();
-  }, [fetchScans]);
+  }, [fetchScans]); // refresh is already wrapped in useCallback
 
   // Fetch on mount (once) and when user changes
   useEffect(() => {

@@ -1,0 +1,13 @@
+{
+  "name": "expo-shortcuts",
+  "platforms": ["ios"],
+  "ios": {
+    "modules": ["ShortcutsModule"],
+    "appDelegateSubscribers": [],
+    "podspec": {
+      "name": "ExpoShortcuts",
+      "source_files": "ios/**/*.swift",
+      "frameworks": ["AppIntents"]
+    }
+  }
+}

@@ -23,41 +23,22 @@ export const TIKTOK_SCRIPT = `
     const style = document.createElement('style');
     style.id = '__alg_video_constrainer';
     style.textContent = [
-      // TikTok videos are fullscreen — constrain to 60vh
-      'video { max-height: 60vh !important; object-fit: cover !important; }',
+      // TikTok: Allow videos to use up to 85vh — closer to native experience
+      // while still leaving room for the scan overlay at the bottom
+      'video { max-height: 85vh !important; object-fit: contain !important; }',
       'video::-webkit-media-controls-fullscreen-button { display: none !important; }',
 
-      // Hide fullscreen video overlays
-      '[class*="FullScreen"], [class*="fullscreen"], [role="presentation"][style*="position: fixed"],' +
-      'div[style*="position: fixed"][style*="z-index"][style*="inset: 0"]' +
-      '{ display: none !important; visibility: hidden !important; }',
-
-      // Constrain video containers
+      // Constrain video containers to fit within viewport with overlay space
       '[class*="VideoContainer"], [class*="video-container"], [class*="FeedContainer"]' +
-      '{ max-height: 60vh !important; overflow: hidden !important; }',
+      '{ max-height: 85vh !important; overflow: hidden !important; }',
 
-      // Allow vertical scrolling over videos (pan-y) but block horizontal swipes
-      'video { touch-action: pan-y !important; }',
+      // Allow vertical scrolling and normal touch interaction
+      'video { touch-action: manipulation !important; }',
     ].join('\\n');
     document.head.appendChild(style);
 
-    // Override fullscreen API
-    const noop = function() { return Promise.reject('blocked'); };
-    if (Element.prototype.requestFullscreen) {
-      Element.prototype.requestFullscreen = noop;
-    }
-    if (Element.prototype.webkitRequestFullscreen) {
-      Element.prototype.webkitRequestFullscreen = noop;
-    }
-    if (HTMLVideoElement.prototype.webkitEnterFullscreen) {
-      HTMLVideoElement.prototype.webkitEnterFullscreen = noop;
-    }
-
-    // DO NOT block video play — allow users to watch videos
-    // ONLY block navigation away from the feed
+    // Only block navigation away from the feed — allow all video interaction
     document.addEventListener('click', function(e) {
-      // Block navigation that would leave the feed (e.g., clicking on a creator profile link)
-      // but allow taps on the video itself or UI controls
       var link = e.target.closest('a[href*="/video/"]');
       if (link) {
         e.preventDefault();
@@ -108,7 +89,11 @@ export const TIKTOK_SCRIPT = `
   }
 
   suppressBanners();
-  setInterval(suppressBanners, 2000);
+  setTimeout(suppressBanners, 1000);
+  setTimeout(suppressBanners, 3000);
+  setTimeout(suppressBanners, 6000);
+  var bannerObserver = new MutationObserver(function() { suppressBanners(); });
+  setTimeout(function() { bannerObserver.observe(document.body, { childList: true, subtree: true }); }, 6000);
 
   // ── Extraction helpers ─────────────────────────────────────
 

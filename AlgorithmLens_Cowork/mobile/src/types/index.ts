@@ -4,6 +4,25 @@
  * Matches the UnifiedScanResult schema from backend/unified_scan_models.py
  */
 
+// Re-export broadcast and streak types for convenient imports
+export type {
+  BroadcastSession,
+  BroadcastStatus,
+  BroadcastFrame,
+  FrameAnalysisResult,
+  StreamConfig,
+  BroadcastCaptureInfo,
+  ScanMode,
+  SupportedPlatform,
+} from './broadcast';
+
+export type {
+  StreakData,
+  StreakDisplayState,
+  StreakMilestone,
+  FeedScore,
+} from './streak';
+
 // ============================================
 // Feed Item Capture (from WebView JS injection)
 // ============================================
@@ -29,7 +48,7 @@ export interface FeedItemCapture {
 export interface ScanMetadata {
   scan_id: string;
   created_at: string;
-  source_type: 'MOBILE_APP' | 'DESKTOP_EXTENSION' | 'MOBILE_VIDEO';
+  source_type: 'MOBILE_APP' | 'DESKTOP_EXTENSION' | 'MOBILE_VIDEO' | 'MOBILE_BROADCAST';
   platform: string;
   user_identifier?: string;
   app_scan_version?: string;
@@ -40,6 +59,15 @@ export interface Environment {
   device_os?: string;
   device_os_version?: string;
   screen_resolution?: { width: number; height: number };
+  broadcast_capture?: {
+    is_broadcast_based: true;
+    broadcast_method: 'REPLAYKIT' | 'MEDIA_PROJECTION';
+    frames_captured: number;
+    frames_unique: number;
+    duration_seconds: number;
+    average_frame_interval_seconds: number;
+    on_device_ocr_used: boolean;
+  };
 }
 
 export interface FeedItemAccount {
@@ -94,6 +122,8 @@ export interface FeedItem {
   source_origin?: 'suggested' | 'followed' | null;
   ai_disclosure?: 'LABELED_AI' | 'NOT_LABELED' | null;
   influenceSignals?: string[];
+  /** Vision model confidence score for broadcast-captured items (0.0–1.0). Null for WebView items. */
+  vision_confidence?: number | null;
 }
 
 export interface Aggregates {
@@ -166,8 +196,9 @@ export interface EntitlementsResponse {
     plan_type: string | null;
     trial_end: number | null;
     current_period_end: number | null;
-    trial_days_remaining: number;
-    period_days_remaining: number;
+    cancel_at_period_end: boolean;
+    trial_days_remaining: number | null;
+    period_days_remaining: number | null;
   };
 }
 
@@ -187,4 +218,8 @@ export interface AppSettings {
   notifications_enabled: boolean;
   reminder_frequency_days: number;
   onboarded: boolean;
+  /** User's preferred scan mode. Defaults to 'broadcast'. */
+  default_scan_mode: 'broadcast' | 'precision';
+  /** Platforms the user has configured iOS Shortcuts automations for. */
+  onboarded_platforms: string[];
 }

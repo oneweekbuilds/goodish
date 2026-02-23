@@ -80,21 +80,21 @@ async function getAuthToken() {
         const payload = JSON.parse(atob(token.split('.')[1]));
         const now = Math.floor(Date.now() / 1000);
         if (payload.exp && payload.exp < now) {
-          console.warn('[AlgorithmLens] Auth token expired — clearing stored token. User needs to visit algorithmlens.com to re-authenticate.');
+          if (CAPTURE_DEBUG) console.warn('[AlgorithmLens] Auth token expired — clearing stored token. User needs to visit algorithmlens.com to re-authenticate.');
           // Clear the expired token so the extension shows logged-out state
           // rather than making authenticated requests that will fail with 401
           await chrome.storage.local.remove('authToken');
           return null;
         }
       } catch (decodeErr) {
-        console.warn('[AlgorithmLens] Could not decode JWT for expiry check:', decodeErr.message);
+        if (CAPTURE_DEBUG) console.warn('[AlgorithmLens] Could not decode JWT for expiry check:', decodeErr.message);
         // If we can't decode the token, let the backend validate it
       }
     }
 
     return token;
   } catch (e) {
-    console.warn('[AlgorithmLens] Failed to get auth token:', e);
+    if (CAPTURE_DEBUG) console.warn('[AlgorithmLens] Failed to get auth token:', e);
     return null;
   }
 }
@@ -286,7 +286,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // Security: Validate message sender origin
   // Only accept messages from our own extension and trusted content scripts
   if (sender.id !== chrome.runtime.id) {
-    console.warn('[AlgorithmLens] Rejected message from unknown sender:', sender.id);
+    if (CAPTURE_DEBUG) console.warn('[AlgorithmLens] Rejected message from unknown sender:', sender.id);
     return false;
   }
 
@@ -624,13 +624,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // ===== DOUBLE-SUBMIT PROTECTION =====
       // If no session or already processing, reject the request
       if (!sessionState) {
-        console.warn('[AlgorithmLens][Session] No session state found - ignoring stop request (possible double-submit)');
+        if (CAPTURE_DEBUG) console.warn('[AlgorithmLens][Session] No session state found - ignoring stop request (possible double-submit)');
         sendResponse({ success: false, error: 'No active session to stop', alreadyProcessed: true });
         return;
       }
 
       if (sessionState.isProcessing) {
-        console.warn(`[AlgorithmLens][Session] Session ${scanId} is already being processed - ignoring duplicate stop`);
+        if (CAPTURE_DEBUG) console.warn(`[AlgorithmLens][Session] Session ${scanId} is already being processed - ignoring duplicate stop`);
         sendResponse({ success: false, error: 'Session is already being processed', alreadyProcessed: true });
         return;
       }
@@ -641,7 +641,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       // Warn if startTime is missing
       if (!startTime) {
-        console.warn('[AlgorithmLens] WARNING: startTime is missing! Duration will default to 1s');
+        if (CAPTURE_DEBUG) console.warn('[AlgorithmLens] WARNING: startTime is missing! Duration will default to 1s');
       }
 
       try {
@@ -679,7 +679,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         // Log rate limit info if triggered
         if (rateLimited) {
-          console.warn('[AlgorithmLens][Background] Session was rate-limited. Posts collected:', posts?.length || 0);
+          if (CAPTURE_DEBUG) console.warn('[AlgorithmLens][Background] Session was rate-limited. Posts collected:', posts?.length || 0);
         }
 
         // ===== INSTRUMENTATION: Reddit-specific logging when receiving posts from content script =====
@@ -699,7 +699,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
           }
           if (!posts || posts.length === 0) {
-            console.warn('[AlgorithmLens][Reddit][Background] ZERO POSTS received from content script!');
+            if (CAPTURE_DEBUG) console.warn('[AlgorithmLens][Reddit][Background] ZERO POSTS received from content script!');
           }
         }
 

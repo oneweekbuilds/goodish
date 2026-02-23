@@ -720,7 +720,7 @@ function scanYouTubeFeed() {
         issues.push({ index, issue: code });
       }
     } catch (err) {
-      console.warn(`[AlgorithmLens][YouTube] Error parsing container ${index}:`, err.message);
+      if (CAPTURE_DEBUG) console.warn(`[AlgorithmLens][YouTube] Error parsing container ${index}:`, err.message);
       const code = 'PARSE_ERROR';
       rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
       issues.push({ index, issue: code, error: err.message });

@@ -21,43 +21,17 @@ export const YOUTUBE_SCRIPT = `
     const style = document.createElement('style');
     style.id = '__alg_shorts_blocker';
     style.textContent = [
-      // Hide Shorts fullscreen overlay
-      'ytm-shorts-player, [class*="ShortsPlayer"], [class*="shorts-player"], [class*="shorts-container"],' +
-      '[role="presentation"][style*="position: fixed"],' +
-      'div[style*="position: fixed"][style*="z-index"][style*="inset: 0"]' +
-      '{ display: none !important; visibility: hidden !important; }',
+      // Only hide the immersive Shorts player overlay — not inline video
+      'ytm-shorts-player { display: none !important; visibility: hidden !important; }',
 
-      // Prevent videos from going fullscreen
-      'video { max-height: 400px !important; object-fit: cover !important; }',
+      // Hide fullscreen button only
       'video::-webkit-media-controls-fullscreen-button { display: none !important; }',
-
-      // Hide Shorts navigation tab
-      '[aria-label*="Shorts"], [aria-label*="shorts"] { pointer-events: none !important; }',
-
-      // Keep video player container constrained
-      '.player-container, [class*="video-container"] { max-height: 400px !important; }',
-
-      // Allow vertical scrolling over videos but block tap/horizontal gestures
-      'video { touch-action: pan-y !important; }',
     ].join('\\n');
     document.head.appendChild(style);
 
-    // Override fullscreen API to prevent video fullscreen
-    const noop = function() { return Promise.reject('blocked'); };
-    if (Element.prototype.requestFullscreen) {
-      Element.prototype.requestFullscreen = noop;
-    }
-    if (Element.prototype.webkitRequestFullscreen) {
-      Element.prototype.webkitRequestFullscreen = noop;
-    }
-    if (HTMLVideoElement.prototype.webkitEnterFullscreen) {
-      HTMLVideoElement.prototype.webkitEnterFullscreen = noop;
-    }
-
-    // ONLY block navigation to Shorts — allow normal video interaction
+    // Only block navigation to Shorts — allow normal video interaction
     document.addEventListener('click', function(e) {
-      // Block navigation to Shorts section
-      var shortsLink = e.target.closest('a[href*="/shorts/"], ytm-shorts-player');
+      var shortsLink = e.target.closest('a[href*="/shorts/"]');
       if (shortsLink) {
         e.preventDefault();
         e.stopPropagation();
@@ -113,7 +87,11 @@ export const YOUTUBE_SCRIPT = `
   }
 
   suppressBanners();
-  setInterval(suppressBanners, 2000);
+  setTimeout(suppressBanners, 1000);
+  setTimeout(suppressBanners, 3000);
+  setTimeout(suppressBanners, 6000);
+  var bannerObserver = new MutationObserver(function() { suppressBanners(); });
+  setTimeout(function() { bannerObserver.observe(document.body, { childList: true, subtree: true }); }, 6000);
 
   // ── Extraction helpers ─────────────────────────────────────
 
@@ -144,8 +122,28 @@ export const YOUTUBE_SCRIPT = `
   }
 
   function extractTitle(element) {
-    const titleEl = element.querySelector('h3, .media-item-headline, .compact-media-item-headline, [aria-label]');
+    // Check aria-label first (Shorts lockups use this)
+    var ariaLabel = element.getAttribute('aria-label');
+    if (ariaLabel && ariaLabel.length > 3) return ariaLabel.trim().substring(0, 500);
+
+    // Check child elements for title text
+    const titleEl = element.querySelector('h3, .media-item-headline, .compact-media-item-headline');
     if (titleEl) return (titleEl.textContent || '').trim().substring(0, 500);
+
+    // Check links with aria-label (common in Shorts grids)
+    const ariaLink = element.querySelector('a[aria-label]');
+    if (ariaLink) {
+      var linkLabel = ariaLink.getAttribute('aria-label');
+      if (linkLabel && linkLabel.length > 3) return linkLabel.trim().substring(0, 500);
+    }
+
+    // Check any element with aria-label
+    const anyAria = element.querySelector('[aria-label]');
+    if (anyAria) {
+      var anyLabel = anyAria.getAttribute('aria-label');
+      if (anyLabel && anyLabel.length > 3) return anyLabel.trim().substring(0, 500);
+    }
+
     return (element.textContent || '').trim().substring(0, 300);
   }
 
@@ -228,8 +226,14 @@ export const YOUTUBE_SCRIPT = `
       'ytm-video-with-context-renderer',
       'ytm-compact-video-renderer',
       'ytm-reel-item-renderer',
+      'ytm-shorts-lockup-view-model',
+      'ytm-shorts-lockup-view-model-v2',
+      'ytm-media-item',
+      '[is-shorts]',
       '.media-item',
       '.compact-media-item',
+      '.shortsLockupViewModelHostOutsideMetadata',
+      '.reel-item-endpoint',
     ];
     selectors.forEach(sel => {
       document.querySelectorAll(sel).forEach(el => {
@@ -258,8 +262,14 @@ export const YOUTUBE_SCRIPT = `
       'ytm-video-with-context-renderer',
       'ytm-compact-video-renderer',
       'ytm-reel-item-renderer',
+      'ytm-shorts-lockup-view-model',
+      'ytm-shorts-lockup-view-model-v2',
+      'ytm-media-item',
+      '[is-shorts]',
       '.media-item',
       '.compact-media-item',
+      '.shortsLockupViewModelHostOutsideMetadata',
+      '.reel-item-endpoint',
     ];
     selectors.forEach(sel => {
       document.querySelectorAll(sel).forEach(el => {

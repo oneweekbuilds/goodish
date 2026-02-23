@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   Animated,
   View,
@@ -6,7 +6,7 @@ import {
   SafeAreaView,
   ViewStyle,
 } from 'react-native';
-import { COLORS } from '../../lib/theme';
+import { useTheme } from '../../context/ThemeContext';
 
 type ToastType = 'success' | 'error' | 'info';
 
@@ -17,13 +17,14 @@ interface ToastProps {
   onDismiss: () => void;
 }
 
-export const Toast: React.FC<ToastProps> = ({
+const ToastComponent: React.FC<ToastProps> = ({
   message,
   type = 'info',
   visible,
   onDismiss,
 }) => {
-  const slideAnim = new Animated.Value(300);
+  const { colors } = useTheme();
+  const slideAnim = useRef(new Animated.Value(300)).current;
 
   useEffect(() => {
     if (visible) {
@@ -47,7 +48,7 @@ export const Toast: React.FC<ToastProps> = ({
     } else {
       slideAnim.setValue(300);
     }
-  }, [visible, slideAnim, onDismiss]);
+  }, [visible, onDismiss]);
 
   if (!visible) {
     return null;
@@ -56,12 +57,12 @@ export const Toast: React.FC<ToastProps> = ({
   const getBorderColor = (): string => {
     switch (type) {
       case 'success':
-        return COLORS.success;
+        return colors.success;
       case 'error':
-        return COLORS.error;
+        return colors.error;
       case 'info':
       default:
-        return COLORS.primaryBlue;
+        return colors.primaryBlue;
     }
   };
 
@@ -76,6 +77,9 @@ export const Toast: React.FC<ToastProps> = ({
         left: 0,
         right: 0,
       }}
+      accessible={true}
+      accessibilityRole="alert"
+      accessibilityLiveRegion="polite"
     >
       <Animated.View
         style={[
@@ -86,7 +90,7 @@ export const Toast: React.FC<ToastProps> = ({
       >
         <View
           style={{
-            backgroundColor: '#FFFFFF',
+            backgroundColor: colors.bgCard,
             marginHorizontal: 16,
             marginBottom: 16,
             borderLeftWidth: 4,
@@ -105,7 +109,7 @@ export const Toast: React.FC<ToastProps> = ({
             style={{
               fontSize: 14,
               fontWeight: '500',
-              color: '#1E293B',
+              color: colors.textMain,
             }}
           >
             {message}
@@ -115,3 +119,5 @@ export const Toast: React.FC<ToastProps> = ({
     </SafeAreaView>
   );
 };
+
+export const Toast = React.memo(ToastComponent);

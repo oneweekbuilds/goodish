@@ -4,6 +4,7 @@ import {
   Text,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTheme } from '../../context/ThemeContext';
 
 type HeaderLevel = 'h2' | 'h3';
 
@@ -13,11 +14,12 @@ interface SectionHeaderProps {
   level?: HeaderLevel;
 }
 
-export const SectionHeader: React.FC<SectionHeaderProps> = ({
+const SectionHeaderComponent: React.FC<SectionHeaderProps> = ({
   title,
   subtitle = null,
   level = 'h2',
 }) => {
+  const { colors } = useTheme();
   const isH2 = level === 'h2';
   const barHeight = isH2 ? 20 : 16;
   const titleSize = isH2 ? 16 : 14;
@@ -33,7 +35,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
     >
       {/* Gradient Accent Bar */}
       <LinearGradient
-        colors={['#2563EB', '#3B82F6']}
+        colors={[colors.primaryBlue, colors.barMedium]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={{
@@ -53,9 +55,10 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
           style={{
             fontSize: titleSize,
             fontWeight: '600',
-            color: '#1E293B',
+            color: colors.textMain,
             marginBottom: subtitle ? 4 : 0,
           }}
+          accessibilityRole="header"
         >
           {title}
         </Text>
@@ -64,7 +67,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
           <Text
             style={{
               fontSize: 14,
-              color: '#94A3B8',
+              color: colors.textSecondary,
               lineHeight: 20,
               maxWidth: 560,
             }}
@@ -76,3 +79,5 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
     </View>
   );
 };
+
+export const SectionHeader = React.memo(SectionHeaderComponent);

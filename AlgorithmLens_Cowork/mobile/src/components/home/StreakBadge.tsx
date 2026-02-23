@@ -1,0 +1,323 @@
+/**
+ * StreakBadge — Visual streak counter with progressive flame and freeze indicator.
+ *
+ * Design: The flame grows and intensifies as the streak lengthens.
+ * - Days 1–2: Small, default orange flame ("Spark")
+ * - Days 3–6: Slightly larger, warmer tone ("Glow")
+ * - Days 7–13: Larger, vivid orange ("Flame")
+ * - Days 14–29: Large, deep orange-red ("Fire")
+ * - Days 30+: Full-size, blazing ("Blaze")
+ *
+ * Also shows:
+ * - Streak freeze availability (small snowflake badge)
+ * - At-risk indicator when it's evening and user hasn't scanned
+ *
+ * Reference: Duolingo's progressive streak flame — but calmer, more Oura-like.
+ */
+
+import React, { useEffect, useRef } from 'react';
+import { View, Text, Animated, AccessibilityInfo } from 'react-native';
+import { Flame, Pause, Sparkles, Snowflake, Clock } from 'lucide-react-native';
+import { useTheme } from '../../context/ThemeContext';
+import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
+import type { StreakData, StreakDisplayState } from '../../types/streak';
+import { getStreakVisualTier } from '../../types/streak';
+
+interface StreakBadgeProps {
+  streakData: StreakData;
+  displayState: StreakDisplayState;
+  /** Whether a streak freeze is available this week. */
+  freezeAvailable?: boolean;
+  /** Whether the streak is at risk (evening + no scan today). */
+  atRisk?: boolean;
+}
+
+function StreakBadgeComponent({
+  streakData,
+  displayState,
+  freezeAvailable = false,
+  atRisk = false,
+}: StreakBadgeProps) {
+  const { colors, shadows } = useTheme();
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const [isReducedMotionEnabled, setIsReducedMotionEnabled] = React.useState(false);
+
+  // Check for reduced motion preference
+  useEffect(() => {
+    const checkReducedMotion = async () => {
+      const enabled = await AccessibilityInfo.isScreenReaderEnabled?.() || false;
+      setIsReducedMotionEnabled(enabled);
+    };
+    checkReducedMotion();
+  }, []);
+
+  // Gentle pulse when at risk (respects reduced motion)
+  useEffect(() => {
+    if (atRisk && !isReducedMotionEnabled) {
+      const animation = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.08,
+            duration: 1200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 1200,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      animation.start();
+      return () => animation.stop();
+    } else {
+      pulseAnim.setValue(1);
+    }
+  }, [atRisk, pulseAnim, isReducedMotionEnabled]);
+
+  if (displayState === 'NEW') {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.sm,
+          backgroundColor: colors.bgCard,
+          borderRadius: RADIUS.lg,
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+          borderWidth: 1,
+          borderColor: colors.borderSoft,
+          ...shadows.soft,
+        }}
+      >
+        <View
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            backgroundColor: colors.blue50,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Sparkles size={16} color={colors.primaryBlue} strokeWidth={1.8} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text
+            style={{
+              ...TYPOGRAPHY.labelBold,
+              color: colors.textMain,
+            }}
+          >
+            Start your streak
+          </Text>
+          <Text
+            style={{
+              fontSize: TYPOGRAPHY.caption.fontSize,
+              color: colors.textSecondary,
+              marginTop: SPACING.xxs,
+            }}
+          >
+            Scan once to begin tracking your feed awareness
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (displayState === 'PAUSED') {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.sm,
+          backgroundColor: colors.bgCard,
+          borderRadius: RADIUS.lg,
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+          borderWidth: 1,
+          borderColor: colors.borderSoft,
+          ...shadows.soft,
+        }}
+      >
+        <View
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            backgroundColor: colors.blue50,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Pause size={14} color={colors.primaryBlue} strokeWidth={2} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text
+            style={{
+              ...TYPOGRAPHY.labelBold,
+              color: colors.textMain,
+            }}
+          >
+            Streak paused
+          </Text>
+          <Text
+            style={{
+              fontSize: TYPOGRAPHY.caption.fontSize,
+              color: colors.textSecondary,
+              marginTop: SPACING.xxs,
+            }}
+          >
+            {streakData.longest_streak > 0
+              ? `Your best: ${streakData.longest_streak} days. Scan today to start a new one.`
+              : 'Scan today to start a new streak.'}
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  // ACTIVE or GRACE state — progressive flame
+  const isGrace = displayState === 'GRACE';
+  const tier = getStreakVisualTier(streakData.current_streak);
+
+  const getFlameColor = (): string => {
+    if (isGrace) return colors.warning;
+    switch (tier.flameColor) {
+      case 'warm': return colors.streakOrange;
+      case 'hot': return colors.streakDeepOrange;
+      case 'blazing': return colors.streakBlaze;
+      default: return colors.streakOrange;
+    }
+  };
+
+  const getBackgroundColor = (): string => {
+    if (isGrace) return colors.lowSampleBg;
+    switch (tier.flameColor) {
+      case 'warm': return colors.streakOrangeBg;
+      case 'hot': return colors.streakDeepOrangeBg;
+      case 'blazing': return colors.streakBlazeBg;
+      default: return colors.streakOrangeBg;
+    }
+  };
+
+  const flameColor = getFlameColor();
+  const flameBgColor = getBackgroundColor();
+  const iconSize = Math.round(16 * tier.iconScale);
+  const containerSize = Math.round(32 * Math.min(tier.iconScale, 1.3));
+
+  return (
+    <Animated.View
+      style={{
+        transform: [{ scale: pulseAnim }],
+      }}
+    >
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.sm,
+          backgroundColor: colors.bgCard,
+          borderRadius: RADIUS.lg,
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+          borderWidth: 1,
+          borderColor: atRisk ? colors.warningBorder : isGrace ? colors.lowSampleBorder : colors.borderSoft,
+          ...shadows.soft,
+        }}
+      >
+        {/* Progressive flame icon */}
+        <View
+          style={{
+            width: containerSize,
+            height: containerSize,
+            borderRadius: containerSize / 2,
+            backgroundColor: flameBgColor,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Flame size={iconSize} color={flameColor} strokeWidth={2} />
+        </View>
+
+        {/* Streak count and context */}
+        <View style={{ flex: 1 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: SPACING.xs }}>
+            <Text
+              style={{
+                ...TYPOGRAPHY.scoreSmall,
+                color: colors.textMain,
+              }}
+            >
+              {streakData.current_streak}
+            </Text>
+            <Text
+              style={{
+                ...TYPOGRAPHY.label,
+                color: colors.textMuted,
+              }}
+            >
+              {streakData.current_streak === 1 ? 'day' : 'days'}
+            </Text>
+            {tier.minDays >= 3 && (
+              <Text
+                style={{
+                  ...TYPOGRAPHY.captionSmall,
+                  color: colors.textTertiary,
+                }}
+              >
+                {tier.label}
+              </Text>
+            )}
+          </View>
+          {isGrace && (
+            <Text
+              style={{
+                fontSize: TYPOGRAPHY.captionSmall.fontSize,
+                color: colors.warning,
+                marginTop: SPACING.xxs,
+              }}
+            >
+              Scan today to keep your streak going
+            </Text>
+          )}
+          {atRisk && !isGrace && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs, marginTop: SPACING.xxs }}>
+              <Clock size={10} color={colors.warning} strokeWidth={2} />
+              <Text
+                style={{
+                  fontSize: TYPOGRAPHY.captionSmall.fontSize,
+                  color: colors.warning,
+                }}
+              >
+                Scan before midnight to keep your streak
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Freeze indicator */}
+        {freezeAvailable && (
+          <View
+            style={{
+              width: 24,
+              height: 24,
+              borderRadius: 12,
+              backgroundColor: colors.blue50,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            accessibilityLabel={`Scan streak: ${streakData.current_streak} days`}
+            accessible
+          >
+            <Snowflake size={12} color={colors.primaryBlue} strokeWidth={2} />
+          </View>
+        )}
+      </View>
+    </Animated.View>
+  );
+}
+
+export const StreakBadge = React.memo(StreakBadgeComponent);

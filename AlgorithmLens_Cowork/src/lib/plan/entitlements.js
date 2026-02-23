@@ -8,6 +8,7 @@ import { authenticatedFetch, isUnauthorized } from '../api/authenticatedFetch';
 import { getApiBaseUrl } from '../apiConfig';
 import { setStoredPlanTier, setStoredSubscriptionStatus, PLAN_TIERS } from './planTier';
 import { logError } from '../errorLogger.js';
+import { setSentryUser } from '../sentry.js';
 
 /**
  * Fetch user's subscription entitlements from backend.
@@ -96,12 +97,14 @@ export async function syncPlanTierFromEntitlements({ isDemoMode, authReady, hasS
     const subscriptionStatus = entitlements.subscription?.status || null;
     setStoredSubscriptionStatus(subscriptionStatus);
 
-    // Set tier based on is_plus
+    // Set tier based on is_plus and update Sentry user context with tier
     if (entitlements.is_plus) {
       setStoredPlanTier(PLAN_TIERS.PLUS);
+      setSentryUser(undefined, 'plus'); // Update tier tag without changing user ID
       return { synced: true, tier: 'plus', subscriptionStatus };
     } else {
       setStoredPlanTier(PLAN_TIERS.FREE);
+      setSentryUser(undefined, 'free');
       return { synced: true, tier: 'free', subscriptionStatus };
     }
 

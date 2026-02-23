@@ -11,12 +11,13 @@ import { extractYouTubePost, scanYouTubeFeed } from './youtube.js';
 import { extractFacebookPost, scanFacebookFeed, resetFacebookState } from './facebook.js';
 import { extractTwitterPost, scanTwitterFeed } from './twitter.js';
 import { extractRedditPost, scanRedditFeed } from './reddit.js';
+import { extractLinkedInPost, scanLinkedInFeed } from './linkedin.js';
 import { isInstagramReels } from './utils.js';
 
 // Re-export everything scanners need
 export {
   scanTikTokFeed, scanInstagramFeed, scanYouTubeFeed,
-  scanFacebookFeed, scanTwitterFeed, scanRedditFeed,
+  scanFacebookFeed, scanTwitterFeed, scanRedditFeed, scanLinkedInFeed,
   resetFacebookState
 };
 
@@ -36,6 +37,7 @@ export function extractPostForPlatform(container, platform, context = {}) {
       case 'facebook':  return extractFacebookPost(container, -1);
       case 'twitter':   return extractTwitterPost(container, -1);
       case 'reddit':    return extractRedditPost(container, -1);
+      case 'linkedin':  return extractLinkedInPost(container, -1);
       default:          return null;
     }
   } catch (e) {
@@ -56,6 +58,7 @@ export function scanFeedForPlatform(platform) {
     case 'facebook':  return scanFacebookFeed();
     case 'twitter':   return scanTwitterFeed();
     case 'reddit':    return scanRedditFeed();
+    case 'linkedin':  return scanLinkedInFeed();
     default:          return [];
   }
 }
@@ -77,6 +80,8 @@ export function getFeedContainerSelectors(platform) {
       return ['main[role="main"]', 'div[data-testid="primaryColumn"]', 'div[data-testid="cellInnerDiv"]'];
     case 'reddit':
       return ['main', 'shreddit-feed', 'div[data-testid="posts-list"]', 'div[data-scroller-first]', '#siteTable'];
+    case 'linkedin':
+      return ['div.scaffold-finite-scroll__content', 'main', 'div[role="feed"]'];
     default:
       return ['body'];
   }
@@ -115,6 +120,11 @@ export function getPostContainerSelectors(platform, context = {}) {
         'shreddit-post', 'article[data-testid="post-container"]', 'div[data-testid="post-container"]',
         'div[data-adclicklocation="background"]', 'faceplate-tracker[source="post"]',
         'article.Post', 'div.thing.link'
+      ];
+    case 'linkedin':
+      return [
+        'div.feed-shared-update-v2', '[data-urn*="urn:li:activity"]',
+        '[data-test-id="update-box"]', '[data-test-id="feed-card"]'
       ];
     default:
       return [];

@@ -5,13 +5,15 @@
  */
 
 import { supabase } from './supabase';
+import { captureError } from './sentry';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000';
 
-/** Warn in production if API_BASE_URL still points at localhost. */
+/** Throw error in production if API_BASE_URL still points at localhost. */
 if (__DEV__ === false && API_BASE_URL.includes('127.0.0.1')) {
-  console.warn(
-    '[api] API_BASE_URL points to localhost in a production build. Set EXPO_PUBLIC_API_BASE_URL in your .env file.'
+  throw new Error(
+    '[api] FATAL: API_BASE_URL points to localhost in a production build. '
+    + 'Set EXPO_PUBLIC_API_BASE_URL in your .env file.'
   );
 }
 
@@ -80,6 +82,7 @@ async function fetchWithRetry(
       return response;
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
+      captureError(lastError, 'api:fetchWithRetry', { path, attempt });
       if (attempt < maxRetries) {
         await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
       }
@@ -93,15 +96,15 @@ async function fetchWithRetry(
  * Uses fetchWithRetry for automatic backoff on transient errors.
  */
 export const api = {
-  async get<T = any>(path: string): Promise<T> {
+  async get<T = unknown>(path: string): Promise<T> {
     const response = await fetchWithRetry(path);
     if (!response.ok) {
       throw new Error(`API GET ${path} failed: ${response.status}`);
     }
-    return response.json();
+    return response.json() as Promise<T>;
   },
 
-  async post<T = any>(path: string, body: any): Promise<T> {
+  async post<T = unknown>(path: string, body: unknown): Promise<T> {
     const response = await fetchWithRetry(path, {
       method: 'POST',
       body: JSON.stringify(body),
@@ -110,14 +113,14 @@ export const api = {
       const errorText = await response.text();
       throw new Error(`API POST ${path} failed: ${response.status} — ${errorText}`);
     }
-    return response.json();
+    return response.json() as Promise<T>;
   },
 
-  async delete<T = any>(path: string): Promise<T> {
+  async delete<T = unknown>(path: string): Promise<T> {
     const response = await fetchWithRetry(path, { method: 'DELETE' });
     if (!response.ok) {
       throw new Error(`API DELETE ${path} failed: ${response.status}`);
     }
-    return response.json();
+    return response.json() as Promise<T>;
   },
 };

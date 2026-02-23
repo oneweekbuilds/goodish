@@ -231,7 +231,7 @@ def create_portal_session(
 @router.post("/stripe/verify-checkout")
 @limiter.limit("10/minute")
 def verify_checkout(
-    http_request: Request = None,
+    request: Request = None,
     current_user: dict = Depends(get_current_user)
 ):
     """

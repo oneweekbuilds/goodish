@@ -15,6 +15,12 @@
  * - Never exposes extension internals to the page
  */
 
+import { CAPTURE_DEBUG } from './shared/debug.js';
+import { initSentry, captureError } from './shared/sentry.js';
+
+// Initialize Sentry in the auth bridge context
+initSentry('auth_bridge');
+
 // Inject DOM marker so the web app can detect the extension
 (function injectExtensionMarker() {
   const marker = document.createElement('div');
@@ -25,11 +31,11 @@
 })();
 
 // Allowed origins for auth token messages
+// Production origins only. For local development, add the localhost origins
+// back and update manifest.json content_scripts matches (see background.js header).
 const ALLOWED_ORIGINS = [
   'https://algorithmlens.com',
   'https://www.algorithmlens.com',
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
 ];
 
 // Listen for auth token messages from the web app
@@ -52,7 +58,8 @@ window.addEventListener('message', async (event) => {
         success: response?.success ?? false,
       }, event.origin);
     } catch (e) {
-      console.warn('[AlgorithmLens] Auth bridge error:', e.message);
+      if (CAPTURE_DEBUG) console.warn('[AlgorithmLens] Auth bridge error:', e.message);
+      captureError(e, 'auth_bridge:set_token');
       window.postMessage({
         type: 'ALGORITHMLENS_AUTH_TOKEN_ACK',
         success: false,
@@ -72,7 +79,8 @@ window.addEventListener('message', async (event) => {
         authenticated: response?.authenticated ?? false,
       }, event.origin);
     } catch (e) {
-      console.warn('[AlgorithmLens] Auth status check error:', e.message);
+      if (CAPTURE_DEBUG) console.warn('[AlgorithmLens] Auth status check error:', e.message);
+      captureError(e, 'auth_bridge:status_check');
       window.postMessage({
         type: 'ALGORITHMLENS_AUTH_STATUS_RESPONSE',
         authenticated: false,

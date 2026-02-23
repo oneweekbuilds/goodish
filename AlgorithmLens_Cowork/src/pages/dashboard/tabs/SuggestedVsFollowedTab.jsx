@@ -409,7 +409,7 @@ const SuggestedVsFollowedTab = ({
               <span className="text-sm text-slate-600">of suggested posts are from creators you don't follow</span>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
               <div className="text-center">
                 <div className="text-lg font-semibold text-slate-800">{creatorFamiliarity.suggestedCreatorCount}</div>
                 <div className="text-xs text-slate-500">Creators in suggestions</div>

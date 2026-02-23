@@ -34,6 +34,7 @@ import type {
 } from '../types/broadcast';
 import type { UnifiedScanResult } from '../types';
 import { useAuth } from '../context/AuthContext';
+import { getUserFriendlyNetworkError } from '../lib/networkUtils';
 
 // ============================================
 // Constants
@@ -43,6 +44,19 @@ import { useAuth } from '../context/AuthContext';
  * Gemini API key from environment.
  * In production, this should be fetched from a secure backend endpoint
  * rather than bundled in the app. For now, it's read from Expo env.
+ *
+ * ⚠️ SECURITY WARNING: Using EXPO_PUBLIC_ exposes this key in the client bundle.
+ * This is a known security risk and should be migrated to a backend proxy as soon as possible.
+ * The key will be visible in:
+ * - JavaScript bundle source code
+ * - Network requests made from the app
+ * - Browser/app debug tools
+ *
+ * MIGRATION TRACKED IN BACKLOG:
+ * - Create a backend endpoint that validates the user and returns a temporary token
+ * - Update this hook to fetch the token from the backend instead
+ * - Remove EXPO_PUBLIC_GEMINI_API_KEY from all build outputs
+ * - Implement rate limiting and monitoring on the backend
  */
 const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY || '';
 
@@ -124,7 +138,7 @@ export function useAnalysis(config?: Partial<PipelineConfig>): UseAnalysisReturn
         setProgress({
           ...INITIAL_PROGRESS,
           stage: 'FAILED',
-          errorMessage: 'Gemini API key not configured. Set EXPO_PUBLIC_GEMINI_API_KEY in your environment.',
+          errorMessage: 'The analysis service isn\'t set up yet. Please contact support if this persists.',
         });
         return;
       }
@@ -133,7 +147,7 @@ export function useAnalysis(config?: Partial<PipelineConfig>): UseAnalysisReturn
         setProgress({
           ...INITIAL_PROGRESS,
           stage: 'FAILED',
-          errorMessage: 'Not authenticated. Please sign in to analyze your feed.',
+          errorMessage: 'You need to be signed in to analyze your feed. Please sign in and try again.',
         });
         return;
       }
@@ -181,7 +195,7 @@ export function useAnalysis(config?: Partial<PipelineConfig>): UseAnalysisReturn
         setProgress((prev) => ({
           ...prev,
           stage: 'FAILED',
-          errorMessage: error instanceof Error ? error.message : 'Unknown error',
+          errorMessage: getUserFriendlyNetworkError(error),
         }));
       }
     },
@@ -252,7 +266,7 @@ function getStatusMessage(progress: PipelineProgress): string {
     case 'COMPLETE':
       return `Analysis complete — ${progress.itemsDeduplicated} feed items found`;
     case 'FAILED':
-      return progress.errorMessage || 'Analysis failed';
+      return progress.errorMessage || 'Something went wrong during analysis. You can try again.';
     default:
       return 'Processing...';
   }

@@ -1,4 +1,5 @@
 import { logError } from '../errorLogger.js';
+import { fetchWithRetry } from '../api/fetchWithRetry';
 
 const isValidEmail = (email) => {
   if (typeof email !== 'string') return false;
@@ -25,12 +26,12 @@ export async function submitWaitlistEmail({ email, source }) {
   if (!normalizedSource) return { ok: false, error: 'Missing source.' };
 
   try {
-    // Public endpoint — no auth required
-    const response = await fetch('/api/subscribe', {
+    // Public endpoint — no auth required, uses retry for resilience
+    const response = await fetchWithRetry('/api/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: normalizedEmail }),
-    });
+    }, { context: 'Waitlist' });
 
     const data = await response.json();
 

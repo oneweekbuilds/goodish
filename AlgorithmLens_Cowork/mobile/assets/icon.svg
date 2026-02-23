@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="lensGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#DBEAFE" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="prismGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#93C5FD"/>
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#60A5FA"/>
+    </linearGradient>
+    <clipPath id="roundedBg">
+      <rect width="1024" height="1024" rx="224" ry="224"/>
+    </clipPath>
+  </defs>
+
+  <!-- Rounded background -->
+  <g clip-path="url(#roundedBg)">
+    <rect width="1024" height="1024" fill="url(#bgGrad)"/>
+
+    <!-- Subtle radial glow behind the lens -->
+    <circle cx="512" cy="480" r="340" fill="#3B82F6" opacity="0.3"/>
+
+    <!-- Outer lens ring -->
+    <circle cx="512" cy="480" r="260" fill="none" stroke="url(#lensGrad)" stroke-width="40" opacity="0.9"/>
+
+    <!-- Inner lens body -->
+    <circle cx="512" cy="480" r="200" fill="url(#lensGrad)" opacity="0.15"/>
+
+    <!-- Prism / refraction element — three angled bars representing revealed patterns -->
+    <g transform="translate(512, 480)">
+      <!-- Left refraction line -->
+      <rect x="-120" y="-60" width="8" height="120" rx="4" fill="#FFFFFF" opacity="0.7" transform="rotate(-20)"/>
+      <!-- Center refraction line -->
+      <rect x="-4" y="-80" width="8" height="160" rx="4" fill="#FFFFFF" opacity="0.9"/>
+      <!-- Right refraction line -->
+      <rect x="112" y="-60" width="8" height="120" rx="4" fill="#FFFFFF" opacity="0.7" transform="rotate(20)"/>
+    </g>
+
+    <!-- Lens highlight / reflection -->
+    <ellipse cx="440" cy="410" rx="60" ry="30" fill="#FFFFFF" opacity="0.2" transform="rotate(-30, 440, 410)"/>
+
+    <!-- Small dot details representing data points being revealed -->
+    <circle cx="430" cy="520" r="10" fill="#FFFFFF" opacity="0.5"/>
+    <circle cx="512" cy="560" r="12" fill="#FFFFFF" opacity="0.6"/>
+    <circle cx="594" cy="520" r="10" fill="#FFFFFF" opacity="0.5"/>
+
+    <!-- Bottom bar — subtle text area accent -->
+    <rect x="362" y="720" width="300" height="6" rx="3" fill="#FFFFFF" opacity="0.3"/>
+  </g>
+</svg>

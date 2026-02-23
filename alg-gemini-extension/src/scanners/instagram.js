@@ -532,7 +532,7 @@ function isInstagramSponsored(container) {
     return { isSponsored: false, evidence: null };
   } catch (error) {
     // Defensive: if ad detection fails, assume not sponsored
-    console.warn('[AlgorithmLens][Instagram] Error in isInstagramSponsored:', error);
+    if (CAPTURE_DEBUG) console.warn('[AlgorithmLens][Instagram] Error in isInstagramSponsored:', error);
     return { isSponsored: false, evidence: null };
   }
 }
@@ -656,7 +656,7 @@ function extractInstagramPost(container, index) {
     try {
       sponsoredResult = isInstagramSponsored(container);
     } catch (error) {
-      console.warn('[AlgorithmLens][Instagram] Error detecting sponsored status:', error);
+      if (CAPTURE_DEBUG) console.warn('[AlgorithmLens][Instagram] Error detecting sponsored status:', error);
       sponsoredResult = { isSponsored: false, evidence: null };
     }
     const isSponsored = sponsoredResult.isSponsored;
@@ -1033,7 +1033,7 @@ function scanInstagramFeed() {
         issues.push({ index, issue: code });
       }
     } catch (err) {
-      console.warn(`[AlgorithmLens][Instagram] Error parsing container ${index}:`, err.message);
+      if (CAPTURE_DEBUG) console.warn(`[AlgorithmLens][Instagram] Error parsing container ${index}:`, err.message);
       const code = 'OUTER_PARSE_ERROR';
       rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
       issues.push({ index, issue: code, error: err.message });

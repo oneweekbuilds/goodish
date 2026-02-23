@@ -1,12 +1,14 @@
 import React from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { logError } from '../../lib/errorLogger.js';
+import { Sentry, addBreadcrumb } from '../../lib/sentry.js';
 
 /**
  * ErrorBoundary - Catches React rendering errors (#24)
  *
  * Prevents full-page crashes by catching errors in child component trees.
  * Shows a friendly fallback UI with recovery options.
+ * Reports errors to Sentry with route, user tier, and dashboard tab context.
  */
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -19,10 +21,30 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    logError('ErrorBoundary', error, errorInfo);
+    // Build Sentry-enriched context from props and current URL
+    const sentryExtra = {
+      componentStack: errorInfo?.componentStack || null,
+      route: typeof window !== 'undefined' ? window.location.pathname : null,
+      boundaryLabel: this.props.fallbackTitle || 'default',
+    };
+
+    // If the parent passed user tier or dashboard tab, include them
+    if (this.props.userTier) {
+      sentryExtra.userTier = this.props.userTier;
+    }
+    if (this.props.dashboardTab) {
+      sentryExtra.dashboardTab = this.props.dashboardTab;
+    }
+
+    addBreadcrumb('error_boundary', `ErrorBoundary caught: ${error.message}`, {
+      route: sentryExtra.route,
+    });
+
+    logError('ErrorBoundary', error, sentryExtra);
   }
 
   handleRetry = () => {
+    addBreadcrumb('ui', 'User clicked Try Again in ErrorBoundary');
     this.setState({ hasError: false, error: null });
   };
 

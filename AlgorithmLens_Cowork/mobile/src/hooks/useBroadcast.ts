@@ -129,13 +129,38 @@ export function useBroadcast(): UseBroadcastReturn {
   }, []);
 
   // Elapsed time counter (runs during recording)
+  // Max broadcast duration: 10 minutes (600 seconds)
+  const MAX_BROADCAST_SECONDS = 600;
+
   const startElapsedTimer = useCallback(() => {
     stopElapsedTimer();
     setElapsedSeconds(0);
     const startTime = Date.now();
     elapsedTimerRef.current = setInterval(() => {
-      setElapsedSeconds(Math.round((Date.now() - startTime) / 1000));
+      const elapsed = Math.round((Date.now() - startTime) / 1000);
+      setElapsedSeconds(elapsed);
+
+      // Auto-stop at 10 minutes to prevent excessive resource usage
+      if (elapsed >= MAX_BROADCAST_SECONDS && managerRef.current) {
+        stopElapsedTimer();
+        managerRef.current.stopSession().then(() => {
+          Alert.alert(
+            'Recording limit reached',
+            'The broadcast automatically stopped after 10 minutes. This is usually enough to capture a good sample of your feed. Tap "View Results" to see your analysis.',
+          );
+        }).catch(() => {
+          // Stop failed — non-critical, session will still complete
+        });
+      }
     }, 1000);
+
+    // Return cleanup function to ensure interval is cleared when this callback is no longer needed
+    return () => {
+      if (elapsedTimerRef.current) {
+        clearInterval(elapsedTimerRef.current);
+        elapsedTimerRef.current = null;
+      }
+    };
   }, []);
 
   function stopElapsedTimer() {
@@ -147,7 +172,7 @@ export function useBroadcast(): UseBroadcastReturn {
 
   const startSession = useCallback(async (platform: SupportedPlatform) => {
     if (!managerRef.current) {
-      Alert.alert('Not Available', 'Broadcast capture is not available on this device.');
+      Alert.alert('Not Available', 'Screen broadcast requires a development build with native modules and is not available in Expo Go. Use Precision Mode instead.');
       return;
     }
 
@@ -160,8 +185,14 @@ export function useBroadcast(): UseBroadcastReturn {
       setStorageUsed(0);
       startElapsedTimer();
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to start broadcast session';
-      Alert.alert('Session Error', message);
+      const rawMsg = error instanceof Error ? error.message : '';
+      if (__DEV__) {
+        console.warn('Broadcast session start error:', rawMsg);
+      }
+      Alert.alert(
+        'Couldn\'t Start Recording',
+        'We ran into a problem setting up the recording. Please try again. If this keeps happening, restart the app.'
+      );
     }
   }, [startElapsedTimer]);
 
@@ -170,8 +201,13 @@ export function useBroadcast(): UseBroadcastReturn {
     try {
       await managerRef.current.requestScreenCapture();
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Screen capture permission denied';
-      Alert.alert('Permission Required', message);
+      if (__DEV__) {
+        console.warn('Screen capture permission error:', error);
+      }
+      Alert.alert(
+        'Permission Needed',
+        'AlgorithmLens needs screen recording permission to capture your feed. Tap "Start Screen Capture" and allow the permission when prompted.'
+      );
     }
   }, []);
 

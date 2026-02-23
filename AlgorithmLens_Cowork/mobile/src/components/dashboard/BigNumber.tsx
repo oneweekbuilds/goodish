@@ -3,6 +3,8 @@ import {
   View,
   Text,
 } from 'react-native';
+import { RFValue } from 'react-native-responsive-fontsize';
+import { useTheme } from '../../context/ThemeContext';
 
 interface BigNumberProps {
   value: string | number;
@@ -10,14 +12,15 @@ interface BigNumberProps {
   suffix?: string;
 }
 
-export const BigNumber: React.FC<BigNumberProps> = ({
+const BigNumberComponent: React.FC<BigNumberProps> = ({
   value,
   label,
   suffix = '%',
 }) => {
+  const { colors } = useTheme();
   const isZero = value === 0 || value === '0';
-  const fontSize = isZero ? 24 : 40;
-  const textColor = isZero ? '#94A3B8' : '#1E293B';
+  const fontSize = isZero ? RFValue(24) : RFValue(40);
+  const textColor = isZero ? colors.textSecondary : colors.textMain;
 
   return (
     <View
@@ -26,6 +29,7 @@ export const BigNumber: React.FC<BigNumberProps> = ({
         justifyContent: 'center',
       }}
       accessible={true}
+      accessibilityRole="text"
       accessibilityLabel={`${label}: ${value}${suffix}`}
     >
       <Text
@@ -42,8 +46,8 @@ export const BigNumber: React.FC<BigNumberProps> = ({
       </Text>
       <Text
         style={{
-          fontSize: 14,
-          color: '#4B5563',
+          fontSize: RFValue(14),
+          color: colors.textMuted,
           fontWeight: '500',
         }}
       >
@@ -52,3 +56,5 @@ export const BigNumber: React.FC<BigNumberProps> = ({
     </View>
   );
 };
+
+export const BigNumber = React.memo(BigNumberComponent);

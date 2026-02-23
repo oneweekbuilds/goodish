@@ -29,7 +29,7 @@ const BarChartSimple = ({ data = [], valueLabel = '', maxBars = 5 }) => {
           className="space-y-1"
         >
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-xs sm:text-sm text-text-main font-medium truncate max-w-[60%] sm:max-w-[70%]" title={item.label}>
+            <span className="text-xs sm:text-sm text-text-main font-medium truncate max-w-[50%] sm:max-w-[70%]" title={item.label}>
               {item.label}
             </span>
             <span className="text-xs sm:text-sm font-semibold text-text-main tabular-nums flex-shrink-0">

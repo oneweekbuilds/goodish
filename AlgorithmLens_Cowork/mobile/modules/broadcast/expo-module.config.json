@@ -1,0 +1,17 @@
+{
+  "name": "expo-broadcast",
+  "platforms": ["ios", "android"],
+  "ios": {
+    "modules": ["BroadcastModule"],
+    "appDelegateSubscribers": [],
+    "podspec": {
+      "name": "ExpoBroadcast",
+      "source_files": "ios/**/*.swift",
+      "frameworks": ["ReplayKit", "Vision"]
+    }
+  },
+  "android": {
+    "modules": ["BroadcastModule"],
+    "gradlePath": "build.gradle"
+  }
+}

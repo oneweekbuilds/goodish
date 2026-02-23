@@ -1,26 +1,47 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
   Animated,
 } from 'react-native';
+import { RFValue } from 'react-native-responsive-fontsize';
+import { useTheme } from '../../context/ThemeContext';
 
 interface BarChartItem {
   label: string;
   value: number;
   percentage: number;
   color?: string;
+  category?: string;
 }
 
 interface BarChartProps {
   items: BarChartItem[];
+  /** Optional summary label for screen readers (e.g., "source distribution across 8 sources") */
+  accessibilitySummary?: string;
+  /** Show a legend when items use multiple distinct colors/categories */
+  showLegend?: boolean;
 }
 
-export const BarChart: React.FC<BarChartProps> = ({ items }) => {
+const BarChartComponent: React.FC<BarChartProps> = ({
+  items,
+  accessibilitySummary,
+  showLegend = false,
+}) => {
+  const { colors } = useTheme();
   const animValuesRef = useRef(items.map(() => new Animated.Value(0)));
 
   useEffect(() => {
-    animValuesRef.current = items.map((_, index) => animValuesRef.current[index] || new Animated.Value(0));
+    // Only extend array if new items added; reuse existing values
+    const currentValues = animValuesRef.current;
+    if (items.length > currentValues.length) {
+      animValuesRef.current = [
+        ...currentValues,
+        ...Array.from({ length: items.length - currentValues.length }, () => new Animated.Value(0)),
+      ];
+    } else if (items.length < currentValues.length) {
+      animValuesRef.current = currentValues.slice(0, items.length);
+    }
   }, [items.length]);
 
   useEffect(() => {
@@ -36,39 +57,50 @@ export const BarChart: React.FC<BarChartProps> = ({ items }) => {
     Animated.stagger(50, animations).start();
   }, [items]);
 
-  const maxValue = Math.max(...items.map((item) => item.value), 1);
+  const maxValue = useMemo(() => Math.max(...items.map((item) => item.value), 1), [items]);
+  const totalValue = useMemo(() => items.reduce((sum, item) => sum + item.value, 0), [items]);
 
-  // Generate progressively lighter colors: first bar darker, subsequent bars lighter
-  const getBarColor = (index: number, defaultColor: string): string => {
-    if (defaultColor) return defaultColor;
-    const baseColor = '#3B82F6'; // Base blue
-    const lightness = [0, 20, 35, 50].includes(index)
-      ? [0, 20, 35, 50][index]
-      : 50;
-    // Simple lightness progression: 0% darker, 20%, 35%, 50%+ lighter
-    const alpha = 1 - (lightness / 100) * 0.5;
-    return baseColor; // In practice, use color library or CSS-like approach
-  };
+  // First bar darker blue, subsequent bars progressively lighter
+  const barColors = [
+    colors.barDarkest, // Darkest
+    colors.barDark, // Dark
+    colors.barMedium, // Medium
+    colors.barLight, // Light
+    colors.barLightest, // Lighter
+  ];
+
+  // Build legend entries from unique categories/colors
+  const legendEntries = showLegend
+    ? items.reduce<Array<{ label: string; color: string }>>((acc, item, index) => {
+        const color = item.color || barColors[Math.min(index, barColors.length - 1)];
+        const label = item.category || item.label;
+        if (!acc.some((e) => e.label === label && e.color === color)) {
+          acc.push({ label, color });
+        }
+        return acc;
+      }, [])
+    : [];
 
   return (
-    <View style={{ gap: 16 }}>
+    <View
+      style={{ gap: 16 }}
+      accessible={true}
+      accessibilityRole="image"
+      accessibilityLabel={
+        accessibilitySummary
+          ? `Bar chart showing ${accessibilitySummary}`
+          : `Bar chart showing ${items.length} items`
+      }
+    >
       {items.map((item, index) => {
         const normalizedPercentage = (item.value / maxValue) * 100;
+        const itemPercentageOfTotal = totalValue > 0 ? Math.round((item.value / totalValue) * 100) : 0;
         const widthAnim = animValuesRef.current[index].interpolate({
           inputRange: [0, 1],
           outputRange: ['0%', `${normalizedPercentage}%`],
         });
 
-        // First bar darker blue, subsequent bars progressively lighter
-        const baseColor = '#1E40AF'; // Darker blue
-        const colors = [
-          '#1E40AF', // Darkest
-          '#2563EB', // Dark
-          '#3B82F6', // Medium
-          '#60A5FA', // Light
-          '#93C5FD', // Lighter
-        ];
-        const barColor = item.color || colors[Math.min(index, colors.length - 1)];
+        const barColor = item.color || barColors[Math.min(index, barColors.length - 1)];
 
         return (
           <View
@@ -77,7 +109,7 @@ export const BarChart: React.FC<BarChartProps> = ({ items }) => {
               gap: 8,
             }}
             accessible={true}
-            accessibilityLabel={`${item.label}: ${item.value}`}
+            accessibilityLabel={`${item.label}: ${item.value} posts, ${itemPercentageOfTotal}% of total`}
           >
             {/* Label and Value Row */}
             <View
@@ -89,8 +121,8 @@ export const BarChart: React.FC<BarChartProps> = ({ items }) => {
             >
               <Text
                 style={{
-                  fontSize: 14,
-                  color: '#475569',
+                  fontSize: RFValue(14),
+                  color: colors.textMuted,
                   fontWeight: '500',
                   flex: 1,
                   maxWidth: '70%',
@@ -101,8 +133,8 @@ export const BarChart: React.FC<BarChartProps> = ({ items }) => {
               </Text>
               <Text
                 style={{
-                  fontSize: 12,
-                  color: '#94A3B8',
+                  fontSize: RFValue(14),
+                  color: colors.textSecondary,
                   marginLeft: 8,
                 }}
               >
@@ -122,10 +154,10 @@ export const BarChart: React.FC<BarChartProps> = ({ items }) => {
               />
               <Text
                 style={{
-                  fontSize: 12,
-                  color: '#94A3B8',
+                  fontSize: RFValue(14),
+                  color: colors.textSecondary,
                   fontWeight: '500',
-                  minWidth: 28,
+                  minWidth: 32,
                 }}
               >
                 {Math.round(normalizedPercentage)}%
@@ -134,6 +166,52 @@ export const BarChart: React.FC<BarChartProps> = ({ items }) => {
           </View>
         );
       })}
+
+      {/* Legend — shown when multiple categories are displayed */}
+      {showLegend && legendEntries.length > 1 && (
+        <View
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: 12,
+            marginTop: 8,
+            paddingTop: 12,
+            borderTopWidth: 1,
+            borderTopColor: colors.borderSoft,
+          }}
+        >
+          {legendEntries.map((entry, idx) => (
+            <View
+              key={`bar-legend-${idx}`}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <View
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: 5,
+                  backgroundColor: entry.color,
+                }}
+              />
+              <Text
+                style={{
+                  fontSize: RFValue(14),
+                  color: colors.textMuted,
+                  fontWeight: '500',
+                }}
+              >
+                {entry.label}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
     </View>
   );
 };
+
+export const BarChart = React.memo(BarChartComponent);

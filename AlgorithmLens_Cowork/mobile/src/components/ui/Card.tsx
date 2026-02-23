@@ -1,67 +1,79 @@
-import React from 'react';
-import { View, ViewStyle } from 'react-native';
+/**
+ * Card — Themed container with consistent padding, radius, and shadow.
+ *
+ * Variants:
+ * - default: subtle shadow, standard padding
+ * - elevated: stronger shadow for floating panels
+ * - interactive: responds to press with opacity change
+ */
 
-type CardVariant = 'default' | 'elevated' | 'outline';
+import React from 'react';
+import { View, Pressable, type ViewStyle } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
+import { SPACING, RADIUS } from '../../lib/theme';
+
+type CardVariant = 'default' | 'elevated' | 'interactive';
 
 interface CardProps {
   children: React.ReactNode;
-  style?: ViewStyle;
   variant?: CardVariant;
+  style?: ViewStyle;
+  onPress?: () => void;
 }
 
-export const Card: React.FC<CardProps> = ({
+const CardComponent: React.FC<CardProps> = ({
   children,
-  style,
   variant = 'default',
+  style,
+  onPress,
 }) => {
-  const getVariantStyles = (): ViewStyle => {
+  const { colors, shadows } = useTheme();
+
+  const getVariantShadow = () => {
     switch (variant) {
       case 'elevated':
-        return {
-          backgroundColor: '#FFFFFF',
-          borderRadius: 20,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 8 },
-          shadowOpacity: 0.12,
-          shadowRadius: 16,
-          elevation: 8,
-          borderWidth: 0,
-        };
-      case 'outline':
-        return {
-          backgroundColor: '#FFFFFF',
-          borderRadius: 20,
-          borderWidth: 1,
-          borderColor: 'rgba(30, 41, 59, 0.12)',
-          shadowColor: 'transparent',
-        };
+        return shadows.lg;
+      case 'interactive':
+        return shadows.md;
       case 'default':
       default:
-        return {
-          backgroundColor: '#FFFFFF',
-          borderRadius: 20,
-          borderWidth: 1,
-          borderColor: 'rgba(30, 41, 59, 0.06)',
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.05,
-          shadowRadius: 8,
-          elevation: 2,
-        };
+        return shadows.soft;
     }
   };
 
+  const baseStyle: ViewStyle = {
+    backgroundColor: colors.bgCard,
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    borderColor: colors.borderSubtle,
+    padding: SPACING.xl,
+    ...getVariantShadow(),
+  };
+
+  if (variant === 'interactive' && onPress) {
+    return (
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        style={({ pressed }) => [
+          baseStyle,
+          { opacity: pressed ? 0.9 : 1 },
+          style,
+        ]}
+      >
+        {children}
+      </Pressable>
+    );
+  }
+
   return (
     <View
-      style={[
-        {
-          padding: 20,
-        },
-        getVariantStyles(),
-        style,
-      ]}
+      style={[baseStyle, style]}
+      accessibilityRole="summary"
     >
       {children}
     </View>
   );
 };
+
+export const Card = React.memo(CardComponent);

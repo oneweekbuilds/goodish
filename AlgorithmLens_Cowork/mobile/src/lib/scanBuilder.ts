@@ -1,4 +1,5 @@
 import { FeedItemCapture } from '../components/scanner/WebViewScanner';
+import { generateUUID } from './utils';
 
 export interface FeedItem {
   creator_handle: string;
@@ -24,17 +25,6 @@ export interface UnifiedScanResult {
     retention_days: number;
   };
   gemini_consent: boolean;
-}
-
-/**
- * Generates a simple UUID v4-like string using Math.random
- */
-function generateUUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
 }
 
 /**

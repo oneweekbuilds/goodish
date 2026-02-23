@@ -169,6 +169,7 @@ export default function LoginScreen() {
               marginBottom: 6,
               letterSpacing: -0.5,
             }}
+            accessibilityRole="header"
           >
             AlgorithmLens
           </Text>
@@ -319,6 +320,7 @@ export default function LoginScreen() {
               editable={!loading}
               accessibilityLabel="Email address"
               accessibilityHint="Enter your email to sign in or create an account"
+              accessible={true}
               style={{
                 backgroundColor: colors.bgCard,
                 borderWidth: 1,
@@ -355,6 +357,7 @@ export default function LoginScreen() {
               autoComplete="password"
               editable={!loading}
               accessibilityLabel="Password"
+              accessible={true}
               style={{
                 backgroundColor: colors.bgCard,
                 borderWidth: 1,

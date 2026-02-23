@@ -23,6 +23,8 @@ import {
   type GeminiDeduplicationResponse,
 } from './analysisPrompts';
 import type { SupportedPlatform } from '../../types/broadcast';
+import { safeJsonParse } from '../utils';
+import { captureMessage } from '../sentry';
 
 // ============================================
 // Configuration
@@ -186,7 +188,7 @@ export class GeminiFlashService {
         parts: [{ text: GEMINI_SYSTEM_PROMPT }],
       },
       generationConfig: {
-        temperature: 0.1, // Low temperature for deterministic extraction
+        temperature: 0, // Low temperature for deterministic extraction
         topP: 0.8,
         maxOutputTokens: 8192,
         responseMimeType: 'application/json',
@@ -216,7 +218,7 @@ export class GeminiFlashService {
         parts: [{ text: GEMINI_SYSTEM_PROMPT }],
       },
       generationConfig: {
-        temperature: 0.1,
+        temperature: 0,
         topP: 0.8,
         maxOutputTokens: 16384,
         responseMimeType: 'application/json',
@@ -231,7 +233,7 @@ export class GeminiFlashService {
   /**
    * Makes a raw HTTP request to the Gemini REST API.
    */
-  private async makeApiRequest(requestBody: any): Promise<string> {
+  private async makeApiRequest(requestBody: Record<string, unknown>): Promise<string> {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent`;
 
     const controller = new AbortController();
@@ -273,12 +275,12 @@ export class GeminiFlashService {
       const finishReason = candidate.finishReason;
 
       if (finishReason === 'SAFETY') {
-        console.warn('Gemini blocked this frame due to content safety filters');
+        captureMessage('Gemini blocked this frame due to content safety filters', 'warning');
         return '{"frame_id":"blocked","extraction_confidence":0,"items":[]}';
       }
 
       if (finishReason === 'MAX_TOKENS') {
-        console.warn('Gemini response was truncated (MAX_TOKENS)');
+        captureMessage('Gemini response was truncated (MAX_TOKENS)', 'warning');
         // Try to parse what we got — the parseFrameResponse fallback handles partial JSON
       }
 
@@ -355,11 +357,14 @@ export class GeminiFlashService {
     frameNumber: number,
   ): GeminiFrameResponse {
     try {
-      const parsed = JSON.parse(rawText);
+      const parsed = safeJsonParse<any>(rawText);
 
       // Validate required structure
       if (!Array.isArray(parsed.items)) {
-        console.warn(`Frame ${frameNumber}: response missing items array, wrapping`);
+        captureMessage(
+          `Frame ${frameNumber}: response missing items array, wrapping`,
+          'warning'
+        );
         return {
           frame_id: String(frameNumber),
           extraction_confidence: 0.5,
@@ -369,7 +374,7 @@ export class GeminiFlashService {
 
       // Sanitize and validate each item
       const items: GeminiExtractedItem[] = parsed.items.map(
-        (item: any, index: number) => sanitizeExtractedItem(item, index),
+        (item: Record<string, unknown>, index: number) => sanitizeExtractedItem(item, index),
       );
 
       return {
@@ -382,7 +387,11 @@ export class GeminiFlashService {
         items,
       };
     } catch (error) {
-      console.warn(`Frame ${frameNumber}: failed to parse Gemini response`, error);
+      captureMessage(
+        `Frame ${frameNumber}: failed to parse Gemini response`,
+        'warning',
+        { error: error instanceof Error ? error.message : String(error) }
+      );
       return {
         frame_id: String(frameNumber),
         extraction_confidence: 0,
@@ -400,7 +409,7 @@ export class GeminiFlashService {
     allItems: GeminiExtractedItem[],
   ): GeminiDeduplicationResponse {
     try {
-      const parsed = JSON.parse(rawText);
+      const parsed = safeJsonParse<Record<string, unknown>>(rawText);
 
       if (!Array.isArray(parsed.deduplicated_items)) {
         throw new Error('Missing deduplicated_items array');
@@ -408,7 +417,10 @@ export class GeminiFlashService {
 
       // Validate dedup didn't return more items than input (hallucination guard)
       if (parsed.deduplicated_items.length > allItems.length) {
-        console.warn('Dedup returned more items than input, falling back to originals');
+        captureMessage(
+          'Dedup returned more items than input, falling back to originals',
+          'warning'
+        );
         return {
           deduplicated_items: allItems,
           original_count: originalCount,
@@ -419,14 +431,18 @@ export class GeminiFlashService {
 
       return {
         deduplicated_items: parsed.deduplicated_items.map(
-          (item: any, i: number) => sanitizeExtractedItem(item, i),
+          (item: Record<string, unknown>, i: number) => sanitizeExtractedItem(item, i),
         ),
-        original_count: parsed.original_count || originalCount,
-        deduplicated_count: parsed.deduplicated_count || parsed.deduplicated_items.length,
-        duplicate_pairs_found: parsed.duplicate_pairs_found || 0,
+        original_count: typeof parsed.original_count === 'number' ? parsed.original_count : originalCount,
+        deduplicated_count: typeof parsed.deduplicated_count === 'number' ? parsed.deduplicated_count : (parsed.deduplicated_items as unknown[]).length,
+        duplicate_pairs_found: typeof parsed.duplicate_pairs_found === 'number' ? parsed.duplicate_pairs_found : 0,
       };
     } catch (error) {
-      console.warn('Failed to parse deduplication response, returning originals');
+      captureMessage(
+        'Failed to parse deduplication response, returning originals',
+        'warning',
+        { error: error instanceof Error ? error.message : String(error) }
+      );
       // Fallback: return items as-is without deduplication
       return {
         deduplicated_items: allItems,
@@ -446,7 +462,12 @@ export class GeminiFlashService {
  * Sanitizes a single extracted feed item, ensuring all required fields exist
  * with correct types and safe defaults.
  */
-function sanitizeExtractedItem(raw: any, index: number): GeminiExtractedItem {
+function sanitizeExtractedItem(raw: Record<string, unknown>, index: number): GeminiExtractedItem {
+  const topics = (raw.topics != null && typeof raw.topics === 'object') ? raw.topics as Record<string, unknown> : null;
+  const political = (raw.political != null && typeof raw.political === 'object') ? raw.political as Record<string, unknown> : null;
+  const wellbeing = (raw.wellbeing != null && typeof raw.wellbeing === 'object') ? raw.wellbeing as Record<string, unknown> : null;
+  const emotions = (raw.emotions != null && typeof raw.emotions === 'object') ? raw.emotions as Record<string, unknown> : null;
+
   return {
     estimated_position: typeof raw.estimated_position === 'number'
       ? raw.estimated_position : index + 1,
@@ -465,33 +486,37 @@ function sanitizeExtractedItem(raw: any, index: number): GeminiExtractedItem {
     post_text: typeof raw.post_text === 'string'
       ? raw.post_text.substring(0, 2000) : '',
     hashtags: Array.isArray(raw.hashtags)
-      ? raw.hashtags.filter((h: any) => typeof h === 'string') : [],
+      ? raw.hashtags.filter((h: unknown) => typeof h === 'string') : [],
     is_partial: Boolean(raw.is_partial),
     topics: {
-      primary_category: raw.topics?.primary_category || 'Other',
-      secondary_categories: Array.isArray(raw.topics?.secondary_categories)
-        ? raw.topics.secondary_categories : [],
-      freeform_tags: Array.isArray(raw.topics?.freeform_tags)
-        ? raw.topics.freeform_tags : [],
+      primary_category: (topics && typeof topics.primary_category === 'string')
+        ? topics.primary_category : 'Other',
+      secondary_categories: (topics && Array.isArray(topics.secondary_categories))
+        ? topics.secondary_categories : [],
+      freeform_tags: (topics && Array.isArray(topics.freeform_tags))
+        ? topics.freeform_tags : [],
     },
     political: {
-      is_political: Boolean(raw.political?.is_political),
-      stance_or_alignment_guess: raw.political?.stance_or_alignment_guess || null,
-      policy_area: raw.political?.policy_area || null,
+      is_political: political ? Boolean(political.is_political) : false,
+      stance_or_alignment_guess: (political && typeof political.stance_or_alignment_guess === 'string')
+        ? political.stance_or_alignment_guess : null,
+      policy_area: (political && typeof political.policy_area === 'string')
+        ? political.policy_area : null,
     },
     wellbeing: {
-      wellbeing_relevance: raw.wellbeing?.wellbeing_relevance || 'NONE',
-      themes: Array.isArray(raw.wellbeing?.themes) ? raw.wellbeing.themes : [],
-      potential_risk_flags: Array.isArray(raw.wellbeing?.potential_risk_flags)
-        ? raw.wellbeing.potential_risk_flags : [],
+      wellbeing_relevance: (wellbeing && typeof wellbeing.wellbeing_relevance === 'string')
+        ? wellbeing.wellbeing_relevance : 'NONE',
+      themes: (wellbeing && Array.isArray(wellbeing.themes)) ? wellbeing.themes : [],
+      potential_risk_flags: (wellbeing && Array.isArray(wellbeing.potential_risk_flags))
+        ? wellbeing.potential_risk_flags : [],
     },
     emotions: {
-      valence: (raw.emotions?.valence && typeof raw.emotions.valence === 'string' && raw.emotions.valence.trim())
-        ? raw.emotions.valence.trim().toUpperCase()
+      valence: (emotions && typeof emotions.valence === 'string' && emotions.valence.trim())
+        ? emotions.valence.trim().toUpperCase()
         : 'NEUTRAL',
     },
-    source_origin: raw.source_origin || null,
-    ai_disclosure: raw.ai_disclosure || null,
+    source_origin: typeof raw.source_origin === 'string' ? raw.source_origin : null,
+    ai_disclosure: typeof raw.ai_disclosure === 'string' ? raw.ai_disclosure : null,
   };
 }
 

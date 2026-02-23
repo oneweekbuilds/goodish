@@ -4,6 +4,8 @@ import {
   Text,
   Animated,
 } from 'react-native';
+import { RFValue } from 'react-native-responsive-fontsize';
+import { useTheme } from '../../context/ThemeContext';
 
 interface Segment {
   label: string;
@@ -14,13 +16,33 @@ interface Segment {
 
 interface StackedBar100Props {
   segments: Segment[];
+  /** Optional summary label for screen readers */
+  accessibilitySummary?: string;
 }
 
-export const StackedBar100: React.FC<StackedBar100Props> = ({ segments }) => {
+/** Minimum visible width for any segment, in percentage points.
+ *  Real values below this threshold render at MIN_VISIBLE_PCT
+ *  visual width but show the actual percentage in the label. */
+const MIN_VISIBLE_PCT = 3;
+
+const StackedBar100Component: React.FC<StackedBar100Props> = ({
+  segments,
+  accessibilitySummary,
+}) => {
+  const { colors } = useTheme();
   const animValuesRef = useRef(segments.map(() => new Animated.Value(0)));
 
   useEffect(() => {
-    animValuesRef.current = segments.map((_, index) => animValuesRef.current[index] || new Animated.Value(0));
+    // Only extend array if new items added; reuse existing values
+    const currentValues = animValuesRef.current;
+    if (segments.length > currentValues.length) {
+      animValuesRef.current = [
+        ...currentValues,
+        ...Array.from({ length: segments.length - currentValues.length }, () => new Animated.Value(0)),
+      ];
+    } else if (segments.length < currentValues.length) {
+      animValuesRef.current = currentValues.slice(0, segments.length);
+    }
   }, [segments.length]);
 
   useEffect(() => {
@@ -35,8 +57,31 @@ export const StackedBar100: React.FC<StackedBar100Props> = ({ segments }) => {
     Animated.stagger(50, animations).start();
   }, [segments]);
 
+  // Compute visual percentages: enforce minimum visible width for non-zero segments
+  const visualSegments = segments.map((seg) => {
+    if (seg.percentage === 0) return { ...seg, visualPct: 0 };
+    const visualPct = Math.max(seg.percentage, MIN_VISIBLE_PCT);
+    return { ...seg, visualPct };
+  });
+
+  // Normalize so visual percentages sum to 100
+  const visualTotal = visualSegments.reduce((sum, s) => sum + s.visualPct, 0);
+  const normalizedSegments = visualSegments.map((s) => ({
+    ...s,
+    visualPct: visualTotal > 0 ? (s.visualPct / visualTotal) * 100 : 0,
+  }));
+
   return (
-    <View style={{ marginBottom: 20 }}>
+    <View
+      style={{ marginBottom: 20 }}
+      accessible={true}
+      accessibilityRole="image"
+      accessibilityLabel={
+        accessibilitySummary
+          ? `Stacked bar chart showing ${accessibilitySummary}`
+          : `Stacked bar chart with ${segments.length} segments`
+      }
+    >
       {/* Bar */}
       <View
         style={{
@@ -45,18 +90,18 @@ export const StackedBar100: React.FC<StackedBar100Props> = ({ segments }) => {
           borderRadius: 12,
           overflow: 'hidden',
           marginBottom: 16,
-          backgroundColor: '#F1F5F9',
+          backgroundColor: colors.stackedBarTrack,
         }}
       >
-        {segments.map((segment, index) => {
-          // Skip rendering 0% segments
+        {normalizedSegments.map((segment, index) => {
+          // Skip rendering truly 0% segments
           if (segment.percentage === 0) {
             return null;
           }
 
           const widthAnim = animValuesRef.current[index].interpolate({
             inputRange: [0, 1],
-            outputRange: ['0%', `${segment.percentage}%`],
+            outputRange: ['0%', `${segment.visualPct}%`],
           });
 
           return (
@@ -64,18 +109,19 @@ export const StackedBar100: React.FC<StackedBar100Props> = ({ segments }) => {
               key={`${segment.label}-${index}`}
               style={{
                 width: widthAnim,
-                minWidth: 30,
                 backgroundColor: segment.color,
                 justifyContent: 'center',
                 alignItems: 'center',
               }}
+              accessible={true}
+              accessibilityLabel={`${segment.label}: ${Math.round(segment.percentage)}% of content`}
             >
-              {segment.percentage >= 10 && (
+              {segment.visualPct >= 10 && (
                 <Text
                   style={{
-                    fontSize: 12,
+                    fontSize: RFValue(14),
                     fontWeight: '600',
-                    color: '#FFFFFF',
+                    color: colors.white,
                   }}
                   numberOfLines={1}
                 >
@@ -87,31 +133,37 @@ export const StackedBar100: React.FC<StackedBar100Props> = ({ segments }) => {
         })}
       </View>
 
-      {/* Legend - includes all segments for reference */}
-      <View style={{ gap: 12 }}>
+      {/* Legend — horizontal wrap layout below the chart */}
+      <View
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          gap: 12,
+        }}
+      >
         {segments.map((segment, index) => (
           <View
             key={`legend-${segment.label}-${index}`}
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 8,
+              gap: 6,
             }}
             accessible={true}
             accessibilityLabel={`${segment.label}: ${Math.round(segment.percentage)}% (${segment.count})`}
           >
             <View
               style={{
-                width: 12,
-                height: 12,
-                borderRadius: 2,
+                width: 10,
+                height: 10,
+                borderRadius: 5,
                 backgroundColor: segment.color,
               }}
             />
             <Text
               style={{
-                fontSize: 14,
-                color: '#475569',
+                fontSize: RFValue(14),
+                color: colors.textMuted,
                 fontWeight: '500',
               }}
             >
@@ -119,11 +171,11 @@ export const StackedBar100: React.FC<StackedBar100Props> = ({ segments }) => {
             </Text>
             <Text
               style={{
-                fontSize: 12,
-                color: '#94A3B8',
+                fontSize: RFValue(14),
+                color: colors.textSecondary,
               }}
             >
-              {Math.round(segment.percentage)}% ({segment.count})
+              {Math.round(segment.percentage)}%
             </Text>
           </View>
         ))}
@@ -131,3 +183,5 @@ export const StackedBar100: React.FC<StackedBar100Props> = ({ segments }) => {
     </View>
   );
 };
+
+export const StackedBar100 = React.memo(StackedBar100Component);

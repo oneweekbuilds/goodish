@@ -855,7 +855,7 @@ function extractFacebookPost(container, index) {
       : `media-idx${index}`;
     const fallbackId = `facebook:fallback:${fallbackIdBase}`;
 
-    console.log(`[AlgorithmLens][Facebook] Fallback post accepted for container ${index} (text length: ${rawContainerText.length}, hasMedia: ${hasMedia})`);
+    if (CAPTURE_DEBUG) console.log(`[AlgorithmLens][Facebook] Fallback post accepted for container ${index} (text length: ${rawContainerText.length}, hasMedia: ${hasMedia})`);
 
     const sourceInfo = isSponsored
       ? { isAlgorithmic: true, sourceType: 'ad' }
@@ -985,13 +985,13 @@ function scanFacebookFeed() {
   // Clear query cache at start of each scan cycle
   clearFbQueryCache();
 
-  console.log('\n');
-  console.log('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
-  console.log('[AlgorithmLens][Facebook] 🔍 STARTING FACEBOOK FEED SCAN');
-  console.log('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
-  console.log('[AlgorithmLens][Facebook] URL:', window.location.href);
-  console.log('[AlgorithmLens][Facebook] Pathname:', window.location.pathname);
-  console.log('[AlgorithmLens][Facebook] Timestamp:', new Date().toISOString());
+  if (CAPTURE_DEBUG) console.log('\n');
+  if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
+  if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Facebook] 🔍 STARTING FACEBOOK FEED SCAN');
+  if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
+  if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Facebook] URL:', window.location.href);
+  if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Facebook] Pathname:', window.location.pathname);
+  if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Facebook] Timestamp:', new Date().toISOString());
 
   // ============================================================================
   // SINGLE SELECTOR: Only process TRUE top-level FeedUnit containers
@@ -999,7 +999,7 @@ function scanFacebookFeed() {
   // ============================================================================
   const rawContainers = Array.from(document.querySelectorAll('div[data-pagelet^="FeedUnit_"]'));
 
-  console.log(`[AlgorithmLens][Facebook] 📦 FeedUnit containers found: ${rawContainers.length}`);
+  if (CAPTURE_DEBUG) console.log(`[AlgorithmLens][Facebook] 📦 FeedUnit containers found: ${rawContainers.length}`);
 
   // ============================================================================
   // VALIDITY CHECK: Filter out non-post FeedUnits
@@ -1028,7 +1028,7 @@ function scanFacebookFeed() {
     }
   }
 
-  console.log(`[AlgorithmLens][Facebook] 📦 After validity check: ${containers.length} valid containers`);
+  if (CAPTURE_DEBUG) console.log(`[AlgorithmLens][Facebook] 📦 After validity check: ${containers.length} valid containers`);
 
   // ============================================================================
   // PHASE 2.5: Per-session container tracking using CONTENT HASH
@@ -1073,24 +1073,24 @@ function scanFacebookFeed() {
   // DIAGNOSTIC: If no FeedUnit containers found, log debug info
   // ============================================================================
   if (allContainers.length === 0) {
-    console.warn('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
-    console.warn('[AlgorithmLens][Facebook] ⚠️ NO FEEDUNIT CONTAINERS FOUND - DIAGNOSTIC INFO:');
-    console.warn('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
-    console.warn(`[AlgorithmLens][Facebook]   → div[data-pagelet^="FeedUnit_"] count: ${document.querySelectorAll('div[data-pagelet^="FeedUnit_"]').length}`);
-    console.warn(`[AlgorithmLens][Facebook]   → role="feed" count: ${document.querySelectorAll('[role="feed"]').length}`);
-    console.warn(`[AlgorithmLens][Facebook]   → role="main" count: ${document.querySelectorAll('[role="main"]').length}`);
+    if (CAPTURE_DEBUG) console.warn('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
+    if (CAPTURE_DEBUG) console.warn('[AlgorithmLens][Facebook] ⚠️ NO FEEDUNIT CONTAINERS FOUND - DIAGNOSTIC INFO:');
+    if (CAPTURE_DEBUG) console.warn('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
+    if (CAPTURE_DEBUG) console.warn(`[AlgorithmLens][Facebook]   → div[data-pagelet^="FeedUnit_"] count: ${document.querySelectorAll('div[data-pagelet^="FeedUnit_"]').length}`);
+    if (CAPTURE_DEBUG) console.warn(`[AlgorithmLens][Facebook]   → role="feed" count: ${document.querySelectorAll('[role="feed"]').length}`);
+    if (CAPTURE_DEBUG) console.warn(`[AlgorithmLens][Facebook]   → role="main" count: ${document.querySelectorAll('[role="main"]').length}`);
 
     // Log first few data-pagelet values to help debug
     const pagelets = Array.from(document.querySelectorAll('[data-pagelet]')).slice(0, 10);
     const pageletValues = pagelets.map(el => el.getAttribute('data-pagelet'));
-    console.warn('[AlgorithmLens][Facebook]   → Sample data-pagelet values:', pageletValues);
+    if (CAPTURE_DEBUG) console.warn('[AlgorithmLens][Facebook]   → Sample data-pagelet values:', pageletValues);
 
     // Check if we're actually on the feed
     const isFeedPage = window.location.pathname === '/' ||
                        window.location.pathname === '' ||
                        window.location.pathname.includes('/home');
-    console.warn(`[AlgorithmLens][Facebook]   → Appears to be feed page: ${isFeedPage}`);
-    console.warn('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
+    if (CAPTURE_DEBUG) console.warn(`[AlgorithmLens][Facebook]   → Appears to be feed page: ${isFeedPage}`);
+    if (CAPTURE_DEBUG) console.warn('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
   }
 
   // ============================================================================
@@ -1128,7 +1128,7 @@ function scanFacebookFeed() {
         skippedPosts++;
       }
     } catch (err) {
-      console.warn(`[AlgorithmLens][Facebook] ❌ Error parsing container ${index}:`, err.message);
+      if (CAPTURE_DEBUG) console.warn(`[AlgorithmLens][Facebook] ❌ Error parsing container ${index}:`, err.message);
       const code = 'PARSE_ERROR';
       rejectionCounts[code] = (rejectionCounts[code] || 0) + 1;
       issues.push({ index, issue: code, error: err.message });
@@ -1144,12 +1144,12 @@ function scanFacebookFeed() {
     sponsoredCount
   );
 
-  console.log('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
-  console.log('[AlgorithmLens][Facebook] 📊 PRIMARY EXTRACTION RESULTS:');
-  console.log(`[AlgorithmLens][Facebook]   → Containers scanned: ${totalContainers}`);
-  console.log(`[AlgorithmLens][Facebook]   → Valid posts: ${validPosts}`);
-  console.log(`[AlgorithmLens][Facebook]   → Skipped posts: ${skippedPosts}`);
-  console.log('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
+  if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
+  if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Facebook] 📊 PRIMARY EXTRACTION RESULTS:');
+  if (CAPTURE_DEBUG) console.log(`[AlgorithmLens][Facebook]   → Containers scanned: ${totalContainers}`);
+  if (CAPTURE_DEBUG) console.log(`[AlgorithmLens][Facebook]   → Valid posts: ${validPosts}`);
+  if (CAPTURE_DEBUG) console.log(`[AlgorithmLens][Facebook]   → Skipped posts: ${skippedPosts}`);
+  if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
 
   if (issues.length > 0) {
     console.debug('[AlgorithmLens][Facebook] 🔍 Issues sample (first 5):', issues.slice(0, 5));
@@ -1158,9 +1158,9 @@ function scanFacebookFeed() {
   // ============================================================================
   // FINAL LOGGING
   // ============================================================================
-  console.log('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
-  console.log(`[AlgorithmLens][Facebook] 📊 FINAL POSTS EXTRACTED: ${posts.length}`);
-  console.log('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
+  if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
+  if (CAPTURE_DEBUG) console.log(`[AlgorithmLens][Facebook] 📊 FINAL POSTS EXTRACTED: ${posts.length}`);
+  if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
 
   if (posts.length > 0) {
     console.debug('[AlgorithmLens][Facebook] Sample captions (first 5):',
@@ -1169,7 +1169,7 @@ function scanFacebookFeed() {
       posts.slice(0, 5).map(p => p.creator || '(none)'));
 
     const sponsoredCount = posts.filter(p => p.isSponsored).length;
-    console.log(`[AlgorithmLens][Facebook] 📊 Sponsored/Ads: ${sponsoredCount} / ${posts.length} (${posts.length > 0 ? Math.round(sponsoredCount / posts.length * 100) : 0}%)`);
+    if (CAPTURE_DEBUG) console.log(`[AlgorithmLens][Facebook] 📊 Sponsored/Ads: ${sponsoredCount} / ${posts.length} (${posts.length > 0 ? Math.round(sponsoredCount / posts.length * 100) : 0}%)`);
 
     if (CAPTURE_DEBUG) {
       debugLog('log', `[CaptureDebug][Facebook] Sample posts (first 20):`, posts.slice(0, 20).map(p => ({
@@ -1193,10 +1193,10 @@ function scanFacebookFeed() {
     }
   }
 
-  console.log('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
-  console.log('[AlgorithmLens][Facebook] 🔍 FACEBOOK FEED SCAN COMPLETE');
-  console.log('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
-  console.log('\n');
+  if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
+  if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Facebook] 🔍 FACEBOOK FEED SCAN COMPLETE');
+  if (CAPTURE_DEBUG) console.log('[AlgorithmLens][Facebook] ════════════════════════════════════════════');
+  if (CAPTURE_DEBUG) console.log('\n');
 
   return posts;
 }

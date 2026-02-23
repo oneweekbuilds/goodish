@@ -15,9 +15,10 @@ import { Instagram, Twitter, Youtube, Music, Facebook, MessageCircle } from 'luc
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, PLATFORMS } from '../../lib/theme';
+import { SPACING, RADIUS, TYPOGRAPHY, PLATFORMS } from '../../lib/theme';
 import { ModeToggle } from './ModeToggle';
 import type { ScanMode, SupportedPlatform } from '../../types/broadcast';
+import { withAlpha } from '../../lib/utils';
 
 // Platform icon mapping
 const PLATFORM_ICONS: Record<string, React.FC<{ size: number; color: string; strokeWidth?: number }>> = {
@@ -42,7 +43,7 @@ interface PlatformPickerProps {
   onScanStart?: (platform: SupportedPlatform, mode: ScanMode) => void;
 }
 
-export function PlatformPicker({ onScanStart }: PlatformPickerProps) {
+function PlatformPickerComponent({ onScanStart }: PlatformPickerProps) {
   const { colors, shadows } = useTheme();
   const [selectedPlatform, setSelectedPlatform] = useState<SupportedPlatform | null>(null);
   const [scanMode, setScanMode] = useState<ScanMode>('broadcast');
@@ -122,14 +123,15 @@ export function PlatformPicker({ onScanStart }: PlatformPickerProps) {
               accessibilityRole="button"
               accessibilityLabel={`Scan ${platform.name}${isSelected ? ', selected — tap again to start scan' : ''}`}
               accessibilityHint={isSelected ? 'Tap again to start scanning this platform' : `Select ${platform.name} for scanning`}
-              style={{ alignItems: 'center', width: 80 }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              style={{ alignItems: 'center', width: 80, minHeight: 80 }}
             >
               <View
                 style={{
                   width: 56,
                   height: 56,
-                  borderRadius: 28,
-                  backgroundColor: isSelected ? `${platform.color}18` : colors.bgCard,
+                  borderRadius: RADIUS['2xl'],
+                  backgroundColor: isSelected ? withAlpha(platform.color, 0.09) : colors.bgCard,
                   borderWidth: isSelected ? 2 : 1,
                   borderColor: isSelected ? platform.color : colors.borderSoft,
                   justifyContent: 'center',
@@ -147,10 +149,10 @@ export function PlatformPicker({ onScanStart }: PlatformPickerProps) {
               </View>
               <Text
                 style={{
-                  fontSize: 11,
+                  fontSize: TYPOGRAPHY.captionSmall.fontSize,
                   fontWeight: isSelected ? '600' : '500',
                   color: isSelected ? colors.textMain : colors.textMuted,
-                  marginTop: 6,
+                  marginTop: SPACING.sm,
                   textAlign: 'center',
                 }}
                 numberOfLines={1}
@@ -173,20 +175,24 @@ export function PlatformPicker({ onScanStart }: PlatformPickerProps) {
           <TouchableOpacity
             onPress={handleStartScan}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={`Start ${scanMode === 'broadcast' ? 'Broadcasting' : 'Scanning'}`}
+            accessibilityHint="Begins your feed scan"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             style={{
               marginTop: SPACING.lg,
               backgroundColor: colors.accentGreen,
               borderRadius: RADIUS.md,
-              paddingVertical: 14,
+              paddingVertical: SPACING.lg,
               alignItems: 'center',
+              minHeight: 48,
               ...shadows.soft,
             }}
           >
             <Text
               style={{
-                fontSize: 15,
-                fontWeight: '600',
-                color: '#FFFFFF',
+                ...TYPOGRAPHY.buttonMd,
+                color: colors.textInverse,
               }}
             >
               {scanMode === 'broadcast' ? 'Start Broadcasting' : 'Start Scanning'}
@@ -197,3 +203,5 @@ export function PlatformPicker({ onScanStart }: PlatformPickerProps) {
     </View>
   );
 }
+
+export const PlatformPicker = React.memo(PlatformPickerComponent);

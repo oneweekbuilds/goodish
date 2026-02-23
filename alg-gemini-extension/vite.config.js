@@ -73,6 +73,7 @@ export default defineConfig({
         content: resolve(__dirname, 'src/content.js'),
         background: resolve(__dirname, 'src/background.js'),
         popup: resolve(__dirname, 'src/popup/popup.js'),
+        auth_bridge: resolve(__dirname, 'src/auth_bridge.js'),
       },
       output: {
         entryFileNames: (chunkInfo) => {

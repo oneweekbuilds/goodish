@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  AndroidManifest for the AlgorithmLens Broadcast module.
+
+  Declares the MediaProjectionService as a foreground service
+  with the mediaProjection service type. This is required by
+  Android 10+ for screen capture using MediaProjection API.
+
+  The service must be declared in the module's manifest so it
+  gets merged into the app's final AndroidManifest.xml during build.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.algorithmlens.broadcast">
+
+    <!-- Required for MediaProjection screen capture -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+
+    <!-- Required for Android 13+ notification channel -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application>
+        <service
+            android:name=".MediaProjectionService"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection" />
+    </application>
+</manifest>

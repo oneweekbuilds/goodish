@@ -1,11 +1,21 @@
 /**
  * Authentication context provider.
- * Manages Supabase session state and user profile across the app.
+ * Manages Supabase session state, user profile, and entitlements across the app.
+ *
+ * Entitlements are synced from the backend via /api/user/entitlements.
+ * This is the backend source of truth for Plus status — the Supabase
+ * is_user_plus column is a cache that may be stale. The entitlements
+ * endpoint checks Stripe subscription status in real time.
+ *
+ * Fail-closed: if the entitlements call fails, isPlus defaults to false.
  */
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
+import { useEntitlements } from '../hooks/useEntitlements';
+import { setSentryUser, addBreadcrumb } from '../lib/sentry';
 import type { Session, User } from '@supabase/supabase-js';
+import type { EntitlementsResponse } from '../types';
 
 interface UserProfile {
   has_completed_onboarding: boolean;
@@ -20,6 +30,12 @@ interface AuthContextType {
   /** @deprecated Use `loading` instead. This property will be removed in a future version. */
   isLoading: boolean;
   userProfile: UserProfile | null;
+  /** Whether the user has active Plus entitlements (backend source of truth). */
+  isPlus: boolean;
+  /** Subscription details from backend entitlements. */
+  subscription: EntitlementsResponse['subscription'] | null;
+  /** Re-fetch entitlements from backend (e.g. after Stripe checkout return). */
+  refreshEntitlements: () => Promise<void>;
   signOut: () => Promise<void>;
   signInWithOAuth: (provider: 'google' | 'apple') => Promise<void>;
   completeOnboarding: (aiConsent?: boolean) => Promise<void>;
@@ -38,6 +54,9 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   isLoading: true,
   userProfile: null,
+  isPlus: false,
+  subscription: null,
+  refreshEntitlements: async () => {},
   signOut: async () => {},
   signInWithOAuth: async () => {},
   completeOnboarding: async () => {},
@@ -49,11 +68,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
+  // Entitlements hook: syncs Plus status from backend.
+  // Fails closed to free tier if the call fails.
+  const hasSession = session !== null;
+  const entitlements = useEntitlements(hasSession);
+
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session?.user) {
+        setSentryUser(session.user.id, 'free');
+        addBreadcrumb('auth', 'Session restored on init');
         fetchOrCreateProfile(session.user.id);
       } else {
         setLoading(false);
@@ -66,8 +92,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session?.user) {
+        setSentryUser(session.user.id, 'free');
+        addBreadcrumb('auth', `Auth state changed: ${_event}`, { userId: session.user.id });
         fetchOrCreateProfile(session.user.id);
       } else {
+        setSentryUser(null);
+        addBreadcrumb('auth', 'User signed out');
         setUserProfile(null);
         setLoading(false);
       }
@@ -155,7 +185,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             { onConflict: 'user_id' }
           );
       } catch (err) {
-        console.warn('Could not persist onboarding status:', err);
+        if (__DEV__) {
+          console.warn('Could not persist onboarding status:', err);
+        }
       }
     }
   };
@@ -179,7 +211,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           })
           .eq('user_id', session.user.id);
       } catch (err) {
-        console.warn('Could not persist AI consent:', err);
+        if (__DEV__) {
+          console.warn('Could not persist AI consent:', err);
+        }
       }
     }
   };
@@ -200,20 +234,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error;
   };
 
+  const contextValue = useMemo(() => ({
+    session,
+    user: session?.user ?? null,
+    loading,
+    isLoading: loading,
+    userProfile,
+    isPlus: entitlements.isPlus,
+    subscription: entitlements.subscription,
+    refreshEntitlements: entitlements.refresh,
+    signOut,
+    signInWithOAuth,
+    completeOnboarding,
+    updateAiConsent,
+  }), [session, loading, userProfile, entitlements.isPlus, entitlements.subscription, entitlements.refresh, signOut, signInWithOAuth, completeOnboarding, updateAiConsent]);
+
   return (
-    <AuthContext.Provider
-      value={{
-        session,
-        user: session?.user ?? null,
-        loading,
-        isLoading: loading,
-        userProfile,
-        signOut,
-        signInWithOAuth,
-        completeOnboarding,
-        updateAiConsent,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

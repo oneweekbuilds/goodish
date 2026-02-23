@@ -29,39 +29,15 @@ export const REDDIT_SCRIPT = `
     const style = document.createElement('style');
     style.id = '__alg_video_blocker';
     style.textContent = [
-      // Prevent videos from going fullscreen
-      'video { max-height: 400px !important; object-fit: cover !important; }',
+      // Only hide fullscreen button — allow normal video playback
       'video::-webkit-media-controls-fullscreen-button { display: none !important; }',
 
-      // Hide fullscreen video overlays
-      '[class*="MediaModal"], [class*="fullscreen"], [role="presentation"][style*="position: fixed"],' +
-      'div[style*="position: fixed"][style*="z-index"][style*="inset: 0"]' +
-      '{ display: none !important; visibility: hidden !important; }',
-
-      // Constrain shreddit-player and video containers
-      'shreddit-player, [class*="player-container"], [class*="video-container"]' +
-      '{ max-height: 400px !important; }',
-
-      // Allow vertical scrolling over videos but block tap/horizontal gestures
-      'article video { touch-action: pan-y !important; }',
+      // Hide only the modal overlay, not inline video
+      '[class*="MediaModal"] { display: none !important; visibility: hidden !important; }',
     ].join('\\n');
     document.head.appendChild(style);
 
-    // Override fullscreen API to prevent video fullscreen
-    const noop = function() { return Promise.reject('blocked'); };
-    if (Element.prototype.requestFullscreen) {
-      Element.prototype.requestFullscreen = noop;
-    }
-    if (Element.prototype.webkitRequestFullscreen) {
-      Element.prototype.webkitRequestFullscreen = noop;
-    }
-    if (HTMLVideoElement.prototype.webkitEnterFullscreen) {
-      HTMLVideoElement.prototype.webkitEnterFullscreen = noop;
-    }
-
-    // Allow video play and normal UI interaction
-    // No blanket video pause listener — users can watch videos
-    // No blanket click blocking — only prevent navigation away from feed
+    // No click blocking needed — Reddit videos play inline
   }
 
   injectVideoBlocker();
@@ -135,7 +111,11 @@ export const REDDIT_SCRIPT = `
   }
 
   suppressBanners();
-  setInterval(suppressBanners, 2000);
+  setTimeout(suppressBanners, 1000);
+  setTimeout(suppressBanners, 3000);
+  setTimeout(suppressBanners, 6000);
+  var bannerObserver = new MutationObserver(function() { suppressBanners(); });
+  setTimeout(function() { bannerObserver.observe(document.body, { childList: true, subtree: true }); }, 6000);
 
   // ── Extraction helpers ─────────────────────────────────────
 

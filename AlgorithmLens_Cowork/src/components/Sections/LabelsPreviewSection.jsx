@@ -32,9 +32,9 @@ const LabelsPreviewSection = () => {
     };
 
     return (
-        <section className="py-12 sm:py-24 bg-bg-page overflow-hidden">
+        <section className="py-12 sm:py-24 bg-bg-page overflow-hidden" aria-labelledby="labels-heading" role="region">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center mb-10 sm:mb-14">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-main mb-4 sm:mb-6">Based on your feed, here's what patterns emerged.</h2>
+                <h2 id="labels-heading" className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-main mb-4 sm:mb-6">Based on your feed, here's what patterns emerged.</h2>
                 <p className="text-base sm:text-lg text-text-muted max-w-2xl mx-auto px-2">
                     We observe what appears in your feed. These patterns show the composition of your content, not what you think or who you are.
                 </p>

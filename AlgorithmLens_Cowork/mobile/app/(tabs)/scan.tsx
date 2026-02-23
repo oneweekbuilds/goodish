@@ -1,23 +1,33 @@
-import React, { useState, useCallback } from 'react';
+/**
+ * Scan Tab — Precision Mode Entry Point
+ *
+ * This is the existing WebView-based scanning flow, now rebranded as
+ * "Precision Mode." It's accessed from the Home screen's platform picker
+ * when the user selects Precision mode, or directly via navigation.
+ *
+ * The tab is hidden from the tab bar (href: null in _layout.tsx) but
+ * the route remains accessible for programmatic navigation.
+ */
+
+import React from 'react';
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
-  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { Instagram, Twitter, Youtube, Clapperboard, Facebook, MessageCircle } from 'lucide-react-native';
-import { COLORS, TYPOGRAPHY, SPACING, RADIUS, SHADOWS, PLATFORMS } from '../../src/lib/theme';
+import { Instagram, Twitter, Youtube, Music, Facebook, MessageCircle, Type } from 'lucide-react-native';
+import { useTheme } from '../../src/context/ThemeContext';
+import { TYPOGRAPHY, SPACING, RADIUS, PLATFORMS } from '../../src/lib/theme';
 
-// M8: Platform icons
 const PLATFORM_ICONS: Record<string, React.FC<{ size: number; color: string; strokeWidth?: number }>> = {
   instagram: Instagram,
   twitter: Twitter,
   youtube: Youtube,
-  tiktok: Clapperboard,
+  tiktok: Music,
   facebook: Facebook,
   reddit: MessageCircle,
 };
@@ -32,11 +42,9 @@ const PLATFORM_LIST = [
 ];
 
 export default function ScanScreen() {
-  const [refreshing, setRefreshing] = useState(false);
+  const { colors, shadows } = useTheme();
 
   const handlePlatformSelect = (platform: string) => {
-    // M2 & M6: Haptic feedback
-    Haptics.selectionAsync();
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.push({
       pathname: '/scanner/[platform]',
@@ -44,41 +52,45 @@ export default function ScanScreen() {
     });
   };
 
-  // L5: Pull-to-refresh (just a visual refresh since this is a static screen)
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await new Promise((r) => setTimeout(r, 400));
-    setRefreshing(false);
-  }, []);
-
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.bgPage }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
       <ScrollView
         scrollEventThrottle={16}
         contentContainerStyle={{ padding: SPACING.lg }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primaryBlue} />
-        }
       >
         {/* Header */}
-        <View style={{ marginBottom: SPACING['3xl'] }}>
-          <Text
-            style={{
-              ...TYPOGRAPHY.heroTitle,
-              fontSize: 24,
-              color: COLORS.textMain,
-              marginBottom: 6,
-            }}
-          >
-            Start a Scan
-          </Text>
+        <View style={{ marginBottom: SPACING.xl }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+            <View
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 14,
+                backgroundColor: colors.blue50,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <Type size={14} color={colors.primaryBlue} strokeWidth={2} />
+            </View>
+            <Text
+              style={{
+                ...TYPOGRAPHY.heroTitle,
+                fontSize: 24,
+                color: colors.textMain,
+              }}
+              accessibilityRole="header"
+            >
+              Precision Mode
+            </Text>
+          </View>
           <Text
             style={{
               ...TYPOGRAPHY.body,
-              color: COLORS.textMuted,
+              color: colors.textMuted,
             }}
           >
-            Choose a platform to analyze your feed
+            Text-only analysis using the built-in browser. Choose a platform to scan.
           </Text>
         </View>
 
@@ -91,19 +103,21 @@ export default function ScanScreen() {
                 key={platform.slug}
                 onPress={() => handlePlatformSelect(platform.slug)}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={`Scan ${platform.name} with Precision Mode`}
                 style={{
                   width: '48%',
-                  backgroundColor: COLORS.bgCard,
+                  backgroundColor: colors.bgCard,
                   borderRadius: RADIUS.lg,
                   padding: SPACING.lg,
+                  minHeight: 44,
                   borderWidth: 1,
-                  borderColor: COLORS.borderLight,
+                  borderColor: colors.borderLight,
                   borderLeftWidth: 3,
-                  borderLeftColor: COLORS.accentGreen,
-                  ...SHADOWS.soft,
+                  borderLeftColor: colors.primaryBlue,
+                  ...shadows.soft,
                 }}
               >
-                {/* M8: Platform icon with tinted background */}
                 <View
                   style={{
                     width: 40,
@@ -122,7 +136,7 @@ export default function ScanScreen() {
                 <Text
                   style={{
                     ...TYPOGRAPHY.h3,
-                    color: COLORS.textMain,
+                    color: colors.textMain,
                   }}
                 >
                   {platform.name}
@@ -137,11 +151,12 @@ export default function ScanScreen() {
           <Text
             style={{
               ...TYPOGRAPHY.label,
-              color: COLORS.textSecondary,
+              color: colors.textSecondary,
               textAlign: 'center',
+              lineHeight: 20,
             }}
           >
-            Just scroll your feed like you normally would. AlgorithmLens quietly captures what appears. When you've scrolled enough, tap Done.
+            Precision Mode scrolls through the built-in browser for text-only analysis. For richer insights including video and image content, use Broadcast mode from the Home screen.
           </Text>
         </View>
       </ScrollView>

@@ -38,46 +38,21 @@ export const INSTAGRAM_SCRIPT = `
     const style = document.createElement('style');
     style.id = '__alg_reels_blocker';
     style.textContent = [
-      // Hide the immersive Reels viewer/overlay
-      '[class*="RMediaFooter"], [class*="ReelsMedia"], [class*="reels-media"],' +
-      '[class*="reels-viewer"], [class*="ReelsViewer"], [class*="ImmersiveViewer"],' +
-      '[data-pagelet*="Reel"], [role="presentation"][style*="position: fixed"],' +
-      'div[style*="position: fixed"][style*="z-index"][style*="inset: 0"]' +
+      // Only hide the FULL-SCREEN immersive Reels viewer/overlay
+      // Do NOT hide inline video players in feed articles
+      '[class*="reels-viewer"], [class*="ReelsViewer"], [class*="ImmersiveViewer"]' +
       '{ display: none !important; visibility: hidden !important; }',
 
-      // Prevent videos from going fullscreen
-      'video { max-height: 400px !important; object-fit: cover !important; }',
+      // Hide the fullscreen video controls button only
       'video::-webkit-media-controls-fullscreen-button { display: none !important; }',
-
-      // Hide the Reels tab/navigation takeover
-      '[aria-label="Reels"] { pointer-events: none !important; }',
 
       // Keep feed items from expanding into immersive view
       'article { position: relative !important; }',
-
-      // Allow vertical scrolling over videos but block tap/horizontal gestures
-      'article video { touch-action: pan-y !important; }',
     ].join('\\n');
     document.head.appendChild(style);
 
-    // Override fullscreen API to prevent video fullscreen
-    const noop = function() { return Promise.reject('blocked'); };
-    if (Element.prototype.requestFullscreen) {
-      Element.prototype.requestFullscreen = noop;
-    }
-    if (Element.prototype.webkitRequestFullscreen) {
-      Element.prototype.webkitRequestFullscreen = noop;
-    }
-    if (Element.prototype.webkitEnterFullscreen) {
-      Element.prototype.webkitEnterFullscreen = noop;
-    }
-    if (HTMLVideoElement.prototype.webkitEnterFullscreen) {
-      HTMLVideoElement.prototype.webkitEnterFullscreen = noop;
-    }
-
-    // ONLY block navigation to /reel/ or /reels/ pages — DO NOT block video interactions
+    // Only block navigation AWAY from feed — allow video playback and interaction
     document.addEventListener('click', function(e) {
-      // Only block reel/reels navigation links — let everything else through
       var link = e.target.closest('a[href*="/reel/"], a[href*="/reels/"]');
       if (link) {
         e.preventDefault();
@@ -136,16 +111,19 @@ export const INSTAGRAM_SCRIPT = `
     });
   }
 
-  // Run banner suppression immediately, frequently for first 10s, then slower (H5)
+  // Run banner suppression immediately + on DOM changes (H5 optimized)
   suppressBanners();
-  const bannerInterval = setInterval(function() {
+  // Suppress again after short delays to catch lazy-loaded banners
+  setTimeout(suppressBanners, 1000);
+  setTimeout(suppressBanners, 3000);
+  setTimeout(suppressBanners, 6000);
+  // After initial burst, only re-suppress on DOM mutations
+  var bannerObserver = new MutationObserver(function() {
     suppressBanners();
-    // After 10 seconds (5 calls at 2s), slow down to every 5s
-    if (bannerCallCount >= 5) {
-      clearInterval(bannerInterval);
-      setInterval(suppressBanners, 5000);
-    }
-  }, 2000);
+  });
+  setTimeout(function() {
+    bannerObserver.observe(document.body, { childList: true, subtree: true });
+  }, 6000);
 
   // ── Watch for the "Suggested Posts" divider (position-aware) ──
   function checkForSuggestedDivider() {

@@ -1,30 +1,67 @@
 """
-SQLite database for storing AlgorithmLens scan history.
+PostgreSQL database for storing AlgorithmLens scan history.
 
-Thread safety: Uses thread-local connections so each thread gets its own
-sqlite3.Connection, avoiding cross-thread access issues with FastAPI's
-thread pool and background tasks.
+Supports PostgreSQL via psycopg2 with connection pooling. Falls back to SQLite
+for local development if DATABASE_URL is not set.
+
+Thread safety: Uses connection pooling from psycopg2.pool.SimpleConnectionPool
+for thread-safe concurrent access. Each thread/request gets its own connection
+from the pool.
 """
-import sqlite3
 import json
 import os
-import threading
 import logging
 from datetime import datetime
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple
+import threading
 
 logger = logging.getLogger(__name__)
 
-# Database file path (same directory as this file)
+# Check for DATABASE_URL environment variable (Supabase provides this)
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+# Connection pooling setup
+_pool = None
+_sqlite_conn = None
+_local = threading.local()
+
+# Fallback for local development
 DB_PATH = os.path.join(os.path.dirname(__file__), "scans.db")
 
-# Thread-local storage for connections
-_local = threading.local()
+# Determine if we're using PostgreSQL or SQLite
+_USE_POSTGRESQL = DATABASE_URL is not None
+
+
+def _get_pg_pool():
+    """Initialize and return PostgreSQL connection pool."""
+    global _pool
+    if _pool is None:
+        try:
+            import psycopg2.pool
+            _pool = psycopg2.pool.SimpleConnectionPool(
+                1, 10, DATABASE_URL, connect_timeout=10
+            )
+            logger.info("PostgreSQL connection pool initialized")
+        except Exception as e:
+            logger.error(f"Failed to initialize PostgreSQL pool: {e}")
+            raise
+    return _pool
 
 
 # Helper functions for row-to-dict mapping
 
-def _row_to_scan_summary(row: sqlite3.Row) -> Dict[str, Any]:
+def _row_to_dict(row: Tuple) -> Dict[str, Any]:
+    """Convert PostgreSQL cursor.description and row tuple to dict."""
+    if _USE_POSTGRESQL:
+        # For PostgreSQL, we need to manually map based on cursor.description
+        # This is handled in the query functions by using RealDictCursor
+        return row
+    else:
+        # For SQLite, row is already a Row object with dict-like access
+        return row
+
+
+def _row_to_scan_summary(row: Dict[str, Any]) -> Dict[str, Any]:
     """
     Convert a database row to a scan summary dict (without full result JSON).
     Extracts source_type from result_json for UI display logic.
@@ -58,7 +95,7 @@ def _row_to_scan_summary(row: sqlite3.Row) -> Dict[str, Any]:
     }
 
 
-def _row_to_scan_detail(row: sqlite3.Row) -> Dict[str, Any]:
+def _row_to_scan_detail(row: Dict[str, Any]) -> Dict[str, Any]:
     """
     Convert a database row to a full scan detail dict (includes full result JSON).
     """
@@ -77,35 +114,44 @@ def _row_to_scan_detail(row: sqlite3.Row) -> Dict[str, Any]:
     }
 
 
-def get_connection() -> sqlite3.Connection:
-    """Get a thread-local database connection.
+def get_connection():
+    """Get a database connection (PostgreSQL from pool or SQLite thread-local).
 
-    Each thread gets its own connection, which is safe for SQLite's
-    default serialized threading mode. Connections are reused within
-    the same thread for performance.
+    For PostgreSQL: Returns a connection from the connection pool. Caller is
+    responsible for returning it with conn.close() after use.
 
-    NOTE: Do NOT call conn.close() on the returned connection — it is
-    cached for reuse. Closing it would cause 'Cannot operate on a closed
-    database' errors on the next call.
+    For SQLite: Returns a thread-local cached connection. Do NOT call close()
+    as it is cached for reuse.
     """
-    conn = getattr(_local, "connection", None)
+    if _USE_POSTGRESQL:
+        return _get_pg_pool().getconn()
+    else:
+        # SQLite thread-local connection
+        import sqlite3
+        conn = getattr(_local, "connection", None)
 
-    # Check if the cached connection is still open
-    if conn is not None:
-        try:
-            conn.execute("SELECT 1")
-        except Exception:
-            # Connection was closed or is broken — recreate it
-            conn = None
-            _local.connection = None
+        # Check if the cached connection is still open
+        if conn is not None:
+            try:
+                conn.execute("SELECT 1")
+            except Exception:
+                # Connection was closed or is broken — recreate it
+                conn = None
+                _local.connection = None
 
-    if conn is None:
-        conn = sqlite3.connect(DB_PATH, timeout=30)
-        conn.row_factory = sqlite3.Row  # Enable dict-like access
-        conn.execute("PRAGMA journal_mode=WAL")  # Better concurrent read/write
-        conn.execute("PRAGMA busy_timeout=5000")  # Wait up to 5s on lock
-        _local.connection = conn
-    return conn
+        if conn is None:
+            conn = sqlite3.connect(DB_PATH, timeout=30)
+            conn.row_factory = sqlite3.Row  # Enable dict-like access
+            conn.execute("PRAGMA journal_mode=WAL")  # Better concurrent read/write
+            conn.execute("PRAGMA busy_timeout=5000")  # Wait up to 5s on lock
+            _local.connection = conn
+        return conn
+
+
+def return_connection(conn):
+    """Return a PostgreSQL connection to the pool. No-op for SQLite."""
+    if _USE_POSTGRESQL and _pool is not None:
+        _pool.putconn(conn)
 
 
 def init_database():
@@ -113,137 +159,266 @@ def init_database():
     conn = get_connection()
     cursor = conn.cursor()
 
-    # Create scans table with status support
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS scans (
-            id TEXT PRIMARY KEY,
-            created_at TEXT NOT NULL,
-            platform TEXT NOT NULL,
-            user_id TEXT,
-            duration_seconds REAL,
-            total_items INTEGER DEFAULT 0,
-            total_ads INTEGER DEFAULT 0,
-            ad_percentage REAL DEFAULT 0.0,
-            status TEXT DEFAULT 'completed',
-            error_message TEXT,
-            result_json TEXT NOT NULL
-        )
-    """)
-
-    # Add status column if it doesn't exist (migration for existing DBs)
     try:
-        cursor.execute("ALTER TABLE scans ADD COLUMN status TEXT DEFAULT 'completed'")
-        logger.info("Added status column to scans table")
-    except sqlite3.OperationalError:
-        pass  # Column already exists
+        if _USE_POSTGRESQL:
+            # PostgreSQL table definitions
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS scans (
+                    id TEXT PRIMARY KEY,
+                    created_at TEXT NOT NULL,
+                    platform TEXT NOT NULL,
+                    user_id TEXT,
+                    duration_seconds DOUBLE PRECISION,
+                    total_items INTEGER DEFAULT 0,
+                    total_ads INTEGER DEFAULT 0,
+                    ad_percentage DOUBLE PRECISION DEFAULT 0.0,
+                    status TEXT DEFAULT 'completed',
+                    error_message TEXT,
+                    result_json JSONB NOT NULL
+                )
+            """)
 
-    try:
-        cursor.execute("ALTER TABLE scans ADD COLUMN error_message TEXT")
-        logger.info("Added error_message column to scans table")
-    except sqlite3.OperationalError:
-        pass  # Column already exists
+            # Add columns if they don't exist (migration for existing DBs)
+            try:
+                cursor.execute("ALTER TABLE scans ADD COLUMN status TEXT DEFAULT 'completed'")
+                logger.info("Added status column to scans table")
+            except Exception:
+                pass  # Column already exists
 
-    # Create index on created_at for faster sorting
-    cursor.execute("""
-        CREATE INDEX IF NOT EXISTS idx_scans_created_at ON scans(created_at DESC)
-    """)
+            try:
+                cursor.execute("ALTER TABLE scans ADD COLUMN error_message TEXT")
+                logger.info("Added error_message column to scans table")
+            except Exception:
+                pass  # Column already exists
 
-    # Phase 5C4.1: Create aggregate_buckets table for weekly platform aggregates
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS aggregate_buckets (
-            platform TEXT NOT NULL,
-            week_bucket TEXT NOT NULL,
-            n_scans INTEGER NOT NULL,
-            n_items_total INTEGER NOT NULL,
-            n_ads_total INTEGER NOT NULL,
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL,
-            PRIMARY KEY (platform, week_bucket)
-        )
-    """)
+            # Create index on created_at for faster sorting
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_scans_created_at ON scans(created_at DESC)
+            """)
 
-    # Phase 5C4.1: Create learned_priors table
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS learned_priors (
-            platform TEXT PRIMARY KEY,
-            alpha REAL NOT NULL,
-            beta REAL NOT NULL,
-            effective_n REAL NOT NULL,
-            version TEXT NOT NULL,
-            last_updated TEXT NOT NULL,
-            source TEXT NOT NULL,
-            note TEXT
-        )
-    """)
+            # Create aggregate_buckets table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS aggregate_buckets (
+                    platform TEXT NOT NULL,
+                    week_bucket TEXT NOT NULL,
+                    n_scans INTEGER NOT NULL,
+                    n_items_total INTEGER NOT NULL,
+                    n_ads_total INTEGER NOT NULL,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (platform, week_bucket)
+                )
+            """)
 
-    # Phase 5C4.1: Create aggregation_config table
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS aggregation_config (
-            key TEXT PRIMARY KEY,
-            value TEXT NOT NULL
-        )
-    """)
+            # Create learned_priors table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS learned_priors (
+                    platform TEXT PRIMARY KEY,
+                    alpha DOUBLE PRECISION NOT NULL,
+                    beta DOUBLE PRECISION NOT NULL,
+                    effective_n DOUBLE PRECISION NOT NULL,
+                    version TEXT NOT NULL,
+                    last_updated TEXT NOT NULL,
+                    source TEXT NOT NULL,
+                    note TEXT
+                )
+            """)
 
-    # Seed aggregation_config with default (OFF)
-    cursor.execute("""
-        INSERT OR IGNORE INTO aggregation_config (key, value)
-        VALUES ('AGGREGATE_COLLECTION_ENABLED', 'false')
-    """)
+            # Create aggregation_config table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS aggregation_config (
+                    key TEXT PRIMARY KEY,
+                    value TEXT NOT NULL
+                )
+            """)
 
-    # Create index on aggregate_buckets for faster queries
-    cursor.execute("""
-        CREATE INDEX IF NOT EXISTS idx_aggregate_buckets_platform_week
-        ON aggregate_buckets(platform, week_bucket)
-    """)
+            # Seed aggregation_config with default (OFF)
+            cursor.execute("""
+                INSERT INTO aggregation_config (key, value)
+                VALUES (%s, %s)
+                ON CONFLICT (key) DO NOTHING
+            """, ('AGGREGATE_COLLECTION_ENABLED', 'false'))
 
-    # Create subscriptions table for Stripe entitlements
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS subscriptions (
-            user_id TEXT PRIMARY KEY,
-            stripe_customer_id TEXT,
-            stripe_subscription_id TEXT,
-            status TEXT,
-            plan_type TEXT,
-            trial_end REAL,
-            current_period_end REAL,
-            created_at TEXT,
-            updated_at TEXT
-        )
-    """)
+            # Create index on aggregate_buckets
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_aggregate_buckets_platform_week
+                ON aggregate_buckets(platform, week_bucket)
+            """)
 
-    # H3 fix: Add cancel_at_period_end column (migration for existing DBs)
-    try:
-        cursor.execute("ALTER TABLE subscriptions ADD COLUMN cancel_at_period_end INTEGER DEFAULT 0")
-        logger.info("Added cancel_at_period_end column to subscriptions table")
-    except sqlite3.OperationalError:
-        pass  # Column already exists
+            # Create subscriptions table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS subscriptions (
+                    user_id TEXT PRIMARY KEY,
+                    stripe_customer_id TEXT,
+                    stripe_subscription_id TEXT,
+                    status TEXT,
+                    plan_type TEXT,
+                    trial_end DOUBLE PRECISION,
+                    current_period_end DOUBLE PRECISION,
+                    cancel_at_period_end BOOLEAN DEFAULT FALSE,
+                    created_at TEXT,
+                    updated_at TEXT
+                )
+            """)
 
-    # H4 fix: Add index on stripe_customer_id for fast webhook lookups.
-    # Without this, every webhook event triggers a full table scan on subscriptions.
-    cursor.execute("""
-        CREATE INDEX IF NOT EXISTS idx_subscriptions_customer_id
-        ON subscriptions(stripe_customer_id)
-    """)
+            # Add cancel_at_period_end column if it doesn't exist (migration)
+            try:
+                cursor.execute("ALTER TABLE subscriptions ADD COLUMN cancel_at_period_end BOOLEAN DEFAULT FALSE")
+                logger.info("Added cancel_at_period_end column to subscriptions table")
+            except Exception:
+                pass  # Column already exists
 
-    # Create stripe_webhook_events table for idempotency
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS stripe_webhook_events (
-            event_id TEXT PRIMARY KEY,
-            event_type TEXT NOT NULL,
-            created_at TEXT NOT NULL
-        )
-    """)
+            # Create index on stripe_customer_id
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_subscriptions_customer_id
+                ON subscriptions(stripe_customer_id)
+            """)
 
-    conn.commit()
-    # Connection is thread-local and reused — do not close
-    logger.info(f"Initialized database at {DB_PATH}")
+            # Create stripe_webhook_events table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS stripe_webhook_events (
+                    event_id TEXT PRIMARY KEY,
+                    event_type TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                )
+            """)
+
+        else:
+            # SQLite table definitions
+            import sqlite3
+
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS scans (
+                    id TEXT PRIMARY KEY,
+                    created_at TEXT NOT NULL,
+                    platform TEXT NOT NULL,
+                    user_id TEXT,
+                    duration_seconds REAL,
+                    total_items INTEGER DEFAULT 0,
+                    total_ads INTEGER DEFAULT 0,
+                    ad_percentage REAL DEFAULT 0.0,
+                    status TEXT DEFAULT 'completed',
+                    error_message TEXT,
+                    result_json TEXT NOT NULL
+                )
+            """)
+
+            # Add columns if they don't exist (migration for existing DBs)
+            try:
+                cursor.execute("ALTER TABLE scans ADD COLUMN status TEXT DEFAULT 'completed'")
+                logger.info("Added status column to scans table")
+            except sqlite3.OperationalError:
+                pass  # Column already exists
+
+            try:
+                cursor.execute("ALTER TABLE scans ADD COLUMN error_message TEXT")
+                logger.info("Added error_message column to scans table")
+            except sqlite3.OperationalError:
+                pass  # Column already exists
+
+            # Create index on created_at for faster sorting
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_scans_created_at ON scans(created_at DESC)
+            """)
+
+            # Phase 5C4.1: Create aggregate_buckets table for weekly platform aggregates
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS aggregate_buckets (
+                    platform TEXT NOT NULL,
+                    week_bucket TEXT NOT NULL,
+                    n_scans INTEGER NOT NULL,
+                    n_items_total INTEGER NOT NULL,
+                    n_ads_total INTEGER NOT NULL,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (platform, week_bucket)
+                )
+            """)
+
+            # Phase 5C4.1: Create learned_priors table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS learned_priors (
+                    platform TEXT PRIMARY KEY,
+                    alpha REAL NOT NULL,
+                    beta REAL NOT NULL,
+                    effective_n REAL NOT NULL,
+                    version TEXT NOT NULL,
+                    last_updated TEXT NOT NULL,
+                    source TEXT NOT NULL,
+                    note TEXT
+                )
+            """)
+
+            # Phase 5C4.1: Create aggregation_config table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS aggregation_config (
+                    key TEXT PRIMARY KEY,
+                    value TEXT NOT NULL
+                )
+            """)
+
+            # Seed aggregation_config with default (OFF)
+            cursor.execute("""
+                INSERT OR IGNORE INTO aggregation_config (key, value)
+                VALUES ('AGGREGATE_COLLECTION_ENABLED', 'false')
+            """)
+
+            # Create index on aggregate_buckets for faster queries
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_aggregate_buckets_platform_week
+                ON aggregate_buckets(platform, week_bucket)
+            """)
+
+            # Create subscriptions table for Stripe entitlements
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS subscriptions (
+                    user_id TEXT PRIMARY KEY,
+                    stripe_customer_id TEXT,
+                    stripe_subscription_id TEXT,
+                    status TEXT,
+                    plan_type TEXT,
+                    trial_end REAL,
+                    current_period_end REAL,
+                    created_at TEXT,
+                    updated_at TEXT
+                )
+            """)
+
+            # H3 fix: Add cancel_at_period_end column (migration for existing DBs)
+            try:
+                cursor.execute("ALTER TABLE subscriptions ADD COLUMN cancel_at_period_end INTEGER DEFAULT 0")
+                logger.info("Added cancel_at_period_end column to subscriptions table")
+            except sqlite3.OperationalError:
+                pass  # Column already exists
+
+            # H4 fix: Add index on stripe_customer_id for fast webhook lookups.
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_subscriptions_customer_id
+                ON subscriptions(stripe_customer_id)
+            """)
+
+            # Create stripe_webhook_events table for idempotency
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS stripe_webhook_events (
+                    event_id TEXT PRIMARY KEY,
+                    event_type TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                )
+            """)
+
+        conn.commit()
+        logger.info("Initialized database successfully")
+
+    finally:
+        # Return connection to pool for PostgreSQL
+        return_connection(conn)
 
 
 def save_scan(scan_result: Dict[str, Any]) -> str:
     """
     Save a scan result to the database.
     Returns the scan_id.
-    
+
     Duration is extracted from multiple possible sources (in order of priority):
     1. aggregates.duration_seconds (session scans)
     2. scan_metadata.session_duration_seconds (session scans)
@@ -253,83 +428,101 @@ def save_scan(scan_result: Dict[str, Any]) -> str:
     """
     conn = get_connection()
     cursor = conn.cursor()
-    
-    # Extract fields from the unified scan result
-    scan_id = scan_result.get("scan_metadata", {}).get("scan_id", "")
-    created_at = scan_result.get("scan_metadata", {}).get("created_at", datetime.now().isoformat())
-    platform = scan_result.get("scan_metadata", {}).get("platform", "UNKNOWN")
-    user_id = scan_result.get("scan_metadata", {}).get("user_identifier", "")
-    
-    # Get aggregates
-    aggregates = scan_result.get("aggregates", {})
-    total_items = aggregates.get("total_feed_items", 0)
-    total_ads = aggregates.get("total_ads", 0)
-    ad_percentage = aggregates.get("ad_percentage", 0.0)
 
-    # Validate ad percentage: total_ads cannot exceed total_items
-    total_ads = min(total_ads, total_items)
-
-    # Extension sends ad_percentage as 0-1 decimal; database stores 0-100 percentage.
-    # Always recalculate from total_ads/total_items to ensure consistency.
-    if total_items > 0:
-        ad_percentage = round(min(total_ads / total_items, 1.0) * 100, 2)
-    else:
-        ad_percentage = 0.0
-    
-    # Get duration from multiple possible sources (session scans vs video scans)
-    # Use isinstance checks to ensure we get numeric values, not falsy 0s
-    duration_seconds = 0
-    
-    # Extract nested objects safely
-    scan_metadata = scan_result.get("scan_metadata", {}) or {}
-    environment = scan_result.get("environment", {}) or {}
-    ext_capture = environment.get("extension_capture", {}) or {}
-    video_capture = environment.get("video_capture", {}) or {}
-    
-    # Priority 1: aggregates.duration_seconds (session scans inject here)
-    agg_duration = aggregates.get("duration_seconds")
-    if isinstance(agg_duration, (int, float)) and agg_duration > 0:
-        duration_seconds = agg_duration
-        logger.info(f"Using aggregates.duration_seconds: {duration_seconds}")
-    # Priority 2: scan_metadata.session_duration_seconds
-    elif isinstance(scan_metadata.get("session_duration_seconds"), (int, float)) and scan_metadata.get("session_duration_seconds") > 0:
-        duration_seconds = scan_metadata["session_duration_seconds"]
-        logger.info(f"Using scan_metadata.session_duration_seconds: {duration_seconds}")
-    # Priority 3: environment.video_capture.duration_seconds (video uploads)
-    elif isinstance(video_capture.get("duration_seconds"), (int, float)) and video_capture.get("duration_seconds") > 0:
-        duration_seconds = video_capture["duration_seconds"]
-        logger.info(f"Using video_capture.duration_seconds: {duration_seconds}")
-    # Priority 4: environment.extension_capture.session_duration_seconds
-    elif isinstance(ext_capture.get("session_duration_seconds"), (int, float)) and ext_capture.get("session_duration_seconds") > 0:
-        duration_seconds = ext_capture["session_duration_seconds"]
-        logger.info(f"Using extension_capture.session_duration_seconds: {duration_seconds}")
-    else:
-        logger.info(f"No valid duration found, using default: {duration_seconds}")
-    
-    # Serialize the full result to JSON
-    result_json = json.dumps(scan_result)
-
-    cursor.execute("""
-        INSERT OR REPLACE INTO scans
-        (id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, result_json)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (scan_id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, result_json))
-    
-    conn.commit()
-    # Connection is thread-local and reused — do not close
-
-    logger.info(f"Saved scan {scan_id} to database")
-
-    # Phase 5C4.1: Contribute to aggregates if opt-in consent given
     try:
-        from accuracy.aggregation import contribute_scan_to_aggregates
-        if contribute_scan_to_aggregates(scan_result):
-            logger.info(f"Contributed scan {scan_id} to aggregates")
-    except Exception as e:
-        # Don't fail scan save if aggregation fails
-        logger.warning(f"Failed to contribute scan to aggregates: {e}")
-    
-    return scan_id
+        # Extract fields from the unified scan result
+        scan_id = scan_result.get("scan_metadata", {}).get("scan_id", "")
+        created_at = scan_result.get("scan_metadata", {}).get("created_at", datetime.now().isoformat())
+        platform = scan_result.get("scan_metadata", {}).get("platform", "UNKNOWN")
+        user_id = scan_result.get("scan_metadata", {}).get("user_identifier", "")
+
+        # Get aggregates
+        aggregates = scan_result.get("aggregates", {})
+        total_items = aggregates.get("total_feed_items", 0)
+        total_ads = aggregates.get("total_ads", 0)
+        ad_percentage = aggregates.get("ad_percentage", 0.0)
+
+        # Validate ad percentage: total_ads cannot exceed total_items
+        total_ads = min(total_ads, total_items)
+
+        # Extension sends ad_percentage as 0-1 decimal; database stores 0-100 percentage.
+        # Always recalculate from total_ads/total_items to ensure consistency.
+        if total_items > 0:
+            ad_percentage = round(min(total_ads / total_items, 1.0) * 100, 2)
+        else:
+            ad_percentage = 0.0
+
+        # Get duration from multiple possible sources (session scans vs video scans)
+        # Use isinstance checks to ensure we get numeric values, not falsy 0s
+        duration_seconds = 0
+
+        # Extract nested objects safely
+        scan_metadata = scan_result.get("scan_metadata", {}) or {}
+        environment = scan_result.get("environment", {}) or {}
+        ext_capture = environment.get("extension_capture", {}) or {}
+        video_capture = environment.get("video_capture", {}) or {}
+
+        # Priority 1: aggregates.duration_seconds (session scans inject here)
+        agg_duration = aggregates.get("duration_seconds")
+        if isinstance(agg_duration, (int, float)) and agg_duration > 0:
+            duration_seconds = agg_duration
+            logger.info(f"Using aggregates.duration_seconds: {duration_seconds}")
+        # Priority 2: scan_metadata.session_duration_seconds
+        elif isinstance(scan_metadata.get("session_duration_seconds"), (int, float)) and scan_metadata.get("session_duration_seconds") > 0:
+            duration_seconds = scan_metadata["session_duration_seconds"]
+            logger.info(f"Using scan_metadata.session_duration_seconds: {duration_seconds}")
+        # Priority 3: environment.video_capture.duration_seconds (video uploads)
+        elif isinstance(video_capture.get("duration_seconds"), (int, float)) and video_capture.get("duration_seconds") > 0:
+            duration_seconds = video_capture["duration_seconds"]
+            logger.info(f"Using video_capture.duration_seconds: {duration_seconds}")
+        # Priority 4: environment.extension_capture.session_duration_seconds
+        elif isinstance(ext_capture.get("session_duration_seconds"), (int, float)) and ext_capture.get("session_duration_seconds") > 0:
+            duration_seconds = ext_capture["session_duration_seconds"]
+            logger.info(f"Using extension_capture.session_duration_seconds: {duration_seconds}")
+        else:
+            logger.info(f"No valid duration found, using default: {duration_seconds}")
+
+        # Serialize the full result to JSON
+        result_json = json.dumps(scan_result)
+
+        if _USE_POSTGRESQL:
+            cursor.execute("""
+                INSERT INTO scans
+                (id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, result_json)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (id) DO UPDATE SET
+                    created_at = EXCLUDED.created_at,
+                    platform = EXCLUDED.platform,
+                    user_id = EXCLUDED.user_id,
+                    duration_seconds = EXCLUDED.duration_seconds,
+                    total_items = EXCLUDED.total_items,
+                    total_ads = EXCLUDED.total_ads,
+                    ad_percentage = EXCLUDED.ad_percentage,
+                    result_json = EXCLUDED.result_json
+            """, (scan_id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, result_json))
+        else:
+            cursor.execute("""
+                INSERT OR REPLACE INTO scans
+                (id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, result_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (scan_id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, result_json))
+
+        conn.commit()
+        logger.info(f"Saved scan {scan_id} to database")
+
+        # Phase 5C4.1: Contribute to aggregates if opt-in consent given
+        try:
+            from accuracy.aggregation import contribute_scan_to_aggregates
+            if contribute_scan_to_aggregates(scan_result):
+                logger.info(f"Contributed scan {scan_id} to aggregates")
+        except Exception as e:
+            # Don't fail scan save if aggregation fails
+            logger.warning(f"Failed to contribute scan to aggregates: {e}")
+
+        return scan_id
+
+    finally:
+        return_connection(conn)
 
 
 def _internal_get_all_scans() -> List[Dict[str, Any]]:
@@ -344,16 +537,25 @@ def _internal_get_all_scans() -> List[Dict[str, Any]]:
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, result_json
-        FROM scans
-        ORDER BY created_at DESC
-    """)
-
-    rows = cursor.fetchall()
-    # Connection is thread-local and reused — do not close
-
-    return [_row_to_scan_summary(row) for row in rows]
+    try:
+        if _USE_POSTGRESQL:
+            cursor.execute("""
+                SELECT id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, result_json
+                FROM scans
+                ORDER BY created_at DESC
+            """)
+            rows = cursor.fetchall()
+            return [dict(row) if hasattr(row, 'keys') else row for row in rows]
+        else:
+            cursor.execute("""
+                SELECT id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, result_json
+                FROM scans
+                ORDER BY created_at DESC
+            """)
+            rows = cursor.fetchall()
+            return [_row_to_scan_summary(row) for row in rows]
+    finally:
+        return_connection(conn)
 
 
 def get_scans_by_user(user_id: str) -> List[Dict[str, Any]]:
@@ -371,17 +573,27 @@ def get_scans_by_user(user_id: str) -> List[Dict[str, Any]]:
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, result_json
-        FROM scans
-        WHERE user_id = ?
-        ORDER BY created_at DESC
-    """, (user_id,))
+    try:
+        if _USE_POSTGRESQL:
+            cursor.execute("""
+                SELECT id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, result_json
+                FROM scans
+                WHERE user_id = %s
+                ORDER BY created_at DESC
+            """, (user_id,))
+        else:
+            cursor.execute("""
+                SELECT id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, result_json
+                FROM scans
+                WHERE user_id = ?
+                ORDER BY created_at DESC
+            """, (user_id,))
 
-    rows = cursor.fetchall()
-    # Connection is thread-local and reused — do not close
+        rows = cursor.fetchall()
+        return [_row_to_scan_summary(row if isinstance(row, dict) else dict(row)) for row in rows]
 
-    return [_row_to_scan_summary(row) for row in rows]
+    finally:
+        return_connection(conn)
 
 
 def _internal_get_scan_by_id(scan_id: str) -> Optional[Dict[str, Any]]:
@@ -394,19 +606,30 @@ def _internal_get_scan_by_id(scan_id: str) -> Optional[Dict[str, Any]]:
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, status, error_message, result_json
-        FROM scans
-        WHERE id = ?
-    """, (scan_id,))
+    try:
+        if _USE_POSTGRESQL:
+            cursor.execute("""
+                SELECT id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, status, error_message, result_json
+                FROM scans
+                WHERE id = %s
+            """, (scan_id,))
+        else:
+            cursor.execute("""
+                SELECT id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, status, error_message, result_json
+                FROM scans
+                WHERE id = ?
+            """, (scan_id,))
 
-    row = cursor.fetchone()
-    # Connection is thread-local and reused — do not close
+        row = cursor.fetchone()
 
-    if row is None:
-        return None
+        if row is None:
+            return None
 
-    return _row_to_scan_detail(row)
+        row = row if isinstance(row, dict) else dict(row)
+        return _row_to_scan_detail(row)
+
+    finally:
+        return_connection(conn)
 
 
 def get_scan_by_id_for_user(scan_id: str, user_id: str) -> Optional[Dict[str, Any]]:
@@ -426,19 +649,30 @@ def get_scan_by_id_for_user(scan_id: str, user_id: str) -> Optional[Dict[str, An
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, status, error_message, result_json
-        FROM scans
-        WHERE id = ? AND user_id = ?
-    """, (scan_id, user_id))
+    try:
+        if _USE_POSTGRESQL:
+            cursor.execute("""
+                SELECT id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, status, error_message, result_json
+                FROM scans
+                WHERE id = %s AND user_id = %s
+            """, (scan_id, user_id))
+        else:
+            cursor.execute("""
+                SELECT id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, status, error_message, result_json
+                FROM scans
+                WHERE id = ? AND user_id = ?
+            """, (scan_id, user_id))
 
-    row = cursor.fetchone()
-    # Connection is thread-local and reused — do not close
+        row = cursor.fetchone()
 
-    if row is None:
-        return None
+        if row is None:
+            return None
 
-    return _row_to_scan_detail(row)
+        row = row if isinstance(row, dict) else dict(row)
+        return _row_to_scan_detail(row)
+
+    finally:
+        return_connection(conn)
 
 
 def delete_scan(scan_id: str, user_id: str) -> bool:
@@ -447,16 +681,22 @@ def delete_scan(scan_id: str, user_id: str) -> bool:
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("DELETE FROM scans WHERE id = ? AND user_id = ?", (scan_id, user_id))
-    deleted = cursor.rowcount > 0
+    try:
+        if _USE_POSTGRESQL:
+            cursor.execute("DELETE FROM scans WHERE id = %s AND user_id = %s", (scan_id, user_id))
+        else:
+            cursor.execute("DELETE FROM scans WHERE id = ? AND user_id = ?", (scan_id, user_id))
 
-    conn.commit()
-    # Connection is thread-local and reused — do not close
+        deleted = cursor.rowcount > 0
+        conn.commit()
 
-    if deleted:
-        logger.info(f"Deleted scan {scan_id}")
+        if deleted:
+            logger.info(f"Deleted scan {scan_id}")
 
-    return deleted
+        return deleted
+
+    finally:
+        return_connection(conn)
 
 
 def create_pending_scan(scan_id: str, platform: str, user_id: str = "demo-user") -> str:
@@ -467,36 +707,51 @@ def create_pending_scan(scan_id: str, platform: str, user_id: str = "demo-user")
     conn = get_connection()
     cursor = conn.cursor()
 
-    created_at = datetime.now().isoformat()
+    try:
+        created_at = datetime.now().isoformat()
 
-    # Create minimal placeholder result
-    placeholder_result = {
-        "scan_metadata": {
-            "scan_id": scan_id,
-            "created_at": created_at,
-            "platform": platform.upper(),
-            "user_identifier": user_id,
-            "source_type": "MOBILE_VIDEO"
-        },
-        "aggregates": {
-            "total_feed_items": 0,
-            "total_ads": 0,
-            "ad_percentage": 0.0
-        },
-        "feed_items": []
-    }
+        # Create minimal placeholder result
+        placeholder_result = {
+            "scan_metadata": {
+                "scan_id": scan_id,
+                "created_at": created_at,
+                "platform": platform.upper(),
+                "user_identifier": user_id,
+                "source_type": "MOBILE_VIDEO"
+            },
+            "aggregates": {
+                "total_feed_items": 0,
+                "total_ads": 0,
+                "ad_percentage": 0.0
+            },
+            "feed_items": []
+        }
 
-    cursor.execute("""
-        INSERT OR REPLACE INTO scans
-        (id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, status, result_json)
-        VALUES (?, ?, ?, ?, 0, 0, 0, 0.0, 'processing', ?)
-    """, (scan_id, created_at, platform.upper(), user_id, json.dumps(placeholder_result)))
+        if _USE_POSTGRESQL:
+            cursor.execute("""
+                INSERT INTO scans
+                (id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, status, result_json)
+                VALUES (%s, %s, %s, %s, 0, 0, 0, 0.0, 'processing', %s)
+                ON CONFLICT (id) DO UPDATE SET
+                    created_at = EXCLUDED.created_at,
+                    platform = EXCLUDED.platform,
+                    user_id = EXCLUDED.user_id,
+                    status = EXCLUDED.status,
+                    result_json = EXCLUDED.result_json
+            """, (scan_id, created_at, platform.upper(), user_id, json.dumps(placeholder_result)))
+        else:
+            cursor.execute("""
+                INSERT OR REPLACE INTO scans
+                (id, created_at, platform, user_id, duration_seconds, total_items, total_ads, ad_percentage, status, result_json)
+                VALUES (?, ?, ?, ?, 0, 0, 0, 0.0, 'processing', ?)
+            """, (scan_id, created_at, platform.upper(), user_id, json.dumps(placeholder_result)))
 
-    conn.commit()
-    # Connection is thread-local and reused — do not close
+        conn.commit()
+        logger.info(f"Created pending scan {scan_id} with status='processing'")
+        return scan_id
 
-    logger.info(f"Created pending scan {scan_id} with status='processing'")
-    return scan_id
+    finally:
+        return_connection(conn)
 
 
 def update_scan_result(scan_id: str, scan_result: Dict[str, Any], status: str = "completed") -> bool:
@@ -507,38 +762,48 @@ def update_scan_result(scan_id: str, scan_result: Dict[str, Any], status: str = 
     conn = get_connection()
     cursor = conn.cursor()
 
-    # Extract fields from the unified scan result
-    aggregates = scan_result.get("aggregates", {})
-    total_items = aggregates.get("total_feed_items", 0)
-    total_ads = aggregates.get("total_ads", 0)
+    try:
+        # Extract fields from the unified scan result
+        aggregates = scan_result.get("aggregates", {})
+        total_items = aggregates.get("total_feed_items", 0)
+        total_ads = aggregates.get("total_ads", 0)
 
-    # Session 9 fix: Recalculate ad_percentage to 0-100 DB scale (matching save_scan behavior)
-    # The incoming payload uses 0-1 decimal scale; DB stores 0-100 percentage scale.
-    if total_items > 0:
-        ad_percentage = round(min(total_ads / total_items, 1.0) * 100, 2)
-    else:
-        ad_percentage = 0.0
+        # Session 9 fix: Recalculate ad_percentage to 0-100 DB scale (matching save_scan behavior)
+        # The incoming payload uses 0-1 decimal scale; DB stores 0-100 percentage scale.
+        if total_items > 0:
+            ad_percentage = round(min(total_ads / total_items, 1.0) * 100, 2)
+        else:
+            ad_percentage = 0.0
 
-    # Get duration from environment
-    environment = scan_result.get("environment", {}) or {}
-    video_capture = environment.get("video_capture", {}) or {}
-    duration_seconds = video_capture.get("duration_seconds", 0) or 0
+        # Get duration from environment
+        environment = scan_result.get("environment", {}) or {}
+        video_capture = environment.get("video_capture", {}) or {}
+        duration_seconds = video_capture.get("duration_seconds", 0) or 0
 
-    result_json = json.dumps(scan_result)
+        result_json = json.dumps(scan_result)
 
-    cursor.execute("""
-        UPDATE scans
-        SET total_items = ?, total_ads = ?, ad_percentage = ?,
-            duration_seconds = ?, status = ?, result_json = ?, error_message = NULL
-        WHERE id = ?
-    """, (total_items, total_ads, ad_percentage, duration_seconds, status, result_json, scan_id))
+        if _USE_POSTGRESQL:
+            cursor.execute("""
+                UPDATE scans
+                SET total_items = %s, total_ads = %s, ad_percentage = %s,
+                    duration_seconds = %s, status = %s, result_json = %s, error_message = NULL
+                WHERE id = %s
+            """, (total_items, total_ads, ad_percentage, duration_seconds, status, result_json, scan_id))
+        else:
+            cursor.execute("""
+                UPDATE scans
+                SET total_items = ?, total_ads = ?, ad_percentage = ?,
+                    duration_seconds = ?, status = ?, result_json = ?, error_message = NULL
+                WHERE id = ?
+            """, (total_items, total_ads, ad_percentage, duration_seconds, status, result_json, scan_id))
 
-    updated = cursor.rowcount > 0
-    conn.commit()
-    # Connection is thread-local and reused — do not close
+        updated = cursor.rowcount > 0
+        conn.commit()
+        logger.info(f"Updated scan {scan_id} with status='{status}', {total_items} items, {total_ads} ads")
+        return updated
 
-    logger.info(f"Updated scan {scan_id} with status='{status}', {total_items} items, {total_ads} ads")
-    return updated
+    finally:
+        return_connection(conn)
 
 
 def update_scan_error(scan_id: str, error_message: str) -> bool:
@@ -549,18 +814,27 @@ def update_scan_error(scan_id: str, error_message: str) -> bool:
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
-        UPDATE scans
-        SET status = 'failed', error_message = ?
-        WHERE id = ?
-    """, (error_message, scan_id))
+    try:
+        if _USE_POSTGRESQL:
+            cursor.execute("""
+                UPDATE scans
+                SET status = 'failed', error_message = %s
+                WHERE id = %s
+            """, (error_message, scan_id))
+        else:
+            cursor.execute("""
+                UPDATE scans
+                SET status = 'failed', error_message = ?
+                WHERE id = ?
+            """, (error_message, scan_id))
 
-    updated = cursor.rowcount > 0
-    conn.commit()
-    # Connection is thread-local and reused — do not close
+        updated = cursor.rowcount > 0
+        conn.commit()
+        logger.info(f"Updated scan {scan_id} with status='failed': {error_message}")
+        return updated
 
-    logger.info(f"Updated scan {scan_id} with status='failed': {error_message}")
-    return updated
+    finally:
+        return_connection(conn)
 
 
 def get_scan_status(scan_id: str) -> Optional[Dict[str, Any]]:
@@ -571,24 +845,34 @@ def get_scan_status(scan_id: str) -> Optional[Dict[str, Any]]:
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT id, status, error_message, total_items, total_ads
-        FROM scans WHERE id = ?
-    """, (scan_id,))
+    try:
+        if _USE_POSTGRESQL:
+            cursor.execute("""
+                SELECT id, status, error_message, total_items, total_ads
+                FROM scans WHERE id = %s
+            """, (scan_id,))
+        else:
+            cursor.execute("""
+                SELECT id, status, error_message, total_items, total_ads
+                FROM scans WHERE id = ?
+            """, (scan_id,))
 
-    row = cursor.fetchone()
-    # Connection is thread-local and reused — do not close
+        row = cursor.fetchone()
 
-    if row is None:
-        return None
+        if row is None:
+            return None
 
-    return {
-        "scan_id": row["id"],
-        "status": row["status"] or "completed",
-        "error_message": row["error_message"],
-        "total_items": row["total_items"],
-        "total_ads": row["total_ads"]
-    }
+        row = row if isinstance(row, dict) else dict(row)
+        return {
+            "scan_id": row["id"],
+            "status": row["status"] or "completed",
+            "error_message": row["error_message"],
+            "total_items": row["total_items"],
+            "total_ads": row["total_ads"]
+        }
+
+    finally:
+        return_connection(conn)
 
 
 # Subscription entitlement functions
@@ -614,44 +898,66 @@ def upsert_subscription(
     conn = get_connection()
     cursor = conn.cursor()
 
-    now = datetime.now().isoformat()
-    # Convert bool to int for SQLite storage (None stays None for COALESCE)
-    cancel_at_period_end_int = int(cancel_at_period_end) if cancel_at_period_end is not None else None
+    try:
+        now = datetime.now().isoformat()
 
-    # Check if record exists
-    cursor.execute("SELECT user_id FROM subscriptions WHERE user_id = ?", (user_id,))
-    exists = cursor.fetchone() is not None
+        if _USE_POSTGRESQL:
+            # PostgreSQL upsert with ON CONFLICT
+            cursor.execute("""
+                INSERT INTO subscriptions
+                (user_id, stripe_customer_id, stripe_subscription_id, status, plan_type,
+                 trial_end, current_period_end, cancel_at_period_end, created_at, updated_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (user_id) DO UPDATE SET
+                    stripe_customer_id = COALESCE(EXCLUDED.stripe_customer_id, subscriptions.stripe_customer_id),
+                    stripe_subscription_id = COALESCE(EXCLUDED.stripe_subscription_id, subscriptions.stripe_subscription_id),
+                    status = COALESCE(EXCLUDED.status, subscriptions.status),
+                    plan_type = COALESCE(EXCLUDED.plan_type, subscriptions.plan_type),
+                    trial_end = COALESCE(EXCLUDED.trial_end, subscriptions.trial_end),
+                    current_period_end = COALESCE(EXCLUDED.current_period_end, subscriptions.current_period_end),
+                    cancel_at_period_end = COALESCE(EXCLUDED.cancel_at_period_end, subscriptions.cancel_at_period_end),
+                    updated_at = %s
+            """, (user_id, stripe_customer_id, stripe_subscription_id, status, plan_type,
+                  trial_end, current_period_end, cancel_at_period_end, now, now, now))
+        else:
+            # SQLite version
+            cursor.execute("SELECT user_id FROM subscriptions WHERE user_id = ?", (user_id,))
+            exists = cursor.fetchone() is not None
 
-    if exists:
-        # Update existing record, using COALESCE to preserve non-null values
-        cursor.execute("""
-            UPDATE subscriptions
-            SET stripe_customer_id = COALESCE(?, stripe_customer_id),
-                stripe_subscription_id = COALESCE(?, stripe_subscription_id),
-                status = COALESCE(?, status),
-                plan_type = COALESCE(?, plan_type),
-                trial_end = COALESCE(?, trial_end),
-                current_period_end = COALESCE(?, current_period_end),
-                cancel_at_period_end = COALESCE(?, cancel_at_period_end),
-                updated_at = ?
-            WHERE user_id = ?
-        """, (stripe_customer_id, stripe_subscription_id, status, plan_type,
-              trial_end, current_period_end, cancel_at_period_end_int, now, user_id))
-    else:
-        # Insert new record
-        cursor.execute("""
-            INSERT INTO subscriptions
-            (user_id, stripe_customer_id, stripe_subscription_id, status, plan_type,
-             trial_end, current_period_end, cancel_at_period_end, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (user_id, stripe_customer_id, stripe_subscription_id, status, plan_type,
-              trial_end, current_period_end, cancel_at_period_end_int or 0, now, now))
+            # Convert bool to int for SQLite storage (None stays None for COALESCE)
+            cancel_at_period_end_int = int(cancel_at_period_end) if cancel_at_period_end is not None else None
 
-    affected = cursor.rowcount > 0
-    conn.commit()
-    # Connection is thread-local and reused — do not close
+            if exists:
+                # Update existing record, using COALESCE to preserve non-null values
+                cursor.execute("""
+                    UPDATE subscriptions
+                    SET stripe_customer_id = COALESCE(?, stripe_customer_id),
+                        stripe_subscription_id = COALESCE(?, stripe_subscription_id),
+                        status = COALESCE(?, status),
+                        plan_type = COALESCE(?, plan_type),
+                        trial_end = COALESCE(?, trial_end),
+                        current_period_end = COALESCE(?, current_period_end),
+                        cancel_at_period_end = COALESCE(?, cancel_at_period_end),
+                        updated_at = ?
+                    WHERE user_id = ?
+                """, (stripe_customer_id, stripe_subscription_id, status, plan_type,
+                      trial_end, current_period_end, cancel_at_period_end_int, now, user_id))
+            else:
+                # Insert new record
+                cursor.execute("""
+                    INSERT INTO subscriptions
+                    (user_id, stripe_customer_id, stripe_subscription_id, status, plan_type,
+                     trial_end, current_period_end, cancel_at_period_end, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (user_id, stripe_customer_id, stripe_subscription_id, status, plan_type,
+                      trial_end, current_period_end, cancel_at_period_end_int or 0, now, now))
 
-    return affected
+        affected = cursor.rowcount > 0
+        conn.commit()
+        return affected
+
+    finally:
+        return_connection(conn)
 
 
 def get_subscription_by_user_id(user_id: str) -> Optional[Dict[str, Any]]:
@@ -659,31 +965,43 @@ def get_subscription_by_user_id(user_id: str) -> Optional[Dict[str, Any]]:
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT user_id, stripe_customer_id, stripe_subscription_id, status, plan_type,
-               trial_end, current_period_end, cancel_at_period_end, created_at, updated_at
-        FROM subscriptions
-        WHERE user_id = ?
-    """, (user_id,))
+    try:
+        if _USE_POSTGRESQL:
+            cursor.execute("""
+                SELECT user_id, stripe_customer_id, stripe_subscription_id, status, plan_type,
+                       trial_end, current_period_end, cancel_at_period_end, created_at, updated_at
+                FROM subscriptions
+                WHERE user_id = %s
+            """, (user_id,))
+        else:
+            cursor.execute("""
+                SELECT user_id, stripe_customer_id, stripe_subscription_id, status, plan_type,
+                       trial_end, current_period_end, cancel_at_period_end, created_at, updated_at
+                FROM subscriptions
+                WHERE user_id = ?
+            """, (user_id,))
 
-    row = cursor.fetchone()
-    # Connection is thread-local and reused — do not close
+        row = cursor.fetchone()
 
-    if row is None:
-        return None
+        if row is None:
+            return None
 
-    return {
-        "user_id": row["user_id"],
-        "stripe_customer_id": row["stripe_customer_id"],
-        "stripe_subscription_id": row["stripe_subscription_id"],
-        "status": row["status"],
-        "plan_type": row["plan_type"],
-        "trial_end": row["trial_end"],
-        "current_period_end": row["current_period_end"],
-        "cancel_at_period_end": bool(row["cancel_at_period_end"]),
-        "created_at": row["created_at"],
-        "updated_at": row["updated_at"]
-    }
+        row = row if isinstance(row, dict) else dict(row)
+        return {
+            "user_id": row["user_id"],
+            "stripe_customer_id": row["stripe_customer_id"],
+            "stripe_subscription_id": row["stripe_subscription_id"],
+            "status": row["status"],
+            "plan_type": row["plan_type"],
+            "trial_end": row["trial_end"],
+            "current_period_end": row["current_period_end"],
+            "cancel_at_period_end": bool(row["cancel_at_period_end"]),
+            "created_at": row["created_at"],
+            "updated_at": row["updated_at"]
+        }
+
+    finally:
+        return_connection(conn)
 
 
 def get_subscription_by_customer_id(stripe_customer_id: str) -> Optional[Dict[str, Any]]:
@@ -691,31 +1009,43 @@ def get_subscription_by_customer_id(stripe_customer_id: str) -> Optional[Dict[st
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT user_id, stripe_customer_id, stripe_subscription_id, status, plan_type,
-               trial_end, current_period_end, cancel_at_period_end, created_at, updated_at
-        FROM subscriptions
-        WHERE stripe_customer_id = ?
-    """, (stripe_customer_id,))
+    try:
+        if _USE_POSTGRESQL:
+            cursor.execute("""
+                SELECT user_id, stripe_customer_id, stripe_subscription_id, status, plan_type,
+                       trial_end, current_period_end, cancel_at_period_end, created_at, updated_at
+                FROM subscriptions
+                WHERE stripe_customer_id = %s
+            """, (stripe_customer_id,))
+        else:
+            cursor.execute("""
+                SELECT user_id, stripe_customer_id, stripe_subscription_id, status, plan_type,
+                       trial_end, current_period_end, cancel_at_period_end, created_at, updated_at
+                FROM subscriptions
+                WHERE stripe_customer_id = ?
+            """, (stripe_customer_id,))
 
-    row = cursor.fetchone()
-    # Connection is thread-local and reused — do not close
+        row = cursor.fetchone()
 
-    if row is None:
-        return None
+        if row is None:
+            return None
 
-    return {
-        "user_id": row["user_id"],
-        "stripe_customer_id": row["stripe_customer_id"],
-        "stripe_subscription_id": row["stripe_subscription_id"],
-        "status": row["status"],
-        "plan_type": row["plan_type"],
-        "trial_end": row["trial_end"],
-        "current_period_end": row["current_period_end"],
-        "cancel_at_period_end": bool(row["cancel_at_period_end"]),
-        "created_at": row["created_at"],
-        "updated_at": row["updated_at"]
-    }
+        row = row if isinstance(row, dict) else dict(row)
+        return {
+            "user_id": row["user_id"],
+            "stripe_customer_id": row["stripe_customer_id"],
+            "stripe_subscription_id": row["stripe_subscription_id"],
+            "status": row["status"],
+            "plan_type": row["plan_type"],
+            "trial_end": row["trial_end"],
+            "current_period_end": row["current_period_end"],
+            "cancel_at_period_end": bool(row["cancel_at_period_end"]),
+            "created_at": row["created_at"],
+            "updated_at": row["updated_at"]
+        }
+
+    finally:
+        return_connection(conn)
 
 
 def is_user_plus(user_id: str) -> bool:
@@ -745,14 +1075,21 @@ def was_stripe_event_processed(event_id: str) -> bool:
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT event_id FROM stripe_webhook_events WHERE event_id = ?
-    """, (event_id,))
+    try:
+        if _USE_POSTGRESQL:
+            cursor.execute("""
+                SELECT event_id FROM stripe_webhook_events WHERE event_id = %s
+            """, (event_id,))
+        else:
+            cursor.execute("""
+                SELECT event_id FROM stripe_webhook_events WHERE event_id = ?
+            """, (event_id,))
 
-    exists = cursor.fetchone() is not None
-    # Connection is thread-local and reused — do not close
+        exists = cursor.fetchone() is not None
+        return exists
 
-    return exists
+    finally:
+        return_connection(conn)
 
 
 def mark_stripe_event_processed(event_id: str, event_type: str) -> None:
@@ -760,23 +1097,33 @@ def mark_stripe_event_processed(event_id: str, event_type: str) -> None:
     Mark a Stripe webhook event as processed.
     Inserts event_id, event_type, and current timestamp into stripe_webhook_events table.
 
-    H1 fix: Uses INSERT OR IGNORE to prevent IntegrityError if two concurrent
-    webhook deliveries race past the was_stripe_event_processed check. Without
-    OR IGNORE, the second INSERT crashes with a UNIQUE constraint violation,
+    H1 fix: Uses INSERT OR IGNORE (SQLite) / ON CONFLICT DO NOTHING (PostgreSQL) to prevent
+    IntegrityError if two concurrent webhook deliveries race past the was_stripe_event_processed
+    check. Without this, the second INSERT crashes with a UNIQUE constraint violation,
     returning 500 to Stripe and causing infinite retries.
     """
     conn = get_connection()
     cursor = conn.cursor()
 
-    now = datetime.now().isoformat()
+    try:
+        now = datetime.now().isoformat()
 
-    cursor.execute("""
-        INSERT OR IGNORE INTO stripe_webhook_events (event_id, event_type, created_at)
-        VALUES (?, ?, ?)
-    """, (event_id, event_type, now))
+        if _USE_POSTGRESQL:
+            cursor.execute("""
+                INSERT INTO stripe_webhook_events (event_id, event_type, created_at)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (event_id) DO NOTHING
+            """, (event_id, event_type, now))
+        else:
+            cursor.execute("""
+                INSERT OR IGNORE INTO stripe_webhook_events (event_id, event_type, created_at)
+                VALUES (?, ?, ?)
+            """, (event_id, event_type, now))
 
-    conn.commit()
-    # Connection is thread-local and reused — do not close
+        conn.commit()
+
+    finally:
+        return_connection(conn)
 
 
 def get_recent_webhook_events(limit: int = 50) -> List[Dict[str, Any]]:
@@ -787,25 +1134,36 @@ def get_recent_webhook_events(limit: int = 50) -> List[Dict[str, Any]]:
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT event_id, event_type, created_at
-        FROM stripe_webhook_events
-        ORDER BY created_at DESC
-        LIMIT ?
-    """, (limit,))
+    try:
+        if _USE_POSTGRESQL:
+            cursor.execute("""
+                SELECT event_id, event_type, created_at
+                FROM stripe_webhook_events
+                ORDER BY created_at DESC
+                LIMIT %s
+            """, (limit,))
+        else:
+            cursor.execute("""
+                SELECT event_id, event_type, created_at
+                FROM stripe_webhook_events
+                ORDER BY created_at DESC
+                LIMIT ?
+            """, (limit,))
 
-    rows = cursor.fetchall()
-    # Connection is thread-local and reused — do not close
+        rows = cursor.fetchall()
+        events = []
+        for row in rows:
+            row = row if isinstance(row, dict) else dict(row)
+            events.append({
+                "event_id": row["event_id"],
+                "event_type": row["event_type"],
+                "created_at": row["created_at"]
+            })
 
-    events = []
-    for row in rows:
-        events.append({
-            "event_id": row["event_id"],
-            "event_type": row["event_type"],
-            "created_at": row["created_at"]
-        })
+        return events
 
-    return events
+    finally:
+        return_connection(conn)
 
 
 def cleanup_old_webhook_events(days_to_keep: int = 90) -> int:
@@ -818,21 +1176,31 @@ def cleanup_old_webhook_events(days_to_keep: int = 90) -> int:
     conn = get_connection()
     cursor = conn.cursor()
 
-    from datetime import timedelta
-    cutoff = (datetime.now() - timedelta(days=days_to_keep)).isoformat()
+    try:
+        from datetime import timedelta
+        cutoff = (datetime.now() - timedelta(days=days_to_keep)).isoformat()
 
-    cursor.execute("""
-        DELETE FROM stripe_webhook_events
-        WHERE created_at < ?
-    """, (cutoff,))
+        if _USE_POSTGRESQL:
+            cursor.execute("""
+                DELETE FROM stripe_webhook_events
+                WHERE created_at < %s
+            """, (cutoff,))
+        else:
+            cursor.execute("""
+                DELETE FROM stripe_webhook_events
+                WHERE created_at < ?
+            """, (cutoff,))
 
-    deleted = cursor.rowcount
-    conn.commit()
+        deleted = cursor.rowcount
+        conn.commit()
 
-    if deleted > 0:
-        logger.info(f"Cleaned up {deleted} webhook events older than {days_to_keep} days")
+        if deleted > 0:
+            logger.info(f"Cleaned up {deleted} webhook events older than {days_to_keep} days")
 
-    return deleted
+        return deleted
+
+    finally:
+        return_connection(conn)
 
 
 def delete_user_data(user_id: str) -> dict:
@@ -843,20 +1211,29 @@ def delete_user_data(user_id: str) -> dict:
     conn = get_connection()
     cursor = conn.cursor()
 
-    # Delete scans
-    cursor.execute("DELETE FROM scans WHERE user_id = ?", (user_id,))
-    scans_deleted = cursor.rowcount
+    try:
+        # Delete scans
+        if _USE_POSTGRESQL:
+            cursor.execute("DELETE FROM scans WHERE user_id = %s", (user_id,))
+        else:
+            cursor.execute("DELETE FROM scans WHERE user_id = ?", (user_id,))
+        scans_deleted = cursor.rowcount
 
-    # Delete subscription records
-    cursor.execute("DELETE FROM subscriptions WHERE user_id = ?", (user_id,))
-    subs_deleted = cursor.rowcount
+        # Delete subscription records
+        if _USE_POSTGRESQL:
+            cursor.execute("DELETE FROM subscriptions WHERE user_id = %s", (user_id,))
+        else:
+            cursor.execute("DELETE FROM subscriptions WHERE user_id = ?", (user_id,))
+        subs_deleted = cursor.rowcount
 
-    conn.commit()
+        conn.commit()
+        logger.info(f"Deleted user data for {user_id}: {scans_deleted} scans, {subs_deleted} subscription records")
 
-    logger.info(f"Deleted user data for {user_id}: {scans_deleted} scans, {subs_deleted} subscription records")
+        return {
+            "scans_deleted": scans_deleted,
+            "subscriptions_deleted": subs_deleted
+        }
 
-    return {
-        "scans_deleted": scans_deleted,
-        "subscriptions_deleted": subs_deleted
-    }
+    finally:
+        return_connection(conn)
 

@@ -1,13 +1,27 @@
 import React, { useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
-import { Stack, router } from 'expo-router';
+import { Stack, router, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
-import { COLORS } from '../src/lib/theme';
+import { ThemeProvider, useTheme } from '../src/context/ThemeContext';
+import { ErrorBoundary } from '../src/components/ErrorBoundary';
+import { initSentry, addBreadcrumb, withSentry } from '../src/lib/sentry';
+
+// Initialize Sentry before any components render
+initSentry();
 
 function RootLayoutNav() {
   const { user, isLoading, userProfile } = useAuth();
+  const { colors, statusBarStyle } = useTheme();
+  const pathname = usePathname();
+
+  // Add navigation breadcrumbs for screen transitions
+  useEffect(() => {
+    if (pathname) {
+      addBreadcrumb('navigation', `Screen: ${pathname}`, { route: pathname });
+    }
+  }, [pathname]);
 
   useEffect(() => {
     if (!isLoading) {
@@ -23,23 +37,40 @@ function RootLayoutNav() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.bgPage }}>
-        <ActivityIndicator size="large" color={COLORS.primaryBlue} />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgPage }}>
+        <ActivityIndicator size="large" color={colors.primaryBlue} />
       </View>
     );
   }
 
   return (
     <>
-      <StatusBar style="dark" backgroundColor={COLORS.bgPage} />
+      <StatusBar style={statusBarStyle} backgroundColor={colors.bgPage} />
       <Stack
         screenOptions={{
           headerShown: false,
+          contentStyle: { backgroundColor: colors.bgPage },
         }}
       >
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="scanner/[platform]" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="broadcast/[platform]"
+          options={{
+            headerShown: false,
+            presentation: 'fullScreenModal',
+            animation: 'slide_from_bottom',
+          }}
+        />
+        <Stack.Screen
+          name="analysis/[sessionId]"
+          options={{
+            headerShown: false,
+            presentation: 'fullScreenModal',
+            animation: 'slide_from_bottom',
+          }}
+        />
       </Stack>
     </>
   );
@@ -47,12 +78,19 @@ function RootLayoutNav() {
 
 // L6: Removed TouchableWithoutFeedback keyboard dismiss wrapper
 // (it was intercepting touch events on the WebView scanner)
-export default function RootLayout() {
+function RootLayout() {
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <RootLayoutNav />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <ErrorBoundary>
+            <RootLayoutNav />
+          </ErrorBoundary>
+        </AuthProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }
+
+// Wrap root component with Sentry error boundary for native crash reporting
+export default withSentry(RootLayout);

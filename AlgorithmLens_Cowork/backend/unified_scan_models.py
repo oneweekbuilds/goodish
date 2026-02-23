@@ -66,6 +66,32 @@ class ScanMetadata(BaseModel):
         return v.strip()
 
 
+class BroadcastCaptureInfo(BaseModel):
+    is_broadcast_based: bool = Field(True)
+    broadcast_method: str = "REPLAYKIT"  # "REPLAYKIT" (iOS) or "MEDIA_PROJECTION" (Android)
+    frames_captured: int = 0
+    frames_unique: int = 0
+    duration_seconds: float = 0.0
+    average_frame_interval_seconds: float = 0.0
+    on_device_ocr_used: bool = True
+
+    @field_validator('frames_captured', 'frames_unique')
+    @classmethod
+    def validate_frame_counts_broadcast(cls, v):
+        """Ensure frame counts are non-negative."""
+        if v < 0:
+            raise ValueError('frame counts must be non-negative')
+        return v
+
+    @field_validator('duration_seconds', 'average_frame_interval_seconds')
+    @classmethod
+    def validate_durations(cls, v):
+        """Ensure duration values are non-negative."""
+        if v < 0:
+            raise ValueError('duration values must be non-negative')
+        return round(v, 2)
+
+
 class Environment(BaseModel):
     device_type: str                     # "MOBILE" or "DESKTOP"
     device_os: Optional[str] = None      # "IOS", "ANDROID", "WINDOWS", "MACOS", etc.
@@ -75,6 +101,7 @@ class Environment(BaseModel):
     screen_resolution: Optional[ScreenResolution] = None
     video_capture: Optional[VideoCaptureInfo] = None
     extension_capture: Optional[ExtensionCaptureInfo] = None
+    broadcast_capture: Optional[BroadcastCaptureInfo] = None
 
 
 # ---------- Feed item sub-sections ----------
@@ -159,6 +186,15 @@ class FeedItem(BaseModel):
     approx_timestamp_offset_sec: Optional[float] = None
     content_type: str = "VIDEO"
     is_ad: bool = False
+    vision_confidence: Optional[float] = None  # Gemini Flash confidence for broadcast items (0.0–1.0)
+
+    @field_validator('vision_confidence')
+    @classmethod
+    def validate_vision_confidence(cls, v):
+        """Ensure vision confidence is between 0 and 1 if provided."""
+        if v is not None and (v < 0 or v > 1):
+            raise ValueError('vision_confidence must be between 0.0 and 1.0')
+        return v if v is None else round(v, 4)
 
     @field_validator('position_in_feed')
     @classmethod

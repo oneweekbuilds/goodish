@@ -4,10 +4,10 @@ import Logo from '../Logo';
 
 const SectionLoop = () => {
     return (
-        <section className="py-12 sm:py-24 bg-[#F0F7FF] overflow-hidden">
-            {/* Section Heading - Unchanged */}
+        <section className="py-12 sm:py-24 bg-[#F0F7FF] overflow-hidden" aria-labelledby="feedback-loop-heading" role="region">
+            {/* Section Heading */}
             <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center mb-12 sm:mb-16">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-main mb-4 sm:mb-6">The Feedback Loop</h2>
+                <h2 id="feedback-loop-heading" className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-main mb-4 sm:mb-6">The Feedback Loop</h2>
                 <p className="text-base sm:text-lg text-text-muted max-w-2xl mx-auto px-2">
                     A cycle where your behavior trains the model, which refines the content, which influences what you see next.
                 </p>

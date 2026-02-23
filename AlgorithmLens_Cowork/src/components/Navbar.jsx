@@ -130,6 +130,7 @@ const Navbar = () => {
         { to: '/start', label: 'Scan', ariaLabel: 'Start a new scan' },
         { to: '/history', label: 'History', ariaLabel: 'View scan history' },
         { to: '/plus', label: 'Plus', ariaLabel: 'View Plus plans' },
+        { to: '/settings', label: 'Settings', ariaLabel: 'Account settings' },
     ];
 
     return (
@@ -156,6 +157,7 @@ const Navbar = () => {
                                 <DisabledNavLink>Scan</DisabledNavLink>
                                 <DisabledNavLink>History</DisabledNavLink>
                                 <DisabledNavLink>Plus</DisabledNavLink>
+                                <DisabledNavLink>Settings</DisabledNavLink>
                             </>
                         ) : (
                             navItems.map(item => (
@@ -251,6 +253,7 @@ const Navbar = () => {
                                         <MobileDisabledLink label="Scan" />
                                         <MobileDisabledLink label="History" />
                                         <MobileDisabledLink label="Plus" />
+                                        <MobileDisabledLink label="Settings" />
                                     </>
                                 ) : (
                                     navItems.map(item => (

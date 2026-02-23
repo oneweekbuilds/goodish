@@ -26,42 +26,20 @@ export const FACEBOOK_SCRIPT = `
     const style = document.createElement('style');
     style.id = '__alg_reels_blocker';
     style.textContent = [
-      // Hide the immersive Reels viewer/overlay
-      '[class*="ReelsPlayer"], [class*="reels-player"], [class*="watch-video"],' +
-      '[class*="WatchContainer"], [role="presentation"][style*="position: fixed"],' +
-      'div[style*="position: fixed"][style*="z-index"][style*="inset: 0"]' +
+      // Only hide immersive Reels overlay — not inline video in feed
+      '[class*="ReelsPlayer"], [class*="reels-player"]' +
       '{ display: none !important; visibility: hidden !important; }',
 
-      // Prevent videos from going fullscreen
-      'video { max-height: 400px !important; object-fit: cover !important; }',
+      // Hide fullscreen button only
       'video::-webkit-media-controls-fullscreen-button { display: none !important; }',
 
       // Keep feed items from expanding into immersive view
       'article { position: relative !important; }',
-
-      // Allow vertical scrolling over videos but block tap/horizontal gestures
-      'article video { touch-action: pan-y !important; }',
     ].join('\\n');
     document.head.appendChild(style);
 
-    // Override fullscreen API to prevent video fullscreen
-    const noop = function() { return Promise.reject('blocked'); };
-    if (Element.prototype.requestFullscreen) {
-      Element.prototype.requestFullscreen = noop;
-    }
-    if (Element.prototype.webkitRequestFullscreen) {
-      Element.prototype.webkitRequestFullscreen = noop;
-    }
-    if (Element.prototype.webkitEnterFullscreen) {
-      Element.prototype.webkitEnterFullscreen = noop;
-    }
-    if (HTMLVideoElement.prototype.webkitEnterFullscreen) {
-      HTMLVideoElement.prototype.webkitEnterFullscreen = noop;
-    }
-
-    // ONLY block navigation to Reels/Watch — allow normal interaction with videos and UI
+    // Only block navigation to Reels/Watch pages — allow video interaction
     document.addEventListener('click', function(e) {
-      // Block navigation to Reels and Watch sections
       var link = e.target.closest('a[href*="/reel/"], a[href*="/reels/"], a[href*="/watch/"]');
       if (link) {
         e.preventDefault();
@@ -131,7 +109,11 @@ export const FACEBOOK_SCRIPT = `
   }
 
   suppressBanners();
-  setInterval(suppressBanners, 2000);
+  setTimeout(suppressBanners, 1000);
+  setTimeout(suppressBanners, 3000);
+  setTimeout(suppressBanners, 6000);
+  var bannerObserver = new MutationObserver(function() { suppressBanners(); });
+  setTimeout(function() { bannerObserver.observe(document.body, { childList: true, subtree: true }); }, 6000);
 
   // ── Extraction helpers ─────────────────────────────────────
 

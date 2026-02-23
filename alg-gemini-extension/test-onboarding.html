@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Onboarding Test — AlgorithmLens Extension</title>
+  <style>
+    body {
+      background: #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    h1 { font-size: 20px; margin-bottom: 20px; color: #1e293b; }
+    .test-frame {
+      width: 360px;
+      border: 2px solid #94a3b8;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+      background: white;
+    }
+    iframe {
+      width: 360px;
+      height: 600px;
+      border: none;
+      display: block;
+    }
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      background: white;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    button:hover { background: #f3f4f6; }
+    .note {
+      margin-top: 16px;
+      font-size: 13px;
+      color: #6b7280;
+      max-width: 500px;
+      text-align: center;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <h1>AlgorithmLens Extension — Onboarding Test</h1>
+  <div class="test-frame">
+    <iframe id="popupFrame" src="dist/popup/index.html"></iframe>
+  </div>
+  <div class="controls">
+    <button onclick="resetOnboarding()">Reset Onboarding (Simulate Fresh Install)</button>
+    <button onclick="location.reload()">Reload</button>
+  </div>
+  <div class="note">
+    <strong>Note:</strong> This is a standalone test page. The chrome.storage API is not available
+    outside the extension context, so the onboarding will always show by default (which is correct
+    for first-install simulation). To fully test persistence, load the extension in Chrome via
+    chrome://extensions → Load unpacked → select the <code>dist/</code> folder.
+  </div>
+</body>
+</html>

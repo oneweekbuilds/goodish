@@ -33,6 +33,8 @@ import type {
   BroadcastCaptureInfo,
 } from '../types/broadcast';
 import { DEFAULT_STREAM_CONFIG, PLATFORM_BROADCAST_CONFIGS } from '../types/broadcast';
+import { generateUUID } from './utils';
+import { captureMessage } from './sentry';
 
 // ============================================
 // Native Module Interface
@@ -69,10 +71,12 @@ function getNativeModule(): NativeBroadcastModule | null {
   }
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { NativeModulesProxy } = require('expo-modules-core');
-    return NativeModulesProxy.ExpoBroadcast as NativeBroadcastModule;
+    const { requireNativeModule } = require('expo-modules-core');
+    return requireNativeModule('ExpoBroadcast') as NativeBroadcastModule;
   } catch (error) {
-    console.warn('[BroadcastSessionManager] Failed to load native module:', error);
+    captureMessage('[BroadcastSessionManager] Failed to load native module', 'warning', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return null;
   }
 }
@@ -86,12 +90,17 @@ function getNativeEventEmitter(): NativeEventEmitter | null {
     const { EventEmitter: ExpoEventEmitter } = require('expo-modules-core');
     const nativeModule = getNativeModule();
     if (!nativeModule) {
-      console.warn('[BroadcastSessionManager] Cannot create event emitter: native module unavailable');
+      captureMessage(
+        '[BroadcastSessionManager] Cannot create event emitter: native module unavailable',
+        'warning'
+      );
       return null;
     }
     return new ExpoEventEmitter(nativeModule);
   } catch (error) {
-    console.warn('[BroadcastSessionManager] Failed to create event emitter:', error);
+    captureMessage('[BroadcastSessionManager] Failed to create event emitter', 'warning', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return null;
   }
 }
@@ -112,9 +121,9 @@ export class BroadcastSessionManager {
   private callbacks: BroadcastSessionCallbacks = {};
   private nativeModule: NativeBroadcastModule | null = null;
   private eventEmitter: NativeEventEmitter | null = null;
-  private statusSubscription: any = null;
-  private frameCountSubscription: any = null;
-  private appStateSubscription: any = null;
+  private statusSubscription: { remove: () => void } | null = null;
+  private frameCountSubscription: { remove: () => void } | null = null;
+  private appStateSubscription: { remove: () => void } | null = null;
   private elapsedTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(callbacks?: BroadcastSessionCallbacks) {
@@ -358,7 +367,9 @@ export class BroadcastSessionManager {
     } catch (error) {
       // Cleanup failure is non-fatal. Stale data will be cleaned
       // on the next session's prepareSession() call.
-      console.warn('[BroadcastSessionManager] Non-fatal cleanup error:', error);
+      captureMessage('[BroadcastSessionManager] Non-fatal cleanup error', 'warning', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
 
     this.session = null;
@@ -379,6 +390,10 @@ export class BroadcastSessionManager {
   destroy(): void {
     this.stopElapsedTimer();
     this.unsubscribeFromNativeEvents();
+    // Stop native capture if still running (Android MediaProjection cleanup)
+    if (Platform.OS === 'android' && this.nativeModule?.stopCapture) {
+      this.nativeModule.stopCapture();
+    }
     if (this.nativeModule) {
       this.nativeModule.stopStatusPolling();
     }
@@ -532,14 +547,4 @@ export class BroadcastSessionManager {
   }
 }
 
-// ============================================
-// Helpers
-// ============================================
-
-function generateUUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
+// generateUUID imported from ./utils

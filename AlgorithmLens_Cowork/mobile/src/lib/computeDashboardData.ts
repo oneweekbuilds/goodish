@@ -171,13 +171,23 @@ function countContentTypes(posts: RawPost[]): { label: string; count: number; pe
     const type = p.content_type || 'unknown';
     counts[type] = (counts[type] || 0) + 1;
   }
-  return Object.entries(counts)
+  const sorted = Object.entries(counts)
     .sort(([, a], [, b]) => b - a)
     .map(([label, count]) => ({
       label: label.charAt(0).toUpperCase() + label.slice(1),
       count,
       percentage: Math.round((count / posts.length) * 100),
     }));
+
+  // Correct rounding so percentages sum to exactly 100
+  if (sorted.length > 0) {
+    const total = sorted.reduce((sum, item) => sum + item.percentage, 0);
+    if (total !== 100 && total !== 0) {
+      sorted[0].percentage += (100 - total);
+    }
+  }
+
+  return sorted;
 }
 
 // ─── Insight Builders ────────────────────────────────────
