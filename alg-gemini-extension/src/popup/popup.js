@@ -843,9 +843,9 @@ function formatUnifiedResults(result, durationSeconds, backendSaved = false, bac
             <span class="dash-card-arrow" aria-hidden="true">›</span>
           </a>
 
-          <a class="dash-card" data-tab="sources" data-scan-id="${escapeAttr(scanId)}" role="button" tabindex="0" aria-label="View Sources on dashboard">
+          <a class="dash-card" data-tab="sources" data-scan-id="${escapeAttr(scanId)}" role="button" tabindex="0" aria-label="View Who Shapes Your Feed on dashboard">
             <div class="dash-card-indicator"></div>
-            <div class="dash-card-name">Sources</div>
+            <div class="dash-card-name">Who Shapes Your Feed</div>
             <div class="dash-card-value">${creatorCount} <span class="dash-card-unit">${creatorCount === 1 ? 'creator' : 'creators'}</span></div>
             ${sourcesChart}
             <div class="dash-card-detail">${sourcesDetail}</div>
@@ -853,9 +853,9 @@ function formatUnifiedResults(result, durationSeconds, backendSaved = false, bac
             <span class="dash-card-arrow" aria-hidden="true">›</span>
           </a>
 
-          <a class="dash-card" data-tab="ads" data-scan-id="${escapeAttr(scanId)}" role="button" tabindex="0" aria-label="View Ads and Sponsors on dashboard">
+          <a class="dash-card" data-tab="ads" data-scan-id="${escapeAttr(scanId)}" role="button" tabindex="0" aria-label="View Ads and Promotions on dashboard">
             <div class="dash-card-indicator"></div>
-            <div class="dash-card-name">Ads &amp; Sponsors</div>
+            <div class="dash-card-name">Ads &amp; Promotions</div>
             <div class="dash-card-value">${adsValue} <span class="dash-card-unit">${adsUnit}</span></div>
             ${adsChart}
             <div class="dash-card-detail">${escapedAdsDetail}</div>
@@ -863,9 +863,9 @@ function formatUnifiedResults(result, durationSeconds, backendSaved = false, bac
             <span class="dash-card-arrow" aria-hidden="true">›</span>
           </a>
 
-          <a class="dash-card" data-tab="suggested" data-scan-id="${escapeAttr(scanId)}" role="button" tabindex="0" aria-label="View Suggested vs Followed on dashboard">
+          <a class="dash-card" data-tab="suggested" data-scan-id="${escapeAttr(scanId)}" role="button" tabindex="0" aria-label="View Suggested vs. Followed on dashboard">
             <div class="dash-card-indicator"></div>
-            <div class="dash-card-name">Suggested vs Followed</div>
+            <div class="dash-card-name">Suggested vs. Followed</div>
             <div class="dash-card-value">${suggestedValue} <span class="dash-card-unit">${suggestedUnit}</span></div>
             ${suggestedChart}
             <div class="dash-card-detail">${escapedSuggestedDetail}</div>

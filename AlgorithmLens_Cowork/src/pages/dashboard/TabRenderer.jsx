@@ -1,4 +1,5 @@
 import React, { Suspense } from 'react';
+import ErrorBoundary from '../../components/ui/ErrorBoundary';
 import { DashboardSkeleton } from '../../components/dashboard/DashboardSkeleton';
 import { FeatureMomentWrapper, TabHero, SecondVisualAnchor, ReadingColumnWrapper } from './TabHero';
 import ViewsGridWithCollapsing from './ViewsGridWithCollapsing';
@@ -42,6 +43,12 @@ const TabRenderer = ({
 }) => {
   return (
     <div className="mb-8" role="tabpanel" id={`tabpanel-${activeTab}`} aria-labelledby={`tab-${activeTab}`}>
+      <ErrorBoundary
+        fallbackTitle="This tab encountered an error"
+        fallbackMessage="Something went wrong loading this tab. Try clicking another tab or refreshing the page."
+        dashboardTab={activeTab}
+        key={activeTab}
+      >
       <Suspense fallback={<DashboardSkeleton />}>
       {activeTab === 'talk' ? (
         <TalkTabPanel />
@@ -166,6 +173,7 @@ const TabRenderer = ({
         </>
       )}
       </Suspense>
+      </ErrorBoundary>
     </div>
   );
 };

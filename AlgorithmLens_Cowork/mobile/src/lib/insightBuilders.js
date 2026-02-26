@@ -352,7 +352,7 @@ export function buildSuggestedVsFollowedHero({ sourceData, toneBySourceOrigin, t
   // Enhance whyCare with creator familiarity or ad comparison context
   let additionalContext = null;
   if (creatorFamiliarity?.hasData && creatorFamiliarity.noveltyPercent >= 50) {
-    additionalContext = `${creatorFamiliarity.noveltyPercent}% of algorithm picks come from creators you don't follow.`;
+    additionalContext = `${creatorFamiliarity.noveltyPercent}% of suggested content comes from creators you don't follow.`;
   } else if (adComparison?.hasData && Math.abs(adComparison.adDelta) >= 5) {
     const more = adComparison.adDelta > 0 ? 'more' : 'less';
     additionalContext = `Suggested posts are ${Math.abs(adComparison.adDelta)} points ${more} commercial than followed posts.`;
@@ -360,16 +360,16 @@ export function buildSuggestedVsFollowedHero({ sourceData, toneBySourceOrigin, t
 
   if (suggested >= 60) {
     return {
-      title: `The algorithm picks ${suggested}% of what you see`,
-      meaning: `Only ${followed}% of your feed comes from accounts you chose to follow. The platform's algorithm decides the majority of your content.`,
+      title: `${suggested}% of your feed is algorithmically suggested`,
+      meaning: `Only ${followed}% of your feed comes from accounts you chose to follow. The majority of your content consists of algorithmic suggestions.`,
       whyCare: toneDifference || additionalContext || 'Typical suggested content is 30–50%. A larger portion of your feed comes from algorithmic suggestions rather than accounts you actively chose to follow.',
       meta,
     };
   } else if (suggested >= 40) {
     return {
       title: `${suggested}% of your feed is algorithm-suggested`,
-      meaning: `Nearly half of what you see was chosen by the platform, not by you. The other ${followed}% comes from accounts you follow.`,
-      whyCare: toneDifference || additionalContext || "This falls within the typical range (30\u201350%). The algorithm plays a significant role but doesn't fully control your experience.",
+      meaning: `Nearly half of your feed consists of algorithmically suggested content. The other ${followed}% comes from accounts you follow.`,
+      whyCare: toneDifference || additionalContext || "This falls within the typical range (30\u201350%). Algorithmic suggestions make up a notable share of your feed.",
       meta,
     };
   } else {
