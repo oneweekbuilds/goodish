@@ -34,9 +34,9 @@ const LabelsPreviewSection = () => {
     return (
         <section className="py-12 sm:py-24 bg-bg-page overflow-hidden" aria-labelledby="labels-heading" role="region">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center mb-10 sm:mb-14">
-                <h2 id="labels-heading" className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-main mb-4 sm:mb-6">This is how the algorithm sees you.</h2>
+                <h2 id="labels-heading" className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-main mb-4 sm:mb-6">These are your inferred interest categories.</h2>
                 <p className="text-base sm:text-lg text-text-muted max-w-2xl mx-auto px-2">
-                    Based on your scrolling behavior, here are the categories the algorithm likely puts you in.
+                    Based on your scrolling behavior, here are the categories your account likely matches.
                 </p>
             </div>
 
