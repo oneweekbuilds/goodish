@@ -362,7 +362,7 @@ export function buildSuggestedVsFollowedHero({ sourceData, toneBySourceOrigin, t
     return {
       title: `The algorithm picks ${suggested}% of what you see`,
       meaning: `Only ${followed}% of your feed comes from accounts you chose to follow. The platform's algorithm decides the majority of your content.`,
-      whyCare: toneDifference || additionalContext || 'Typical suggested content is 30–50%. At this level, the platform has more control over your attention than you do.',
+      whyCare: toneDifference || additionalContext || 'Typical suggested content is 30–50%. A larger portion of your feed comes from algorithmic suggestions rather than accounts you actively chose to follow.',
       meta,
     };
   } else if (suggested >= 40) {

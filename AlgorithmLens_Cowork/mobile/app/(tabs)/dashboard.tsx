@@ -53,10 +53,10 @@ const ANIMATION = {
 
 const TABS = [
   { id: 'overview', label: 'Overview', needsAi: false },
-  { id: 'sources', label: 'Sources', needsAi: false },
-  { id: 'ads', label: 'Ads & Promos', needsAi: false },
-  { id: 'politics', label: 'Political', needsAi: true },
-  { id: 'tone', label: 'Tone', needsAi: true },
+  { id: 'sources', label: 'Who Shapes Your Feed', needsAi: false },
+  { id: 'ads', label: 'Ads & Promotions', needsAi: false },
+  { id: 'politics', label: 'Political Exposure', needsAi: true },
+  { id: 'tone', label: 'Emotional Tone', needsAi: true },
   { id: 'suggested_vs_followed', label: 'Suggested vs. Followed', needsAi: false },
 ];
 
