@@ -104,7 +104,7 @@ const SimpleTable = ({ columns = [], rows = [], maxRows = 10 }) => {
                       className={`py-3 px-3 sm:px-4 ${getAlignment(col.align)}`}
                       style={{
                         fontWeight: isTop3 ? 600 : 400,
-                        color: isTop3 ? '#1E293B' : '#64748B',
+                        color: isTop3 ? '#1E293B' : '#4B5563',
                         fontSize: '0.875rem',
                         letterSpacing: '-0.005em',
                       }}

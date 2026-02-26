@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 try:
     import cv2  # type: ignore
 except ModuleNotFoundError:
@@ -620,6 +624,7 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
             try:
                 text, preprocessed_frame = extract_text_with_preprocessing(frame)
             except Exception as e:
+                logger.error(f"Error in OCR text extraction for frame {frame_idx}: {e}", exc_info=True)
                 text = ""
                 preprocessed_frame = None
 
@@ -787,10 +792,9 @@ def process_video(file_path: str, user_id: str = "demo-user", platform: str = "t
 
     ad_percentage = ad_items_count / total_samples
 
-    # Log OCR summary even when not in debug mode (helps diagnose issues)
-    print(f"[video_processor] OCR Summary: {ocr_non_empty_frames}/{frames_analyzed} frames with text, "
-          f"{ocr_ad_detections} ads detected via OCR, "
-          f"avg chars: {ocr_total_chars / max(ocr_non_empty_frames, 1):.0f}")
+    logger.info(f"OCR Summary: {ocr_non_empty_frames}/{frames_analyzed} frames with text, "
+                f"{ocr_ad_detections} ads detected via OCR, "
+                f"avg chars: {ocr_total_chars / max(ocr_non_empty_frames, 1):.0f}")
     
     # Normalize topics
     sorted_topics = sorted(topic_counts.items(), key=lambda x: x[1], reverse=True)

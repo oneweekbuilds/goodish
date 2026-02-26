@@ -392,7 +392,7 @@ export function aggregateAiDisclosures(scans, scanDetails) {
       // Check if this is demo mode by looking for demo scan IDs
       const isDemoMode = scans.length > 0 && scans[0].id?.startsWith('demo-');
 
-      if (!isDemoMode) {
+      if (!isDemoMode && import.meta.env.DEV) {
         console.info('[AI Disclosure Validation]', {
           totalVisualPosts: result.totalVisualPosts,
           rawCounts: result.rawCounts,

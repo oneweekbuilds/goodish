@@ -15,6 +15,7 @@
 
 import * as Sentry from '@sentry/react-native';
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
 const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN || 'https://placeholder@sentry.io/0';
 const IS_PLACEHOLDER_DSN = SENTRY_DSN.includes('placeholder@sentry.io');
@@ -27,13 +28,17 @@ const APP_VERSION = Constants.expoConfig?.version ?? '0.0.0';
  * If additional heavy operations are needed in the future, consider deferring with InteractionManager.
  */
 export function initSentry(): void {
-  if (IS_PLACEHOLDER_DSN && !IS_DEV) {
+  // Skip Sentry on web — @sentry/react-native injects native styles that crash web rendering
+  if (Platform.OS === 'web') {
+    return;
+  }
+  // P-1 FIX: Don't initialize Sentry with placeholder DSN — causes 400 errors.
+  // P-2 FIX: Disable debug mode to reduce console noise.
+  if (IS_PLACEHOLDER_DSN) {
     if (__DEV__) {
-      console.warn(
-        '[Sentry] Using placeholder DSN in production build. Error tracking is disabled. '
-        + 'Set EXPO_PUBLIC_SENTRY_DSN in your .env file.'
-      );
+      console.info('[Sentry] Placeholder DSN detected — error tracking disabled. Set EXPO_PUBLIC_SENTRY_DSN to enable.');
     }
+    return; // Skip initialization entirely with placeholder DSN
   }
 
   Sentry.init({
@@ -63,7 +68,8 @@ export function initSentry(): void {
       'WebView was terminated',
     ],
 
-    debug: IS_DEV,
+    // P-2 FIX: Disabled debug logging to keep console clean
+    debug: false,
     enableAutoSessionTracking: true,
     enableNativeFramesTracking: !IS_DEV,
   });
@@ -156,4 +162,7 @@ export function addBreadcrumb(
  * Wrap a React Native component with Sentry error boundary.
  * Use for the root app component.
  */
-export const withSentry = Sentry.wrap;
+// Skip Sentry.wrap on web — it injects native-only styles that crash CSSStyleDeclaration
+export const withSentry = Platform.OS === 'web'
+  ? (component: React.ComponentType<any>) => component
+  : Sentry.wrap;

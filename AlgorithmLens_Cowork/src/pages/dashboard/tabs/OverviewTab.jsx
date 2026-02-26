@@ -97,6 +97,7 @@ const OverviewTab = ({
   onCloseTrendsPanel,
 }) => {
 
+  const isPremium = isPlusUser;
   // Aggregate data from all filtered scans
   const creatorsData = aggregateCreators(scans, scanDetails);
   const adsData = aggregateAds(scans, scanDetails);
@@ -199,7 +200,7 @@ const OverviewTab = ({
       segments: [
         { label: 'Not ads', percentage: notAdsPercent, count: notAdsCount, color: '#94A3B8' },
         { label: 'Labeled ads', percentage: labeledAdsPercent, count: labeledAdsCount, color: '#2563EB' },
-        { label: 'Unlabeled promos', percentage: likelySellingPercent, count: likelySellingCount, color: '#B8A394' },
+        { label: 'Unlabeled promos', percentage: likelySellingPercent, count: likelySellingCount, color: '#10B981' },
       ],
     };
   };
@@ -287,9 +288,9 @@ const OverviewTab = ({
     return {
       hasData: true,
       segments: [
-        { label: 'Positive', percentage: posPercent, count: posCount, color: '#93C5B8' },
-        { label: 'Neutral', percentage: neutPercent, count: neutCount, color: '#CBD5E1' },
-        { label: 'Negative', percentage: negPercent, count: negCount, color: '#A3B1C6' },
+        { label: 'Positive', percentage: posPercent, count: posCount, color: '#10B981' },
+        { label: 'Neutral', percentage: neutPercent, count: neutCount, color: '#94A3B8' },
+        { label: 'Negative', percentage: negPercent, count: negCount, color: '#2563EB' },
       ],
     };
   };
@@ -329,53 +330,60 @@ const OverviewTab = ({
 
     // Detect platform names from scan data
     const platforms = Object.keys(adsData.byPlatform || {});
-    const platformName = platforms.length === 1
+    const isSinglePlatform = platforms.length === 1;
+    const platformName = isSinglePlatform
       ? platforms[0].charAt(0).toUpperCase() + platforms[0].slice(1)
-      : 'your feed';
+      : 'your';
+    // When multi-platform, templates use "your feed" directly;
+    // when single-platform, they use e.g. "your Instagram feed"
+    const feedLabel = isSinglePlatform ? `${platformName} feed` : 'feed';
 
     // Get top source handle if available
     const topHandle = sourceConcentration.hasData && sourceConcentration.top1Handle
       ? `@${sourceConcentration.top1Handle}`
       : null;
 
+    // For "on [platform]" phrasing: single platform uses name, multi uses "across platforms"
+    const onPlatform = isSinglePlatform ? `on ${platformName}` : 'across platforms';
+
     // Priority 1: High source concentration
     if (sourceConcentration.hasData && sourceConcentration.top5Percent >= 60) {
       const suggestion = topHandle
-        ? `Try following 5 new accounts outside your usual topics on ${platformName}. Right now ${topHandle} alone accounts for ${sourceConcentration.top1Percent}% of your feed. Scan again afterward to see if concentration drops.`
-        : `Try following 5 new accounts in a different niche on ${platformName}, then run another scan to see if your top 5 concentration drops below ${sourceConcentration.top5Percent}%.`;
+        ? `Try following 5 new accounts outside your usual topics ${onPlatform}. Right now ${topHandle} alone accounts for ${sourceConcentration.top1Percent}% of your feed. Scan again afterward to see if concentration drops.`
+        : `Try following 5 new accounts in a different niche ${onPlatform}, then run another scan to see if your top 5 concentration drops below ${sourceConcentration.top5Percent}%.`;
       suggestions.push(suggestion);
     } else if (sourceConcentration.hasData && sourceConcentration.top1Percent >= 25) {
       const suggestion = topHandle
-        ? `Try muting ${topHandle} for one day on ${platformName} (they make up ${sourceConcentration.top1Percent}% of your feed), then scan again to see how your source mix changes.`
+        ? `Try muting ${topHandle} for one day ${onPlatform} (they make up ${sourceConcentration.top1Percent}% of your feed), then scan again to see how your source mix changes.`
         : `Try muting your top source for one day, then run another scan to see how your source mix changes.`;
       suggestions.push(suggestion);
     }
 
     // Priority 2: High ad percentage
     if (adMinutesPercent !== null && adMinutesPercent >= 25) {
-      suggestions.push(`Try using "Hide ad" or "Not interested" on 3 ads today on ${platformName}. Your feed is currently ${Math.round(adMinutesPercent)}% commercial content. Scan again to see if that drops.`);
+      suggestions.push(`Try using "Hide ad" or "Not interested" on 3 ads today ${onPlatform}. Your feed is currently ${Math.round(adMinutesPercent)}% commercial content. Scan again to see if that drops.`);
     } else if (influenceData.possibleInfluence > 0 && totalPosts > 0) {
       const unlabeledPromoPercent = (influenceData.possibleInfluence / totalPosts) * 100;
       if (unlabeledPromoPercent >= 10) {
-        suggestions.push(`${Math.round(unlabeledPromoPercent)}% of your ${platformName} feed appears promotional but isn't labeled as an ad. Try tapping into a few of these posts and checking for affiliate links or discount codes.`);
+        suggestions.push(`${Math.round(unlabeledPromoPercent)}% of your ${feedLabel} appears promotional but isn't labeled as an ad. Try tapping into a few of these posts and checking for affiliate links or discount codes.`);
       }
     }
 
     // Priority 3: High political share
     if (politicalShare.hasData && politicalShare.politicalPercent >= 15) {
-      suggestions.push(`Political content is ${politicalShare.politicalPercent}% of your ${platformName} feed. Try engaging with 3 non-political accounts you enjoy today, then scan again to see if the balance shifts.`);
+      suggestions.push(`Political content is ${politicalShare.politicalPercent}% of your ${feedLabel}. Try engaging with 3 non-political accounts you enjoy today, then scan again to see if the balance shifts.`);
     }
 
     // Priority 4: High negative tone
     if (toneComposition.hasData) {
       const negSegment = toneComposition.segments.find(s => s.label === 'Negative');
       if (negSegment && negSegment.percentage >= 30) {
-        suggestions.push(`${negSegment.percentage}% of your ${platformName} feed has negative tone. Try spending 5 minutes engaging with calmer content (music, art, nature), then scan again to see if the emotional balance shifts.`);
+        suggestions.push(`${negSegment.percentage}% of your ${feedLabel} has negative tone. Try spending 5 minutes engaging with calmer content (music, art, nature), then scan again to see if the emotional balance shifts.`);
       }
     }
 
     if (suggestions.length === 0) {
-      return [`Your ${platformName} feed looks balanced. Try scanning again after a few days of normal use to see if patterns emerge.`];
+      return [`Your ${feedLabel} looks balanced. Try scanning again after a few days of normal use to see if patterns emerge.`];
     }
 
     return suggestions.slice(0, 2);
@@ -555,18 +563,21 @@ const OverviewTab = ({
       {/* Insight Hero */}
       <InsightHero {...hero} />
 
-      {/* Trends CTA */}
+      {/* Trends CTA or Panel */}
       <TrendsCTA
         onClick={() => onOpenTrends({ tab: 'overview', placement: 'hero_trends' })}
         isPlusUser={isPlusUser}
+        tabName="overview"
+        scanCount={scans.length}
       />
 
-      {/* Trends Panel (Plus users only) */}
-      {showTrendsPanel && (
+      {/* Trends Panel (auto-show for Plus users or when manually opened) */}
+      {(isPlusUser || showTrendsPanel) && (
         <TrendsPanel
           scans={scans}
           scanDetails={scanDetails}
           onClose={onCloseTrendsPanel}
+          embedded={isPlusUser}
         />
       )}
 
@@ -826,10 +837,10 @@ const OverviewTab = ({
       {/* Feed Summary + AI Likelihood (collapsed details) */}
       <section className="space-y-3">
         {overviewSummary.length > 0 && (
-          <details className="bg-white border border-slate-200 rounded-lg">
-            <summary className="cursor-pointer px-5 py-4 text-sm font-semibold text-slate-700 hover:text-slate-900 select-none">
-              Feed summary
-            </summary>
+          <div className="bg-white border border-slate-200 rounded-lg">
+            <div className="px-5 pt-4 pb-2">
+              <h3 className="text-sm font-semibold text-slate-700">Feed summary</h3>
+            </div>
             <div className="px-5 pb-4 space-y-2">
               <ul className="space-y-2 text-sm text-slate-700" role="list">
                 {overviewSummary.map((summary, index) => (
@@ -839,14 +850,14 @@ const OverviewTab = ({
                 ))}
               </ul>
             </div>
-          </details>
+          </div>
         )}
 
         {aiDisclosureData.hasEnoughData && (
-          <details className="bg-white border border-slate-200 rounded-lg">
-            <summary className="cursor-pointer px-5 py-4 text-sm font-semibold text-slate-700 hover:text-slate-900 select-none">
-              AI-made content analysis
-            </summary>
+          <div className="bg-white border border-slate-200 rounded-lg">
+            <div className="px-5 pt-4 pb-2">
+              <h3 className="text-sm font-semibold text-slate-700">AI-made content analysis</h3>
+            </div>
             <div className="px-5 pb-4 space-y-3">
               {(() => {
                 const likelyAiCount = aiDisclosureData.rawCounts.aiLabelPresent + aiDisclosureData.rawCounts.c2paPresent;
@@ -862,17 +873,17 @@ const OverviewTab = ({
               <CompositionBar100WithCounts segments={aiDisclosureData.segmentsSimplified} />
               <p className="text-xs text-text-muted">Based on {aiDisclosureData.totalVisualPosts} visual posts</p>
             </div>
-          </details>
+          </div>
         )}
       </section>
 
       {/* How the Feedback Loop Works (Gap 8) */}
       <section>
-        <details className="bg-white border border-slate-200 rounded-lg">
-          <summary className="cursor-pointer px-5 py-4 text-sm font-semibold text-slate-700 hover:text-slate-900 select-none flex items-center gap-2">
-            <RefreshCw className="w-4 h-4 text-slate-400" />
-            How the feedback loop works
-          </summary>
+        <div className="bg-white border border-slate-200 rounded-lg">
+            <div className="px-5 pt-4 pb-2 flex items-center gap-2">
+              <RefreshCw className="w-4 h-4 text-slate-400" />
+              <h3 className="text-sm font-semibold text-slate-700">How the feedback loop works</h3>
+            </div>
           <div className="px-5 pb-5 space-y-4">
             <p className="text-sm text-slate-600 leading-relaxed">
               Your feed is shaped by a cycle. Understanding this cycle is the first step to making informed choices about your media diet.
@@ -911,7 +922,7 @@ const OverviewTab = ({
               AlgorithmLens shows you step 3 — what content actually appeared. The experiment suggestions above help you test step 1.
             </p>
           </div>
-        </details>
+        </div>
       </section>
 
       {/* Section 1.4 - Master Numbers Line */}

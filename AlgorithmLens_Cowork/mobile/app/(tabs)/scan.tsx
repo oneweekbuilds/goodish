@@ -18,14 +18,15 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import * as Haptics from 'expo-haptics';
-import { Instagram, Twitter, Youtube, Music, Facebook, MessageCircle, Type } from 'lucide-react-native';
+import { triggerImpactLight } from '../../src/lib/haptics';
+import { Instagram, Youtube, Music, Facebook, MessageCircle, Type } from 'lucide-react-native';
 import { useTheme } from '../../src/context/ThemeContext';
 import { TYPOGRAPHY, SPACING, RADIUS, PLATFORMS } from '../../src/lib/theme';
+import { XPlatformIcon } from '../../src/components/icons/XPlatformIcon';
 
 const PLATFORM_ICONS: Record<string, React.FC<{ size: number; color: string; strokeWidth?: number }>> = {
   instagram: Instagram,
-  twitter: Twitter,
+  twitter: XPlatformIcon,
   youtube: Youtube,
   tiktok: Music,
   facebook: Facebook,
@@ -45,7 +46,7 @@ export default function ScanScreen() {
   const { colors, shadows } = useTheme();
 
   const handlePlatformSelect = (platform: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    triggerImpactLight();
     router.push({
       pathname: '/scanner/[platform]',
       params: { platform },

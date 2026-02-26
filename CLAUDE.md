@@ -16,12 +16,15 @@ The dashboard has six tabs:
 6. Suggested vs. Followed
 
 ## Critical: Epistemic Restraint Standards
-ALL analysis text MUST follow these rules:
+Marketing and homepage copy:
+- It IS acceptable to state that algorithms optimize for engagement
+- It IS acceptable to say algorithms are designed to keep users scrolling
+- Avoid specific unverifiable claims about individual platform mechanics (e.g., don't say "TikTok uses X specific technique")
+
+Dashboard analysis tabs (specific user data):
 - Describe observable patterns: "Your feed contains 70% content from accounts you don't follow"
-- Use hedging language: "This pattern may suggest..." or "Based on observable data..."
-- NEVER speculate on algorithmic intent: "The algorithm wants you to..."
-- NEVER anthropomorphize the algorithm: "The algorithm is trying to..."
-- NEVER make causal claims: "This is designed to keep you scrolling"
+- Use hedging language for specific data interpretations: "This pattern may suggest..." or "Based on observable data..."
+- NEVER anthropomorphize the algorithm with emotions or desires: "The algorithm wants you to..."
 
 ## Code Conventions
 - Use existing component patterns from the Overview tab as reference

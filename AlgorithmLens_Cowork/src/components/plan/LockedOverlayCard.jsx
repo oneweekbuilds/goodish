@@ -33,7 +33,7 @@ const LockedOverlayCard = ({
       <div className="filter blur-sm pointer-events-none">{children}</div>
 
       {/* Locked overlay */}
-      <div className="absolute inset-0 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-lg border border-slate-200">
+      <div className="absolute inset-0 flex items-center justify-center bg-white/95 backdrop-blur-md rounded-lg border border-slate-200">
         <div className="max-w-md text-center px-6 py-8 space-y-4">
           {/* Lock icon */}
           <div className="flex justify-center">

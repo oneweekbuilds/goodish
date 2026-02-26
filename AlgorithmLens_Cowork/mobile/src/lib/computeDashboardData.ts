@@ -10,6 +10,8 @@
  * - Banned words: manipulate, trick, targeting you, the algorithm wants, etc.
  */
 
+import { getPlatformDisplayName } from './utils';
+
 // ─── Types ───────────────────────────────────────────────
 
 interface RawPost {
@@ -17,7 +19,9 @@ interface RawPost {
   creator_display_name: string | null;
   post_text: string;
   is_ad: boolean;
-  is_suggested: boolean;
+  // PIPELINE FIX H-03: is_suggested can be null when subscription status is unknown.
+  // null means "unknown" — we distribute unknowns proportionally based on known ratios.
+  is_suggested: boolean | null;
   content_type: string;
   hashtags: string[];
   position_in_feed: number;
@@ -77,6 +81,8 @@ interface AnalyzedFeedItem {
   political?: {
     is_political?: boolean;
     stance_or_alignment?: string;
+    // A-06 FIX: Gemini service outputs stance_or_alignment_guess — support both field names
+    stance_or_alignment_guess?: string;
   };
   emotions?: {
     valence?: string; // POSITIVE | NEUTRAL | NEGATIVE | MIXED
@@ -85,6 +91,9 @@ interface AnalyzedFeedItem {
     handle?: string;
     name?: string;
   };
+  // A-06: also support flat creator fields from Gemini output
+  creator_handle?: string;
+  creator_display_name?: string;
 }
 
 // Tone analysis types (from Gemini AI analysis)
@@ -98,6 +107,39 @@ export interface ToneAnalysis {
   knownValenceTotal: number;
   totalAnalyzed: number;
   lowSample: boolean;
+}
+
+// Top sources by tone (for Tone tab)
+export interface ToneSourceStat {
+  handle: string;
+  count: number;
+}
+
+// Tone breakdown for suggested vs followed comparison
+export interface ToneBySourceOrigin {
+  hasData: boolean;
+  suggested: {
+    positivePct: number;
+    neutralPct: number;
+    negativePct: number;
+    total: number;
+  } | null;
+  followed: {
+    positivePct: number;
+    neutralPct: number;
+    negativePct: number;
+    total: number;
+  } | null;
+}
+
+// Creator novelty analysis (for Suggested vs Followed tab)
+export interface CreatorNovelty {
+  hasData: boolean;
+  noveltyPercent: number;
+  suggestedCreatorCount: number;
+  followedCreatorCount: number;
+  overlapCount: number;
+  approximate: boolean; // true when follow detection is unreliable
 }
 
 export interface InsightHeroData {
@@ -114,6 +156,12 @@ export interface CreatorStat {
   percentage: number;
 }
 
+export interface AdvertiserStat {
+  name: string;
+  count: number;
+  percent: number;
+}
+
 export interface DashboardData {
   // Core counts
   totalPosts: number;
@@ -127,6 +175,10 @@ export interface DashboardData {
   // Top creators
   topCreators: CreatorStat[];
   top5Pct: number;
+  uniqueCreatorCount: number;
+
+  // Top advertisers (from ad posts)
+  topAdvertisers: AdvertiserStat[];
 
   // Content types
   contentTypes: { label: string; count: number; percentage: number }[];
@@ -145,6 +197,23 @@ export interface DashboardData {
   // Tone analysis (from Gemini)
   toneAnalysis: ToneAnalysis | null;
 
+  // Top sources by tone (top 3 positive and negative)
+  topPositiveSources: ToneSourceStat[];
+  topNegativeSources: ToneSourceStat[];
+
+  // Tone comparison: suggested vs followed
+  toneBySourceOrigin: ToneBySourceOrigin | null;
+
+  // Creator novelty analysis (for Suggested vs Followed tab)
+  creatorNovelty: CreatorNovelty | null;
+
+  // Political summary sentence
+  politicalSummary: string | null;
+
+  // Scan metadata
+  platform: string;
+  scanDate: string | null;
+
   // Flags
   hasData: boolean;
   hasPoliticsData: boolean;
@@ -156,7 +225,8 @@ export interface DashboardData {
 function countByCreator(posts: RawPost[]): Record<string, { count: number; displayName: string | null }> {
   const counts: Record<string, { count: number; displayName: string | null }> = {};
   for (const p of posts) {
-    const handle = p.creator_handle || 'Unknown';
+    // Use display name as fallback when handle is missing, to reduce "Unknown" bucket
+    const handle = p.creator_handle || p.creator_display_name || 'Unknown';
     if (!counts[handle]) {
       counts[handle] = { count: 0, displayName: p.creator_display_name };
     }
@@ -183,7 +253,8 @@ function countContentTypes(posts: RawPost[]): { label: string; count: number; pe
   if (sorted.length > 0) {
     const total = sorted.reduce((sum, item) => sum + item.percentage, 0);
     if (total !== 100 && total !== 0) {
-      sorted[0].percentage += (100 - total);
+      const first = sorted[0];
+      if (first) first.percentage += (100 - total);
     }
   }
 
@@ -318,10 +389,18 @@ function buildAdsInsight(
       meta,
     };
   } else {
+    // MC-007/MC-008 FIX: Handle zero-count gracefully, replace "detected" with friendlier language
+    const meaningText = adCount === 0
+      ? `This scan captured ${totalPosts} posts with no visible ad labels.`
+      : `${adCount} labeled ad${adCount !== 1 ? 's' : ''} appeared among ${totalPosts} posts.`;
     return {
-      title: `Commercial content is minimal in your feed (${adPct}%)`,
-      meaning: `Only ${adCount} ad${adCount !== 1 ? 's were' : ' was'} detected among ${totalPosts} posts.`,
-      whyCare: 'This is below the typical range of 15–30%, leaving more space for non-commercial content.',
+      title: adCount === 0
+        ? `No labeled ads appeared in this ${totalPosts}-post scan`
+        : `Commercial content is minimal in your feed (${adPct}%)`,
+      meaning: meaningText,
+      whyCare: adCount === 0
+        ? 'Some promotional content may not carry visible labels — native ads and influencer partnerships often blend in.'
+        : 'This is below the typical range of 15–30%, leaving more space for non-commercial content.',
       meta,
     };
   }
@@ -454,14 +533,14 @@ function extractPoliticalAnalysis(raw: ScanRecord['raw_data']): PoliticalAnalysi
     if (!item.political?.is_political) continue;
     politicalCount++;
 
-    // Count stance distribution
-    const stance = (item.political.stance_or_alignment || '').toLowerCase();
+    // A-06 FIX: Support both field names from different pipeline versions
+    const stance = (item.political.stance_or_alignment || item.political.stance_or_alignment_guess || '').toLowerCase();
     if (stance === 'left') leftCount++;
     else if (stance === 'neutral' || stance === 'center') centerCount++;
     else if (stance === 'right') rightCount++;
 
-    // Track per-creator political counts
-    const handle = item.creator?.handle || item.creator?.name || '';
+    // Track per-creator political counts — A-06: support both nested and flat creator fields
+    const handle = item.creator?.handle || item.creator?.name || item.creator_handle || '';
     if (handle) {
       if (!creatorPoliticalCounts[handle]) {
         creatorPoliticalCounts[handle] = { count: 0, handle };
@@ -509,11 +588,13 @@ function extractPoliticalAnalysis(raw: ScanRecord['raw_data']): PoliticalAnalysi
       .sort((a, b) => b.count - a.count);
     if (sortedCreators.length > 0) {
       const top = sortedCreators[0];
-      topPoliticalSource = {
-        handle: top.handle,
-        count: top.count,
-        pctOfPolitical: Math.round((top.count / politicalCount) * 100),
-      };
+      if (top) {
+        topPoliticalSource = {
+          handle: top.handle,
+          count: top.count,
+          pctOfPolitical: Math.round((top.count / politicalCount) * 100),
+        };
+      }
     }
   }
 
@@ -586,6 +667,183 @@ function extractToneAnalysis(raw: ScanRecord['raw_data']): ToneAnalysis | null {
     totalAnalyzed,
     lowSample,
   };
+}
+
+// ─── Top Sources by Tone Extraction ─────────────────────
+// Returns top 3 positive and top 3 negative sources by post count.
+
+function extractTopToneSources(raw: ScanRecord['raw_data']): { topPositive: ToneSourceStat[]; topNegative: ToneSourceStat[] } {
+  const analysis = raw?.analysis;
+  if (!analysis?.ai_analyzed || !analysis.feed_items) {
+    return { topPositive: [], topNegative: [] };
+  }
+
+  const positiveCounts: Record<string, number> = {};
+  const negativeCounts: Record<string, number> = {};
+
+  for (const item of analysis.feed_items) {
+    const handle = item.creator?.handle || item.creator?.name || item.creator_handle || '';
+    if (!handle) continue;
+
+    const valence = (item.emotions?.valence || '').toUpperCase();
+    if (valence === 'POSITIVE') {
+      positiveCounts[handle] = (positiveCounts[handle] || 0) + 1;
+    } else if (valence === 'NEGATIVE') {
+      negativeCounts[handle] = (negativeCounts[handle] || 0) + 1;
+    }
+  }
+
+  const topPositive = Object.entries(positiveCounts)
+    .map(([handle, count]) => ({ handle, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 3);
+
+  const topNegative = Object.entries(negativeCounts)
+    .map(([handle, count]) => ({ handle, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 3);
+
+  return { topPositive, topNegative };
+}
+
+// ─── Tone by Source Origin Extraction ────────────────────
+// Compares tone breakdown between suggested and followed posts.
+
+function extractToneBySourceOrigin(posts: RawPost[], raw: ScanRecord['raw_data']): ToneBySourceOrigin | null {
+  const analysis = raw?.analysis;
+  if (!analysis?.ai_analyzed || !analysis.feed_items) {
+    return null;
+  }
+
+  // Build a map from position to source origin from raw posts
+  const originByPosition: Record<number, boolean | null> = {};
+  for (const p of posts) {
+    originByPosition[p.position_in_feed] = p.is_suggested;
+  }
+
+  let sugPos = 0, sugNeut = 0, sugNeg = 0;
+  let folPos = 0, folNeut = 0, folNeg = 0;
+
+  for (let i = 0; i < analysis.feed_items.length; i++) {
+    const item = analysis.feed_items[i];
+    const valence = (item.emotions?.valence || '').toUpperCase();
+    if (valence !== 'POSITIVE' && valence !== 'NEUTRAL' && valence !== 'NEGATIVE') continue;
+
+    // Try to match with raw post by index position
+    const isSuggested = originByPosition[i] ?? null;
+    if (isSuggested === null) continue; // unknown origin, skip
+
+    if (isSuggested) {
+      if (valence === 'POSITIVE') sugPos++;
+      else if (valence === 'NEUTRAL') sugNeut++;
+      else sugNeg++;
+    } else {
+      if (valence === 'POSITIVE') folPos++;
+      else if (valence === 'NEUTRAL') folNeut++;
+      else folNeg++;
+    }
+  }
+
+  const sugTotal = sugPos + sugNeut + sugNeg;
+  const folTotal = folPos + folNeut + folNeg;
+
+  if (sugTotal < 5 || folTotal < 5) {
+    return { hasData: false, suggested: null, followed: null };
+  }
+
+  const pct = (n: number, total: number) => Math.round((n / total) * 100);
+
+  return {
+    hasData: true,
+    suggested: {
+      positivePct: pct(sugPos, sugTotal),
+      neutralPct: pct(sugNeut, sugTotal),
+      negativePct: pct(sugNeg, sugTotal),
+      total: sugTotal,
+    },
+    followed: {
+      positivePct: pct(folPos, folTotal),
+      neutralPct: pct(folNeut, folTotal),
+      negativePct: pct(folNeg, folTotal),
+      total: folTotal,
+    },
+  };
+}
+
+// ─── Creator Novelty Extraction ─────────────────────────
+// Analyzes how many suggested posts come from creators the user doesn't follow.
+
+function extractCreatorNovelty(posts: RawPost[]): CreatorNovelty | null {
+  if (posts.length === 0) return null;
+
+  const suggestedCreators = new Set<string>();
+  const followedCreators = new Set<string>();
+  let unknownCount = 0;
+
+  for (const p of posts) {
+    const handle = (p.creator_handle || '').toLowerCase();
+    if (!handle) continue;
+
+    if (p.is_suggested === true) {
+      suggestedCreators.add(handle);
+    } else if (p.is_suggested === false) {
+      followedCreators.add(handle);
+    } else {
+      unknownCount++;
+    }
+  }
+
+  if (suggestedCreators.size === 0) return null;
+
+  // Calculate overlap
+  const overlap = new Set([...suggestedCreators].filter(c => followedCreators.has(c)));
+  const novelCreators = suggestedCreators.size - overlap.size;
+  const noveltyPercent = suggestedCreators.size > 0
+    ? Math.round((novelCreators / suggestedCreators.size) * 100)
+    : 0;
+
+  // Flag as approximate if many posts have unknown origin
+  const approximate = unknownCount > posts.length * 0.3;
+
+  return {
+    hasData: true,
+    noveltyPercent,
+    suggestedCreatorCount: suggestedCreators.size,
+    followedCreatorCount: followedCreators.size,
+    overlapCount: overlap.size,
+    approximate,
+  };
+}
+
+// ─── Political Summary Builder ──────────────────────────
+// Generates a single summary sentence for the Political tab.
+
+function buildPoliticalSummary(analysis: PoliticalAnalysis | null): string | null {
+  if (!analysis || analysis.lowSample) return null;
+
+  let summary = `Based on keyword and AI analysis, your feed appeared to contain ${analysis.politicalPct}% political content`;
+
+  if (analysis.topPoliticalSource) {
+    summary += `, mostly from @${analysis.topPoliticalSource.handle}`;
+  }
+
+  if (analysis.ideology) {
+    const { left, center, right } = analysis.ideology;
+    const max = Math.max(left, center, right);
+    if (max === left && left > center + 10 && left > right + 10) {
+      summary += '. The ideological distribution appeared to lean left.';
+    } else if (max === right && right > center + 10 && right > left + 10) {
+      summary += '. The ideological distribution appeared to lean right.';
+    } else if (max === center && center > left + 10 && center > right + 10) {
+      summary += '. The ideological distribution appeared mostly center.';
+    } else {
+      summary += '. The ideological distribution appeared relatively balanced.';
+    }
+  } else {
+    summary += '.';
+  }
+
+  return summary;
 }
 
 function buildToneInsight(
@@ -688,8 +946,9 @@ export function computeDashboardData(scan: ScanRecord): DashboardData {
   const raw = scan?.raw_data;
   const posts: RawPost[] = raw?.posts || [];
   const totalPosts = posts.length;
-  const platform = (scan?.platform || 'your platform').charAt(0).toUpperCase() +
-    (scan?.platform || 'your platform').slice(1);
+  const platform = getPlatformDisplayName(scan?.platform) !== 'Unknown'
+    ? getPlatformDisplayName(scan?.platform)
+    : 'your platform';
 
   // ── Political analysis (from Gemini AI enrichment) ──
   const politicalAnalysis = extractPoliticalAnalysis(raw);
@@ -708,6 +967,8 @@ export function computeDashboardData(scan: ScanRecord): DashboardData {
     const followedCount = Math.max(0, fallbackTotal - suggestedCount);
     const suggestedPct = Math.round(scan?.suggested_percentage || 0);
 
+    const toneSources = extractTopToneSources(raw);
+
     return {
       totalPosts: fallbackTotal,
       adCount,
@@ -718,6 +979,8 @@ export function computeDashboardData(scan: ScanRecord): DashboardData {
       followedPct: 100 - suggestedPct,
       topCreators: [],
       top5Pct: 0,
+      uniqueCreatorCount: 0,
+      topAdvertisers: [],
       contentTypes: [],
       overviewInsight: buildOverviewInsight(fallbackTotal, 0, platform),
       sourcesInsight: buildSourcesInsight([], fallbackTotal, 0, platform),
@@ -727,6 +990,13 @@ export function computeDashboardData(scan: ScanRecord): DashboardData {
       toneInsight: buildToneInsight(platform, fallbackTotal, toneAnalysis),
       politicalAnalysis,
       toneAnalysis,
+      topPositiveSources: toneSources.topPositive,
+      topNegativeSources: toneSources.topNegative,
+      toneBySourceOrigin: null,
+      creatorNovelty: null,
+      politicalSummary: buildPoliticalSummary(politicalAnalysis),
+      platform,
+      scanDate: scan?.created_at || raw?.scanned_at || null,
       hasData: fallbackTotal > 0,
       hasPoliticsData,
       hasToneData,
@@ -738,14 +1008,46 @@ export function computeDashboardData(scan: ScanRecord): DashboardData {
   const adPct = Math.round((adCount / totalPosts) * 100);
 
   // ── Suggested vs followed ──
-  const suggestedCount = posts.filter(p => p.is_suggested).length;
-  const followedCount = Math.max(0, totalPosts - suggestedCount);
-  const suggestedPct = Math.round((suggestedCount / totalPosts) * 100);
+  // PIPELINE FIX H-03: Handle null is_suggested values.
+  // When subscription status is unknown (null), distribute unknowns
+  // proportionally based on the ratio of known suggested/followed posts.
+  // If ALL are unknown, default to a 70/30 suggested/followed split
+  // (typical for algorithmic platforms like YouTube).
+  const knownSuggested = posts.filter(p => p.is_suggested === true).length;
+  const knownFollowed = posts.filter(p => p.is_suggested === false).length;
+  const unknownCount = posts.filter(p => p.is_suggested === null || p.is_suggested === undefined).length;
+
+  let suggestedCount: number;
+  let followedCount: number;
+
+  if (unknownCount === 0) {
+    // All posts have known subscription status
+    suggestedCount = knownSuggested;
+    followedCount = knownFollowed;
+  } else if (knownSuggested + knownFollowed > 0) {
+    // Distribute unknowns proportionally based on known ratio
+    const knownTotal = knownSuggested + knownFollowed;
+    const suggestedRatio = knownSuggested / knownTotal;
+    const distributedSuggested = Math.round(unknownCount * suggestedRatio);
+    suggestedCount = knownSuggested + distributedSuggested;
+    followedCount = knownFollowed + (unknownCount - distributedSuggested);
+  } else {
+    // ALL posts have unknown status — use platform default (70/30 for YouTube)
+    suggestedCount = Math.round(totalPosts * 0.7);
+    followedCount = totalPosts - suggestedCount;
+  }
+
+  const suggestedPct = totalPosts > 0 ? Math.round((suggestedCount / totalPosts) * 100) : 0;
   const followedPct = 100 - suggestedPct;
 
   // ── Top creators ──
   const creatorData = countByCreator(posts);
+  // Count unique creators excluding "Unknown" bucket
+  const unknownBucket = creatorData['Unknown'];
+  const uniqueCreatorCount = Object.keys(creatorData).filter(k => k !== 'Unknown').length;
+  // Rank creators, excluding "Unknown" from the top list — it's not a real creator
   const topCreators: CreatorStat[] = Object.entries(creatorData)
+    .filter(([name]) => name !== 'Unknown')
     .sort(([, a], [, b]) => b.count - a.count)
     .slice(0, 10)
     .map(([name, data]) => ({
@@ -755,12 +1057,35 @@ export function computeDashboardData(scan: ScanRecord): DashboardData {
       percentage: Math.round((data.count / totalPosts) * 100),
     }));
 
-  // Top 5 concentration
+  // Top 5 concentration (of identified creators only)
   const top5Total = topCreators.slice(0, 5).reduce((sum, c) => sum + c.count, 0);
   const top5Pct = totalPosts > 0 ? Math.round((top5Total / totalPosts) * 100) : 0;
 
+  // ── Top advertisers ──
+  const advertiserCounts: Record<string, number> = {};
+  for (const p of posts) {
+    if (p.is_ad) {
+      const name = p.creator_handle || p.creator_display_name || 'Unknown advertiser';
+      advertiserCounts[name] = (advertiserCounts[name] || 0) + 1;
+    }
+  }
+  const topAdvertisers: AdvertiserStat[] = Object.entries(advertiserCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5)
+    .map(([name, count]) => ({
+      name,
+      count,
+      percent: adCount > 0 ? Math.round((count / adCount) * 100) : 0,
+    }));
+
   // ── Content types ──
   const contentTypes = countContentTypes(posts);
+
+  // ── New cross-tab data ──
+  const toneSources = extractTopToneSources(raw);
+  const toneBySourceOrigin = extractToneBySourceOrigin(posts, raw);
+  const creatorNovelty = extractCreatorNovelty(posts);
+  const politicalSummary = buildPoliticalSummary(politicalAnalysis);
 
   return {
     totalPosts,
@@ -772,6 +1097,8 @@ export function computeDashboardData(scan: ScanRecord): DashboardData {
     followedPct,
     topCreators,
     top5Pct,
+    uniqueCreatorCount,
+    topAdvertisers,
     contentTypes,
     overviewInsight: buildOverviewInsight(totalPosts, top5Pct, platform),
     sourcesInsight: buildSourcesInsight(topCreators, totalPosts, top5Pct, platform),
@@ -781,6 +1108,13 @@ export function computeDashboardData(scan: ScanRecord): DashboardData {
     toneInsight: buildToneInsight(platform, totalPosts, toneAnalysis),
     politicalAnalysis,
     toneAnalysis,
+    topPositiveSources: toneSources.topPositive,
+    topNegativeSources: toneSources.topNegative,
+    toneBySourceOrigin,
+    creatorNovelty,
+    politicalSummary,
+    platform,
+    scanDate: scan?.created_at || raw?.scanned_at || null,
     hasData: totalPosts > 0,
     hasPoliticsData,
     hasToneData,

@@ -109,7 +109,7 @@ export const useDashboard = (): UseDashboardReturn => {
     fetchScans();
   }, [fetchScans]);
 
-  const latestScan = scans.length > 0 ? scans[0] : null;
+  const latestScan = scans.length > 0 ? (scans[0] ?? null) : null;
 
   return {
     scans,

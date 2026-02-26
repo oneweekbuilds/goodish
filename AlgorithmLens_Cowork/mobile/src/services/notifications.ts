@@ -8,11 +8,33 @@
  * Permissions are requested once; if denied, we respect the decision.
  */
 
-import * as Notifications from 'expo-notifications';
-import * as SecureStore from 'expo-secure-store';
 import { Platform, Alert, Linking } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DEFAULT_REMINDER_FREQUENCY_DAYS, type ReminderFrequency } from '../config/thresholds';
 import { captureError, addBreadcrumb } from '../lib/sentry';
+
+// Import platform-specific modules only on native
+let Notifications: typeof import('expo-notifications') | null = null;
+let SecureStore: typeof import('expo-secure-store') | null = null;
+
+if (Platform.OS !== 'web') {
+  Notifications = require('expo-notifications');
+  SecureStore = require('expo-secure-store');
+
+  // Configure notification behavior (show alert even when app is foregrounded).
+  // This handler is set once at module load time and properly cleaned up by expo-notifications.
+  if (Notifications) {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      }),
+    });
+  }
+}
 
 // ─── Storage Keys ─────────────────────────────────────────
 
@@ -21,30 +43,22 @@ const STORE_KEY_NOTIFICATION_FREQUENCY = 'notification_frequency_days';
 const STORE_KEY_PERMISSION_ASKED = 'notification_permission_asked';
 const STORE_KEY_LAST_SCAN_DATE = 'last_scan_date';
 
-// ─── Notification Channel Setup ───────────────────────────
-
-/** Configure notification behavior (show alert even when app is foregrounded).
- * This handler is set once at module load time and properly cleaned up by expo-notifications.
- */
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
-
 // ─── Permission Management ────────────────────────────────
 
 /**
  * Requests notification permission from the user.
  * Returns true if granted, false otherwise.
  * Will not re-prompt if already denied — instead guides user to Settings.
+ * Returns false on web (not supported).
  */
 export async function requestNotificationPermission(): Promise<boolean> {
+  if (Platform.OS === 'web') {
+    return false;
+  }
+
   try {
+    if (!Notifications) return false;
+
     // Check current status first
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
 
@@ -53,7 +67,9 @@ export async function requestNotificationPermission(): Promise<boolean> {
     }
 
     // Check if we already asked and were denied
-    const alreadyAsked = await SecureStore.getItemAsync(STORE_KEY_PERMISSION_ASKED);
+    const alreadyAsked = SecureStore
+      ? await SecureStore.getItemAsync(STORE_KEY_PERMISSION_ASKED)
+      : null;
 
     if (alreadyAsked === 'true' && existingStatus === 'denied') {
       // Don't re-prompt; guide user to system settings
@@ -79,7 +95,9 @@ export async function requestNotificationPermission(): Promise<boolean> {
 
     // First time asking — request permission
     const { status } = await Notifications.requestPermissionsAsync();
-    await SecureStore.setItemAsync(STORE_KEY_PERMISSION_ASKED, 'true');
+    if (SecureStore) {
+      await SecureStore.setItemAsync(STORE_KEY_PERMISSION_ASKED, 'true');
+    }
 
     return status === 'granted';
   } catch (error) {
@@ -104,8 +122,13 @@ function getNotificationBody(): string {
 
 /**
  * Cancels all existing scan reminder notifications.
+ * No-op on web.
  */
 export async function cancelAllReminders(): Promise<void> {
+  if (Platform.OS === 'web' || !Notifications) {
+    return;
+  }
+
   try {
     await Notifications.cancelAllScheduledNotificationsAsync();
   } catch (error) {
@@ -117,10 +140,15 @@ export async function cancelAllReminders(): Promise<void> {
 
 /**
  * Schedules a repeating scan reminder notification.
+ * Returns false on web (not supported).
  *
  * @param frequencyDays - How often to remind (3, 5, or 7 days)
  */
 export async function scheduleReminder(frequencyDays: number): Promise<boolean> {
+  if (Platform.OS === 'web' || !Notifications) {
+    return false;
+  }
+
   try {
     // Cancel any existing reminders first
     await cancelAllReminders();
@@ -155,7 +183,13 @@ export async function scheduleReminder(frequencyDays: number): Promise<boolean> 
  */
 async function getDaysSinceLastScan(): Promise<number | null> {
   try {
-    const lastScanStr = await SecureStore.getItemAsync(STORE_KEY_LAST_SCAN_DATE);
+    let lastScanStr: string | null = null;
+    if (Platform.OS === 'web') {
+      lastScanStr = await AsyncStorage.getItem(STORE_KEY_LAST_SCAN_DATE);
+    } else if (SecureStore) {
+      lastScanStr = await SecureStore.getItemAsync(STORE_KEY_LAST_SCAN_DATE);
+    }
+
     if (!lastScanStr) return null;
     const lastScan = new Date(lastScanStr);
     const now = new Date();
@@ -170,7 +204,12 @@ async function getDaysSinceLastScan(): Promise<number | null> {
  */
 export async function recordScanDate(): Promise<void> {
   try {
-    await SecureStore.setItemAsync(STORE_KEY_LAST_SCAN_DATE, new Date().toISOString());
+    const dateStr = new Date().toISOString();
+    if (Platform.OS === 'web') {
+      await AsyncStorage.setItem(STORE_KEY_LAST_SCAN_DATE, dateStr);
+    } else if (SecureStore) {
+      await SecureStore.setItemAsync(STORE_KEY_LAST_SCAN_DATE, dateStr);
+    }
   } catch (error) {
     addBreadcrumb('notifications', 'Error recording scan date', {
       error: error instanceof Error ? error.message : String(error),
@@ -183,7 +222,12 @@ export async function recordScanDate(): Promise<void> {
 /** Save notification enabled state to secure storage. */
 export async function saveNotificationEnabled(enabled: boolean): Promise<void> {
   try {
-    await SecureStore.setItemAsync(STORE_KEY_NOTIFICATIONS_ENABLED, enabled ? 'true' : 'false');
+    const value = enabled ? 'true' : 'false';
+    if (Platform.OS === 'web') {
+      await AsyncStorage.setItem(STORE_KEY_NOTIFICATIONS_ENABLED, value);
+    } else if (SecureStore) {
+      await SecureStore.setItemAsync(STORE_KEY_NOTIFICATIONS_ENABLED, value);
+    }
   } catch (error) {
     addBreadcrumb('notifications', 'Error saving notification state', {
       error: error instanceof Error ? error.message : String(error),
@@ -194,7 +238,12 @@ export async function saveNotificationEnabled(enabled: boolean): Promise<void> {
 /** Load notification enabled state from secure storage. */
 export async function loadNotificationEnabled(): Promise<boolean> {
   try {
-    const value = await SecureStore.getItemAsync(STORE_KEY_NOTIFICATIONS_ENABLED);
+    let value: string | null = null;
+    if (Platform.OS === 'web') {
+      value = await AsyncStorage.getItem(STORE_KEY_NOTIFICATIONS_ENABLED);
+    } else if (SecureStore) {
+      value = await SecureStore.getItemAsync(STORE_KEY_NOTIFICATIONS_ENABLED);
+    }
     return value === 'true';
   } catch {
     return false;
@@ -204,7 +253,11 @@ export async function loadNotificationEnabled(): Promise<boolean> {
 /** Save notification frequency to secure storage. */
 export async function saveNotificationFrequency(frequency: ReminderFrequency): Promise<void> {
   try {
-    await SecureStore.setItemAsync(STORE_KEY_NOTIFICATION_FREQUENCY, frequency);
+    if (Platform.OS === 'web') {
+      await AsyncStorage.setItem(STORE_KEY_NOTIFICATION_FREQUENCY, frequency);
+    } else if (SecureStore) {
+      await SecureStore.setItemAsync(STORE_KEY_NOTIFICATION_FREQUENCY, frequency);
+    }
   } catch (error) {
     addBreadcrumb('notifications', 'Error saving notification frequency', {
       error: error instanceof Error ? error.message : String(error),
@@ -215,7 +268,12 @@ export async function saveNotificationFrequency(frequency: ReminderFrequency): P
 /** Load notification frequency from secure storage. */
 export async function loadNotificationFrequency(): Promise<ReminderFrequency> {
   try {
-    const value = await SecureStore.getItemAsync(STORE_KEY_NOTIFICATION_FREQUENCY);
+    let value: string | null = null;
+    if (Platform.OS === 'web') {
+      value = await AsyncStorage.getItem(STORE_KEY_NOTIFICATION_FREQUENCY);
+    } else if (SecureStore) {
+      value = await SecureStore.getItemAsync(STORE_KEY_NOTIFICATION_FREQUENCY);
+    }
     if (value === '3' || value === '5' || value === '7') {
       return value;
     }

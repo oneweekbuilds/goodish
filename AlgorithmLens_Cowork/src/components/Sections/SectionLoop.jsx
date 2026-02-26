@@ -9,7 +9,7 @@ const SectionLoop = () => {
             <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center mb-12 sm:mb-16">
                 <h2 id="feedback-loop-heading" className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-main mb-4 sm:mb-6">The Feedback Loop</h2>
                 <p className="text-base sm:text-lg text-text-muted max-w-2xl mx-auto px-2">
-                    A cycle where your behavior trains the model, which refines the content, which influences what you see next.
+                    Your behavior trains the algorithm. The algorithm reshapes your feed to maximize engagement. The cycle repeats.
                 </p>
             </div>
 
@@ -51,7 +51,7 @@ const SectionLoop = () => {
                         <LoopCard
                             number={3}
                             title="Tailored content"
-                            desc="Your feed composition reflects your inferred categories."
+                            desc="The algorithm fills your feed with content designed to keep you scrolling."
                             delay={0.8}
                         />
                     </div>
@@ -61,7 +61,7 @@ const SectionLoop = () => {
                         <LoopCard
                             number={4}
                             title="Your media diet evolves"
-                            desc="Over time, your feed composition may reflect and reinforce the topics you engage with most."
+                            desc="Over time, your feed narrows around what keeps you engaged — whether you want it to or not."
                             delay={1.1}
                         />
                     </div>
@@ -104,8 +104,8 @@ const SectionLoop = () => {
                 <div className="flex flex-col gap-4 sm:gap-6 md:hidden items-center w-full">
                     <LoopCard number={1} title="Your behavior" desc="Every tap, scroll, and pause becomes a data point." delay={0.2} />
                     <LoopCard number={2} title="Content patterns form" desc="Your feed content clusters into observable themes." delay={0.4} />
-                    <LoopCard number={3} title="Tailored content" desc="Your feed composition reflects your inferred categories." delay={0.6} />
-                    <LoopCard number={4} title="Your media diet evolves" desc="Over time, your feed composition may reflect and reinforce the topics you engage with most." delay={0.8} />
+                    <LoopCard number={3} title="Tailored content" desc="The algorithm fills your feed with content designed to keep you scrolling." delay={0.6} />
+                    <LoopCard number={4} title="Your media diet evolves" desc="Over time, your feed narrows around what keeps you engaged — whether you want it to or not." delay={0.8} />
                 </div>
             </div>
         </section>

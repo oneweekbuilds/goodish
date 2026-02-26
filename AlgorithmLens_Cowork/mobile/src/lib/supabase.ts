@@ -4,7 +4,8 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
@@ -15,30 +16,47 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-// Custom storage adapter using Expo SecureStore
-const ExpoSecureStoreAdapter = {
+// Import SecureStore only on native platforms
+let SecureStore: typeof import('expo-secure-store') | null = null;
+if (Platform.OS !== 'web') {
+  SecureStore = require('expo-secure-store');
+}
+
+// Custom storage adapter: use SecureStore on native, AsyncStorage on web
+const StorageAdapter = {
   getItem: async (key: string): Promise<string | null> => {
     try {
-      return await SecureStore.getItemAsync(key);
+      if (Platform.OS === 'web') {
+        return await AsyncStorage.getItem(key);
+      }
+      return SecureStore ? await SecureStore.getItemAsync(key) : null;
     } catch {
       return null;
     }
   },
   setItem: async (key: string, value: string): Promise<void> => {
     try {
-      await SecureStore.setItemAsync(key, value);
+      if (Platform.OS === 'web') {
+        await AsyncStorage.setItem(key, value);
+      } else if (SecureStore) {
+        await SecureStore.setItemAsync(key, value);
+      }
     } catch {
       if (__DEV__) {
-        console.warn('SecureStore setItem failed:', key);
+        console.warn('Storage setItem failed:', key);
       }
     }
   },
   removeItem: async (key: string): Promise<void> => {
     try {
-      await SecureStore.deleteItemAsync(key);
+      if (Platform.OS === 'web') {
+        await AsyncStorage.removeItem(key);
+      } else if (SecureStore) {
+        await SecureStore.deleteItemAsync(key);
+      }
     } catch {
       if (__DEV__) {
-        console.warn('SecureStore removeItem failed:', key);
+        console.warn('Storage removeItem failed:', key);
       }
     }
   },
@@ -46,7 +64,7 @@ const ExpoSecureStoreAdapter = {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: ExpoSecureStoreAdapter,
+    storage: StorageAdapter,
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,

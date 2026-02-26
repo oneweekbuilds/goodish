@@ -435,17 +435,17 @@ const AdsTab = ({
       hasData: true,
       selling: {
         segments: [
-          { label: 'Positive', percentage: sellingPosPercent, count: sellingTones.positive, color: '#86EFAC' },
+          { label: 'Positive', percentage: sellingPosPercent, count: sellingTones.positive, color: '#93C5B8' },
           { label: 'Neutral', percentage: sellingNeutPercent, count: sellingTones.neutral, color: '#CBD5E1' },
-          { label: 'Negative', percentage: sellingNegPercent, count: sellingTones.negative, color: '#FCA5A5' },
+          { label: 'Negative', percentage: sellingNegPercent, count: sellingTones.negative, color: '#A3B1C6' },
         ],
         totalKnownValence: sellingKnownValenceTotal,
       },
       notSelling: {
         segments: [
-          { label: 'Positive', percentage: notSellingPosPercent, count: notSellingTones.positive, color: '#86EFAC' },
+          { label: 'Positive', percentage: notSellingPosPercent, count: notSellingTones.positive, color: '#93C5B8' },
           { label: 'Neutral', percentage: notSellingNeutPercent, count: notSellingTones.neutral, color: '#CBD5E1' },
-          { label: 'Negative', percentage: notSellingNegPercent, count: notSellingTones.negative, color: '#FCA5A5' },
+          { label: 'Negative', percentage: notSellingNegPercent, count: notSellingTones.negative, color: '#A3B1C6' },
         ],
         totalKnownValence: notSellingKnownValenceTotal,
       },
@@ -474,41 +474,56 @@ const AdsTab = ({
       {/* Insight Hero */}
       <InsightHero {...hero} />
 
-      {/* Trends CTA */}
+      {/* Trends CTA or Panel */}
       <TrendsCTA
         onClick={() => onOpenTrends({ tab: 'ads', placement: 'hero_trends' })}
         isPlusUser={isPlusUser}
+        tabName="ads"
+        scanCount={scans.length}
       />
 
-      {/* Trends Panel (Plus users only) */}
-      {showTrendsPanel && (
+      {/* Trends Panel (auto-show for Plus users or when manually opened) */}
+      {(isPlusUser || showTrendsPanel) && (
         <TrendsPanel
           scans={scans}
           scanDetails={scanDetails}
           onClose={onCloseTrendsPanel}
+          embedded={isPlusUser}
         />
       )}
 
-      {/* Ads Summary */}
+
+      {/* Ads Summary - Stat Cards */}
       {adsSummary.length > 0 && (
         <section>
-          <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-3">
-            <div>
-              <h3 className="text-sm font-semibold text-slate-900 mb-1">
-                Ads summary
-              </h3>
-              <p className="text-xs text-slate-500">
-                Based on posts in this scan.
-              </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Total Ads Card */}
+            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Ad Posts</p>
+              <p className="text-2xl font-bold text-slate-900">{influenceData.labeledAds || 0}</p>
+              <p className="text-sm text-slate-500 mt-1">{((influenceData.labeledAds || 0) / totalPosts * 100).toFixed(1)}% of posts</p>
             </div>
-            <ul className="space-y-2 text-sm text-slate-700" role="list">
-              {adsSummary.map((summary, index) => (
-                <li key={index} className="leading-relaxed">
-                  • {summary}
-                </li>
-              ))}
-            </ul>
+            
+            {/* Top Advertiser Card */}
+            {topAdvertisers.hasData && topAdvertisers.advertisers.length > 0 && (
+              <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Top Advertiser</p>
+                <p className="text-lg font-bold text-slate-900 truncate">{topAdvertisers.advertisers[0].name}</p>
+                <p className="text-sm text-slate-500 mt-1">{topAdvertisers.advertisers[0].percent}% of ads</p>
+              </div>
+            )}
+            
+            {/* Unlabeled Promos Card */}
+            {unlabeledPromo.hasData && (
+              <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Unlabeled Promos</p>
+                <p className="text-2xl font-bold text-slate-900">{unlabeledPromo.promoPercent}%</p>
+                <p className="text-sm text-slate-500 mt-1">{unlabeledPromo.unlabeledPromoCount} posts flagged</p>
+              </div>
+            )}
           </div>
+          
+          <p className="text-xs text-slate-500 mt-4">Based on posts in this scan.</p>
         </section>
       )}
 
@@ -526,8 +541,8 @@ const AdsTab = ({
           </>
         ) : (
           <div className="rounded-xl p-6 text-center" style={{ background: "#FAFBFE", border: "1px solid rgba(37, 99, 235, 0.06)" }}>
-            <p className="text-sm text-slate-400 italic">
-              Not enough posts in this window.
+            <p className="text-sm text-slate-500">
+              This section needs a bit more data. Try selecting a wider date range or scanning again.
             </p>
           </div>
         )}
@@ -578,8 +593,8 @@ const AdsTab = ({
                 </>
               ) : (
                 <div className="rounded-xl p-6 text-center" style={{ background: "#FAFBFE", border: "1px solid rgba(37, 99, 235, 0.06)" }}>
-                  <p className="text-sm text-slate-400 italic">
-                    No labeled ads were detected in this window.
+                  <p className="text-sm text-slate-500">
+                    No ads were labeled in this scan — which might mean your feed was ad-light this time.
                   </p>
                 </div>
               )}
@@ -606,7 +621,7 @@ const AdsTab = ({
                             <td className="px-4 py-3 text-sm text-slate-800">{theme.theme}</td>
                             <td className="px-4 py-3 text-sm text-slate-600 text-right">{theme.percent}%</td>
                             <td className="px-4 py-3 text-xs text-slate-500">
-                              {theme.examples.length > 0 ? theme.examples.join(', ') : 'N/A'}
+                              {theme.examples.length > 0 ? theme.examples.join(', ') : '—'}
                             </td>
                           </tr>
                         ))}
@@ -619,8 +634,8 @@ const AdsTab = ({
                 </>
               ) : (
                 <div className="rounded-xl p-6 text-center" style={{ background: "#FAFBFE", border: "1px solid rgba(37, 99, 235, 0.06)" }}>
-                  <p className="text-sm text-slate-400 italic">
-                    Ads in this window did not repeat strongly enough to form clear themes.
+                  <p className="text-sm text-slate-500">
+                    No clear ad themes emerged from this scan. More scans may reveal patterns over time.
                   </p>
                 </div>
               )}
@@ -663,8 +678,8 @@ const AdsTab = ({
                 </div>
               ) : (
                 <div className="rounded-xl p-6 text-center" style={{ background: "#FAFBFE", border: "1px solid rgba(37, 99, 235, 0.06)" }}>
-                  <p className="text-sm text-slate-400 italic">
-                    No unlabeled promotional posts were detected in the selected date range.
+                  <p className="text-sm text-slate-500">
+                    No unlabeled promos were detected — a good sign for ad transparency in your feed.
                   </p>
                 </div>
               )}

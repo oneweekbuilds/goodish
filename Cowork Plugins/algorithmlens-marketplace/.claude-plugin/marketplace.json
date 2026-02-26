@@ -1,0 +1,13 @@
+{
+  "name": "algorithmlens-marketplace",
+  "owner": {
+    "name": "Justin"
+  },
+  "plugins": [
+    {
+      "name": "algorithmlens-auditor",
+      "source": "./algorithmlens-auditor",
+      "description": "Complete audit, fix, and verification system for the AlgorithmLens iOS app"
+    }
+  ]
+}

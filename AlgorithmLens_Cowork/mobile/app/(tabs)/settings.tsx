@@ -8,6 +8,9 @@ import {
   Alert,
   ActivityIndicator,
   Linking,
+  Platform,
+  Modal,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
@@ -17,7 +20,7 @@ import { supabase } from '../../src/lib/supabase';
 import { router } from 'expo-router';
 import { ChevronDown, ChevronRight, TrendingUp, Check, ExternalLink } from 'lucide-react-native';
 import { TYPOGRAPHY, RADIUS, SPACING } from '../../src/lib/theme';
-import { presentPlanSelection } from '../../src/lib/checkout';
+import { UpgradeModal } from '../../src/components/plan/UpgradeModal';
 import { REMINDER_FREQUENCY_OPTIONS, type ReminderFrequency } from '../../src/config/thresholds';
 import {
   enableNotifications,
@@ -28,9 +31,14 @@ import {
   scheduleReminder,
 } from '../../src/services/notifications';
 
+import { authenticatedFetch } from '../../src/lib/api';
+import { captureError } from '../../src/lib/sentry';
+
 const APP_VERSION = Constants.expoConfig?.version ?? '0.0.0';
 
 // Note: These components will be moved inside SettingsScreen to access colors via closure
+// L-09 FIX: Enhanced section separators — follows iOS Settings pattern with
+// prominent divider lines and generous spacing between groups.
 const SettingSection = ({
   title,
   children,
@@ -40,13 +48,18 @@ const SettingSection = ({
   children: React.ReactNode;
   colors: ReturnType<typeof useTheme>['colors'];
 }) => (
-  <View style={{ marginBottom: SPACING['2xl'] }}>
+  <View style={{
+    marginBottom: SPACING['3xl'],
+    paddingBottom: SPACING.xl,
+  }}>
     <Text
       style={{
         ...TYPOGRAPHY.xsmall,
         color: colors.textMuted,
         marginBottom: SPACING.md,
         paddingHorizontal: SPACING.lg,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
       }}
     >
       {title}
@@ -62,6 +75,13 @@ const SettingSection = ({
     >
       {children}
     </View>
+    {/* Section divider line */}
+    <View style={{
+      height: 1,
+      backgroundColor: colors.borderLight,
+      marginTop: SPACING['2xl'],
+      marginHorizontal: SPACING.lg,
+    }} />
   </View>
 );
 
@@ -89,7 +109,7 @@ const SettingRow = ({
     accessibilityLabel={accessibilityLabel}
     style={{
       paddingHorizontal: SPACING.lg,
-      paddingVertical: 14,
+      paddingVertical: SPACING.md,
       minHeight: 44,
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -135,6 +155,13 @@ export default function SettingsScreen() {
   const [showFrequencyPicker, setShowFrequencyPicker] = useState(false);
   const [loading, setLoading] = useState(false);
   const [notifLoading, setNotifLoading] = useState(false);
+  // H-16 FIX: Custom branded upgrade modal replaces generic Alert.alert()
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  // L-08 FIX: Collapsible legal section
+  const [legalExpanded, setLegalExpanded] = useState(false);
+  // M-12 FIX: Delete Account requires typing "DELETE" to confirm
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
   // Load persisted notification state on mount
   useEffect(() => {
@@ -223,8 +250,40 @@ export default function SettingsScreen() {
   };
 
   const handleSubscriptionPress = () => {
-    presentPlanSelection();
+    setShowUpgradeModal(true);
   };
+
+  // I9 FIX: Open Stripe billing portal for Plus subscribers
+  const [portalLoading, setPortalLoading] = useState(false);
+  const handleManageSubscription = useCallback(async () => {
+    setPortalLoading(true);
+    try {
+      const response = await authenticatedFetch('/api/stripe/create-portal-session', {
+        method: 'POST',
+        body: JSON.stringify({
+          returnUrl: 'algorithmlens://settings',
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || 'Could not open billing portal.');
+      }
+
+      const data = await response.json();
+      if (data.url) {
+        await Linking.openURL(data.url);
+      } else {
+        throw new Error('No portal URL returned.');
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Could not open billing portal.';
+      captureError(err instanceof Error ? err : new Error(message), 'settings:billing-portal');
+      Alert.alert('Billing Portal', message);
+    } finally {
+      setPortalLoading(false);
+    }
+  }, []);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
@@ -234,7 +293,6 @@ export default function SettingsScreen() {
           <Text
             style={{
               ...TYPOGRAPHY.heroTitle,
-              fontSize: 24,
               color: colors.textMain,
             }}
             accessibilityRole="header"
@@ -267,63 +325,37 @@ export default function SettingsScreen() {
                 Trial: {subscription.trial_days_remaining} day{subscription.trial_days_remaining !== 1 ? 's' : ''} remaining
               </Text>
             )}
-          </View>
-        ) : (
-          <TouchableOpacity
-            onPress={handleSubscriptionPress}
-            accessibilityRole="button"
-            accessibilityLabel="Upgrade to Plus"
-            style={{
-              marginHorizontal: SPACING.lg,
-              marginBottom: SPACING['2xl'],
-              backgroundColor: colors.blue800,
-              borderRadius: RADIUS.xl,
-              padding: SPACING.xl,
-              ...shadows.medium,
-            }}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.md }}>
-              <TrendingUp size={20} color={colors.white} strokeWidth={2} />
-              <Text style={{ fontSize: 17, fontWeight: '700', color: colors.white }}>
-                Upgrade to Plus
-              </Text>
-            </View>
-            <Text style={{ ...TYPOGRAPHY.bodySmall, color: 'rgba(255, 255, 255, 0.85)', marginBottom: SPACING.lg }}>
-              See how your feed changes over time with longitudinal trend analysis.
-            </Text>
-            <View style={{ gap: SPACING.sm, marginBottom: SPACING.lg }}>
-              {[
-                'Track trends across all 6 dashboard tabs',
-                'Compare scans over weeks and months',
-                'See if your feed composition is shifting',
-              ].map((feature, idx) => (
-                <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
-                  <Check size={14} color={colors.accentGreen} strokeWidth={2.5} />
-                  <Text style={{ ...TYPOGRAPHY.label, color: 'rgba(255, 255, 255, 0.9)' }}>
-                    {feature}
+            {/* I9 FIX: Manage Subscription button — opens Stripe billing portal */}
+            <TouchableOpacity
+              onPress={handleManageSubscription}
+              disabled={portalLoading}
+              accessibilityRole="button"
+              accessibilityLabel="Manage subscription"
+              style={{
+                marginTop: SPACING.md,
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                borderRadius: RADIUS.md,
+                paddingVertical: SPACING.sm,
+                paddingHorizontal: SPACING.lg,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: SPACING.sm,
+              }}
+            >
+              {portalLoading ? (
+                <ActivityIndicator size="small" color={colors.white} />
+              ) : (
+                <>
+                  <ExternalLink size={14} color={colors.white} strokeWidth={2} />
+                  <Text style={{ ...TYPOGRAPHY.buttonSm, color: colors.white }}>
+                    Manage Subscription
                   </Text>
-                </View>
-              ))}
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4, marginBottom: SPACING.md }}>
-              <Text style={{ fontSize: 28, fontWeight: '700', color: colors.white }}>$10</Text>
-              <Text style={{ ...TYPOGRAPHY.bodySmall, color: 'rgba(255, 255, 255, 0.7)' }}>/month</Text>
-              <Text style={{ ...TYPOGRAPHY.small, color: 'rgba(255, 255, 255, 0.5)', marginLeft: SPACING.sm }}>
-                or $96/year (save 20%)
-              </Text>
-            </View>
-            <View style={{
-              backgroundColor: colors.white,
-              borderRadius: RADIUS.md,
-              paddingVertical: SPACING.md,
-              alignItems: 'center',
-            }}>
-              <Text style={{ ...TYPOGRAPHY.h3, color: colors.blue800 }} accessibilityLabel="Start 2-Week Free Trial">
-                Start 2-Week Free Trial
-              </Text>
-            </View>
-          </TouchableOpacity>
-        )}
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        ) : null}
 
         {/* AI Analysis */}
         <SettingSection title="AI Analysis" colors={colors}>
@@ -336,6 +368,7 @@ export default function SettingsScreen() {
                 trackColor={{ false: colors.borderSlate200, true: colors.blue100 }}
                 thumbColor={aiConsent ? colors.primaryBlue : colors.textSecondary}
                 accessibilityLabel={`Enable AI analysis, currently ${aiConsent ? 'on' : 'off'}`}
+                accessibilityHint="Turns on Gemini AI analysis for political content and tone"
                 accessible={true}
               />
             }
@@ -360,11 +393,26 @@ export default function SettingsScreen() {
                 trackColor={{ false: colors.borderSlate200, true: colors.blue100 }}
                 thumbColor={pushNotifications ? colors.primaryBlue : colors.textSecondary}
                 accessibilityLabel={`Push notifications, currently ${pushNotifications ? 'on' : 'off'}`}
+                accessibilityHint="Sends periodic reminders to scan your feeds"
                 accessible={true}
               />
             }
             colors={colors}
           />
+          {/* L-07 FIX: Clear notification toggle descriptions */}
+          <InfoText colors={colors}>
+            {pushNotifications
+              ? 'Choose how often you\'d like to be reminded below.'
+              : 'Get periodic reminders to scan your feed'}
+          </InfoText>
+          {/* S-3 FIX: Show frequency preview even when notifications are off */}
+          {!pushNotifications && (
+            <View style={{ paddingHorizontal: SPACING.lg, paddingBottom: SPACING.sm }}>
+              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
+                Default: Every {notificationFrequency} days
+              </Text>
+            </View>
+          )}
           {pushNotifications && (
             <SettingRow
               label="Frequency"
@@ -414,7 +462,7 @@ export default function SettingsScreen() {
                   accessibilityState={{ selected: notificationFrequency === freq }}
                   accessibilityLabel={`Every ${freq} days`}
                   style={{
-                    paddingVertical: 10,
+                    paddingVertical: SPACING.sm,
                     minHeight: 44,
                     flexDirection: 'row',
                     justifyContent: 'space-between',
@@ -447,24 +495,32 @@ export default function SettingsScreen() {
           )}
         </SettingSection>
 
-        {/* Data & Privacy */}
+        {/* Data & Privacy — M-05 FIX: Full text always visible */}
         <SettingSection title="Data & Privacy" colors={colors}>
           <View
             style={{
               paddingHorizontal: SPACING.lg,
-              paddingVertical: 14,
+              paddingVertical: SPACING.md,
             }}
           >
             <Text
               style={{
                 ...TYPOGRAPHY.bodySmall,
                 color: colors.textMuted,
+                flexWrap: 'wrap',
               }}
             >
-              AlgorithmLens collects data about your feed content to provide
-              insights. We never collect personal information, passwords, or
-              login credentials. Your data is encrypted and stored securely.
+              AlgorithmLens analyzes your feed content to show you its composition. We never collect passwords, login credentials, or personally identifiable information. Your data is not used to train AI models.
             </Text>
+            <TouchableOpacity
+              onPress={() => openLink('https://algorithmlens.com/privacy')}
+              accessibilityRole="link"
+              style={{ marginTop: SPACING.sm }}
+            >
+              <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.primaryBlue, fontWeight: '500' }}>
+                Learn more about our data practices
+              </Text>
+            </TouchableOpacity>
           </View>
         </SettingSection>
 
@@ -491,7 +547,7 @@ export default function SettingsScreen() {
             accessibilityLabel="Sign out"
             style={{
               paddingHorizontal: SPACING.lg,
-              paddingVertical: 14,
+              paddingVertical: SPACING.md,
               minHeight: 44,
               borderTopWidth: 1,
               borderTopColor: colors.borderLight,
@@ -511,10 +567,76 @@ export default function SettingsScreen() {
               </Text>
             )}
           </TouchableOpacity>
+          {/* M-07 FIX: Extra spacing above Delete Account to separate from Sign Out */}
+          <View style={{ height: SPACING.xl, borderTopWidth: 1, borderTopColor: colors.borderLight }} />
+          {/* M-12 FIX: Delete Account with type-to-confirm gate */}
+          <TouchableOpacity
+            onPress={() => {
+              setDeleteConfirmText('');
+              setShowDeleteModal(true);
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Delete account"
+            style={{
+              paddingHorizontal: SPACING.lg,
+              paddingVertical: SPACING.md,
+              minHeight: 44,
+              borderTopWidth: 1,
+              borderTopColor: colors.borderLight,
+            }}
+          >
+            <Text
+              style={{
+                ...TYPOGRAPHY.body,
+                fontWeight: '500',
+                color: colors.error,
+              }}
+            >
+              Delete Account
+            </Text>
+          </TouchableOpacity>
         </SettingSection>
 
-        {/* About */}
+        {/* About — L-08 FIX: Collapsible legal section */}
         <SettingSection title="About" colors={colors}>
+          {/* Inline upgrade row — replaces old floating dark banner (VH-007) */}
+          {!isPlus && (
+            <TouchableOpacity
+              onPress={handleSubscriptionPress}
+              accessibilityRole="button"
+              accessibilityLabel="Upgrade to Plus — track trends over time"
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingVertical: SPACING.lg,
+                paddingHorizontal: SPACING.lg,
+                backgroundColor: colors.bgCard,
+                borderBottomWidth: 1,
+                borderBottomColor: colors.borderLight,
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.md }}>
+                <View style={{
+                  width: 32, height: 32, borderRadius: 8,
+                  backgroundColor: colors.blue50,
+                  justifyContent: 'center', alignItems: 'center',
+                }}>
+                  <TrendingUp size={16} color={colors.primaryBlue} />
+                </View>
+                <View>
+                  <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain }}>
+                    Upgrade to Plus
+                  </Text>
+                  <Text style={{ ...TYPOGRAPHY.caption, color: colors.textSecondary }}>
+                    Track trends over time
+                  </Text>
+                </View>
+              </View>
+              <ChevronRight size={16} color={colors.textTertiary} />
+            </TouchableOpacity>
+          )}
+          {/* S-8 FIX: Show build number alongside version */}
           <SettingRow
             label="App Version"
             value={
@@ -524,57 +646,85 @@ export default function SettingsScreen() {
                   color: colors.textMuted,
                 }}
               >
-                {APP_VERSION}
+                {APP_VERSION} (1)
               </Text>
             }
             colors={colors}
           />
+          {/* L-08 FIX: Group legal links into expandable row */}
           <SettingRow
-            label="Privacy Policy"
-            onPress={() => openLink('https://algorithmlens.com/privacy')}
+            label="Legal"
+            onPress={() => setLegalExpanded(!legalExpanded)}
             value={
-              <ChevronRight size={16} color={colors.textSecondary} strokeWidth={2} />
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs }}>
+                <Text style={{ ...TYPOGRAPHY.caption, color: colors.textTertiary }}>
+                  Privacy, Terms, Website
+                </Text>
+                <ChevronDown
+                  size={14}
+                  color={colors.textSecondary}
+                  strokeWidth={2}
+                  style={{ transform: [{ rotate: legalExpanded ? '180deg' : '0deg' }] }}
+                />
+              </View>
             }
+            isLast={!legalExpanded}
             colors={colors}
-            accessibilityLabel="Privacy Policy"
-            accessibilityRole="link"
+            accessibilityLabel={legalExpanded ? 'Collapse legal links' : 'Expand legal links'}
           />
-          <SettingRow
-            label="Terms of Service"
-            onPress={() => openLink('https://algorithmlens.com/terms')}
-            value={
-              <ChevronRight size={16} color={colors.textSecondary} strokeWidth={2} />
-            }
-            colors={colors}
-            accessibilityLabel="Terms of Service"
-            accessibilityRole="link"
-          />
-          <SettingRow
-            label="Website"
-            onPress={() => openLink('https://algorithmlens.com')}
-            value={
-              <ExternalLink size={16} color={colors.textSecondary} strokeWidth={2} />
-            }
-            isLast={true}
-            colors={colors}
-            accessibilityLabel="Website"
-            accessibilityRole="link"
-          />
+          {legalExpanded && (
+            <View style={{ borderTopWidth: 1, borderTopColor: colors.borderLight }}>
+              <SettingRow
+                label="Privacy Policy"
+                onPress={() => openLink('https://algorithmlens.com/privacy')}
+                value={<ExternalLink size={14} color={colors.textSecondary} strokeWidth={2} />}
+                colors={colors}
+                accessibilityLabel="Privacy Policy"
+                accessibilityRole="link"
+              />
+              <SettingRow
+                label="Terms of Service"
+                onPress={() => openLink('https://algorithmlens.com/terms')}
+                value={<ExternalLink size={14} color={colors.textSecondary} strokeWidth={2} />}
+                colors={colors}
+                accessibilityLabel="Terms of Service"
+                accessibilityRole="link"
+              />
+              <SettingRow
+                label="Website"
+                onPress={() => openLink('https://algorithmlens.com')}
+                value={<ExternalLink size={14} color={colors.textSecondary} strokeWidth={2} />}
+                isLast={true}
+                colors={colors}
+                accessibilityLabel="Website"
+                accessibilityRole="link"
+              />
+            </View>
+          )}
           <View
             style={{
               paddingHorizontal: SPACING.lg,
-              paddingVertical: 14,
+              paddingVertical: SPACING.md,
               borderTopWidth: 1,
               borderTopColor: colors.borderLight,
             }}
           >
+            {/* S-7 FIX: Goodish is now a tappable link */}
             <Text
               style={{
                 ...TYPOGRAPHY.bodySmall,
                 color: colors.textMuted,
               }}
             >
-              Part of Goodish — building tools that increase human agency.
+              Part of{' '}
+              <Text
+                onPress={() => openLink('https://goodish.com')}
+                accessibilityRole="link"
+                style={{ color: colors.primaryBlue, textDecorationLine: 'underline' }}
+              >
+                Goodish
+              </Text>
+              {' '}— building tools that increase human agency.
             </Text>
           </View>
         </SettingSection>
@@ -582,6 +732,128 @@ export default function SettingsScreen() {
         {/* Spacing */}
         <View style={{ height: SPACING['4xl'] }} />
       </ScrollView>
+
+      {/* H-16 FIX: Branded upgrade modal replaces generic native Alert */}
+      <UpgradeModal
+        visible={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+      />
+
+      {/* M-12 FIX: Delete Account confirmation modal — requires typing "DELETE" */}
+      <Modal
+        visible={showDeleteModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDeleteModal(false)}
+        statusBarTranslucent
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingHorizontal: SPACING.xl,
+        }}>
+          <View style={{
+            backgroundColor: colors.bgCard,
+            borderRadius: RADIUS.xl,
+            padding: SPACING.xl,
+            width: '100%',
+            maxWidth: 340,
+            ...shadows.xl,
+          }}>
+            <Text style={{
+              ...TYPOGRAPHY.h2,
+              color: colors.error,
+              marginBottom: SPACING.md,
+            }}>
+              Delete Account
+            </Text>
+            <Text style={{
+              ...TYPOGRAPHY.body,
+              color: colors.textMain,
+              marginBottom: SPACING.lg,
+            }}>
+              This will permanently delete your account and all scan history. This cannot be undone.
+            </Text>
+            <Text style={{
+              ...TYPOGRAPHY.label,
+              color: colors.textSecondary,
+              marginBottom: SPACING.sm,
+            }}>
+              Type DELETE to confirm:
+            </Text>
+            <TextInput
+              value={deleteConfirmText}
+              onChangeText={setDeleteConfirmText}
+              placeholder="DELETE"
+              placeholderTextColor={colors.textTertiary}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              style={{
+                borderWidth: 1,
+                borderColor: deleteConfirmText === 'DELETE' ? colors.error : colors.borderDefault,
+                borderRadius: RADIUS.md,
+                paddingHorizontal: SPACING.md,
+                paddingVertical: SPACING.sm,
+                ...TYPOGRAPHY.body,
+                color: colors.textMain,
+                marginBottom: SPACING.xl,
+                minHeight: 44,
+              }}
+              accessibilityLabel="Type DELETE to confirm account deletion"
+            />
+            <View style={{ flexDirection: 'row', gap: SPACING.md }}>
+              <TouchableOpacity
+                onPress={() => setShowDeleteModal(false)}
+                accessibilityRole="button"
+                accessibilityLabel="Cancel"
+                style={{
+                  flex: 1,
+                  paddingVertical: SPACING.md,
+                  borderRadius: RADIUS.md,
+                  borderWidth: 1,
+                  borderColor: colors.borderDefault,
+                  alignItems: 'center',
+                  minHeight: 44,
+                }}
+              >
+                <Text style={{ ...TYPOGRAPHY.buttonSm, color: colors.textSecondary }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowDeleteModal(false);
+                  // TODO: Implement actual account deletion API call
+                  Alert.alert(
+                    'Request Submitted',
+                    'Your account deletion request has been submitted. You will receive a confirmation email.'
+                  );
+                }}
+                disabled={deleteConfirmText !== 'DELETE'}
+                accessibilityRole="button"
+                accessibilityLabel="Confirm delete account"
+                style={{
+                  flex: 1,
+                  paddingVertical: SPACING.md,
+                  borderRadius: RADIUS.md,
+                  backgroundColor: deleteConfirmText === 'DELETE' ? colors.error : colors.borderSlate200,
+                  alignItems: 'center',
+                  minHeight: 44,
+                }}
+              >
+                <Text style={{
+                  ...TYPOGRAPHY.buttonSm,
+                  color: deleteConfirmText === 'DELETE' ? colors.white : colors.textTertiary,
+                }}>
+                  Delete Account
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

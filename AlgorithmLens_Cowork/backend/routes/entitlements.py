@@ -104,7 +104,7 @@ def delete_all_user_data(
     if subscription and subscription.get("stripe_subscription_id"):
         sub_id = subscription["stripe_subscription_id"]
         try:
-            stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+            # Stripe API key initialized centrally in config.init_stripe()
             stripe.Subscription.cancel(sub_id)
             stripe_canceled = True
             logger.info(f"Canceled Stripe subscription {sub_id} for user {user_id} during data deletion")

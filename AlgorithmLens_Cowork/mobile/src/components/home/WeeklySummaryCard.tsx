@@ -44,7 +44,7 @@ function WeeklySummaryCardComponent({ summary }: WeeklySummaryCardProps) {
         padding: SPACING.lg,
         borderWidth: 1,
         borderColor: colors.borderSoft,
-        ...shadows.soft,
+        ...shadows.card,
       }}
       accessible
       accessibilityRole="summary"

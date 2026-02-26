@@ -2,9 +2,29 @@ import React from 'react';
 import {
   View,
   Text,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../context/ThemeContext';
+import { TYPOGRAPHY, SPACING } from '../../lib/theme';
+
+// Web-safe gradient wrapper for LinearGradient
+const GradientWrapper = Platform.OS === 'web'
+  ? ({ colors: gradientColors, start, end, style, children, ...props }: any) => {
+      const flatStyle = style ? (Array.isArray(style) ? Object.assign({}, ...style) : style) : {};
+      return (
+        <View
+          style={{
+            ...flatStyle,
+            background: `linear-gradient(to bottom, ${gradientColors[0]} 0%, ${gradientColors[1]} 100%)`,
+          }}
+          {...props}
+        >
+          {children}
+        </View>
+      );
+    }
+  : LinearGradient;
 
 type HeaderLevel = 'h2' | 'h3';
 
@@ -22,19 +42,19 @@ const SectionHeaderComponent: React.FC<SectionHeaderProps> = ({
   const { colors } = useTheme();
   const isH2 = level === 'h2';
   const barHeight = isH2 ? 20 : 16;
-  const titleSize = isH2 ? 16 : 14;
+  const titleStyle = isH2 ? TYPOGRAPHY.h2 : TYPOGRAPHY.h3;
 
   return (
     <View
       style={{
         flexDirection: 'row',
         gap: 12,
-        marginBottom: 12,
+        marginBottom: SPACING.md,
         marginTop: 0,
       }}
     >
       {/* Gradient Accent Bar */}
-      <LinearGradient
+      <GradientWrapper
         colors={[colors.primaryBlue, colors.barMedium]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
@@ -53,8 +73,7 @@ const SectionHeaderComponent: React.FC<SectionHeaderProps> = ({
       >
         <Text
           style={{
-            fontSize: titleSize,
-            fontWeight: '600',
+            ...titleStyle,
             color: colors.textMain,
             marginBottom: subtitle ? 4 : 0,
           }}
@@ -66,9 +85,8 @@ const SectionHeaderComponent: React.FC<SectionHeaderProps> = ({
         {subtitle && (
           <Text
             style={{
-              fontSize: 14,
+              ...TYPOGRAPHY.bodySmall,
               color: colors.textSecondary,
-              lineHeight: 20,
               maxWidth: 560,
             }}
           >

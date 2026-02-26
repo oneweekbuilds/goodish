@@ -13,7 +13,7 @@
  */
 
 import React from 'react';
-import { Shield, Mail } from 'lucide-react';
+import { Shield } from 'lucide-react';
 import SEO from '../components/SEO';
 import BackLink from '../components/ui/BackLink';
 
@@ -441,7 +441,7 @@ export default function PrivacyPage() {
                 <div>
                   <h3 className="font-semibold text-text-main mb-2">GDPR & CCPA Rights</h3>
                   <p className="text-text-muted leading-relaxed">
-                    If you are a resident of the EU, UK, or California, you have additional rights under GDPR, GDPR UK, and CCPA. Contact us at legal@algorithmlens.com to exercise these rights.
+                    If you are a resident of the EU, UK, or California, you have additional rights under GDPR, GDPR UK, and CCPA. Contact us through the AlgorithmLens website to exercise these rights.
                   </p>
                 </div>
               </div>
@@ -488,7 +488,7 @@ export default function PrivacyPage() {
               <h2 className="text-2xl font-bold text-text-main mb-4">11. Children's Privacy</h2>
 
               <p className="text-text-muted leading-relaxed">
-                AlgorithmLens is not intended for children under 13 years old. We do not knowingly collect personal information from children under 13. If we become aware that we have collected personal information from a child under 13, we will delete such information and terminate the child's account. If you believe we have collected information from a child under 13, please contact us immediately at legal@algorithmlens.com.
+                AlgorithmLens is not intended for children under 13 years old. We do not knowingly collect personal information from children under 13. If we become aware that we have collected personal information from a child under 13, we will delete such information and terminate the child's account. If you believe we have collected information from a child under 13, please contact us immediately through the AlgorithmLens website.
               </p>
             </section>
 
@@ -541,30 +541,10 @@ export default function PrivacyPage() {
                 If you have any questions about this Privacy Policy or our privacy practices, please contact us:
               </p>
 
-              <div className="bg-gray-50 rounded-xl p-5 border border-border-light space-y-3">
-                <div className="flex items-start gap-3">
-                  <Mail size={18} className="text-primary-blue flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-semibold text-text-main">Privacy & Legal Inquiries</p>
-                    <p className="text-text-muted text-sm">
-                      <a href="mailto:legal@algorithmlens.com" className="text-primary-blue hover:underline">
-                        legal@algorithmlens.com
-                      </a>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <Mail size={18} className="text-primary-blue flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-semibold text-text-main">General Support</p>
-                    <p className="text-text-muted text-sm">
-                      <a href="mailto:support@algorithmlens.com" className="text-primary-blue hover:underline">
-                        support@algorithmlens.com
-                      </a>
-                    </p>
-                  </div>
-                </div>
+              <div className="bg-gray-50 rounded-xl p-5 border border-border-light">
+                <p className="text-text-muted text-sm">
+                  For privacy, legal, or general support inquiries, please contact us through the AlgorithmLens website.
+                </p>
               </div>
 
               <p className="text-text-muted leading-relaxed mt-4 text-sm">

@@ -309,13 +309,7 @@ def analyze_posts_batch(posts: List[Dict[str, Any]]) -> Optional[List[Dict[str, 
             post_count=len(posts_for_analysis)
         )
 
-        # DEBUG: Log what we're sending to Gemini (with safe encoding for Windows console)
-        print(f"[Gemini] Sending {len(posts_for_analysis)} posts for analysis:")
-        for p in posts_for_analysis:
-            # Encode to ASCII with replacement to avoid Windows console encoding errors
-            safe_creator = (p['creator'] or '').encode('ascii', 'replace').decode('ascii')
-            safe_text = (p['text'][:80] if p['text'] else '').encode('ascii', 'replace').decode('ascii')
-            print(f"  [{p['index']}] @{safe_creator}: {safe_text}...")
+        logger.debug(f"Sending {len(posts_for_analysis)} posts to Gemini for analysis")
 
         # Call Gemini with retry logic for transient errors
         # Retry with exponential backoff: 1s, 2s, 4s (3 attempts total)
@@ -376,8 +370,7 @@ def analyze_posts_batch(posts: List[Dict[str, Any]]) -> Optional[List[Dict[str, 
         # Parse response
         raw_response_text = response.text.strip()
 
-        # DEBUG: Log raw Gemini response
-        print(f"[Gemini] Raw response (first 500 chars): {raw_response_text[:500]}")
+        logger.debug(f"Gemini raw response (first 500 chars): {raw_response_text[:500]}")
 
         # Extract JSON robustly (handles code blocks, preamble, etc.)
         json_text = _extract_json_from_response(raw_response_text)

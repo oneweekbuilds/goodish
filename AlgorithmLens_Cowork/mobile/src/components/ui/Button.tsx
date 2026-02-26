@@ -5,9 +5,11 @@ import {
   ViewStyle,
   TextStyle,
   ActivityIndicator,
+  StyleSheet,
 } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, TYPOGRAPHY, RADIUS } from '../../lib/theme';
+import { flattenStyle } from '../../lib/styles';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -22,6 +24,7 @@ interface ButtonProps {
   icon?: ReactNode;
   style?: ViewStyle;
   accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 const ButtonComponent: React.FC<ButtonProps> = ({
@@ -34,6 +37,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   icon,
   style,
   accessibilityLabel,
+  accessibilityHint,
 }) => {
   const { colors } = useTheme();
 
@@ -148,9 +152,10 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       onPress={onPress}
       disabled={disabled || loading}
       accessibilityLabel={accessibilityLabel || title}
+      accessibilityHint={accessibilityHint}
       accessibilityRole="button"
       accessibilityState={{disabled: disabled || loading}}
-      style={({ pressed }) => [
+      style={({ pressed }) => flattenStyle([
         {
           borderRadius: RADIUS.md,
           justifyContent: 'center',
@@ -161,7 +166,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
         sizeStyles.container,
         variantStyles.container,
         style,
-      ]}
+      ])}
     >
       {({ pressed }) => (
         <>
@@ -174,10 +179,10 @@ const ButtonComponent: React.FC<ButtonProps> = ({
             <>
               {icon && <Text style={{ marginRight: SPACING.xs }}>{icon}</Text>}
               <Text
-                style={[
+                style={flattenStyle([
                   sizeStyles.text,
                   variantStyles.text,
-                ]}
+                ])}
               >
                 {title}
               </Text>

@@ -129,10 +129,10 @@ export const LIGHT_COLORS = {
   // ── Chart Palette ──
   chartPalette: ['#2563EB', '#10B981', '#7C8DB5', '#B8860B', '#8B7BA8', '#5B7FA6'] as readonly string[],
 
-  // ── Chart: Tone Tab ──
-  tonePositive: '#93C5B8',
-  toneNeutral: '#CBD5E1',
-  toneNegative: '#A3B1C6',
+  // ── Chart: Tone Tab ── (CT-001: increased hue separation for readability)
+  tonePositive: '#93C5A8',   // muted sage-green
+  toneNeutral: '#C5C0B8',    // warm gray
+  toneNegative: '#A3B1C6',   // muted slate-blue (unchanged)
 
   // ── Chart: Ads Tab ──
   adsNotAds: '#94A3B8',
@@ -147,10 +147,10 @@ export const LIGHT_COLORS = {
   barLightest: '#93C5FD',
   stackedBarTrack: '#F1F5F9',
 
-  // ── Ideology ──
-  ideologyLeft: '#7C9CBF',
+  // ── Ideology ── (CT-002: increased saturation for left/right)
+  ideologyLeft: '#6B8FC4',
   ideologyCenter: '#94A3B8',
-  ideologyRight: '#B8A394',
+  ideologyRight: '#C4A088',
 
   // ── Category Icons ──
   iconAds: '#F59E0B',
@@ -409,9 +409,9 @@ export const LIGHT_SHADOWS = {
   soft: {
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 1,
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 2,
   },
   md: {
     shadowColor: '#0F172A',
@@ -423,9 +423,9 @@ export const LIGHT_SHADOWS = {
   card: {
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.04,
-    shadowRadius: 16,
-    elevation: 2,
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 3,
   },
   lg: {
     shadowColor: '#0F172A',
@@ -635,10 +635,10 @@ export const TYPOGRAPHY = {
     textTransform: 'uppercase' as const,
   },
   bigNumber: {
-    fontSize: RFValue(40),
+    fontSize: RFValue(32),
     fontWeight: '700' as const,
-    lineHeight: RFValue(48),
-    letterSpacing: -1.2,
+    lineHeight: RFValue(40),
+    letterSpacing: -1.0,
   },
   scoreLarge: {
     fontSize: RFValue(32),
@@ -705,16 +705,17 @@ export const RADIUS = {
 
 export const PLATFORMS = {
   instagram: { name: 'Instagram', color: '#E4405F', icon: 'instagram' },
-  twitter: { name: 'Twitter / X', color: '#1DA1F2', icon: 'twitter' },
-  youtube: { name: 'YouTube', color: '#FF0000', icon: 'youtube' },
-  tiktok: { name: 'TikTok', color: '#000000', icon: 'music' },
+  twitter: { name: 'X', color: '#000000', icon: 'twitter' },
+  youtube: { name: 'YouTube', color: '#D32F2F', icon: 'youtube' },
+  // O-4 FIX: Use music-2 icon which is slightly more recognizable for TikTok
+  tiktok: { name: 'TikTok', color: '#000000', icon: 'music-2' },
   facebook: { name: 'Facebook', color: '#1877F2', icon: 'facebook' },
   reddit: { name: 'Reddit', color: '#FF4500', icon: 'message-circle' },
 } as const;
 
 export const DARK_PLATFORMS = {
   ...PLATFORMS,
-  tiktok: { name: 'TikTok', color: '#FFFFFF', icon: 'music' },
+  tiktok: { name: 'TikTok', color: '#FFFFFF', icon: 'music-2' },
 } as const;
 
 // ─── Utility: Color with opacity ─────────────────────────
@@ -722,9 +723,9 @@ export const DARK_PLATFORMS = {
 export function withOpacity(hex: string, opacity: number): string {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   if (result) {
-    const r = parseInt(result[1], 16);
-    const g = parseInt(result[2], 16);
-    const b = parseInt(result[3], 16);
+    const r = parseInt(result[1] ?? '0', 16);
+    const g = parseInt(result[2] ?? '0', 16);
+    const b = parseInt(result[3] ?? '0', 16);
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   }
   return hex;

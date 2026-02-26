@@ -17,6 +17,7 @@
  */
 
 import React, { useEffect, useCallback, useRef } from 'react';
+import Constants from 'expo-constants';
 
 // Cleanup delay for broadcast session (ms)
 const BROADCAST_CLEANUP_DELAY_MS = 2000;
@@ -32,12 +33,17 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft, Radio, Shield } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
+import { triggerNotificationWarning, triggerImpactMedium } from '../../src/lib/haptics';
 import { useTheme } from '../../src/context/ThemeContext';
 import { SPACING, TYPOGRAPHY, RADIUS, PLATFORMS } from '../../src/lib/theme';
+import { MIN_FRAMES_REQUIRED, MIN_SCAN_DURATION_SECS } from '../../src/config/thresholds';
 import { useBroadcast } from '../../src/hooks/useBroadcast';
 import { BroadcastOverlay } from '../../src/components/broadcast/BroadcastOverlay';
 import { BroadcastPickerButton } from '../../src/components/broadcast/BroadcastPickerButton';
+import {
+  NativeBroadcastPicker,
+  triggerBroadcastPicker,
+} from '../../src/components/broadcast/NativeBroadcastPicker';
 import { PLATFORM_BROADCAST_CONFIGS } from '../../src/types/broadcast';
 import type { SupportedPlatform } from '../../src/types/broadcast';
 import { storeAnalysisData } from '../../src/lib/analysis/analysisDataStore';
@@ -50,6 +56,18 @@ export default function BroadcastScreen() {
   }>();
   const { colors, shadows } = useTheme();
   const broadcast = useBroadcast();
+
+  // Safety guard: If running in Expo Go, redirect back immediately.
+  // ReplayKit requires native modules only available in development builds.
+  useEffect(() => {
+    if (Constants.appOwnership === 'expo') {
+      Alert.alert(
+        'Development Build Required',
+        'Screen Capture requires the AlgorithmLens development build. Use Quick Scan instead.',
+        [{ text: 'OK', onPress: () => router.replace('/(tabs)/') }]
+      );
+    }
+  }, []);
 
   // Detect if this screen was launched from an iOS Shortcut
   const isFromShortcut = source === 'shortcut';
@@ -137,21 +155,42 @@ export default function BroadcastScreen() {
   }, [broadcast.isRecording]);
 
   const handleBackDuringRecording = useCallback(() => {
-    Alert.alert(
-      'Recording in progress',
-      'Would you like to stop the broadcast and go back?',
-      [
-        { text: 'Keep Recording', style: 'cancel' },
-        {
-          text: 'Stop & Go Back',
-          style: 'destructive',
-          onPress: async () => {
-            await broadcast.cancelSession();
-            router.back();
+    const framesMet = broadcast.frameCount >= MIN_FRAMES_REQUIRED;
+    const timeMet = broadcast.elapsedSeconds >= MIN_SCAN_DURATION_SECS;
+
+    if (!framesMet || !timeMet) {
+      Alert.alert(
+        "Your scan doesn't have enough data yet",
+        `Scans need at least ${MIN_FRAMES_REQUIRED} frames and ${Math.floor(MIN_SCAN_DURATION_SECS / 60)} minute of recording for accurate analysis. Keep recording?`,
+        [
+          { text: 'Keep Recording', style: 'cancel' },
+          {
+            text: 'Discard & Exit',
+            style: 'destructive',
+            onPress: async () => {
+              await broadcast.cancelSession();
+              router.back();
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+    } else {
+      Alert.alert(
+        'Recording in progress',
+        'Would you like to stop the broadcast and go back?',
+        [
+          { text: 'Keep Recording', style: 'cancel' },
+          {
+            text: 'Stop & Go Back',
+            style: 'destructive',
+            onPress: async () => {
+              await broadcast.cancelSession();
+              router.back();
+            },
+          },
+        ]
+      );
+    }
   }, [broadcast]);
 
   const handleBack = useCallback(() => {
@@ -176,24 +215,50 @@ export default function BroadcastScreen() {
   }, [broadcast, platformKey, platformName]);
 
   const handleStop = useCallback(async () => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    Alert.alert(
-      'Stop recording?',
-      `This will end the broadcast session. ${broadcast.frameCount} frames have been captured so far.`,
-      [
-        { text: 'Keep Recording', style: 'cancel' },
-        {
-          text: 'Stop Recording',
-          onPress: async () => {
-            await broadcast.stopSession();
+    const framesMet = broadcast.frameCount >= MIN_FRAMES_REQUIRED;
+    const timeMet = broadcast.elapsedSeconds >= MIN_SCAN_DURATION_SECS;
+
+    if (!framesMet || !timeMet) {
+      // Thresholds not met — warn user
+      triggerNotificationWarning();
+      const needs: string[] = [];
+      if (!framesMet) needs.push(`${MIN_FRAMES_REQUIRED - broadcast.frameCount} more frames`);
+      if (!timeMet) needs.push(`${MIN_SCAN_DURATION_SECS - broadcast.elapsedSeconds}s more recording time`);
+
+      Alert.alert(
+        "Your scan doesn't have enough data yet",
+        `Need ${needs.join(' and ')} for accurate analysis. Keep recording?`,
+        [
+          { text: 'Keep Recording', style: 'cancel' },
+          {
+            text: 'Stop Anyway',
+            style: 'destructive',
+            onPress: async () => {
+              await broadcast.stopSession();
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+    } else {
+      triggerNotificationWarning();
+      Alert.alert(
+        'Stop recording?',
+        `This will end the broadcast session. ${broadcast.frameCount} frames have been captured so far.`,
+        [
+          { text: 'Keep Recording', style: 'cancel' },
+          {
+            text: 'Stop Recording',
+            onPress: async () => {
+              await broadcast.stopSession();
+            },
+          },
+        ]
+      );
+    }
   }, [broadcast]);
 
   const handleViewResults = useCallback(async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    triggerImpactMedium();
 
     try {
       // Collect captured frames for the analysis pipeline
@@ -282,6 +347,42 @@ export default function BroadcastScreen() {
     router.back();
   }, [broadcast]);
 
+  // C4 FIX: Android screen recording (MediaProjection API) is not yet implemented.
+  // Show a friendly message and redirect users to Precision Mode instead.
+  if (Platform.OS === 'android') {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: SPACING.xl }}>
+          <Radio size={40} color={colors.primaryBlue} strokeWidth={1.5} />
+          <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain, textAlign: 'center', marginTop: SPACING.lg, marginBottom: SPACING.md }}>
+            Coming to Android Soon
+          </Text>
+          <Text style={{ ...TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center', marginBottom: SPACING.xl, lineHeight: 22 }}>
+            Screen recording is coming to Android soon. The iOS version is available now.{'\n\n'}In the meantime, you can use Precision Mode for text-based feed analysis.
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              router.back();
+            }}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Go back and use Precision Mode"
+            style={{
+              backgroundColor: colors.primaryBlue,
+              borderRadius: RADIUS.md,
+              paddingVertical: 12,
+              paddingHorizontal: SPACING.xl,
+            }}
+          >
+            <Text style={{ ...TYPOGRAPHY.buttonMd, color: colors.textInverse }}>
+              Use Precision Mode
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   // Check broadcast availability
   if (!broadcast.isAvailable) {
     return (
@@ -291,7 +392,7 @@ export default function BroadcastScreen() {
             Broadcast not available
           </Text>
           <Text style={{ ...TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center', marginBottom: SPACING.xl }}>
-            Screen broadcast requires a development build with native modules. It is not available in Expo Go. Use Precision Mode to scan your feed instead.
+            Screen broadcast requires iOS 12+ and the AlgorithmLens development build. Please ensure you're running the app via a development build (not Expo Go). Use Quick Scan to analyze your feed in the meantime.
           </Text>
           <TouchableOpacity
             onPress={() => router.back()}
@@ -407,13 +508,24 @@ export default function BroadcastScreen() {
           </View>
         )}
 
+        {/* Native broadcast picker — invisible, hosts RPSystemBroadcastPickerView */}
+        {Platform.OS === 'ios' && <NativeBroadcastPicker />}
+
         {/* Broadcast picker button — shown before recording starts */}
         {(broadcast.status === 'INITIALIZING' ||
           broadcast.status === 'AWAITING_BROADCAST_START') && (
           <View style={{ marginBottom: SPACING.xl }}>
             <BroadcastPickerButton
               disabled={broadcast.status === 'INITIALIZING'}
-              onPress={Platform.OS === 'android' ? () => broadcast.requestScreenCapture() : undefined}
+              onPress={() => {
+                if (Platform.OS === 'ios') {
+                  // iOS: Trigger the native RPSystemBroadcastPickerView
+                  triggerBroadcastPicker();
+                } else if (Platform.OS === 'android') {
+                  // Android: Request MediaProjection permission
+                  broadcast.requestScreenCapture();
+                }
+              }}
             />
           </View>
         )}
@@ -428,8 +540,10 @@ export default function BroadcastScreen() {
             platform={platformKey}
             frameCount={broadcast.frameCount}
             elapsedTime={broadcast.elapsedTime}
+            elapsedSeconds={broadcast.elapsedSeconds}
             storageUsed={broadcast.storageUsed}
             errorMessage={broadcast.session?.error_message}
+            canSave={broadcast.frameCount >= MIN_FRAMES_REQUIRED && broadcast.elapsedSeconds >= MIN_SCAN_DURATION_SECS}
             onStop={handleStop}
             onCancel={handleCancel}
             onViewResults={handleViewResults}
@@ -460,7 +574,7 @@ export default function BroadcastScreen() {
               How it works
             </Text>
             {[
-              Platform.OS === 'android'
+              Platform.OS !== 'web' && Platform.OS !== 'windows' && Platform.OS !== 'macos'
                 ? 'Tap "Start Screen Capture" and grant permission'
                 : 'Tap "Start Screen Recording" above',
               `Open ${platformName} and scroll your feed normally`,

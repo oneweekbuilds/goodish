@@ -170,16 +170,15 @@ const PoliticsTab = ({
     return {
       hasData: true,
       segments: [
-        { label: 'Left', percentage: leftPercent, count: leftCount, color: '#7C9CBF' },
+        { label: 'Left', percentage: leftPercent, count: leftCount, color: '#2563EB' },
         { label: 'Center', percentage: neutralPercent, count: neutralCount, color: '#94A3B8' },
-        { label: 'Right', percentage: rightPercent, count: rightCount, color: '#B8A394' },
+        { label: 'Right', percentage: rightPercent, count: rightCount, color: '#10B981' },
       ],
       knownAlignmentTotal,
     };
   };
 
   const ideologicalDistribution = computeIdeologicalDistribution();
-  const [showIdeology, setShowIdeology] = useState(false);
 
   // ===========================================
   // BUILD INSIGHT HERO
@@ -200,18 +199,21 @@ const PoliticsTab = ({
       {/* Insight Hero */}
       <InsightHero {...hero} />
 
-      {/* Trends CTA */}
+      {/* Trends CTA or Panel */}
       <TrendsCTA
         onClick={() => onOpenTrends({ tab: 'politics', placement: 'hero_trends' })}
         isPlusUser={isPlusUser}
+        tabName="politics"
+        scanCount={scans.length}
       />
 
-      {/* Trends Panel (Plus users only) */}
-      {showTrendsPanel && (
+      {/* Trends Panel (auto-show for Plus users or when manually opened) */}
+      {(isPlusUser || showTrendsPanel) && (
         <TrendsPanel
           scans={scans}
           scanDetails={scanDetails}
           onClose={onCloseTrendsPanel}
+          embedded={isPlusUser}
         />
       )}
 
@@ -241,55 +243,55 @@ const PoliticsTab = ({
         <SectionHeader>Top political source</SectionHeader>
 
         {topPoliticalSource.hasData ? (
-          <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-3">
-            <div className="text-2xl font-semibold text-slate-900">
-              @{topPoliticalSource.handle}
+          <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-4">
+            <div>
+              <div className="text-2xl font-semibold text-slate-900">
+                @{topPoliticalSource.handle}
+              </div>
+              <div className="text-sm text-slate-700 mt-2">
+                Accounts for {topPoliticalSource.percentOfPolitical}% of political posts
+              </div>
+              <div className="text-xs text-slate-500 mt-1">
+                {topPoliticalSource.politicalPostsFromSource} political posts
+              </div>
             </div>
-            <div className="text-sm text-slate-700">
-              Accounts for {topPoliticalSource.percentOfPolitical}% of political posts
+            
+            {/* Progress bar showing share of political posts */}
+            <div className="w-full">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs font-medium text-slate-600">Share of political posts</span>
+                <span className="text-xs font-medium text-slate-600">{topPoliticalSource.percentOfPolitical}%</span>
+              </div>
+              <div className="w-full bg-slate-100 rounded-full h-2">
+                <div className="bg-[#2563EB] h-2 rounded-full" style={{ width: `${topPoliticalSource.percentOfPolitical}%` }}></div>
+              </div>
             </div>
-            <div className="text-xs text-slate-500">
-              {topPoliticalSource.politicalPostsFromSource} political posts
-            </div>
+            
             <DenominatorLine text={`Percent of political posts (${politicalPostsCount} political posts)`} />
           </div>
         ) : (
           <div className="rounded-xl p-6 text-center" style={{ background: "#FAFBFE", border: "1px solid rgba(37, 99, 235, 0.06)" }}>
-            <p className="text-sm text-slate-400 italic">
-              Not enough political posts in this window.
+            <p className="text-sm text-slate-500">
+              Not enough political posts yet to show this breakdown. More scans will fill this in.
             </p>
           </div>
         )}
       </section>
-
-      {/* Section 4.3 - Ideological Distribution (collapsible) */}
+      {/* Section 4.3 - Ideological Distribution */}
       <section>
-        <button
-          onClick={() => setShowIdeology(!showIdeology)}
-          className="w-full flex items-center justify-between py-3 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue/60 focus-visible:ring-offset-2 rounded"
-          aria-expanded={showIdeology}
-        >
-          <span>Show ideological breakdown</span>
-          <span className="text-xs text-slate-400">{showIdeology ? 'Show less' : 'Show more'}</span>
-        </button>
+        <SectionHeader>Ideological distribution</SectionHeader>
 
-        {showIdeology && (
-          <div className="mt-4">
-            <SectionHeader>Ideological distribution</SectionHeader>
-
-            {ideologicalDistribution.hasData ? (
-              <div className="space-y-3">
-                <CompositionBar100WithCounts segments={ideologicalDistribution.segments} />
-                <p className="text-xs text-slate-500 italic">Each segment shows what percentage of political posts lean in that direction. Categorized based on stance keywords found in post text. This is approximate and may not capture nuance.</p>
-                <DenominatorLine text={`Percent of political posts in the selected date range (${ideologicalDistribution.knownAlignmentTotal} political posts)`} />
-              </div>
-            ) : (
-              <div className="rounded-xl p-6 text-center" style={{ background: "#FAFBFE", border: "1px solid rgba(37, 99, 235, 0.06)" }}>
-                <p className="text-sm text-slate-400 italic">
-                  Political content volume was too low to show a reliable distribution.
-                </p>
-              </div>
-            )}
+        {ideologicalDistribution.hasData ? (
+          <div className="space-y-3">
+            <CompositionBar100WithCounts segments={ideologicalDistribution.segments} />
+            <p className="text-xs text-slate-500 italic">Each segment shows what percentage of political posts lean in that direction. Categorized based on stance keywords found in post text. This is approximate and may not capture nuance.</p>
+            <DenominatorLine text={`Percent of political posts in the selected date range (${ideologicalDistribution.knownAlignmentTotal} political posts)`} />
+          </div>
+        ) : (
+          <div className="rounded-xl p-6 text-center" style={{ background: "#FAFBFE", border: "1px solid rgba(37, 99, 235, 0.06)" }}>
+            <p className="text-sm text-slate-500">
+              Not enough political posts yet for a reliable distribution. This will populate as you scan more.
+            </p>
           </div>
         )}
       </section>

@@ -4,12 +4,15 @@ import {
   Text,
   Animated,
   TouchableOpacity,
+  Platform,
+  StyleSheet,
+  Linking,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronDown } from 'lucide-react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from '../../context/ThemeContext';
-import { RADIUS, SPACING, COLORS } from '../../lib/theme';
+import { RADIUS, SPACING, COLORS, TYPOGRAPHY, withOpacity } from '../../lib/theme';
 
 interface HowWeMeasureData {
   what?: string | null;
@@ -29,6 +32,24 @@ interface InsightHeroProps {
   /** Methodology disclosure section */
   howWeMeasure?: HowWeMeasureData | null;
 }
+
+// Web-safe gradient wrapper for LinearGradient
+const GradientWrapper = Platform.OS === 'web'
+  ? ({ colors: gradientColors, start, end, style, children, ...props }: any) => {
+      const flatStyle = style ? (Array.isArray(style) ? Object.assign({}, ...style) : style) : {};
+      return (
+        <View
+          style={{
+            ...flatStyle,
+            background: `linear-gradient(135deg, ${gradientColors[0]} 0%, ${gradientColors[1]} 100%)`,
+          }}
+          {...props}
+        >
+          {children}
+        </View>
+      );
+    }
+  : LinearGradient;
 
 const InsightHeroComponent: React.FC<InsightHeroProps> = ({
   title,
@@ -69,16 +90,13 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
     }).start();
   }, [expanded]);
 
-  const hexToRgb = (hex: string): string => {
-    if (!hex || typeof hex !== 'string') return 'rgba(37, 99, 235, 0.08)';
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    if (result) {
-      const r = parseInt(result[1], 16);
-      const g = parseInt(result[2], 16);
-      const b = parseInt(result[3], 16);
-      return `rgba(${r}, ${g}, ${b}, 0.08)`;
+  // Use theme utility for accent-based background tint
+  const accentBg = (hex: string): string => {
+    try {
+      return withOpacity(hex, 0.08);
+    } catch {
+      return 'rgba(37, 99, 235, 0.08)';
     }
-    return 'rgba(37, 99, 235, 0.08)';
   };
 
   return (
@@ -92,13 +110,13 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
         accessibilityHint={whyCare || meta ? 'Tap to expand for more context' : undefined}
         accessibilityState={{expanded}}
       >
-        <LinearGradient
-          colors={[hexToRgb(accent), colors.bgCard]}
+        <GradientWrapper
+          colors={[accentBg(accent), colors.bgCard]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{
             borderRadius: RADIUS.lg,
-            padding: SPACING.lg,
+            padding: SPACING.xl,
             marginBottom: SPACING.md,
             borderWidth: 1,
             borderColor: colors.borderSoft,
@@ -118,16 +136,14 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
             }}
           />
 
-          <View style={{ paddingLeft: SPACING.sm }}>
+          <View style={{ paddingLeft: SPACING.md }}>
             <Text
               style={{
-                fontSize: RFValue(18),
-                fontWeight: '700',
+                ...TYPOGRAPHY.h1,
                 color: colors.textMain,
-                marginBottom: SPACING.sm,
-                letterSpacing: -0.3,
+                marginBottom: SPACING.md,
               }}
-              numberOfLines={expanded ? undefined : 2}
+              numberOfLines={expanded ? undefined : 3}
               accessibilityRole="header"
             >
               {title}
@@ -135,11 +151,10 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
 
             <Text
               style={{
-                fontSize: RFValue(14),
+                ...TYPOGRAPHY.bodySmall,
                 color: colors.textMuted,
-                lineHeight: RFValue(20),
               }}
-              numberOfLines={expanded ? undefined : 2}
+              numberOfLines={expanded ? undefined : 3}
             >
               {meaning}
             </Text>
@@ -150,9 +165,8 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
                 {whyCare && (
                   <Text
                     style={{
-                      fontSize: RFValue(14),
+                      ...TYPOGRAPHY.bodySmall,
                       color: colors.textSecondary,
-                      lineHeight: RFValue(20),
                       marginTop: SPACING.sm,
                     }}
                   >
@@ -162,8 +176,7 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
                 {meta && (
                   <Text
                     style={{
-                      fontSize: RFValue(14),
-                      fontWeight: '500',
+                      ...TYPOGRAPHY.label,
                       color: colors.textSecondary,
                       marginTop: SPACING.sm,
                     }}
@@ -182,41 +195,51 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
                   alignItems: 'center',
                   gap: SPACING.sm,
                   marginTop: SPACING.sm,
-                  backgroundColor: accent,
+                  backgroundColor: 'transparent',
+                  borderWidth: 1,
+                  borderColor: accent,
                   alignSelf: 'flex-start',
                   paddingHorizontal: SPACING.md,
-                  paddingVertical: SPACING.sm,
-                  borderRadius: RADIUS.md,
+                  paddingVertical: SPACING.xs,
+                  borderRadius: RADIUS.full,
                 }}
               >
-                <Text style={{ fontSize: RFValue(14), color: colors.white, fontWeight: '600' }}>
+                <Text style={{ ...TYPOGRAPHY.labelBold, color: accent }}>
                   Tap for more context
                 </Text>
                 <Animated.View
-                  style={{
-                    transform: [
-                      {
-                        rotate: chevronRotateAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: ['0deg', '180deg'],
-                        }),
-                      },
-                    ],
-                  }}
+                  style={Platform.OS === 'web'
+                    ? {
+                        transform: `rotate(${chevronRotateAnim.__getValue ? chevronRotateAnim.__getValue() : 0}deg)`,
+                      }
+                    : {
+                        transform: [
+                          {
+                            rotate: chevronRotateAnim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: ['0deg', '180deg'],
+                            }),
+                          },
+                        ],
+                      }
+                  }
                 >
-                  <ChevronDown size={14} color={colors.white} />
+                  <ChevronDown size={14} color={accent} />
                 </Animated.View>
               </View>
             )}
           </View>
-        </LinearGradient>
+        </GradientWrapper>
       </TouchableOpacity>
 
-      {/* Counterfactual — collapsible "What this might also mean" */}
-      {counterfactual && (
+      {/* About this analysis — combined counterfactual + methodology */}
+      {(counterfactual || (howWeMeasure && (howWeMeasure.what || howWeMeasure.how || howWeMeasure.limitations))) && (
         <TouchableOpacity
           activeOpacity={0.8}
-          onPress={() => setShowCounterfactual(!showCounterfactual)}
+          onPress={() => {
+            setShowCounterfactual(!showCounterfactual);
+            setShowHowWeMeasure(!showCounterfactual);
+          }}
           style={{
             marginTop: SPACING.sm,
             borderRadius: RADIUS.md,
@@ -228,8 +251,8 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
           }}
           accessible={true}
           accessibilityRole="button"
-          accessibilityLabel="What this might also mean"
-          accessibilityHint="Tap to expand alternative interpretations"
+          accessibilityLabel="About this analysis"
+          accessibilityHint="Tap to see context and methodology"
         >
           <View style={{
             flexDirection: 'row',
@@ -239,106 +262,67 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
             paddingVertical: SPACING.md,
           }}>
             <Text style={{
-              fontSize: RFValue(12),
-              fontWeight: '600',
+              ...TYPOGRAPHY.label,
               color: colors.textMuted,
-              letterSpacing: 0.3,
             }}>
-              What this might also mean
+              About this analysis
             </Text>
             <ChevronDown
               size={14}
               color={colors.textSecondary}
               strokeWidth={2}
-              style={{ transform: [{ rotate: showCounterfactual ? '180deg' : '0deg' }] }}
+              style={{
+                transform: [{ rotate: showCounterfactual ? '180deg' : '0deg' }],
+              }}
             />
           </View>
           {showCounterfactual && (
-            <View style={{ paddingHorizontal: SPACING.lg, paddingBottom: SPACING.md }}>
-              <Text style={{
-                fontSize: RFValue(12),
-                color: colors.textSecondary,
-                lineHeight: RFValue(18),
-                fontStyle: 'italic',
-              }}>
-                {counterfactual}
-              </Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      )}
-
-      {/* How we measure — collapsible methodology disclosure */}
-      {howWeMeasure && (howWeMeasure.what || howWeMeasure.how || howWeMeasure.limitations) && (
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => setShowHowWeMeasure(!showHowWeMeasure)}
-          style={{
-            marginTop: SPACING.sm,
-            borderRadius: RADIUS.md,
-            borderWidth: 1,
-            borderColor: colors.borderSoft,
-            backgroundColor: colors.bgCardGradientEnd,
-            overflow: 'hidden',
-            minHeight: 44,
-          }}
-          accessible={true}
-          accessibilityRole="button"
-          accessibilityLabel="How we measure"
-          accessibilityHint="Tap to see methodology details"
-        >
-          <View style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            paddingHorizontal: SPACING.lg,
-            paddingVertical: SPACING.md,
-          }}>
-            <Text style={{
-              fontSize: RFValue(11),
-              fontWeight: '600',
-              color: colors.textMuted,
-              letterSpacing: 0.88,
-              textTransform: 'uppercase',
-            }}>
-              How we measure
-            </Text>
-            <ChevronDown
-              size={14}
-              color={colors.textSecondary}
-              strokeWidth={2}
-              style={{ transform: [{ rotate: showHowWeMeasure ? '180deg' : '0deg' }] }}
-            />
-          </View>
-          {showHowWeMeasure && (
-            <View style={{ paddingHorizontal: SPACING.lg, paddingBottom: SPACING.md, gap: SPACING.sm }}>
-              {howWeMeasure.what && (
-                <Text style={{ fontSize: RFValue(12), lineHeight: RFValue(18), color: colors.textMuted }}>
-                  <Text style={{ fontWeight: '600', color: colors.textMain }}>What this measures: </Text>
-                  <Text style={{ color: colors.textMuted }}>{howWeMeasure.what}</Text>
-                </Text>
-              )}
-              {howWeMeasure.how && (
-                <Text style={{ fontSize: RFValue(12), lineHeight: RFValue(18), color: colors.textMuted }}>
-                  <Text style={{ fontWeight: '600', color: colors.textMain }}>How we measure it: </Text>
-                  <Text style={{ color: colors.textMuted }}>{howWeMeasure.how}</Text>
-                </Text>
-              )}
-              {howWeMeasure.limitations && (
-                <Text style={{ fontSize: RFValue(12), lineHeight: RFValue(18), color: colors.textMuted }}>
-                  <Text style={{ fontWeight: '600', color: colors.textMain }}>Limitations: </Text>
-                  <Text style={{ color: colors.textMuted }}>{howWeMeasure.limitations}</Text>
-                </Text>
-              )}
-              {howWeMeasure.learnMoreUrl && (
+            <View style={{ paddingHorizontal: SPACING.lg, paddingBottom: SPACING.md, gap: SPACING.md }}>
+              {counterfactual && (
                 <Text style={{
-                  fontSize: RFValue(12),
-                  color: accent,
-                  fontWeight: '500',
-                  marginTop: SPACING.xxs,
+                  ...TYPOGRAPHY.caption,
+                  color: colors.textSecondary,
+                  fontStyle: 'italic',
                 }}>
-                  Learn more on algorithmlens.com
+                  {counterfactual}
                 </Text>
+              )}
+              {counterfactual && howWeMeasure && (howWeMeasure.what || howWeMeasure.how) && (
+                <View style={{ height: 1, backgroundColor: colors.borderSoft }} />
+              )}
+              {howWeMeasure?.what && (
+                <Text style={{ ...TYPOGRAPHY.caption, color: colors.textMuted }}>
+                  <Text style={{ fontWeight: '600', color: colors.textMain }}>What this measures: </Text>
+                  {howWeMeasure.what}
+                </Text>
+              )}
+              {howWeMeasure?.how && (
+                <Text style={{ ...TYPOGRAPHY.caption, color: colors.textMuted }}>
+                  <Text style={{ fontWeight: '600', color: colors.textMain }}>How we measure it: </Text>
+                  {howWeMeasure.how}
+                </Text>
+              )}
+              {howWeMeasure?.limitations && (
+                <Text style={{ ...TYPOGRAPHY.caption, color: colors.textMuted }}>
+                  <Text style={{ fontWeight: '600', color: colors.textMain }}>Limitations: </Text>
+                  {howWeMeasure.limitations}
+                </Text>
+              )}
+              {howWeMeasure?.learnMoreUrl && (
+                <TouchableOpacity
+                  onPress={() => Linking.openURL(howWeMeasure.learnMoreUrl!)}
+                  activeOpacity={0.7}
+                  accessibilityRole="link"
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Text style={{
+                    ...TYPOGRAPHY.caption,
+                    color: colors.primaryBlue,
+                    fontWeight: '500',
+                  }}>
+                    Learn more
+                  </Text>
+                </TouchableOpacity>
               )}
             </View>
           )}

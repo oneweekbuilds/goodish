@@ -86,13 +86,12 @@ const DashboardPage = () => {
     if (nextTabEl) nextTabEl.focus();
   };
 
-  // Premium gating: wired to real plan tier from auth context
-  const currentTier = getCurrentPlanTier();
-  const isPremiumUser = currentTier === PLAN_TIERS.PLUS;
-  const userTier = isPremiumUser ? 'plus' : 'free';
-
   // Initialize plan tier and demo mode
   const { isDemoMode, planTier, setPlanTier } = useDashboardInitialization({ authReady });
+
+  // Premium gating: use planTier from initialization (respects ?demoPlan=plus)
+  const isPremiumUser = planTier === PLAN_TIERS.PLUS;
+  const userTier = isPremiumUser ? 'plus' : 'free';
 
   // Checkout success state via hook
   const { checkoutSuccess, setCheckoutSuccess } = useCheckoutSync({
@@ -149,9 +148,9 @@ const DashboardPage = () => {
     }
   }, [activeTab]);
 
-  // Reset date preset to valid option for free users
+  // Reset date preset to valid option for non-Plus users
   useEffect(() => {
-    if (userTier === 'free') {
+    if (userTier !== 'plus') {
       const allowedPresets = ['today', '7days', 'all'];
       if (!allowedPresets.includes(datePreset)) {
         handlePresetChange('all');

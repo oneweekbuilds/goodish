@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator, Platform, LogBox } from 'react-native';
 import { Stack, router, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { ThemeProvider, useTheme } from '../src/context/ThemeContext';
@@ -11,12 +12,23 @@ import { initSentry, addBreadcrumb, withSentry } from '../src/lib/sentry';
 // Initialize Sentry before any components render
 initSentry();
 
+// H-14 FIX: Suppress error banners in production and known benign warnings in dev
+if (!__DEV__) {
+  LogBox.ignoreAllLogs(true);
+}
+LogBox.ignoreLogs([
+  'Expected transform functions',
+  'SyntaxError',
+]);
+
+// Keep splash screen visible until auth loading completes
+SplashScreen.preventAutoHideAsync();
+
 function RootLayoutNav() {
   const { user, isLoading, userProfile } = useAuth();
   const { colors, statusBarStyle } = useTheme();
   const pathname = usePathname();
 
-  // Add navigation breadcrumbs for screen transitions
   useEffect(() => {
     if (pathname) {
       addBreadcrumb('navigation', `Screen: ${pathname}`, { route: pathname });
@@ -25,6 +37,7 @@ function RootLayoutNav() {
 
   useEffect(() => {
     if (!isLoading) {
+      SplashScreen.hideAsync();
       if (!user) {
         router.replace('/(auth)/login');
       } else if (!userProfile?.has_completed_onboarding) {
@@ -76,15 +89,70 @@ function RootLayoutNav() {
   );
 }
 
-// L6: Removed TouchableWithoutFeedback keyboard dismiss wrapper
-// (it was intercepting touch events on the WebView scanner)
+// G-2 FIX: Web wrapper constrains app to mobile viewport width
+function WebConstrainedWrapper({ children }: { children: React.ReactNode }) {
+  const { colors } = useTheme();
+
+  if (Platform.OS !== 'web') {
+    return <>{children}</>;
+  }
+
+  return (
+    <View
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        backgroundColor: colors.bgSecondary,
+      }}
+    >
+      <View
+        style={{
+          flex: 1,
+          width: '100%',
+          maxWidth: 428,
+          backgroundColor: colors.bgPage,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 0.12,
+          shadowRadius: 24,
+          overflow: 'hidden' as any,
+        }}
+      >
+        {/* G-5 FIX: Mock iOS status bar for web preview */}
+        <View
+          style={{
+            height: 44,
+            backgroundColor: colors.bgPage,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingHorizontal: 20,
+          }}
+        >
+          <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textMain }}>
+            9:41
+          </Text>
+          <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
+            <View style={{ width: 16, height: 10, borderRadius: 2, borderWidth: 1, borderColor: colors.textMain, justifyContent: 'center', paddingLeft: 1 }}>
+              <View style={{ width: 10, height: 6, backgroundColor: colors.textMain, borderRadius: 1 }} />
+            </View>
+          </View>
+        </View>
+        {children}
+      </View>
+    </View>
+  );
+}
+
 function RootLayout() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
         <AuthProvider>
           <ErrorBoundary>
-            <RootLayoutNav />
+            <WebConstrainedWrapper>
+              <RootLayoutNav />
+            </WebConstrainedWrapper>
           </ErrorBoundary>
         </AuthProvider>
       </ThemeProvider>
@@ -92,5 +160,4 @@ function RootLayout() {
   );
 }
 
-// Wrap root component with Sentry error boundary for native crash reporting
 export default withSentry(RootLayout);

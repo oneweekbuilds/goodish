@@ -2,11 +2,30 @@ import React from 'react';
 import {
   View,
   Text,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
+
+// Web-safe gradient wrapper for LinearGradient
+const GradientWrapper = Platform.OS === 'web'
+  ? ({ colors: gradientColors, start, end, style, children, ...props }: any) => {
+      const flatStyle = style ? (Array.isArray(style) ? Object.assign({}, ...style) : style) : {};
+      return (
+        <View
+          style={{
+            ...flatStyle,
+            background: `linear-gradient(to bottom, ${gradientColors[0]} 0%, ${gradientColors[1]} 100%)`,
+          }}
+          {...props}
+        >
+          {children}
+        </View>
+      );
+    }
+  : LinearGradient;
 
 interface MetricCardProps {
   headline: string;
@@ -27,7 +46,7 @@ const MetricCardComponent: React.FC<MetricCardProps> = ({
   microLine = null,
   contextLine = null,
   denominatorText = '',
-  fallbackText = 'No data',
+  fallbackText = 'This data appears after scanning more content',
   hasData,
   icon,
 }) => {
@@ -35,7 +54,7 @@ const MetricCardComponent: React.FC<MetricCardProps> = ({
   const accessibilityLabel = `${headline}${value ? ': ' + value : ''}${microLine ? '. ' + microLine : ''}${contextLine ? '. ' + contextLine : ''}`;
 
   return (
-    <LinearGradient
+    <GradientWrapper
       colors={[colors.bgCard, colors.bgCardGradientEnd]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
@@ -44,7 +63,7 @@ const MetricCardComponent: React.FC<MetricCardProps> = ({
         padding: SPACING.lg,
         borderWidth: 1,
         borderColor: colors.brandTintBorder,
-        ...shadows.soft,
+        ...shadows.card,
       }}
       accessible={true}
       accessibilityLabel={accessibilityLabel}
@@ -141,7 +160,7 @@ const MetricCardComponent: React.FC<MetricCardProps> = ({
           {fallbackText}
         </Text>
       )}
-    </LinearGradient>
+    </GradientWrapper>
   );
 };
 

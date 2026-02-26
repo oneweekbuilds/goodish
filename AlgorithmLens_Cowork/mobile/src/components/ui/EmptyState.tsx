@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, TYPOGRAPHY, RADIUS } from '../../lib/theme';
 
@@ -114,7 +114,7 @@ const EmptyStateComponent: React.FC<EmptyStateProps> = ({
       {action && secondaryAction ? (
         <View style={styles.actionRow}>
           <TouchableOpacity
-            style={[styles.secondaryButton, { flex: 1 }]}
+            style={Platform.OS === 'web' ? { ...styles.secondaryButton, flex: 1 } : [styles.secondaryButton, { flex: 1 }]}
             onPress={secondaryAction.onPress}
             accessible={true}
             accessibilityLabel={secondaryAction.label}
@@ -124,7 +124,7 @@ const EmptyStateComponent: React.FC<EmptyStateProps> = ({
             <Text style={styles.secondaryButtonText}>{secondaryAction.label}</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.button, { flex: 1 }]}
+            style={Platform.OS === 'web' ? { ...styles.button, flex: 1 } : [styles.button, { flex: 1 }]}
             onPress={action.onPress}
             disabled={action.loading}
             accessible={true}

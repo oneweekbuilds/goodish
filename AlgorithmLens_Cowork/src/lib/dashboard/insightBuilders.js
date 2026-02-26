@@ -30,22 +30,22 @@ export function buildOverviewHero({ sourceConcentration, totalPosts, platformCou
   if (top5 >= 60) {
     return {
       title: `${top5}% of your feed comes from just 5 accounts`,
-      meaning: `That means roughly ${Math.round(top5 / 10)} out of every 10 posts you scroll past are from the same small group. In a 60-minute session, these voices fill about ${Math.round(60 * top5 / 100)} minutes of your attention.`,
-      whyCare: 'This is above the typical range of 40–60%. A small number of creators make up a large portion of what appears in your feed.',
+      meaning: `About 6 in 10 posts you scroll past come from the same small group.`,
+      whyCare: 'Above the typical 40–60% range.',
       meta,
     };
   } else if (top5 >= 40) {
     return {
       title: `Your top 5 sources make up ${top5}% of your feed`,
-      meaning: `Nearly half of what you scroll through comes from a handful of familiar accounts. The rest is spread across many voices.`,
-      whyCare: 'This falls within the typical range (40–60%). You get a mix of familiar sources and new perspectives.',
+      meaning: `Nearly half of what you scroll through comes from a handful of familiar accounts.`,
+      whyCare: 'Within the typical range (40–60%).',
       meta,
     };
   } else {
     return {
       title: `Your feed is spread across many voices (${top5}% from top 5)`,
-      meaning: 'No small group of creators dominates what you see. Your attention is distributed across a wide range of sources.',
-      whyCare: 'This is below the typical range of 40–60%, meaning you encounter more diverse perspectives than most users.',
+      meaning: 'No small group of creators dominates what you see.',
+      whyCare: 'Below the typical range of 40–60%.',
       meta,
     };
   }
@@ -71,29 +71,29 @@ export function buildSourcesHero({ top5Percent, totalPosts, platformCount, hasDa
   if (top5Percent >= 75) {
     return {
       title: `5 accounts shape ${top5Percent}% of everything you see`,
-      meaning: `Three-quarters of your feed came from a small group of accounts. In a typical scroll session, you'd need to pass ${Math.round(75 / 10)} posts from these sources before seeing 3 from anyone else.`,
-      whyCare: 'This is well above typical (40–60%). These accounts made up the majority of what appeared during this scan.',
+      meaning: `Three-quarters of your feed comes from a small group of accounts.`,
+      whyCare: 'Well above typical (40–60%).',
       meta,
     };
   } else if (top5Percent >= 60) {
     return {
       title: `A few recurring voices fill ${top5Percent}% of your feed`,
-      meaning: 'About two-thirds of posts come from your most-shown accounts, leaving limited space for new perspectives.',
-      whyCare: 'This is at the high end of typical (40–60%). These sources appear frequently in your feed.',
+      meaning: 'About two-thirds of posts come from your most-shown accounts.',
+      whyCare: 'At the high end of typical (40–60%).',
       meta,
     };
   } else if (top5Percent >= 40) {
     return {
       title: `Your feed balances familiar and new (${top5Percent}% from top 5)`,
-      meaning: 'Less than half of posts come from your top sources. You regularly encounter content from accounts outside your core group.',
-      whyCare: 'This is within the typical range (40–60%). A healthy balance of familiarity and discovery.',
+      meaning: 'Less than half of posts come from your top sources.',
+      whyCare: 'Within the typical range (40–60%).',
       meta,
     };
   } else {
     return {
       title: `Your feed draws from a wide range of voices (${top5Percent}% from top 5)`,
-      meaning: 'Posts are distributed across many accounts. No small group dominates your attention.',
-      whyCare: 'This is below the typical range (40–60%), meaning more diverse viewpoints reach you than most users see.',
+      meaning: 'Posts are distributed across many accounts.',
+      whyCare: 'Below the typical range (40–60%).',
       meta,
     };
   }
@@ -127,14 +127,11 @@ export function buildAdsHero({ commercialComposition, totalPosts, platformCount 
   const likely = likelySegFallback?.percentage || 0;
   const totalCommercial = labeled + likely;
 
-  // Time calculation for implication
-  const adMinutesIn60 = Math.round(60 * totalCommercial / 100);
-
   if (likely >= 10) {
     return {
       title: `${likely}% of your feed appears promotional but isn't labeled`,
-      meaning: `On top of ${labeled}% labeled ads, another ${likely}% of posts appear promotional but aren't disclosed. That's about ${adMinutesIn60} minutes of commercial content in a 60-minute session.`,
-      whyCare: 'Typical unlabeled promotion is 3–8%. At this level, a meaningful share of what looks like organic content appears to be commercial.',
+      meaning: `On top of ${labeled}% labeled ads, another ${likely}% of posts appear promotional but aren't disclosed.`,
+      whyCare: 'Typical unlabeled promotion is 3–8%.',
       meta,
     };
   }
@@ -142,29 +139,29 @@ export function buildAdsHero({ commercialComposition, totalPosts, platformCount 
   if (totalCommercial >= 40) {
     return {
       title: `${totalCommercial}% of your feed is commercial content`,
-      meaning: `That's about ${adMinutesIn60} minutes of ads and promotions in every hour you scroll. Nearly half of posts in this scan were commercial in nature.`,
-      whyCare: 'This is above the typical range of 15–30%. A large share of what appeared in your feed is commercial in nature.',
+      meaning: `Nearly half of posts in this scan were commercial in nature.`,
+      whyCare: 'Above the typical range of 15–30%.',
       meta,
     };
   } else if (totalCommercial >= 25) {
     return {
       title: `About 1 in 4 posts is commercial content (${totalCommercial}%)`,
-      meaning: `That translates to roughly ${adMinutesIn60} minutes of commercial content per hour of scrolling.`,
-      whyCare: 'This falls at the higher end of typical (15–30%). Enough to meaningfully shape what products and brands feel familiar.',
+      meaning: `About 1 in 4 posts is an ad or promotion.`,
+      whyCare: 'At the higher end of typical (15–30%).',
       meta,
     };
   } else if (totalCommercial >= 10) {
     return {
       title: `${totalCommercial}% of your feed is commercial content`,
-      meaning: `About 1 in ${Math.round(100 / totalCommercial)} posts is an ad or promotion. That's roughly ${adMinutesIn60} minutes per hour of scrolling.`,
-      whyCare: 'This is within the typical range (15–30%). A regular but not dominant presence of commercial content.',
+      meaning: `About 1 in ${Math.round(100 / totalCommercial)} posts is an ad or promotion.`,
+      whyCare: 'Within the typical range (15–30%).',
       meta,
     };
   } else {
     return {
       title: `Commercial content is minimal in your feed (${totalCommercial}%)`,
-      meaning: 'Less than 1 in 10 posts is selling something. Most of your feed is non-commercial content.',
-      whyCare: 'This is below the typical range of 15–30%, leaving more space for personal expression and genuine connection.',
+      meaning: 'Less than 1 in 10 posts is selling something.',
+      whyCare: 'Below the typical range of 15–30%.',
       meta,
     };
   }
@@ -188,27 +185,26 @@ export function buildPoliticsHero({ politicalShare, totalPosts, platformCount })
   }
 
   const percent = politicalShare.politicalPercent;
-  const minutesIn60 = Math.round(60 * percent / 100);
 
   if (percent >= 25) {
     return {
       title: `1 in ${Math.round(100 / percent)} posts in your feed is political (${percent}%)`,
-      meaning: `In a 60-minute scroll session, that's roughly ${minutesIn60} minutes of political content at this level.`,
-      whyCare: 'This is above the typical range of 8–20%. At this level, conflict-focused content made up a substantial part of what appeared.',
+      meaning: `About 1 in ${Math.round(100 / percent)} posts is political.`,
+      whyCare: 'Above the typical range of 8–20%.',
       meta,
     };
   } else if (percent >= 10) {
     return {
       title: `${percent}% of your feed carries political content`,
-      meaning: `About 1 in ${Math.round(100 / percent)} posts is political. That's roughly ${minutesIn60} minutes per hour of scrolling.`,
-      whyCare: 'This falls within the typical range (8–20%). Regular exposure to political content keeps governance and social issues present in your thinking.',
+      meaning: `About 1 in ${Math.round(100 / percent)} posts is political.`,
+      whyCare: 'Within the typical range (8–20%).',
       meta,
     };
   } else {
     return {
       title: `Politics is a small slice of your feed (${percent}%)`,
-      meaning: 'Political posts appear occasionally but are far from dominant. Most of your feed is non-political.',
-      whyCare: 'This is below the typical range (8–20%), meaning your daily attention is less shaped by political framing than most users.',
+      meaning: 'Political posts appear occasionally but are far from dominant.',
+      whyCare: 'Below the typical range (8–20%).',
       meta,
     };
   }
@@ -245,18 +241,17 @@ export function buildToneHero({ toneDistribution, totalPosts, platformCount }) {
   if (spread < 15) {
     return {
       title: `Your feed has a balanced emotional mix (${pos}% positive, ${neut}% neutral, ${neg}% negative)`,
-      meaning: 'No single emotional tone dominates. You encounter a roughly even spread of upbeat, informational, and conflict-focused content.',
-      whyCare: "A balanced feed means your mood isn't being pulled strongly in one direction by the content you consume.",
+      meaning: 'No single emotional tone dominates.',
+      whyCare: 'A balanced feed means diverse perspectives rather than heavy exposure to a single tone.',
       meta,
     };
   }
 
   if (neg === max && neg >= 35) {
-    const negMinutesIn60 = Math.round(60 * neg / 100);
     return {
       title: `${neg}% of your feed carries negative or conflict-focused tone`,
-      meaning: `More than 1 in 3 posts is framed around conflict, outrage, or negativity. In a 60-minute session, that's about ${negMinutesIn60} minutes of negative content.`,
-      whyCare: 'Typical negative tone is 20–30%. At this level, conflict-focused content made up a substantial part of what appeared.',
+      meaning: `More than 1 in 3 posts is framed around conflict, outrage, or negativity.`,
+      whyCare: 'Typical negative tone is 20–30%.',
       meta,
     };
   }
@@ -264,8 +259,8 @@ export function buildToneHero({ toneDistribution, totalPosts, platformCount }) {
   if (pos === max && pos >= 35) {
     return {
       title: `Your feed skews positive (${pos}% positive tone)`,
-      meaning: 'More than 1 in 3 posts carries upbeat or happy emotional framing. Your scrolling experience leans optimistic.',
-      whyCare: "Positive content dominated during this scan. A skew toward upbeat content may not reflect the full range of what's happening.",
+      meaning: 'More than 1 in 3 posts carries upbeat or happy framing.',
+      whyCare: 'A skew toward upbeat content may mean you\'re seeing a narrower emotional range than typical.',
       meta,
     };
   }
@@ -273,8 +268,8 @@ export function buildToneHero({ toneDistribution, totalPosts, platformCount }) {
   if (neut === max && neut >= 35) {
     return {
       title: `Your feed is mostly informational (${neut}% neutral tone)`,
-      meaning: 'Most posts are balanced or factual rather than emotionally charged. Your feed reads more like a news digest than an emotional rollercoaster.',
-      whyCare: 'Neutral tone creates space for reflection without strong emotional pulls. This is common in feeds heavy on news and educational content.',
+      meaning: 'Most posts are balanced or factual rather than emotionally charged.',
+      whyCare: 'Neutral tone creates space for reflection without strong emotional pulls.',
       meta,
     };
   }
@@ -284,21 +279,21 @@ export function buildToneHero({ toneDistribution, totalPosts, platformCount }) {
     return {
       title: `Negative tone appears most often in your feed (${neg}%)`,
       meaning: `Negative or conflict-focused posts slightly outpace positive (${pos}%) and neutral (${neut}%) content.`,
-      whyCare: 'Even a modest lean toward negativity can shape what problems feel most urgent and what topics dominate your thinking.',
+      whyCare: 'Even a modest lean toward negativity can shape what problems feel most urgent.',
       meta,
     };
   } else if (pos === max) {
     return {
       title: `Positive tone leads your feed (${pos}%)`,
       meaning: `Upbeat content slightly outpaces neutral (${neut}%) and negative (${neg}%) posts.`,
-      whyCare: 'A positive lean can improve mood during scrolling, though it may also filter out important but difficult topics.',
+      whyCare: 'A positive lean can improve mood, though it may filter out important but difficult topics.',
       meta,
     };
   } else {
     return {
       title: `Neutral tone leads your feed (${neut}%)`,
       meaning: `Balanced or informational content outpaces positive (${pos}%) and negative (${neg}%) posts.`,
-      whyCare: 'A neutral lean means your feed is less emotionally activating, which can support more reflective consumption.',
+      whyCare: 'A neutral lean means your feed is less emotionally activating.',
       meta,
     };
   }
@@ -358,25 +353,32 @@ export function buildSuggestedVsFollowedHero({ sourceData, toneBySourceOrigin, t
     additionalContext = `Suggested posts are ${Math.abs(adComparison.adDelta)} points ${more} commercial than followed posts.`;
   }
 
-  if (suggested >= 60) {
+  if (suggested > 50) {
     return {
       title: `${suggested}% of your feed was suggested content`,
-      meaning: `Only ${followed}% of your feed comes from accounts you chose to follow. The majority of posts in this scan were suggested rather than from accounts you follow.`,
-      whyCare: toneDifference || additionalContext || 'Typical suggested content is 30–50%. At this level, suggested posts make up a significant portion of your feed.',
+      meaning: `More than half of your feed was suggested rather than from accounts you follow.`,
+      whyCare: toneDifference || additionalContext || 'Typical suggested content is 30–50%.',
       meta,
     };
-  } else if (suggested >= 40) {
+  } else if (suggested >= 45) {
     return {
       title: `${suggested}% of your feed is suggested content`,
-      meaning: `Nearly half of what you see was suggested. The other ${followed}% comes from accounts you follow.`,
-      whyCare: toneDifference || additionalContext || "This falls within the typical range (30\u201350%). Suggested content makes up a significant share but doesn't account for everything.",
+      meaning: `Nearly half of what you see was suggested.`,
+      whyCare: toneDifference || additionalContext || 'Within the typical range (30–50%).',
+      meta,
+    };
+  } else if (suggested >= 30) {
+    return {
+      title: `${suggested}% of your feed is suggested content`,
+      meaning: `About 1 in 3 posts were suggested to you.`,
+      whyCare: toneDifference || additionalContext || 'Within the typical range (30–50%).',
       meta,
     };
   } else {
     return {
       title: `You control most of your feed (${followed}% from accounts you follow)`,
-      meaning: `Only ${suggested}% of posts were suggested. The majority of your feed reflects your own choices.`,
-      whyCare: toneDifference || additionalContext || 'This is below the typical range (30–50%), meaning you have more direct control over what content reaches you.',
+      meaning: `Only ${suggested}% of posts were suggested.`,
+      whyCare: toneDifference || additionalContext || 'Below the typical range (30–50%).',
       meta,
     };
   }

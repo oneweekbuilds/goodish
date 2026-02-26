@@ -54,7 +54,7 @@ function SmartSuggestionComponent({ suggestion, onAction }: SmartSuggestionProps
           flexDirection: 'row',
           alignItems: 'flex-start',
           gap: SPACING.md,
-          ...shadows.soft,
+          ...shadows.card,
         }}
       >
         {/* Icon */}

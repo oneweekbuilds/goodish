@@ -130,7 +130,7 @@ const TabHero = ({
           <p
             style={{
               fontSize: '11px',
-              color: '#64748B',
+              color: '#4B5563',
               letterSpacing: scopeLabel ? '0.04em' : '0.14em',
               fontWeight: 500,
               textTransform: scopeLabel ? 'none' : 'uppercase',
@@ -147,7 +147,7 @@ const TabHero = ({
               border: '1px solid rgba(37, 99, 235, 0.2)',
               padding: '0.375rem 0.875rem',
               fontSize: '11px',
-              color: '#64748B',
+              color: '#4B5563',
               fontWeight: 500,
             }}
           >

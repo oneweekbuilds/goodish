@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -79,7 +79,7 @@ const ProgressBarComponent: React.FC<ProgressBarProps> = ({
       accessibilityValue={{min: 0, max: 100, now: Math.round(progress * 100)}}
       testID={testID}
     >
-      <Animated.View style={[styles.progressBar, animatedStyle]} />
+      <Animated.View style={Platform.OS === 'web' ? styles.progressBar : [styles.progressBar, animatedStyle]} />
     </View>
   );
 };

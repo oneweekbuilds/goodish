@@ -1,10 +1,1 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(head:*)",
-      "Bash(grep mobile:*)",
-      "Bash(tail:*)",
-      "Bash(cd /c/Users/jwjwi/Desktop/AlgorithmLens_ParentFolder/AlgorithmLens_Cowork/mobile && npm test 2>&1)"
-    ]
-  }
-}
+{"permissions":{"allow":["Bash(*)","Write(*)","Read(*)","Edit(*)"],"deny":[]}}

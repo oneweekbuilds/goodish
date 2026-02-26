@@ -22,6 +22,7 @@ import {
   Animated,
   StyleSheet,
   AccessibilityInfo,
+  Platform,
 } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import {
@@ -190,7 +191,8 @@ export const DashboardTour: React.FC<DashboardTourProps> = ({
   // Switch to the corresponding tab when step changes
   useEffect(() => {
     if (isActive && onSwitchTab) {
-      onSwitchTab(TOUR_STEPS[currentStep].tabId);
+      const currentTourStep = TOUR_STEPS[currentStep];
+      if (currentTourStep) onSwitchTab(currentTourStep.tabId);
     }
   }, [isActive, currentStep, onSwitchTab]);
 
@@ -225,6 +227,7 @@ export const DashboardTour: React.FC<DashboardTourProps> = ({
   if (!isActive) return null;
 
   const step = TOUR_STEPS[currentStep];
+  if (!step) return null;
   const Icon = step.icon;
   const isLastStep = currentStep === TOUR_STEPS.length - 1;
 
@@ -247,7 +250,11 @@ export const DashboardTour: React.FC<DashboardTourProps> = ({
 
       {/* Tooltip card — positioned at bottom for easy thumb reach */}
       <Animated.View
-        style={[
+        style={Platform.OS === 'web' ? {
+          ...styles.tooltipContainer,
+          opacity: 1,
+          transform: [{ translateY: 0 }],
+        } : [
           styles.tooltipContainer,
           {
             opacity: fadeAnim,
@@ -256,7 +263,12 @@ export const DashboardTour: React.FC<DashboardTourProps> = ({
         ]}
       >
         <View
-          style={[
+          style={Platform.OS === 'web' ? {
+            ...styles.tooltipCard,
+            backgroundColor: colors.bgCard,
+            borderColor: colors.borderSoft,
+            width: screenWidth - SPACING['3xl'],
+          } : [
             styles.tooltipCard,
             {
               backgroundColor: colors.bgCard,
@@ -267,7 +279,10 @@ export const DashboardTour: React.FC<DashboardTourProps> = ({
         >
           {/* Accent bar */}
           <View
-            style={[
+            style={Platform.OS === 'web' ? {
+              ...styles.accentBar,
+              backgroundColor: step.accent,
+            } : [
               styles.accentBar,
               { backgroundColor: step.accent },
             ]}
@@ -277,7 +292,10 @@ export const DashboardTour: React.FC<DashboardTourProps> = ({
           <View style={styles.header}>
             <View style={styles.headerLeft}>
               <View
-                style={[
+                style={Platform.OS === 'web' ? {
+                  ...styles.iconContainer,
+                  backgroundColor: withAlpha(step.accent, 0.09),
+                } : [
                   styles.iconContainer,
                   { backgroundColor: withAlpha(step.accent, 0.09) },
                 ]}
@@ -285,7 +303,10 @@ export const DashboardTour: React.FC<DashboardTourProps> = ({
                 <Icon size={20} color={step.accent} strokeWidth={1.5} />
               </View>
               <View
-                style={[
+                style={Platform.OS === 'web' ? {
+                  ...styles.stepBadge,
+                  backgroundColor: step.accent,
+                } : [
                   styles.stepBadge,
                   { backgroundColor: step.accent },
                 ]}
@@ -307,7 +328,10 @@ export const DashboardTour: React.FC<DashboardTourProps> = ({
 
           {/* Title */}
           <Text
-            style={[
+            style={Platform.OS === 'web' ? {
+              ...styles.title,
+              color: colors.textMain,
+            } : [
               styles.title,
               { color: colors.textMain },
             ]}
@@ -317,7 +341,10 @@ export const DashboardTour: React.FC<DashboardTourProps> = ({
 
           {/* Description */}
           <Text
-            style={[
+            style={Platform.OS === 'web' ? {
+              ...styles.description,
+              color: colors.textMuted,
+            } : [
               styles.description,
               { color: colors.textMuted },
             ]}
@@ -330,7 +357,12 @@ export const DashboardTour: React.FC<DashboardTourProps> = ({
             {TOUR_STEPS.map((_, index) => (
               <View
                 key={index}
-                style={[
+                style={Platform.OS === 'web' ? {
+                  ...styles.dot,
+                  width: index === currentStep ? 20 : 6,
+                  backgroundColor:
+                    index <= currentStep ? step.accent : colors.borderSlate200,
+                } : [
                   styles.dot,
                   {
                     width: index === currentStep ? 20 : 6,
@@ -351,7 +383,10 @@ export const DashboardTour: React.FC<DashboardTourProps> = ({
               accessibilityRole="button"
               accessibilityLabel="Skip tour"
             >
-              <Text style={[styles.skipText, { color: colors.textSecondary }]}>
+              <Text style={Platform.OS === 'web' ? {
+                ...styles.skipText,
+                color: colors.textSecondary,
+              } : [styles.skipText, { color: colors.textSecondary }]}>
                 Skip tour
               </Text>
             </TouchableOpacity>
@@ -360,7 +395,11 @@ export const DashboardTour: React.FC<DashboardTourProps> = ({
               {currentStep > 0 && (
                 <TouchableOpacity
                   onPress={handleBack}
-                  style={[
+                  style={Platform.OS === 'web' ? {
+                    ...styles.backButton,
+                    borderColor: colors.borderSlate200,
+                    minHeight: 44,
+                  } : [
                     styles.backButton,
                     {
                       borderColor: colors.borderSlate200,
@@ -371,19 +410,26 @@ export const DashboardTour: React.FC<DashboardTourProps> = ({
                   accessibilityLabel="Go back to previous step"
                 >
                   <ChevronLeft size={16} color={colors.textMuted} strokeWidth={2} />
-                  <Text style={[styles.backText, { color: colors.textMuted }]}>
+                  <Text style={Platform.OS === 'web' ? {
+                    ...styles.backText,
+                    color: colors.textMuted,
+                  } : [styles.backText, { color: colors.textMuted }]}>
                     Back
                   </Text>
                 </TouchableOpacity>
               )}
               <TouchableOpacity
                 onPress={handleNext}
-                style={[
+                style={Platform.OS === 'web' ? {
+                  ...styles.nextButton,
+                  backgroundColor: step.accent,
+                  minHeight: 44,
+                } : [
                   styles.nextButton,
                   { backgroundColor: step.accent, minHeight: 44 },
                 ]}
                 accessibilityRole="button"
-                accessibilityLabel={isLastStep ? 'Finish tour' : `Next tab: ${TOUR_STEPS[Math.min(currentStep + 1, TOUR_STEPS.length - 1)].title}`}
+                accessibilityLabel={isLastStep ? 'Finish tour' : `Next tab: ${TOUR_STEPS[Math.min(currentStep + 1, TOUR_STEPS.length - 1)]?.title ?? 'next'}`}
               >
                 <Text style={styles.nextText}>
                   {isLastStep ? 'Got it' : 'Next'}
@@ -465,18 +511,17 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.md,
   },
   stepBadgeText: {
-    fontSize: RFValue(11),
+    ...TYPOGRAPHY.captionSmall,
     fontWeight: '600',
     color: COLORS.white,
   },
   title: {
-    fontSize: RFValue(18),
+    ...TYPOGRAPHY.h2,
     fontWeight: '700',
     marginBottom: SPACING.sm,
-    letterSpacing: -0.3,
   },
   description: {
-    fontSize: RFValue(14),
+    ...TYPOGRAPHY.bodySmall,
     lineHeight: RFValue(21),
     marginBottom: SPACING.lg,
   },
@@ -500,7 +545,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.xs,
   },
   skipText: {
-    fontSize: RFValue(12),
+    ...TYPOGRAPHY.caption,
     fontWeight: '500',
   },
   navButtons: {
@@ -530,8 +575,7 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.md,
   },
   nextText: {
-    fontSize: RFValue(14),
-    fontWeight: '600',
+    ...TYPOGRAPHY.labelBold,
     color: COLORS.white,
   },
 });

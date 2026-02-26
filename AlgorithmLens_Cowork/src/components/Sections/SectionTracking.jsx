@@ -32,7 +32,7 @@ const SectionTracking = () => {
                         transition={{ delay: 0.1 }}
                         className="text-base sm:text-lg text-text-muted max-w-2xl mx-auto px-2"
                     >
-                        Every scroll generates data. Platforms log your interactions as behavioral signals.
+                        Every scroll, pause, and tap trains the algorithm to keep you engaged.
                     </motion.p>
                 </div>
 

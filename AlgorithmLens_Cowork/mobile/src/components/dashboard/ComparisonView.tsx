@@ -21,6 +21,7 @@ import { ArrowUp, ArrowDown, Minus, Info, X } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { TYPOGRAPHY, SPACING, RADIUS } from '../../lib/theme';
 import { computeDashboardData, type ScanRecord, type DashboardData } from '../../lib/computeDashboardData';
+import { getPlatformDisplayName } from '../../lib/utils';
 
 // ─── Types ────────────────────────────────────────────────
 
@@ -81,11 +82,11 @@ function DeltaRow({
     ? Math.round(Math.abs(delta / metric.olderValue) * 100)
     : delta !== 0 ? 100 : 0;
 
+  // CT-004 FIX: Use same neutral color for both up and down —
+  // differentiate by arrow direction only, not color, to stay purely informational.
   const deltaColor = isFlat
     ? colors.textSecondary
-    : isUp
-      ? colors.primaryBlue
-      : colors.accentGreen;
+    : colors.primaryBlue;
 
   return (
     <View
@@ -121,9 +122,7 @@ function DeltaRow({
           gap: 4,
           backgroundColor: isFlat
             ? colors.borderLight
-            : isUp
-              ? colors.blue50
-              : colors.green50,
+            : colors.blue50,
           paddingHorizontal: SPACING.md,
           paddingVertical: 6,
           borderRadius: RADIUS.sm,
@@ -219,10 +218,8 @@ function ComparisonViewComponent({
   const olderDate = formatScanDate(olderScan.created_at) || 'Older scan';
   const newerDate = formatScanDate(newerScan.created_at) || 'Newer scan';
 
-  const platformStr = newerScan.platform || olderScan.platform || 'Unknown';
-  const platform = platformStr
-    ? platformStr.charAt(0).toUpperCase() + platformStr.slice(1).toLowerCase()
-    : 'Unknown';
+  const platformStr = newerScan.platform || olderScan.platform || '';
+  const platform = getPlatformDisplayName(platformStr);
 
   // ── Build comparison metrics ──
   const metrics: ComparisonMetric[] = [

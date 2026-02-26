@@ -19,7 +19,7 @@
  */
 
 import React from 'react';
-import { FileText, Mail } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import SEO from '../components/SEO';
 import BackLink from '../components/ui/BackLink';
 
@@ -146,7 +146,7 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-text-main mb-2">Account Security</h3>
                   <p className="text-text-muted leading-relaxed">
-                    You are solely responsible for all activities that occur under your account. While AlgorithmLens uses magic link authentication (no passwords), you are responsible for protecting access to your email account. If you believe your account has been compromised, contact us immediately at support@algorithmlens.com.
+                    You are solely responsible for all activities that occur under your account. While AlgorithmLens uses magic link authentication (no passwords), you are responsible for protecting access to your email account. If you believe your account has been compromised, contact us immediately through the AlgorithmLens website.
                   </p>
                 </div>
 
@@ -291,7 +291,7 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-text-main mb-2">Refunds</h3>
                   <p className="text-text-muted leading-relaxed">
-                    Subscriptions are non-refundable. However, if you cancel your subscription during a billing cycle, you retain access to Plus features through the end of that cycle. If you are on a free trial and convert to a paid subscription, no refund is available. For billing errors or disputes, contact us at support@algorithmlens.com.
+                    Subscriptions are non-refundable. However, if you cancel your subscription during a billing cycle, you retain access to Plus features through the end of that cycle. If you are on a free trial and convert to a paid subscription, no refund is available. For billing errors or disputes, contact us through the AlgorithmLens website.
                   </p>
                 </div>
 
@@ -513,30 +513,10 @@ export default function TermsPage() {
                 If you have any questions about these Terms of Service, disputes with AlgorithmLens, or need to report a violation, please contact us:
               </p>
 
-              <div className="bg-gray-50 rounded-xl p-5 border border-border-light space-y-3">
-                <div className="flex items-start gap-3">
-                  <Mail size={18} className="text-primary-blue flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-semibold text-text-main">Legal & Billing Issues</p>
-                    <p className="text-text-muted text-sm">
-                      <a href="mailto:legal@algorithmlens.com" className="text-primary-blue hover:underline">
-                        legal@algorithmlens.com
-                      </a>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <Mail size={18} className="text-primary-blue flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-semibold text-text-main">General Support</p>
-                    <p className="text-text-muted text-sm">
-                      <a href="mailto:support@algorithmlens.com" className="text-primary-blue hover:underline">
-                        support@algorithmlens.com
-                      </a>
-                    </p>
-                  </div>
-                </div>
+              <div className="bg-gray-50 rounded-xl p-5 border border-border-light">
+                <p className="text-text-muted text-sm">
+                  For legal, billing, or general support inquiries, please contact us through the AlgorithmLens website.
+                </p>
               </div>
 
               <p className="text-text-muted leading-relaxed mt-4 text-sm">

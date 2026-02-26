@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Upload, Smartphone, Play, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { logError } from '../lib/errorLogger.js';
 import { getApiBaseUrl } from '../lib/apiConfig.js';
@@ -68,6 +69,7 @@ const INSTRUCTIONS = {
 };
 
 const ScanPage = () => {
+    const navigate = useNavigate();
     // Flow state
     const [step, setStep] = useState(1); // 1: platform, 2: instructions, 3: upload, 4: loading, 5: results
     const [selectedPlatform, setSelectedPlatform] = useState(null);
@@ -106,6 +108,16 @@ const ScanPage = () => {
         setError(null);
         setResult(null);
         setStep(4); // Show loading state
+
+        // Demo mode: simulate processing and redirect
+        const isDemoMode = new URLSearchParams(window.location.search).get('demo') === '1';
+        if (isDemoMode) {
+            // Simulate processing for 2 seconds
+            setTimeout(() => {
+                navigate('/dashboard?demo=1&demoPlan=plus');
+            }, 2000);
+            return;
+        }
 
         const formData = new FormData();
         formData.append("file", file);

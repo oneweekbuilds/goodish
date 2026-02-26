@@ -26,7 +26,7 @@ const Hero = () => {
                         The Spotify Wrapped for your algorithm. Discover your inferred digital labels.
                     </p>
 
-                    <button className="group relative px-10 py-5 bg-gradient-to-r from-blue-600 to-violet-600 text-white text-xl font-bold rounded-full shadow-xl hover:shadow-2xl transition-all hover:scale-105 active:scale-95 ring-4 ring-white/50">
+                    <button aria-label="Reveal your algorithmic profile" className="group relative px-10 py-5 bg-gradient-to-r from-blue-600 to-violet-600 text-white text-xl font-bold rounded-full shadow-xl hover:shadow-2xl transition-all hover:scale-105 active:scale-95 ring-4 ring-white/50">
                         Reveal My Profile
                         <div className="absolute inset-0 rounded-full bg-white/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
                     </button>
@@ -34,7 +34,7 @@ const Hero = () => {
             </div>
 
             {/* Floating Icons System */}
-            <div className="absolute inset-0 pointer-events-none z-0">
+            <div className="absolute inset-0 pointer-events-none z-0" aria-hidden="true">
                 {/* Icon 1: Top Left */}
                 <motion.div
                     animate={{ y: ["0%", "-10%", "0%"] }}

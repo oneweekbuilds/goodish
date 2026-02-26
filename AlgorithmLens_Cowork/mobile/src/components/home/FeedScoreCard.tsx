@@ -20,14 +20,16 @@ import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
 import type { FeedScore } from '../../types/streak';
 
 interface FeedScoreCardProps {
-  feedScore: FeedScore | null;
+  /** FeedScore data, null if not enough scans, or undefined if still loading. */
+  feedScore: FeedScore | null | undefined;
 }
 
 function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
   const { colors, shadows } = useTheme();
 
-  // Not enough data state
-  if (!feedScore || feedScore.label === 'Not enough data') {
+  // H-02 FIX: While data is loading (undefined), show a neutral loading card
+  // instead of flashing the "Complete 2 scans" empty state.
+  if (feedScore === undefined) {
     return (
       <View
         style={{
@@ -36,7 +38,7 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
           padding: SPACING.lg,
           borderWidth: 1,
           borderColor: colors.borderSoft,
-          ...shadows.soft,
+          ...shadows.card,
         }}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.sm }}>
@@ -67,7 +69,55 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
             color: colors.textSecondary,
           }}
         >
-          {`You'll see your weekly feed health score here after your second scan. Each scan adds to the picture.`}
+          Loading...
+        </Text>
+      </View>
+    );
+  }
+
+  // Not enough data state
+  if (!feedScore || feedScore.label === 'Not enough data') {
+    return (
+      <View
+        style={{
+          backgroundColor: colors.bgCard,
+          borderRadius: RADIUS.lg,
+          padding: SPACING.lg,
+          borderWidth: 1,
+          borderColor: colors.borderSoft,
+          ...shadows.card,
+        }}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.sm }}>
+          <View
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 14,
+              backgroundColor: colors.blue50,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <BarChart3 size={14} color={colors.primaryBlue} strokeWidth={2} />
+          </View>
+          <Text
+            style={{
+              ...TYPOGRAPHY.labelBold,
+              color: colors.textMain,
+            }}
+          >
+            Feed Score
+          </Text>
+        </View>
+        <Text
+          style={{
+            ...TYPOGRAPHY.caption,
+            color: colors.textSecondary,
+          }}
+        >
+          {/* H-4 FIX: Shortened empty state text */}
+          {'Complete 2 scans to see your Feed Score.'}
         </Text>
       </View>
     );
@@ -75,7 +125,6 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
 
   // Score color — muted scale, never alarming
   const getScoreColor = (score: number): string => {
-    if (score >= 70) return colors.accentGreen;
     if (score >= 50) return colors.primaryBlue;
     return colors.textMuted;
   };
@@ -90,7 +139,7 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
         padding: SPACING.lg,
         borderWidth: 1,
         borderColor: colors.borderSoft,
-        ...shadows.soft,
+        ...shadows.card,
       }}
       accessibilityRole="summary"
       accessibilityLabel={`Feed score: ${feedScore.score} - ${feedScore.label}`}

@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDashboard, ScanDetail } from '../../src/hooks/useDashboard';
 import { router } from 'expo-router';
 import { Zap, Users, Clock, ScanSearch, GitCompareArrows, Check, Radio, Filter, Calendar } from 'lucide-react-native';
@@ -18,13 +18,15 @@ import { getQualityLevel } from '../../src/config/thresholds';
 import ComparisonView from '../../src/components/dashboard/ComparisonView';
 import { withAlpha } from '../../src/lib/utils';
 
+// H-08 FIX: Consistent platform icon labels across all scan history entries.
+// Every platform always uses the same abbreviation — no more mismatched icons.
 const PLATFORM_LABELS: Record<string, string> = {
   instagram: 'IG',
   twitter: 'X',
   youtube: 'YT',
   tiktok: 'TT',
   facebook: 'FB',
-  reddit: 'R',
+  reddit: 'Re',
 };
 
 // Estimated height for each scan item in the list (used for virtual scrolling optimization)
@@ -33,6 +35,7 @@ const SCAN_ITEM_ESTIMATED_HEIGHT = 130;
 export default function HistoryScreen() {
   const { scans, loading, refresh, error: fetchError } = useDashboard();
   const { colors, shadows } = useTheme();
+  const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
 
   // ── Comparison mode state ──
@@ -107,10 +110,10 @@ export default function HistoryScreen() {
         groups[label] = [];
         groupOrder.push(label);
       }
-      groups[label].push(scan);
+      groups[label]?.push(scan);
     }
 
-    return groupOrder.map((title) => ({ title, data: groups[title] }));
+    return groupOrder.map((title) => ({ title, data: groups[title] ?? [] }));
   }, []);
 
   const toggleScanSelection = useCallback((scanId: string) => {
@@ -120,7 +123,7 @@ export default function HistoryScreen() {
       }
       if (prev.length >= 2) {
         // Replace the oldest selection
-        return [prev[1], scanId];
+        return [prev[1] ?? scanId, scanId];
       }
       return [...prev, scanId];
     });
@@ -194,7 +197,6 @@ export default function HistoryScreen() {
 
     // Use centralized quality threshold
     const qualityLevel = getQualityLevel(postCount);
-    const qualityColor = colors[qualityLevel.colorKey];
 
     const isSelected = selectedScans.includes(item.id);
     const selectionIndex = selectedScans.indexOf(item.id);
@@ -230,9 +232,9 @@ export default function HistoryScreen() {
           {compareMode && (
             <View
               style={{
-                width: 28,
-                height: 28,
-                borderRadius: 14,
+                width: SPACING['3xl'],
+                height: SPACING['3xl'],
+                borderRadius: SPACING.lg,
                 backgroundColor: isSelected ? colors.primaryBlue : colors.borderLight,
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -248,8 +250,8 @@ export default function HistoryScreen() {
           )}
           <View
             style={{
-              width: 40,
-              height: 40,
+              width: SPACING['4xl'],
+              height: SPACING['4xl'],
               backgroundColor: withAlpha(platformColor, 0.08),
               borderRadius: RADIUS.sm,
               justifyContent: 'center',
@@ -292,7 +294,7 @@ export default function HistoryScreen() {
                 </View>
               )}
             </View>
-            <Text style={{ ...TYPOGRAPHY.small, color: colors.textSecondary, marginTop: 2 }}>
+            <Text style={{ ...TYPOGRAPHY.small, color: colors.textSecondary, marginTop: SPACING.xxs }}>
               {getRelativeTime(item.created_at)} — {postCount} posts
               {isBroadcast && durationSecs > 0 ? ` · ${formatDuration(durationSecs)}` : ''}
             </Text>
@@ -308,9 +310,9 @@ export default function HistoryScreen() {
               alignItems: 'center',
               backgroundColor: colors.blue50,
               paddingHorizontal: SPACING.md,
-              paddingVertical: 6,
+              paddingVertical: SPACING.xs,
               borderRadius: RADIUS.sm,
-              gap: 4,
+              gap: SPACING.xs,
             }}
           >
             <Zap size={13} color={colors.primaryBlue} strokeWidth={2} />
@@ -331,9 +333,9 @@ export default function HistoryScreen() {
               alignItems: 'center',
               backgroundColor: colors.green50,
               paddingHorizontal: SPACING.md,
-              paddingVertical: 6,
+              paddingVertical: SPACING.xs,
               borderRadius: RADIUS.sm,
-              gap: 4,
+              gap: SPACING.xs,
             }}
           >
             <Users size={13} color={colors.green600} strokeWidth={2} />
@@ -347,25 +349,26 @@ export default function HistoryScreen() {
             </Text>
           </View>
 
-          {/* Quality indicator chip — uses centralized thresholds */}
+          {/* Quality indicator chip — neutral blue styling (non-judgmental, no traffic-light colors) */}
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              backgroundColor: `${qualityColor}20`,
+              backgroundColor: colors.blue50,
               paddingHorizontal: SPACING.md,
-              paddingVertical: 6,
+              paddingVertical: SPACING.xs,
               borderRadius: RADIUS.sm,
-              gap: 4,
+              gap: SPACING.xs,
             }}
           >
             <Text
               style={{
                 ...TYPOGRAPHY.labelBold,
-                color: qualityColor,
+                color: colors.primaryBlue,
               }}
             >
-              {qualityLevel.label}
+              {/* M-04 FIX: Show threshold hint to explain what quality means */}
+              {qualityLevel.labelWithHint}
             </Text>
           </View>
         </View>
@@ -391,6 +394,30 @@ export default function HistoryScreen() {
           )}
           <View style={{ flex: 1, backgroundColor: colors.primaryBlue, height: '100%' }} />
         </View>
+
+        {/* M-03 FIX: Legend explaining composition bar colors */}
+        <View style={{ flexDirection: 'row', gap: SPACING.md, marginTop: SPACING.xs, alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.primaryBlue }} />
+            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>Followed</Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.accentGreen }} />
+            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>Suggested</Text>
+          </View>
+          {adPercentage > 0 && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.iconAds }} />
+              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>Ads</Text>
+            </View>
+          )}
+          {/* L-16 FIX: Indicate dashboard is viewable */}
+          {!compareMode && (
+            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.primaryBlue, marginLeft: 'auto' }}>
+              View Results →
+            </Text>
+          )}
+        </View>
       </TouchableOpacity>
     );
   };
@@ -410,8 +437,8 @@ export default function HistoryScreen() {
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.md }}>
         <Skeleton width={40} height={40} borderRadius={RADIUS.sm} style={{ marginRight: SPACING.md }} />
         <View style={{ flex: 1 }}>
-          <Skeleton width={120} height={16} borderRadius={4} style={{ marginBottom: 6 }} />
-          <Skeleton width={180} height={12} borderRadius={4} />
+          <Skeleton width={120} height={16} borderRadius={RADIUS.xs} style={{ marginBottom: SPACING.xs }} />
+          <Skeleton width={180} height={12} borderRadius={RADIUS.xs} />
         </View>
       </View>
       <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
@@ -427,8 +454,8 @@ export default function HistoryScreen() {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        paddingVertical: 60,
-        paddingHorizontal: 24,
+        paddingVertical: SPACING['6xl'],
+        paddingHorizontal: SPACING.xl,
       }}
     >
       <View
@@ -442,7 +469,8 @@ export default function HistoryScreen() {
           marginBottom: SPACING.xl,
         }}
       >
-        <Clock size={28} color={colors.primaryBlue} strokeWidth={1.5} />
+        {/* Hi-2 FIX: Increased icon size for better visibility */}
+        <Clock size={32} color={colors.primaryBlue} strokeWidth={1.5} />
       </View>
       <Text
         style={{
@@ -451,7 +479,7 @@ export default function HistoryScreen() {
           marginBottom: SPACING.sm,
         }}
       >
-        No scans yet
+        Your history starts here
       </Text>
       <Text
         style={{
@@ -461,7 +489,7 @@ export default function HistoryScreen() {
           marginBottom: SPACING.xl,
         }}
       >
-        Your scan history will appear here after you complete your first scan.
+        Each scan adds a new snapshot of your feed. Over time you can compare them to spot patterns and changes.
       </Text>
       <TouchableOpacity
         onPress={() => router.push('/(tabs)/scan')}
@@ -489,23 +517,28 @@ export default function HistoryScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
       <View style={{ flex: 1 }}>
-        {/* Header */}
-        <View style={{ paddingHorizontal: SPACING.lg, paddingVertical: SPACING.xl }}>
+        {/* Header — H-06 FIX: ensure right-side elements have adequate safe-area padding and don't clip */}
+        <View style={{ paddingHorizontal: SPACING.lg, paddingRight: Math.max(SPACING.lg, insets.right + SPACING.sm), paddingVertical: SPACING.xl, overflow: 'visible' }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <View>
+            <View style={{ flex: 1, marginRight: SPACING.sm }}>
               <Text
                 style={{
                   ...TYPOGRAPHY.heroTitle,
                   color: colors.textMain,
-                  fontSize: 24,
-                  marginBottom: 4,
+                  marginBottom: SPACING.xs,
                 }}
               >
                 {compareMode ? 'Select Two Scans' : 'Scan History'}
               </Text>
+              {/* Hi-3 FIX: Added subtitle to orient users */}
               {!compareMode && scans.length > 0 && (
                 <Text style={{ ...TYPOGRAPHY.label, color: colors.textSecondary }}>
-                  {scans.length} scan{scans.length !== 1 ? 's' : ''} total
+                  Review your past feed analyses · {scans.length} scan{scans.length !== 1 ? 's' : ''} total
+                </Text>
+              )}
+              {!compareMode && scans.length === 0 && (
+                <Text style={{ ...TYPOGRAPHY.label, color: colors.textSecondary }}>
+                  Review your past feed analyses
                 </Text>
               )}
               {compareMode && (
@@ -530,10 +563,10 @@ export default function HistoryScreen() {
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
-                  gap: 6,
+                  gap: SPACING.xs,
                   backgroundColor: compareMode ? colors.cancelButtonBg : colors.blue50,
                   paddingHorizontal: SPACING.md,
-                  paddingVertical: 8,
+                  paddingVertical: SPACING.sm,
                   minHeight: 44,
                   borderRadius: RADIUS.md,
                 }}
@@ -587,14 +620,16 @@ export default function HistoryScreen() {
           </View>
         )}
 
-        {/* Platform filter */}
+        {/* Platform filter — H-06 FIX: add right padding to prevent clipping */}
         {!compareMode && availablePlatforms.length > 1 && (
           <View
             style={{
               flexDirection: 'row',
               paddingHorizontal: SPACING.lg,
+              paddingRight: Math.max(SPACING.lg, insets.right + SPACING.sm),
               marginBottom: SPACING.md,
               gap: SPACING.sm,
+              flexWrap: 'wrap',
             }}
             accessibilityRole="radiogroup"
             accessible={true}
@@ -615,7 +650,7 @@ export default function HistoryScreen() {
               accessibilityLabel="All platforms"
             >
               <Text style={{ ...TYPOGRAPHY.buttonSm, color: !filterPlatform ? colors.white : colors.textSecondary }}>
-                All
+                All platforms
               </Text>
             </TouchableOpacity>
             {availablePlatforms.map((p) => {
@@ -676,7 +711,8 @@ export default function HistoryScreen() {
             sections={sections}
             renderItem={renderScanItem}
             renderSectionHeader={({ section: { title } }: { section: { title: string } }) => (
-              <View style={{ paddingHorizontal: SPACING.lg, paddingTop: SPACING.lg, paddingBottom: SPACING.sm }}>
+              /* L-03 FIX: Add marginBottom for proper header spacing */
+              <View style={{ paddingHorizontal: SPACING.lg, paddingTop: SPACING.lg, paddingBottom: SPACING.sm, marginBottom: SPACING.sm }}>
                 <Text style={{ ...TYPOGRAPHY.overline, color: colors.textTertiary }} accessibilityRole="header">
                   {title}
                 </Text>

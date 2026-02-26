@@ -1,3 +1,4 @@
+import { triggerNotificationSuccess } from '../../lib/haptics';
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -6,11 +7,10 @@ import {
   AccessibilityInfo,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as Haptics from 'expo-haptics';
 import { Button } from '../ui/Button';
 import { useTheme } from '../../context/ThemeContext';
 import { RADIUS, SPACING, TYPOGRAPHY } from '../../lib/theme';
-import { MIN_POSTS_GOOD, MIN_POSTS_OK } from '../../config/thresholds';
+import { MIN_POSTS_REQUIRED, MIN_SCAN_DURATION_SECS } from '../../config/thresholds';
 
 interface ScanOverlayProps {
   postCount: number;
@@ -19,24 +19,57 @@ interface ScanOverlayProps {
   onDone: () => void;
 }
 
-function getQualityIndicator(postCount: number, colors: ReturnType<typeof useTheme>['colors']): {
+/**
+ * Returns a milestone message based on current post count and elapsed time.
+ * Encouraging framing to motivate users to keep scrolling.
+ */
+function getMilestoneMessage(postCount: number, elapsedSecs: number, colors: ReturnType<typeof useTheme>['colors']): {
   label: string;
   color: string;
 } {
-  if (postCount >= MIN_POSTS_GOOD) {
-    return { label: 'Good sample', color: colors.accentGreen };
-  } else if (postCount >= MIN_POSTS_OK) {
-    return { label: 'Getting there', color: colors.warning };
-  } else {
-    return { label: `${MIN_POSTS_OK - postCount} more for good data`, color: colors.error };
+  const postsMet = postCount >= MIN_POSTS_REQUIRED;
+  const timeMet = elapsedSecs >= MIN_SCAN_DURATION_SECS;
+
+  if (postsMet && timeMet) {
+    if (postCount >= 50) {
+      return { label: 'Excellent! This will give you very detailed insights.', color: colors.accentGreen };
+    }
+    if (postCount >= 30) {
+      return { label: 'Great sample! Save anytime.', color: colors.accentGreen };
+    }
+    if (elapsedSecs >= 120) {
+      return { label: 'Great session length! Your results will be comprehensive.', color: colors.accentGreen };
+    }
+    return { label: 'Good start! Keep going for better accuracy.', color: colors.accentGreen };
   }
+
+  if (postCount >= 1) {
+    return { label: 'Keep scrolling — building your sample', color: colors.primaryBlue };
+  }
+
+  return { label: 'Start scrolling to capture posts', color: colors.primaryBlue };
 }
 
-// M1 & M5: Better button copy
-function getButtonLabel(postCount: number): string {
-  if (postCount >= 10) return 'Done — Save Scan';
-  if (postCount >= 5) return `Save (${postCount} posts) — or keep scrolling`;
-  return `Scroll past ${Math.max(5 - postCount, 0)} more posts to save`;
+/**
+ * Returns the button label based on threshold state.
+ */
+function getButtonLabel(postCount: number, elapsedSecs: number): string {
+  const postsMet = postCount >= MIN_POSTS_REQUIRED;
+  const timeMet = elapsedSecs >= MIN_SCAN_DURATION_SECS;
+
+  if (postsMet && timeMet) {
+    if (postCount >= 30) return 'Save scan — great sample!';
+    return 'Save scan — good to go!';
+  }
+
+  // Show which requirement(s) are missing
+  const needs: string[] = [];
+  if (!postsMet) needs.push(`${MIN_POSTS_REQUIRED - postCount} more post${MIN_POSTS_REQUIRED - postCount !== 1 ? 's' : ''}`);
+  if (!timeMet) {
+    const secsLeft = MIN_SCAN_DURATION_SECS - elapsedSecs;
+    needs.push(`${secsLeft}s more`);
+  }
+  return `Keep scrolling — ${needs.join(' & ')} needed`;
 }
 
 export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
@@ -75,7 +108,23 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
   const seconds = elapsedSecs % 60;
   const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
-  const quality = getQualityIndicator(postCount, colors);
+  // Threshold checks
+  const postsMet = postCount >= MIN_POSTS_REQUIRED;
+  const timeMet = elapsedSecs >= MIN_SCAN_DURATION_SECS;
+  const canSave = postsMet && timeMet;
+
+  const milestone = getMilestoneMessage(postCount, elapsedSecs, colors);
+
+  // Progress bar percentages (capped at 100%)
+  const postProgress = Math.min(postCount / MIN_POSTS_REQUIRED, 1);
+  const timeProgress = Math.min(elapsedSecs / MIN_SCAN_DURATION_SECS, 1);
+
+  // Format time requirement display
+  const timeReqMinutes = Math.floor(MIN_SCAN_DURATION_SECS / 60);
+  const timeReqSeconds = MIN_SCAN_DURATION_SECS % 60;
+  const timeReqString = timeReqSeconds > 0
+    ? `${timeReqMinutes}:${timeReqSeconds.toString().padStart(2, '0')}`
+    : `${timeReqMinutes}:00`;
 
   // Minimized mode — small floating pill (L1: white dot on blue)
   if (minimized) {
@@ -83,13 +132,13 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
       <TouchableOpacity
         onPress={() => setMinimized(false)}
         activeOpacity={0.8}
-        accessibilityLabel={`Scan progress: ${postCount} posts captured, ${timeString} elapsed. Tap to expand.`}
+        accessibilityLabel={`Scan progress: ${postCount} posts captured, ${timeString} elapsed. ${canSave ? 'Ready to save.' : 'Keep scrolling.'} Tap to expand.`}
         accessibilityRole="button"
         style={{
           position: 'absolute',
           bottom: insets.bottom + SPACING.lg,
           right: SPACING.lg,
-          backgroundColor: colors.primaryBlue,
+          backgroundColor: canSave ? colors.accentGreen : colors.primaryBlue,
           borderRadius: RADIUS['2xl'],
           paddingHorizontal: SPACING.lg,
           paddingVertical: SPACING.md,
@@ -122,64 +171,137 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
   return (
     <View
       style={{
+        // L-05 FIX: More compact panel with higher opacity to prevent overlap with content
         backgroundColor: colors.scanOverlayBg,
         borderTopLeftRadius: RADIUS.xl,
         borderTopRightRadius: RADIUS.xl,
-        paddingHorizontal: SPACING.lg,
-        paddingTop: SPACING.lg,
-        paddingBottom: SPACING.lg + insets.bottom,
+        paddingHorizontal: SPACING.md,
+        paddingTop: SPACING.sm,
+        paddingBottom: SPACING.sm + insets.bottom,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 4,
+        shadowOpacity: 0.15,
+        shadowRadius: 10,
+        elevation: 6,
       }}
     >
-      {/* Quality indicator + minimize button */}
+      {/* Milestone indicator + minimize button — L-05: tighter spacing */}
       <View style={{
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: SPACING.md,
+        marginBottom: SPACING.sm,
       }}>
         <View style={{
           flexDirection: 'row',
           alignItems: 'center',
           gap: SPACING.sm,
+          flex: 1,
         }}>
           <View style={{
             width: 8,
             height: 8,
             borderRadius: 4,
-            backgroundColor: quality.color,
+            backgroundColor: milestone.color,
           }} />
           <Text style={{
             ...TYPOGRAPHY.caption,
             fontWeight: '600',
-            color: quality.color,
-          }}>
-            {quality.label}
+            color: milestone.color,
+            flex: 1,
+          }} numberOfLines={2}>
+            {canSave
+              ? 'Great sample! You can save now or keep scrolling for richer insights.'
+              : milestone.label}
           </Text>
         </View>
+        {/* M-21 FIX: "Hide panel" with note about continued scanning */}
         <TouchableOpacity
           onPress={() => setMinimized(true)}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          accessibilityLabel="Minimize scan overlay"
+          accessibilityLabel="Hide panel — scanning continues in the background"
           accessibilityRole="button"
         >
           <Text style={{ fontSize: TYPOGRAPHY.caption.fontSize, color: colors.textSecondary }}>
-            Minimize
+            Hide panel
           </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Stats Row */}
+      {/* Instruction hint for new users */}
+      {postCount < MIN_POSTS_REQUIRED && (
+        <Text
+          style={{
+            ...TYPOGRAPHY.caption,
+            color: colors.textSecondary,
+            marginBottom: SPACING.xs,
+          }}
+          accessibilityLiveRegion="polite"
+        >
+          Scroll through your feed — posts are captured automatically as they appear.
+        </Text>
+      )}
+
+      {/* Progress indicators — posts and time — L-05: reduced margins */}
+      <View style={{ marginBottom: SPACING.sm, gap: SPACING.xs }}>
+        {/* Posts progress */}
+        <View>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+            <Text style={{ ...TYPOGRAPHY.caption, fontWeight: '600', color: postsMet ? colors.accentGreen : colors.textMain }}>
+              Posts: {postCount}/{MIN_POSTS_REQUIRED}
+            </Text>
+            {postsMet && (
+              <Text style={{ ...TYPOGRAPHY.caption, color: colors.accentGreen, fontWeight: '600' }}>✓</Text>
+            )}
+          </View>
+          <View style={{
+            height: 6,
+            borderRadius: RADIUS.full,
+            backgroundColor: colors.bgSecondary,
+            overflow: 'hidden',
+          }}>
+            <View style={{
+              height: '100%',
+              width: `${Math.round(postProgress * 100)}%`,
+              borderRadius: RADIUS.full,
+              backgroundColor: postsMet ? colors.accentGreen : colors.primaryBlue,
+            }} />
+          </View>
+        </View>
+
+        {/* Time progress */}
+        <View>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+            <Text style={{ ...TYPOGRAPHY.caption, fontWeight: '600', color: timeMet ? colors.accentGreen : colors.textMain }}>
+              Time: {timeString}/{timeReqString}
+            </Text>
+            {timeMet && (
+              <Text style={{ ...TYPOGRAPHY.caption, color: colors.accentGreen, fontWeight: '600' }}>✓</Text>
+            )}
+          </View>
+          <View style={{
+            height: 6,
+            borderRadius: RADIUS.full,
+            backgroundColor: colors.bgSecondary,
+            overflow: 'hidden',
+          }}>
+            <View style={{
+              height: '100%',
+              width: `${Math.round(timeProgress * 100)}%`,
+              borderRadius: RADIUS.full,
+              backgroundColor: timeMet ? colors.accentGreen : colors.primaryBlue,
+            }} />
+          </View>
+        </View>
+      </View>
+
+      {/* Stats Row — ads count + timer — L-05: reduced margin */}
       <View
         style={{
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: SPACING.lg,
+          marginBottom: SPACING.sm,
         }}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.md }}>
@@ -195,7 +317,7 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
           <Text style={{ fontSize: TYPOGRAPHY.bodySmall.fontSize, color: colors.separator }}>|</Text>
 
           <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: SPACING.xs }}>
-            <Text style={{ ...TYPOGRAPHY.h2, color: colors.warning }}>
+            <Text style={{ ...TYPOGRAPHY.h2, color: colors.primaryBlue }}>
               {adCount}
             </Text>
             <Text style={{ fontSize: TYPOGRAPHY.bodySmall.fontSize, color: colors.textMuted }}>
@@ -220,18 +342,22 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
         </View>
       </View>
 
-      {/* Done Button — M1: better labels, still tappable at 5+ */}
+      {/* Done Button — disabled until both thresholds met */}
       <Button
-        title={getButtonLabel(postCount)}
+        title={getButtonLabel(postCount, elapsedSecs)}
         onPress={() => {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          triggerNotificationSuccess();
           onDone();
         }}
         variant="primary"
         size="lg"
         style={{ width: '100%' }}
-        disabled={postCount < 5}
-        accessibilityLabel={postCount < 5 ? `Need ${5 - postCount} more posts to save scan` : `Save scan with ${postCount} posts`}
+        disabled={!canSave}
+        accessibilityLabel={
+          canSave
+            ? `Save scan with ${postCount} posts`
+            : `Cannot save yet — need ${!postsMet ? `${MIN_POSTS_REQUIRED - postCount} more posts` : ''}${!postsMet && !timeMet ? ' and ' : ''}${!timeMet ? `${MIN_SCAN_DURATION_SECS - elapsedSecs} more seconds` : ''}`
+        }
       />
     </View>
   );

@@ -160,7 +160,7 @@ export function useHabitFeatures(streakData: StreakData): UseHabitFeaturesReturn
 
       const newAchievements = await checkAchievements(ctx);
       if (newAchievements.length > 0) {
-        setNewlyEarnedId(newAchievements[0].id);
+        setNewlyEarnedId(newAchievements[0]?.id ?? null);
         setEarnedAchievements((prev) => [...prev, ...newAchievements]);
       }
 

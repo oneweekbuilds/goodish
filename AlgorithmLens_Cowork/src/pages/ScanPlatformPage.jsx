@@ -292,9 +292,6 @@ const ScanPlatformPage = () => {
             <h1 className="text-3xl font-bold text-text-main">
               Scan Your {platformName} Feed
             </h1>
-            <p className="text-text-muted">
-              Choose how you'd like to capture your feed
-            </p>
           </div>
         </div>
 
@@ -333,16 +330,13 @@ const ScanPlatformPage = () => {
                   <AlertCircle size={18} />
                   <span className="font-medium">Extension not detected</span>
                 </div>
-                <a
-                  href="https://chrome.google.com/webstore"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm text-primary-blue hover:underline"
+                <span
+                  className="inline-flex items-center gap-2 text-sm text-text-muted cursor-default opacity-75"
                 >
                   <Download size={16} />
                   Install Chrome Extension
-                  <ExternalLink size={14} />
-                </a>
+                  <span className="text-xs bg-slate-100 px-2 py-0.5 rounded-full ml-1">Coming Soon</span>
+                </span>
               </div>
             )}
 
@@ -359,28 +353,6 @@ const ScanPlatformPage = () => {
               Start Desktop Scan
             </button>
 
-            {/* Instructions */}
-            <div className="mt-6 pt-4 border-t border-slate-100">
-              <h3 className="text-sm font-semibold text-slate-700 mb-2">How it works:</h3>
-              <ol className="text-sm text-slate-600 space-y-1.5">
-                <li className="flex items-start gap-2">
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-medium">1</span>
-                  <span>Install the Chrome extension</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-medium">2</span>
-                  <span>Navigate to {platformName}</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-medium">3</span>
-                  <span>Click "Start Scan" and scroll your feed</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-medium">4</span>
-                  <span>Stop scan to see results</span>
-                </li>
-              </ol>
-            </div>
           </div>
 
           {/* Card B: Mobile Upload */}
@@ -394,65 +366,9 @@ const ScanPlatformPage = () => {
               </div>
             </div>
 
-            <p className="text-slate-600 mb-4">
-              Upload a screen recording of your feed. Perfect for mobile users on iOS or Android.
+            <p className="text-slate-600 mb-6">
+              Upload a screen recording of your feed. Perfect for mobile users.
             </p>
-
-            {/* Tips for best results */}
-            <div className="mb-6">
-              <p className="text-xs font-semibold text-slate-700 mb-2">Tips for best results:</p>
-              <ul className="text-xs text-slate-600 space-y-1 list-disc list-inside">
-                <li>Use a recent screen recording (1–2 minutes is ideal)</li>
-                <li>Scroll your feed normally while recording</li>
-                <li>Avoid switching apps during the recording</li>
-              </ul>
-            </div>
-
-            {/* How to record on your phone - Collapsible */}
-            <div className="mb-6">
-              <button
-                onClick={() => setShowRecordingHelp(!showRecordingHelp)}
-                className="flex items-center gap-2 text-sm text-primary-blue hover:underline font-medium"
-              >
-                {showRecordingHelp ? (
-                  <>
-                    <ChevronUp size={16} />
-                    Hide recording instructions
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown size={16} />
-                    How to record on your phone
-                  </>
-                )}
-              </button>
-
-              {showRecordingHelp && (
-                <div className="mt-3 bg-slate-50 rounded-lg p-4 border border-slate-200">
-                  {/* iOS Instructions */}
-                  <div className="mb-4">
-                    <h4 className="text-sm font-semibold text-slate-800 mb-2">On iPhone (iOS)</h4>
-                    <ul className="text-xs text-slate-600 space-y-1.5 list-disc list-inside">
-                      <li>Open Control Center (swipe down from the top-right corner).</li>
-                      <li>Tap the Screen Recording button.</li>
-                      <li>Wait for the countdown, then open the app and scroll your feed.</li>
-                      <li>When finished, stop the recording from Control Center. The video will be saved to Photos.</li>
-                    </ul>
-                  </div>
-
-                  {/* Android Instructions */}
-                  <div>
-                    <h4 className="text-sm font-semibold text-slate-800 mb-2">On Android</h4>
-                    <ul className="text-xs text-slate-600 space-y-1.5 list-disc list-inside">
-                      <li>Swipe down to open Quick Settings.</li>
-                      <li>Tap Screen Record (or your device's screen recording option).</li>
-                      <li>Start the recording, then open the app and scroll your feed.</li>
-                      <li>When finished, stop the recording. The video will be saved to your gallery.</li>
-                    </ul>
-                  </div>
-                </div>
-              )}
-            </div>
 
             {/* Drag & Drop Zone */}
             <div
@@ -557,16 +473,13 @@ const ScanPlatformPage = () => {
               <p className="text-sm text-slate-600">
                 On desktop, the AlgorithmLens Chrome extension records your feed automatically so you don't have to upload videos.
               </p>
-              <a
-                href="https://chrome.google.com/webstore"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-primary-blue text-white rounded-xl font-semibold hover:bg-blue-700 shadow-md hover:shadow-lg transition-all"
+              <span
+                className="inline-flex items-center gap-2 px-6 py-3 bg-slate-200 text-slate-400 rounded-xl font-semibold cursor-default"
               >
                 <Download size={18} />
-                Install Chrome extension
-                <ExternalLink size={16} />
-              </a>
+                Install Chrome Extension
+                <span className="text-xs bg-slate-100 px-2 py-0.5 rounded-full ml-1">Coming Soon</span>
+              </span>
               <p className="text-sm text-slate-500 mt-4">
                 On mobile, you can upload recordings today. A dedicated mobile app is coming soon.
               </p>

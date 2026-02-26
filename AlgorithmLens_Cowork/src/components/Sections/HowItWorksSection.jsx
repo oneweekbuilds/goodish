@@ -8,7 +8,7 @@ const HowItWorksSection = () => {
             <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center mb-10 sm:mb-16">
                 <h2 id="how-it-works-heading" className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-main mb-4 sm:mb-6">Your data stays yours.</h2>
                 <p className="text-base sm:text-lg text-text-muted max-w-2xl mx-auto px-2">
-                    We show you the patterns in your feed so you can engage with intention.
+                    See what the algorithm is optimizing for, so you can scroll with intention.
                 </p>
             </div>
 

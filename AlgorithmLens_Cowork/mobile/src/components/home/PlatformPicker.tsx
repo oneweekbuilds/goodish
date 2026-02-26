@@ -9,21 +9,23 @@
  * platform triggers a light haptic and highlights the selection.
  */
 
+import { triggerImpactLight, triggerImpactMedium } from '../../lib/haptics';
 import React, { useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, Animated } from 'react-native';
-import { Instagram, Twitter, Youtube, Music, Facebook, MessageCircle } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
+import { View, Text, TouchableOpacity, Animated, Platform } from 'react-native';
+import Constants from 'expo-constants';
+import { Instagram, Youtube, Music, Facebook, MessageCircle } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, RADIUS, TYPOGRAPHY, PLATFORMS } from '../../lib/theme';
 import { ModeToggle } from './ModeToggle';
 import type { ScanMode, SupportedPlatform } from '../../types/broadcast';
 import { withAlpha } from '../../lib/utils';
+import { XPlatformIcon } from '../icons/XPlatformIcon';
 
 // Platform icon mapping
 const PLATFORM_ICONS: Record<string, React.FC<{ size: number; color: string; strokeWidth?: number }>> = {
   instagram: Instagram,
-  twitter: Twitter,
+  twitter: XPlatformIcon,
   youtube: Youtube,
   tiktok: Music,
   facebook: Facebook,
@@ -32,7 +34,7 @@ const PLATFORM_ICONS: Record<string, React.FC<{ size: number; color: string; str
 
 const PLATFORM_LIST: { slug: SupportedPlatform; name: string; color: string }[] = [
   { slug: 'instagram', name: 'Instagram', color: PLATFORMS.instagram.color },
-  { slug: 'twitter', name: 'Twitter / X', color: PLATFORMS.twitter.color },
+  { slug: 'twitter', name: 'X', color: PLATFORMS.twitter.color },
   { slug: 'youtube', name: 'YouTube', color: PLATFORMS.youtube.color },
   { slug: 'tiktok', name: 'TikTok', color: PLATFORMS.tiktok.color },
   { slug: 'facebook', name: 'Facebook', color: PLATFORMS.facebook.color },
@@ -46,10 +48,15 @@ interface PlatformPickerProps {
 function PlatformPickerComponent({ onScanStart }: PlatformPickerProps) {
   const { colors, shadows } = useTheme();
   const [selectedPlatform, setSelectedPlatform] = useState<SupportedPlatform | null>(null);
-  const [scanMode, setScanMode] = useState<ScanMode>('broadcast');
+  // Screen Capture hidden — default to precision (Quick Scan) for all users.
+  // Original logic preserved for when Screen Capture ships:
+  // const isExpoGo = Constants.appOwnership === 'expo';
+  // const isAndroid = Platform.OS === 'android';
+  // const defaultMode: ScanMode = (!isExpoGo && !isAndroid && Platform.OS === 'ios') ? 'broadcast' : 'precision';
+  const [scanMode, setScanMode] = useState<ScanMode>('precision');
 
   const handlePlatformTap = useCallback((slug: SupportedPlatform) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    triggerImpactLight();
 
     if (selectedPlatform === slug) {
       // Second tap on same platform — start the scan
@@ -80,7 +87,7 @@ function PlatformPickerComponent({ onScanStart }: PlatformPickerProps) {
 
   const handleStartScan = useCallback(() => {
     if (!selectedPlatform) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    triggerImpactMedium();
 
     if (onScanStart) {
       onScanStart(selectedPlatform, scanMode);
@@ -131,7 +138,8 @@ function PlatformPickerComponent({ onScanStart }: PlatformPickerProps) {
                   width: 56,
                   height: 56,
                   borderRadius: RADIUS['2xl'],
-                  backgroundColor: isSelected ? withAlpha(platform.color, 0.09) : colors.bgCard,
+                  // L-04 FIX: Brand colors at reduced opacity for unselected state
+                  backgroundColor: isSelected ? withAlpha(platform.color, 0.15) : withAlpha(platform.color, 0.06),
                   borderWidth: isSelected ? 2 : 1,
                   borderColor: isSelected ? platform.color : colors.borderSoft,
                   justifyContent: 'center',
@@ -164,23 +172,27 @@ function PlatformPickerComponent({ onScanStart }: PlatformPickerProps) {
         })}
       </View>
 
-      {/* Mode toggle + start button — shown when a platform is selected */}
-      {selectedPlatform && (
+      {/* Screen Capture mode toggle — hidden until feature is ready */}
+      {false && selectedPlatform && (
         <View style={{ marginTop: SPACING.xl }}>
           <ModeToggle
             selectedMode={scanMode}
             onModeChange={handleModeChange}
           />
+        </View>
+      )}
 
+      {/* Start button — shown when a platform is selected */}
+      {selectedPlatform && (
+        <View style={{ marginTop: SPACING.xl }}>
           <TouchableOpacity
             onPress={handleStartScan}
             activeOpacity={0.7}
             accessibilityRole="button"
-            accessibilityLabel={`Start ${scanMode === 'broadcast' ? 'Broadcasting' : 'Scanning'}`}
+            accessibilityLabel="Start Scan"
             accessibilityHint="Begins your feed scan"
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             style={{
-              marginTop: SPACING.lg,
               backgroundColor: colors.accentGreen,
               borderRadius: RADIUS.md,
               paddingVertical: SPACING.lg,
@@ -195,7 +207,7 @@ function PlatformPickerComponent({ onScanStart }: PlatformPickerProps) {
                 color: colors.textInverse,
               }}
             >
-              {scanMode === 'broadcast' ? 'Start Broadcasting' : 'Start Scanning'}
+              Start Scan
             </Text>
           </TouchableOpacity>
         </View>

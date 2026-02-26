@@ -15,6 +15,7 @@ import {
   Smartphone
 } from 'lucide-react';
 import PlatformBadge, { getPlatformConfig } from '../components/PlatformBadge';
+import PlatformIcon from '../components/PlatformIcon';
 import Skeleton from '../components/ui/Skeleton';
 import { useUserProfile } from '../context/UserProfileContext';
 import { authenticatedFetch } from '../lib/api/authenticatedFetch';
@@ -55,9 +56,19 @@ const SourceBadge = ({ scan }) => {
 
 const SCANS_PER_PAGE = 10; // (#22) Pagination: 10 scans per page
 
+// Demo scan data for ?demo=1 mode
+const DEMO_SCANS = [
+  { id: 'demo-1', platform: 'instagram', created_at: new Date(Date.now() - 2 * 3600000).toISOString(), total_items: 42, duration_seconds: 85, ad_percentage: 0.14, status: 'completed' },
+  { id: 'demo-2', platform: 'tiktok', created_at: new Date(Date.now() - 26 * 3600000).toISOString(), total_items: 38, duration_seconds: 72, ad_percentage: 0.21, status: 'completed' },
+  { id: 'demo-3', platform: 'instagram', created_at: new Date(Date.now() - 3 * 86400000).toISOString(), total_items: 55, duration_seconds: 110, ad_percentage: 0.11, status: 'completed' },
+  { id: 'demo-4', platform: 'tiktok', created_at: new Date(Date.now() - 5 * 86400000).toISOString(), total_items: 31, duration_seconds: 60, ad_percentage: 0.19, status: 'completed' },
+  { id: 'demo-5', platform: 'instagram', created_at: new Date(Date.now() - 8 * 86400000).toISOString(), total_items: 47, duration_seconds: 95, ad_percentage: 0.16, status: 'completed' },
+];
+
 const HistoryPage = () => {
   const navigate = useNavigate();
   const { userProfile } = useUserProfile();
+  const isDemoMode = new URLSearchParams(window.location.search).get('demo') === '1';
   const [scans, setScans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -66,10 +77,15 @@ const HistoryPage = () => {
   const [deleteError, setDeleteError] = useState(null); // Styled error message
   const [currentPage, setCurrentPage] = useState(1); // (#22) Track current page
 
-  // Fetch scans on mount
+  // Fetch scans on mount (use demo data if in demo mode)
   useEffect(() => {
+    if (isDemoMode) {
+      setScans(DEMO_SCANS);
+      setLoading(false);
+      return;
+    }
     fetchScans();
-  }, []);
+  }, [isDemoMode]);
 
   const fetchScans = async () => {
     setLoading(true);
@@ -317,19 +333,18 @@ const HistoryPage = () => {
             return (
               <Link
                 key={scan.id}
-                to={`/scan/results/${scan.id}`}
+                to={isDemoMode ? `/dashboard?demo=1` : `/scan/results/${scan.id}`}
                 className={`block bg-white rounded-xl shadow-sm border border-slate-100 p-5 hover:shadow-md hover:border-primary-blue/20 active:shadow-sm active:bg-slate-50 transition-all ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}
               >
                 <div className="flex items-center gap-4">
                   {/* Platform Icon */}
-                  <div className={`flex-shrink-0 w-12 h-12 rounded-xl ${platformConfig.bgColor} flex items-center justify-center`}>
-                    <span className="text-xl">{platformConfig.icon}</span>
+                  <div className={`flex-shrink-0 w-12 h-12 rounded-xl ${platformConfig.bgColor} flex items-center justify-center text-white`}>
+                    <PlatformIcon platform={scan.platform} size={24} className="text-white" />
                   </div>
 
                   {/* Main Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <PlatformBadge platform={scan.platform} size="sm" />
                       <SourceBadge scan={scan} />
                       <span className="text-sm text-text-muted flex items-center gap-1">
                         <Clock size={14} />
@@ -463,6 +478,3 @@ const HistoryPage = () => {
 };
 
 export default HistoryPage;
-
-
-

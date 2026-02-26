@@ -46,14 +46,11 @@ const TwoWaysSection = () => {
             <p className="text-xs text-text-muted mb-4">
               Best for desktop browsing on TikTok, Instagram, YouTube, X, Facebook, LinkedIn, and Reddit.
             </p>
-            <a
-              href="https://chrome.google.com/webstore"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-primary-blue hover:text-blue-700 transition-colors"
+            <span
+              className="inline-flex items-center gap-2 text-sm font-semibold text-text-muted cursor-default opacity-75"
             >
-              Install Extension <ArrowRight size={14} aria-hidden="true" />
-            </a>
+              Install Extension <span className="text-xs bg-slate-100 px-2 py-0.5 rounded-full ml-1">Coming Soon</span>
+            </span>
           </motion.div>
 
           {/* Mobile App Card */}
@@ -76,14 +73,11 @@ const TwoWaysSection = () => {
             <p className="text-xs text-text-muted mb-4">
               Available for iOS and Android. Scan your feed anywhere, anytime.
             </p>
-            <a
-              href="https://apps.apple.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-accent-green hover:text-green-700 transition-colors"
+            <span
+              className="inline-flex items-center gap-2 text-sm font-semibold text-text-muted cursor-default opacity-75"
             >
-              Download App <ArrowRight size={14} aria-hidden="true" />
-            </a>
+              Download App <span className="text-xs bg-slate-100 px-2 py-0.5 rounded-full ml-1">Coming Soon</span>
+            </span>
           </motion.div>
         </div>
       </div>

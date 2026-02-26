@@ -170,7 +170,7 @@ export const STREAK_VISUAL_TIERS: StreakVisualTier[] = [
  * Returns the visual tier for a given streak length.
  */
 export function getStreakVisualTier(streakDays: number): StreakVisualTier {
-  let tier = STREAK_VISUAL_TIERS[0];
+  let tier: StreakVisualTier = STREAK_VISUAL_TIERS[0]!;
   for (const t of STREAK_VISUAL_TIERS) {
     if (streakDays >= t.minDays) tier = t;
   }

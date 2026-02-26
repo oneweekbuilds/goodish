@@ -115,9 +115,8 @@ def get_ads_evidence_bundle(
                     "method": "wilson"
                 }
                 observations["ad_rate_estimate_type"] = "INTERVAL"
-            except ImportError:
-                # If import fails, leave as None (should not happen in production)
-                pass
+            except ImportError as e:
+                logger.error(f"Error importing statsmodels for ad rate confidence interval: {e}", exc_info=True)
 
     # Generate analysis copy from the bundle
     analysis = generate_ads_analysis_copy(bundle)

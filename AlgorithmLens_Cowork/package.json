@@ -12,6 +12,8 @@
     "lint:changed": "node scripts/lint-changed.mjs",
     "lint:all": "eslint .",
     "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "test:smoke": "playwright test tests/dashboard-smoke.spec.js",
     "test:smoke:ui": "playwright test tests/dashboard-smoke.spec.js --ui",
     "env:setup": "node scripts/setup-env.mjs",
@@ -46,6 +48,7 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.9.3",
-    "vite": "^5.4.21"
+    "vite": "^5.4.21",
+    "vitest": "^4.0.18"
   }
 }

@@ -185,41 +185,53 @@ const SourcesTab = ({
       {/* Insight Hero */}
       <InsightHero {...hero} />
 
-      {/* Trends CTA */}
+      {/* Trends CTA or Panel */}
       <TrendsCTA
         onClick={() => onOpenTrends({ tab: 'sources', placement: 'hero_trends' })}
         isPlusUser={isPlusUser}
+        tabName="sources"
+        scanCount={scans.length}
       />
 
-      {/* Trends Panel (Plus users only) */}
-      {showTrendsPanel && (
+      {/* Trends Panel (auto-show for Plus users or when manually opened) */}
+      {(isPlusUser || showTrendsPanel) && (
         <TrendsPanel
           scans={scans}
           scanDetails={scanDetails}
           onClose={onCloseTrendsPanel}
+          embedded={isPlusUser}
         />
       )}
 
-      {/* Sources Summary */}
+      {/* Sources Summary - Stat Cards */}
       {sourcesSummary.length > 0 && (
         <section>
-          <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-3">
-            <div>
-              <h3 className="text-sm font-semibold text-slate-900 mb-1">
-                Sources summary
-              </h3>
-              <p className="text-xs text-slate-500">
-                Based on posts in this scan.
-              </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Top 5 Concentration Card */}
+            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Top 5 Concentration</p>
+              <p className="text-2xl font-bold text-slate-900">{Math.round(top5Percent)}%</p>
+              <p className="text-sm text-slate-500 mt-1">of all posts</p>
             </div>
-            <ul className="space-y-2 text-sm text-slate-700" role="list">
-              {sourcesSummary.map((summary, index) => (
-                <li key={index} className="leading-relaxed">
-                  • {summary}
-                </li>
-              ))}
-            </ul>
+            
+            {/* Top Source Card */}
+            {topSourcesTableData.length > 0 && (
+              <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Top Source</p>
+                <p className="text-lg font-bold text-slate-900">{topSourcesTableData[0].handle}</p>
+                <p className="text-sm text-slate-500 mt-1">{topSourcesTableData[0].sharePercent} of posts</p>
+              </div>
+            )}
+            
+            {/* Total Sources Card */}
+            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Total Sources</p>
+              <p className="text-2xl font-bold text-slate-900">{creatorsData.uniqueCreatorCount}</p>
+              <p className="text-sm text-slate-500 mt-1">unique accounts</p>
+            </div>
           </div>
+          
+          <p className="text-xs text-slate-500 mt-4">Based on posts in this scan.</p>
         </section>
       )}
 
@@ -255,11 +267,20 @@ const SourcesTab = ({
                 </p>
               </div>
             )}
+
+            {/* For Plus users, show how many sources are being displayed */}
+            {isPlusUser && creatorsData.uniqueCreatorCount > 10 && (
+              <div className="mt-3 px-4 py-3 bg-slate-50 border border-slate-100 rounded-lg text-center">
+                <p className="text-xs text-slate-500">
+                  Showing top {topSourcesTableData.length} of {creatorsData.uniqueCreatorCount} sources.
+                </p>
+              </div>
+            )}
           </>
         ) : (
           <div className="bg-white border border-slate-200 rounded-lg p-8 text-center">
-            <p className="text-sm text-slate-400 italic">
-              No sources were available in this window.
+            <p className="text-sm text-slate-500">
+              Source data will appear here once your scan captures post authors. Try scanning again.
             </p>
           </div>
         )}

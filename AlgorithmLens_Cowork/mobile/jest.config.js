@@ -14,6 +14,9 @@ module.exports = {
     '^expo-modules-core$': '<rootDir>/src/__tests__/__mocks__/expo-modules-core.ts',
     '^expo-haptics$': '<rootDir>/src/__tests__/__mocks__/expo-haptics.ts',
     '^@react-native-async-storage/async-storage$': '<rootDir>/src/__tests__/__mocks__/async-storage.ts',
+    '^@sentry/react-native$': '<rootDir>/src/__tests__/__mocks__/sentry-react-native.ts',
+    '^expo-constants$': '<rootDir>/src/__tests__/__mocks__/expo-constants.ts',
+    '^react-native$': '<rootDir>/src/__tests__/__mocks__/react-native.ts',
   },
   transformIgnorePatterns: [
     'node_modules/(?!expo-|@expo/|react-native|@react-native)',

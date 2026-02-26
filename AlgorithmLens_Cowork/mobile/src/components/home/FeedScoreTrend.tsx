@@ -36,7 +36,7 @@ function FeedScoreTrendComponent({ points, direction, changePercent }: FeedScore
           padding: SPACING.lg,
           borderWidth: 1,
           borderColor: colors.borderSoft,
-          ...shadows.soft,
+          ...shadows.card,
         }}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
@@ -72,7 +72,7 @@ function FeedScoreTrendComponent({ points, direction, changePercent }: FeedScore
         padding: SPACING.lg,
         borderWidth: 1,
         borderColor: colors.borderSoft,
-        ...shadows.soft,
+        ...shadows.card,
       }}
       accessibilityRole="image"
       accessibilityLabel={`Feed score trend: ${direction === 'improving' ? 'improving' : direction === 'declining' ? 'declining' : 'stable'} over 7 days`}
@@ -178,7 +178,7 @@ const Sparkline = React.memo(function Sparkline({
 
         return (
           <View
-            key={points[index].date}
+            key={points[index]?.date ?? index}
             style={{
               flex: 1,
               alignItems: 'center',
@@ -210,15 +210,15 @@ const Sparkline = React.memo(function Sparkline({
               }}
             />
 
-            {/* Day label */}
+            {/* Day label — TS-001 FIX: was ~9px, now uses captionSmall (11px) minimum */}
             <Text
               style={{
-                fontSize: TYPOGRAPHY.captionSmall.fontSize - 2,
+                fontSize: TYPOGRAPHY.captionSmall.fontSize,
                 color: colors.textTertiary as string,
                 marginTop: SPACING.xxs,
               }}
             >
-              {formatDayLabel(points[index].date)}
+              {formatDayLabel(points[index]?.date ?? '')}
             </Text>
           </View>
         );
@@ -258,5 +258,5 @@ function getSummaryText(direction: TrendDirection, changePercent: number): strin
 function formatDayLabel(dateStr: string): string {
   const date = new Date(dateStr + 'T00:00:00');
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  return days[date.getDay()];
+  return days[date.getDay()] ?? '';
 }

@@ -8,10 +8,10 @@
  * Each milestone only fires once (tracked via AsyncStorage).
  */
 
+import { triggerNotificationSuccess, triggerSelection } from '../../lib/haptics';
 import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, Animated, AccessibilityInfo } from 'react-native';
+import { View, Text, TouchableOpacity, Animated, AccessibilityInfo, Platform, StyleSheet } from 'react-native';
 import { Award } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
 
@@ -44,7 +44,7 @@ function MilestoneModalComponent({ milestone, onDismiss }: MilestoneModalProps) 
 
   useEffect(() => {
     // Celebratory haptic
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    triggerNotificationSuccess();
 
     if (isReducedMotionEnabled) {
       // Skip animation if reduced motion is enabled
@@ -69,7 +69,7 @@ function MilestoneModalComponent({ milestone, onDismiss }: MilestoneModalProps) 
   }, [fadeAnim, scaleAnim, isReducedMotionEnabled]);
 
   const handleDismiss = () => {
-    Haptics.selectionAsync();
+    triggerSelection();
     Animated.timing(fadeAnim, {
       toValue: 0,
       duration: 200,
@@ -98,16 +98,28 @@ function MilestoneModalComponent({ milestone, onDismiss }: MilestoneModalProps) 
       accessible={true}
     >
       <Animated.View
-        style={{
-          backgroundColor: colors.bgCard,
-          borderRadius: RADIUS.xl,
-          padding: SPACING['3xl'],
-          marginHorizontal: SPACING['3xl'],
-          alignItems: 'center',
-          transform: [{ scale: scaleAnim }],
-          ...shadows.hero,
-          maxWidth: 320,
-        }}
+        style={Platform.OS === 'web'
+          ? {
+              backgroundColor: colors.bgCard,
+              borderRadius: RADIUS.xl,
+              padding: SPACING['3xl'],
+              marginHorizontal: SPACING['3xl'],
+              alignItems: 'center',
+              transform: `scale(${scaleAnim.__getValue ? scaleAnim.__getValue() : 1})`,
+              ...shadows.hero,
+              maxWidth: 320,
+            }
+          : {
+              backgroundColor: colors.bgCard,
+              borderRadius: RADIUS.xl,
+              padding: SPACING['3xl'],
+              marginHorizontal: SPACING['3xl'],
+              alignItems: 'center',
+              transform: [{ scale: scaleAnim }],
+              ...shadows.hero,
+              maxWidth: 320,
+            }
+        }
       >
         {/* Award icon */}
         <View

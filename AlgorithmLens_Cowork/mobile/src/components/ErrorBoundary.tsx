@@ -7,6 +7,8 @@
 
 import React, { Component, type ErrorInfo, type ReactNode } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { router } from 'expo-router';
+import { AlertCircle } from 'lucide-react-native';
 import { captureError } from '../lib/sentry';
 import { SPACING, TYPOGRAPHY, RADIUS, COLORS } from '../lib/theme';
 
@@ -38,13 +40,21 @@ export class ErrorBoundary extends Component<Props, State> {
     captureError(error, 'ErrorBoundary', {
       componentStack: errorInfo.componentStack || null,
     });
-    if (__DEV__) {
-      console.error('[ErrorBoundary] Caught error:', error, errorInfo);
+    // Always log error details to console for debugging
+    console.error('[ErrorBoundary] error.message:', error.message);
+    console.error('[ErrorBoundary] error.stack:', error.stack);
+    if (errorInfo.componentStack) {
+      console.error('[ErrorBoundary] componentStack:', errorInfo.componentStack);
     }
   }
 
   handleRestart = (): void => {
     this.setState({ hasError: false, errorMessage: '' });
+  };
+
+  handleGoHome = (): void => {
+    this.setState({ hasError: false, errorMessage: '' });
+    router.replace('/(tabs)/');
   };
 
   render(): ReactNode {
@@ -55,8 +65,9 @@ export class ErrorBoundary extends Component<Props, State> {
 
       return (
         <View style={styles.container}>
+          {/* L-17 FIX: Calm icon instead of bright yellow emoji */}
           <View style={styles.iconContainer}>
-            <Text style={styles.icon}>⚠️</Text>
+            <AlertCircle size={28} color={COLORS.textSecondary} strokeWidth={1.8} />
           </View>
           <Text style={styles.title}>Something went wrong</Text>
           <Text style={styles.message}>
@@ -69,6 +80,13 @@ export class ErrorBoundary extends Component<Props, State> {
             activeOpacity={0.7}
           >
             <Text style={styles.buttonText}>Try Again</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, { backgroundColor: 'transparent', marginTop: SPACING.sm }]}
+            onPress={this.handleGoHome}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.buttonText, { color: COLORS.primary }]}>Go Home</Text>
           </TouchableOpacity>
         </View>
       );
@@ -90,13 +108,11 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: RADIUS['2xl'],
-    backgroundColor: COLORS.warningLight,
+    // L-17 FIX: Neutral background instead of warning yellow
+    backgroundColor: COLORS.bgSecondary,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.xl,
-  },
-  icon: {
-    fontSize: 28,
   },
   title: {
     ...TYPOGRAPHY.scoreSmall,

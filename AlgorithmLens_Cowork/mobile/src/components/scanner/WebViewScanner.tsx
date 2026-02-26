@@ -16,6 +16,7 @@ import { getPlatformUrl, getPlatformScript } from '../../lib/platformScripts';
 import { captureError, addBreadcrumb } from '../../lib/sentry';
 import { markPlatformLoggedIn, isLoggedInUrl } from '../../lib/cookieManager';
 import { COLORS, TYPOGRAPHY, RADIUS, SPACING, SHADOWS } from '../../lib/theme';
+import { getPlatformDisplayName } from '../../lib/utils';
 
 export interface FeedItemCapture {
   platform: string;
@@ -26,7 +27,8 @@ export interface FeedItemCapture {
   ad_label_text: string | null;
   post_text: string;
   hashtags: string[];
-  is_suggested: boolean;
+  // PIPELINE FIX H-03: null means subscription status is unknown
+  is_suggested: boolean | null;
   content_type: string;
   capture_timestamp: number;
   metadata?: Record<string, any>;
@@ -73,7 +75,8 @@ const BLOCKED_PATH_PATTERNS = [
   /\/live\//i,
   /\/tv\//i,
   /\/watch/i,
-  /\/shorts\//i,
+  // /shorts/ is intentionally NOT blocked — users need to scroll through
+  // Shorts to capture them during YouTube Precision scans (H-05, A-04)
   /\/video\//i,
   /\/status\/\d+\/video/i,
 ];
@@ -178,6 +181,11 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
           setCapturedItems((prev) => {
             return [...prev, data];
           });
+        } else if (message.type === 'SCANNER_DEBUG' && message.data) {
+          // Debug logging from injected script — log in dev mode only
+          if (__DEV__) {
+            console.log(`[Scanner Debug] captured: ${message.data.captured}, observing: ${message.data.observing}`);
+          }
         } else if (message.type === 'SCAN_ERROR' && message.data) {
           // Error reported by injected script (try-catch or timeout)
           const scanErr = message.data as ScanError;
@@ -231,7 +239,9 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
     [baseUrl]
   );
 
-  // M10: Android fallback + login detection for all platforms
+  // M10: Login detection + block navigation to video/reel pages on all platforms.
+  // YouTube and other SPAs use client-side navigation which bypasses onShouldStartLoadWithRequest
+  // on iOS, so we also need to catch blocked URLs here and navigate back.
   const handleNavigationStateChange = useCallback(
     (navState: { url: string }) => {
       const { url } = navState;
@@ -241,11 +251,11 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
         markPlatformLoggedIn(platform);
       }
 
-      // Android: block navigation to video/reel pages
-      if (Platform.OS === 'android') {
-        if (BLOCKED_PATH_PATTERNS.some((p) => p.test(url))) {
-          webViewRef.current?.goBack();
-        }
+      // Block navigation to video/reel/watch pages on ALL platforms (not just Android).
+      // SPA-style navigation (e.g. YouTube clicking into a video) bypasses
+      // onShouldStartLoadWithRequest on iOS, so this is needed as a fallback.
+      if (BLOCKED_PATH_PATTERNS.some((p) => p.test(url))) {
+        webViewRef.current?.goBack();
       }
     },
     [platform]
@@ -384,6 +394,8 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
               <TouchableOpacity
                 onPress={handleRetry}
                 activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel={`Try again, ${MAX_RETRY_ATTEMPTS - retryCount} attempts remaining`}
                 style={{
                   backgroundColor: COLORS.primaryBlue,
                   borderRadius: RADIUS.md,
@@ -401,6 +413,8 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
               <TouchableOpacity
                 onPress={handleReportIssue}
                 activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel="Report this scan issue"
                 style={{
                   backgroundColor: COLORS.primaryBlue,
                   borderRadius: RADIUS.md,
@@ -471,15 +485,24 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
         mediaPlaybackRequiresUserAction={true}
         allowsInlineMediaPlayback={true}
         allowsFullscreenVideo={false}
+        accessible={true}
         onLoadEnd={() => {
-          if (status === 'loading') setStatus('scanning');
+          // Give the injected JS 5 seconds to send SCANNER_READY.
+          // If it doesn't fire (e.g. script blocked by CSP), fall back to 'scanning'
+          // so the user isn't stuck on a loading screen indefinitely.
+          setTimeout(() => {
+            setStatus((prev) => (prev === 'loading' ? 'scanning' : prev));
+          }, 5000);
         }}
-        style={{ flex: 1 } as ViewStyle}
+        style={{ flex: 1, backgroundColor: '#FFFFFF' } as ViewStyle}
+        containerStyle={{ backgroundColor: '#FFFFFF' }}
       />
 
       {/* Loading indicator — visible while page is loading, before scanning starts */}
       {isLoading && (
         <View
+          accessibilityLiveRegion="polite"
+          accessibilityLabel={`Loading ${platform}`}
           style={{
             position: 'absolute',
             top: 0,
@@ -509,7 +532,7 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
                 marginTop: SPACING.lg,
               }}
             >
-              Loading {platform.charAt(0).toUpperCase() + platform.slice(1).toLowerCase()}
+              Loading {getPlatformDisplayName(platform)}
             </Text>
             <Text
               style={{

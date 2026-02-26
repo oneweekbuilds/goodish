@@ -15,6 +15,7 @@
  * On web/unsupported platforms, renders a disabled placeholder.
  */
 
+import { triggerImpactMedium } from '../../lib/haptics';
 import React from 'react';
 import {
   View,
@@ -24,7 +25,6 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Radio, Smartphone } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, TYPOGRAPHY, RADIUS } from '../../lib/theme';
 
@@ -47,8 +47,8 @@ export const BroadcastPickerButton = React.memo(function BroadcastPickerButton({
   // Unsupported platform
   if (Platform.OS !== 'ios' && Platform.OS !== 'android') {
     return (
-      <View style={[styles.container, { opacity: 0.5 }]}>
-        <Text style={[styles.unavailableText, { color: colors.textMuted }]}>
+      <View style={Platform.OS === 'web' ? { ...styles.container, opacity: 0.5 } : [styles.container, { opacity: 0.5 }]}>
+        <Text style={Platform.OS === 'web' ? { ...styles.unavailableText, color: colors.textMuted } : [styles.unavailableText, { color: colors.textMuted }]}>
           Broadcast recording requires iOS or Android
         </Text>
       </View>
@@ -64,7 +64,7 @@ export const BroadcastPickerButton = React.memo(function BroadcastPickerButton({
 
   const handlePress = () => {
     if (disabled) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    triggerImpactMedium();
     onPress?.();
   };
 
@@ -73,7 +73,13 @@ export const BroadcastPickerButton = React.memo(function BroadcastPickerButton({
       onPress={handlePress}
       disabled={disabled}
       activeOpacity={0.7}
-      style={[
+      style={Platform.OS === 'web' ? {
+        ...styles.button,
+        backgroundColor: disabled ? colors.bgPage : colors.primaryBlue,
+        opacity: disabled ? 0.5 : 1,
+        minHeight: 44,
+        ...shadows.soft,
+      } : [
         styles.button,
         {
           backgroundColor: disabled ? colors.bgPage : colors.primaryBlue,
@@ -96,7 +102,10 @@ export const BroadcastPickerButton = React.memo(function BroadcastPickerButton({
       </View>
       <View style={styles.textContainer}>
         <Text
-          style={[
+          style={Platform.OS === 'web' ? {
+            ...styles.buttonLabel,
+            color: disabled ? colors.textMuted : colors.textInverse,
+          } : [
             styles.buttonLabel,
             { color: disabled ? colors.textMuted : colors.textInverse },
           ]}
@@ -104,7 +113,10 @@ export const BroadcastPickerButton = React.memo(function BroadcastPickerButton({
           {buttonLabel}
         </Text>
         <Text
-          style={[
+          style={Platform.OS === 'web' ? {
+            ...styles.buttonHint,
+            color: disabled ? colors.textSecondary : 'rgba(255,255,255,0.7)',
+          } : [
             styles.buttonHint,
             { color: disabled ? colors.textSecondary : 'rgba(255,255,255,0.7)' },
           ]}

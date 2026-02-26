@@ -26,7 +26,8 @@
  * - Generous white space
  */
 
-import React, { useCallback, useState } from 'react';
+import { triggerImpactMedium } from '../../lib/haptics';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -37,7 +38,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Scan } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useStreak } from '../../hooks/useStreak';
@@ -66,8 +66,8 @@ interface RecentScan {
 }
 
 interface CalmHomeScreenProps {
-  /** Feed score data from recent scans, if available. */
-  feedScore: FeedScore | null;
+  /** Feed score data from recent scans. null = not enough data, undefined = still loading. */
+  feedScore: FeedScore | null | undefined;
   /** Most recent scan for the preview card. */
   recentScan?: RecentScan | null;
   /** Callback when the user starts a scan. */
@@ -92,6 +92,10 @@ interface CalmHomeScreenProps {
   freezeAvailable?: boolean;
   /** Whether streak is at risk. */
   streakAtRisk?: boolean;
+  /** Actual scan count from database (Supabase), for correcting stale local streak state. */
+  dbScanCount?: number;
+  /** Callback to refresh dashboard data (scans from Supabase). */
+  onRefreshDashboard?: () => Promise<void>;
 }
 
 function CalmHomeScreenComponent({
@@ -108,31 +112,36 @@ function CalmHomeScreenComponent({
   suggestion,
   freezeAvailable = false,
   streakAtRisk = false,
+  dbScanCount = 0,
+  onRefreshDashboard,
 }: CalmHomeScreenProps) {
   const { colors, shadows } = useTheme();
   const { user } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [sheetVisible, setSheetVisible] = useState(false);
 
-  // Extract first name — prefer metadata, fall back to cleaned email prefix
+  // H-01 FIX: Extract display name from auth profile.
+  // Priority: display_name → full_name → name → omit entirely.
+  // NEVER parse the email address to extract a "name" — email handles
+  // like "jwjwin0" are not names and look broken in the greeting.
   const userName = React.useMemo(() => {
     if (!user) return undefined;
     const meta = user.user_metadata;
-    if (meta?.full_name) return (String(meta.full_name ?? '').split(' ')[0]) || undefined;
-    if (meta?.name) return (String(meta.name ?? '').split(' ')[0]) || undefined;
-    if (user.email) {
-      // Strip Gmail-style +alias suffixes (e.g., "user+app1@gmail.com" → "user")
-      const localPart = user.email.split('@')[0];
-      const cleaned = localPart.split('+')[0];
-      // Only use if the cleaned name looks reasonable (not just numbers/symbols)
-      if (cleaned && /[a-zA-Z]/.test(cleaned)) return cleaned;
+
+    // Try explicit display name fields first
+    const displayName = meta?.display_name ?? meta?.full_name ?? meta?.name;
+    if (displayName) {
+      const firstName = String(displayName).trim().split(/\s+/)[0];
+      if (firstName) return firstName;
     }
+
+    // No usable name — greeting will just say "Good morning" / "Good evening" (no name)
     return undefined;
   }, [user]);
 
   const {
     streakData,
-    displayState,
+    displayState: rawDisplayState,
     loading: streakLoading,
     greeting,
     pendingMilestone,
@@ -140,19 +149,46 @@ function CalmHomeScreenComponent({
     refresh: refreshStreak,
   } = useStreak(userName);
 
+  // H-03 FIX: Override display state when local streak data is stale.
+  // If the database has scans but AsyncStorage thinks total_scans is 0,
+  // show PAUSED (not NEW) so the user doesn't see "Start your streak" when
+  // they already have scan history.
+  const displayState = React.useMemo(() => {
+    if (rawDisplayState === 'NEW' && dbScanCount > 0) {
+      return 'PAUSED' as const;
+    }
+    return rawDisplayState;
+  }, [rawDisplayState, dbScanCount]);
+
+  // H-09 FIX: Lock the subtitle to the first non-loading value within a session.
+  // This prevents the subtitle from flickering between states (e.g., "Welcome back"
+  // → "See what's in your feed" → "Your feed awareness is growing") as data loads.
+  const lockedSubheadingRef = useRef<string | null>(null);
+  const subheading = React.useMemo(() => {
+    // Only lock once streak has loaded (not in loading state)
+    if (!streakLoading && lockedSubheadingRef.current === null) {
+      lockedSubheadingRef.current = getSubheading(displayState, streakData.total_scans, dbScanCount);
+    }
+    return lockedSubheadingRef.current ?? getSubheading(displayState, streakData.total_scans, dbScanCount);
+  }, [streakLoading, displayState, streakData.total_scans, dbScanCount]);
+
+  // M-19 FIX: Pull-to-refresh now refreshes both streak AND dashboard data
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await refreshStreak();
+      await Promise.all([
+        refreshStreak(),
+        onRefreshDashboard?.(),
+      ]);
     } catch {
-      // Silently fail — streak data is not critical
+      // Silently fail — data refresh is not critical
     } finally {
       setRefreshing(false);
     }
-  }, [refreshStreak]);
+  }, [refreshStreak, onRefreshDashboard]);
 
   const handleCtaPress = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    triggerImpactMedium();
     setSheetVisible(true);
   }, []);
 
@@ -195,10 +231,10 @@ function CalmHomeScreenComponent({
         showsVerticalScrollIndicator={false}
       >
         {/* ── Greeting ── */}
-        <View style={{ marginBottom: SPACING['2xl'] }}>
+        <View style={{ marginBottom: SPACING['2xl'] }} accessibilityLiveRegion="polite">
           <Text
             style={{
-              ...TYPOGRAPHY.heroTitle,
+              ...TYPOGRAPHY.h1,
               color: colors.textMain,
               marginBottom: SPACING.xs,
             }}
@@ -209,10 +245,11 @@ function CalmHomeScreenComponent({
           <Text
             style={{
               ...TYPOGRAPHY.body,
-              color: colors.textMuted,
+              color: colors.textSecondary,
+              marginBottom: SPACING.xl,
             }}
           >
-            {getSubheading(displayState, streakData.total_scans)}
+            See what's in your social media feed
           </Text>
         </View>
 
@@ -266,7 +303,9 @@ function CalmHomeScreenComponent({
             ...shadows.hero,
           }}
         >
-          <Scan size={22} color={colors.textInverse} strokeWidth={2} />
+          {/* H-2 FIX: Updated CTA text to indicate platform selection step */}
+          {/* H-7 FIX: Increased icon size for better visual balance */}
+          <Scan size={26} color={colors.textInverse} strokeWidth={2} />
           <Text
             style={{
               ...TYPOGRAPHY.buttonLg,
@@ -274,7 +313,7 @@ function CalmHomeScreenComponent({
               fontSize: TYPOGRAPHY.h2.fontSize,
             }}
           >
-            Scan Your Feed
+            Choose a Platform to Scan
           </Text>
         </TouchableOpacity>
 
@@ -321,11 +360,12 @@ function CalmHomeScreenComponent({
         </View>
       </ScrollView>
 
-      {/* Platform selection bottom sheet */}
+      {/* Platform selection bottom sheet — M-24 FIX: pass last platform for default selection */}
       <PlatformBottomSheet
         visible={sheetVisible}
         onClose={handleSheetClose}
         onScanStart={handleScanStart}
+        lastPlatform={recentScan?.platform as import('../../types/broadcast').SupportedPlatform | undefined}
       />
     </SafeAreaView>
   );
@@ -334,22 +374,16 @@ function CalmHomeScreenComponent({
 export const CalmHomeScreen = React.memo(CalmHomeScreenComponent);
 
 /**
- * Contextual subheading based on streak state.
+ * Contextual subheading based on scan history.
+ * H-09 FIX: Uses deterministic logic based on whether user has scanned before,
+ * not streak display state which can change within a session.
  * Epistemically restrained — describes, never accuses.
  */
-function getSubheading(displayState: string, totalScans: number): string {
-  switch (displayState) {
-    case 'NEW':
-      return 'See what appears in your social media feed';
-    case 'ACTIVE':
-      return totalScans > 5
-        ? 'Your feed awareness is growing'
-        : 'Keep scanning to build your picture';
-    case 'GRACE':
-      return 'Scan today to keep your streak';
-    case 'PAUSED':
-      return 'Welcome back — ready for a fresh scan?';
-    default:
-      return 'See what appears in your social media feed';
+function getSubheading(_displayState: string, totalScans: number, dbScanCount: number): string {
+  // Deterministic: has the user ever scanned?
+  const hasHistory = totalScans > 0 || dbScanCount > 0;
+  if (hasHistory) {
+    return 'Welcome back \u2014 ready for a fresh scan?';
   }
+  return 'See what\u2019s in your social media feed';
 }

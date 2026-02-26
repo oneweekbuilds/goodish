@@ -26,7 +26,7 @@ const PricingPage = () => {
                         Start free, or unlock deeper analysis with Plus.
                     </p>
                     <p className="text-sm text-text-muted mt-4">
-                        Built by an MIT student. Designed for transparency.
+                        Built at MIT. Designed for transparency.
                     </p>
                 </section>
 

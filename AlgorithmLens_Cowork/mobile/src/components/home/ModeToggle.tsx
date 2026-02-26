@@ -8,12 +8,13 @@
  * sub-selection before the scan starts.
  */
 
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { Radio, Type } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
+import React, { useMemo } from 'react';
+import { View, Text, TouchableOpacity, Platform, Alert } from 'react-native';
+import { Radio, Type, Check } from 'lucide-react-native';
+import { triggerSelection } from '../../lib/haptics';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
+import { isBroadcastModuleAvailable } from '../../lib/broadcastSessionManager';
 import type { ScanMode } from '../../types/broadcast';
 
 interface ModeToggleProps {
@@ -24,9 +25,25 @@ interface ModeToggleProps {
 function ModeToggleComponent({ selectedMode, onModeChange }: ModeToggleProps) {
   const { colors, shadows } = useTheme();
 
+  // Runtime check: can the native broadcast module actually load?
+  // Returns true in dev builds / production builds with native modules.
+  // Returns false in Expo Go (native modules not compiled in).
+  const broadcastAvailable = useMemo(() => isBroadcastModuleAvailable(), []);
+
   const handleModePress = (mode: ScanMode) => {
     if (mode === selectedMode) return;
-    Haptics.selectionAsync();
+    // Show explanation when broadcast is tapped but native modules are unavailable
+    if (mode === 'broadcast' && !broadcastAvailable) {
+      Alert.alert(
+        'Screen Capture Coming Soon',
+        'Screen Capture lets you record your real feed as you scroll through your favorite apps. '
+          + 'This feature is currently in development and will be available in a future update.\n\n'
+          + 'In the meantime, Quick Scan provides full feed analysis via the built-in browser.',
+        [{ text: 'Got it', style: 'default' }],
+      );
+      return;
+    }
+    triggerSelection();
     onModeChange(mode);
   };
 
@@ -46,7 +63,7 @@ function ModeToggleComponent({ selectedMode, onModeChange }: ModeToggleProps) {
         activeOpacity={0.7}
         accessibilityRole="radio"
         accessibilityState={{ selected: selectedMode === 'broadcast' }}
-        accessibilityLabel="Broadcast mode — scroll your real app"
+        accessibilityLabel="Screen Capture mode — record your real feed as you scroll"
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         style={{
           flex: 1,
@@ -69,10 +86,15 @@ function ModeToggleComponent({ selectedMode, onModeChange }: ModeToggleProps) {
             style={{
               ...TYPOGRAPHY.labelBold,
               color: selectedMode === 'broadcast' ? colors.textInverse : colors.textMain,
+              flex: 1,
             }}
           >
-            Broadcast
+            Screen Capture
           </Text>
+          {/* M-12 FIX: Checkmark on selected mode card */}
+          {selectedMode === 'broadcast' && (
+            <Check size={16} color={colors.textInverse} strokeWidth={2.5} />
+          )}
         </View>
         <Text
           style={{
@@ -80,13 +102,13 @@ function ModeToggleComponent({ selectedMode, onModeChange }: ModeToggleProps) {
             color: selectedMode === 'broadcast' ? colors.whiteOverlay85 : colors.textSecondary,
           }}
         >
-          Scroll your real app
+          Record your real feed as you scroll
         </Text>
         {selectedMode !== 'broadcast' && (
           <View
             style={{
               marginTop: SPACING.sm,
-              backgroundColor: colors.accentGreen,
+              backgroundColor: broadcastAvailable ? colors.accentGreen : colors.textTertiary,
               borderRadius: RADIUS.sm,
               paddingHorizontal: SPACING.sm,
               paddingVertical: SPACING.xxs,
@@ -94,7 +116,7 @@ function ModeToggleComponent({ selectedMode, onModeChange }: ModeToggleProps) {
             }}
           >
             <Text style={{ ...TYPOGRAPHY.captionSmall, fontWeight: '700', color: colors.white }}>
-              RECOMMENDED
+              {broadcastAvailable ? 'RECOMMENDED' : 'COMING SOON'}
             </Text>
           </View>
         )}
@@ -106,7 +128,7 @@ function ModeToggleComponent({ selectedMode, onModeChange }: ModeToggleProps) {
         activeOpacity={0.7}
         accessibilityRole="radio"
         accessibilityState={{ selected: selectedMode === 'precision' }}
-        accessibilityLabel="Precision mode — text-only analysis in built-in browser"
+        accessibilityLabel="Quick Scan mode — analyze content via built-in browser"
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         style={{
           flex: 1,
@@ -129,10 +151,15 @@ function ModeToggleComponent({ selectedMode, onModeChange }: ModeToggleProps) {
             style={{
               ...TYPOGRAPHY.labelBold,
               color: selectedMode === 'precision' ? colors.textInverse : colors.textMain,
+              flex: 1,
             }}
           >
-            Precision
+            Quick Scan
           </Text>
+          {/* M-12 FIX: Checkmark on selected mode card */}
+          {selectedMode === 'precision' && (
+            <Check size={16} color={colors.textInverse} strokeWidth={2.5} />
+          )}
         </View>
         <Text
           style={{
@@ -140,7 +167,7 @@ function ModeToggleComponent({ selectedMode, onModeChange }: ModeToggleProps) {
             color: selectedMode === 'precision' ? colors.whiteOverlay85 : colors.textSecondary,
           }}
         >
-          Text-only via browser
+          Analyze content via built-in browser
         </Text>
       </TouchableOpacity>
     </View>

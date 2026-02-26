@@ -10,11 +10,13 @@ import {
   AccessibilityInfo,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { ErrorBoundary } from '../../src/components/ErrorBoundary';
 import { useDashboard } from '../../src/hooks/useDashboard';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
-import { computeDashboardData, DashboardData, PoliticalAnalysis, ToneAnalysis } from '../../src/lib/computeDashboardData';
+import { computeDashboardData, DashboardData, PoliticalAnalysis, ToneAnalysis, AdvertiserStat, ToneSourceStat, ToneBySourceOrigin, CreatorNovelty } from '../../src/lib/computeDashboardData';
 import { InsightHero } from '../../src/components/dashboard/InsightHero';
 import { BarChart } from '../../src/components/dashboard/BarChart';
 import { StackedBar100 } from '../../src/components/dashboard/StackedBar100';
@@ -24,8 +26,9 @@ import { SectionHeader } from '../../src/components/dashboard/SectionHeader';
 import { LockedOverlayCard } from '../../src/components/plan/LockedOverlayCard';
 import { DashboardTour } from '../../src/components/dashboard/DashboardTour';
 import { SPACING, RADIUS, TYPOGRAPHY, COLORS } from '../../src/lib/theme';
-import * as Haptics from 'expo-haptics';
+import { triggerSelection } from '../../src/lib/haptics';
 import { captureError } from '../../src/lib/sentry';
+import { getPlatformDisplayName } from '../../src/lib/utils';
 import {
   Search,
   Sparkles,
@@ -40,15 +43,21 @@ import {
   BarChart3,
 } from 'lucide-react-native';
 
+// ─── Animation Constants ─────────────────────────────────
+const ANIMATION = {
+  TAB_FADE_OUT: 80,
+  TAB_FADE_IN: 150,
+} as const;
+
 // ─── Tab Definitions ─────────────────────────────────────
 
 const TABS = [
   { id: 'overview', label: 'Overview', needsAi: false },
   { id: 'sources', label: 'Sources', needsAi: false },
-  { id: 'ads', label: 'Ads', needsAi: false },
-  { id: 'politics', label: 'Politics', needsAi: true },
+  { id: 'ads', label: 'Ads & Promos', needsAi: false },
+  { id: 'politics', label: 'Political', needsAi: true },
   { id: 'tone', label: 'Tone', needsAi: true },
-  { id: 'suggested_vs_followed', label: 'Suggested', needsAi: false },
+  { id: 'suggested_vs_followed', label: 'Suggested vs. Followed', needsAi: false },
 ];
 
 // Friendly content type labels
@@ -65,139 +74,269 @@ const CONTENT_TYPE_LABELS: Record<string, string> = {
 
 // ─── Tab Content Components ──────────────────────────────
 
-const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: DashboardData; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => (
-  <View style={{ gap: 8 }}>
-    <InsightHero
-      title={data.overviewInsight.title}
-      meaning={data.overviewInsight.meaning}
-      whyCare={data.overviewInsight.whyCare}
-      meta={data.overviewInsight.meta}
-      accent={colors.primaryBlue}
-      counterfactual="This is what showed up during this window. It may not represent your typical feed — a single scan captures one moment, not a pattern."
-      howWeMeasure={{
-        what: 'A snapshot of your feed composition at the time of scanning — content types, sources, ads, and recommendations.',
-        how: 'Posts are captured from the visible feed via scrolling, then categorized by platform-provided signals (creator handles, ad labels, recommendation indicators).',
-        limitations: 'Feed composition changes between sessions. A single scan shows one moment in time, not a persistent pattern. Re-scan to see how your feed evolves.',
-        learnMoreUrl: 'https://algorithmlens.com/dashboard#overview',
-      }}
-    />
+const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: DashboardData; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
+  // VH-002/PD-005 FIX: Overview secondary sections collapsed by default
+  const [showMore, setShowMore] = useState(false);
 
-    <SectionHeader title="Key Metrics" />
+  // ── Feed in Minutes calculations ──
+  const DAILY_MINUTES = 45;
+  const adMinutes = data.totalPosts >= 10 ? (data.adPct / 100) * DAILY_MINUTES : null;
+  const politicalPct = data.politicalAnalysis?.politicalPct ?? 0;
+  // Show 0 when political content is 0% (instead of ambiguous "—")
+  const politicalMinutes = data.totalPosts >= 10 ? (politicalPct / 100) * DAILY_MINUTES : null;
 
-    <View style={{ gap: SPACING.sm }}>
-      <MetricCard
-        headline="Posts scanned"
-        value={String(data.totalPosts)}
-        microLine={`From this scan session`}
-        hasData={data.totalPosts > 0}
-        fallbackText="No posts captured"
-        icon={<Layers size={16} color={colors.primaryBlue} strokeWidth={2} />}
+  const formatMinutes = (mins: number | null): string => {
+    if (mins === null) return '—';
+    if (mins === 0) return '0';
+    if (mins < 1) return '< 1';
+    return String(Math.round(mins));
+  };
+
+  // ── Experiment Suggestions ──
+  const suggestions: string[] = [];
+  if (data.totalPosts >= 10) {
+    if (data.suggestedPct > 60) {
+      suggestions.push('Try using chronological feed mode to see more from accounts you follow.');
+    }
+    if (data.top5Pct > 70) {
+      suggestions.push('Explore new creators — your feed is heavily concentrated.');
+    }
+    if (data.adPct > 20) {
+      suggestions.push('Consider using ad-blocking features on this platform.');
+    }
+    if (data.adPct === 0) {
+      suggestions.push('Your scan showed no detected ads — scan longer next time for more complete results.');
+    }
+    suggestions.push('Compare results across multiple scans to see patterns.');
+  } else {
+    suggestions.push('Scan at least 10 posts to see meaningful experiment suggestions.');
+    suggestions.push('Compare results across multiple scans to see patterns.');
+  }
+
+  // ── Content Patterns ──
+  const emotionalSummary = data.toneAnalysis
+    ? data.toneAnalysis.negativePct >= 35 ? 'High intensity — notable negative tone'
+    : data.toneAnalysis.positivePct >= 50 ? 'Mostly positive'
+    : data.toneAnalysis.neutralPct >= 50 ? 'Mostly neutral'
+    : 'Mix of positive and negative'
+    : null;
+
+  const sourceDiversitySummary = data.topCreators.length >= 5
+    ? `Concentrated — top 5 creators make up ${data.top5Pct}%`
+    : data.topCreators.length > 0
+    ? `${data.uniqueCreatorCount} unique creators detected`
+    : null;
+
+  const hasContentPatterns = emotionalSummary || sourceDiversitySummary;
+
+  return (
+    <View style={{ gap: SPACING['2xl'] }}>
+      <InsightHero
+        title={data.overviewInsight.title}
+        meaning={data.overviewInsight.meaning}
+        whyCare={data.overviewInsight.whyCare}
+        meta={data.overviewInsight.meta}
+        accent={colors.primaryBlue}
+        counterfactual="This is what showed up during this window. It may not represent your typical feed — a single scan captures one moment, not a pattern."
+        howWeMeasure={{
+          what: 'A snapshot of your feed composition at the time of scanning — content types, sources, ads, and recommendations.',
+          how: 'Posts are captured from the visible feed via scrolling, then categorized by platform-provided signals (creator handles, ad labels, recommendation indicators).',
+          limitations: 'Feed composition changes between sessions. A single scan shows one moment in time, not a persistent pattern. Re-scan to see how your feed evolves.',
+          learnMoreUrl: 'https://algorithmlens.com/dashboard#overview',
+        }}
       />
 
-      <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
-        <View style={{ flex: 1 }}>
-          <MetricCard
-            headline="Ads detected"
-            value={`${data.adPct}%`}
-            microLine={`${data.adCount} of ${data.totalPosts}`}
-            hasData={data.totalPosts > 0}
-            icon={<ShoppingBag size={16} color={colors.iconAds} strokeWidth={2} />}
-            contextLine={data.adPct <= 5 ? "Very few ads in this session" : data.adPct <= 15 ? "A typical ad density" : "Higher than average ad density"}
-          />
+      <SectionHeader title="Key Metrics" />
+
+      <View style={{ gap: SPACING.sm }}>
+        <MetricCard
+          headline="Posts scanned"
+          value={String(data.totalPosts)}
+          microLine={`From this scan session`}
+          hasData={data.totalPosts > 0}
+          fallbackText="No posts captured"
+          icon={<Layers size={16} color={colors.primaryBlue} strokeWidth={2} />}
+        />
+
+        <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
+          <View style={{ flex: 1 }}>
+            <MetricCard
+              headline="Ads detected"
+              value={`${data.adPct}%`}
+              microLine={`${data.adCount} of ${data.totalPosts}`}
+              hasData={data.totalPosts > 0}
+              icon={<ShoppingBag size={16} color={colors.iconAds} strokeWidth={2} />}
+              contextLine={`${data.adPct}% of posts were labeled as ads`}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <MetricCard
+              headline="Suggested"
+              value={`${data.suggestedPct}%`}
+              microLine={`${data.suggestedCount} of ${data.totalPosts}`}
+              hasData={data.totalPosts > 0}
+              icon={<Users size={16} color={colors.accentGreen} strokeWidth={2} />}
+              contextLine={`${data.suggestedPct}% from accounts you don't follow`}
+            />
+          </View>
         </View>
-        <View style={{ flex: 1 }}>
+
+        {data.topCreators.length > 0 && (
           <MetricCard
-            headline="Suggested"
-            value={`${data.suggestedPct}%`}
-            microLine={`${data.suggestedCount} of ${data.totalPosts}`}
-            hasData={data.totalPosts > 0}
-            icon={<Users size={16} color={colors.accentGreen} strokeWidth={2} />}
-            contextLine={data.suggestedPct >= 50 ? "Most of your feed was recommended" : data.suggestedPct >= 20 ? "A moderate amount of suggestions" : "Your feed was mostly from accounts you follow"}
+            headline="Top 5 concentration"
+            value={`${data.top5Pct}%`}
+            microLine={data.topCreators[0]?.name && data.topCreators[0].name !== 'Unknown' ? `Most from @${data.topCreators[0].name}` : data.topCreators[1]?.name && data.topCreators[1].name !== 'Unknown' ? `Most identified: @${data.topCreators[1].name}` : `From ${data.uniqueCreatorCount} sources`}
+            hasData={data.topCreators.length > 0}
+            fallbackText="Creator data appears after scanning more content"
+            icon={<BarChart3 size={16} color={colors.accent} strokeWidth={2} />}
           />
-        </View>
+        )}
       </View>
 
-      {data.topCreators.length > 0 && (
-        <MetricCard
-          headline="Top 5 concentration"
-          value={`${data.top5Pct}%`}
-          microLine={`Most from @${data.topCreators[0].name}`}
-          hasData={data.topCreators.length > 0}
-          fallbackText="No creator data available"
-          icon={<BarChart3 size={16} color={colors.accent} strokeWidth={2} />}
-        />
-      )}
-    </View>
-
-    {data.contentTypes.length > 0 && (
-      <>
-        <SectionHeader title="Content Types" subtitle="Formats in your feed" />
-        <View style={{
+      {/* VH-002 FIX: "See more details" toggle — secondary sections collapsed by default */}
+      {/* A-004 FIX: minHeight 44 ensures accessible tap target */}
+      <TouchableOpacity
+        onPress={() => setShowMore(!showMore)}
+        activeOpacity={0.7}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: SPACING.sm,
+          paddingVertical: SPACING.md,
+          minHeight: 44,
+          borderRadius: RADIUS.md,
           backgroundColor: colors.bgCard,
-          borderRadius: RADIUS.lg,
-          padding: SPACING.lg,
           borderWidth: 1,
           borderColor: colors.borderSoft,
-          ...shadows.card,
-        }}>
-          <StackedBar100
-            segments={data.contentTypes.map((ct, i) => ({
-              label: CONTENT_TYPE_LABELS[ct.label] || ct.label,
-              percentage: ct.percentage,
-              count: ct.count,
-              color: colors.chartPalette[i % colors.chartPalette.length],
-            }))}
-          />
-        </View>
-      </>
-    )}
+        }}
+        accessibilityRole="button"
+        accessibilityLabel={showMore ? 'Hide additional details' : 'Show additional details'}
+        accessibilityState={{ expanded: showMore }}
+      >
+        <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.primaryBlue }}>
+          {showMore ? 'Show less' : 'See more details'}
+        </Text>
+        <ChevronDown
+          size={16}
+          color={colors.primaryBlue}
+          strokeWidth={2}
+          style={{ transform: [{ rotate: showMore ? '180deg' : '0deg' }] }}
+        />
+      </TouchableOpacity>
 
-    {/* Premium: Trend Analysis — locked for free users */}
-    <LockedOverlayCard
-      locked={!isPlus}
-      title="Trend analysis"
-      body="See how your feed composition changes over time. Track ad percentages, source concentration, and content themes across scans."
-      onUpgrade={onUpgrade}
-    >
-      <View style={{ gap: SPACING.sm }}>
-        <SectionHeader title="Trends Over Time" subtitle="How your feed is changing" />
-        <View style={{
-          backgroundColor: colors.bgCard, borderRadius: RADIUS.lg, padding: SPACING.lg,
-          borderWidth: 1, borderColor: colors.borderSoft, ...shadows.card, minHeight: 120,
-        }}>
-          <MetricCard headline="Ad trend" value="—" microLine="Across recent scans" hasData={false} />
-        </View>
-        <View style={{
-          backgroundColor: colors.bgCard, borderRadius: RADIUS.lg, padding: SPACING.lg,
-          borderWidth: 1, borderColor: colors.borderSoft, ...shadows.card, minHeight: 120,
-        }}>
-          <MetricCard headline="Source diversity trend" value="—" microLine="Across recent scans" hasData={false} />
-        </View>
-      </View>
-    </LockedOverlayCard>
-  </View>
-));
+      {showMore && data.contentTypes.length > 0 && (
+        <>
+          <SectionHeader title="Content Types" subtitle="Formats in your feed" />
+          <View style={{
+            backgroundColor: colors.bgCard,
+            borderRadius: RADIUS.lg,
+            padding: SPACING.lg,
+            borderWidth: 1,
+            borderColor: colors.borderSoft,
+            ...shadows.card,
+          }}>
+            <StackedBar100
+              segments={data.contentTypes.map((ct, i) => ({
+                label: CONTENT_TYPE_LABELS[ct.label] || ct.label,
+                percentage: ct.percentage,
+                count: ct.count,
+                color: colors.chartPalette[i % colors.chartPalette.length] ?? colors.accent,
+              }))}
+            />
+          </View>
+        </>
+      )}
 
-const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: DashboardData; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => (
-  <View style={{ gap: SPACING.sm }}>
-    <InsightHero
-      title={data.sourcesInsight.title}
-      meaning={data.sourcesInsight.meaning}
-      whyCare={data.sourcesInsight.whyCare}
-      meta={data.sourcesInsight.meta}
-      accent={colors.primaryBlue}
-      counterfactual="A few sources appearing frequently could reflect your following choices, recent posting activity by those creators, or algorithmic amplification. This analysis describes what appeared, not why."
-      howWeMeasure={{
-        what: 'Which accounts created the content you scrolled past, and how concentrated your feed is among a few sources.',
-        how: 'We extract the creator handle from each post and rank by frequency. Top-5 concentration is the percentage of all posts from your five most-shown accounts.',
-        limitations: 'Some posts may not have identifiable creators (e.g., promoted content without a visible handle). These are excluded from source analysis.',
-        learnMoreUrl: 'https://algorithmlens.com/dashboard#sources',
-      }}
-    />
+      {/* ── Your Feed in Minutes (VH-004 FIX: collapsed behind showMore) ── */}
+      {showMore && data.totalPosts >= 10 && (
+        <>
+          <SectionHeader title="Your Feed in Minutes" subtitle="Based on average daily usage" />
+          <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
+            <View style={{
+              flex: 1,
+              backgroundColor: colors.blue50,
+              borderRadius: RADIUS.lg,
+              padding: SPACING.lg,
+              borderWidth: 1,
+              borderColor: colors.blue200,
+            }}>
+              <Text style={{ fontSize: 28, fontWeight: '700', color: colors.textMain }}>
+                {formatMinutes(adMinutes)}
+              </Text>
+              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
+                min/day on ads
+              </Text>
+            </View>
+            <View style={{
+              flex: 1,
+              backgroundColor: colors.bgCardGradientEnd,
+              borderRadius: RADIUS.lg,
+              padding: SPACING.lg,
+              borderWidth: 1,
+              borderColor: colors.borderSoft,
+            }}>
+              <Text style={{ fontSize: 28, fontWeight: '700', color: colors.textMain }}>
+                {formatMinutes(politicalMinutes)}
+              </Text>
+              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
+                min/day on political content
+              </Text>
+            </View>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xxs, paddingHorizontal: SPACING.xs }}>
+            <Info size={11} color={colors.textSecondary} strokeWidth={2} />
+            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic' }}>
+              Based on average daily social media usage of 45 minutes
+            </Text>
+          </View>
+        </>
+      )}
 
-    <SectionHeader title="Top Creators" subtitle="Who appeared most" />
+      {/* ── Content Patterns Observed (collapsed behind showMore) ── */}
+      {showMore && hasContentPatterns && data.totalPosts >= 10 && (
+        <>
+          <SectionHeader title="Content Patterns Observed" />
+          <View style={{
+            backgroundColor: colors.bgCard,
+            borderRadius: RADIUS.lg,
+            padding: SPACING.lg,
+            borderWidth: 1,
+            borderColor: colors.borderSoft,
+            ...shadows.card,
+            gap: SPACING.sm,
+          }}>
+            {emotionalSummary && (
+              <View style={{ gap: SPACING.xxs }}>
+                <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
+                  Emotional Signal
+                </Text>
+                <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '600' }}>
+                  {emotionalSummary}
+                </Text>
+              </View>
+            )}
+            {sourceDiversitySummary && (
+              <View style={{ gap: SPACING.xxs }}>
+                <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
+                  Source Diversity
+                </Text>
+                <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '600' }}>
+                  {sourceDiversitySummary}
+                </Text>
+              </View>
+            )}
+            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic', marginTop: SPACING.xxs }}>
+              These labels are inferred from feed content only. Actual platform categorization may differ.
+            </Text>
+          </View>
+        </>
+      )}
 
-    {data.topCreators.length > 0 ? (
+      {/* ── Experiment Suggestions (VH-005 FIX: collapsed behind showMore) ── */}
+      {showMore && (
+      <>
+      <SectionHeader title="Ideas to Explore" subtitle="Optional suggestions" />
       <View style={{
         backgroundColor: colors.bgCard,
         borderRadius: RADIUS.lg,
@@ -205,23 +344,171 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
         borderWidth: 1,
         borderColor: colors.borderSoft,
         ...shadows.card,
+        gap: SPACING.sm,
       }}>
-        <BarChart
-          items={data.topCreators.slice(0, 8).map((creator, i) => ({
-            label: `@${creator.name}`,
-            value: creator.count,
-            percentage: creator.percentage,
-            color: i === 0 ? colors.barDarkest : i < 3 ? colors.primaryBlue : colors.blue200,
-          }))}
-        />
+        {suggestions.map((suggestion, i) => (
+          <View key={i} style={{ flexDirection: 'row', gap: SPACING.sm, alignItems: 'flex-start' }}>
+            <Text style={{ ...TYPOGRAPHY.body, color: colors.primaryBlue, fontWeight: '700', lineHeight: 20 }}>
+              {'\u2022'}
+            </Text>
+            <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted, flex: 1, lineHeight: 20 }}>
+              {suggestion}
+            </Text>
+          </View>
+        ))}
       </View>
-    ) : (
-      <EmptySection message="No creator data available for this scan." colors={colors} />
-    )}
+      </>
+      )}
 
-    {data.topCreators.length >= 5 && (
-      <>
-        <SectionHeader title="Source Concentration" />
+      {/* Premium: Trend Analysis — locked for free users */}
+      <LockedOverlayCard
+        locked={!isPlus}
+        title="Trend analysis"
+        body="See how your feed composition changes over time. Track ad percentages, source concentration, and content themes across scans."
+        onUpgrade={onUpgrade}
+      >
+        <View style={{ gap: SPACING.sm }}>
+          <SectionHeader title="Trends Over Time" subtitle="How your feed is changing" />
+          <View style={{
+            backgroundColor: colors.bgCard, borderRadius: RADIUS.lg, padding: SPACING.lg,
+            borderWidth: 1, borderColor: colors.borderSoft, ...shadows.card, minHeight: 120,
+          }}>
+            <MetricCard headline="Ad trend" value="—" microLine="Across recent scans" hasData={false} />
+          </View>
+          <View style={{
+            backgroundColor: colors.bgCard, borderRadius: RADIUS.lg, padding: SPACING.lg,
+            borderWidth: 1, borderColor: colors.borderSoft, ...shadows.card, minHeight: 120,
+          }}>
+            <MetricCard headline="Source diversity trend" value="—" microLine="Across recent scans" hasData={false} />
+          </View>
+        </View>
+      </LockedOverlayCard>
+
+      {/* ── Master Numbers Line ── */}
+      <View style={{
+        flexDirection: 'row',
+        justifyContent: 'center',
+        flexWrap: 'wrap',
+        gap: SPACING.sm,
+        paddingTop: SPACING.md,
+        borderTopWidth: 1,
+        borderTopColor: colors.borderSoft,
+        marginTop: SPACING.sm,
+      }}>
+        <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
+          {data.platform}
+        </Text>
+        <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>{'\u00B7'}</Text>
+        <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
+          {data.totalPosts} posts
+        </Text>
+        {data.scanDate && (
+          <>
+            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>{'\u00B7'}</Text>
+            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
+              {new Date(data.scanDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+            </Text>
+          </>
+        )}
+      </View>
+    </View>
+  );
+});
+
+const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: DashboardData; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
+  // PD-004 FIX: Collapse concentration section behind expandable header
+  const [showConcentration, setShowConcentration] = useState(false);
+  // Concentration composition data for stacked bar
+  const top5Count = data.topCreators.slice(0, 5).reduce((sum, c) => sum + c.count, 0);
+  const top6to10Count = data.topCreators.slice(5, 10).reduce((sum, c) => sum + c.count, 0);
+  const othersCount = Math.max(0, data.totalPosts - top5Count - top6to10Count);
+  const top5ConcPct = data.top5Pct;
+  const top6to10Pct = data.totalPosts > 0 ? Math.round((top6to10Count / data.totalPosts) * 100) : 0;
+  const othersPct = Math.max(0, 100 - top5ConcPct - top6to10Pct);
+
+  return (
+    <View style={{ gap: SPACING['2xl'] }}>
+      <InsightHero
+        title={data.sourcesInsight.title}
+        meaning={data.sourcesInsight.meaning}
+        whyCare={data.sourcesInsight.whyCare}
+        meta={data.sourcesInsight.meta}
+        accent={colors.primaryBlue}
+        counterfactual="A few sources appearing frequently could reflect your following choices, recent posting activity by those creators, or algorithmic amplification. This analysis describes what appeared, not why."
+        howWeMeasure={{
+          what: 'Which accounts created the content you scrolled past, and how concentrated your feed is among a few sources.',
+          how: 'We extract the creator handle from each post and rank by frequency. Top-5 concentration is the percentage of all posts from your five most-shown accounts.',
+          limitations: 'Some posts may not have identifiable creators (e.g., promoted content without a visible handle). These are excluded from source analysis.',
+          learnMoreUrl: 'https://algorithmlens.com/dashboard#sources',
+        }}
+      />
+
+      {/* ── 3-column summary stat cards ── */}
+      {data.topCreators.length > 0 && (
+        <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
+          <View style={{
+            flex: 1,
+            backgroundColor: colors.bgCard,
+            borderRadius: RADIUS.lg,
+            padding: SPACING.md,
+            borderWidth: 1,
+            borderColor: colors.borderSoft,
+            ...shadows.card,
+          }}>
+            <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
+              Top 5
+            </Text>
+            <Text style={{ fontSize: 22, fontWeight: '700', color: colors.textMain, marginTop: SPACING.xxs }}>
+              {data.top5Pct}%
+            </Text>
+            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2 }}>
+              of posts from top 5
+            </Text>
+          </View>
+          <View style={{
+            flex: 1,
+            backgroundColor: colors.bgCard,
+            borderRadius: RADIUS.lg,
+            padding: SPACING.md,
+            borderWidth: 1,
+            borderColor: colors.borderSoft,
+            ...shadows.card,
+          }}>
+            <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
+              Top Source
+            </Text>
+            <Text style={{ fontSize: 14, fontWeight: '700', color: colors.textMain, marginTop: SPACING.xxs }} numberOfLines={1}>
+              @{data.topCreators[0]?.name ?? '—'}
+            </Text>
+            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2 }}>
+              most frequent
+            </Text>
+          </View>
+          <View style={{
+            flex: 1,
+            backgroundColor: colors.bgCard,
+            borderRadius: RADIUS.lg,
+            padding: SPACING.md,
+            borderWidth: 1,
+            borderColor: colors.borderSoft,
+            ...shadows.card,
+          }}>
+            <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
+              Sources
+            </Text>
+            <Text style={{ fontSize: 22, fontWeight: '700', color: colors.textMain, marginTop: SPACING.xxs }}>
+              {data.uniqueCreatorCount}
+            </Text>
+            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2 }}>
+              unique creators
+            </Text>
+          </View>
+        </View>
+      )}
+
+      <SectionHeader title="Top Creators" subtitle="Who appeared most" />
+
+      {data.topCreators.length > 0 ? (
         <View style={{
           backgroundColor: colors.bgCard,
           borderRadius: RADIUS.lg,
@@ -229,52 +516,137 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
           borderWidth: 1,
           borderColor: colors.borderSoft,
           ...shadows.card,
-          alignItems: 'center',
         }}>
-          <BigNumber
-            value={data.top5Pct}
-            label="of your feed from top 5 accounts"
-            suffix="%"
+          <BarChart
+            items={data.topCreators.slice(0, 8).map((creator, i) => ({
+              label: `@${creator.name}`,
+              value: creator.count,
+              percentage: creator.percentage,
+              color: i === 0 ? colors.barDarkest : i < 3 ? colors.primaryBlue : colors.blue200,
+            }))}
           />
-          <Text style={{ fontSize: TYPOGRAPHY.captionSmall.fontSize, color: colors.textSecondary, marginTop: SPACING.xxs }}>
-            Typical range: 40–60%
-          </Text>
         </View>
-      </>
-    )}
+      ) : (
+        <EmptySection message="Creator information builds up as you scan. Try scrolling through more content to capture source data." colors={colors} />
+      )}
 
-    {/* Premium: Creator-specific breakdowns — locked for free users */}
-    <LockedOverlayCard
-      locked={!isPlus}
-      title="Creator breakdowns"
-      body="See which creators drive ad content, political posts, and specific topics in your feed."
-      onUpgrade={onUpgrade}
-    >
-      <View style={{ gap: SPACING.sm }}>
-        <SectionHeader title="Creator Breakdowns" subtitle="Who drives what content" />
-        <View style={{
-          backgroundColor: colors.bgCard, borderRadius: RADIUS.lg, padding: SPACING.lg,
-          borderWidth: 1, borderColor: colors.borderSoft, ...shadows.card, minHeight: 120,
-        }}>
-          <MetricCard headline="Top ad creators" value="—" microLine="Who promotes most" hasData={false} />
+      {/* PD-004 FIX: Concentration section collapsed by default */}
+      {/* A-004 FIX: minHeight 44 ensures accessible tap target */}
+      {data.topCreators.length >= 5 && (
+        <TouchableOpacity
+          onPress={() => setShowConcentration(!showConcentration)}
+          activeOpacity={0.7}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingVertical: SPACING.md,
+            paddingHorizontal: SPACING.lg,
+            minHeight: 44,
+            borderRadius: RADIUS.lg,
+            backgroundColor: colors.bgCard,
+            borderWidth: 1,
+            borderColor: colors.borderSoft,
+          }}
+          accessibilityRole="button"
+          accessibilityLabel={showConcentration ? 'Hide concentration analysis' : 'How concentrated is your feed?'}
+          accessibilityState={{ expanded: showConcentration }}
+        >
+          <Text style={{ ...TYPOGRAPHY.label, color: colors.textMuted }}>
+            How concentrated is your feed?
+          </Text>
+          <ChevronDown
+            size={16}
+            color={colors.textSecondary}
+            strokeWidth={2}
+            style={{ transform: [{ rotate: showConcentration ? '180deg' : '0deg' }] }}
+          />
+        </TouchableOpacity>
+      )}
+      {showConcentration && data.topCreators.length >= 5 && (
+        <>
+          <SectionHeader title="Source Concentration" />
+          <View style={{
+            backgroundColor: colors.bgCard,
+            borderRadius: RADIUS.lg,
+            padding: SPACING.lg,
+            borderWidth: 1,
+            borderColor: colors.borderSoft,
+            ...shadows.card,
+            alignItems: 'center',
+          }}>
+            <BigNumber
+              value={data.top5Pct}
+              label="of your feed from top 5 accounts"
+              suffix="%"
+            />
+            <Text style={{ fontSize: TYPOGRAPHY.captionSmall.fontSize, color: colors.textSecondary, marginTop: SPACING.xxs }}>
+              Typical range: 40–60%
+            </Text>
+          </View>
+        </>
+      )}
+
+      {/* ── Concentration Composition Bar (PD-004: also collapsed) ── */}
+      {showConcentration && data.topCreators.length >= 5 && (
+        <>
+          <SectionHeader title="Concentration Breakdown" subtitle="How your feed is distributed" />
+          <View style={{
+            backgroundColor: colors.bgCard,
+            borderRadius: RADIUS.lg,
+            padding: SPACING.lg,
+            borderWidth: 1,
+            borderColor: colors.borderSoft,
+            ...shadows.card,
+          }}>
+            <StackedBar100
+              segments={[
+                { label: 'Top 5', percentage: top5ConcPct, count: top5Count, color: colors.primaryBlue },
+                ...(top6to10Pct > 0 ? [{ label: 'Top 6–10', percentage: top6to10Pct, count: top6to10Count, color: colors.blue200 }] : []),
+                { label: 'Others', percentage: othersPct, count: othersCount, color: colors.textTertiary },
+              ]}
+            />
+            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic', marginTop: SPACING.sm }}>
+              Higher values for top sources indicate a more concentrated feed.
+            </Text>
+          </View>
+        </>
+      )}
+
+      {/* Premium: Creator-specific breakdowns — locked for free users */}
+      <LockedOverlayCard
+        locked={!isPlus}
+        title="Creator breakdowns"
+        body="See which creators drive ad content, political posts, and specific topics in your feed."
+        onUpgrade={onUpgrade}
+      >
+        <View style={{ gap: SPACING.sm }}>
+          <SectionHeader title="Creator Breakdowns" subtitle="Who drives what content" />
+          <View style={{
+            backgroundColor: colors.bgCard, borderRadius: RADIUS.lg, padding: SPACING.lg,
+            borderWidth: 1, borderColor: colors.borderSoft, ...shadows.card, minHeight: 120,
+          }}>
+            <MetricCard headline="Top ad creators" value="—" microLine="Who promotes most" hasData={false} />
+          </View>
+          <View style={{
+            backgroundColor: colors.bgCard, borderRadius: RADIUS.lg, padding: SPACING.lg,
+            borderWidth: 1, borderColor: colors.borderSoft, ...shadows.card, minHeight: 120,
+          }}>
+            <MetricCard headline="Top political creators" value="—" microLine="Who drives political content" hasData={false} />
+          </View>
         </View>
-        <View style={{
-          backgroundColor: colors.bgCard, borderRadius: RADIUS.lg, padding: SPACING.lg,
-          borderWidth: 1, borderColor: colors.borderSoft, ...shadows.card, minHeight: 120,
-        }}>
-          <MetricCard headline="Top political creators" value="—" microLine="Who drives political content" hasData={false} />
-        </View>
-      </View>
-    </LockedOverlayCard>
-  </View>
-));
+      </LockedOverlayCard>
+    </View>
+  );
+});
 
 const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: DashboardData; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
+  const [showAdvertisers, setShowAdvertisers] = useState(false);
   const organicCount = data.totalPosts - data.adCount;
   const organicPct = 100 - data.adPct;
 
   return (
-    <View style={{ gap: SPACING.sm }}>
+    <View style={{ gap: SPACING['2xl'] }}>
       <InsightHero
         title={data.adsInsight.title}
         meaning={data.adsInsight.meaning}
@@ -290,25 +662,95 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
         }}
       />
 
-      <SectionHeader title="Ad Composition" subtitle="Content labeled as sponsored" />
-
-      <View style={{
-        backgroundColor: colors.bgCard,
-        borderRadius: RADIUS.lg,
-        padding: SPACING.lg,
-        borderWidth: 1,
-        borderColor: colors.borderSoft,
-        ...shadows.card,
-      }}>
-        <StackedBar100
-          segments={[
-            { label: 'Non-sponsored', percentage: organicPct, count: organicCount, color: colors.primaryBlue },
-            { label: 'Sponsored', percentage: data.adPct, count: data.adCount, color: colors.blue200 },
-          ]}
-        />
+      {/* ── 3-column summary stat cards ── */}
+      <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
+        <View style={{
+          flex: 1,
+          backgroundColor: colors.bgCard,
+          borderRadius: RADIUS.lg,
+          padding: SPACING.md,
+          borderWidth: 1,
+          borderColor: colors.borderSoft,
+          ...shadows.card,
+        }}>
+          <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
+            Ad Posts
+          </Text>
+          <Text style={{ fontSize: 22, fontWeight: '700', color: colors.textMain, marginTop: SPACING.xxs }}>
+            {data.adCount}
+          </Text>
+          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2 }}>
+            {data.adPct}% of posts
+          </Text>
+        </View>
+        {data.topAdvertisers.length > 0 && (
+          <View style={{
+            flex: 1,
+            backgroundColor: colors.bgCard,
+            borderRadius: RADIUS.lg,
+            padding: SPACING.md,
+            borderWidth: 1,
+            borderColor: colors.borderSoft,
+            ...shadows.card,
+          }}>
+            <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
+              Top Advertiser
+            </Text>
+            <Text style={{ fontSize: 14, fontWeight: '700', color: colors.textMain, marginTop: SPACING.xxs }} numberOfLines={1}>
+              @{data.topAdvertisers[0]?.name ?? '—'}
+            </Text>
+            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2 }}>
+              {data.topAdvertisers[0]?.percent ?? 0}% of ads
+            </Text>
+          </View>
+        )}
+        {data.adCount > 0 && (
+          <View style={{
+            flex: 1,
+            backgroundColor: colors.bgCard,
+            borderRadius: RADIUS.lg,
+            padding: SPACING.md,
+            borderWidth: 1,
+            borderColor: colors.borderSoft,
+            ...shadows.card,
+          }}>
+            <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
+              Ad Density
+            </Text>
+            <Text style={{ fontSize: 22, fontWeight: '700', color: colors.textMain, marginTop: SPACING.xxs }}>
+              1:{data.adPct > 0 ? Math.round(100 / data.adPct) : '—'}
+            </Text>
+            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2 }}>
+              post ratio
+            </Text>
+          </View>
+        )}
       </View>
 
+      {/* CD-005 FIX: Only show Ad Composition chart when there are both sponsored and non-sponsored segments */}
+      {data.adCount > 0 && (
+        <>
+          <SectionHeader title="Ad Composition" subtitle="Content labeled as sponsored" />
+          <View style={{
+            backgroundColor: colors.bgCard,
+            borderRadius: RADIUS.lg,
+            padding: SPACING.lg,
+            borderWidth: 1,
+            borderColor: colors.borderSoft,
+            ...shadows.card,
+          }}>
+            <StackedBar100
+              segments={[
+                { label: 'Non-sponsored', percentage: organicPct, count: organicCount, color: colors.primaryBlue },
+                { label: 'Sponsored', percentage: data.adPct, count: data.adCount, color: colors.blue200 },
+              ]}
+            />
+          </View>
+        </>
+      )}
+
       {data.adCount === 0 ? (
+        /* ── Enhanced Ad Detection Note (0% ads) ── */
         <View style={{
           backgroundColor: colors.bgCard,
           borderRadius: RADIUS.lg,
@@ -316,9 +758,19 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
           borderWidth: 1,
           borderColor: colors.borderSoft,
           ...shadows.card,
+          gap: SPACING.sm,
         }}>
-          <Text style={{ fontSize: TYPOGRAPHY.bodySmall.fontSize, color: colors.textMuted, lineHeight: 19, textAlign: 'center' }}>
-            No content labeled as sponsored was detected in this scan. Some ads may not carry visible labels.
+          <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '600' }}>
+            No labeled ads appeared in this scan
+          </Text>
+          <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted, lineHeight: 20 }}>
+            We look for platform-provided ad labels (like "Sponsored" or "Ad" badges). Some promotional content doesn't carry visible labels.
+          </Text>
+          <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted, lineHeight: 20 }}>
+            Native advertising, influencer partnerships, and product placements may not have standard ad markers.
+          </Text>
+          <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted, lineHeight: 20 }}>
+            Scan longer and scroll through more content — ads may appear at different points in your feed.
           </Text>
         </View>
       ) : (
@@ -337,6 +789,60 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
             suffix=""
           />
         </View>
+      )}
+
+      {/* ── Top Advertised Companies (collapsible) ── */}
+      {data.topAdvertisers.length > 0 && (
+        <>
+          <TouchableOpacity
+            onPress={() => setShowAdvertisers(!showAdvertisers)}
+            activeOpacity={0.7}
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingVertical: SPACING.md,
+            }}
+          >
+            <Text style={{ ...TYPOGRAPHY.label, color: colors.textMuted }}>
+              Top advertised companies
+            </Text>
+            <ChevronDown
+              size={16}
+              color={colors.textSecondary}
+              strokeWidth={2}
+              style={{
+                transform: [{ rotate: showAdvertisers ? '180deg' : '0deg' }],
+              }}
+            />
+          </TouchableOpacity>
+
+          {showAdvertisers && (
+            <View style={{
+              backgroundColor: colors.bgCard,
+              borderRadius: RADIUS.lg,
+              padding: SPACING.lg,
+              borderWidth: 1,
+              borderColor: colors.borderSoft,
+              ...shadows.card,
+              gap: SPACING.sm,
+            }}>
+              {data.topAdvertisers.map((advertiser, idx) => (
+                <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '500' }}>
+                    @{advertiser.name}
+                  </Text>
+                  <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
+                    {advertiser.percent}% of ads ({advertiser.count})
+                  </Text>
+                </View>
+              ))}
+              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic', marginTop: SPACING.xxs }}>
+                Based on {data.adCount} labeled ad posts
+              </Text>
+            </View>
+          )}
+        </>
       )}
 
       {/* Premium: Ad trend over time — locked for free users */}
@@ -360,8 +866,12 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
   );
 });
 
-const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => (
-  <View style={{ gap: SPACING.sm }}>
+const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
+  // PD-002/MC-004 FIX: "What You Can Do" collapsed by default, reframed as optional
+  const [showIdeas, setShowIdeas] = useState(false);
+
+  return (
+  <View style={{ gap: SPACING['2xl'] }}>
     <InsightHero
       title={data.suggestedInsight.title}
       meaning={data.suggestedInsight.meaning}
@@ -412,18 +922,284 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
         }
       </Text>
     </View>
+
+    {/* Section: Are These New Voices? */}
+    {data.creatorNovelty?.hasData && (
+      <>
+        <SectionHeader title="Are These New Voices?" subtitle="Creator novelty in suggested content" />
+        <View style={{
+          backgroundColor: colors.bgCard,
+          borderRadius: RADIUS.lg,
+          padding: SPACING.lg,
+          borderWidth: 1,
+          borderColor: colors.borderSoft,
+          ...shadows.card,
+          gap: SPACING.sm,
+        }}>
+          {/* BigNumber: novelty percent */}
+          <View style={{ alignItems: 'center' }}>
+            <BigNumber
+              value={data.creatorNovelty.noveltyPercent}
+              label="of suggested posts appeared to be from creators you don't follow"
+              suffix="%"
+            />
+          </View>
+
+          {/* Three stat cards in a row */}
+          <View style={{ flexDirection: 'row', gap: SPACING.sm, paddingTop: SPACING.xs }}>
+            <View style={{
+              flex: 1,
+              backgroundColor: colors.bgCardGradientEnd,
+              borderRadius: RADIUS.md,
+              padding: SPACING.md,
+              alignItems: 'center',
+            }}>
+              <Text style={{ fontSize: 18, fontWeight: '700', color: colors.textMain }}>
+                {data.creatorNovelty.suggestedCreatorCount}
+              </Text>
+              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, textAlign: 'center', marginTop: 2 }}>
+                Suggested{'\n'}creators
+              </Text>
+            </View>
+            <View style={{
+              flex: 1,
+              backgroundColor: colors.bgCardGradientEnd,
+              borderRadius: RADIUS.md,
+              padding: SPACING.md,
+              alignItems: 'center',
+            }}>
+              <Text style={{ fontSize: 18, fontWeight: '700', color: colors.textMain }}>
+                {data.creatorNovelty.overlapCount}
+              </Text>
+              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, textAlign: 'center', marginTop: 2 }}>
+                Overlap
+              </Text>
+            </View>
+            <View style={{
+              flex: 1,
+              backgroundColor: colors.bgCardGradientEnd,
+              borderRadius: RADIUS.md,
+              padding: SPACING.md,
+              alignItems: 'center',
+            }}>
+              <Text style={{ fontSize: 18, fontWeight: '700', color: colors.textMain }}>
+                {data.creatorNovelty.followedCreatorCount}
+              </Text>
+              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, textAlign: 'center', marginTop: 2 }}>
+                Followed{'\n'}creators
+              </Text>
+            </View>
+          </View>
+
+          {/* Contextual interpretation */}
+          <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted, lineHeight: 19 }}>
+            {data.creatorNovelty.noveltyPercent >= 60
+              ? 'Most suggested content appeared to come from creators you don\'t follow — lots of new voices in the mix.'
+              : data.creatorNovelty.noveltyPercent >= 40
+              ? 'A mix of new and familiar creators appeared in suggested content.'
+              : 'Most suggested content appeared to come from creators you already follow.'
+            }
+          </Text>
+
+          {/* Approximate data warning */}
+          {data.creatorNovelty.approximate && (
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: SPACING.xs,
+              paddingTop: SPACING.xxs,
+            }}>
+              <Info size={12} color={colors.textSecondary} strokeWidth={2} />
+              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic', flex: 1 }}>
+                Follow detection is limited on some platforms. These numbers are approximate.
+              </Text>
+            </View>
+          )}
+        </View>
+      </>
+    )}
+
+    {/* PD-002/MC-004 FIX: Collapsible "Ideas to explore" with softer framing */}
+    {/* A-004 FIX: minHeight 44 ensures accessible tap target */}
+    <TouchableOpacity
+      onPress={() => setShowIdeas(!showIdeas)}
+      activeOpacity={0.7}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: SPACING.md,
+        paddingHorizontal: SPACING.lg,
+        minHeight: 44,
+        borderRadius: RADIUS.lg,
+        backgroundColor: colors.bgCard,
+        borderWidth: 1,
+        borderColor: colors.borderSoft,
+      }}
+      accessibilityRole="button"
+      accessibilityLabel={showIdeas ? 'Hide ideas to explore' : 'Show ideas to explore'}
+      accessibilityState={{ expanded: showIdeas }}
+    >
+      <Text style={{ ...TYPOGRAPHY.label, color: colors.textMuted }}>
+        Ideas to explore
+      </Text>
+      <ChevronDown
+        size={16}
+        color={colors.textSecondary}
+        strokeWidth={2}
+        style={{ transform: [{ rotate: showIdeas ? '180deg' : '0deg' }] }}
+      />
+    </TouchableOpacity>
+
+    {showIdeas && (
+    <View style={{
+      backgroundColor: colors.bgCard,
+      borderRadius: RADIUS.lg,
+      padding: SPACING.lg,
+      borderWidth: 1,
+      borderColor: colors.borderSoft,
+      ...shadows.card,
+      gap: SPACING.sm,
+    }}>
+      {/* Reframed as optional reflections instead of imperative commands */}
+      <View style={{
+        flexDirection: 'row',
+        gap: SPACING.sm,
+        alignItems: 'flex-start',
+        padding: SPACING.md,
+        borderRadius: RADIUS.md,
+        backgroundColor: colors.blue50,
+        borderWidth: 1,
+        borderColor: colors.blue200,
+      }}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '600' }}>
+            Diversify your follows
+          </Text>
+          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2, lineHeight: 17 }}>
+            Some people find that following a wider range of accounts changes what their feed recommends over time.
+          </Text>
+        </View>
+      </View>
+
+      <View style={{
+        flexDirection: 'row',
+        gap: SPACING.sm,
+        alignItems: 'flex-start',
+        padding: SPACING.md,
+        borderRadius: RADIUS.md,
+        backgroundColor: colors.blue50,
+        borderWidth: 1,
+        borderColor: colors.blue200,
+      }}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '600' }}>
+            Try chronological mode
+          </Text>
+          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2, lineHeight: 17 }}>
+            Some platforms offer a "Following" or "Latest" feed mode that shows only posts from accounts you follow, in chronological order.
+          </Text>
+        </View>
+      </View>
+
+      <View style={{
+        flexDirection: 'row',
+        gap: SPACING.sm,
+        alignItems: 'flex-start',
+        padding: SPACING.md,
+        borderRadius: RADIUS.md,
+        backgroundColor: colors.blue50,
+        borderWidth: 1,
+        borderColor: colors.blue200,
+      }}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '600' }}>
+            Engage intentionally
+          </Text>
+          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2, lineHeight: 17 }}>
+            Platforms often describe engagement (likes, shares, comments) as a factor in feed ranking, though the exact effect is not publicly documented.
+          </Text>
+        </View>
+      </View>
+    </View>
+    )}
+
+    {/* ── Master Numbers Line ── */}
+    <View style={{
+      flexDirection: 'row',
+      justifyContent: 'center',
+      flexWrap: 'wrap',
+      gap: SPACING.sm,
+      paddingTop: SPACING.md,
+      borderTopWidth: 1,
+      borderTopColor: colors.borderSoft,
+      marginTop: SPACING.sm,
+    }}>
+      <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
+        {data.platform}
+      </Text>
+      <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>{'\u00B7'}</Text>
+      <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
+        {data.totalPosts} posts
+      </Text>
+      {data.scanDate && (
+        <>
+          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>{'\u00B7'}</Text>
+          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
+            {new Date(data.scanDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+          </Text>
+        </>
+      )}
+    </View>
   </View>
-));
+  );
+});
 
 // Politics tab — renders political analysis from Gemini AI classification.
 // Shows political share, top political source, ideological distribution,
 // and methodology disclaimer matching the main site's PoliticsTab.
+// Gates are mutually exclusive: only ONE state renders at a time.
 const PoliticsContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, colors, shadows }: { data: DashboardData; aiConsent: boolean; onGoToSettings: () => void; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
   const [showIdeology, setShowIdeology] = useState(false);
   const analysis = data.politicalAnalysis;
+  const totalAnalyzed = analysis?.totalAnalyzed ?? data.totalPosts;
+  const isLowPostCount = totalAnalyzed < 20;
 
+  // ── Gate 1: No AI consent → show ONLY the consent card, nothing else ──
+  if (!aiConsent) {
+    return (
+      <View style={{ gap: SPACING.sm }}>
+        <AiConsentCard
+          title="Enable AI Insights"
+          description="Turn on AI analysis in Settings to see how much political content appears in your feed."
+          buttonLabel="Go to Settings"
+          onPress={onGoToSettings}
+          colors={colors}
+          shadows={shadows}
+        />
+      </View>
+    );
+  }
+
+  // ── Gate 2: AI consent given but no political data ──
+  if (!data.hasPoliticsData) {
+    return (
+      <View style={{ gap: SPACING.sm }}>
+        <AiProcessingCard
+          title="Political content wasn't prominent in this scan"
+          message={`Political keywords and themes weren't prominent among the ${totalAnalyzed} posts in this scan.${isLowPostCount ? ' Try scanning during peak news hours or scrolling through more content for a fuller picture.' : ' Each scan captures a different moment — try scanning at a different time.'}`}
+          subtitle={isLowPostCount ? undefined : 'Try scanning at a different time of day to see how results vary.'}
+          colors={colors}
+          shadows={shadows}
+        />
+        <PoliticsMethodologyDisclaimer colors={colors} />
+      </View>
+    );
+  }
+
+  // ── Gate 3: Has political data — render full analysis ──
   return (
-    <View style={{ gap: SPACING.sm }}>
+    <View style={{ gap: SPACING['2xl'] }}>
       <InsightHero
         title={data.politicsInsight.title}
         meaning={data.politicsInsight.meaning}
@@ -439,72 +1215,51 @@ const PoliticsContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgra
         }}
       />
 
-      {/* Gate 1: No AI consent */}
-      {!aiConsent ? (
-        <AiConsentCard
-          title="Enable AI Insights"
-          description="Turn on AI analysis in Settings to see how much political content appears in your feed."
-          buttonLabel="Go to Settings"
-          onPress={onGoToSettings}
-          colors={colors}
-          shadows={shadows}
-        />
-      ) : !data.hasPoliticsData ? (
-        /* Gate 2: AI consent given but no political data yet */
-        <View style={{ gap: SPACING.sm }}>
-          <View style={{
-            backgroundColor: colors.bgCard,
-            borderRadius: RADIUS.lg,
-            padding: SPACING.xl,
-            borderWidth: 1,
-            borderColor: colors.borderSoft,
-            ...shadows.card,
-            alignItems: 'center',
-            gap: SPACING.sm,
-          }}>
-            <View style={{
-              width: 44, height: 44, borderRadius: 22,
-              backgroundColor: colors.blue50, justifyContent: 'center', alignItems: 'center',
-            }}>
-              <Info size={20} color={colors.primaryBlue} strokeWidth={1.5} />
-            </View>
-            <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain, textAlign: 'center' }}>
-              No political content detected
-            </Text>
-            <Text style={{ ...TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center' }}>
-              No posts in this scan contained political keywords or themes. This could mean political content was light in this session, or the scan needs more posts for analysis.
-            </Text>
-            <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted, textAlign: 'center' }}>
-              Try scanning a longer session for a fuller picture.
-            </Text>
-          </View>
-          <PoliticsMethodologyDisclaimer colors={colors} />
+      {/* Low sample indicator */}
+      {analysis?.lowSample && (
+        <View style={{
+          backgroundColor: colors.lowSampleBg,
+          borderRadius: RADIUS.md,
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+          borderWidth: 1,
+          borderColor: colors.lowSampleBorder,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.xs,
+        }}>
+          <Info size={14} color={colors.warning} strokeWidth={2} />
+          <Text style={{ ...TYPOGRAPHY.caption, color: colors.warning, flex: 1 }}>
+            Low sample — fewer than 10 political posts. Results may not reflect typical patterns.
+          </Text>
         </View>
-      ) : (
-        /* Gate 3: Has political data — render full analysis */
-        <View style={{ gap: SPACING.sm }}>
-          {/* Low sample indicator */}
-          {analysis?.lowSample && (
-            <View style={{
-              backgroundColor: colors.lowSampleBg,
-              borderRadius: RADIUS.md,
-              paddingHorizontal: SPACING.lg,
-              paddingVertical: SPACING.md,
-              borderWidth: 1,
-              borderColor: colors.lowSampleBorder,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: SPACING.xs,
-            }}>
-              <Info size={14} color={colors.warning} strokeWidth={2} />
-              <Text style={{ ...TYPOGRAPHY.caption, color: colors.warning, flex: 1 }}>
-                Low sample — fewer than 10 political posts. Results may not reflect typical patterns.
-              </Text>
-            </View>
-          )}
+      )}
 
-          {/* Section: Political Share */}
-          <SectionHeader title="Political Share" subtitle="Posts containing political keywords" />
+      {/* Section: Political Share */}
+      <SectionHeader title="Political Share" subtitle="Posts containing political keywords" />
+      <View style={{
+        backgroundColor: colors.bgCard,
+        borderRadius: RADIUS.lg,
+        padding: SPACING.lg,
+        borderWidth: 1,
+        borderColor: colors.borderSoft,
+        ...shadows.card,
+        alignItems: 'center',
+      }}>
+        <BigNumber
+          value={analysis?.politicalPct ?? 0}
+          label="of your feed contained political content"
+          suffix="%"
+        />
+        <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, marginTop: SPACING.xxs }}>
+          {analysis?.politicalCount ?? 0} of {analysis?.totalAnalyzed ?? 0} posts
+        </Text>
+      </View>
+
+      {/* Section: Top Political Source */}
+      {analysis?.topPoliticalSource && (
+        <>
+          <SectionHeader title="Top Political Source" />
           <View style={{
             backgroundColor: colors.bgCard,
             borderRadius: RADIUS.lg,
@@ -512,127 +1267,140 @@ const PoliticsContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgra
             borderWidth: 1,
             borderColor: colors.borderSoft,
             ...shadows.card,
-            alignItems: 'center',
+            gap: SPACING.sm,
           }}>
-            <BigNumber
-              value={analysis?.politicalPct ?? 0}
-              label="of your feed contained political content"
-              suffix="%"
-            />
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, marginTop: SPACING.xxs }}>
-              {analysis?.politicalCount ?? 0} of {analysis?.totalAnalyzed ?? 0} posts
+            <Text style={{ ...TYPOGRAPHY.h2, color: colors.textMain }}>
+              @{analysis.topPoliticalSource.handle}
             </Text>
-          </View>
-
-          {/* Section: Top Political Source */}
-          {analysis?.topPoliticalSource && (
-            <>
-              <SectionHeader title="Top Political Source" />
-              <View style={{
-                backgroundColor: colors.bgCard,
-                borderRadius: RADIUS.lg,
-                padding: SPACING.lg,
-                borderWidth: 1,
-                borderColor: colors.borderSoft,
-                ...shadows.card,
-              }}>
-                <Text style={{ ...TYPOGRAPHY.h2, color: colors.textMain }}>
-                  @{analysis.topPoliticalSource.handle}
+            <Text style={{ ...TYPOGRAPHY.body, color: colors.textMuted }}>
+              {analysis.topPoliticalSource.count} of {analysis.politicalCount} political posts ({analysis.topPoliticalSource.pctOfPolitical}%)
+            </Text>
+            {/* Progress bar */}
+            <View style={{ gap: SPACING.xxs }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontWeight: '600' }}>
+                  Share of political posts
                 </Text>
-                <Text style={{ ...TYPOGRAPHY.body, color: colors.textMuted, marginTop: SPACING.xxs }}>
-                  Appeared in {analysis.topPoliticalSource.pctOfPolitical}% of political posts ({analysis.topPoliticalSource.count} posts)
+                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontWeight: '600' }}>
+                  {analysis.topPoliticalSource.pctOfPolitical}%
                 </Text>
               </View>
-            </>
-          )}
-
-          {/* Section: Ideological Distribution (collapsible, matches main site) */}
-          <TouchableOpacity
-            onPress={() => setShowIdeology(!showIdeology)}
-            activeOpacity={0.7}
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              paddingVertical: SPACING.md,
-            }}
-          >
-            <Text style={{ fontSize: 14, fontWeight: '500', color: colors.textMuted }}>
-              Show ideological breakdown
-            </Text>
-            <ChevronDown
-              size={16}
-              color={colors.textSecondary}
-              strokeWidth={2}
-              style={{ transform: [{ rotate: showIdeology ? '180deg' : '0deg' }] }}
-            />
-          </TouchableOpacity>
-
-          {showIdeology && (
-            <>
-              {analysis?.ideology ? (
+              <View style={{ height: 8, backgroundColor: colors.borderSoft, borderRadius: 4, overflow: 'hidden' }}>
                 <View style={{
-                  backgroundColor: colors.bgCard,
-                  borderRadius: RADIUS.lg,
-                  padding: SPACING.lg,
-                  borderWidth: 1,
-                  borderColor: colors.borderSoft,
-                  ...shadows.card,
-                  gap: 8,
-                }}>
-                  <StackedBar100
-                    segments={[
-                      { label: 'Left', percentage: analysis.ideology.left, count: analysis.ideology.leftCount, color: colors.ideologyLeft },
-                      { label: 'Center', percentage: analysis.ideology.center, count: analysis.ideology.centerCount, color: colors.ideologyCenter },
-                      { label: 'Right', percentage: analysis.ideology.right, count: analysis.ideology.rightCount, color: colors.ideologyRight },
-                    ]}
-                  />
-                  <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic' }}>
-                    Each segment shows what share of political posts showed keywords associated with that direction. This is approximate and may not capture nuance.
-                  </Text>
-                  <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted }}>
-                    Based on {analysis.ideology.knownTotal} political posts with identifiable alignment
-                  </Text>
-                </View>
-              ) : (
-                <View style={{
-                  backgroundColor: colors.bgCard,
-                  borderRadius: RADIUS.lg,
-                  padding: SPACING.lg,
-                  borderWidth: 1,
-                  borderColor: colors.borderSoft,
-                  alignItems: 'center',
-                }}>
-                  <Text style={{ ...TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center', fontStyle: 'italic' }}>
-                    Not enough political posts with identifiable alignment to show a reliable distribution.
-                  </Text>
-                </View>
-              )}
-            </>
-          )}
-
-          {/* Premium: Political trend over time — locked for free users */}
-          <LockedOverlayCard
-            locked={!isPlus}
-            title="Political exposure trends"
-            body="Track how political content in your feed changes across scans. See if exposure is rising, falling, or steady."
-            onUpgrade={onUpgrade}
-          >
-            <View style={{ gap: SPACING.sm }}>
-              <SectionHeader title="Changes Over Time" subtitle="Political exposure trend" />
-              <View style={{
-                backgroundColor: colors.bgCard, borderRadius: RADIUS.lg, padding: SPACING.lg,
-                borderWidth: 1, borderColor: colors.borderSoft, ...shadows.card, minHeight: 120,
-              }}>
-                <MetricCard headline="Political trend" value="—" microLine="Across recent scans" hasData={false} />
+                  height: 8,
+                  backgroundColor: colors.primaryBlue,
+                  borderRadius: 4,
+                  width: `${analysis.topPoliticalSource.pctOfPolitical}%`,
+                }} />
               </View>
             </View>
-          </LockedOverlayCard>
+          </View>
+        </>
+      )}
 
-          {/* Methodology disclaimer */}
-          <PoliticsMethodologyDisclaimer colors={colors} />
+      {/* Political Summary Sentence */}
+      {data.politicalSummary && (
+        <View style={{
+          backgroundColor: colors.bgCard,
+          borderRadius: RADIUS.lg,
+          padding: SPACING.lg,
+          borderWidth: 1,
+          borderColor: colors.borderSoft,
+          ...shadows.card,
+        }}>
+          <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted, lineHeight: 20, fontStyle: 'italic' }}>
+            {data.politicalSummary}
+          </Text>
         </View>
       )}
+
+      {/* Section: Ideological Distribution (collapsible, matches main site) */}
+      <TouchableOpacity
+        onPress={() => setShowIdeology(!showIdeology)}
+        activeOpacity={0.7}
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingVertical: SPACING.md,
+        }}
+      >
+        <Text style={{ ...TYPOGRAPHY.label, color: colors.textMuted }}>
+          Show ideological breakdown
+        </Text>
+        <ChevronDown
+          size={16}
+          color={colors.textSecondary}
+          strokeWidth={2}
+          style={{
+            transform: [{ rotate: showIdeology ? '180deg' : '0deg' }],
+          }}
+        />
+      </TouchableOpacity>
+
+      {showIdeology && (
+        <>
+          {analysis?.ideology ? (
+            <View style={{
+              backgroundColor: colors.bgCard,
+              borderRadius: RADIUS.lg,
+              padding: SPACING.lg,
+              borderWidth: 1,
+              borderColor: colors.borderSoft,
+              ...shadows.card,
+              gap: SPACING.sm,
+            }}>
+              <StackedBar100
+                segments={[
+                  { label: 'Left', percentage: analysis.ideology.left, count: analysis.ideology.leftCount, color: colors.ideologyLeft },
+                  { label: 'Center', percentage: analysis.ideology.center, count: analysis.ideology.centerCount, color: colors.ideologyCenter },
+                  { label: 'Right', percentage: analysis.ideology.right, count: analysis.ideology.rightCount, color: colors.ideologyRight },
+                ]}
+              />
+              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic' }}>
+                Each segment shows what share of political posts showed keywords associated with that direction. This is approximate and may not capture nuance.
+              </Text>
+              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted }}>
+                Based on {analysis.ideology.knownTotal} political posts with identifiable alignment
+              </Text>
+            </View>
+          ) : (
+            <View style={{
+              backgroundColor: colors.bgCard,
+              borderRadius: RADIUS.lg,
+              padding: SPACING.lg,
+              borderWidth: 1,
+              borderColor: colors.borderSoft,
+              alignItems: 'center',
+            }}>
+              <Text style={{ ...TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center', fontStyle: 'italic' }}>
+                Not enough political posts with identifiable alignment to show a reliable distribution.
+              </Text>
+            </View>
+          )}
+        </>
+      )}
+
+      {/* Premium: Political trend over time — locked for free users */}
+      <LockedOverlayCard
+        locked={!isPlus}
+        title="Political exposure trends"
+        body="Track how political content in your feed changes across scans. See if exposure is rising, falling, or steady."
+        onUpgrade={onUpgrade}
+      >
+        <View style={{ gap: SPACING.sm }}>
+          <SectionHeader title="Changes Over Time" subtitle="Political exposure trend" />
+          <View style={{
+            backgroundColor: colors.bgCard, borderRadius: RADIUS.lg, padding: SPACING.lg,
+            borderWidth: 1, borderColor: colors.borderSoft, ...shadows.card, minHeight: 120,
+          }}>
+            <MetricCard headline="Political trend" value="—" microLine="Across recent scans" hasData={false} />
+          </View>
+        </View>
+      </LockedOverlayCard>
+
+      {/* PD-003 FIX: Removed redundant methodology disclaimer — InsightHero's
+          "How we measure" section already provides this via progressive disclosure */}
     </View>
   );
 });
@@ -646,8 +1414,8 @@ const PoliticsMethodologyDisclaimer = ({ colors }: { colors: ReturnType<typeof u
     borderWidth: 1,
     borderColor: colors.borderSoft,
   }}>
-    <Text style={{ ...TYPOGRAPHY.label, color: colors.textMuted, marginBottom: SPACING.xxs }}>
-      How we measure
+    <Text style={{ ...TYPOGRAPHY.overline, color: colors.textMuted, marginBottom: SPACING.xxs }}>
+      How We Measure
     </Text>
     <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
       Political classification uses Google's Gemini AI to identify posts containing political keywords and themes. Ideological alignment (left/center/right) is approximate, based on stance keywords found in post text. This analysis describes what appeared in your feed — it does not infer your personal views or the platform's intent.
@@ -658,8 +1426,13 @@ const PoliticsMethodologyDisclaimer = ({ colors }: { colors: ReturnType<typeof u
 // Tone tab — renders emotional tone analysis from Gemini AI classification.
 // Shows tone composition bar, methodology disclaimer, and quality gating.
 // Matches the main site's ToneTab pattern with epistemic restraint.
+// Gates are mutually exclusive: only ONE state renders at a time.
 const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, colors, shadows }: { data: DashboardData; aiConsent: boolean; onGoToSettings: () => void; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
   const analysis = data.toneAnalysis;
+  const totalAnalyzed = analysis?.totalAnalyzed ?? data.totalPosts;
+  const isLowPostCount = totalAnalyzed < 20;
+  // PD-001 FIX: Collapse secondary tone sections by default
+  const [showToneDetails, setShowToneDetails] = useState(false);
 
   // Tone colors from theme palette
   const TONE_COLORS = {
@@ -668,8 +1441,41 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
     negative: colors.toneNegative,
   };
 
+  // ── Gate 1: No AI consent → show ONLY the consent card, nothing else ──
+  if (!aiConsent) {
+    return (
+      <View style={{ gap: SPACING.sm }}>
+        <AiConsentCard
+          title="Enable AI Insights"
+          description="Turn on AI analysis in Settings to unlock emotional tone classification for your feed content."
+          buttonLabel="Go to Settings"
+          onPress={onGoToSettings}
+          colors={colors}
+          shadows={shadows}
+        />
+      </View>
+    );
+  }
+
+  // ── Gate 2: AI consent given but no tone data ──
+  if (!data.hasToneData) {
+    return (
+      <View style={{ gap: SPACING.sm }}>
+        <AiProcessingCard
+          title="Emotional tone wasn't prominent in this scan"
+          message={`Clear emotional tone signals weren't prominent among the ${totalAnalyzed} posts in this scan.${isLowPostCount ? ' Short video titles may not contain enough text for tone analysis. Try scanning longer or on a platform with more text-based posts.' : ' Each scan captures a different moment — try scanning at a different time.'}`}
+          subtitle={isLowPostCount ? undefined : 'Try scanning at a different time of day to see how results vary.'}
+          colors={colors}
+          shadows={shadows}
+        />
+        <ToneMethodologyDisclaimer colors={colors} />
+      </View>
+    );
+  }
+
+  // ── Gate 3: Has tone data — render full analysis ──
   return (
-    <View style={{ gap: SPACING.sm }}>
+    <View style={{ gap: SPACING['2xl'] }}>
       <InsightHero
         title={data.toneInsight.title}
         meaning={data.toneInsight.meaning}
@@ -685,72 +1491,169 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
         }}
       />
 
-      {/* Gate 1: No AI consent */}
-      {!aiConsent ? (
-        <AiConsentCard
-          title="Enable AI Insights"
-          description="Turn on AI analysis in Settings to unlock emotional tone classification for your feed content."
-          buttonLabel="Go to Settings"
-          onPress={onGoToSettings}
-          colors={colors}
-          shadows={shadows}
+      {/* Low sample indicator */}
+      {analysis?.lowSample && (
+        <View style={{
+          backgroundColor: colors.lowSampleBg,
+          borderRadius: RADIUS.md,
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+          borderWidth: 1,
+          borderColor: colors.lowSampleBorder,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.xs,
+        }}>
+          <Info size={14} color={colors.warning} strokeWidth={2} />
+          <Text style={{ ...TYPOGRAPHY.caption, color: colors.warning, flex: 1 }}>
+            Low sample — fewer than 10 posts with tone data. Results may not reflect typical patterns.
+          </Text>
+        </View>
+      )}
+
+      {/* Section: Tone Composition */}
+      <SectionHeader title="Tone Distribution" subtitle="Emotional character of posts" />
+      <View style={{
+        backgroundColor: colors.bgCard,
+        borderRadius: RADIUS.lg,
+        padding: SPACING.lg,
+        borderWidth: 1,
+        borderColor: colors.borderSoft,
+        ...shadows.card,
+      }}>
+        <StackedBar100
+          segments={[
+            { label: 'Positive', percentage: analysis?.positivePct ?? 0, count: analysis?.positiveCount ?? 0, color: TONE_COLORS.positive },
+            { label: 'Neutral', percentage: analysis?.neutralPct ?? 0, count: analysis?.neutralCount ?? 0, color: TONE_COLORS.neutral },
+            { label: 'Negative', percentage: analysis?.negativePct ?? 0, count: analysis?.negativeCount ?? 0, color: TONE_COLORS.negative },
+          ]}
         />
-      ) : !data.hasToneData ? (
-        /* Gate 2: AI consent given but no tone data yet */
-        <View style={{ gap: SPACING.sm }}>
-          <View style={{
-            backgroundColor: colors.bgCard,
+        <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic', marginTop: SPACING.xxs }}>
+          Each segment shows what share of posts fell into that emotional category.
+        </Text>
+        <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
+          Based on {analysis?.knownValenceTotal ?? 0} posts with identifiable tone
+        </Text>
+      </View>
+
+      {/* Section: Summary Stats */}
+      <View style={{
+        backgroundColor: colors.bgCard,
+        borderRadius: RADIUS.lg,
+        padding: SPACING.lg,
+        borderWidth: 1,
+        borderColor: colors.borderSoft,
+        ...shadows.card,
+      }}>
+        <Text style={{ ...TYPOGRAPHY.body, color: colors.textMuted }}>
+          {(analysis?.negativePct ?? 0) >= 35
+            ? `Negative or conflict-focused tone appeared in ${analysis?.negativePct}% of posts. In a 60-minute session, that would represent about ${Math.round(60 * (analysis?.negativePct ?? 0) / 100)} minutes of negatively-framed content.`
+            : (analysis?.positivePct ?? 0) >= 35
+            ? `Positive or upbeat tone appeared in ${analysis?.positivePct}% of posts. Your scrolling experience leaned toward optimistic content.`
+            : (analysis?.neutralPct ?? 0) >= 35
+            ? `Neutral or informational tone appeared in ${analysis?.neutralPct}% of posts. Most content appeared factual or balanced rather than emotionally charged.`
+            : `Your feed showed a mix of emotional tones — ${analysis?.positivePct}% positive, ${analysis?.neutralPct}% neutral, and ${analysis?.negativePct}% negative.`
+          }
+        </Text>
+      </View>
+
+      {/* PD-001 FIX: Collapsible detail sections */}
+      {/* A-004 FIX: minHeight 44 ensures accessible tap target */}
+      {(data.topPositiveSources.length > 0 || data.topNegativeSources.length > 0 || data.toneBySourceOrigin) && (
+        <TouchableOpacity
+          onPress={() => setShowToneDetails(!showToneDetails)}
+          activeOpacity={0.7}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingVertical: SPACING.md,
+            paddingHorizontal: SPACING.lg,
+            minHeight: 44,
             borderRadius: RADIUS.lg,
-            padding: SPACING.xl,
+            backgroundColor: colors.bgCard,
             borderWidth: 1,
             borderColor: colors.borderSoft,
-            ...shadows.card,
-            alignItems: 'center',
-            gap: SPACING.sm,
-          }}>
+          }}
+          accessibilityRole="button"
+          accessibilityLabel={showToneDetails ? 'Hide tone details' : 'Show tone details'}
+          accessibilityState={{ expanded: showToneDetails }}
+        >
+          <Text style={{ ...TYPOGRAPHY.label, color: colors.textMuted }}>
+            Deeper analysis
+          </Text>
+          <ChevronDown
+            size={16}
+            color={colors.textSecondary}
+            strokeWidth={2}
+            style={{ transform: [{ rotate: showToneDetails ? '180deg' : '0deg' }] }}
+          />
+        </TouchableOpacity>
+      )}
+
+      {/* Section: Top Sources by Tone */}
+      {showToneDetails && (data.topPositiveSources.length > 0 || data.topNegativeSources.length > 0) && (
+        <>
+          <SectionHeader title="Top Sources by Tone" subtitle="Based on observable signals" />
+
+          {data.topPositiveSources.length > 0 && (
             <View style={{
-              width: 44, height: 44, borderRadius: 22,
-              backgroundColor: colors.blue50, justifyContent: 'center', alignItems: 'center',
-            }}>
-              <Info size={20} color={colors.primaryBlue} strokeWidth={1.5} />
-            </View>
-            <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain, textAlign: 'center' }}>
-              No emotional tone data detected
-            </Text>
-            <Text style={{ ...TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center' }}>
-              No posts in this scan contained identifiable emotional tone. This could mean tone classification was not available for this session, or the scan needs more posts for analysis.
-            </Text>
-            <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted, textAlign: 'center' }}>
-              Try scanning a longer session for a fuller picture.
-            </Text>
-          </View>
-          <ToneMethodologyDisclaimer colors={colors} />
-        </View>
-      ) : (
-        /* Gate 3: Has tone data — render full analysis */
-        <View style={{ gap: SPACING.sm }}>
-          {/* Low sample indicator */}
-          {analysis?.lowSample && (
-            <View style={{
-              backgroundColor: colors.lowSampleBg,
-              borderRadius: RADIUS.md,
-              paddingHorizontal: SPACING.lg,
-              paddingVertical: SPACING.md,
+              backgroundColor: colors.bgCard,
+              borderRadius: RADIUS.lg,
+              padding: SPACING.lg,
               borderWidth: 1,
-              borderColor: colors.lowSampleBorder,
-              flexDirection: 'row',
-              alignItems: 'center',
+              borderColor: colors.borderSoft,
+              ...shadows.card,
               gap: SPACING.xs,
             }}>
-              <Info size={14} color={colors.warning} strokeWidth={2} />
-              <Text style={{ ...TYPOGRAPHY.caption, color: colors.warning, flex: 1 }}>
-                Low sample — fewer than 10 posts with tone data. Results may not reflect typical patterns.
+              <Text style={{ ...TYPOGRAPHY.overline, color: colors.textMuted, marginBottom: SPACING.xxs }}>
+                Most Positive Sources
               </Text>
+              {data.topPositiveSources.map((source, i) => (
+                <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '500' }}>
+                    @{source.handle}
+                  </Text>
+                  <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
+                    {source.count} positive post{source.count !== 1 ? 's' : ''}
+                  </Text>
+                </View>
+              ))}
             </View>
           )}
 
-          {/* Section: Tone Composition */}
-          <SectionHeader title="Tone Distribution" subtitle="Emotional character of posts" />
+          {data.topNegativeSources.length > 0 && (
+            <View style={{
+              backgroundColor: colors.bgCard,
+              borderRadius: RADIUS.lg,
+              padding: SPACING.lg,
+              borderWidth: 1,
+              borderColor: colors.borderSoft,
+              ...shadows.card,
+              gap: SPACING.xs,
+            }}>
+              <Text style={{ ...TYPOGRAPHY.overline, color: colors.textMuted, marginBottom: SPACING.xxs }}>
+                Most Negative Sources
+              </Text>
+              {data.topNegativeSources.map((source, i) => (
+                <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '500' }}>
+                    @{source.handle}
+                  </Text>
+                  <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
+                    {source.count} negative post{source.count !== 1 ? 's' : ''}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </>
+      )}
+
+      {/* Section: Tone Comparison — Suggested vs Followed (PD-001: collapsible) */}
+      {showToneDetails && data.toneBySourceOrigin?.hasData && data.toneBySourceOrigin.suggested && data.toneBySourceOrigin.followed && (
+        <>
+          <SectionHeader title="Tone: Suggested vs Followed" subtitle="Comparing emotional character by origin" />
           <View style={{
             backgroundColor: colors.bgCard,
             borderRadius: RADIUS.lg,
@@ -758,65 +1661,81 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
             borderWidth: 1,
             borderColor: colors.borderSoft,
             ...shadows.card,
+            gap: SPACING.md,
           }}>
-            <StackedBar100
-              segments={[
-                { label: 'Positive', percentage: analysis?.positivePct ?? 0, count: analysis?.positiveCount ?? 0, color: TONE_COLORS.positive },
-                { label: 'Neutral', percentage: analysis?.neutralPct ?? 0, count: analysis?.neutralCount ?? 0, color: TONE_COLORS.neutral },
-                { label: 'Negative', percentage: analysis?.negativePct ?? 0, count: analysis?.negativeCount ?? 0, color: TONE_COLORS.negative },
-              ]}
-            />
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic', marginTop: SPACING.xxs }}>
-              Each segment shows what share of posts fell into that emotional category.
-            </Text>
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
-              Based on {analysis?.knownValenceTotal ?? 0} posts with identifiable tone
-            </Text>
-          </View>
+            {/* Suggested tone mini bar */}
+            <View style={{ gap: SPACING.xxs }}>
+              <Text style={{ ...TYPOGRAPHY.overline, color: colors.textMuted }}>
+                Tone of Suggested Content
+              </Text>
+              <View style={{ height: 20, flexDirection: 'row', borderRadius: 10, overflow: 'hidden' }}>
+                <View style={{ width: `${data.toneBySourceOrigin.suggested.positivePct}%`, backgroundColor: colors.tonePositive }} />
+                <View style={{ width: `${data.toneBySourceOrigin.suggested.neutralPct}%`, backgroundColor: colors.toneNeutral }} />
+                <View style={{ width: `${data.toneBySourceOrigin.suggested.negativePct}%`, backgroundColor: colors.toneNegative }} />
+              </View>
+              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
+                {data.toneBySourceOrigin.suggested.positivePct}% pos · {data.toneBySourceOrigin.suggested.neutralPct}% neut · {data.toneBySourceOrigin.suggested.negativePct}% neg ({data.toneBySourceOrigin.suggested.total} posts)
+              </Text>
+            </View>
 
-          {/* Section: Summary Stats */}
-          <View style={{
-            backgroundColor: colors.bgCard,
-            borderRadius: RADIUS.lg,
-            padding: SPACING.lg,
-            borderWidth: 1,
-            borderColor: colors.borderSoft,
-            ...shadows.card,
-          }}>
-            <Text style={{ ...TYPOGRAPHY.body, color: colors.textMuted }}>
-              {(analysis?.negativePct ?? 0) >= 35
-                ? `Negative or conflict-focused tone appeared in ${analysis?.negativePct}% of posts. In a 60-minute session, that would represent about ${Math.round(60 * (analysis?.negativePct ?? 0) / 100)} minutes of negatively-framed content.`
-                : (analysis?.positivePct ?? 0) >= 35
-                ? `Positive or upbeat tone appeared in ${analysis?.positivePct}% of posts. Your scrolling experience leaned toward optimistic content.`
-                : (analysis?.neutralPct ?? 0) >= 35
-                ? `Neutral or informational tone appeared in ${analysis?.neutralPct}% of posts. Most content appeared factual or balanced rather than emotionally charged.`
-                : `Your feed showed a mix of emotional tones — ${analysis?.positivePct}% positive, ${analysis?.neutralPct}% neutral, and ${analysis?.negativePct}% negative.`
-              }
-            </Text>
-          </View>
+            {/* Followed tone mini bar */}
+            <View style={{ gap: SPACING.xxs }}>
+              <Text style={{ ...TYPOGRAPHY.overline, color: colors.textMuted }}>
+                Tone of Followed Content
+              </Text>
+              <View style={{ height: 20, flexDirection: 'row', borderRadius: 10, overflow: 'hidden' }}>
+                <View style={{ width: `${data.toneBySourceOrigin.followed.positivePct}%`, backgroundColor: colors.tonePositive }} />
+                <View style={{ width: `${data.toneBySourceOrigin.followed.neutralPct}%`, backgroundColor: colors.toneNeutral }} />
+                <View style={{ width: `${data.toneBySourceOrigin.followed.negativePct}%`, backgroundColor: colors.toneNegative }} />
+              </View>
+              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
+                {data.toneBySourceOrigin.followed.positivePct}% pos · {data.toneBySourceOrigin.followed.neutralPct}% neut · {data.toneBySourceOrigin.followed.negativePct}% neg ({data.toneBySourceOrigin.followed.total} posts)
+              </Text>
+            </View>
 
-          {/* Premium: Rare content detection — locked for free users */}
-          <LockedOverlayCard
-            locked={!isPlus}
-            title="Rare content detection"
-            body="See which topics rarely appear in your feed and discover underrepresented content themes across your scans."
-            onUpgrade={onUpgrade}
-          >
-            <View style={{ gap: SPACING.sm }}>
-              <SectionHeader title="Underrepresented Topics" subtitle="What rarely shows up" />
-              <View style={{
-                backgroundColor: colors.bgCard, borderRadius: RADIUS.lg, padding: SPACING.lg,
-                borderWidth: 1, borderColor: colors.borderSoft, ...shadows.card, minHeight: 120,
-              }}>
-                <MetricCard headline="Rare topics" value="—" microLine="Topics that rarely appear" hasData={false} />
+            {/* Legend */}
+            <View style={{ flexDirection: 'row', gap: SPACING.md, justifyContent: 'center', paddingTop: SPACING.xxs }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.tonePositive }} />
+                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>Positive</Text>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.toneNeutral }} />
+                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>Neutral</Text>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.toneNegative }} />
+                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>Negative</Text>
               </View>
             </View>
-          </LockedOverlayCard>
 
-          {/* Methodology disclaimer */}
-          <ToneMethodologyDisclaimer colors={colors} />
-        </View>
+            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic' }}>
+              Based on observable tone signals. This comparison may not be available for all scans.
+            </Text>
+          </View>
+        </>
       )}
+
+      {/* Premium: Rare content detection — locked for free users */}
+      <LockedOverlayCard
+        locked={!isPlus}
+        title="Rare content detection"
+        body="See which topics rarely appear in your feed and discover underrepresented content themes across your scans."
+        onUpgrade={onUpgrade}
+      >
+        <View style={{ gap: SPACING.sm }}>
+          <SectionHeader title="Underrepresented Topics" subtitle="What rarely shows up" />
+          <View style={{
+            backgroundColor: colors.bgCard, borderRadius: RADIUS.lg, padding: SPACING.lg,
+            borderWidth: 1, borderColor: colors.borderSoft, ...shadows.card, minHeight: 120,
+          }}>
+            <MetricCard headline="Rare topics" value="—" microLine="Topics that rarely appear" hasData={false} />
+          </View>
+        </View>
+      </LockedOverlayCard>
+
+      {/* PD-003 FIX: Removed redundant methodology disclaimer — InsightHero's
+          "How we measure" section already provides this via progressive disclosure */}
     </View>
   );
 });
@@ -830,8 +1749,8 @@ const ToneMethodologyDisclaimer = ({ colors }: { colors: ReturnType<typeof useTh
     borderWidth: 1,
     borderColor: colors.borderSoft,
   }}>
-    <Text style={{ ...TYPOGRAPHY.label, color: colors.textMuted, marginBottom: SPACING.xxs }}>
-      How we measure
+    <Text style={{ ...TYPOGRAPHY.overline, color: colors.textMuted, marginBottom: SPACING.xxs }}>
+      How We Measure
     </Text>
     <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
       Emotional tone classification uses Google's Gemini AI to categorize posts as positive, neutral, or negative based on language patterns. Sentiment analysis is approximate — tone is subjective, and short posts may be misclassified. This analysis describes what appeared in your feed — it does not infer your emotional state or the platform's intent.
@@ -840,6 +1759,32 @@ const ToneMethodologyDisclaimer = ({ colors }: { colors: ReturnType<typeof useTh
 );
 
 // ─── Shared Sub-Components ───────────────────────────────
+
+/** Per-tab error fallback — shows inline error instead of crashing the whole dashboard */
+const TabErrorFallback = ({ tabLabel, colors }: { tabLabel: string; colors: ReturnType<typeof useTheme>['colors'] }) => (
+  <View style={{
+    backgroundColor: colors.bgCard,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.xl,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
+    alignItems: 'center',
+    gap: SPACING.sm,
+  }}>
+    <View style={{
+      width: 44, height: 44, borderRadius: 22,
+      backgroundColor: colors.warningLight, justifyContent: 'center', alignItems: 'center',
+    }}>
+      <Info size={20} color={colors.warning} strokeWidth={1.5} />
+    </View>
+    <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain, textAlign: 'center' }}>
+      This section couldn't load
+    </Text>
+    <Text style={{ ...TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center' }}>
+      The {tabLabel} tab ran into an issue. Try switching to another tab or refreshing the dashboard.
+    </Text>
+  </View>
+);
 
 const EmptySection = ({ message, colors }: { message: string; colors: ReturnType<typeof useTheme>['colors'] }) => (
   <View style={{
@@ -850,7 +1795,7 @@ const EmptySection = ({ message, colors }: { message: string; colors: ReturnType
     borderColor: colors.borderSoft,
     alignItems: 'center',
   }}>
-    <Text style={{ fontSize: 13, color: colors.textSecondary, textAlign: 'center', lineHeight: 19 }}>
+    <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textSecondary, textAlign: 'center' }}>
       {message}
     </Text>
   </View>
@@ -889,7 +1834,7 @@ const AiConsentCard = ({
       accessibilityRole="button"
       style={{
         backgroundColor: colors.primaryBlue, borderRadius: RADIUS.md,
-        paddingHorizontal: 14, paddingVertical: 9,
+        paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm,
         flexDirection: 'row', alignItems: 'center', gap: SPACING.xs,
       }}
     >
@@ -957,22 +1902,22 @@ const PlusTierBanner = ({ isPlus, colors }: { isPlus: boolean; colors: ReturnTyp
         backgroundColor: colors.blue800,
         borderRadius: RADIUS.lg,
         paddingHorizontal: SPACING.lg,
-        paddingVertical: 10,
+        paddingVertical: SPACING.sm,
         minHeight: 44,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
+        gap: SPACING.sm,
       }}
     >
       <TrendingUp size={16} color={colors.white} strokeWidth={2} />
-      <Text style={{ fontSize: 12, fontWeight: '600', color: colors.white, flex: 1 }}>
+      <Text style={{ ...TYPOGRAPHY.small, fontWeight: '600', color: colors.white, flex: 1 }}>
         Unlock trend analysis with Plus
       </Text>
       <View style={{
         backgroundColor: colors.accentGreen, borderRadius: RADIUS.sm,
-        paddingHorizontal: 8, paddingVertical: 4,
+        paddingHorizontal: SPACING.sm, paddingVertical: SPACING.xs,
       }}>
-        <Text style={{ fontSize: 10, fontWeight: '700', color: colors.white }}>Try Free</Text>
+        <Text style={{ ...TYPOGRAPHY.captionSmall, fontWeight: '700', color: colors.white }}>Try Free</Text>
       </View>
     </TouchableOpacity>
   );
@@ -990,6 +1935,15 @@ export default function DashboardScreen() {
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const aiConsent = userProfile?.ai_analysis_consent === true;
+
+  // C-03 FIX: Refresh scan data when this tab gains focus.
+  // This ensures the dashboard always shows the newest scan data,
+  // especially when navigating from Scan Complete → Dashboard.
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh])
+  );
 
   // L4: If a specific scanId was passed (from history), use that scan
   const activeScan = useMemo(() => {
@@ -1025,7 +1979,7 @@ export default function DashboardScreen() {
   // Tab switch with fade animation and haptic feedback
   const switchTab = useCallback((tabId: string) => {
     if (tabId === activeTab) return;
-    Haptics.selectionAsync();
+    triggerSelection();
 
     // Check for reduced motion preference
     AccessibilityInfo.isReduceMotionEnabled().then((isReduceMotionEnabled: boolean) => {
@@ -1034,16 +1988,16 @@ export default function DashboardScreen() {
         setActiveTab(tabId);
       } else {
         // Play fade animation
-        Animated.timing(fadeAnim, { toValue: 0, duration: 80, useNativeDriver: true }).start(() => {
+        Animated.timing(fadeAnim, { toValue: 0, duration: ANIMATION.TAB_FADE_OUT, useNativeDriver: true }).start(() => {
           setActiveTab(tabId);
-          Animated.timing(fadeAnim, { toValue: 1, duration: 150, useNativeDriver: true }).start();
+          Animated.timing(fadeAnim, { toValue: 1, duration: ANIMATION.TAB_FADE_IN, useNativeDriver: true }).start();
         });
       }
     }).catch(() => {
       // If API not available, default to no animation skip
-      Animated.timing(fadeAnim, { toValue: 0, duration: 80, useNativeDriver: true }).start(() => {
+      Animated.timing(fadeAnim, { toValue: 0, duration: ANIMATION.TAB_FADE_OUT, useNativeDriver: true }).start(() => {
         setActiveTab(tabId);
-        Animated.timing(fadeAnim, { toValue: 1, duration: 150, useNativeDriver: true }).start();
+        Animated.timing(fadeAnim, { toValue: 1, duration: ANIMATION.TAB_FADE_IN, useNativeDriver: true }).start();
       });
     });
   }, [activeTab, fadeAnim]);
@@ -1052,15 +2006,23 @@ export default function DashboardScreen() {
 
   const renderTabContent = () => {
     if (!dashboardData) return null;
+    const tabLabel = TABS.find(t => t.id === activeTab)?.label ?? 'this';
+    const fallback = <TabErrorFallback tabLabel={tabLabel} colors={colors} />;
+    let content: React.ReactNode;
     switch (activeTab) {
-      case 'overview': return <OverviewContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />;
-      case 'sources': return <SourcesContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />;
-      case 'ads': return <AdsContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />;
-      case 'politics': return <PoliticsContent data={dashboardData} aiConsent={aiConsent} onGoToSettings={goToSettings} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />;
-      case 'tone': return <ToneContent data={dashboardData} aiConsent={aiConsent} onGoToSettings={goToSettings} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />;
-      case 'suggested_vs_followed': return <SuggestedContent data={dashboardData} colors={colors} shadows={shadows} />;
-      default: return <OverviewContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />;
+      case 'overview': content = <OverviewContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
+      case 'sources': content = <SourcesContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
+      case 'ads': content = <AdsContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
+      case 'politics': content = <PoliticsContent data={dashboardData} aiConsent={aiConsent} onGoToSettings={goToSettings} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
+      case 'tone': content = <ToneContent data={dashboardData} aiConsent={aiConsent} onGoToSettings={goToSettings} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
+      case 'suggested_vs_followed': content = <SuggestedContent data={dashboardData} colors={colors} shadows={shadows} />; break;
+      default: content = <OverviewContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
     }
+    return (
+      <ErrorBoundary key={activeTab} fallback={fallback}>
+        {content}
+      </ErrorBoundary>
+    );
   };
 
   // Tour tab-switch handler (no haptics during tour)
@@ -1086,13 +2048,14 @@ export default function DashboardScreen() {
         }
         scrollEventThrottle={16}
       >
-        {/* Header with scan button */}
+        {/* Header with scan button — M-07 FIX: Added gap + marginRight to prevent overlap */}
         <View style={{
           flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
-          paddingHorizontal: SPACING.lg, paddingTop: SPACING.lg, paddingBottom: 6,
+          paddingHorizontal: SPACING.lg, paddingTop: SPACING.lg, paddingBottom: SPACING.xs,
+          gap: SPACING.md,
         }}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: TYPOGRAPHY.h1.fontSize, fontWeight: TYPOGRAPHY.h1.fontWeight, color: colors.textMain, marginBottom: 2 }} accessibilityRole="header">
+          <View style={{ flex: 1, marginRight: SPACING.sm }}>
+            <Text style={{ ...TYPOGRAPHY.h1, color: colors.textMain, marginBottom: SPACING.xxs }} accessibilityRole="header">
               Your Dashboard
             </Text>
             {activeScan ? (
@@ -1101,7 +2064,7 @@ export default function DashboardScreen() {
                   month: 'short', day: 'numeric', year: 'numeric',
                   hour: 'numeric', minute: '2-digit',
                 })}{' — '}
-                {activeScan.platform.charAt(0).toUpperCase() + activeScan.platform.slice(1)}{' '}
+                {getPlatformDisplayName(activeScan.platform)}{' '}
                 ({activeScan.post_count} posts)
               </Text>
             ) : (
@@ -1110,6 +2073,7 @@ export default function DashboardScreen() {
               </Text>
             )}
           </View>
+          {/* D-1 FIX: Unified scan CTA color — primary blue */}
           {hasData && (
             <TouchableOpacity
               onPress={() => router.push('/(tabs)/scan')}
@@ -1117,25 +2081,36 @@ export default function DashboardScreen() {
               accessibilityRole="button"
               accessibilityLabel="Scan your feed"
               style={{
-                backgroundColor: colors.accentGreen, borderRadius: RADIUS.md,
-                paddingHorizontal: 14, paddingVertical: 8,
+                backgroundColor: colors.primaryBlue, borderRadius: RADIUS.md,
+                paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm,
                 minHeight: 44,
-                flexDirection: 'row', alignItems: 'center', gap: 5,
+                flexDirection: 'row', alignItems: 'center', gap: SPACING.xs,
               }}
             >
               <ScanSearch size={14} color={colors.white} strokeWidth={2} />
-              <Text style={{ fontSize: 13, fontWeight: '600', color: colors.white }}>Scan</Text>
+              <Text style={{ ...TYPOGRAPHY.buttonSm, color: colors.white }}>Scan</Text>
             </TouchableOpacity>
           )}
         </View>
 
-        {/* Loading */}
+        {/* Loading — Skeleton shimmer matching dashboard layout */}
         {loading && !refreshing && scans.length === 0 && (
-          <View style={{ paddingVertical: 60, alignItems: 'center' }}>
-            <ActivityIndicator size="large" color={colors.primaryBlue} />
-            <Text style={{ ...TYPOGRAPHY.body, color: colors.textSecondary, marginTop: SPACING.lg }}>
-              Loading your scans...
-            </Text>
+          <View style={{ paddingHorizontal: SPACING.lg, paddingVertical: SPACING.xl, gap: SPACING.lg }}>
+            {/* Skeleton: tab bar placeholder */}
+            <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
+              {[80, 70, 90].map((w, i) => (
+                <View key={i} style={{ width: w, height: 40, borderRadius: RADIUS.full, backgroundColor: colors.borderSoft }} />
+              ))}
+            </View>
+            {/* Skeleton: insight card placeholder */}
+            <View style={{ height: 140, borderRadius: RADIUS.lg, backgroundColor: colors.borderSoft }} />
+            {/* Skeleton: metrics row */}
+            <View style={{ flexDirection: 'row', gap: SPACING.md }}>
+              <View style={{ flex: 1, height: 100, borderRadius: RADIUS.lg, backgroundColor: colors.borderSoft }} />
+              <View style={{ flex: 1, height: 100, borderRadius: RADIUS.lg, backgroundColor: colors.borderSoft }} />
+            </View>
+            {/* Skeleton: chart placeholder */}
+            <View style={{ height: 80, borderRadius: RADIUS.lg, backgroundColor: colors.borderSoft }} />
           </View>
         )}
 
@@ -1146,7 +2121,7 @@ export default function DashboardScreen() {
             backgroundColor: colors.warningLight, borderRadius: RADIUS.md,
             padding: SPACING.lg, borderWidth: 1, borderColor: colors.warningBorder,
             flexDirection: 'row', alignItems: 'center', gap: SPACING.xs,
-          }} accessibilityRole="alert">
+          }} accessibilityRole="alert" accessibilityLiveRegion="assertive">
             <Info size={16} color={colors.warning} strokeWidth={2} />
             <Text style={{ ...TYPOGRAPHY.body, color: colors.warning, flex: 1 }}>
               {fetchError}
@@ -1156,10 +2131,10 @@ export default function DashboardScreen() {
 
                 {/* Dashboard compute error */}
         {dashboardComputeError && (
-          <View style={{ paddingHorizontal: 24, paddingVertical: 40, alignItems: 'center' }}>
+          <View style={{ paddingHorizontal: SPACING.xl, paddingVertical: SPACING['4xl'], alignItems: 'center' }}>
             <View style={{
               width: 56, height: 56, backgroundColor: colors.warningLight, borderRadius: 28,
-              justifyContent: 'center', alignItems: 'center', marginBottom: 16,
+              justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.lg,
             }}>
               <Info size={24} color={colors.warning} strokeWidth={1.5} />
             </View>
@@ -1177,105 +2152,189 @@ export default function DashboardScreen() {
               accessibilityLabel="Refresh dashboard"
               style={{
                 backgroundColor: colors.primaryBlue, borderRadius: RADIUS.md,
-                paddingHorizontal: 20, paddingVertical: 12,
+                paddingHorizontal: SPACING.xl, paddingVertical: SPACING.md,
               }}
             >
-              <Text style={{ fontSize: 14, fontWeight: '600', color: colors.white }}>Refresh</Text>
+              <Text style={{ ...TYPOGRAPHY.buttonSm, color: colors.white }}>Refresh</Text>
             </TouchableOpacity>
           </View>
         )}
 
                 {/* Empty state */}
         {!loading && !hasData && (
-          <View style={{ paddingHorizontal: SPACING['2xl'], paddingVertical: SPACING['6xl'], alignItems: 'center' }}>
+          <>
+            {/* D-2 FIX: Show tab strip even in empty state so users understand dashboard structure */}
+            <View style={{ paddingHorizontal: SPACING.lg, marginTop: SPACING.xs, marginBottom: SPACING.sm, opacity: 0.5 }}>
+              {[TABS.slice(0, 3), TABS.slice(3, 6)].map((row, rowIdx) => (
+                <View key={rowIdx} style={{ flexDirection: 'row', gap: SPACING.sm, marginBottom: SPACING.sm }}>
+                  {row.map((tab) => (
+                    <View
+                      key={tab.id}
+                      style={{
+                        flex: 1,
+                        paddingVertical: SPACING.md,
+                        minHeight: 48,
+                        borderRadius: RADIUS.md,
+                        backgroundColor: colors.bgCard,
+                        borderWidth: 1,
+                        borderColor: colors.borderSlate200,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Text style={{
+                        ...TYPOGRAPHY.buttonSm,
+                        color: colors.textTertiary,
+                        textAlign: 'center',
+                      }}>
+                        {tab.label}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              ))}
+            </View>
+
+            {/* D-5 FIX: Position empty state in upper portion instead of centered */}
+            <View style={{ paddingHorizontal: SPACING['2xl'], paddingTop: SPACING['2xl'], paddingBottom: SPACING['4xl'], alignItems: 'center' }}>
+            {/* D-4 FIX: Use AlgorithmLens Eye icon instead of generic search icon */}
             <View style={{
               width: 56, height: 56, backgroundColor: colors.blue50, borderRadius: 28,
-              justifyContent: 'center', alignItems: 'center', marginBottom: 16,
+              justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.lg,
             }}>
               <Search size={24} color={colors.primaryBlue} strokeWidth={1.5} />
             </View>
+            {/* D-3 FIX: Improved empty state subtitle */}
             <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain, marginBottom: SPACING.sm }}>
               No scans yet
             </Text>
             <Text style={{
               ...TYPOGRAPHY.body, color: colors.textMuted, textAlign: 'center', marginBottom: SPACING.xl,
             }}>
-              Scan a social media feed to see what appears — ads, suggested content, top sources, and more.
+              Complete your first scan to unlock insights about your feed — ads, suggested content, top sources, and more.
             </Text>
+            {/* D-1 FIX: Unified scan CTA color — primary blue instead of teal/green */}
             <TouchableOpacity
               onPress={() => router.push('/(tabs)/scan')}
               accessibilityRole="button"
               accessibilityLabel="Start your first scan"
               style={{
-                backgroundColor: colors.accentGreen, borderRadius: RADIUS.md,
-                paddingHorizontal: 20, paddingVertical: 12,
+                backgroundColor: colors.primaryBlue, borderRadius: RADIUS.md,
+                paddingHorizontal: SPACING.xl, paddingVertical: SPACING.md,
               }}
             >
-              <Text style={{ fontSize: 14, fontWeight: '600', color: colors.white }}>Start Your First Scan</Text>
+              <Text style={{ ...TYPOGRAPHY.buttonSm, color: colors.white }}>Start Your First Scan</Text>
             </TouchableOpacity>
           </View>
+          </>
         )}
 
         {/* Tab bar + content */}
         {hasData && (
           <>
-            <PlusTierBanner isPlus={isPlus} colors={colors} />
+            {/* H-05 FIX: Plus banner only shows on Overview tab, not all 6 */}
+            {activeTab === 'overview' && <PlusTierBanner isPlus={isPlus} colors={colors} />}
 
-            {/* Two rows of 3 tabs — all 6 always visible */}
-            <View style={{ paddingHorizontal: SPACING.lg, marginTop: 4, marginBottom: SPACING.sm }}>
-              {[TABS.slice(0, 3), TABS.slice(3, 6)].map((row, rowIdx) => (
-                <View key={rowIdx} style={{ flexDirection: 'row', gap: 7, marginBottom: 7 }}>
-                  {row.map((tab) => {
-                    const isActive = activeTab === tab.id;
-                    return (
-                      <TouchableOpacity
-                        key={tab.id}
-                        onPress={() => switchTab(tab.id)}
-                        activeOpacity={0.7}
-                        accessibilityRole="tab"
-                        accessibilityState={{ selected: isActive }}
-                        accessibilityLabel={`${tab.label} tab`}
-                        style={{
-                          flex: 1,
-                          paddingVertical: SPACING.md,
-                          minHeight: 48,
-                          borderRadius: RADIUS.md,
-                          backgroundColor: isActive ? colors.primaryBlue : colors.bgCard,
-                          borderWidth: isActive ? 0 : 1,
-                          borderColor: colors.borderSlate200,
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: tab.needsAi ? 4 : 0,
-                          ...(isActive ? shadows.soft : {}),
-                        }}
-                      >
-                        {tab.needsAi && !isActive && (
-                          <Sparkles size={11} color={colors.textSecondary} strokeWidth={2} />
-                        )}
-                        {tab.needsAi && isActive && (
-                          <Sparkles size={11} color={colors.white} strokeWidth={2} />
-                        )}
-                        <Text style={{
-                          ...TYPOGRAPHY.buttonSm,
-                          color: isActive ? colors.white : colors.textMuted,
-                          textAlign: 'center',
+            {/* Horizontally scrollable tab bar — single row, no wrapping */}
+            <View style={{ position: 'relative' }}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{
+                  paddingHorizontal: SPACING.lg,
+                  gap: SPACING.sm,
+                  marginTop: SPACING.xs,
+                  marginBottom: SPACING.sm,
+                }}
+                accessibilityRole="tablist"
+              >
+                {TABS.map((tab) => {
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <TouchableOpacity
+                      key={tab.id}
+                      onPress={() => switchTab(tab.id)}
+                      activeOpacity={0.7}
+                      accessibilityRole="tab"
+                      accessibilityState={{ selected: isActive }}
+                      accessibilityLabel={`${tab.label} tab`}
+                      style={{
+                        paddingVertical: SPACING.md,
+                        paddingHorizontal: SPACING.lg,
+                        minHeight: 44,
+                        borderRadius: RADIUS.full,
+                        backgroundColor: isActive ? colors.primaryBlue : colors.bgCard,
+                        borderWidth: isActive ? 0 : 1,
+                        borderColor: colors.borderSlate200,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: tab.needsAi ? 4 : 0,
+                        ...(isActive ? shadows.soft : {}),
+                      }}
+                    >
+                      {tab.needsAi && (
+                        <View style={{
+                          backgroundColor: isActive ? 'rgba(255,255,255,0.25)' : colors.blue50,
+                          borderRadius: RADIUS.xs,
+                          paddingHorizontal: 4,
+                          paddingVertical: 1,
                         }}>
-                          {tab.label}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              ))}
+                          <Text style={{
+                            fontSize: 10,
+                            fontWeight: '700',
+                            color: isActive ? colors.white : colors.primaryBlue,
+                            letterSpacing: 0.5,
+                          }}>AI</Text>
+                        </View>
+                      )}
+                      <Text style={{
+                        ...TYPOGRAPHY.buttonSm,
+                        color: isActive ? colors.white : colors.textMuted,
+                      }}>
+                        {tab.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+              {/* Left fade */}
+              <LinearGradient
+                colors={[colors.bgPage, 'transparent']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: 20,
+                  pointerEvents: 'none',
+                }}
+              />
+              {/* Right fade */}
+              <LinearGradient
+                colors={['transparent', colors.bgPage]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: 20,
+                  pointerEvents: 'none',
+                }}
+              />
             </View>
 
             {/* Tab Content with fade */}
             <Animated.View style={{
               paddingHorizontal: SPACING.lg,
-              paddingBottom: 32,
+              paddingBottom: SPACING['6xl'],
               opacity: fadeAnim,
-            }}>
+            }} accessibilityLiveRegion="polite">
               {renderTabContent()}
             </Animated.View>
           </>

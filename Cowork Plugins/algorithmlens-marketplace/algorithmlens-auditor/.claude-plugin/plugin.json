@@ -1,0 +1,8 @@
+{
+  "name": "algorithmlens-auditor",
+  "description": "Complete audit, fix, and verification system for the AlgorithmLens iOS app. Analyzes screen recordings, catalogs issues, attempts code fixes, and loops until everything is verified working.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Justin"
+  }
+}

@@ -7,13 +7,14 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../src/context/AuthContext';
 import { supabase } from '../../src/lib/supabase';
 import { useTheme } from '../../src/context/ThemeContext';
 import { Eye } from 'lucide-react-native';
-import { TYPOGRAPHY, SPACING, RADIUS } from '../../src/lib/theme';
+import { TYPOGRAPHY, SPACING, RADIUS, COLORS } from '../../src/lib/theme';
 
 // Email validation — checks for user@domain.tld pattern
 const isValidEmail = (email: string): boolean => {
@@ -27,6 +28,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [authMethod, setAuthMethod] = useState<'oauth' | 'email'>('oauth');
   const [emailError, setEmailError] = useState('');
+  const [authError, setAuthError] = useState('');
   const emailInputRef = useRef<TextInput>(null);
   const { signInWithOAuth } = useAuth();
   const { colors, shadows } = useTheme();
@@ -41,9 +43,10 @@ export default function LoginScreen() {
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
+      setAuthError('');
       await signInWithOAuth('google');
     } catch (error) {
-      Alert.alert('Sign in failed', error instanceof Error ? error.message : 'Try again');
+      setAuthError(error instanceof Error ? error.message : 'Sign in failed. Try again');
     } finally {
       setLoading(false);
     }
@@ -52,9 +55,10 @@ export default function LoginScreen() {
   const handleAppleSignIn = async () => {
     try {
       setLoading(true);
+      setAuthError('');
       await signInWithOAuth('apple');
     } catch (error) {
-      Alert.alert('Sign in failed', error instanceof Error ? error.message : 'Try again');
+      setAuthError(error instanceof Error ? error.message : 'Sign in failed. Try again');
     } finally {
       setLoading(false);
     }
@@ -71,11 +75,12 @@ export default function LoginScreen() {
       return;
     }
     if (!password) {
-      Alert.alert('Missing fields', 'Please enter password');
+      setAuthError('Please enter password');
       return;
     }
 
     setEmailError('');
+    setAuthError('');
 
     try {
       setLoading(true);
@@ -85,10 +90,10 @@ export default function LoginScreen() {
       });
 
       if (error) {
-        Alert.alert('Sign in failed', error.message);
+        setAuthError(error.message);
       }
     } catch (error) {
-      Alert.alert('Error', error instanceof Error ? error.message : 'Try again');
+      setAuthError(error instanceof Error ? error.message : 'Sign in failed. Try again');
     } finally {
       setLoading(false);
     }
@@ -105,15 +110,16 @@ export default function LoginScreen() {
       return;
     }
     if (!password) {
-      Alert.alert('Missing fields', 'Please enter password');
+      setAuthError('Please enter password');
       return;
     }
     if (password.length < 6) {
-      Alert.alert('Password too short', 'Password must be at least 6 characters');
+      setAuthError('Password must be at least 6 characters');
       return;
     }
 
     setEmailError('');
+    setAuthError('');
 
     try {
       setLoading(true);
@@ -123,12 +129,12 @@ export default function LoginScreen() {
       });
 
       if (error) {
-        Alert.alert('Sign up failed', error.message);
+        setAuthError(error.message);
       } else {
-        Alert.alert('Success', 'Account created! Signing you in...');
+        setAuthError('Account created! Signing you in...');
       }
     } catch (error) {
-      Alert.alert('Error', error instanceof Error ? error.message : 'Try again');
+      setAuthError(error instanceof Error ? error.message : 'Sign up failed. Try again');
     } finally {
       setLoading(false);
     }
@@ -140,12 +146,12 @@ export default function LoginScreen() {
         contentContainerStyle={{
           flexGrow: 1,
           justifyContent: 'center',
-          paddingHorizontal: 20,
-          paddingVertical: 40,
+          paddingHorizontal: SPACING.xl,
+          paddingVertical: SPACING['4xl'],
         }}
       >
         {/* Logo and Branding */}
-        <View style={{ alignItems: 'center', marginBottom: 50 }}>
+        <View style={{ alignItems: 'center', marginBottom: SPACING['5xl'] }}>
           {/* App Icon */}
           <View
             style={{
@@ -157,17 +163,20 @@ export default function LoginScreen() {
               alignItems: 'center',
               marginBottom: SPACING.lg,
               ...shadows.hero,
+              shadowColor: colors.primaryBlue,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.25,
+              shadowRadius: 8,
+              elevation: 8,
             }}
           >
             <Eye size={36} color={colors.white} strokeWidth={1.5} />
           </View>
           <Text
             style={{
-              fontSize: 28,
-              fontWeight: '700',
+              ...TYPOGRAPHY.display,
               color: colors.primaryBlue,
-              marginBottom: 6,
-              letterSpacing: -0.5,
+              marginBottom: SPACING.xs,
             }}
             accessibilityRole="header"
           >
@@ -175,13 +184,15 @@ export default function LoginScreen() {
           </Text>
           <Text
             style={{
-              fontSize: 14,
+              ...TYPOGRAPHY.bodySmall,
               color: colors.textMuted,
               textAlign: 'center',
               letterSpacing: 0.3,
+              fontWeight: '500',
             }}
           >
-            See what shapes your feed
+            {/* E-2 FIX: Stricter epistemic compliance — "appears" instead of "shapes" */}
+            See what appears in your feed
           </Text>
         </View>
 
@@ -199,27 +210,41 @@ export default function LoginScreen() {
                 borderWidth: 1,
                 borderColor: colors.borderSlate200,
                 borderRadius: RADIUS.md,
-                paddingVertical: 14,
-                paddingHorizontal: 16,
-                marginBottom: 12,
+                paddingVertical: SPACING.md,
+                paddingHorizontal: SPACING.lg,
+                marginBottom: SPACING.md,
                 alignItems: 'center',
                 minHeight: 48,
                 justifyContent: 'center',
+                flexDirection: 'row',
                 ...shadows.soft,
               }}
             >
               {loading ? (
                 <ActivityIndicator color={colors.primaryBlue} />
               ) : (
-                <Text
-                  style={{
-                    fontSize: 16,
-                    fontWeight: '600',
-                    color: colors.textMain,
-                  }}
-                >
-                  Continue with Google
-                </Text>
+                <>
+                  <View
+                    style={{
+                      width: 20,
+                      height: 20,
+                      marginRight: SPACING.sm,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>G</Text>
+                  </View>
+                  <Text
+                    style={{
+                      ...TYPOGRAPHY.body,
+                      fontWeight: '600',
+                      color: colors.textMain,
+                    }}
+                  >
+                    Continue with Google
+                  </Text>
+                </>
               )}
             </TouchableOpacity>
 
@@ -234,44 +259,73 @@ export default function LoginScreen() {
                 borderWidth: 1,
                 borderColor: colors.borderSlate200,
                 borderRadius: RADIUS.md,
-                paddingVertical: 14,
-                paddingHorizontal: 16,
-                marginBottom: 24,
+                paddingVertical: SPACING.md,
+                paddingHorizontal: SPACING.lg,
+                marginBottom: SPACING.xl,
                 alignItems: 'center',
                 minHeight: 48,
                 justifyContent: 'center',
+                flexDirection: 'row',
                 ...shadows.soft,
               }}
             >
               {loading ? (
                 <ActivityIndicator color={colors.primaryBlue} />
               ) : (
-                <Text
-                  style={{
-                    fontSize: 16,
-                    fontWeight: '600',
-                    color: colors.textMain,
-                  }}
-                >
-                  Continue with Apple
-                </Text>
+                <>
+                  <View
+                    style={{
+                      width: 20,
+                      height: 20,
+                      marginRight: SPACING.sm,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>🍎</Text>
+                  </View>
+                  <Text
+                    style={{
+                      ...TYPOGRAPHY.body,
+                      fontWeight: '600',
+                      color: colors.textMain,
+                    }}
+                  >
+                    Continue with Apple
+                  </Text>
+                </>
               )}
             </TouchableOpacity>
+
+            {/* Error Message for OAuth */}
+            {authError ? (
+              <Text
+                style={{
+                  ...TYPOGRAPHY.small,
+                  color: colors.error,
+                  marginBottom: SPACING.md,
+                  marginLeft: SPACING.xs,
+                  textAlign: 'center',
+                }}
+              >
+                {authError}
+              </Text>
+            ) : null}
 
             {/* Divider */}
             <View
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                marginVertical: 20,
+                marginVertical: SPACING.xl,
               }}
             >
               <View style={{ flex: 1, height: 1, backgroundColor: colors.borderSlate200 }} />
               <Text
                 style={{
-                  marginHorizontal: 12,
+                  marginHorizontal: SPACING.md,
                   color: colors.textSecondary,
-                  fontSize: 14,
+                  ...TYPOGRAPHY.bodySmall,
                 }}
               >
                 or
@@ -285,7 +339,7 @@ export default function LoginScreen() {
               accessibilityLabel="Sign in with email"
               accessibilityRole="button"
               style={{
-                paddingVertical: 12,
+                paddingVertical: SPACING.md,
                 alignItems: 'center',
                 minHeight: 48,
                 justifyContent: 'center',
@@ -293,7 +347,7 @@ export default function LoginScreen() {
             >
               <Text
                 style={{
-                  fontSize: 14,
+                  ...TYPOGRAPHY.bodySmall,
                   color: colors.primaryBlue,
                   fontWeight: '600',
                 }}
@@ -326,22 +380,23 @@ export default function LoginScreen() {
                 borderWidth: 1,
                 borderColor: emailError ? colors.error : colors.borderSlate200,
                 borderRadius: RADIUS.md,
-                paddingHorizontal: 14,
-                paddingVertical: 12,
-                marginBottom: emailError ? 6 : 12,
-                fontSize: 16,
+                paddingHorizontal: SPACING.md,
+                paddingVertical: SPACING.md,
+                marginBottom: emailError ? SPACING.xs : SPACING.md,
+                ...TYPOGRAPHY.body,
                 color: colors.textMain,
                 minHeight: 48,
+                ...(Platform.OS === 'web' && { outlineStyle: 'none' } as any),
               }}
               placeholderTextColor={colors.textSecondary}
             />
             {emailError ? (
               <Text
                 style={{
-                  fontSize: 12,
+                  ...TYPOGRAPHY.small,
                   color: colors.error,
-                  marginBottom: 12,
-                  marginLeft: 4,
+                  marginBottom: SPACING.md,
+                  marginLeft: SPACING.xs,
                 }}
               >
                 {emailError}
@@ -357,21 +412,75 @@ export default function LoginScreen() {
               autoComplete="password"
               editable={!loading}
               accessibilityLabel="Password"
+              accessibilityHint="Minimum 6 characters"
               accessible={true}
               style={{
                 backgroundColor: colors.bgCard,
                 borderWidth: 1,
                 borderColor: colors.borderSlate200,
                 borderRadius: RADIUS.md,
-                paddingHorizontal: 14,
-                paddingVertical: 12,
-                marginBottom: 20,
-                fontSize: 16,
+                paddingHorizontal: SPACING.md,
+                paddingVertical: SPACING.md,
+                marginBottom: SPACING.sm,
+                ...TYPOGRAPHY.body,
                 color: colors.textMain,
                 minHeight: 48,
+                ...(Platform.OS === 'web' && { outlineStyle: 'none' } as any),
               }}
               placeholderTextColor={colors.textSecondary}
             />
+
+            {/* Forgot Password Link — L-5 FIX */}
+            <TouchableOpacity
+              onPress={async () => {
+                if (!email || !isValidEmail(email)) {
+                  setAuthError('Enter your email address first, then tap Forgot password.');
+                  return;
+                }
+                try {
+                  setAuthError('');
+                  const { error: resetError } = await supabase.auth.resetPasswordForEmail(email);
+                  if (resetError) {
+                    setAuthError(resetError.message);
+                  } else {
+                    setAuthError('Password reset email sent! Check your inbox.');
+                  }
+                } catch {
+                  setAuthError('Could not send reset email. Please try again.');
+                }
+              }}
+              style={{
+                alignSelf: 'flex-end',
+                marginBottom: SPACING.xl,
+              }}
+              accessibilityLabel="Forgot password"
+              accessibilityRole="link"
+            >
+              <Text
+                style={{
+                  ...TYPOGRAPHY.small,
+                  color: colors.primaryBlue,
+                  fontWeight: '500',
+                }}
+              >
+                Forgot password?
+              </Text>
+            </TouchableOpacity>
+
+            {/* Error Message for Email Auth */}
+            {authError ? (
+              <Text
+                style={{
+                  ...TYPOGRAPHY.small,
+                  color: colors.error,
+                  marginBottom: SPACING.md,
+                  marginLeft: SPACING.xs,
+                  textAlign: 'center',
+                }}
+              >
+                {authError}
+              </Text>
+            ) : null}
 
             {/* Sign In Button */}
             <TouchableOpacity
@@ -383,8 +492,8 @@ export default function LoginScreen() {
               style={{
                 backgroundColor: colors.primaryBlue,
                 borderRadius: RADIUS.md,
-                paddingVertical: 14,
-                marginBottom: 12,
+                paddingVertical: SPACING.md,
+                marginBottom: SPACING.md,
                 alignItems: 'center',
                 minHeight: 48,
                 justifyContent: 'center',
@@ -396,7 +505,7 @@ export default function LoginScreen() {
               ) : (
                 <Text
                   style={{
-                    fontSize: 16,
+                    ...TYPOGRAPHY.body,
                     fontWeight: '600',
                     color: colors.white,
                   }}
@@ -418,8 +527,8 @@ export default function LoginScreen() {
                 borderWidth: 1,
                 borderColor: colors.borderSlate200,
                 borderRadius: RADIUS.md,
-                paddingVertical: 14,
-                marginBottom: 24,
+                paddingVertical: SPACING.md,
+                marginBottom: SPACING.xl,
                 alignItems: 'center',
                 minHeight: 48,
                 justifyContent: 'center',
@@ -430,7 +539,7 @@ export default function LoginScreen() {
               ) : (
                 <Text
                   style={{
-                    fontSize: 16,
+                    ...TYPOGRAPHY.body,
                     fontWeight: '600',
                     color: colors.primaryBlue,
                   }}
@@ -446,7 +555,7 @@ export default function LoginScreen() {
               accessibilityLabel="Other sign-in options"
               accessibilityRole="button"
               style={{
-                paddingVertical: 12,
+                paddingVertical: SPACING.md,
                 alignItems: 'center',
                 minHeight: 48,
                 justifyContent: 'center',
@@ -454,7 +563,7 @@ export default function LoginScreen() {
             >
               <Text
                 style={{
-                  fontSize: 14,
+                  ...TYPOGRAPHY.bodySmall,
                   color: colors.primaryBlue,
                   fontWeight: '600',
                 }}

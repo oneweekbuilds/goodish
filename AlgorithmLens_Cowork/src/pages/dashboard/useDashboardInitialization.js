@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { PLAN_TIERS, setStoredPlanTier } from '../../lib/plan';
+import { PLAN_TIERS, setStoredPlanTier, getCurrentPlanTier } from '../../lib/plan';
 import { fetchEntitlements } from '../../lib/plan/entitlements';
 import { logWarning } from '../../lib/errorLogger.js';
 
@@ -21,9 +21,7 @@ const useDashboardInitialization = ({ authReady }) => {
   const searchParams = useMemo(() => new URLSearchParams(window.location.search), []);
 
   const [planTier, setPlanTier] = useState(() => {
-    const { getCurrentPlanTier } = require('../../lib/plan');
-    const tier = getCurrentPlanTier(isDemoMode, searchParams);
-    return isDemoMode && tier === PLAN_TIERS.PLUS ? PLAN_TIERS.FREE : tier;
+    return getCurrentPlanTier(isDemoMode, searchParams);
   });
 
   // Re-sync planTier from backend when auth becomes ready

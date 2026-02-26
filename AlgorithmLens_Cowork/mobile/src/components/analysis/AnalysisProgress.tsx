@@ -12,7 +12,7 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, Animated, Easing, AccessibilityInfo as RNAccessibilityInfo } from 'react-native';
+import { View, Text, TouchableOpacity, Animated, Easing, AccessibilityInfo as RNAccessibilityInfo, Platform, StyleSheet } from 'react-native';
 import {
   Sparkles,
   CheckCircle,
@@ -23,7 +23,7 @@ import {
   Save,
   Brain,
 } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
+import { triggerNotificationSuccess, triggerNotificationError } from '../../lib/haptics';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, TYPOGRAPHY, RADIUS, COLORS } from '../../lib/theme';
 import type { PipelineProgress, PipelineStage } from '../../lib/analysis/broadcastAnalysisPipeline';
@@ -92,9 +92,9 @@ export const AnalysisProgress = React.memo(function AnalysisProgress({
   // Haptic on completion
   useEffect(() => {
     if (progress.stage === 'COMPLETE') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      triggerNotificationSuccess();
     } else if (progress.stage === 'FAILED') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      triggerNotificationError();
     }
   }, [progress.stage]);
 
@@ -134,7 +134,16 @@ export const AnalysisProgress = React.memo(function AnalysisProgress({
           }}
         >
           {isRunning ? (
-            <Animated.View style={{ transform: [{ rotate: spinRotation }] }}>
+            <Animated.View
+              style={Platform.OS === 'web'
+                ? {
+                    transform: `rotate(${spinRotation.__getValue ? spinRotation.__getValue() : 0}deg)`,
+                  }
+                : {
+                    transform: [{ rotate: spinRotation }],
+                  }
+              }
+            >
               <StageIcon stage={progress.stage} color={stageInfo.iconColor(colors)} />
             </Animated.View>
           ) : (

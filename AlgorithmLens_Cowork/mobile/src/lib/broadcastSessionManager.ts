@@ -105,6 +105,22 @@ function getNativeEventEmitter(): NativeEventEmitter | null {
   }
 }
 
+/**
+ * Lightweight check: can this runtime load the native broadcast module?
+ * Returns true in dev/production builds with native modules compiled in.
+ * Returns false in Expo Go or on unsupported platforms.
+ * This avoids importing the full BroadcastSessionManager just to check.
+ */
+export function isBroadcastModuleAvailable(): boolean {
+  const mod = getNativeModule();
+  if (!mod) return false;
+  try {
+    return mod.isAvailable();
+  } catch {
+    return false;
+  }
+}
+
 // ============================================
 // Session Manager
 // ============================================
@@ -510,7 +526,7 @@ export class BroadcastSessionManager {
     // Fire specific callbacks for terminal states
     if (status === 'COMPLETE') {
       this.collectFrames().then((frames) => {
-        this.callbacks.onSessionComplete?.(this.session!, frames);
+        if (this.session) this.callbacks.onSessionComplete?.(this.session, frames);
       });
     } else if (status === 'FAILED') {
       this.callbacks.onSessionError?.(

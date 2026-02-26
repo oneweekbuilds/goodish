@@ -16,7 +16,7 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Animated, AccessibilityInfo } from 'react-native';
+import { View, Text, Animated, AccessibilityInfo, Platform, StyleSheet } from 'react-native';
 import { Flame, Pause, Sparkles, Snowflake, Clock } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
@@ -88,7 +88,7 @@ function StreakBadgeComponent({
           paddingVertical: SPACING.md,
           borderWidth: 1,
           borderColor: colors.borderSoft,
-          ...shadows.soft,
+          ...shadows.card,
         }}
       >
         <View
@@ -101,7 +101,8 @@ function StreakBadgeComponent({
             alignItems: 'center',
           }}
         >
-          <Sparkles size={16} color={colors.primaryBlue} strokeWidth={1.8} />
+          {/* H-3 FIX: Use Flame icon instead of Sparkles — more recognizable for streaks */}
+          <Flame size={18} color={colors.streakOrange} strokeWidth={1.8} />
         </View>
         <View style={{ flex: 1 }}>
           <Text
@@ -139,7 +140,7 @@ function StreakBadgeComponent({
           paddingVertical: SPACING.md,
           borderWidth: 1,
           borderColor: colors.borderSoft,
-          ...shadows.soft,
+          ...shadows.card,
         }}
       >
         <View
@@ -210,9 +211,14 @@ function StreakBadgeComponent({
 
   return (
     <Animated.View
-      style={{
-        transform: [{ scale: pulseAnim }],
-      }}
+      style={Platform.OS === 'web'
+        ? {
+            transform: `scale(${pulseAnim.__getValue ? pulseAnim.__getValue() : 1})`,
+          }
+        : {
+            transform: [{ scale: pulseAnim }],
+          }
+      }
     >
       <View
         style={{
@@ -225,7 +231,7 @@ function StreakBadgeComponent({
           paddingVertical: SPACING.md,
           borderWidth: 1,
           borderColor: atRisk ? colors.warningBorder : isGrace ? colors.lowSampleBorder : colors.borderSoft,
-          ...shadows.soft,
+          ...shadows.card,
         }}
       >
         {/* Progressive flame icon */}

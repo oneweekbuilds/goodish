@@ -45,8 +45,6 @@ const SuggestedVsFollowedTab = ({
   onCloseTrendsPanel,
 }) => {
 
-  const [showDetails, setShowDetails] = useState(false);
-
   // Aggregate data from all filtered scans
   const sourceData = aggregateSourceOrigin(scans, scanDetails);
 
@@ -101,13 +99,13 @@ const SuggestedVsFollowedTab = ({
       label: 'Followed',
       percentage: sourceData.followedPercentage,
       count: sourceData.totalFollowed,
-      color: '#3b82f6', // blue-500
+      color: '#2563EB', // blue-500
     },
     {
       label: 'Suggested',
       percentage: sourceData.suggestedPercentage,
       count: sourceData.totalSuggested,
-      color: '#f59e0b', // amber-500
+      color: '#10B981', // amber-500
     },
   ] : [];
 
@@ -121,13 +119,13 @@ const SuggestedVsFollowedTab = ({
             label: 'Followed',
             percentage: data.followedPercent,
             count: data.followed,
-            color: '#3b82f6',
+            color: '#2563EB',
           },
           {
             label: 'Suggested',
             percentage: data.suggestedPercent,
             count: data.suggested,
-            color: '#f59e0b',
+            color: '#10B981',
           },
         ];
       }
@@ -227,17 +225,17 @@ const SuggestedVsFollowedTab = ({
       deltaInsight,
       suggested: {
         segments: [
-          { label: 'Positive', percentage: sugPosPercent, count: suggestedPos, color: '#93C5B8' },
-          { label: 'Neutral', percentage: sugNeutPercent, count: suggestedNeut, color: '#CBD5E1' },
-          { label: 'Negative', percentage: sugNegPercent, count: suggestedNeg, color: '#A3B1C6' },
+          { label: 'Positive', percentage: sugPosPercent, count: suggestedPos, color: '#10B981' },
+          { label: 'Neutral', percentage: sugNeutPercent, count: suggestedNeut, color: '#94A3B8' },
+          { label: 'Negative', percentage: sugNegPercent, count: suggestedNeg, color: '#2563EB' },
         ],
         total: suggestedTotal,
       },
       followed: {
         segments: [
-          { label: 'Positive', percentage: folPosPercent, count: followedPos, color: '#93C5B8' },
-          { label: 'Neutral', percentage: folNeutPercent, count: followedNeut, color: '#CBD5E1' },
-          { label: 'Negative', percentage: folNegPercent, count: followedNeg, color: '#A3B1C6' },
+          { label: 'Positive', percentage: folPosPercent, count: followedPos, color: '#10B981' },
+          { label: 'Neutral', percentage: folNeutPercent, count: followedNeut, color: '#94A3B8' },
+          { label: 'Negative', percentage: folNegPercent, count: followedNeg, color: '#2563EB' },
         ],
         total: followedTotal,
       },
@@ -280,10 +278,10 @@ const SuggestedVsFollowedTab = ({
           <div className="bg-white border border-slate-200 rounded-lg p-8">
             <h2 className="text-xl font-semibold text-slate-800 mb-4">Suggested vs Followed</h2>
             <p className="text-slate-600 mb-4">
-              This view shows how much of your feed comes from accounts you follow versus content suggested by the platform.
+              This view will show how much of your feed comes from accounts you follow versus content suggested by the platform.
             </p>
             <p className="text-slate-600">
-              <strong>Coming Soon.</strong> This analysis will be available once platform metadata capture is enabled during scans. It will show how much of your feed comes from accounts you follow versus suggested content.
+              This analysis unlocks once platform metadata capture is enabled during scans. It's on the way — stay tuned.
             </p>
           </div>
         </section>
@@ -305,18 +303,21 @@ const SuggestedVsFollowedTab = ({
       {/* Insight Hero */}
       <InsightHero {...hero} />
 
-      {/* Trends CTA */}
+      {/* Trends CTA or Panel */}
       <TrendsCTA
         onClick={() => onOpenTrends({ tab: 'suggested_vs_followed', placement: 'hero_trends' })}
         isPlusUser={isPlusUser}
+        tabName="suggested_vs_followed"
+        scanCount={scans.length}
       />
 
-      {/* Trends Panel (Plus users only) */}
-      {showTrendsPanel && (
+      {/* Trends Panel (auto-show for Plus users or when manually opened) */}
+      {(isPlusUser || showTrendsPanel) && (
         <TrendsPanel
           scans={scans}
           scanDetails={scanDetails}
           onClose={onCloseTrendsPanel}
+          embedded={isPlusUser}
         />
       )}
 
@@ -503,37 +504,15 @@ const SuggestedVsFollowedTab = ({
               )}
             </>
           ) : (
-            <p className="text-sm text-slate-400 italic text-center py-4">
-              Not enough posts in both suggested and followed groups to compare tone.
+            <p className="text-sm text-slate-500 text-center py-4">
+              Not enough posts in both groups to compare tone yet. This will unlock with more scans.
             </p>
           )}
         </div>
       </section>
 
-      {/* Collapsible Details Toggle */}
-      {(topicComparison.hasData || contentTypeComparison.hasData) && (
-        <div className="flex justify-center">
-          <button
-            onClick={() => setShowDetails(!showDetails)}
-            className="text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors flex items-center gap-1.5"
-          >
-            <svg
-              className={`w-4 h-4 transition-transform duration-200 ${showDetails ? 'rotate-180' : ''}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-            </svg>
-            {showDetails ? 'Hide details' : 'See more details'}
-          </button>
-        </div>
-      )}
-
-      {/* Collapsible Detail Sections */}
-      {showDetails && (
-        <>
+      {/* Detail Sections (always visible) */}
+      <>
           {/* Section: Topics the Algorithm Favors */}
           {topicComparison.hasData && (
             <section>
@@ -552,7 +531,7 @@ const SuggestedVsFollowedTab = ({
                             <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
                               <div
                                 className="h-full rounded-full"
-                                style={{ width: `${Math.min(t.percent, 100)}%`, backgroundColor: '#f59e0b' }}
+                                style={{ width: `${Math.min(t.percent, 100)}%`, backgroundColor: '#10B981' }}
                               />
                             </div>
                             <span className="text-xs text-slate-500 w-8 text-right">{t.percent}%</span>
@@ -574,7 +553,7 @@ const SuggestedVsFollowedTab = ({
                             <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
                               <div
                                 className="h-full rounded-full"
-                                style={{ width: `${Math.min(t.percent, 100)}%`, backgroundColor: '#3b82f6' }}
+                                style={{ width: `${Math.min(t.percent, 100)}%`, backgroundColor: '#2563EB' }}
                               />
                             </div>
                             <span className="text-xs text-slate-500 w-8 text-right">{t.percent}%</span>
@@ -654,32 +633,40 @@ const SuggestedVsFollowedTab = ({
             </section>
           )}
         </>
-      )}
 
-      {/* Section: What You Can Do */}
+            {/* Section: What You Can Do */}
       <section>
         <div className="bg-white border border-slate-200 rounded-lg p-6 space-y-4" style={{ backgroundColor: 'rgba(16, 185, 129, 0.02)' }}>
           <SectionHeader>What you can do</SectionHeader>
-          <ul className="space-y-3 text-slate-700">
-            <li className="flex items-start gap-3">
-              <span className="text-slate-400 mt-0.5">•</span>
-              <span>
+          
+          <div className="space-y-3">
+            <div className="flex gap-4 items-start p-4 rounded-xl border border-slate-100 bg-gradient-to-r from-blue-50/50 to-transparent">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                <span className="text-sm font-bold text-blue-600">1</span>
+              </div>
+              <p className="text-sm text-slate-700 leading-relaxed">
                 <strong>Follow more accounts:</strong> If suggested content dominates your feed, following more creators in topics you care about can help balance what you see.
-              </span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="text-slate-400 mt-0.5">•</span>
-              <span>
+              </p>
+            </div>
+            
+            <div className="flex gap-4 items-start p-4 rounded-xl border border-slate-100 bg-gradient-to-r from-blue-50/50 to-transparent">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                <span className="text-sm font-bold text-blue-600">2</span>
+              </div>
+              <p className="text-sm text-slate-700 leading-relaxed">
                 <strong>Use chronological feeds:</strong> Some platforms offer a "Following" or "Latest" feed mode that shows only posts from accounts you follow, in chronological order.
-              </span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="text-slate-400 mt-0.5">•</span>
-              <span>
+              </p>
+            </div>
+            
+            <div className="flex gap-4 items-start p-4 rounded-xl border border-slate-100 bg-gradient-to-r from-blue-50/50 to-transparent">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                <span className="text-sm font-bold text-blue-600">3</span>
+              </div>
+              <p className="text-sm text-slate-700 leading-relaxed">
                 <strong>Engage with what you value:</strong> Platforms often describe engagement (likes, shares, comments) as a factor in feed ranking, though the exact effect is not publicly documented.
-              </span>
-            </li>
-          </ul>
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 

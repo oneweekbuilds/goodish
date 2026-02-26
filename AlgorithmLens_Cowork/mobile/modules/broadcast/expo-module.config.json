@@ -2,7 +2,7 @@
   "name": "expo-broadcast",
   "platforms": ["ios", "android"],
   "ios": {
-    "modules": ["BroadcastModule"],
+    "modules": ["BroadcastModule", "BroadcastPickerViewModule"],
     "appDelegateSubscribers": [],
     "podspec": {
       "name": "ExpoBroadcast",

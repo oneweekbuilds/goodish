@@ -3,6 +3,7 @@ import json
 import os
 import sqlite3
 import tempfile
+import time
 from datetime import datetime
 from typing import Generator
 
@@ -39,6 +40,15 @@ def setup_test_db(test_db_path: str) -> Generator[None, None, None]:
     # Initialize the test database
     database.init_database()
 
+    # Clean all tables for test isolation
+    conn = database.get_connection()
+    for table in ["scans", "subscriptions", "stripe_webhook_events"]:
+        try:
+            conn.execute(f"DELETE FROM {table}")
+        except Exception:
+            pass
+    conn.commit()
+
     yield
 
     # Cleanup after test: close connections and reset
@@ -61,13 +71,20 @@ def client(setup_test_db) -> TestClient:
 
 @pytest.fixture
 def valid_token() -> str:
-    """Create a valid test JWT token."""
+    """Create a valid test JWT token.
+
+    Note: The HS256 path in auth.py does not pass audience= to jwt.decode,
+    so including 'aud' in the payload would cause InvalidAudienceError.
+    We omit 'aud' here. exp and iat are required (verify_exp/verify_iat=True).
+    """
     import jwt
+    now = int(time.time())
     payload = {
-        "user_id": "test-user-123",
+        "sub": "test-user-123",
         "email": "test@example.com",
-        "aud": "authenticated",
-        "iss": "https://example.supabase.co/auth/v1"
+        "iss": "https://example.supabase.co/auth/v1",
+        "iat": now,
+        "exp": now + 3600,
     }
     secret = os.getenv("SUPABASE_JWT_SECRET", "test-secret")
     return jwt.encode(payload, secret, algorithm="HS256")

@@ -6,6 +6,7 @@
 
 import { supabase } from './supabase';
 import { captureError } from './sentry';
+import { getUserFriendlyNetworkError } from './networkUtils';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000';
 
@@ -26,9 +27,13 @@ interface FetchOptions extends RequestInit {
  */
 const RETRYABLE_STATUSES = [429, 500, 502, 503];
 
+/** Default request timeout in milliseconds (30 seconds). */
+const REQUEST_TIMEOUT_MS = 30_000;
+
 /**
  * Fetch wrapper that automatically injects Supabase JWT.
  * All backend requests go through this function.
+ * Includes a 30-second timeout to prevent hanging on dead connections.
  */
 export async function authenticatedFetch(
   path: string,
@@ -50,12 +55,19 @@ export async function authenticatedFetch(
 
   const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
 
-  const response = await fetch(url, {
-    ...fetchOptions,
-    headers,
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
-  return response;
+  try {
+    const response = await fetch(url, {
+      ...fetchOptions,
+      headers,
+      signal: fetchOptions.signal ?? controller.signal,
+    });
+    return response;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 /**
@@ -88,7 +100,8 @@ async function fetchWithRetry(
       }
     }
   }
-  throw lastError || new Error(`Request to ${path} failed after ${maxRetries + 1} attempts`);
+  const friendlyMessage = getUserFriendlyNetworkError(lastError);
+  throw lastError || new Error(friendlyMessage);
 }
 
 /**
@@ -111,9 +124,25 @@ export const api = {
     });
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`API POST ${path} failed: ${response.status} — ${errorText}`);
+      throw new Error(`API POST ${path} failed: ${response.status} — ${errorText.substring(0, 200)}`);
     }
-    return response.json() as Promise<T>;
+    // Read body as text first — prevents silent JSON.parse failures when
+    // the server returns HTML (e.g. "coming soon" page at API_BASE_URL).
+    const rawText = await response.text();
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('text/html') || rawText.trimStart().startsWith('<')) {
+      throw new Error(
+        `API POST ${path} returned HTML instead of JSON. ` +
+        'The API server may not be deployed. Check EXPO_PUBLIC_API_BASE_URL in .env.'
+      );
+    }
+    try {
+      return JSON.parse(rawText) as T;
+    } catch {
+      throw new Error(
+        `API POST ${path} returned invalid JSON: ${rawText.substring(0, 120)}…`
+      );
+    }
   },
 
   async delete<T = unknown>(path: string): Promise<T> {

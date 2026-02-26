@@ -1,6 +1,6 @@
 ---
 active: true
-iteration: 1
+iteration: 2
 max_iterations: 25
 completion_promise: "BROWSER_SCAN_FIXED"
 started_at: "2026-02-23T02:00:56Z"

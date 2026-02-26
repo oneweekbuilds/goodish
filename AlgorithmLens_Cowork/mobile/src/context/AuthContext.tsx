@@ -11,11 +11,16 @@
  */
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { useEntitlements } from '../hooks/useEntitlements';
 import { setSentryUser, addBreadcrumb } from '../lib/sentry';
 import type { Session, User } from '@supabase/supabase-js';
 import type { EntitlementsResponse } from '../types';
+
+// H-07 FIX: AsyncStorage key for onboarding completion — belt-and-suspenders backup
+// in case Supabase profile write fails silently.
+const ONBOARDING_COMPLETED_KEY = '@algorithmlens_onboarding_completed';
 
 interface UserProfile {
   has_completed_onboarding: boolean;
@@ -108,8 +113,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   /**
    * Fetch user profile from Supabase, creating one if it doesn't exist.
+   * H-07 FIX: Also checks AsyncStorage for onboarding completion flag
+   * as a belt-and-suspenders backup in case Supabase write failed.
    */
   const fetchOrCreateProfile = async (userId: string) => {
+    // H-07 FIX: Check AsyncStorage for local onboarding completion flag
+    let localOnboardingCompleted = false;
+    try {
+      const localFlag = await AsyncStorage.getItem(ONBOARDING_COMPLETED_KEY);
+      localOnboardingCompleted = localFlag === 'true';
+    } catch {
+      // Non-blocking — fallback to Supabase only
+    }
+
     try {
       const { data, error } = await supabase
         .from('user_profiles')
@@ -118,18 +134,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (data && !error) {
+        // H-07 FIX: If Supabase says not completed but local says completed,
+        // trust local (the Supabase write may have failed silently)
+        const onboardingCompleted = data.has_completed_onboarding || localOnboardingCompleted;
         setUserProfile({
-          has_completed_onboarding: data.has_completed_onboarding ?? false,
+          has_completed_onboarding: onboardingCompleted,
           ai_analysis_consent: data.ai_analysis_consent ?? true,
           is_user_plus: data.is_user_plus ?? false,
         });
       } else if (error?.code === 'PGRST116') {
         // No profile row exists — create one
+        // H-07 FIX: If local says onboarding completed, set that in the new profile too
         const { data: newProfile, error: insertError } = await supabase
           .from('user_profiles')
           .insert({
             user_id: userId,
-            has_completed_onboarding: false,
+            has_completed_onboarding: localOnboardingCompleted,
             ai_analysis_consent: true,
             is_user_plus: false,
           })
@@ -138,27 +158,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (newProfile && !insertError) {
           setUserProfile({
-            has_completed_onboarding: newProfile.has_completed_onboarding,
+            has_completed_onboarding: newProfile.has_completed_onboarding || localOnboardingCompleted,
             ai_analysis_consent: newProfile.ai_analysis_consent,
             is_user_plus: newProfile.is_user_plus,
           });
         } else {
           // Fallback if insert fails (e.g. table doesn't exist yet)
-          setUserProfile({ ...defaultProfile });
+          setUserProfile({ ...defaultProfile, has_completed_onboarding: localOnboardingCompleted });
         }
       } else {
-        // Some other error — use defaults
-        setUserProfile({ ...defaultProfile });
+        // Some other error — use defaults but respect local onboarding flag
+        setUserProfile({ ...defaultProfile, has_completed_onboarding: localOnboardingCompleted });
       }
     } catch {
-      setUserProfile({ ...defaultProfile });
+      setUserProfile({ ...defaultProfile, has_completed_onboarding: localOnboardingCompleted });
     } finally {
       setLoading(false);
     }
   };
 
   /**
-   * Mark onboarding as complete — persists to Supabase and updates local state.
+   * Mark onboarding as complete — persists to Supabase, AsyncStorage, and updates local state.
+   * H-07 FIX: Write to AsyncStorage as a belt-and-suspenders backup so onboarding
+   * never re-shows even if Supabase write fails.
    */
   const completeOnboarding = async (aiConsent?: boolean) => {
     const consent = aiConsent ?? true;
@@ -169,6 +191,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       has_completed_onboarding: true,
       ai_analysis_consent: consent,
     }));
+
+    // H-07 FIX: Persist to AsyncStorage immediately — this is the belt-and-suspenders backup
+    try {
+      await AsyncStorage.setItem(ONBOARDING_COMPLETED_KEY, 'true');
+    } catch {
+      // Non-blocking
+    }
 
     // Persist to Supabase in the background
     if (session?.user?.id) {

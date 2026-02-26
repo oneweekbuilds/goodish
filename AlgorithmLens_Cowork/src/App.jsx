@@ -184,10 +184,10 @@ function App() {
                               <section className="py-12 sm:py-26 mt-12 sm:mt-20 bg-bg-page text-center">
                                 <div className="max-w-4xl mx-auto px-4 sm:px-6">
                                   <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-main mb-6 sm:mb-8">
-                                    Ready to see your profile?
+                                    Ready to see what the algorithm sees?
                                   </h2>
                                   <p className="text-base sm:text-lg text-text-muted mb-8 sm:mb-12 max-w-xl mx-auto px-2">
-                                    Upload a screen recording of your feed to generate your AlgorithmLens dashboard. Private and secure.
+                                    Scan your feed and get your AlgorithmLens dashboard in minutes.
                                   </p>
                                   <Link
                                     to="/start"
@@ -256,7 +256,7 @@ function App() {
                   <div className="flex flex-col gap-2">
                     <Logo variant="footer" />
                     <p className="text-sm font-medium text-text-muted max-w-xs">
-                      Understand what appears in your social media feed. Built by an MIT student.
+                      Understand what appears in your social media feed. Built at MIT.
                     </p>
                   </div>
 
@@ -277,12 +277,6 @@ function App() {
                         <li><Link to="/terms" className="text-sm text-text-muted hover:text-primary-blue transition-colors">Terms of Service</Link></li>
                       </ul>
                     </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-text-main mb-3">Support</h3>
-                      <ul className="space-y-2">
-                        <li><a href="mailto:support@algorithmlens.com" className="text-sm text-text-muted hover:text-primary-blue transition-colors">Contact</a></li>
-                      </ul>
-                    </div>
                   </nav>
                 </div>
 
@@ -291,7 +285,7 @@ function App() {
                     © 2026 AlgorithmLens. All rights reserved.
                   </p>
                   <p className="text-sm font-medium text-text-muted">
-                    Developed with support from MIT Sandbox Innovation Fund.
+                    Built at MIT.
                   </p>
                 </div>
               </div>

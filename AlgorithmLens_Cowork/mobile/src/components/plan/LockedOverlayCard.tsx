@@ -1,32 +1,29 @@
 /**
  * LockedOverlayCard — React Native equivalent of the main site's LockedOverlayCard.
  *
- * Wraps premium content with a blur overlay and "Unlock Plus" CTA for free-tier users.
+ * Wraps premium content with a subtle inline card for free-tier users.
  * When `locked` is false, renders children as-is (no overlay).
  *
  * Visual behavior:
- * - Children remain rendered underneath with a blur effect so the underlying
- *   content is tantalizingly visible but not readable.
- * - A semi-transparent overlay with CTA sits on top.
- * - Trial messaging matches the main site: "Try free for 14 days."
+ * - Styled as a normal dashboard card (bgCard background, borderDefault border)
+ *   so upsell cards feel like natural extensions of the dashboard, not ads.
+ * - Small sparkle icon + concise copy + text-link CTA.
  */
 
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Sparkles } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { TYPOGRAPHY, SPACING, RADIUS, SHADOWS } from '../../lib/theme';
-
-const TRIAL_DAYS = 14;
+import { TYPOGRAPHY, SPACING, RADIUS } from '../../lib/theme';
 
 interface LockedOverlayCardProps {
   /** When false, renders children without overlay. */
   locked: boolean;
-  /** Overlay title. */
+  /** Card title. */
   title?: string;
-  /** Overlay body description. */
+  /** Card body description. */
   body?: string;
-  /** CTA button label. */
+  /** CTA button label (ignored — CTA is now fixed text link). */
   ctaLabel?: string;
   /** Called when the CTA is pressed. */
   onUpgrade?: () => void;
@@ -36,9 +33,9 @@ interface LockedOverlayCardProps {
 
 function LockedOverlayCardComponent({
   locked = false,
-  title = 'Deeper analysis available',
-  body = 'Your snapshot shows the headlines. Plus reveals the full picture — trend tracking, creator breakdowns, and rare content detection.',
-  ctaLabel = `Try free for ${TRIAL_DAYS} days`,
+  title = 'See how your feed changes over time',
+  body = 'Trend tracking, creator breakdowns, and rare content detection — the full picture behind your feed.',
+  ctaLabel: _ctaLabel,
   onUpgrade,
   children,
 }: LockedOverlayCardProps) {
@@ -48,48 +45,56 @@ function LockedOverlayCardComponent({
     return <>{children}</>;
   }
 
+  const cardStyle = Platform.OS === 'web'
+    ? {
+        ...styles.card,
+        backgroundColor: colors.bgCard,
+        borderColor: colors.borderDefault,
+      }
+    : [styles.card, { backgroundColor: colors.bgCard, borderColor: colors.borderDefault }];
+
   return (
-    <View style={styles.container}>
-      {/* Blurred content underneath — visible but not readable */}
-      <View style={styles.blurredContent} pointerEvents="none">
-        {children}
+    <View style={cardStyle}>
+      {/* Header row: icon + title */}
+      <View style={styles.headerRow}>
+        <Sparkles size={16} color={colors.primaryBlue} strokeWidth={2} />
+        <Text
+          style={Platform.OS === 'web'
+            ? { ...styles.title, color: colors.textMain }
+            : [styles.title, { color: colors.textMain }]}
+        >
+          {title}
+        </Text>
       </View>
 
-      {/* Overlay */}
-      <View style={[styles.overlay, { backgroundColor: colors.overlayBg, borderColor: colors.borderSlate200 }]}>
-        <View style={styles.overlayInner}>
-          {/* Icon */}
-          <View style={[styles.iconCircle, { backgroundColor: colors.blue50 }]}>
-            <Sparkles size={22} color={colors.primaryBlue} strokeWidth={2} />
-          </View>
+      {/* Description */}
+      <Text
+        style={Platform.OS === 'web'
+          ? { ...styles.body, color: colors.textSecondary }
+          : [styles.body, { color: colors.textSecondary }]}
+      >
+        {body}
+      </Text>
 
-          {/* Title */}
-          <Text style={[styles.title, { color: colors.textMain }]}>{title}</Text>
-
-          {/* Body */}
-          <Text style={[styles.body, { color: colors.textMuted }]}>{body}</Text>
-
-          {/* CTA */}
-          {onUpgrade && (
-            <View style={styles.ctaContainer}>
-              <TouchableOpacity
-                onPress={onUpgrade}
-                activeOpacity={0.8}
-                accessibilityRole="button"
-                accessibilityLabel={`Premium feature: ${title}. ${ctaLabel}`}
-                accessibilityHint="Opens upgrade flow to unlock premium features"
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                style={[styles.ctaButton, { backgroundColor: colors.primaryBlue, minHeight: 44 }]}
-              >
-                <Text style={[styles.ctaText, { color: colors.white }]}>{ctaLabel}</Text>
-              </TouchableOpacity>
-              <Text style={[styles.disclaimer, { color: colors.textSecondary }]}>
-                No charge for {TRIAL_DAYS} days. Cancel anytime.
-              </Text>
-            </View>
-          )}
-        </View>
-      </View>
+      {/* Text-link CTA */}
+      {onUpgrade && (
+        <TouchableOpacity
+          onPress={onUpgrade}
+          activeOpacity={0.6}
+          accessibilityRole="button"
+          accessibilityLabel={`Premium feature: ${title}. Try free for 14 days`}
+          accessibilityHint="Opens upgrade flow to unlock premium features"
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Text
+            style={Platform.OS === 'web'
+              ? { ...styles.ctaLink, color: colors.primaryBlue }
+              : [styles.ctaLink, { color: colors.primaryBlue }]}
+          >
+            Try free for 14 days →
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -97,66 +102,29 @@ function LockedOverlayCardComponent({
 export const LockedOverlayCard = React.memo(LockedOverlayCardComponent);
 
 const styles = StyleSheet.create({
-  container: {
-    position: 'relative',
-    overflow: 'hidden',
-    borderRadius: RADIUS.xl,
-  },
-  blurredContent: {
-    // Approximate blur on RN: reduce opacity + overlay does the rest.
-    // On iOS we get real blur via the overlay backdrop; on Android we
-    // rely on low opacity to make content tantalizingly visible.
-    // Platform-specific opacity values: iOS can be higher (0.35) due to native blur effect,
-    // Android lower (0.25) to compensate for lack of native blur.
-    opacity: Platform.OS === 'ios' ? 0.35 : 0.25,
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
+  card: {
     borderRadius: RADIUS.xl,
     borderWidth: 1,
+    padding: SPACING.lg,
+    gap: SPACING.xs,
   },
-  overlayInner: {
-    maxWidth: 300,
-    alignItems: 'center',
-    paddingHorizontal: SPACING.xl,
-    paddingVertical: SPACING['2xl'],
-  },
-  iconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: SPACING.md,
-  },
-  title: {
-    ...TYPOGRAPHY.h2,
-    textAlign: 'center',
-    marginBottom: SPACING.sm,
-  },
-  body: {
-    ...TYPOGRAPHY.bodySmall,
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: SPACING.lg,
-  },
-  ctaContainer: {
+  headerRow: {
+    flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
   },
-  ctaButton: {
-    borderRadius: RADIUS.md,
-    paddingHorizontal: SPACING['2xl'],
-    paddingVertical: SPACING.md,
-    ...SHADOWS.soft,
-  },
-  ctaText: {
+  title: {
     ...TYPOGRAPHY.h3,
+    flexShrink: 1,
   },
-  disclaimer: {
-    ...TYPOGRAPHY.small,
-    textAlign: 'center',
+  body: {
+    ...TYPOGRAPHY.caption,
+    lineHeight: 18,
+    paddingLeft: SPACING.sm + 16, // align with title text (icon width + gap)
+  },
+  ctaLink: {
+    ...TYPOGRAPHY.label,
+    paddingLeft: SPACING.sm + 16,
+    paddingTop: SPACING.xs,
   },
 });

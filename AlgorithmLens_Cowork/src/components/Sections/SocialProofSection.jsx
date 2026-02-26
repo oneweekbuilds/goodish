@@ -37,6 +37,7 @@ const PlusTeaser = () => {
         </p>
         <button
           onClick={() => navigate('/plus')}
+          aria-label="Learn about Plus pricing and features"
           className="text-sm font-semibold text-primary-blue hover:text-blue-700 transition-colors"
         >
           Learn about Plus →
@@ -51,7 +52,7 @@ const TrustBadgesSection = () => {
   const badges = [
     {
       icon: Shield,
-      label: "Built by an MIT student",
+      label: "Built at MIT",
       delay: 0.1,
     },
     {

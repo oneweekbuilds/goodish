@@ -271,7 +271,7 @@ const ViewsGridWithCollapsing = ({ views, viewDataResults, scanCount, platformCo
                                   style={{
                                     background: idx === 0 ? '#EFF6FF' : '#FFFFFF',
                                     border: `1px solid ${idx === 0 ? '#BFDBFE' : '#E2E8F0'}`,
-                                    color: idx === 0 ? '#1D4ED8' : '#64748B',
+                                    color: idx === 0 ? '#1D4ED8' : '#4B5563',
                                     fontWeight: idx === 0 ? 600 : 500,
                                   }}
                                 >

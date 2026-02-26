@@ -756,7 +756,8 @@ function correctPercentageRounding<T extends { percentage: number }>(items: T[])
   const diff = 100 - total;
   // Apply the correction to the largest item
   const result = items.map((item) => ({ ...item }));
-  result[0].percentage = Math.round((result[0].percentage + diff) * 100) / 100;
+  const first = result[0];
+  if (first) first.percentage = Math.round((first.percentage + diff) * 100) / 100;
   return result;
 }
 

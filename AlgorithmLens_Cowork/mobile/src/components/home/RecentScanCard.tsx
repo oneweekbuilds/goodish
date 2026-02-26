@@ -55,7 +55,7 @@ function formatTimeAgo(dateString: string): string {
 function formatPlatformName(platform: string): string {
   const names: Record<string, string> = {
     instagram: 'Instagram',
-    twitter: 'Twitter / X',
+    twitter: 'X',
     youtube: 'YouTube',
     tiktok: 'TikTok',
     facebook: 'Facebook',
@@ -91,7 +91,7 @@ function RecentScanCardComponent({ scan, onPress }: RecentScanCardProps) {
           borderColor: colors.borderSoft,
           flexDirection: 'row',
           alignItems: 'center',
-          ...shadows.soft,
+          ...shadows.card,
         }}
       >
         <View
@@ -123,9 +123,17 @@ function RecentScanCardComponent({ scan, onPress }: RecentScanCardProps) {
               ...TYPOGRAPHY.bodySmall,
               color: colors.textMain,
             }}
-            numberOfLines={1}
           >
-            {platformName} · {timeAgo} · {scan.post_count} posts · {Math.round(scan.ad_percentage)}% ads
+            {platformName} · {timeAgo}
+          </Text>
+          <Text
+            style={{
+              ...TYPOGRAPHY.caption,
+              color: colors.textSecondary,
+              marginTop: SPACING.xxs,
+            }}
+          >
+            {scan.post_count} posts · {Math.round(scan.ad_percentage)}% ads
           </Text>
         </View>
 

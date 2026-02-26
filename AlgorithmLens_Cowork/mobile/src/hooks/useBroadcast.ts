@@ -172,7 +172,7 @@ export function useBroadcast(): UseBroadcastReturn {
 
   const startSession = useCallback(async (platform: SupportedPlatform) => {
     if (!managerRef.current) {
-      Alert.alert('Not Available', 'Screen broadcast requires a development build with native modules and is not available in Expo Go. Use Precision Mode instead.');
+      Alert.alert('Not Available', 'Screen broadcast is not available on this device. Please ensure you are running the AlgorithmLens development build on iOS 12+.');
       return;
     }
 
@@ -270,6 +270,7 @@ export function useBroadcast(): UseBroadcastReturn {
     isComplete,
     isAvailable,
     elapsedTime,
+    elapsedSeconds,
     startSession,
     requestScreenCapture,
     openPlatformApp,

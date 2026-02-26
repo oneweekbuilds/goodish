@@ -5,6 +5,7 @@ import {
   Text,
   SafeAreaView,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -82,7 +83,9 @@ const ToastComponent: React.FC<ToastProps> = ({
       accessibilityLiveRegion="polite"
     >
       <Animated.View
-        style={[
+        style={Platform.OS === 'web' ? {
+          transform: [{ translateY: 0 }],
+        } : [
           {
             transform: [{ translateY: slideAnim }],
           },

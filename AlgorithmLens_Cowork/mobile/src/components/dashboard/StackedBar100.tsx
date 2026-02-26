@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from '../../context/ThemeContext';
+import { TYPOGRAPHY } from '../../lib/theme';
 
 interface Segment {
   label: string;
@@ -47,7 +48,9 @@ const StackedBar100Component: React.FC<StackedBar100Props> = ({
 
   useEffect(() => {
     const animations = segments.map((_, index) => {
-      return Animated.timing(animValuesRef.current[index], {
+      const animValue = animValuesRef.current[index];
+      if (!animValue) return Animated.delay(0);
+      return Animated.timing(animValue, {
         toValue: 1,
         duration: 800 + index * 100,
         useNativeDriver: false,
@@ -82,12 +85,32 @@ const StackedBar100Component: React.FC<StackedBar100Props> = ({
           : `Stacked bar chart with ${segments.length} segments`
       }
     >
+      {/* CD-001 FIX: External labels for segments 3–10% that can't fit internal text */}
+      {normalizedSegments.some((s) => s.percentage > 0 && s.visualPct < 15) && (
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 6 }}>
+          {normalizedSegments.map((segment, index) => {
+            if (segment.percentage === 0 || segment.visualPct >= 15) return null;
+            return (
+              <View
+                key={`ext-label-${segment.label}-${index}`}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+              >
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: segment.color }} />
+                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontWeight: '500' }}>
+                  {segment.label} {Math.round(segment.percentage)}%
+                </Text>
+              </View>
+            );
+          })}
+        </View>
+      )}
+
       {/* Bar */}
       <View
         style={{
           flexDirection: 'row',
-          height: 44,
-          borderRadius: 12,
+          height: 36,
+          borderRadius: 18,
           overflow: 'hidden',
           marginBottom: 16,
           backgroundColor: colors.stackedBarTrack,
@@ -99,7 +122,9 @@ const StackedBar100Component: React.FC<StackedBar100Props> = ({
             return null;
           }
 
-          const widthAnim = animValuesRef.current[index].interpolate({
+          const animValue = animValuesRef.current[index];
+          if (!animValue) return null;
+          const widthAnim = animValue.interpolate({
             inputRange: [0, 1],
             outputRange: ['0%', `${segment.visualPct}%`],
           });
@@ -116,11 +141,10 @@ const StackedBar100Component: React.FC<StackedBar100Props> = ({
               accessible={true}
               accessibilityLabel={`${segment.label}: ${Math.round(segment.percentage)}% of content`}
             >
-              {segment.visualPct >= 10 && (
+              {segment.visualPct >= 15 && (
                 <Text
                   style={{
-                    fontSize: RFValue(14),
-                    fontWeight: '600',
+                    ...TYPOGRAPHY.labelBold,
                     color: colors.white,
                   }}
                   numberOfLines={1}
@@ -134,6 +158,7 @@ const StackedBar100Component: React.FC<StackedBar100Props> = ({
       </View>
 
       {/* Legend — horizontal wrap layout below the chart */}
+      {/* A-001/A-003 FIX: Distinct shapes per legend item for color-blind accessibility */}
       <View
         style={{
           flexDirection: 'row',
@@ -152,26 +177,18 @@ const StackedBar100Component: React.FC<StackedBar100Props> = ({
             accessible={true}
             accessibilityLabel={`${segment.label}: ${Math.round(segment.percentage)}% (${segment.count})`}
           >
-            <View
-              style={{
-                width: 10,
-                height: 10,
-                borderRadius: 5,
-                backgroundColor: segment.color,
-              }}
-            />
+            <LegendShape index={index} color={segment.color} />
             <Text
               style={{
-                fontSize: RFValue(14),
+                ...TYPOGRAPHY.label,
                 color: colors.textMuted,
-                fontWeight: '500',
               }}
             >
               {segment.label}
             </Text>
             <Text
               style={{
-                fontSize: RFValue(14),
+                ...TYPOGRAPHY.bodySmall,
                 color: colors.textSecondary,
               }}
             >
@@ -183,5 +200,40 @@ const StackedBar100Component: React.FC<StackedBar100Props> = ({
     </View>
   );
 };
+
+/** A-001 FIX: Distinct legend shapes — circle, square, diamond, triangle —
+ *  so segments are distinguishable without relying on color alone. */
+function LegendShape({ index, color }: { index: number; color: string }) {
+  const shape = index % 4;
+  switch (shape) {
+    case 0: // circle
+      return <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: color }} />;
+    case 1: // square
+      return <View style={{ width: 10, height: 10, borderRadius: 1, backgroundColor: color }} />;
+    case 2: // diamond (rotated square)
+      return (
+        <View style={{ width: 12, height: 12, justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ width: 8, height: 8, backgroundColor: color, transform: [{ rotate: '45deg' }] }} />
+        </View>
+      );
+    case 3: // triangle
+      return (
+        <View
+          style={{
+            width: 0,
+            height: 0,
+            borderLeftWidth: 5,
+            borderRightWidth: 5,
+            borderBottomWidth: 10,
+            borderLeftColor: 'transparent',
+            borderRightColor: 'transparent',
+            borderBottomColor: color,
+          }}
+        />
+      );
+    default:
+      return <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: color }} />;
+  }
+}
 
 export const StackedBar100 = React.memo(StackedBar100Component);

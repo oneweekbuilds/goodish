@@ -17,6 +17,18 @@ export const MIN_POSTS_OK = 10;
 /** Minimum post count for any meaningful analysis. */
 export const MIN_POSTS_FOR_ANALYSIS = 10;
 
+// ─── Minimum Scan Requirements ───────────────────────────
+// Both must be met before a scan can be saved.
+
+/** Minimum posts required to save a scan. */
+export const MIN_POSTS_REQUIRED = 20;
+
+/** Minimum scan duration in seconds required to save a scan. */
+export const MIN_SCAN_DURATION_SECS = 60;
+
+/** Minimum frames required for broadcast mode. */
+export const MIN_FRAMES_REQUIRED = 20;
+
 // ─── Political & Tone Analysis Thresholds ─────────────────
 
 /** Minimum political posts before ideology distribution is shown. */
@@ -61,13 +73,24 @@ export interface QualityChip {
 /**
  * Returns a quality chip label and color key based on post count.
  * The caller must resolve the color key against the current theme.
+ *
+ * Five-tier system:
+ *   50+  → Excellent sample (green)
+ *   30-49 → Good sample (green)
+ *   20-29 → Fair sample (warning/yellow)
+ *   10-19 → Low sample (warning/orange)
+ *   <10  → Very low sample (error/red)
  */
-export function getQualityLevel(postCount: number): { label: string; colorKey: 'accentGreen' | 'warning' | 'error' } {
-  if (postCount >= MIN_POSTS_GOOD) {
-    return { label: 'Good sample', colorKey: 'accentGreen' };
+export function getQualityLevel(postCount: number): { label: string; labelWithHint: string; colorKey: 'accentGreen' | 'warning' | 'error' } {
+  if (postCount >= 50) {
+    return { label: 'Excellent sample', labelWithHint: 'Excellent sample (50+ posts)', colorKey: 'accentGreen' };
+  } else if (postCount >= 30) {
+    return { label: 'Good sample', labelWithHint: 'Good sample (30+ posts)', colorKey: 'accentGreen' };
+  } else if (postCount >= MIN_POSTS_GOOD) {
+    return { label: 'Fair sample', labelWithHint: `Fair sample (${MIN_POSTS_GOOD}+ posts)`, colorKey: 'warning' };
   } else if (postCount >= MIN_POSTS_OK) {
-    return { label: 'Fair sample', colorKey: 'warning' };
+    return { label: 'Low sample', labelWithHint: `Low sample (aim for ${MIN_POSTS_GOOD}+)`, colorKey: 'warning' };
   } else {
-    return { label: 'Low sample', colorKey: 'error' };
+    return { label: 'Very low sample', labelWithHint: `Very low sample (aim for ${MIN_POSTS_OK}+)`, colorKey: 'error' };
   }
 }

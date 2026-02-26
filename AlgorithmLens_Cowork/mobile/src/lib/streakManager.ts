@@ -40,6 +40,22 @@ function daysBetween(dateA: string, dateB: string): number {
   return Math.round(diffMs / (1000 * 60 * 60 * 24));
 }
 
+/**
+ * H-04 FIX: Check if a YYYY-MM-DD date string represents a scan within the last 24 hours.
+ * This handles the edge case where a scan at 11pm shows as "yesterday" by calendar date
+ * but is actually only ~9 hours ago and should count as active.
+ *
+ * We store last_scan_date as YYYY-MM-DD, so we check if the END of that calendar day
+ * (23:59:59) is within 24 hours of now. This is a generous heuristic — a scan at any
+ * point on that calendar day will count as "recent enough" if the day ended <24h ago.
+ */
+function isWithin24Hours(dateStr: string): boolean {
+  const endOfScanDay = new Date(dateStr + 'T23:59:59');
+  const now = new Date();
+  const diffMs = now.getTime() - endOfScanDay.getTime();
+  return diffMs < 24 * 60 * 60 * 1000;
+}
+
 // ─── Default Streak Data ─────────────────────────────────
 
 const DEFAULT_STREAK_DATA: StreakData = {
@@ -138,8 +154,15 @@ export function computeStreakState(data: StreakData): StreakDisplayState {
     return 'ACTIVE';
   }
 
+  // H-04 FIX: A scan should count as "today" if it was within the last 24 hours,
+  // even if it was on a different calendar date. This handles the edge case where
+  // a scan at 11pm shows as "yesterday" but is only ~9 hours ago.
+  if (daysSinceLastScan === 1 && isWithin24Hours(data.last_scan_date)) {
+    return 'ACTIVE';
+  }
+
   if (daysSinceLastScan === 1) {
-    // Missed today but scanned yesterday — still active, showing as grace
+    // Scanned yesterday (but >24h ago) — still active via grace
     return data.current_streak > 0 ? 'GRACE' : 'NEW';
   }
 
@@ -149,6 +172,7 @@ export function computeStreakState(data: StreakData): StreakDisplayState {
   }
 
   // Missed too many days — streak is paused
+  // H-04 FIX: Only pause if truly >24h ago AND on a previous calendar date
   return 'PAUSED';
 }
 
@@ -267,11 +291,20 @@ export function getWelcomeBackMessage(data: StreakData): string {
  */
 export function getTimeBasedGreeting(name?: string): string {
   const hour = new Date().getHours();
-  const displayName = name || 'there';
 
-  if (hour < 12) return `Good morning, ${displayName}`;
-  if (hour < 17) return `Good afternoon, ${displayName}`;
-  return `Good evening, ${displayName}`;
+  // L-01 FIX: Full time-of-day coverage with "Good night" for late evening
+  const timeOfDay =
+    hour >= 5 && hour < 12
+      ? 'Good morning'
+      : hour >= 12 && hour < 17
+      ? 'Good afternoon'
+      : hour >= 17 && hour < 21
+      ? 'Good evening'
+      : 'Good night';
+
+  // If we have a real name, include it. Otherwise just use the greeting alone.
+  // Never fall back to "there" — it looks generic and impersonal.
+  return name ? `${timeOfDay}, ${name}` : timeOfDay;
 }
 
 // ─── Streak Freeze ──────────────────────────────────────

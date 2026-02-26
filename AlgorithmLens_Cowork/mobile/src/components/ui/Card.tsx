@@ -8,7 +8,7 @@
  */
 
 import React from 'react';
-import { View, Pressable, type ViewStyle } from 'react-native';
+import { View, Pressable, type ViewStyle, Platform } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, RADIUS } from '../../lib/theme';
 
@@ -37,7 +37,7 @@ const CardComponent: React.FC<CardProps> = ({
         return shadows.md;
       case 'default':
       default:
-        return shadows.soft;
+        return shadows.card;
     }
   };
 
@@ -55,7 +55,11 @@ const CardComponent: React.FC<CardProps> = ({
       <Pressable
         onPress={onPress}
         accessibilityRole="button"
-        style={({ pressed }) => [
+        style={({ pressed }) => Platform.OS === 'web' ? {
+          ...baseStyle,
+          opacity: pressed ? 0.9 : 1,
+          ...style,
+        } : [
           baseStyle,
           { opacity: pressed ? 0.9 : 1 },
           style,
@@ -68,7 +72,7 @@ const CardComponent: React.FC<CardProps> = ({
 
   return (
     <View
-      style={[baseStyle, style]}
+      style={Platform.OS === 'web' ? { ...baseStyle, ...style } : [baseStyle, style]}
       accessibilityRole="summary"
     >
       {children}

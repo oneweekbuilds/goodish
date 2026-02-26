@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from '../../context/ThemeContext';
+import { TYPOGRAPHY } from '../../lib/theme';
 
 interface BarChartItem {
   label: string;
@@ -46,7 +47,9 @@ const BarChartComponent: React.FC<BarChartProps> = ({
 
   useEffect(() => {
     const animations = items.map((_, index) => {
-      return Animated.timing(animValuesRef.current[index], {
+      const animValue = animValuesRef.current[index];
+      if (!animValue) return Animated.delay(0);
+      return Animated.timing(animValue, {
         toValue: 1,
         duration: 600,
         useNativeDriver: false,
@@ -60,13 +63,14 @@ const BarChartComponent: React.FC<BarChartProps> = ({
   const maxValue = useMemo(() => Math.max(...items.map((item) => item.value), 1), [items]);
   const totalValue = useMemo(() => items.reduce((sum, item) => sum + item.value, 0), [items]);
 
-  // First bar darker blue, subsequent bars progressively lighter
+  // CD-002 FIX: Top 3 bars use primary blue, remaining use neutral gray.
+  // Bar length already communicates ranking — color distinguishes "top" from "rest".
   const barColors = [
-    colors.barDarkest, // Darkest
-    colors.barDark, // Dark
-    colors.barMedium, // Medium
-    colors.barLight, // Light
-    colors.barLightest, // Lighter
+    colors.barDark,     // Top 1 — primary blue
+    colors.barDark,     // Top 2 — primary blue
+    colors.barDark,     // Top 3 — primary blue
+    colors.textTertiary, // Rest — neutral gray
+    colors.textTertiary,
   ];
 
   // Build legend entries from unique categories/colors
@@ -75,7 +79,7 @@ const BarChartComponent: React.FC<BarChartProps> = ({
         const color = item.color || barColors[Math.min(index, barColors.length - 1)];
         const label = item.category || item.label;
         if (!acc.some((e) => e.label === label && e.color === color)) {
-          acc.push({ label, color });
+          acc.push({ label, color: color ?? colors.accent });
         }
         return acc;
       }, [])
@@ -83,7 +87,7 @@ const BarChartComponent: React.FC<BarChartProps> = ({
 
   return (
     <View
-      style={{ gap: 16 }}
+      style={{ gap: 20 }}
       accessible={true}
       accessibilityRole="image"
       accessibilityLabel={
@@ -94,10 +98,14 @@ const BarChartComponent: React.FC<BarChartProps> = ({
     >
       {items.map((item, index) => {
         const normalizedPercentage = (item.value / maxValue) * 100;
+        // Cap visual bar width at 82% to always leave room for the percentage label
+        const barVisualWidth = Math.min(normalizedPercentage, 82);
         const itemPercentageOfTotal = totalValue > 0 ? Math.round((item.value / totalValue) * 100) : 0;
-        const widthAnim = animValuesRef.current[index].interpolate({
+        const animValue = animValuesRef.current[index];
+        if (!animValue) return null;
+        const widthAnim = animValue.interpolate({
           inputRange: [0, 1],
-          outputRange: ['0%', `${normalizedPercentage}%`],
+          outputRange: ['0%', `${barVisualWidth}%`],
         });
 
         const barColor = item.color || barColors[Math.min(index, barColors.length - 1)];
@@ -121,9 +129,8 @@ const BarChartComponent: React.FC<BarChartProps> = ({
             >
               <Text
                 style={{
-                  fontSize: RFValue(14),
+                  ...TYPOGRAPHY.label,
                   color: colors.textMuted,
-                  fontWeight: '500',
                   flex: 1,
                   maxWidth: '70%',
                 }}
@@ -133,7 +140,7 @@ const BarChartComponent: React.FC<BarChartProps> = ({
               </Text>
               <Text
                 style={{
-                  fontSize: RFValue(14),
+                  ...TYPOGRAPHY.bodySmall,
                   color: colors.textSecondary,
                   marginLeft: 8,
                 }}
@@ -147,16 +154,15 @@ const BarChartComponent: React.FC<BarChartProps> = ({
               <Animated.View
                 style={{
                   width: widthAnim,
-                  height: 24,
+                  height: 20,
                   backgroundColor: barColor,
-                  borderRadius: 4,
+                  borderRadius: 6,
                 }}
               />
               <Text
                 style={{
-                  fontSize: RFValue(14),
+                  ...TYPOGRAPHY.label,
                   color: colors.textSecondary,
-                  fontWeight: '500',
                   minWidth: 32,
                 }}
               >
@@ -199,9 +205,8 @@ const BarChartComponent: React.FC<BarChartProps> = ({
               />
               <Text
                 style={{
-                  fontSize: RFValue(14),
+                  ...TYPOGRAPHY.label,
                   color: colors.textMuted,
-                  fontWeight: '500',
                 }}
               >
                 {entry.label}

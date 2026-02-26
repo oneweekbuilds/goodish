@@ -1,14 +1,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { themeTokens } from '../../../lib/theme/tokens';
 
 /**
- * PREMIER color palette - Blue & Green harmonious tones
- * Replaces dull grays with palette-cohesive colors
+ * Emotional tone color palette — sourced from design token system.
+ * Calm, informational colors that don't alarm or celebrate.
+ * @see DESIGN_TOKENS.json → colors.emotionalTone
  */
 const EMOTIONAL_TONE_COLORS = {
-  positive: '#34D399',  // Richer green (was #86EFAC)
-  neutral: '#94A3B8',   // Slate (kept for neutral)
-  negative: '#93C5FD',  // Blue-tinted (was #FCA5A5 red)
+  positive: themeTokens.tonePositive,
+  neutral: themeTokens.toneNeutral,
+  negative: themeTokens.toneNegative,
 };
 
 /**

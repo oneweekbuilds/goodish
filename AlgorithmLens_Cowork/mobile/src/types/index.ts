@@ -37,7 +37,7 @@ export interface FeedItemCapture {
   post_text: string;
   hashtags: string[];
   is_suggested: boolean | null;
-  content_type: 'photo' | 'video' | 'reel' | 'short' | 'text' | 'unknown';
+  content_type: 'photo' | 'video' | 'reel' | 'short' | 'text' | 'carousel' | 'image' | 'gallery' | 'link' | 'unknown';
   capture_timestamp: number;
 }
 

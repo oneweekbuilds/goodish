@@ -1,8 +1,10 @@
 import React from 'react';
+import { Platform, TouchableOpacity } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Home, LayoutDashboard, Clock, Settings } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/context/ThemeContext';
+import { SPACING } from '../../src/lib/theme';
 
 /**
  * Tabs layout — updated for broadcast-first architecture.
@@ -20,28 +22,99 @@ import { useTheme } from '../../src/context/ThemeContext';
  * The scan route still exists for Precision Mode — it's just no
  * longer a top-level tab.
  */
+
+/**
+ * G-3 FIX: Web-compatible tab bar button.
+ * react-native-web's Pressable/TouchableOpacity can fail to translate
+ * mouse events to press events. This wrapper adds an explicit onClick
+ * handler on web to ensure reliable mouse click handling.
+ */
+function WebCompatibleTabButton(props: any) {
+  if (Platform.OS === 'web') {
+    const { onPress, children, style, accessibilityRole, ...rest } = props;
+    return (
+      <div
+        onClick={onPress}
+        role="tab"
+        tabIndex={0}
+        onKeyDown={(e: any) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onPress?.();
+          }
+        }}
+        style={{
+          cursor: 'pointer',
+          display: 'flex',
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          background: 'none',
+          border: 'none',
+          padding: 0,
+          // @ts-ignore
+          ...(typeof style === 'object' ? style : {}),
+        }}
+        {...rest}
+      >
+        {children}
+      </div>
+    );
+  }
+  // On native, use standard TouchableOpacity
+  const { children, style, ...rest } = props;
+  return (
+    <TouchableOpacity {...rest} style={Platform.OS === 'web' ? {
+      ...style,
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    } : [style, { flex: 1, justifyContent: 'center', alignItems: 'center' }]}>
+      {children}
+    </TouchableOpacity>
+  );
+}
+
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
 
+  // L-15 FIX: Enable fade animation between tab switches
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
+        animation: 'fade',
         tabBarActiveTintColor: colors.primaryBlue,
         tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: {
+        tabBarStyle: Platform.OS === 'web' ? {
           backgroundColor: colors.bgCard,
           borderTopWidth: 1,
-          borderTopColor: colors.borderSlate200,
+          borderTopColor: colors.borderSoft,
           paddingBottom: Math.max(insets.bottom, 12),
-          paddingTop: 8,
+          paddingTop: SPACING.sm,
+          height: 60 + Math.max(insets.bottom, 0),
+          maxWidth: 428,
+          alignSelf: 'center' as const,
+          width: '100%',
+        } : {
+          backgroundColor: colors.bgCard,
+          borderTopWidth: 1,
+          borderTopColor: colors.borderSoft,
+          paddingBottom: Math.max(insets.bottom, 12),
+          paddingTop: SPACING.sm,
           height: 60 + Math.max(insets.bottom, 0),
         },
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
-          marginTop: 2,
+          marginTop: SPACING.xxs,
+        },
+        // T-1 FIX: Add active indicator style — top border line on active tab
+        tabBarActiveBackgroundColor: 'transparent',
+        tabBarItemStyle: {
+          borderTopWidth: 2,
+          borderTopColor: 'transparent',
         },
       }}
     >
@@ -50,9 +123,11 @@ export default function TabsLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => (
-            <Home size={22} color={color} strokeWidth={2} />
+            <Home size={24} color={color} strokeWidth={2} />
           ),
           tabBarAccessibilityLabel: 'Home tab',
+          // G-3 FIX: Web-compatible click handling
+          ...(Platform.OS === 'web' ? { tabBarButton: (props: any) => <WebCompatibleTabButton {...props} /> } : {}),
         }}
       />
       <Tabs.Screen
@@ -60,9 +135,10 @@ export default function TabsLayout() {
         options={{
           title: 'Dashboard',
           tabBarIcon: ({ color }) => (
-            <LayoutDashboard size={22} color={color} strokeWidth={2} />
+            <LayoutDashboard size={24} color={color} strokeWidth={2} />
           ),
           tabBarAccessibilityLabel: 'Dashboard tab',
+          ...(Platform.OS === 'web' ? { tabBarButton: (props: any) => <WebCompatibleTabButton {...props} /> } : {}),
         }}
       />
       <Tabs.Screen
@@ -70,9 +146,10 @@ export default function TabsLayout() {
         options={{
           title: 'History',
           tabBarIcon: ({ color }) => (
-            <Clock size={22} color={color} strokeWidth={2} />
+            <Clock size={24} color={color} strokeWidth={2} />
           ),
           tabBarAccessibilityLabel: 'History tab',
+          ...(Platform.OS === 'web' ? { tabBarButton: (props: any) => <WebCompatibleTabButton {...props} /> } : {}),
         }}
       />
       <Tabs.Screen
@@ -80,9 +157,10 @@ export default function TabsLayout() {
         options={{
           title: 'Settings',
           tabBarIcon: ({ color }) => (
-            <Settings size={22} color={color} strokeWidth={2} />
+            <Settings size={24} color={color} strokeWidth={2} />
           ),
           tabBarAccessibilityLabel: 'Settings tab',
+          ...(Platform.OS === 'web' ? { tabBarButton: (props: any) => <WebCompatibleTabButton {...props} /> } : {}),
         }}
       />
       {/* Scan tab hidden from bar — accessed via Home platform picker */}

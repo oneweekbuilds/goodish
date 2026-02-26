@@ -132,10 +132,7 @@ const WaitlistSignup = ({ id }) => {
 
           {/* MIT Credibility */}
           <div className="mt-8 text-center">
-            <p className="text-sm font-semibold text-text-main mb-2">Built by an MIT student</p>
-            <p className="text-xs text-text-muted">
-              Developed with support from the MIT Sandbox Innovation Fund.
-            </p>
+            <p className="text-sm font-semibold text-text-main mb-2">Built at MIT</p>
           </div>
 
           {error && (

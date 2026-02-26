@@ -194,7 +194,7 @@ function BadgeItem({
           justifyContent: 'center',
           alignItems: 'center',
           marginBottom: SPACING.xs,
-          ...(earned ? shadows.soft : {}),
+          ...(earned ? shadows.card : {}),
           borderWidth: isNew ? 2 : 0,
           borderColor: isNew ? colors.primaryBlue : 'transparent',
         }}

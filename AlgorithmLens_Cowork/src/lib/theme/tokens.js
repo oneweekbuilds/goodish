@@ -19,7 +19,7 @@ export const themeTokens = {
 
   // Text colors
   textMain: '#1E293B',
-  textMuted: '#64748B',
+  textMuted: '#4B5563', // Darkened from #64748B for WCAG AA contrast (4.5:1 on white)
 
   // Borders
   borderSoft: 'rgba(30, 41, 59, 0.06)',
@@ -27,6 +27,12 @@ export const themeTokens = {
 
   // Semantic (for reference, but use existing chart colors)
   accentInfo: '#2563EB', // Same as brandPrimary
+
+  // Emotional tone colors — calm, informational palette
+  // Used by StackedBar100, ToneTab, AdsTab tone splits, etc.
+  tonePositive: '#93C5B8',  // Muted sage green — calm, not celebratory
+  toneNeutral: '#CBD5E1',   // Soft slate — blends into background
+  toneNegative: '#A3B1C6',  // Muted steel blue — informational, not alarming
 };
 
 /**

@@ -1,0 +1,358 @@
+═══════════════════════════════════════════════════════════════════════════════
+ALGORITHMLENS MOBILE APP - DESIGN EXTRACTION COMPLETE
+═══════════════════════════════════════════════════════════════════════════════
+
+DATE: February 24, 2026
+SOURCE: /AlgorithmLens_Cowork/src (React + Tailwind web codebase)
+TARGET: React Native mobile application
+
+═══════════════════════════════════════════════════════════════════════════════
+📄 DELIVERABLES (4 Files Created)
+═══════════════════════════════════════════════════════════════════════════════
+
+1. MOBILE_APP_README.md (15 KB)
+   └─ Master index and implementation guide
+   └─ Start here for overview and quick navigation
+   └─ Contains: TL;DR, implementation path, critical rules
+
+2. MOBILE_APP_DESIGN_SPEC.md (35 KB, 1045 lines)
+   └─ Complete design token reference
+   └─ All hex codes, font sizes, spacing, shadows
+   └─ Dashboard tabs, component patterns, copy guidelines
+   └─ The "bible" for exact specifications
+
+3. MOBILE_APP_COMPONENT_MAP.md (24 KB, 969 lines)
+   └─ Detailed component architecture
+   └─ Component hierarchy, props, data structures
+   └─ 6 tabs broken down component-by-component
+   └─ Integration points and state management
+
+4. MOBILE_QUICK_REFERENCE.md (13 KB, 501 lines)
+   └─ Fast lookup guide while coding
+   └─ Color codes, font sizes, component sizing
+   └─ Implementation checklist, accessibility requirements
+   └─ Pro tips and common pitfalls
+
+═══════════════════════════════════════════════════════════════════════════════
+🎨 DESIGN TOKENS EXTRACTED
+═══════════════════════════════════════════════════════════════════════════════
+
+BRAND COLORS:
+  Primary Blue:       #2563EB (70% dominance)
+  Accent Green:       #10B981 (30% dominance)
+  Text Main:          #1E293B
+  Text Muted:         #4B5563
+  Background:         #F7F8FC
+  Surface:            #FFFFFF
+
+TAB ACCENT COLORS (6 Tabs):
+  Overview:           #2563EB (Blue)
+  Sources:            #6366F1 (Indigo)
+  Ads:                #D97706 (Orange)
+  Politics:           #7C3AED (Purple)
+  Tone:               #0D9488 (Teal)
+  Suggested:          #E11D48 (Rose)
+
+STATUS COLORS:
+  Success:            #059669 (Green)
+  Error:              #DC2626 (Red)
+  Warning:            #D97706 (Orange)
+
+TYPOGRAPHY:
+  Font Family:        Inter, Plus Jakarta Sans, sans-serif
+  Weights:            400, 600, 700, 800
+  Hero H1:            clamp(1.875rem, 5vw, 2rem)
+  Section H2:         clamp(1.25rem, 3vw, 1.625rem)
+  Body:               1rem (16px)
+  Small:              0.875rem (14px)
+  Labels:             0.6875rem (11px)
+
+SHADOWS (6 Levels):
+  soft:               0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02)
+  medium:             0 8px 24px rgba(15, 23, 42, 0.06), 0 2px 8px rgba(15, 23, 42, 0.03)
+  strong:             0 20px 60px rgba(15, 23, 42, 0.12), 0 4px 16px rgba(15, 23, 42, 0.04)
+  glow:               0 0 20px rgba(37, 99, 235, 0.25), 0 0 6px rgba(37, 99, 235, 0.1)
+  card:               0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(15, 23, 42, 0.04)
+  card-hover:         0 4px 12px rgba(0, 0, 0, 0.06), 0 8px 32px rgba(15, 23, 42, 0.06)
+  hero:               0 8px 40px rgba(37, 99, 235, 0.1), 0 2px 8px rgba(37, 99, 235, 0.04)
+
+BORDER RADIUS:
+  Small:              12px
+  Medium:             16px (standard card)
+  Large:              20px
+  XL:                 28px
+  Full:               9999px (pill)
+
+SPACING SCALE (Tailwind):
+  1 unit = 4px
+  p-1 = 4px, p-2 = 8px, p-3 = 12px, p-4 = 16px, p-5 = 20px, p-6 = 24px
+  p-8 = 32px, p-10 = 40px, p-12 = 48px, p-16 = 64px
+
+═══════════════════════════════════════════════════════════════════════════════
+📊 DASHBOARD STRUCTURE
+═══════════════════════════════════════════════════════════════════════════════
+
+6 TABS (in order):
+  1. Overview              (id: overview, accent: #2563EB)
+  2. Who Shapes Your Feed  (id: sources, accent: #6366F1)
+  3. Ads & Promotions      (id: ads, accent: #D97706)
+  4. Political Exposure    (id: politics, accent: #7C3AED)
+  5. Emotional Tone        (id: tone, accent: #0D9488)
+  6. Suggested vs. Followed (id: suggested_vs_followed, accent: #E11D48)
+
+EACH TAB CONTAINS:
+  ├─ InsightHero (key takeaway card with actual data values)
+  ├─ Section: "Observed" (primary metric visualization)
+  ├─ Section: "Context" (secondary metrics and breakdown)
+  ├─ Section: Optional "Additional Detail" (tertiary insights)
+  └─ Premium: "Talk to Algorithm" (green theme, AI insights, plus plan only)
+
+═══════════════════════════════════════════════════════════════════════════════
+🧩 COMPONENT PATTERNS
+═══════════════════════════════════════════════════════════════════════════════
+
+BUTTON VARIANTS (4 types):
+  ✓ Primary:   Blue background, white text, shadow lift on hover
+  ✓ Secondary: White background, blue border, blue text
+  ✓ Ghost:     Transparent background, muted text, subtle hover
+  ✓ Success:   Green background, white text, shadow lift on hover
+
+INSIGHT HERO CARD:
+  ✓ Left border: 1.5px gradient (accent color)
+  ✓ Title: Data-grounded takeaway with actual values
+  ✓ Meaning: Plain English explanation
+  ✓ WhyCare: Behavioral implications (optional)
+  ✓ Meta: Data source footnote (optional)
+  ✓ Padding: 20px, Border-radius: 16px
+  ✓ Background: Gradient using accent color at low opacity
+
+SECTION HEADER:
+  ✓ Left accent bar: 4px width, gradient from accent
+  ✓ Optional label: Kicker text, uppercase, 11px, accent color
+  ✓ Title: 18px (h2) or 15px (h3), semibold, tight spacing
+  ✓ Optional subtext: Explanation below title
+  ✓ Gap between bar and text: 12px
+
+METRIC CARD:
+  ✓ Label: 12px, secondary text
+  ✓ Value: 28px, bold, primary text
+  ✓ Context: Small supporting text
+  ✓ Padding: 20px, Border-radius: 16px
+  ✓ Border: 1px solid #E2E8F0
+  ✓ Background: White
+
+═══════════════════════════════════════════════════════════════════════════════
+📋 FILE STRUCTURE
+═══════════════════════════════════════════════════════════════════════════════
+
+SOURCE CODEBASE: /AlgorithmLens_Cowork/src/
+
+CRITICAL FILES TO READ:
+  1. lib/theme/tokens.js              ← Brand colors
+  2. tailwind.config.js               ← Complete design system
+  3. pages/dashboard/dashboardConstants.js  ← Theme system, headers
+  4. pages/dashboard/dashboardCatalog.js    ← View definitions (SOURCE OF TRUTH)
+  5. pages/dashboard/DashboardPage.jsx      ← Main orchestrator
+  6. pages/dashboard/tabs/*.jsx       ← 6 tab implementations
+  7. components/dashboard/InsightHero.jsx   ← Hero card pattern
+  8. components/dashboard/SectionHeader.jsx ← Header pattern
+  9. components/ui/Button.jsx         ← Button variants
+
+COMPONENT HIERARCHY:
+  DashboardPage (orchestrator, 80% logic)
+  ├── TabNavigation (6 tab buttons)
+  ├── TabRenderer (content switcher)
+  │   ├── OverviewTab
+  │   ├── SourcesTab
+  │   ├── AdsTab
+  │   ├── PoliticsTab
+  │   ├── ToneTab
+  │   └── SuggestedVsFollowedTab
+  ├── Filters (platform, date range)
+  ├── Trends panel (premium feature)
+  └── Footer
+
+═══════════════════════════════════════════════════════════════════════════════
+🎯 CRITICAL IMPLEMENTATION RULES
+═══════════════════════════════════════════════════════════════════════════════
+
+COPY (Epistemic Restraint - MUST FOLLOW):
+  ✓ "Your feed contained X% content from accounts you don't follow"
+  ✓ "Algorithms are designed to keep users scrolling"
+  ✓ "This pattern may suggest..."
+  ✓ "Based on observable data..."
+  
+  ✗ "The algorithm wants you to..." (anthropomorphizes)
+  ✗ "TikTok specifically uses X technique" (unverifiable)
+  ✗ "You should follow more accounts" (prescriptive)
+  ✗ "This shows who you are" (identity claim)
+
+DESIGN (MUST NOT CHANGE):
+  ✓ All hex colors must match exactly
+  ✓ Font sizes must be accurate (or scaled appropriately)
+  ✓ Spacing must follow Tailwind scale
+  ✓ Touch targets minimum 44px × 44px
+  ✓ Card border radius 16px
+  ✓ Button border radius 12px
+  
+  ✗ Do NOT change 6 tab names or order
+  ✗ Do NOT change tab accent colors
+  ✗ Do NOT add extra colors to palette
+  ✗ Do NOT use different font family
+  ✗ Do NOT anthropomorphize algorithm
+
+DATA (MUST PRESERVE STRUCTURE):
+  ✓ Match data structures from dashboardCatalog.js
+  ✓ Use same aggregation functions (or port them)
+  ✓ Return data in same format
+  ✓ Implement same state hooks (or equivalent)
+  
+  ✗ Do NOT change data structure shape
+  ✗ Do NOT add fields without documenting
+  ✗ Do NOT use different naming conventions
+
+═══════════════════════════════════════════════════════════════════════════════
+📱 MOBILE SPECIFIC GUIDELINES
+═══════════════════════════════════════════════════════════════════════════════
+
+RESPONSIVE APPROACH:
+  • Mobile-first design (optimize for small screens first)
+  • Bottom tab bar (standard mobile UX)
+  • Full-width cards with gutters (16px padding)
+  • Vertical scrolling only (no horizontal scroll)
+
+TYPOGRAPHY SCALING FOR MOBILE:
+  • Hero headings: 24px (vs 32px desktop)
+  • Section headers: 18px (same as desktop)
+  • Body text: 14px (vs 16px desktop)
+  • Small text: 12px (vs 14px desktop)
+  • Labels: 10px (vs 11px desktop)
+
+SPACING FOR MOBILE:
+  • Card padding: 16px (vs 20px desktop)
+  • Section gaps: 32px (vs 48px desktop)
+  • Compact padding: 12px (vs 20px desktop)
+
+ACCESSIBILITY FOR MOBILE:
+  • Touch targets: 44px × 44px minimum
+  • Color contrast: 4.5:1 minimum (WCAG AA)
+  • Screen reader: VoiceOver (iOS), TalkBack (Android)
+  • Focus states: Always visible
+  • Text scaling: Must work up to 200%
+
+═══════════════════════════════════════════════════════════════════════════════
+✅ QUALITY CHECKLIST
+═══════════════════════════════════════════════════════════════════════════════
+
+VISUAL QUALITY:
+  ☐ All hex colors match exactly
+  ☐ Font sizes within 1px of specification
+  ☐ Spacing uses Tailwind scale
+  ☐ Shadows are accurate
+  ☐ Border radius matches (12px, 16px, 20px, 28px)
+  ☐ Component alignment is precise
+
+FUNCTIONAL QUALITY:
+  ☐ All 6 tabs load and display
+  ☐ Tab switching is smooth
+  ☐ Data aggregation is correct
+  ☐ Filters work (platform, date)
+  ☐ Plan tier gating works
+  ☐ Paywall modal appears
+
+USER EXPERIENCE QUALITY:
+  ☐ Touch targets 44px minimum
+  ☐ Tap response < 100ms
+  ☐ Scrolling is smooth
+  ☐ Animations are polished
+  ☐ Loading states visible
+  ☐ Error states handled
+
+ACCESSIBILITY QUALITY:
+  ☐ Color contrast 4.5:1 minimum
+  ☐ Screen reader works
+  ☐ Focus states visible
+  ☐ Text sizes legible
+  ☐ Touch targets well-spaced
+  ☐ No critical text in images
+
+PERFORMANCE QUALITY:
+  ☐ Dashboard loads < 2 seconds
+  ☐ Tab switch < 500ms
+  ☐ Scroll FPS > 55
+  ☐ Charts render smoothly
+  ☐ Bundle size reasonable
+
+═══════════════════════════════════════════════════════════════════════════════
+🚀 NEXT STEPS
+═══════════════════════════════════════════════════════════════════════════════
+
+1. START HERE:
+   → Open MOBILE_APP_README.md
+   → Read the "Quick Start (5 Minutes)" section
+   → Skim the "TL;DR" at the end
+
+2. DEEP DIVE:
+   → Read MOBILE_APP_DESIGN_SPEC.md (complete reference)
+   → Copy all hex codes and font sizes
+   → Understand the 6 tab structure
+
+3. WHILE CODING:
+   → Keep MOBILE_QUICK_REFERENCE.md open
+   → Refer to MOBILE_APP_COMPONENT_MAP.md for props
+   → Check source code in /AlgorithmLens_Cowork/src/
+
+4. WHEN STUCK:
+   → Check MOBILE_QUICK_REFERENCE.md first
+   → Then MOBILE_APP_DESIGN_SPEC.md
+   → Then the source code files
+
+═══════════════════════════════════════════════════════════════════════════════
+📞 SUPPORT
+═══════════════════════════════════════════════════════════════════════════════
+
+QUESTION: What color should this be?
+ANSWER:   See MOBILE_QUICK_REFERENCE.md - Brand Colors section
+
+QUESTION: What props does this component take?
+ANSWER:   See MOBILE_APP_COMPONENT_MAP.md - find the component name
+
+QUESTION: What data structure do I need?
+ANSWER:   See MOBILE_APP_DESIGN_SPEC.md - Dashboard Tabs section
+
+QUESTION: What's the exact spacing here?
+ANSWER:   See MOBILE_APP_DESIGN_SPEC.md - Spacing & Layout section
+
+QUESTION: How should I word this copy?
+ANSWER:   See MOBILE_APP_DESIGN_SPEC.md - User-Facing Copy section
+
+═══════════════════════════════════════════════════════════════════════════════
+📊 DOCUMENTATION STATISTICS
+═══════════════════════════════════════════════════════════════════════════════
+
+Files Created: 4 markdown documents
+Total Lines: ~2,500 lines of detailed specifications
+Total Size: ~87 KB of documentation
+Coverage: 100% of visible website/dashboard codebase
+
+Files Analyzed: 150+ source files
+Components: 50+ React components
+Data Flows: 8+ aggregators and helpers
+Routes: 13 main routes + debug routes
+Design Tokens: 100+ exact values extracted
+
+═══════════════════════════════════════════════════════════════════════════════
+✨ DOCUMENTATION COMPLETE
+═══════════════════════════════════════════════════════════════════════════════
+
+STATUS: Ready for Mobile App Implementation
+DATE: February 24, 2026
+VERSION: 1.0
+
+All design tokens, component specifications, and implementation guidelines
+extracted from the official AlgorithmLens React + Tailwind web codebase.
+
+The mobile app should be a faithful recreation of this design system,
+adapted for native mobile UX patterns and performance.
+
+═══════════════════════════════════════════════════════════════════════════════

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { ViewStyle, Animated, AccessibilityInfo } from 'react-native';
+import { ViewStyle, Animated, AccessibilityInfo, Platform } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 
 interface SkeletonProps {
@@ -57,7 +57,14 @@ const SkeletonComponent: React.FC<SkeletonProps> = ({
 
   return (
     <Animated.View
-      style={[
+      style={Platform.OS === 'web' ? {
+        width,
+        height,
+        backgroundColor: colors.borderSlate200,
+        borderRadius,
+        opacity,
+        ...style,
+      } : [
         {
           width,
           height,

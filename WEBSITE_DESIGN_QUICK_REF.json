@@ -1,0 +1,225 @@
+{
+  "metadata": {
+    "source": "Website codebase analysis",
+    "date": "2026-02-24",
+    "purpose": "Quick reference for exact website design values"
+  },
+  "tabConfiguration": {
+    "tabs": [
+      {
+        "id": "overview",
+        "websiteLabel": "Overview",
+        "mobileLabel": "Overview",
+        "accentColor": "#2563EB",
+        "accentName": "Primary Blue",
+        "heroTitle": "Content patterns during this window",
+        "heroSubtext": "What content appeared based on your recent activity.",
+        "label": "Observed"
+      },
+      {
+        "id": "sources",
+        "websiteLabel": "Who Shapes Your Feed",
+        "mobileLabel": "Sources",
+        "accentColor": "#6366F1",
+        "accentName": "Indigo",
+        "heroTitle": "Influence during this window",
+        "heroSubtext": "Which accounts shaped what you saw. What appeared, not who you are.",
+        "label": "Observed"
+      },
+      {
+        "id": "ads",
+        "websiteLabel": "Ads & Promotions",
+        "mobileLabel": "Ads",
+        "accentColor": "#D97706",
+        "accentName": "Amber",
+        "heroTitle": "Commercial content in your feed",
+        "heroSubtext": "What share of your feed contains labeled ads and promotional content.",
+        "label": "Observed",
+        "trustSentence": "This view estimates how often ads and sales-driven posts appeared in the content you scanned. It reflects what showed up, not what you believe or want.",
+        "counterfactual": "This may not match your perception. Some ads blend in with regular content."
+      },
+      {
+        "id": "politics",
+        "websiteLabel": "Political Exposure",
+        "mobileLabel": "Politics",
+        "accentColor": "#7C3AED",
+        "accentName": "Purple",
+        "heroTitle": "Political keywords during this window",
+        "heroSubtext": "Measures exposure to political content, not belief formation.",
+        "label": "Observed",
+        "trustSentence": "Counts and percentages are based only on the posts included in your scans.",
+        "counterfactual": "This measures exposure, not belief formation. Political content may be more memorable than other topics."
+      },
+      {
+        "id": "tone",
+        "websiteLabel": "Emotional Tone",
+        "mobileLabel": "Tone",
+        "accentColor": "#0D9488",
+        "accentName": "Teal",
+        "heroTitle": "Topics during this window",
+        "heroSubtext": "What surfaced. Patterns in exposure, not preference.",
+        "label": "Observed"
+      },
+      {
+        "id": "suggested_vs_followed",
+        "websiteLabel": "Suggested vs. Followed",
+        "mobileLabel": "Suggested",
+        "accentColor": "#E11D48",
+        "accentName": "Rose",
+        "heroTitle": "Your feed split",
+        "heroSubtext": "How much of your feed comes from suggested posts vs accounts you follow.",
+        "label": "Suggested vs. Followed"
+      }
+    ]
+  },
+  "colors": {
+    "brand": {
+      "primaryBlue": "#2563EB",
+      "accentGreen": "#10B981"
+    },
+    "text": {
+      "main": "#1E293B",
+      "muted": "#4B5563"
+    },
+    "backgrounds": {
+      "page": "#F7F8FC",
+      "surface": "#FFFFFF",
+      "blueLightHero": "#EFF6FF",
+      "greenLight": "#ECFDF5",
+      "sectionTint": "#F8FAFC"
+    },
+    "borders": {
+      "light": "rgba(30, 41, 59, 0.08)",
+      "blue": "rgba(37, 99, 235, 0.2)",
+      "green": "rgba(16, 185, 129, 0.15)"
+    },
+    "status": {
+      "success": "#059669",
+      "error": "#DC2626",
+      "warning": "#D97706"
+    }
+  },
+  "typography": {
+    "fontFamily": "Inter, Plus Jakarta Sans, sans-serif",
+    "sizes": {
+      "heroHeadline": "clamp(1.625rem, 4.5vw, 2.25rem)",
+      "tabLabelDesktop": "14px",
+      "tabLabelMobile": "11px",
+      "bodyText": "15px",
+      "kicker": "11px"
+    },
+    "weights": {
+      "bold": 700,
+      "semibold": 600,
+      "medium": 500,
+      "regular": 400
+    },
+    "letterSpacing": {
+      "tightHero": "-0.03em",
+      "wideLabel": "0.05em",
+      "widerLabel": "0.1em"
+    }
+  },
+  "spacing": {
+    "heroCardPaddingVertical": "clamp(2rem, 5vw, 3.5rem)",
+    "heroCardPaddingHorizontal": "clamp(1.75rem, 4vw, 3rem)"
+  },
+  "borderRadius": {
+    "sm": "12px",
+    "md": "20px",
+    "lg": "28px",
+    "pill": "9999px",
+    "heroCard": "24px",
+    "tabButton": "12px"
+  },
+  "shadows": {
+    "soft": "0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02)",
+    "medium": "0 8px 24px rgba(15, 23, 42, 0.06), 0 2px 8px rgba(15, 23, 42, 0.03)",
+    "card": "0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(15, 23, 42, 0.04)",
+    "glow": "0 0 20px rgba(37, 99, 235, 0.25), 0 0 6px rgba(37, 99, 235, 0.1)"
+  },
+  "heroSection": {
+    "mainHeadline": "See how the algorithms see you.",
+    "subheadline": "Algorithms learn what keeps you scrolling — the content, emotions, and topics that hold your attention. AlgorithmLens shows you what they've figured out.",
+    "platformSupportLine": "Works with TikTok, Instagram, YouTube, X, Facebook, LinkedIn, and Reddit.",
+    "credentialPill": "Built at MIT",
+    "primaryCTA": "Start a Scan — It's Free",
+    "primaryCTAComingSoon": "Join the Waitlist",
+    "secondaryCTA": "Free forever. Upgrade to Plus for trends and deeper analysis."
+  },
+  "tabMismatchAlert": {
+    "issue": "Tab names differ between website and mobile",
+    "tabs": [
+      {
+        "id": "sources",
+        "website": "Who Shapes Your Feed",
+        "mobile": "Sources",
+        "recommendation": "Standardize naming"
+      },
+      {
+        "id": "ads",
+        "website": "Ads & Promotions",
+        "mobile": "Ads",
+        "recommendation": "Mobile uses abbreviated form"
+      },
+      {
+        "id": "politics",
+        "website": "Political Exposure",
+        "mobile": "Politics",
+        "recommendation": "Mobile uses abbreviated form"
+      },
+      {
+        "id": "tone",
+        "website": "Emotional Tone",
+        "mobile": "Tone",
+        "recommendation": "Mobile uses abbreviated form"
+      },
+      {
+        "id": "suggested_vs_followed",
+        "website": "Suggested vs. Followed",
+        "mobile": "Suggested",
+        "recommendation": "Mobile truncates label"
+      }
+    ]
+  },
+  "pages": {
+    "settings": {
+      "path": "/settings",
+      "sections": [
+        {
+          "name": "Account",
+          "icon": "User",
+          "fields": ["Email", "Member since", "Current plan", "Sign out"]
+        },
+        {
+          "name": "AI Analysis",
+          "icon": "Brain",
+          "fields": ["Enable AI analysis toggle", "What AI does explanation", "What AI doesn't do list"]
+        },
+        {
+          "name": "Plan Management",
+          "icon": "CreditCard",
+          "fields": ["Current plan status", "Billing portal link (Plus only)", "Upgrade CTA (Free users)"]
+        }
+      ]
+    },
+    "history": {
+      "path": "/history",
+      "features": [
+        "Scan list with platform icon, timestamp, stats",
+        "Inline delete confirmation",
+        "Pagination (10 scans per page)",
+        "Quick summary stats section",
+        "Loading skeleton states",
+        "Error and empty states"
+      ]
+    }
+  },
+  "keyDifferences": {
+    "tabNaming": "Website uses full descriptive names; mobile uses abbreviated forms",
+    "colorPalette": "Identical in both systems",
+    "typography": "Font family identical; website uses fluid sizing with clamp()",
+    "structure": "Website organized by 6 tabs with detailed sub-cards; mobile TBD",
+    "epistemicRestraint": "Website emphasizes observation-based language throughout"
+  }
+}

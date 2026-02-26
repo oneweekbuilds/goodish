@@ -86,10 +86,9 @@ async def lifespan(app: FastAPI):
             logger.error(f"STARTUP ERROR: {error_msg}")
             raise RuntimeError(error_msg)
 
-        # Initialize Stripe with secret key
-        import stripe
-        stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-        logger.info("Stripe API configured")
+        # Initialize Stripe via centralized config
+        from config import init_stripe
+        init_stripe()
 
     yield
 
@@ -132,12 +131,14 @@ _allowed_origins = [
 
 # Note: Chrome extension requests from service workers bypass CORS.
 # Extension popup requests may come from chrome-extension:// origin.
-# We handle this via allow_origin_regex for extension contexts.
+# We restrict to the specific AlgorithmLens extension ID for security.
+# TODO: Replace with production extension ID from Chrome Web Store after publishing.
+_EXTENSION_ID = os.getenv("CHROME_EXTENSION_ID", "your-extension-id-here")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_allowed_origins,
-    allow_origin_regex=r"^chrome-extension://.*$",
+    allow_origin_regex=rf"^chrome-extension://{_EXTENSION_ID}$",
     allow_credentials=False,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "Accept", "X-Extension-Version"],

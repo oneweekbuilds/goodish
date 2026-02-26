@@ -16,8 +16,9 @@
  */
 
 import React, { useCallback, useMemo } from 'react';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { CalmHomeScreen } from '../../src/components/home/CalmHomeScreen';
+import { FirstUseWalkthrough } from '../../src/components/home/FirstUseWalkthrough';
 import { useDashboard } from '../../src/hooks/useDashboard';
 import { useStreak } from '../../src/hooks/useStreak';
 import { useHabitFeatures } from '../../src/hooks/useHabitFeatures';
@@ -25,8 +26,8 @@ import type { ScanMode, SupportedPlatform } from '../../src/types/broadcast';
 import type { FeedScore } from '../../src/types/streak';
 
 export default function HomeScreen() {
-  const { scans, latestScan } = useDashboard();
-  const { streakData } = useStreak();
+  const { scans, latestScan, loading: dashboardLoading, refresh: refreshDashboard } = useDashboard();
+  const { streakData, refresh: refreshStreak } = useStreak();
 
   // Habit-forming features
   const {
@@ -41,29 +42,64 @@ export default function HomeScreen() {
     streakAtRisk,
   } = useHabitFeatures(streakData);
 
-  // Compute a simple Feed Score from recent scans
-  const feedScore = useMemo((): FeedScore | null => {
+  // M-18 FIX: Refresh dashboard AND streak data when this tab gains focus.
+  // This ensures the home screen shows fresh data after completing a scan
+  // on another screen and navigating back.
+  // C-04/H-08 FIX: Also refresh streak so it reflects scans recorded
+  // by analysis/[sessionId].tsx which writes directly to AsyncStorage.
+  useFocusEffect(
+    useCallback(() => {
+      refreshDashboard();
+      refreshStreak();
+    }, [refreshDashboard, refreshStreak])
+  );
+
+  // L-02 FIX: Dynamic Feed Score that factors in source diversity, ad percentage,
+  // suggested vs followed ratio, and platform variety. No longer returns a static "80 — Balanced".
+  // H-02 FIX: Return undefined (not null) while dashboard is still loading.
+  const feedScore = useMemo((): FeedScore | null | undefined => {
+    if (dashboardLoading && scans.length === 0) return undefined;
     if (scans.length < 2) return null;
 
-    // Get scans from the last 7 days
+    // Try 7-day window first; fall back to all scans if too few recent ones
     const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    const recentScans = scans.filter(
+    let scoringScans = scans.filter(
       (s) => new Date(s.created_at).getTime() > oneWeekAgo
     );
+    if (scoringScans.length < 2) {
+      scoringScans = scans.slice(0, 10);
+    }
 
-    if (recentScans.length < 2) return null;
-
+    // ── Factor 1: Ad density (lower ads = higher score) ──
     const avgAdPct =
-      recentScans.reduce((sum, s) => sum + s.ad_percentage, 0) /
-      recentScans.length;
-    const avgItems =
-      recentScans.reduce((sum, s) => sum + (s.post_count || 0), 0) /
-      recentScans.length;
+      scoringScans.reduce((sum, s) => sum + s.ad_percentage, 0) /
+      scoringScans.length;
+    // Lose up to 20 points for high ad density (>30% = max penalty)
+    const adPenalty = Math.min(20, Math.max(0, avgAdPct - 5) * 0.8);
 
-    let score = 75;
-    score -= Math.max(0, avgAdPct - 10) * 0.5;
-    score += Math.min(10, recentScans.length * 2);
-    score += Math.min(5, avgItems / 10);
+    // ── Factor 2: Suggested vs followed ratio (more followed = higher score) ──
+    const avgSuggestedPct =
+      scoringScans.reduce((sum, s) => sum + (s.suggested_percentage || 0), 0) /
+      scoringScans.length;
+    // Lose up to 15 points for high suggested ratio (>70% = max penalty)
+    const suggestedPenalty = Math.min(15, Math.max(0, avgSuggestedPct - 30) * 0.375);
+
+    // ── Factor 3: Source diversity (unique platforms scanned) ──
+    const uniquePlatforms = new Set(scoringScans.map((s) => s.platform?.toLowerCase())).size;
+    // Bonus up to 10 points for scanning multiple platforms
+    const diversityBonus = Math.min(10, (uniquePlatforms - 1) * 5);
+
+    // ── Factor 4: Sample quality (more posts = better data) ──
+    const avgItems =
+      scoringScans.reduce((sum, s) => sum + (s.post_count || 0), 0) /
+      scoringScans.length;
+    const sampleBonus = Math.min(5, avgItems / 10);
+
+    // ── Factor 5: Scan frequency bonus ──
+    const frequencyBonus = Math.min(5, scoringScans.length);
+
+    // Compute final score: start at 80, apply adjustments
+    let score = 80 - adPenalty - suggestedPenalty + diversityBonus + sampleBonus + frequencyBonus;
     score = Math.round(Math.max(0, Math.min(100, score)));
 
     const label =
@@ -75,19 +111,29 @@ export default function HomeScreen() {
 
     const summary =
       score >= 70
-        ? 'Your feed shows a healthy mix of content. Ad density is moderate and sources are varied.'
+        ? avgAdPct <= 10
+          ? 'Your feed has low ad density and a good content mix across sources.'
+          : 'Your feed shows a healthy balance overall. Ad density is moderate.'
         : score >= 50
-        ? 'Your feed is fairly balanced. Consider scanning different platforms to compare.'
+        ? avgSuggestedPct >= 50
+          ? 'Much of your feed comes from suggestions rather than accounts you follow.'
+          : 'Your feed is fairly balanced. Consider scanning different platforms to compare.'
+        : avgAdPct >= 25
+        ? 'Ad density is high across your recent scans. Check the dashboard for details.'
         : 'Some areas of your feed could use attention. Check the dashboard for details.';
+
+    const scansThisWeek = scans.filter(
+      (s) => new Date(s.created_at).getTime() > oneWeekAgo
+    ).length;
 
     return {
       score,
       label: label as FeedScore['label'],
-      scans_this_week: recentScans.length,
+      scans_this_week: scansThisWeek,
       summary,
       computed_at: new Date().toISOString(),
     };
-  }, [scans]);
+  }, [scans, dashboardLoading]);
 
   // Build recent scan preview data from the latest scan
   const recentScan = useMemo(() => {
@@ -122,6 +168,9 @@ export default function HomeScreen() {
   }, []);
 
   return (
+    <>
+    {/* M-22 FIX: First-use walkthrough for new users */}
+    <FirstUseWalkthrough />
     <CalmHomeScreen
       feedScore={feedScore}
       recentScan={recentScan}
@@ -136,6 +185,9 @@ export default function HomeScreen() {
       suggestion={suggestion}
       freezeAvailable={freezeAvailable}
       streakAtRisk={streakAtRisk}
+      dbScanCount={scans.length}
+      onRefreshDashboard={refreshDashboard}
     />
+    </>
   );
 }

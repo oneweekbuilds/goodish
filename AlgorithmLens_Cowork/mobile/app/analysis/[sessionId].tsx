@@ -12,7 +12,7 @@ import { View, Text, TouchableOpacity, BackHandler, Alert, Platform } from 'reac
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft, Sparkles } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
+import { triggerImpactMedium } from '../../src/lib/haptics';
 import { useTheme } from '../../src/context/ThemeContext';
 import { SPACING, TYPOGRAPHY, RADIUS, PLATFORMS } from '../../src/lib/theme';
 import { useAnalysis } from '../../src/hooks/useAnalysis';
@@ -119,7 +119,7 @@ export default function AnalysisScreen() {
   }, [analysis.isRunning, handleCancelPress]);
 
   const handleViewResults = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    triggerImpactMedium();
     router.replace('/(tabs)/dashboard');
   }, []);
 

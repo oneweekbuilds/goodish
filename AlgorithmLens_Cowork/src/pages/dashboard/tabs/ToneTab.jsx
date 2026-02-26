@@ -421,7 +421,7 @@ const ToneTab = ({
   };
 
   const sellingVsNotSellingTone = computeSellingVsNotSellingTone();
-  const [showToneSplits, setShowToneSplits] = useState(false);
+  // showToneSplits removed — tone comparisons always visible
 
   // ===========================================
   // BUILD INSIGHT HERO
@@ -442,18 +442,21 @@ const ToneTab = ({
       {/* Insight Hero */}
       <InsightHero {...hero} />
 
-      {/* Trends CTA */}
+      {/* Trends CTA or Panel */}
       <TrendsCTA
         onClick={() => onOpenTrends({ tab: 'tone', placement: 'hero_trends' })}
         isPlusUser={isPlusUser}
+        tabName="tone"
+        scanCount={scans.length}
       />
 
-      {/* Trends Panel (Plus users only) */}
-      {showTrendsPanel && (
+      {/* Trends Panel (auto-show for Plus users or when manually opened) */}
+      {(isPlusUser || showTrendsPanel) && (
         <TrendsPanel
           scans={scans}
           scanDetails={scanDetails}
           onClose={onCloseTrendsPanel}
+          embedded={isPlusUser}
         />
       )}
 
@@ -469,69 +472,71 @@ const ToneTab = ({
 
             {/* Top 5 Positive Sources */}
             {toneDistribution.topPositive.length > 0 && (
-              <div
-      className="rounded-xl p-5 sm:p-6"
-      style={{
-        background: 'linear-gradient(180deg, #FFFFFF 0%, #FAFBFE 100%)',
-        border: '1px solid rgba(37, 99, 235, 0.08)',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
-      }}
-    >
-                <h3 className="text-sm font-semibold text-slate-700 mb-3">Top 5 sources by positive post volume</h3>
-                <div className="space-y-2">
-                  {toneDistribution.topPositive.map((item, index) => (
-                    <div key={index} className="flex justify-between text-sm">
-                      <span className="text-slate-800">@{item.handle}</span>
-                      <span className="text-slate-600">{item.count} posts</span>
-                    </div>
-                  ))}
+              <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+                <h3 className="text-sm font-semibold text-slate-700 mb-4">Top 5 sources by positive post volume</h3>
+                <div className="space-y-3">
+                  {toneDistribution.topPositive.map((source, i) => {
+                    const maxCount = Math.max(...toneDistribution.topPositive.map(s => s.count));
+                    const barWidth = (source.count / maxCount) * 100;
+                    return (
+                      <div key={i} className="flex items-center gap-3">
+                        <span className="text-xs font-medium text-slate-500 w-4">{i + 1}</span>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm font-medium text-slate-800">@{source.handle}</span>
+                            <span className="text-xs text-slate-500">{source.count} posts</span>
+                          </div>
+                          <div className="w-full bg-slate-100 rounded-full h-1.5">
+                            <div className="bg-[#10B981] h-1.5 rounded-full" style={{ width: `${barWidth}%` }}></div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
             {/* Top 5 Negative Sources */}
             {toneDistribution.topNegative.length > 0 && (
-              <div
-      className="rounded-xl p-5 sm:p-6"
-      style={{
-        background: 'linear-gradient(180deg, #FFFFFF 0%, #FAFBFE 100%)',
-        border: '1px solid rgba(37, 99, 235, 0.08)',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
-      }}
-    >
-                <h3 className="text-sm font-semibold text-slate-700 mb-3">Top 5 sources by negative post volume</h3>
-                <div className="space-y-2">
-                  {toneDistribution.topNegative.map((item, index) => (
-                    <div key={index} className="flex justify-between text-sm">
-                      <span className="text-slate-800">@{item.handle}</span>
-                      <span className="text-slate-600">{item.count} posts</span>
-                    </div>
-                  ))}
+              <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+                <h3 className="text-sm font-semibold text-slate-700 mb-4">Top 5 sources by negative post volume</h3>
+                <div className="space-y-3">
+                  {toneDistribution.topNegative.map((source, i) => {
+                    const maxCount = Math.max(...toneDistribution.topNegative.map(s => s.count));
+                    const barWidth = (source.count / maxCount) * 100;
+                    return (
+                      <div key={i} className="flex items-center gap-3">
+                        <span className="text-xs font-medium text-slate-500 w-4">{i + 1}</span>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm font-medium text-slate-800">@{source.handle}</span>
+                            <span className="text-xs text-slate-500">{source.count} posts</span>
+                          </div>
+                          <div className="w-full bg-slate-100 rounded-full h-1.5">
+                            <div className="bg-[#2563EB] h-1.5 rounded-full" style={{ width: `${barWidth}%` }}></div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
           </div>
         ) : (
           <div className="rounded-xl p-6 text-center" style={{ background: '#FAFBFE', border: '1px solid rgba(37, 99, 235, 0.06)' }}>
-            <p className="text-sm text-slate-400 italic">
-              Not enough posts with known tone in this window.
+            <p className="text-sm text-slate-500">
+              Tone analysis needs a bit more data. Try selecting a wider date range or scanning again.
             </p>
           </div>
         )}
       </section>
 
-      {/* Sections 5.2-5.3: Collapsible tone comparisons */}
+      {/* Sections 5.2-5.3: Tone comparisons (always visible) */}
       <section>
-        <button
-          onClick={() => setShowToneSplits(!showToneSplits)}
-          className="w-full flex items-center justify-between py-3 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue/60 focus-visible:ring-offset-2 rounded"
-          aria-expanded={showToneSplits}
-        >
-          <span>Tone comparisons</span>
-          <span className="text-xs text-slate-400">{showToneSplits ? 'Show less' : 'Show more'}</span>
-        </button>
+        <SectionHeader>Tone comparisons</SectionHeader>
 
-        {showToneSplits && (
           <div className="space-y-8 mt-4">
             {/* Section 5.2 - Tone: Political vs Non-Political */}
             <div>
@@ -546,8 +551,8 @@ const ToneTab = ({
                 />
               ) : (
                 <div className="rounded-xl p-6 text-center" style={{ background: '#FAFBFE', border: '1px solid rgba(37, 99, 235, 0.06)' }}>
-                  <p className="text-sm text-slate-400 italic">
-                    Not enough posts in both political and non-political groups to compare tone.
+                  <p className="text-sm text-slate-500">
+                    Not enough posts in both groups to compare tone yet. This will unlock with more scans.
                   </p>
                 </div>
               )}
@@ -566,14 +571,13 @@ const ToneTab = ({
                 />
               ) : (
                 <div className="rounded-xl p-6 text-center" style={{ background: '#FAFBFE', border: '1px solid rgba(37, 99, 235, 0.06)' }}>
-                  <p className="text-sm text-slate-400 italic">
-                    Not enough posts in both selling and not selling groups to compare tone.
+                  <p className="text-sm text-slate-500">
+                    Not enough posts in both groups to compare tone yet. This will unlock with more scans.
                   </p>
                 </div>
               )}
             </div>
           </div>
-        )}
       </section>
 
       {/* Evidence Bundle + Ask Your Feed Teasers (free users only) */}

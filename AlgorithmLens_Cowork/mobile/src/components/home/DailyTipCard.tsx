@@ -19,13 +19,13 @@ import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
  * never accuse platforms or imply intent.
  */
 const DAILY_TIPS: string[] = [
-  'On average, about 40% of an Instagram feed consists of suggested content from accounts not followed.',
+  'Your scans may show how much of your feed comes from accounts you don\'t follow — compare across sessions to see if this changes.',
   'Scanning across multiple platforms can reveal how content composition varies between them.',
-  'Ad density in feeds typically ranges from 5% to 15%, depending on the platform.',
-  'Most users see content from fewer than 20% of the accounts they follow in a single session.',
-  'Feed composition can shift noticeably between morning and evening sessions.',
+  'Your scans can show how much of your feed is labeled as sponsored — compare sessions to see if this varies.',
+  'Try scanning at different times of day. Your feed composition may look different in the morning versus the evening.',
+  'Feed composition can shift noticeably between sessions — scanning regularly helps you spot patterns over time.',
   'Scanning regularly helps you build a more complete picture of what appears in your feed over time.',
-  'Short-form video content has grown to represent a large portion of feed content across platforms.',
+  'Check your Sources tab to see how concentrated your feed is among a few accounts.',
   'Your Feed Score reflects source diversity, ad density, and content balance in your recent scans.',
 ];
 
@@ -50,7 +50,7 @@ function DailyTipCardComponent() {
         flexDirection: 'row',
         alignItems: 'flex-start',
         gap: SPACING.md,
-        ...shadows.soft,
+        ...shadows.card,
       }}
       accessible
       accessibilityRole="summary"
@@ -58,16 +58,16 @@ function DailyTipCardComponent() {
     >
       <View
         style={{
-          width: 28,
-          height: 28,
-          borderRadius: 14,
-          backgroundColor: colors.gradientWarmStart,
+          width: SPACING['3xl'],
+          height: SPACING['3xl'],
+          borderRadius: SPACING.lg,
+          backgroundColor: `${colors.accentGreen}18`,
           justifyContent: 'center',
           alignItems: 'center',
           marginTop: SPACING.xxs,
         }}
       >
-        <Lightbulb size={14} color={colors.warning} strokeWidth={2} />
+        <Lightbulb size={14} color={colors.accentGreen} strokeWidth={2} />
       </View>
 
       <View style={{ flex: 1 }}>
@@ -78,7 +78,7 @@ function DailyTipCardComponent() {
             marginBottom: SPACING.xs,
           }}
         >
-          Did you know?
+          Daily tip
         </Text>
         <Text
           style={{

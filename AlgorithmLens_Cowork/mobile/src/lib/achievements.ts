@@ -84,7 +84,7 @@ const CHECKERS: Record<string, AchievementChecker> = {
     );
     // Check if any 7-day window shows improvement
     for (let i = 1; i < sorted.length; i++) {
-      if (sorted[i].score > sorted[i - 1].score) return true;
+      if ((sorted[i]?.score ?? 0) > (sorted[i - 1]?.score ?? 0)) return true;
     }
     return false;
   },
@@ -228,8 +228,8 @@ export async function getRecentScoreTrend(): Promise<{
     return { points: recent, direction: 'stable', changePercent: 0 };
   }
 
-  const first = recent[0].score;
-  const last = recent[recent.length - 1].score;
+  const first = recent[0]?.score ?? 0;
+  const last = recent[recent.length - 1]?.score ?? 0;
   const change = last - first;
   const changePercent = first > 0 ? Math.round((change / first) * 100) : 0;
 

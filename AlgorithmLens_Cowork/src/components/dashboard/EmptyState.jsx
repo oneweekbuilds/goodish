@@ -37,11 +37,10 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
       case EMPTY_STATE_TYPES.NEEDS_MORE_SCANS:
         return {
           icon: 'scan',
-          title: 'More scans needed',
-          why: 'This insight appears after you run multiple scans.',
+          title: 'Your feed history is building',
+          why: 'You\'ll see this insight after your second scan. Each snapshot adds to your personal feed timeline.',
           howToUnlock: [
-            'Run 2-3 scans this week',
-            'Scan the same platform multiple times',
+            'Try scanning again in a few days to see how your feed changes',
           ],
           cta: { label: 'Start a Scan', to: '/start' },
         };
@@ -49,11 +48,10 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
       case EMPTY_STATE_TYPES.NEEDS_BROADER_BEHAVIOR:
         return {
           icon: 'platforms',
-          title: 'Broader data needed',
-          why: 'This insight appears when you scan across multiple platforms.',
+          title: 'More platforms, richer insights',
+          why: 'Try scanning a second platform to unlock cross-platform comparisons. Each platform tells a different part of the story.',
           howToUnlock: [
-            'Scan at least 2 different platforms',
-            'Compare patterns across platforms',
+            'Scan a different platform to see how your feeds compare',
           ],
           cta: { label: 'Scan Another Platform', to: '/start' },
         };
@@ -62,10 +60,10 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
         return {
           icon: 'future',
           title: 'Coming soon',
-          why: 'This insight requires a feature that isn\'t available yet.',
+          why: 'We\'re working on this feature and it\'ll be here soon. Stay tuned.',
           howToUnlock: [],
           cta: null,
-          footer: 'Available in a future update.',
+          footer: 'Coming in a future update.',
         };
 
       case EMPTY_STATE_TYPES.INSUFFICIENT_DATA:
@@ -82,7 +80,7 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
           if (match) {
             const threshold = match[1];
             const unit = match[2];
-            calmWhy = `We need at least ${threshold} ${unit} to show meaningful patterns. Below that, individual items have too much influence on the results.`;
+            calmWhy = `Just ${threshold} ${unit} needed to show reliable patterns. Each scan brings you closer.`;
           }
         }
         
@@ -114,11 +112,10 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
     if (!msg) {
       return {
         icon: 'scan',
-        title: 'More data needed',
-        why: 'Run more scans to populate this view.',
+        title: 'Your insights are building',
+        why: 'Each scan adds data to make this view more complete. Try scanning again this week.',
         howToUnlock: [
-          'Run 2-3 scans this week',
-          'Scan the same platform multiple times',
+          'Scan your favorite platform to start building your feed profile',
         ],
         cta: { label: 'Start a Scan', to: '/start' },
       };
@@ -135,15 +132,14 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
       const hasThreshold = lower.includes('at least');
       return {
         icon: 'quality',
-        title: 'Insufficient data',
+        title: 'Almost there',
         why: msg,
-        howToUnlock: hasThreshold 
+        howToUnlock: hasThreshold
           ? [] // Threshold already in why message
           : [
-              'Run more scans to increase sample size',
-              'Ensure scans capture enough posts',
+              'A few more scans will bring this insight to life',
             ],
-        cta: { label: 'Run More Scans', to: '/start' },
+        cta: { label: 'Run Another Scan', to: '/start' },
       };
     }
 
@@ -169,11 +165,10 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
         lower.includes('broader')) {
       return {
         icon: 'platforms',
-        title: 'Broader data needed',
-        why: 'This insight appears when you scan across multiple platforms.',
+        title: 'More platforms, richer insights',
+        why: 'Try scanning a second platform to see how your feeds compare.',
         howToUnlock: [
-          'Scan at least 2 different platforms',
-          'Compare patterns across platforms',
+          'Scan a different platform to unlock cross-platform comparisons',
         ],
         cta: { label: 'Scan Another Platform', to: '/start' },
       };
@@ -182,11 +177,10 @@ const EmptyState = ({ emptyStateType, missing, chartQuality }) => {
     // Default to needs more scans
     return {
       icon: 'scan',
-      title: 'More scans needed',
-      why: 'This insight appears after you run multiple scans.',
+      title: 'Your feed history is growing',
+      why: 'You\'ll see this insight after your next scan. Each snapshot adds to your personal feed timeline.',
       howToUnlock: [
-        'Run 2-3 scans this week',
-        'Scan the same platform multiple times',
+        'Try scanning again in a few days to see how your feed changes',
       ],
       cta: { label: 'Start a Scan', to: '/start' },
     };

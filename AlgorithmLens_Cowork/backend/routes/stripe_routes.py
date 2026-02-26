@@ -7,9 +7,7 @@ from urllib.parse import urlparse
 import stripe
 from fastapi import APIRouter, HTTPException, Request, Depends
 
-# C3 fix: Initialize Stripe API key for all routes in this module
-# This ensures Stripe calls work regardless of app.py lifespan execution
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+# Stripe API key is initialized centrally in config.init_stripe() during app startup
 from pydantic import BaseModel
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -461,8 +459,8 @@ async def stripe_webhook(request: Request):
                 try:
                     customer_obj = stripe.Customer.retrieve(customer_id)
                     user_id = customer_obj.get("metadata", {}).get("supabase_user_id")
-                except stripe.error.StripeError:
-                    pass
+                except stripe.error.StripeError as e:
+                    logger.error(f"Error retrieving customer {customer_id} for subscription.updated: {e}", exc_info=True)
 
                 if not user_id:
                     # Try subscription metadata
@@ -603,14 +601,37 @@ async def stripe_webhook(request: Request):
             subscription_id = subscription_obj.get("id")
             trial_end = subscription_obj.get("trial_end")
 
-            # Log the event for monitoring — email notification should be set up
-            # via Stripe's built-in trial-ending emails or a transactional email service.
-            # See MANUAL_ACTION_ITEMS.md for setup instructions.
             sub_record = get_subscription_by_customer_id(customer_id) if customer_id else None
             user_id = sub_record["user_id"] if sub_record else "unknown"
+
+            # I8 FIX: Structured log entry for trial-end monitoring and alerting.
+            # Stripe's built-in "Trial ending" email should fire automatically if
+            # enabled in Stripe Dashboard → Settings → Emails.
+            # See docs/TRIAL_EMAIL_SETUP.md for configuration instructions.
+            from datetime import datetime, timezone
+            trial_end_dt = (
+                datetime.fromtimestamp(trial_end, tz=timezone.utc).isoformat()
+                if trial_end else "unknown"
+            )
+            logger.info(
+                "trial_will_end event received",
+                extra={
+                    "event_type": "customer.subscription.trial_will_end",
+                    "customer_id": customer_id,
+                    "subscription_id": subscription_id,
+                    "user_id": user_id,
+                    "trial_end_date": trial_end_dt,
+                    "trial_end_unix": trial_end,
+                    "note": "Stripe built-in trial-ending email should have been sent. "
+                            "Verify in Stripe Dashboard → Logs → Events. "
+                            "No custom transactional email service is configured yet.",
+                },
+            )
             logger.info(
                 f"Trial ending soon for user {user_id}, "
-                f"subscription {subscription_id}, trial_end={trial_end}"
+                f"subscription {subscription_id}, "
+                f"trial_end={trial_end_dt}, "
+                f"customer={customer_id}"
             )
 
         # Handle invoice.payment_action_required (payment needs customer intervention)

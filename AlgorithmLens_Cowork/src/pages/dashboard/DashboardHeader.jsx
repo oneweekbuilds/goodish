@@ -76,19 +76,19 @@ const DashboardHeader = ({
             <option value="today">Today</option>
             <option value="7days">Last 7 days</option>
             <option value="all">All time</option>
-            <option value="30days" disabled={userTier === 'free'}>
-              Last 30 days{userTier === 'free' ? ' (Premium)' : ''}
+            <option value="30days" disabled={userTier !== 'plus'}>
+              Last 30 days{userTier !== 'plus' ? ' (Premium)' : ''}
             </option>
-            <option value="90days" disabled={userTier === 'free'}>
-              Last 90 days{userTier === 'free' ? ' (Premium)' : ''}
+            <option value="90days" disabled={userTier !== 'plus'}>
+              Last 90 days{userTier !== 'plus' ? ' (Premium)' : ''}
             </option>
-            <option value="custom" disabled={userTier === 'free'}>
-              Custom{userTier === 'free' ? ' (Premium)' : ''}
+            <option value="custom" disabled={userTier !== 'plus'}>
+              Custom{userTier !== 'plus' ? ' (Premium)' : ''}
             </option>
           </select>
         </div>
 
-        {userTier === 'free' && (
+        {userTier !== 'plus' && (
           <span className="text-xs text-slate-500">
             Upgrade to Premium to unlock 30-day, 90-day, and custom date ranges.
           </span>
@@ -118,7 +118,7 @@ const DashboardHeader = ({
           </div>
         )}
 
-        {userTier === 'free' && (
+        {userTier !== 'plus' && (
           <>
             {remainingScans === 0 ? (
               <span className="text-xs text-slate-600">

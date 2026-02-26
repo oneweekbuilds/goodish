@@ -34,6 +34,10 @@ export default defineConfig({
       }
     }
   },
+  test: {
+    environment: 'node',
+    include: ['src/**/*.test.{js,jsx}'],
+  },
   // (#40) Code Splitting Configuration
   // Splits vendor libraries and feature groups into separate chunks for better caching
   // and parallel loading. This reduces initial bundle size.

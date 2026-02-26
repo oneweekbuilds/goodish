@@ -50,11 +50,10 @@ const HeroSection = () => {
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                     className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight text-text-main mb-6 sm:mb-8 leading-[1.1] max-w-full"
                 >
-                    <span className="font-bold">See what your algorithm</span>
+                    <span className="font-bold text-text-main">See how the </span>
                     <br />
-                    <span className="block sm:inline whitespace-normal sm:whitespace-nowrap tracking-tight-hero font-extrabold">
-                        <span className="text-primary-blue">actually</span> <span className="text-accent-green">shows you.</span>
-                    </span>
+                    <span className="font-extrabold text-primary-blue">algorithms </span>
+                    <span className="font-extrabold text-accent-green">see you.</span>
                 </motion.h1>
 
                 <motion.p
@@ -63,7 +62,7 @@ const HeroSection = () => {
                     transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
                     className="text-base sm:text-lg md:text-xl text-text-muted mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed font-medium px-2"
                 >
-                    AlgorithmLens scans your social media feed and breaks down exactly what's in it — how many ads, what topics dominate, which posts are suggested by the algorithm vs. accounts you follow. No guessing, just the data.
+                    Algorithms learn what keeps you scrolling — the content, emotions, and topics that hold your attention. AlgorithmLens shows you what they've figured out.
                 </motion.p>
 
                 <motion.p
@@ -74,6 +73,16 @@ const HeroSection = () => {
                 >
                     Works with TikTok, Instagram, YouTube, X, Facebook, LinkedIn, and Reddit.
                 </motion.p>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.17, ease: [0.16, 1, 0.3, 1] }}
+                >
+                    <span className="inline-block px-4 py-1.5 bg-slate-100 text-text-muted text-xs font-semibold rounded-full">
+                        Built at MIT
+                    </span>
+                </motion.div>
 
                 {/* Primary CTA */}
                 <motion.div
@@ -103,24 +112,20 @@ const HeroSection = () => {
                     transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
                     className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center gap-3 sm:gap-6"
                 >
-                    <a
-                        href="https://chrome.google.com/webstore"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-5 py-2.5 border border-border-light rounded-full text-sm font-medium text-text-main hover:border-primary-blue/40 hover:bg-primary-blue/5 transition-all"
+                    <span
+                        className="inline-flex items-center gap-2 px-5 py-2.5 border border-border-light rounded-full text-sm font-medium text-text-main cursor-default opacity-75"
                     >
                         <Monitor size={16} className="text-primary-blue" aria-hidden="true" />
-                        Install Chrome Extension
-                    </a>
-                    <a
-                        href="https://apps.apple.com"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-5 py-2.5 border border-border-light rounded-full text-sm font-medium text-text-main hover:border-accent-green/40 hover:bg-accent-green/5 transition-all"
+                        Chrome Extension
+                        <span className="text-xs bg-slate-100 px-2 py-0.5 rounded-full ml-1">Coming Soon</span>
+                    </span>
+                    <span
+                        className="inline-flex items-center gap-2 px-5 py-2.5 border border-border-light rounded-full text-sm font-medium text-text-main cursor-default opacity-75"
                     >
                         <Smartphone size={16} className="text-accent-green" aria-hidden="true" />
-                        Download Mobile App
-                    </a>
+                        Mobile App
+                        <span className="text-xs bg-slate-100 px-2 py-0.5 rounded-full ml-1">Coming Soon</span>
+                    </span>
                 </motion.div>
             </div>
 

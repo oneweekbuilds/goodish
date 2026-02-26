@@ -24,8 +24,8 @@ export function generateUUID(): string {
       const bytes = new Uint8Array(16);
       crypto.getRandomValues(bytes);
       // Set version 4 (0100) and variant 10xx bits
-      bytes[6] = (bytes[6] & 0x0f) | 0x40;
-      bytes[8] = (bytes[8] & 0x3f) | 0x80;
+      bytes[6] = ((bytes[6] ?? 0) & 0x0f) | 0x40;
+      bytes[8] = ((bytes[8] ?? 0) & 0x3f) | 0x80;
       const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
       return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
     }
@@ -63,6 +63,29 @@ export function safeJsonParse<T = unknown>(text: string, maxSize: number = MAX_J
 }
 
 /**
+ * H-10 FIX: Returns the properly cased display name for a platform slug.
+ * Uses the canonical PLATFORMS map for trademarked names (e.g., "YouTube", "TikTok"),
+ * falling back to naive capitalization only for unknown platforms.
+ *
+ * @param slug - Platform slug (e.g., "youtube", "twitter", "tiktok")
+ * @returns Properly cased display name (e.g., "YouTube", "X", "TikTok")
+ */
+const PLATFORM_DISPLAY_NAMES: Record<string, string> = {
+  instagram: 'Instagram',
+  twitter: 'X',
+  youtube: 'YouTube',
+  tiktok: 'TikTok',
+  facebook: 'Facebook',
+  reddit: 'Reddit',
+};
+
+export function getPlatformDisplayName(slug: string | undefined | null): string {
+  if (!slug) return 'Unknown';
+  const lower = slug.toLowerCase();
+  return PLATFORM_DISPLAY_NAMES[lower] ?? (slug.charAt(0).toUpperCase() + slug.slice(1));
+}
+
+/**
  * Converts a hex color to rgba with the specified alpha.
  * Handles 3-char, 6-char, and 8-char hex values.
  *
@@ -74,9 +97,9 @@ export function withAlpha(hex: string, alpha: number): string {
   const cleaned = hex.replace('#', '');
   let r: number, g: number, b: number;
   if (cleaned.length === 3) {
-    r = parseInt(cleaned[0] + cleaned[0], 16);
-    g = parseInt(cleaned[1] + cleaned[1], 16);
-    b = parseInt(cleaned[2] + cleaned[2], 16);
+    r = parseInt((cleaned[0] ?? '0') + (cleaned[0] ?? '0'), 16);
+    g = parseInt((cleaned[1] ?? '0') + (cleaned[1] ?? '0'), 16);
+    b = parseInt((cleaned[2] ?? '0') + (cleaned[2] ?? '0'), 16);
   } else {
     r = parseInt(cleaned.substring(0, 2), 16);
     g = parseInt(cleaned.substring(2, 4), 16);

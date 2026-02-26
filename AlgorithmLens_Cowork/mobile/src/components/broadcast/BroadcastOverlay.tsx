@@ -16,6 +16,7 @@
  * Uses the app's theme system for consistent styling.
  */
 
+import { triggerImpactMedium } from '../../lib/haptics';
 import React, { useRef, useEffect } from 'react';
 import {
   View,
@@ -24,6 +25,7 @@ import {
   Animated,
   StyleSheet,
   AccessibilityInfo,
+  Platform,
 } from 'react-native';
 import {
   Radio,
@@ -35,7 +37,6 @@ import {
   Layers,
   ArrowRight,
 } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, TYPOGRAPHY, RADIUS, COLORS } from '../../lib/theme';
 import type { BroadcastStatus } from '../../types/broadcast';
@@ -50,10 +51,14 @@ interface BroadcastOverlayProps {
   frameCount: number;
   /** Formatted elapsed time string (e.g., "2:35"). */
   elapsedTime: string;
+  /** Elapsed time in raw seconds (for threshold checks). */
+  elapsedSeconds?: number;
   /** Storage used in bytes. */
   storageUsed: number;
   /** Error message if session failed. */
   errorMessage?: string | null;
+  /** Whether minimum thresholds are met to save. */
+  canSave?: boolean;
   /** Called when user taps "Stop Recording". */
   onStop: () => void;
   /** Called when user taps "Cancel". */
@@ -81,6 +86,7 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
 }: BroadcastOverlayProps) {
   const { colors, shadows } = useTheme();
   const platformName = PLATFORM_BROADCAST_CONFIGS[platform]?.display_name ?? platform;
+  const thresholdsMet = canSave ?? true;
 
   // Pulsing animation for recording indicator
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -172,7 +178,11 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
             {/* Recording indicator */}
             <View style={styles.recordingRow}>
               <Animated.View
-                style={[
+                style={Platform.OS === 'web' ? {
+                  ...styles.recordingDot,
+                  backgroundColor: colors.recordingDot,
+                  opacity: 1,
+                } : [
                   styles.recordingDot,
                   { backgroundColor: colors.recordingDot, opacity: pulseAnim },
                 ]}
@@ -224,6 +234,13 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
               Scroll your {platformName} feed normally. Come back here when you're done.
             </Text>
 
+            {/* Threshold status hint */}
+            {!thresholdsMet && (
+              <Text style={[styles.hintText, { color: colors.warning, fontWeight: '500' }]}>
+                Keep recording — more frames and time needed for accurate analysis.
+              </Text>
+            )}
+
             {/* Action buttons */}
             <View style={styles.buttonRow}>
               <TouchableOpacity
@@ -239,7 +256,7 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  triggerImpactMedium();
                   onStop();
                 }}
                 activeOpacity={0.7}
@@ -283,7 +300,7 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
             </Text>
             <TouchableOpacity
               onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                triggerImpactMedium();
                 onViewResults();
               }}
               activeOpacity={0.7}
@@ -369,7 +386,12 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
 
   return (
     <View
-      style={[
+      style={Platform.OS === 'web' ? {
+        ...styles.container,
+        backgroundColor: colors.bgCard,
+        borderColor: status === 'RECORDING' ? colors.recordingBorder : colors.borderLight,
+        ...shadows.hero,
+      } : [
         styles.container,
         {
           backgroundColor: colors.bgCard,

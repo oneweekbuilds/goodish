@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from '../../context/ThemeContext';
+import { TYPOGRAPHY } from '../../lib/theme';
 
 interface BigNumberProps {
   value: string | number;
@@ -19,7 +20,7 @@ const BigNumberComponent: React.FC<BigNumberProps> = ({
 }) => {
   const { colors } = useTheme();
   const isZero = value === 0 || value === '0';
-  const fontSize = isZero ? RFValue(24) : RFValue(40);
+  const fontSize = isZero ? RFValue(24) : RFValue(32);
   const textColor = isZero ? colors.textSecondary : colors.textMain;
 
   return (
@@ -46,9 +47,8 @@ const BigNumberComponent: React.FC<BigNumberProps> = ({
       </Text>
       <Text
         style={{
-          fontSize: RFValue(14),
+          ...TYPOGRAPHY.label,
           color: colors.textMuted,
-          fontWeight: '500',
         }}
       >
         {label}
