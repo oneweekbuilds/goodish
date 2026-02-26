@@ -1,13 +1,13 @@
 {
   "schema_version": "1.0",
   "last_updated": "2026-02-26",
-  "cycle_count": 2,
+  "cycle_count": 3,
 
   "current_cycle": {
-    "cycle_id": "cycle-1",
+    "cycle_id": "cycle-2",
     "started_at": "2026-02-26",
     "phase": "completed",
-    "focus": "cross-platform-parity",
+    "focus": "error-handling",
     "phase_options": ["idle", "auditing", "prioritizing", "fixing", "verifying", "completed"]
   },
 
@@ -41,51 +41,6 @@
       "max_attempts": 2,
       "fix_history": [],
       "confidence": "medium"
-    },
-    {
-      "id": "ISSUE-009",
-      "found_in_cycle": 1,
-      "platform": "extension",
-      "file_path": "alg-gemini-extension/src/popup/popup.js",
-      "severity": "P1",
-      "category": "cross-platform-parity",
-      "description": "Extension tab labels 'Sources' and 'Ads & Sponsors' don't match canonical names 'Who Shapes Your Feed' and 'Ads & Promotions'",
-      "suggested_fix": "Update label strings in popup.js to match DESIGN_TOKENS.json canonical names",
-      "status": "open",
-      "attempt_count": 0,
-      "max_attempts": 2,
-      "fix_history": [],
-      "confidence": "high"
-    },
-    {
-      "id": "ISSUE-010",
-      "found_in_cycle": 1,
-      "platform": "extension",
-      "file_path": "alg-gemini-extension/src/popup/popup.js",
-      "severity": "P2",
-      "category": "cross-platform-parity",
-      "description": "Extension uses 'Suggested vs Followed' (missing period in 'vs.') — should be 'Suggested vs. Followed'",
-      "suggested_fix": "Add period: 'Suggested vs. Followed'",
-      "status": "open",
-      "attempt_count": 0,
-      "max_attempts": 2,
-      "fix_history": [],
-      "confidence": "high"
-    },
-    {
-      "id": "ISSUE-011",
-      "found_in_cycle": 1,
-      "platform": "mobile",
-      "file_path": "AlgorithmLens_Cowork/mobile/src/lib/insightBuilders.js",
-      "severity": "P0",
-      "category": "epistemic-restraint",
-      "description": "Lines 363-364, 371-372: Additional epistemic violations near ISSUE-005 fix — 'The algorithm picks', 'The platform's algorithm decides', 'was chosen by the platform, not by you', 'The algorithm plays a significant role'",
-      "suggested_fix": "Replace with observational language: 'X% of your feed consists of suggested content', 'Nearly half your feed consists of algorithmically suggested content'",
-      "status": "open",
-      "attempt_count": 0,
-      "max_attempts": 2,
-      "fix_history": [],
-      "confidence": "high"
     }
   ],
 
@@ -227,25 +182,117 @@
         }
       ],
       "confidence": "high"
+    },
+    {
+      "id": "ISSUE-009",
+      "found_in_cycle": 1,
+      "platform": "extension",
+      "file_path": "alg-gemini-extension/src/popup/popup.js",
+      "severity": "P1",
+      "category": "cross-platform-parity",
+      "description": "Extension tab labels 'Sources' and 'Ads & Sponsors' don't match canonical names 'Who Shapes Your Feed' and 'Ads & Promotions'",
+      "suggested_fix": "Update label strings in popup.js to match DESIGN_TOKENS.json canonical names",
+      "status": "verified",
+      "attempt_count": 1,
+      "max_attempts": 2,
+      "fix_history": [
+        {
+          "cycle_id": "cycle-2",
+          "attempted_at": "2026-02-26",
+          "what_was_tried": "Updated 'Sources' → 'Who Shapes Your Feed', 'Ads & Sponsors' → 'Ads & Promotions', and corresponding aria-labels in popup.js",
+          "result": "success",
+          "details": "Verified: grep shows all 6 dash-card-name labels now match canonical names from DESIGN_TOKENS.json"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "ISSUE-010",
+      "found_in_cycle": 1,
+      "platform": "extension",
+      "file_path": "alg-gemini-extension/src/popup/popup.js",
+      "severity": "P2",
+      "category": "cross-platform-parity",
+      "description": "Extension uses 'Suggested vs Followed' (missing period in 'vs.') — should be 'Suggested vs. Followed'",
+      "suggested_fix": "Add period: 'Suggested vs. Followed'",
+      "status": "verified",
+      "attempt_count": 1,
+      "max_attempts": 2,
+      "fix_history": [
+        {
+          "cycle_id": "cycle-2",
+          "attempted_at": "2026-02-26",
+          "what_was_tried": "Updated 'Suggested vs Followed' → 'Suggested vs. Followed' in dash-card-name and aria-label",
+          "result": "success",
+          "details": "Verified: grep confirms 'Suggested vs. Followed' (with period) in popup.js"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "ISSUE-011",
+      "found_in_cycle": 1,
+      "platform": "mobile",
+      "file_path": "AlgorithmLens_Cowork/mobile/src/lib/insightBuilders.js",
+      "severity": "P0",
+      "category": "epistemic-restraint",
+      "description": "Lines 363-364, 371-372: Additional epistemic violations — 'The algorithm picks', 'The platform's algorithm decides', 'was chosen by the platform, not by you', 'The algorithm plays a significant role'",
+      "suggested_fix": "Replace with observational language: 'X% of your feed consists of suggested content', 'Nearly half your feed consists of algorithmically suggested content'",
+      "status": "verified",
+      "attempt_count": 1,
+      "max_attempts": 2,
+      "fix_history": [
+        {
+          "cycle_id": "cycle-2",
+          "attempted_at": "2026-02-26",
+          "what_was_tried": "Replaced 4 epistemic violations: 'The algorithm picks X%' → 'X% of your feed is algorithmically suggested', 'The platform's algorithm decides' → 'consists of algorithmic suggestions', 'was chosen by the platform, not by you' → 'consists of algorithmically suggested content', 'The algorithm plays a significant role' → 'Algorithmic suggestions make up a notable share'. Also fixed 'algorithm picks' in additionalContext line.",
+          "result": "success",
+          "details": "Verified: grep for 'algorithm picks|algorithm decides|chosen by the platform|algorithm plays' returns no matches"
+        }
+      ],
+      "confidence": "high"
+    },
+    {
+      "id": "ISSUE-012",
+      "found_in_cycle": 2,
+      "platform": "web",
+      "file_path": "AlgorithmLens_Cowork/src/pages/dashboard/TabRenderer.jsx",
+      "severity": "P1",
+      "category": "error-handling",
+      "description": "Lazy-loaded tab components wrapped only in Suspense, not ErrorBoundary. If any tab crashes during render, the app-level ErrorBoundary catches it but takes out the entire dashboard including navigation.",
+      "suggested_fix": "Wrap Suspense content in ErrorBoundary with dashboardTab prop and tab-specific fallback message",
+      "status": "verified",
+      "attempt_count": 1,
+      "max_attempts": 2,
+      "fix_history": [
+        {
+          "cycle_id": "cycle-2",
+          "attempted_at": "2026-02-26",
+          "what_was_tried": "Added ErrorBoundary import and wrapped all Suspense content with ErrorBoundary including fallbackTitle, fallbackMessage, dashboardTab, and key={activeTab} for reset on tab switch",
+          "result": "success",
+          "details": "Verified: grep confirms ErrorBoundary import and usage in TabRenderer.jsx. Pre-existing TS errors in useEvidenceBundle.ts unrelated to change."
+        }
+      ],
+      "confidence": "high"
     }
   ],
 
   "needs_human": [],
 
   "stats": {
-    "total_issues_found": 11,
-    "total_fixed": 6,
+    "total_issues_found": 12,
+    "total_fixed": 10,
     "total_failed": 0,
     "total_needs_human": 0,
     "issues_by_severity": {
       "P0": 6,
-      "P1": 4,
+      "P1": 5,
       "P2": 1,
       "P3": 0
     },
     "issues_by_platform": {
-      "mobile": 3,
-      "web": 6,
+      "mobile": 4,
+      "web": 7,
       "extension": 2
     }
   },
@@ -264,6 +311,13 @@
       "message": "agent-loop cycle 1: fix epistemic violations + mobile tab label parity",
       "files_changed": 3,
       "issues_fixed": ["ISSUE-004", "ISSUE-005", "ISSUE-008"]
+    },
+    {
+      "cycle_id": "cycle-2",
+      "commit_hash": "815e216",
+      "message": "agent-loop cycle 2: fix epistemic violations, extension tab parity, add tab ErrorBoundary",
+      "files_changed": 3,
+      "issues_fixed": ["ISSUE-009", "ISSUE-010", "ISSUE-011", "ISSUE-012"]
     }
   ]
 }
