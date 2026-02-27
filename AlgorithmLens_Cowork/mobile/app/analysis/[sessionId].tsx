@@ -150,6 +150,9 @@ export default function AnalysisScreen() {
               borderRadius: RADIUS.md,
               paddingVertical: SPACING.md,
               paddingHorizontal: SPACING.xl,
+              minHeight: 44,
+              justifyContent: 'center',
+              alignItems: 'center',
             }}
           >
             <Text style={{ ...TYPOGRAPHY.buttonMd, color: colors.textInverse }}>
@@ -182,6 +185,9 @@ export default function AnalysisScreen() {
               borderRadius: RADIUS.md,
               paddingVertical: SPACING.md,
               paddingHorizontal: SPACING.xl,
+              minHeight: 44,
+              justifyContent: 'center',
+              alignItems: 'center',
             }}
           >
             <Text style={{ ...TYPOGRAPHY.buttonMd, color: colors.textInverse }}>

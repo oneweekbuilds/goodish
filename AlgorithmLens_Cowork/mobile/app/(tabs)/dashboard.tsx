@@ -463,7 +463,7 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
             <Text style={{ ...TYPOGRAPHY.h2, color: colors.textMain, marginTop: SPACING.xxs }}>
               {data.top5Pct}%
             </Text>
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2 }}>
+            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
               of posts from top 5
             </Text>
           </View>
@@ -482,7 +482,7 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
             <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.textMain, marginTop: SPACING.xxs }} numberOfLines={1}>
               @{data.topCreators[0]?.name ?? '—'}
             </Text>
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2 }}>
+            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
               most frequent
             </Text>
           </View>
@@ -501,7 +501,7 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
             <Text style={{ ...TYPOGRAPHY.h2, color: colors.textMain, marginTop: SPACING.xxs }}>
               {data.uniqueCreatorCount}
             </Text>
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2 }}>
+            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
               unique creators
             </Text>
           </View>
@@ -681,7 +681,7 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
           <Text style={{ ...TYPOGRAPHY.h2, color: colors.textMain, marginTop: SPACING.xxs }}>
             {data.adCount}
           </Text>
-          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2 }}>
+          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
             {data.adPct}% of posts
           </Text>
         </View>
@@ -701,7 +701,7 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
             <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.textMain, marginTop: SPACING.xxs }} numberOfLines={1}>
               @{data.topAdvertisers[0]?.name ?? '—'}
             </Text>
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2 }}>
+            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
               {data.topAdvertisers[0]?.percent ?? 0}% of ads
             </Text>
           </View>
@@ -722,7 +722,7 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
             <Text style={{ ...TYPOGRAPHY.h2, color: colors.textMain, marginTop: SPACING.xxs }}>
               1:{data.adPct > 0 ? Math.round(100 / data.adPct) : '—'}
             </Text>
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2 }}>
+            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
               post ratio
             </Text>
           </View>
@@ -959,7 +959,7 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
               <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain }}>
                 {data.creatorNovelty.suggestedCreatorCount}
               </Text>
-              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, textAlign: 'center', marginTop: 2 }}>
+              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, textAlign: 'center', marginTop: SPACING.xxs }}>
                 Suggested{'\n'}creators
               </Text>
             </View>
@@ -973,7 +973,7 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
               <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain }}>
                 {data.creatorNovelty.overlapCount}
               </Text>
-              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, textAlign: 'center', marginTop: 2 }}>
+              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, textAlign: 'center', marginTop: SPACING.xxs }}>
                 Overlap
               </Text>
             </View>
@@ -987,7 +987,7 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
               <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain }}>
                 {data.creatorNovelty.followedCreatorCount}
               </Text>
-              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, textAlign: 'center', marginTop: 2 }}>
+              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, textAlign: 'center', marginTop: SPACING.xxs }}>
                 Followed{'\n'}creators
               </Text>
             </View>
@@ -1078,7 +1078,7 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
           <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '600' }}>
             Diversify your follows
           </Text>
-          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2, lineHeight: 17 }}>
+          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs, lineHeight: 17 }}>
             Some people find that following a wider range of accounts changes what their feed recommends over time.
           </Text>
         </View>
@@ -1098,7 +1098,7 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
           <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '600' }}>
             Try chronological mode
           </Text>
-          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2, lineHeight: 17 }}>
+          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs, lineHeight: 17 }}>
             Some platforms offer a "Following" or "Latest" feed mode that shows only posts from accounts you follow, in chronological order.
           </Text>
         </View>
@@ -1118,7 +1118,7 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
           <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '600' }}>
             Engage intentionally
           </Text>
-          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2, lineHeight: 17 }}>
+          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs, lineHeight: 17 }}>
             Platforms often describe engagement (likes, shares, comments) as a factor in feed ranking, though the exact effect is not publicly documented.
           </Text>
         </View>
@@ -1839,6 +1839,7 @@ const AiConsentCard = ({
         backgroundColor: colors.primaryBlue, borderRadius: RADIUS.md,
         paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm,
         flexDirection: 'row', alignItems: 'center', gap: SPACING.xs,
+        minHeight: 44,
       }}
     >
       <Settings size={13} color={colors.white} strokeWidth={2} />
@@ -2167,6 +2168,8 @@ export default function DashboardScreen() {
               style={{
                 backgroundColor: colors.primaryBlue, borderRadius: RADIUS.md,
                 paddingHorizontal: SPACING.xl, paddingVertical: SPACING.md,
+                minHeight: 44,
+                justifyContent: 'center', alignItems: 'center',
               }}
             >
               <Text style={{ ...TYPOGRAPHY.buttonSm, color: colors.white }}>Refresh</Text>

@@ -209,7 +209,7 @@ export default function LoginScreen() {
               variant="secondary"
               size="lg"
               accessibilityLabel="Continue with Google"
-              icon={<Text style={{ fontWeight: 'bold', fontSize: 16 }}>G</Text>}
+              icon={<Text style={{ fontWeight: 'bold', fontSize: TYPOGRAPHY.body.fontSize }}>G</Text>}
               style={{ marginBottom: SPACING.md }}
             />
 
@@ -221,7 +221,7 @@ export default function LoginScreen() {
               variant="secondary"
               size="lg"
               accessibilityLabel="Continue with Apple"
-              icon={<Text style={{ fontSize: 18 }}>🍎</Text>}
+              icon={<Text style={{ fontSize: TYPOGRAPHY.h3.fontSize }}>🍎</Text>}
               style={{ marginBottom: SPACING.xl }}
             />
 

@@ -177,7 +177,7 @@ export const AnalysisProgress = React.memo(function AnalysisProgress({
       {progress.stage !== 'FAILED' && (
         <View
           style={{
-            height: 6,
+            height: 8,
             borderRadius: RADIUS.xs,
             backgroundColor: colors.bgPage,
             marginBottom: SPACING.md,
