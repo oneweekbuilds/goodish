@@ -25,7 +25,7 @@ import {
   Award,
 } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
+import { SPACING, RADIUS, TYPOGRAPHY, ICON_SIZES } from '../../lib/theme';
 import type { EarnedAchievement } from '../../types/achievements';
 import { ACHIEVEMENT_DEFINITIONS } from '../../types/achievements';
 
@@ -181,15 +181,15 @@ function BadgeItem({
       style={{
         opacity: earned ? glowAnim : 0.4,
         alignItems: 'center',
-        width: 64,
+        width: ICON_SIZES['5xl'],
       }}
       accessibilityLabel={`${title}: ${earned ? 'earned' : 'not yet earned'}`}
     >
       <View
         style={{
-          width: 44,
-          height: 44,
-          borderRadius: 22,
+          width: ICON_SIZES.touch,
+          height: ICON_SIZES.touch,
+          borderRadius: ICON_SIZES.touch / 2,
           backgroundColor: bgColor,
           justifyContent: 'center',
           alignItems: 'center',

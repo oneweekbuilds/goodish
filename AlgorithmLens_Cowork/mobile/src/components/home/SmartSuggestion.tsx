@@ -15,7 +15,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Compass, Clock, ArrowRight } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
+import { SPACING, RADIUS, TYPOGRAPHY, ICON_SIZES } from '../../lib/theme';
 import type { ScanSuggestion } from '../../lib/achievements';
 
 interface SmartSuggestionProps {
@@ -60,8 +60,8 @@ function SmartSuggestionComponent({ suggestion, onAction }: SmartSuggestionProps
         {/* Icon */}
         <View
           style={{
-            width: 28,
-            height: 28,
+            width: ICON_SIZES.lg,
+            height: ICON_SIZES.lg,
             borderRadius: RADIUS.lg,
             backgroundColor: iconBgColor,
             justifyContent: 'center',

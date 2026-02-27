@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from '../../context/ThemeContext';
-import { TYPOGRAPHY, SPACING, RADIUS } from '../../lib/theme';
+import { TYPOGRAPHY, SPACING, RADIUS, ICON_SIZES } from '../../lib/theme';
 
 interface BarChartItem {
   label: string;
@@ -63,20 +63,28 @@ const BarChartComponent: React.FC<BarChartProps> = ({
   const maxValue = useMemo(() => Math.max(...items.map((item) => item.value), 1), [items]);
   const totalValue = useMemo(() => items.reduce((sum, item) => sum + item.value, 0), [items]);
 
-  // CD-002 FIX: Top 3 bars use primary blue, remaining use neutral gray.
-  // Bar length already communicates ranking — color distinguishes "top" from "rest".
-  const barColors = [
-    colors.barDark,     // Top 1 — primary blue
-    colors.barDark,     // Top 2 — primary blue
-    colors.barDark,     // Top 3 — primary blue
-    colors.textTertiary, // Rest — neutral gray
-    colors.textTertiary,
+  // Graduated blue scale — ranked from darkest to lightest.
+  const barColors: string[] = [
+    colors.barDarkest,   // #1
+    colors.barDark,      // #2
+    colors.barMedium,    // #3
+    colors.barLight,     // #4
+    colors.barLightest,  // #5
   ];
+
+  /** Return the color for a bar at the given rank index.
+   *  Custom item.color takes priority; ranked items use the gradient;
+   *  items beyond the gradient fall back to neutral gray. */
+  const getBarColor = (index: number, itemColor?: string): string => {
+    if (itemColor) return itemColor;
+    if (index < barColors.length) return barColors[index]!;
+    return colors.textTertiary;
+  };
 
   // Build legend entries from unique categories/colors
   const legendEntries = showLegend
     ? items.reduce<Array<{ label: string; color: string }>>((acc, item, index) => {
-        const color = item.color || barColors[Math.min(index, barColors.length - 1)];
+        const color = getBarColor(index, item.color);
         const label = item.category || item.label;
         if (!acc.some((e) => e.label === label && e.color === color)) {
           acc.push({ label, color: color ?? colors.accent });
@@ -108,7 +116,7 @@ const BarChartComponent: React.FC<BarChartProps> = ({
           outputRange: ['0%', `${barVisualWidth}%`],
         });
 
-        const barColor = item.color || barColors[Math.min(index, barColors.length - 1)];
+        const barColor = getBarColor(index, item.color);
 
         return (
           <View
@@ -197,9 +205,9 @@ const BarChartComponent: React.FC<BarChartProps> = ({
             >
               <View
                 style={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: 5,
+                  width: ICON_SIZES.dot,
+                  height: ICON_SIZES.dot,
+                  borderRadius: ICON_SIZES.dot / 2,
                   backgroundColor: entry.color,
                 }}
               />

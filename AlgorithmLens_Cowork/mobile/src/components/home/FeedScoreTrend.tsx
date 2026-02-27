@@ -14,7 +14,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { TrendingUp, TrendingDown, Minus, Activity } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
+import { SPACING, RADIUS, TYPOGRAPHY, ICON_SIZES } from '../../lib/theme';
 import type { FeedScoreTrendPoint, TrendDirection } from '../../types/achievements';
 
 interface FeedScoreTrendProps {
@@ -42,8 +42,8 @@ function FeedScoreTrendComponent({ points, direction, changePercent }: FeedScore
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
           <View
             style={{
-              width: 24,
-              height: 24,
+              width: ICON_SIZES.md,
+              height: ICON_SIZES.md,
               borderRadius: RADIUS.md,
               backgroundColor: colors.blue50,
               justifyContent: 'center',

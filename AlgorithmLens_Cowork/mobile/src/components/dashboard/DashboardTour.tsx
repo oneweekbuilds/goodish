@@ -38,7 +38,7 @@ import {
 } from 'lucide-react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from '../../context/ThemeContext';
-import { RADIUS, SPACING, TYPOGRAPHY, COLORS, SHADOWS } from '../../lib/theme';
+import { RADIUS, SPACING, TYPOGRAPHY, COLORS, SHADOWS, ICON_SIZES } from '../../lib/theme';
 import { withAlpha } from '../../lib/utils';
 
 // ─── Storage Key ─────────────────────────────────────────
@@ -496,8 +496,8 @@ const styles = StyleSheet.create({
     gap: SPACING.md,
   },
   iconContainer: {
-    width: 36,
-    height: 36,
+    width: ICON_SIZES.xl,
+    height: ICON_SIZES.xl,
     borderRadius: RADIUS.md,
     justifyContent: 'center',
     alignItems: 'center',

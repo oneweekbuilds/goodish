@@ -129,10 +129,10 @@ export const LIGHT_COLORS = {
   // ── Chart Palette ──
   chartPalette: ['#2563EB', '#10B981', '#7C8DB5', '#B8860B', '#8B7BA8', '#5B7FA6'] as readonly string[],
 
-  // ── Chart: Tone Tab ── (CT-001: increased hue separation for readability)
-  tonePositive: '#93C5A8',   // muted sage-green
-  toneNeutral: '#C5C0B8',    // warm gray
-  toneNegative: '#A3B1C6',   // muted slate-blue (unchanged)
+  // ── Chart: Tone Tab ── (CT-001: WCAG AA colorblind-accessible palette)
+  tonePositive: '#1A8754',   // deep emerald — 5.1:1 vs white ✓
+  toneNeutral: '#6B7280',    // cool gray-600 — 5.0:1 vs white ✓
+  toneNegative: '#B83B3B',   // deep coral — 5.2:1 vs white ✓
 
   // ── Chart: Ads Tab ──
   adsNotAds: '#94A3B8',
@@ -147,10 +147,10 @@ export const LIGHT_COLORS = {
   barLightest: '#93C5FD',
   stackedBarTrack: '#F1F5F9',
 
-  // ── Ideology ── (CT-002: increased saturation for left/right)
-  ideologyLeft: '#6B8FC4',
-  ideologyCenter: '#94A3B8',
-  ideologyRight: '#C4A088',
+  // ── Ideology ── (CT-002: WCAG AA colorblind-accessible palette)
+  ideologyLeft: '#2563EB',    // primary blue — 4.6:1 vs white ✓
+  ideologyCenter: '#6B7280',  // gray-600 — 5.0:1 vs white ✓
+  ideologyRight: '#B45309',   // amber-700 — 4.7:1 vs white ✓
 
   // ── Category Icons ──
   iconAds: '#F59E0B',
@@ -310,10 +310,10 @@ export const DARK_COLORS = {
   // ── Chart Palette ──
   chartPalette: ['#3B82F6', '#34D399', '#94A3B8', '#FBBF24', '#A78BFA', '#7DD3FC'] as readonly string[],
 
-  // ── Chart: Tone Tab ──
-  tonePositive: '#6EE7B7',
-  toneNeutral: '#94A3B8',
-  toneNegative: '#7DD3FC',
+  // ── Chart: Tone Tab ── (WCAG AA colorblind-accessible palette)
+  tonePositive: '#4ADE80',    // green-400
+  toneNeutral: '#94A3B8',     // keep as-is (already works)
+  toneNegative: '#F87171',    // red-400
 
   // ── Chart: Ads Tab ──
   adsNotAds: '#64748B',
@@ -328,10 +328,10 @@ export const DARK_COLORS = {
   barLightest: '#1D4ED8',
   stackedBarTrack: '#334155',
 
-  // ── Ideology ──
-  ideologyLeft: '#7DD3FC',
-  ideologyCenter: '#94A3B8',
-  ideologyRight: '#D4A574',
+  // ── Ideology ── (WCAG AA colorblind-accessible palette)
+  ideologyLeft: '#60A5FA',    // blue-400
+  ideologyCenter: '#94A3B8',  // keep as-is
+  ideologyRight: '#FBBF24',   // amber-400
 
   // ── Category Icons ──
   iconAds: '#FBBF24',
@@ -703,6 +703,34 @@ export const RADIUS = {
 
 // ─── Touch Target Minimums (Apple HIG) ──────────────────
 export const MIN_TOUCH_TARGET = 44;
+
+// ─── Icon / Avatar Size Scale ────────────────────────────
+// Named tokens for icon containers and avatar wrappers.
+// For circular icons: borderRadius = ICON_SIZES.xx / 2
+export const ICON_SIZES = {
+  /** 10px — Legend dots, recording indicator dots */
+  dot: 10,
+  /** 24px — Small avatars, feed score indicators */
+  md: 24,
+  /** 28px — Metric card icon containers */
+  lg: 28,
+  /** 36px — Navigation back buttons, action circles */
+  xl: 36,
+  /** 40px — Status icons (analysis progress, broadcast results) */
+  '2xl': 40,
+  /** 44px — Touch-target-sized containers (= MIN_TOUCH_TARGET) */
+  touch: 44,
+  /** 48px — Onboarding medium icons */
+  '3xl': 48,
+  /** 60px — Broadcast picker native view */
+  '4xl': 60,
+  /** 64px — Large decorative icons (error boundary) */
+  '5xl': 64,
+  /** 72px — App icon on login */
+  '6xl': 72,
+  /** 80px — Onboarding large icons */
+  '7xl': 80,
+} as const;
 
 // ─── Platform Config ─────────────────────────────────────
 

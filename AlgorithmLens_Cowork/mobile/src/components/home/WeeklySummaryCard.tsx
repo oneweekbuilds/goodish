@@ -16,7 +16,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { Calendar, TrendingUp, TrendingDown, Minus, Scan } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
+import { SPACING, RADIUS, TYPOGRAPHY, ICON_SIZES } from '../../lib/theme';
 import { PLATFORMS } from '../../lib/theme';
 import type { WeeklySummaryData } from '../../types/achievements';
 
@@ -61,8 +61,8 @@ function WeeklySummaryCardComponent({ summary }: WeeklySummaryCardProps) {
       >
         <View
           style={{
-            width: 28,
-            height: 28,
+            width: ICON_SIZES.lg,
+            height: ICON_SIZES.lg,
             borderRadius: RADIUS.lg,
             backgroundColor: colors.green50,
             justifyContent: 'center',

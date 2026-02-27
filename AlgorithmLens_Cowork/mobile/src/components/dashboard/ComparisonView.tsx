@@ -19,7 +19,7 @@ import {
 } from 'react-native';
 import { ArrowUp, ArrowDown, Minus, Info, X } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { TYPOGRAPHY, SPACING, RADIUS } from '../../lib/theme';
+import { TYPOGRAPHY, SPACING, RADIUS, ICON_SIZES } from '../../lib/theme';
 import { computeDashboardData, type ScanRecord, type DashboardData } from '../../lib/computeDashboardData';
 import { getPlatformDisplayName } from '../../lib/utils';
 
@@ -315,8 +315,8 @@ function ComparisonViewComponent({
           accessibilityLabel="Close comparison"
           accessibilityRole="button"
           style={{
-            width: 36,
-            height: 36,
+            width: ICON_SIZES.xl,
+            height: ICON_SIZES.xl,
             justifyContent: 'center',
             alignItems: 'center',
             borderRadius: RADIUS.sm,

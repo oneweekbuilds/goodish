@@ -16,7 +16,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, Animated } from 'react-native';
 import { BarChart3, Info } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
+import { SPACING, RADIUS, TYPOGRAPHY, ICON_SIZES } from '../../lib/theme';
 import type { FeedScore } from '../../types/streak';
 
 interface FeedScoreCardProps {
@@ -78,8 +78,8 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.sm }}>
           <View
             style={{
-              width: 28,
-              height: 28,
+              width: ICON_SIZES.lg,
+              height: ICON_SIZES.lg,
               borderRadius: RADIUS.lg,
               backgroundColor: colors.blue50,
               justifyContent: 'center',
@@ -125,8 +125,8 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.sm }}>
           <View
             style={{
-              width: 28,
-              height: 28,
+              width: ICON_SIZES.lg,
+              height: ICON_SIZES.lg,
               borderRadius: RADIUS.lg,
               backgroundColor: colors.blue50,
               justifyContent: 'center',

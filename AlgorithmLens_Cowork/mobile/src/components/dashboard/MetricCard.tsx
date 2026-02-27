@@ -7,7 +7,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
+import { SPACING, RADIUS, TYPOGRAPHY, ICON_SIZES } from '../../lib/theme';
 
 // Web-safe gradient wrapper for LinearGradient
 const GradientWrapper = Platform.OS === 'web'
@@ -76,8 +76,8 @@ const MetricCardComponent: React.FC<MetricCardProps> = ({
               {icon && (
                 <View
                   style={{
-                    width: 28,
-                    height: 28,
+                    width: ICON_SIZES.lg,
+                    height: ICON_SIZES.lg,
                     borderRadius: RADIUS.sm,
                     backgroundColor: colors.blue50,
                     justifyContent: 'center',
