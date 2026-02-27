@@ -43,6 +43,7 @@ import {
   Users,
   Layers,
   BarChart3,
+  Clock,
 } from 'lucide-react-native';
 
 // ─── Animation Constants ─────────────────────────────────
@@ -77,14 +78,16 @@ const CONTENT_TYPE_LABELS: Record<string, string> = {
 // ─── Tab Content Components ──────────────────────────────
 
 const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: DashboardData; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
-  // VH-002/PD-005 FIX: Overview secondary sections collapsed by default
-  const [showMore, setShowMore] = useState(false);
+  // ── Accordion states for "Explore Your Data" rows ──
+  const [showContentTypes, setShowContentTypes] = useState(false);
+  const [showTimeEstimate, setShowTimeEstimate] = useState(false);
+  const [showContentPatterns, setShowContentPatterns] = useState(false);
+  const [showAllIdeas, setShowAllIdeas] = useState(false);
 
   // ── Feed in Minutes calculations ──
   const DAILY_MINUTES = 45;
   const adMinutes = data.totalPosts >= 10 ? (data.adPct / 100) * DAILY_MINUTES : null;
   const politicalPct = data.politicalAnalysis?.politicalPct ?? 0;
-  // Show 0 when political content is 0% (instead of ambiguous "—")
   const politicalMinutes = data.totalPosts >= 10 ? (politicalPct / 100) * DAILY_MINUTES : null;
 
   const formatMinutes = (mins: number | null): string => {
@@ -131,8 +134,63 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
 
   const hasContentPatterns = emotionalSummary || sourceDiversitySummary;
 
+  // ── Hero stat priority logic ──
+  // Determine which single metric gets hero treatment
+  type HeroStat = { value: number; label: string; suffix: string; caption: string; key: string };
+  let heroStat: HeroStat | null = null;
+
+  if (data.suggestedPct > 60) {
+    heroStat = {
+      value: data.suggestedPct,
+      label: 'of your feed is from accounts you don\'t follow',
+      suffix: '%',
+      caption: 'Most of what you scrolled past was chosen for you, not by you.',
+      key: 'suggested',
+    };
+  } else if (data.adPct > 15) {
+    heroStat = {
+      value: data.adPct,
+      label: 'of your feed is sponsored content',
+      suffix: '%',
+      caption: `That\'s ${data.adCount} ad${data.adCount !== 1 ? 's' : ''} in ${data.totalPosts} posts scanned.`,
+      key: 'ads',
+    };
+  } else if (data.top5Pct > 70 && data.topCreators.length >= 5) {
+    heroStat = {
+      value: data.top5Pct,
+      label: 'of your feed from just 5 accounts',
+      suffix: '%',
+      caption: 'A small number of sources dominate what you see.',
+      key: 'top5',
+    };
+  } else if (data.totalPosts > 0) {
+    heroStat = {
+      value: data.totalPosts,
+      label: 'posts scanned',
+      suffix: '',
+      caption: 'A snapshot of your feed composition from this session.',
+      key: 'total',
+    };
+  }
+
+  // ── Supporting metrics: the 3 that weren't chosen as hero ──
+  const supportingMetrics: { value: string; label: string }[] = [];
+  if (heroStat?.key !== 'suggested' && data.totalPosts > 0) {
+    supportingMetrics.push({ value: `${data.suggestedPct}%`, label: 'Suggested' });
+  }
+  if (heroStat?.key !== 'ads' && data.totalPosts > 0) {
+    supportingMetrics.push({ value: `${data.adPct}%`, label: 'Ads' });
+  }
+  if (heroStat?.key !== 'top5' && data.topCreators.length >= 5) {
+    supportingMetrics.push({ value: `${data.top5Pct}%`, label: 'Top 5' });
+  }
+  if (heroStat?.key !== 'total') {
+    supportingMetrics.push({ value: String(data.totalPosts), label: 'Posts' });
+  }
+
   return (
     <View style={{ gap: SPACING['2xl'] }}>
+      {/* ── 1. HERO ZONE ── */}
       <InsightHero
         title={data.overviewInsight.title}
         meaning={data.overviewInsight.meaning}
@@ -148,220 +206,292 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
         }}
       />
 
-      <SectionHeader title="Key Metrics" />
-
-      <View style={{ gap: SPACING.sm }}>
-        <MetricCard
-          headline="Posts scanned"
-          value={String(data.totalPosts)}
-          microLine={`From this scan session`}
-          hasData={data.totalPosts > 0}
-          fallbackText="No posts captured"
-          icon={<Layers size={16} color={colors.primaryBlue} strokeWidth={2} />}
-        />
-
-        <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
-          <View style={{ flex: 1 }}>
-            <MetricCard
-              headline="Ads detected"
-              value={`${data.adPct}%`}
-              microLine={`${data.adCount} of ${data.totalPosts}`}
-              hasData={data.totalPosts > 0}
-              icon={<ShoppingBag size={16} color={colors.iconAds} strokeWidth={2} />}
-            />
-          </View>
-          <View style={{ flex: 1 }}>
-            <MetricCard
-              headline="Suggested"
-              value={`${data.suggestedPct}%`}
-              microLine={`${data.suggestedCount} of ${data.totalPosts}`}
-              hasData={data.totalPosts > 0}
-              icon={<Users size={16} color={colors.accentGreen} strokeWidth={2} />}
-              contextLine={`${data.suggestedPct}% from accounts you don't follow`}
-            />
-          </View>
-        </View>
-
-        {data.topCreators.length > 0 && (
-          <MetricCard
-            headline="Top 5 concentration"
-            value={`${data.top5Pct}%`}
-            microLine={data.topCreators[0]?.name && data.topCreators[0].name !== 'Unknown' ? `Most from @${data.topCreators[0].name}` : data.topCreators[1]?.name && data.topCreators[1].name !== 'Unknown' ? `Most identified: @${data.topCreators[1].name}` : `From ${data.uniqueCreatorCount} sources`}
-            hasData={data.topCreators.length > 0}
-            fallbackText="Creator data appears after scanning more content"
-            icon={<BarChart3 size={16} color={colors.accent} strokeWidth={2} />}
-          />
-        )}
-      </View>
-
-      {/* VH-002 FIX: "See more details" toggle — secondary sections collapsed by default */}
-      {/* A-004 FIX: minHeight 44 ensures accessible tap target */}
-      <TouchableOpacity
-        onPress={() => setShowMore(!showMore)}
-        activeOpacity={0.7}
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: SPACING.sm,
-          paddingVertical: SPACING.md,
-          minHeight: 44,
-          borderRadius: RADIUS.md,
+      {/* Primary stat card */}
+      {heroStat && (
+        <View style={{
           backgroundColor: colors.bgCard,
+          borderRadius: RADIUS.lg,
+          padding: SPACING.xl,
           borderWidth: 1,
           borderColor: colors.borderSoft,
-        }}
-        accessibilityRole="button"
-        accessibilityLabel={showMore ? 'Hide additional details' : 'Show additional details'}
-        accessibilityState={{ expanded: showMore }}
-      >
-        <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.primaryBlue }}>
-          {showMore ? 'Show less' : 'See more details'}
-        </Text>
-        <ChevronDown
-          size={16}
-          color={colors.primaryBlue}
-          strokeWidth={2}
-          style={{ transform: [{ rotate: showMore ? '180deg' : '0deg' }] }}
-        />
-      </TouchableOpacity>
-
-      {showMore && data.contentTypes.length > 0 && (
-        <>
-          <SectionHeader title="Content Types" subtitle="Formats in your feed" />
-          <View style={{
-            backgroundColor: colors.bgCard,
-            borderRadius: RADIUS.lg,
-            padding: SPACING.lg,
-            borderWidth: 1,
-            borderColor: colors.borderSoft,
-            ...shadows.card,
-          }}>
-            <StackedBar100
-              segments={data.contentTypes.map((ct, i) => ({
-                label: CONTENT_TYPE_LABELS[ct.label] || ct.label,
-                percentage: ct.percentage,
-                count: ct.count,
-                color: colors.chartPalette[i % colors.chartPalette.length] ?? colors.accent,
-              }))}
-            />
-          </View>
-        </>
+          ...shadows.card,
+        }}>
+          <BigNumber
+            value={heroStat.value}
+            label={heroStat.label}
+            suffix={heroStat.suffix}
+          />
+          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic', marginTop: SPACING.sm }}>
+            {heroStat.caption}
+          </Text>
+        </View>
       )}
 
-      {/* ── Your Feed in Minutes (VH-004 FIX: collapsed behind showMore) ── */}
-      {showMore && data.totalPosts >= 10 && (
+      {/* ── 2. SUPPORTING METRICS ── */}
+      {supportingMetrics.length > 0 && (
         <>
-          <SectionHeader title="Your Feed in Minutes" subtitle="Based on average daily usage" />
-          <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
-            <View style={{
-              flex: 1,
-              backgroundColor: colors.blue50,
-              borderRadius: RADIUS.lg,
-              padding: SPACING.lg,
-              borderWidth: 1,
-              borderColor: colors.blue200,
-            }}>
-              <Text style={{ ...TYPOGRAPHY.h1, color: colors.textMain }}>
-                {formatMinutes(adMinutes)}
-              </Text>
-              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
-                min/day on ads
-              </Text>
-            </View>
-            <View style={{
-              flex: 1,
-              backgroundColor: colors.bgCardGradientEnd,
-              borderRadius: RADIUS.lg,
-              padding: SPACING.lg,
-              borderWidth: 1,
-              borderColor: colors.borderSoft,
-            }}>
-              <Text style={{ ...TYPOGRAPHY.h1, color: colors.textMain }}>
-                {formatMinutes(politicalMinutes)}
-              </Text>
-              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
-                min/day on political content
-              </Text>
-            </View>
-          </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xxs, paddingHorizontal: SPACING.xs }}>
-            <Info size={11} color={colors.textSecondary} strokeWidth={2} />
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic' }}>
-              Based on average daily social media usage of 45 minutes
-            </Text>
-          </View>
-        </>
-      )}
-
-      {/* ── Content Patterns Observed (collapsed behind showMore) ── */}
-      {showMore && hasContentPatterns && data.totalPosts >= 10 && (
-        <>
-          <SectionHeader title="Content Patterns Observed" />
-          <View style={{
-            backgroundColor: colors.bgCard,
-            borderRadius: RADIUS.lg,
-            padding: SPACING.lg,
-            borderWidth: 1,
-            borderColor: colors.borderSoft,
-            ...shadows.card,
-            gap: SPACING.sm,
-          }}>
-            {emotionalSummary && (
-              <View style={{ gap: SPACING.xxs }}>
-                <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
-                  Emotional Signal
+          <View style={{ height: 1, backgroundColor: colors.borderSoft, marginVertical: SPACING.lg }} />
+          <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+            {supportingMetrics.map((metric, i) => (
+              <View key={i} style={{ alignItems: 'center' }}>
+                <Text style={{ ...TYPOGRAPHY.h3, fontWeight: '700', color: colors.textMain }}>
+                  {metric.value}
                 </Text>
-                <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '600' }}>
-                  {emotionalSummary}
+                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
+                  {metric.label}
                 </Text>
               </View>
-            )}
-            {sourceDiversitySummary && (
-              <View style={{ gap: SPACING.xxs }}>
-                <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
-                  Source Diversity
-                </Text>
-                <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '600' }}>
-                  {sourceDiversitySummary}
-                </Text>
-              </View>
-            )}
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic', marginTop: SPACING.xxs }}>
-              These labels are inferred from feed content only. Actual platform categorization may differ.
-            </Text>
+            ))}
           </View>
         </>
       )}
 
-      {/* ── Experiment Suggestions (VH-005 FIX: collapsed behind showMore) ── */}
-      {showMore && (
-      <>
-      <SectionHeader title="Ideas to Explore" subtitle="Optional suggestions" />
+      {/* ── 3. EXPLORE YOUR DATA (accordion) ── */}
+      <Text style={{ ...TYPOGRAPHY.overline, color: colors.textMuted, marginTop: SPACING['2xl'] }}>
+        EXPLORE YOUR DATA
+      </Text>
       <View style={{
         backgroundColor: colors.bgCard,
         borderRadius: RADIUS.lg,
-        padding: SPACING.lg,
         borderWidth: 1,
         borderColor: colors.borderSoft,
-        ...shadows.card,
-        gap: SPACING.sm,
+        overflow: 'hidden',
       }}>
-        {suggestions.map((suggestion, i) => (
-          <View key={i} style={{ flexDirection: 'row', gap: SPACING.sm, alignItems: 'flex-start' }}>
-            <Text style={{ ...TYPOGRAPHY.body, color: colors.primaryBlue, fontWeight: '700', lineHeight: 20 }}>
-              {'\u2022'}
-            </Text>
-            <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted, flex: 1, lineHeight: 20 }}>
-              {suggestion}
-            </Text>
-          </View>
-        ))}
+        {/* Row 1: Content Types */}
+        {data.contentTypes.length > 0 && (
+          <>
+            <TouchableOpacity
+              onPress={() => setShowContentTypes(!showContentTypes)}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={showContentTypes ? 'Collapse content types' : 'Expand content types'}
+              accessibilityState={{ expanded: showContentTypes }}
+              style={{
+                paddingHorizontal: SPACING.lg,
+                minHeight: 52,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
+                <BarChart3 size={16} color={colors.primaryBlue} strokeWidth={2} />
+                <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain }}>Content Types</Text>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
+                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted }}>
+                  {data.contentTypes.length} types
+                </Text>
+                <ChevronDown
+                  size={16}
+                  color={colors.textSecondary}
+                  strokeWidth={2}
+                  style={{ transform: [{ rotate: showContentTypes ? '180deg' : '0deg' }] }}
+                />
+              </View>
+            </TouchableOpacity>
+            {showContentTypes && (
+              <View style={{ paddingHorizontal: SPACING.lg, paddingBottom: SPACING.lg }}>
+                <StackedBar100
+                  segments={data.contentTypes.map((ct, i) => ({
+                    label: CONTENT_TYPE_LABELS[ct.label] || ct.label,
+                    percentage: ct.percentage,
+                    count: ct.count,
+                    color: colors.chartPalette[i % colors.chartPalette.length] ?? colors.accent,
+                  }))}
+                />
+              </View>
+            )}
+          </>
+        )}
+
+        {/* Divider between rows */}
+        {data.contentTypes.length > 0 && data.totalPosts >= 10 && (
+          <View style={{ height: 1, backgroundColor: colors.borderSoft }} />
+        )}
+
+        {/* Row 2: Time Estimate */}
+        {data.totalPosts >= 10 && (
+          <>
+            <TouchableOpacity
+              onPress={() => setShowTimeEstimate(!showTimeEstimate)}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={showTimeEstimate ? 'Collapse time estimate' : 'Expand time estimate'}
+              accessibilityState={{ expanded: showTimeEstimate }}
+              style={{
+                paddingHorizontal: SPACING.lg,
+                minHeight: 52,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
+                <Clock size={16} color={colors.primaryBlue} strokeWidth={2} />
+                <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain }}>Time Estimate</Text>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
+                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted }}>
+                  {formatMinutes(adMinutes)} min ads/day
+                </Text>
+                <ChevronDown
+                  size={16}
+                  color={colors.textSecondary}
+                  strokeWidth={2}
+                  style={{ transform: [{ rotate: showTimeEstimate ? '180deg' : '0deg' }] }}
+                />
+              </View>
+            </TouchableOpacity>
+            {showTimeEstimate && (
+              <View style={{ paddingHorizontal: SPACING.lg, paddingBottom: SPACING.lg, gap: SPACING.sm }}>
+                <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
+                  <View style={{
+                    flex: 1,
+                    backgroundColor: colors.blue50,
+                    borderRadius: RADIUS.lg,
+                    padding: SPACING.lg,
+                    borderWidth: 1,
+                    borderColor: colors.blue200,
+                  }}>
+                    <Text style={{ ...TYPOGRAPHY.h1, color: colors.textMain }}>
+                      {formatMinutes(adMinutes)}
+                    </Text>
+                    <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
+                      min/day on ads
+                    </Text>
+                  </View>
+                  <View style={{
+                    flex: 1,
+                    backgroundColor: colors.bgCardGradientEnd,
+                    borderRadius: RADIUS.lg,
+                    padding: SPACING.lg,
+                    borderWidth: 1,
+                    borderColor: colors.borderSoft,
+                  }}>
+                    <Text style={{ ...TYPOGRAPHY.h1, color: colors.textMain }}>
+                      {formatMinutes(politicalMinutes)}
+                    </Text>
+                    <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
+                      min/day on political content
+                    </Text>
+                  </View>
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xxs, paddingHorizontal: SPACING.xs }}>
+                  <Info size={11} color={colors.textSecondary} strokeWidth={2} />
+                  <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic' }}>
+                    Based on average daily social media usage of 45 minutes
+                  </Text>
+                </View>
+              </View>
+            )}
+          </>
+        )}
+
+        {/* Divider between rows */}
+        {data.totalPosts >= 10 && hasContentPatterns && (
+          <View style={{ height: 1, backgroundColor: colors.borderSoft }} />
+        )}
+
+        {/* Row 3: Content Patterns */}
+        {hasContentPatterns && data.totalPosts >= 10 && (
+          <>
+            <TouchableOpacity
+              onPress={() => setShowContentPatterns(!showContentPatterns)}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={showContentPatterns ? 'Collapse content patterns' : 'Expand content patterns'}
+              accessibilityState={{ expanded: showContentPatterns }}
+              style={{
+                paddingHorizontal: SPACING.lg,
+                minHeight: 52,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
+                <TrendingUp size={16} color={colors.primaryBlue} strokeWidth={2} />
+                <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain }}>Content Patterns</Text>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, flex: 1, justifyContent: 'flex-end' }}>
+                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted }} numberOfLines={1}>
+                  {emotionalSummary ?? sourceDiversitySummary ?? ''}
+                </Text>
+                <ChevronDown
+                  size={16}
+                  color={colors.textSecondary}
+                  strokeWidth={2}
+                  style={{ transform: [{ rotate: showContentPatterns ? '180deg' : '0deg' }] }}
+                />
+              </View>
+            </TouchableOpacity>
+            {showContentPatterns && (
+              <View style={{ paddingHorizontal: SPACING.lg, paddingBottom: SPACING.lg, gap: SPACING.sm }}>
+                {emotionalSummary && (
+                  <View style={{ gap: SPACING.xxs }}>
+                    <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
+                      Emotional Signal
+                    </Text>
+                    <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '600' }}>
+                      {emotionalSummary}
+                    </Text>
+                  </View>
+                )}
+                {sourceDiversitySummary && (
+                  <View style={{ gap: SPACING.xxs }}>
+                    <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
+                      Source Diversity
+                    </Text>
+                    <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '600' }}>
+                      {sourceDiversitySummary}
+                    </Text>
+                  </View>
+                )}
+                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic', marginTop: SPACING.xxs }}>
+                  These labels are inferred from feed content only. Actual platform categorization may differ.
+                </Text>
+              </View>
+            )}
+          </>
+        )}
       </View>
-      </>
+
+      {/* ── 4. IDEAS TO EXPLORE (simplified) ── */}
+      {suggestions.length > 0 && (
+        <View>
+          <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted }}>
+            {suggestions[0]}
+          </Text>
+          {suggestions.length > 1 && (
+            <>
+              <TouchableOpacity
+                onPress={() => setShowAllIdeas(!showAllIdeas)}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={showAllIdeas ? 'Hide ideas' : 'See all ideas'}
+                accessibilityState={{ expanded: showAllIdeas }}
+                style={{ marginTop: SPACING.sm, minHeight: 44, justifyContent: 'center' }}
+              >
+                <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.primaryBlue }}>
+                  {showAllIdeas ? 'Hide ideas' : 'See all ideas'}
+                </Text>
+              </TouchableOpacity>
+              {showAllIdeas && (
+                <View style={{ marginTop: SPACING.sm, gap: SPACING.sm }}>
+                  {suggestions.slice(1).map((suggestion, i) => (
+                    <Text key={i} style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted }}>
+                      {'\u2022'} {suggestion}
+                    </Text>
+                  ))}
+                </View>
+              )}
+            </>
+          )}
+        </View>
       )}
 
-      {/* Premium: Trend Analysis — locked for free users */}
+      {/* ── 5. PREMIUM + FOOTER ── */}
       <LockedOverlayCard
         locked={!isPlus}
         title="Trend analysis"
