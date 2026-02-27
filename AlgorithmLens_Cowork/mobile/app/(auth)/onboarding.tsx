@@ -54,6 +54,7 @@ import Constants from 'expo-constants';
 import type { SupportedPlatform } from '../../src/types/broadcast';
 import { withAlpha } from '../../src/lib/utils';
 import { XPlatformIcon } from '../../src/components/icons/XPlatformIcon';
+import { Button } from '../../src/components/ui/Button';
 
 const { width } = Dimensions.get('window');
 
@@ -510,78 +511,33 @@ export default function OnboardingScreen() {
 
         {/* CTA button */}
         {isLastPage ? (
-          <TouchableOpacity
+          <Button
+            title="Let's go"
             onPress={handleGetStarted}
-            activeOpacity={0.85}
-            accessibilityRole="button"
+            variant="primary"
+            size="lg"
             accessibilityLabel={selectedPlatform ? `Let's go — scan ${selectedPlatform}` : "Let's go"}
-            style={{
-              backgroundColor: colors.primary,
-              borderRadius: RADIUS.lg,
-              paddingVertical: SPACING.lg,
-              alignItems: 'center',
-              minHeight: 52,
-              ...shadows.hero,
-            }}
-          >
-            <Text
-              style={{
-                ...TYPOGRAPHY.buttonLg,
-                color: colors.textInverse,
-              }}
-            >
-              Let's go
-            </Text>
-          </TouchableOpacity>
+          />
         ) : (
-          <TouchableOpacity
+          <Button
+            title="Next"
             onPress={() => handleGoToPage(currentPage + 1)}
-            activeOpacity={0.85}
-            accessibilityRole="button"
+            variant="primary"
+            size="lg"
             accessibilityLabel="Next screen"
-            style={{
-              backgroundColor: colors.primary,
-              borderRadius: RADIUS.lg,
-              paddingVertical: SPACING.lg,
-              alignItems: 'center',
-              minHeight: 52,
-              ...shadows.medium,
-            }}
-          >
-            <Text
-              style={{
-                ...TYPOGRAPHY.buttonLg,
-                color: colors.textInverse,
-              }}
-            >
-              Next
-            </Text>
-          </TouchableOpacity>
+          />
         )}
 
         {/* Skip option (screens 1–2 only) */}
         {!isLastPage && (
-          <TouchableOpacity
+          <Button
+            title="Skip"
             onPress={() => handleGoToPage(TOTAL_PAGES - 1)}
-            activeOpacity={0.7}
-            accessibilityRole="button"
+            variant="ghost"
+            size="md"
             accessibilityLabel="Skip onboarding"
-            style={{
-              marginTop: SPACING.md,
-              paddingVertical: SPACING.sm,
-              alignItems: 'center',
-              minHeight: 44,
-            }}
-          >
-            <Text
-              style={{
-                ...TYPOGRAPHY.label,
-                color: colors.textTertiary,
-              }}
-            >
-              Skip
-            </Text>
-          </TouchableOpacity>
+            style={{ marginTop: SPACING.md }}
+          />
         )}
       </View>
     </SafeAreaView>
