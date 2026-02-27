@@ -91,7 +91,7 @@ export const BroadcastResultsSummary = React.memo(function BroadcastResultsSumma
           style={{
             width: 40,
             height: 40,
-            borderRadius: RADIUS.xl,
+            borderRadius: RADIUS.lg,
             backgroundColor: colors.successBgMedium,
             justifyContent: 'center',
             alignItems: 'center',
@@ -103,7 +103,7 @@ export const BroadcastResultsSummary = React.memo(function BroadcastResultsSumma
           <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain }}>
             Scan Complete
           </Text>
-          <Text style={{ fontSize: TYPOGRAPHY.bodySmall.fontSize, color: colors.textSecondary, marginTop: SPACING.xxs }}>
+          <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textSecondary, marginTop: SPACING.xxs }}>
             {totalItems} feed items found from {framesUsed} frames
           </Text>
         </View>
@@ -244,7 +244,7 @@ function MiniStat({
     >
       {icon}
       <View>
-        <Text style={{ fontSize: TYPOGRAPHY.captionSmall.fontSize, color: colors.textMuted }}>{label}</Text>
+        <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted }}>{label}</Text>
         <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.textMain }}>{value}</Text>
       </View>
     </View>
@@ -272,8 +272,8 @@ function FindingRow({
       }}
     >
       {icon}
-      <Text style={{ fontSize: TYPOGRAPHY.bodySmall.fontSize, color: colors.textSecondary, width: 120 }}>{label}</Text>
-      <Text style={{ fontSize: TYPOGRAPHY.bodySmall.fontSize, fontWeight: '600', color: colors.textMain, flex: 1 }}>
+      <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textSecondary, width: 120 }}>{label}</Text>
+      <Text style={{ ...TYPOGRAPHY.bodySmall, fontWeight: '600', color: colors.textMain, flex: 1 }}>
         {value}
       </Text>
     </View>

@@ -20,7 +20,8 @@ const BigNumberComponent: React.FC<BigNumberProps> = ({
 }) => {
   const { colors } = useTheme();
   const isZero = value === 0 || value === '0';
-  const fontSize = isZero ? RFValue(24) : RFValue(32);
+  // Capped at RFValue(26) to sit below InsightHero title (26px) in the visual hierarchy
+  const fontSize = isZero ? RFValue(20) : RFValue(26);
   const textColor = isZero ? colors.textSecondary : colors.textMain;
 
   return (
@@ -38,8 +39,8 @@ const BigNumberComponent: React.FC<BigNumberProps> = ({
           fontSize: fontSize,
           fontWeight: '700',
           color: textColor,
-          letterSpacing: -0.03,
-          marginBottom: SPACING.sm,
+          letterSpacing: -0.5,
+          marginBottom: SPACING.xs,
         }}
       >
         {value}

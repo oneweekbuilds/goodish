@@ -89,10 +89,10 @@ const MetricCardComponent: React.FC<MetricCardProps> = ({
               )}
               <Text
                 style={{
-                  fontSize: RFValue(22),
+                  fontSize: RFValue(20),
                   fontWeight: '700',
                   color: colors.textMain,
-                  letterSpacing: -0.5,
+                  letterSpacing: -0.3,
                 }}
               >
                 {value}

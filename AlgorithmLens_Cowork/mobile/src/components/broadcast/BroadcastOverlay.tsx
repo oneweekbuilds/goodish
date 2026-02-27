@@ -83,6 +83,7 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
   onViewResults,
   onOpenPlatform,
   onRetry,
+  canSave,
 }: BroadcastOverlayProps) {
   const { colors, shadows } = useTheme();
   const platformName = PLATFORM_BROADCAST_CONFIGS[platform]?.display_name ?? platform;
@@ -474,7 +475,7 @@ const styles = StyleSheet.create({
   statDivider: {
     width: 1,
     height: 16,
-    backgroundColor: 'rgba(0,0,0,0.08)',
+    backgroundColor: COLORS.borderSlate200,
   },
   buttonRow: {
     flexDirection: 'row',

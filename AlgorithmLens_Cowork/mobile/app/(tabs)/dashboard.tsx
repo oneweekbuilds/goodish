@@ -168,7 +168,6 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
               microLine={`${data.adCount} of ${data.totalPosts}`}
               hasData={data.totalPosts > 0}
               icon={<ShoppingBag size={16} color={colors.iconAds} strokeWidth={2} />}
-              contextLine={`${data.adPct}% of posts were labeled as ads`}
             />
           </View>
           <View style={{ flex: 1 }}>
@@ -582,7 +581,7 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
               label="of your feed from top 5 accounts"
               suffix="%"
             />
-            <Text style={{ fontSize: TYPOGRAPHY.captionSmall.fontSize, color: colors.textSecondary, marginTop: SPACING.xxs }}>
+            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, marginTop: SPACING.xxs }}>
               Typical range: 40–60%
             </Text>
           </View>
@@ -915,7 +914,7 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
       borderColor: colors.borderSoft,
       ...shadows.card,
     }}>
-      <Text style={{ fontSize: TYPOGRAPHY.bodySmall.fontSize, color: colors.textMuted, lineHeight: 19 }}>
+      <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted }}>
         {data.suggestedPct >= 50
           ? `${data.suggestedPct}% of the posts in your feed came from accounts you don't follow. Most of what appeared in your feed came from accounts you don't follow.`
           : data.suggestedPct >= 20
