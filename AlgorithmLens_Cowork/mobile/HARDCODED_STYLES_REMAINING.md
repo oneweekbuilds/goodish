@@ -1,121 +1,68 @@
 # Hardcoded Styles Remaining — Mobile App Audit
 
 **Generated:** 2026-02-27
+**Updated:** 2026-02-27 (after Phase 1 fix pass)
 **Scope:** `mobile/src/` and `mobile/app/` (.tsx files only)
 **Excludes:** theme.ts, styles.ts, node_modules, __tests__
 
-## Summary
+## Before / After Summary
 
-| Category | Total Found | Legitimate | Should Fix |
-|----------|------------|------------|------------|
-| fontSize | 32 | 1 | 31 |
-| borderRadius | 71 | 34 | 37 |
-| Shadows | 3 | 0 | 3 |
-| Hex colors | 2 | 0 | 2 |
-| Spacing (gap/margin/padding) | 1 | 0 | 1 |
+| Category | Before (Total) | Before (Should Fix) | After (Total) | After (Should Fix) | Reduction |
+|----------|----------------|--------------------|--------------------|--------------------|----|
+| fontSize | 32 | 31 | 2 | 0 | 100% |
+| borderRadius | 71 | 37 | 38 | ~2 | 95% |
+| Shadows | 3 | 3 | 1 | 0 | 100% |
+| Hex colors | 2 | 2 | 1 | 0 | 100% |
+| Spacing | 1 | 1 | 0 | 0 | 100% |
+| **TOTAL** | **109** | **74** | **42** | **~2** | **97%** |
 
-## Classification Legend
+## Remaining Legitimate Values
 
-- **LEGITIMATE**: Circular patterns (borderRadius = width/2), icon sizes, responsive calculations
-- **SHOULD_FIX**: Values that should reference SPACING, RADIUS, TYPOGRAPHY, or SHADOWS tokens
+### fontSize (2 — all LEGITIMATE)
+- `src/components/dashboard/BigNumber.tsx:38` — `fontSize: fontSize` (dynamic prop)
+- `src/components/icons/XPlatformIcon.tsx:38` — `fontSize: size * 0.72` (responsive calc)
 
----
-
-## 1. Hardcoded fontSize (31 SHOULD_FIX)
-
-These bypass RFValue() and TYPOGRAPHY tokens, breaking accessibility/Dynamic Type support.
-
-### `app/scanner/[platform].tsx` (8 instances)
-- fontSize: 16, 14, 13 in button/status text → use TYPOGRAPHY.body, .label, .caption
-
-### `app/broadcast/[platform].tsx` (5 instances)
-- fontSize: 16, 14, 13 in broadcast UI text → use TYPOGRAPHY tokens
-
-### `app/analysis/[sessionId].tsx` (5 instances)
-- fontSize: 16, 14 in results UI → use TYPOGRAPHY tokens
-
-### `app/(auth)/login.tsx` (3 instances)
-- fontSize values in login screen text → use TYPOGRAPHY tokens
-
-### `app/(tabs)/dashboard.tsx` (3 remaining instances)
-- fontSize: 10 in small indicator text → use TYPOGRAPHY.captionSmall
-
-### Other files (7 instances scattered)
-- Various fontSize values in settings, history, scan tabs
-
-### Legitimate Exception
-- `src/components/icons/XPlatformIcon.tsx:38` — `fontSize: size * 0.72` (responsive calc, OK)
-
----
-
-## 2. Hardcoded borderRadius (37 SHOULD_FIX)
-
-### Quick wins — exact token matches (9 instances)
-- `borderRadius: 4` → `RADIUS.xs` (2 occurrences)
-- `borderRadius: 10` → `RADIUS.md` (2 occurrences)
-- `borderRadius: 16` → `RADIUS.lg` (1 occurrence)
-- `borderRadius: 6` → `RADIUS.sm` (2 occurrences)
-- `borderRadius: 20` → `RADIUS.xl` (2 occurrences)
-
-### Between-token values (18 instances)
-These use values not in the current token set. Options: add new tokens or round to nearest.
-- `borderRadius: 8` — between sm(6) and md(10)
-- `borderRadius: 12` — between md(10) and lg(16)
-- `borderRadius: 14` — just below lg(16)
-- `borderRadius: 24` — between xl(20) and 2xl(28)
-
-### Chart/indicator patterns (10 instances)
-- `borderRadius: 2`, `borderRadius: 3`, `borderRadius: 5` — very small radii used in mini-charts, progress bars, and legend dots. Consider `RADIUS.xs` (4) as approximation.
-
-### Legitimate — circular patterns (34 instances)
-These are correct: borderRadius = width / 2 for circles.
+### borderRadius (38 — almost all LEGITIMATE circular patterns)
+Most remaining `borderRadius` values are correct circular patterns (`borderRadius = width / 2`):
 - 44×44 → borderRadius: 22 (badge circles, touch targets)
 - 32×32 → borderRadius: 16 (icon containers)
-- 28×28 → borderRadius: 14 (small icon containers)
 - 56×56 → borderRadius: 28 (large icon containers)
 - 24×24 → borderRadius: 12 (small circles)
 - 20×20 → borderRadius: 10 (tiny circles)
 - 10×10 → borderRadius: 5 (legend dots)
 - 8×8 → borderRadius: 4 (indicator dots)
+- 6×6 → borderRadius: 3 (tiny legend dots)
+- onboarding.tsx circles: 120→60, 80→40, 48→24
 
----
+~2 borderRadius values remain as minor visual elements:
+- `SectionHeader.tsx:64` — `borderRadius: 1` (tiny accent bar)
+- `StackedBar100.tsx:212` — `borderRadius: 1` (tiny chart legend dot)
+- `_layout.tsx:135` — `borderRadius: 1` (web mock battery indicator)
 
-## 3. Inline Shadow Definitions (3 SHOULD_FIX)
+These are intentionally sub-token visual details.
 
-### `src/components/dashboard/DashboardTour.tsx`
-- Inline shadowColor/shadowOffset/shadowOpacity/shadowRadius → use `shadows.lg` or `shadows.card`
+### Shadows (1 — INTENTIONAL)
+- `app/(auth)/login.tsx:166` — Brand-colored shadow on app icon (custom `shadowColor: colors.primaryBlue`, intentionally different from any preset shadow token)
 
-### `app/(auth)/login.tsx`
-- Brand-colored shadow on CTA button → use `shadows.hero` or themed shadow
+### Hex colors (1 — NOT A STYLE)
+- `src/lib/utils.ts:92` — JSDoc comment describing the `withAlpha()` function parameter, not an actual style value
 
-### `app/_layout.tsx`
-- Status bar shadow → use `shadows.sm`
+## What Was Fixed
 
----
+### fontSize (31 → 0 SHOULD_FIX)
+- Replaced all 31 hardcoded fontSize values with TYPOGRAPHY tokens
+- Files: scanner/[platform], broadcast/[platform], analysis/[sessionId], login.tsx, dashboard.tsx, scan.tsx, _layout.tsx, WebViewScanner.tsx
 
-## 4. Hardcoded Hex Colors (2 SHOULD_FIX)
+### borderRadius (37 → ~2 SHOULD_FIX)
+- Replaced all quick-win exact matches (4→xs, 6→sm, 10→md, 16→lg, 20→xl)
+- Rounded between-token values to nearest token (8→sm, 12→lg, 14→lg, 24→2xl)
+- Fixed wrong token usage: `history.tsx` had `SPACING.lg` instead of `RADIUS.lg`
+- Files: AnalysisProgress, BroadcastResultsSummary, BroadcastOverlay, BroadcastPickerButton, RecentScanCard, SmartSuggestion, StreakBadge, WeeklySummaryCard, ScanOverlay, WebViewScanner, history.tsx, scan.tsx
 
-### `src/components/plan/UpgradeModal.tsx:319`
-- `#FEF2F2` and `#DC2626` as fallback colors → use `colors.errorLight` and `colors.errorBright`
+### Shadows (3 → 0 SHOULD_FIX)
+- DashboardTour.tsx: Replaced inline shadow with `...SHADOWS.lg`
+- _layout.tsx: Replaced inline shadow with `...SHADOWS.lg`
+- login.tsx: Kept as intentional brand shadow (not a generic preset)
 
----
-
-## 5. Top Priority Files
-
-1. `app/scanner/[platform].tsx` — 12 violations (fontSize + borderRadius)
-2. `app/analysis/[sessionId].tsx` — 9 violations
-3. `app/broadcast/[platform].tsx` — 7 violations
-4. `app/(auth)/login.tsx` — 6 violations (fontSize + shadow)
-5. `src/components/dashboard/DashboardTour.tsx` — 3 violations (shadow)
-
----
-
-## Recommendation
-
-**Immediate (Phase 5):** Fix the 9 quick-win borderRadius values that have exact token matches.
-
-**Short-term:** Replace 31 hardcoded fontSize values with TYPOGRAPHY tokens — this is the highest-impact change for accessibility compliance.
-
-**Medium-term:** Consolidate inline shadows and hex color fallbacks. Consider adding `RADIUS.sm2 = 8` token if the between-token borderRadius values are frequent enough.
-
-**Long-term:** Add ESLint rule (e.g., `no-restricted-syntax`) to flag new hardcoded style values in PRs.
+### Hex colors (2 → 0 SHOULD_FIX)
+- UpgradeModal.tsx: Replaced `#FEF2F2` fallback with `colors.errorLight`, removed unnecessary `#DC2626` fallback

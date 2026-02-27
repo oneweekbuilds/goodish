@@ -66,7 +66,7 @@ export default function ScanScreen() {
               style={{
                 width: 28,
                 height: 28,
-                borderRadius: 14,
+                borderRadius: RADIUS.lg,
                 backgroundColor: colors.blue50,
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -76,8 +76,7 @@ export default function ScanScreen() {
             </View>
             <Text
               style={{
-                ...TYPOGRAPHY.heroTitle,
-                fontSize: 24,
+                ...TYPOGRAPHY.h1,
                 color: colors.textMain,
               }}
               accessibilityRole="header"

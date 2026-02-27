@@ -354,7 +354,7 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
               style={{
                 width: 48,
                 height: 48,
-                borderRadius: 24,
+                borderRadius: RADIUS['2xl'],
                 backgroundColor: COLORS.errorLight,
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -362,7 +362,7 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
                 marginBottom: SPACING.lg,
               }}
             >
-              <Text style={{ fontSize: 22, color: COLORS.error }}>!</Text>
+              <Text style={{ ...TYPOGRAPHY.h1, color: COLORS.error }}>!</Text>
             </View>
 
             {/* Error heading */}

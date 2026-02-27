@@ -38,7 +38,7 @@ import {
 } from 'lucide-react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from '../../context/ThemeContext';
-import { RADIUS, SPACING, TYPOGRAPHY, COLORS } from '../../lib/theme';
+import { RADIUS, SPACING, TYPOGRAPHY, COLORS, SHADOWS } from '../../lib/theme';
 import { withAlpha } from '../../lib/utils';
 
 // ─── Storage Key ─────────────────────────────────────────
@@ -471,13 +471,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: SPACING.xl,
     overflow: 'hidden',
-    // Shadow for iOS
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 24,
-    // Shadow for Android
-    elevation: 8,
+    // Shadow for iOS and Android
+    ...SHADOWS.lg,
   },
   accentBar: {
     position: 'absolute',
@@ -533,7 +528,7 @@ const styles = StyleSheet.create({
   },
   dot: {
     height: 4,
-    borderRadius: 2,
+    borderRadius: RADIUS.xs,
   },
   navRow: {
     flexDirection: 'row',

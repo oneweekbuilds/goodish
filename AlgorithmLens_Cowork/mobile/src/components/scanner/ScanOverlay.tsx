@@ -151,7 +151,7 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
         <View style={{
           width: 8,
           height: 8,
-          borderRadius: 4,
+          borderRadius: RADIUS.xs,
           backgroundColor: colors.white,
         }} />
         <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.white }}>
@@ -193,7 +193,7 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
           <View style={{
             width: 8,
             height: 8,
-            borderRadius: 4,
+            borderRadius: RADIUS.xs,
             backgroundColor: milestone.color,
           }} />
           <Text style={{

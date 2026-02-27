@@ -4,7 +4,7 @@ import { Tabs } from 'expo-router';
 import { Home, LayoutDashboard, Clock, Settings } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/context/ThemeContext';
-import { SPACING } from '../../src/lib/theme';
+import { SPACING, TYPOGRAPHY } from '../../src/lib/theme';
 
 /**
  * Tabs layout — updated for broadcast-first architecture.
@@ -106,7 +106,7 @@ export default function TabsLayout() {
           height: 60 + Math.max(insets.bottom, 0),
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          ...TYPOGRAPHY.captionSmall,
           fontWeight: '600',
           marginTop: SPACING.xxs,
         },

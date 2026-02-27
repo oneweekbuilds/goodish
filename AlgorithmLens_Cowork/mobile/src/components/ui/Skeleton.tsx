@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { ViewStyle, Animated, AccessibilityInfo, Platform } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
+import { RADIUS } from '../../lib/theme';
 
 interface SkeletonProps {
   width?: number | `${number}%` | 'auto';
@@ -12,7 +13,7 @@ interface SkeletonProps {
 const SkeletonComponent: React.FC<SkeletonProps> = ({
   width = '100%',
   height = 20,
-  borderRadius = 8,
+  borderRadius = RADIUS.sm,
   style,
 }) => {
   const { colors } = useTheme();

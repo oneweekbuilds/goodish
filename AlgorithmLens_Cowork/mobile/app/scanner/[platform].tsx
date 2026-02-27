@@ -386,7 +386,7 @@ export default function ScannerScreen() {
           flex: 1,
           justifyContent: 'center',
           alignItems: 'center',
-          paddingHorizontal: 32,
+          paddingHorizontal: SPACING['3xl'],
           opacity: successAnim,
           transform: [{ scale }],
         }}>
@@ -398,36 +398,35 @@ export default function ScannerScreen() {
             backgroundColor: colors.primaryBlue,
             justifyContent: 'center',
             alignItems: 'center',
-            marginBottom: 24,
+            marginBottom: SPACING['2xl'],
             ...shadows.hero,
           }}>
             <Check size={40} color={colors.white} strokeWidth={2.5} />
           </View>
 
           <Text style={{
-            fontSize: 24,
-            fontWeight: '700',
+            ...TYPOGRAPHY.h1,
             color: colors.textMain,
             textAlign: 'center',
-            marginBottom: 8,
+            marginBottom: SPACING.sm,
           }}>
             Scan Complete
           </Text>
 
           <Text style={{
-            fontSize: 15,
+            ...TYPOGRAPHY.body,
             color: colors.textMuted,
             textAlign: 'center',
-            marginBottom: 8,
+            marginBottom: SPACING.sm,
           }}>
             Your {platformName} feed has been analyzed
           </Text>
           {/* L-10 FIX: Add insight sentence to fill white space */}
           <Text style={{
-            fontSize: 13,
+            ...TYPOGRAPHY.caption,
             color: colors.textTertiary,
             textAlign: 'center',
-            marginBottom: 24,
+            marginBottom: SPACING['2xl'],
           }}>
             Here's a quick snapshot of what we captured
           </Text>
@@ -441,11 +440,11 @@ export default function ScannerScreen() {
               backgroundColor: colors.lowSampleBg,
               borderRadius: RADIUS.md,
               padding: SPACING.md,
-              marginBottom: 16,
-              gap: 8,
+              marginBottom: SPACING.lg,
+              gap: SPACING.sm,
             }}>
               <AlertTriangle size={16} color={colors.warning} strokeWidth={2} />
-              <Text style={{ fontSize: 13, color: colors.warning, flex: 1 }}>
+              <Text style={{ ...TYPOGRAPHY.caption, color: colors.warning, flex: 1 }}>
                 {savedSuggestedPct === 0 && savedAdPct > 0
                   ? `0% suggested content detected across ${savedPostCount} posts. This may indicate a classification issue — your dashboard data for this scan may be incomplete.`
                   : `We couldn't detect ads or suggested content. ${platformName} may have updated their layout.`}
@@ -458,7 +457,7 @@ export default function ScannerScreen() {
             flexDirection: 'row',
             justifyContent: 'space-evenly',
             paddingVertical: SPACING.xl,
-            marginBottom: 40,
+            marginBottom: SPACING['4xl'],
             width: '100%',
           }}>
             {[
@@ -497,11 +496,11 @@ export default function ScannerScreen() {
             style={{
               backgroundColor: colors.primaryBlue,
               borderRadius: RADIUS.md,
-              paddingHorizontal: 32,
-              paddingVertical: 16,
+              paddingHorizontal: SPACING['3xl'],
+              paddingVertical: SPACING.lg,
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 8,
+              gap: SPACING.sm,
               ...shadows.medium,
             }}
           >
@@ -510,13 +509,13 @@ export default function ScannerScreen() {
             ) : (
               <ChartBar size={18} color={colors.white} strokeWidth={2} />
             )}
-            <Text style={{ fontSize: 16, fontWeight: '600', color: colors.white }}>
+            <Text style={{ ...TYPOGRAPHY.buttonLg, color: colors.white }}>
               {navigatingToDashboard ? 'Loading Dashboard...' : 'View Your Dashboard'}
             </Text>
           </TouchableOpacity>
 
           {/* M-17 FIX: "Scan Another Platform" as proper outline button */}
-          <View style={{ gap: 12, marginTop: 16, alignItems: 'center' }}>
+          <View style={{ gap: SPACING.md, marginTop: SPACING.lg, alignItems: 'center' }}>
             <TouchableOpacity
               onPress={() => router.replace('/(tabs)/scan')}
               accessibilityRole="button"
@@ -559,8 +558,8 @@ export default function ScannerScreen() {
       {/* Header */}
       <View
         style={{
-          paddingHorizontal: 16,
-          paddingVertical: 12,
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
           backgroundColor: colors.bgCard,
           borderBottomWidth: 1,
           borderBottomColor: colors.borderSlate200,
@@ -581,22 +580,21 @@ export default function ScannerScreen() {
             height: 36,
             justifyContent: 'center',
             alignItems: 'center',
-            borderRadius: 8,
-            marginRight: 8,
+            borderRadius: RADIUS.sm,
+            marginRight: SPACING.sm,
           }}
         >
           <ChevronLeft size={20} color={colors.textMuted} strokeWidth={2} />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
           <Text style={{
-            fontSize: 16,
-            fontWeight: '700',
+            ...TYPOGRAPHY.h3,
             color: colors.textMain,
-            marginBottom: 2,
+            marginBottom: SPACING.xxs,
           }} accessibilityRole="header">
             {platformName}
           </Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
             {scanStatus === 'scanning' && (
               <View style={{
                 width: 8,
@@ -606,9 +604,9 @@ export default function ScannerScreen() {
               }} />
             )}
             <Text style={{
-              fontSize: 13,
-              color: scanStatus === 'scanning' ? colors.primaryBlue : colors.textSecondary,
+              ...TYPOGRAPHY.caption,
               fontWeight: '500',
+              color: scanStatus === 'scanning' ? colors.primaryBlue : colors.textSecondary,
             }}>
               {/* M-10 FIX: Use platformName (correctly capitalized) in loading text */}
               {scanStatus === 'loading'
@@ -631,7 +629,7 @@ export default function ScannerScreen() {
             minWidth: 44,
             justifyContent: 'center',
             alignItems: 'center',
-            borderRadius: 8,
+            borderRadius: RADIUS.sm,
             backgroundColor: colors.cancelButtonBg,
           }}
         >
@@ -669,17 +667,16 @@ export default function ScannerScreen() {
           <View style={{
             backgroundColor: colors.bgCard,
             borderRadius: RADIUS.xl,
-            paddingHorizontal: 32,
-            paddingVertical: 24,
+            paddingHorizontal: SPACING['3xl'],
+            paddingVertical: SPACING['2xl'],
             alignItems: 'center',
             ...shadows.hero,
           }}>
             <ActivityIndicator size="large" color={colors.primaryBlue} />
             <Text style={{
-              fontSize: 14,
-              fontWeight: '600',
+              ...TYPOGRAPHY.labelBold,
               color: colors.textMain,
-              marginTop: 16,
+              marginTop: SPACING.lg,
             }}>
               Saving your scan...
             </Text>

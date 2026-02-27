@@ -618,7 +618,7 @@ export default function SettingsScreen() {
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.md }}>
                 <View style={{
-                  width: 32, height: 32, borderRadius: 8,
+                  width: 32, height: 32, borderRadius: RADIUS.md,
                   backgroundColor: colors.blue50,
                   justifyContent: 'center', alignItems: 'center',
                 }}>

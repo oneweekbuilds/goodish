@@ -447,7 +447,7 @@ const styles = StyleSheet.create({
   recordingDot: {
     width: 10,
     height: 10,
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
   },
   recordingLabel: {
     ...TYPOGRAPHY.buttonMd,

@@ -148,7 +148,7 @@ export default function AnalysisScreen() {
             style={{
               backgroundColor: colors.primaryBlue,
               borderRadius: RADIUS.md,
-              paddingVertical: 12,
+              paddingVertical: SPACING.md,
               paddingHorizontal: SPACING.xl,
             }}
           >
@@ -180,7 +180,7 @@ export default function AnalysisScreen() {
             style={{
               backgroundColor: colors.primaryBlue,
               borderRadius: RADIUS.md,
-              paddingVertical: 12,
+              paddingVertical: SPACING.md,
               paddingHorizontal: SPACING.xl,
             }}
           >
@@ -206,7 +206,7 @@ export default function AnalysisScreen() {
             style={{
               width: 36,
               height: 36,
-              borderRadius: 18,
+              borderRadius: RADIUS.md,
               backgroundColor: colors.bgCard,
               justifyContent: 'center',
               alignItems: 'center',
@@ -218,12 +218,12 @@ export default function AnalysisScreen() {
             <ArrowLeft size={18} color={colors.textMain} strokeWidth={2} />
           </TouchableOpacity>
           <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
               <View
                 style={{
                   width: 24,
                   height: 24,
-                  borderRadius: 12,
+                  borderRadius: RADIUS.md,
                   backgroundColor: `${platformBrandColor}18`,
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -233,8 +233,7 @@ export default function AnalysisScreen() {
               </View>
               <Text
                 style={{
-                  ...TYPOGRAPHY.heroTitle,
-                  fontSize: 20,
+                  ...TYPOGRAPHY.scoreSmall,
                   color: colors.textMain,
                 }}
               >
@@ -243,10 +242,9 @@ export default function AnalysisScreen() {
             </View>
             <Text
               style={{
-                ...TYPOGRAPHY.body,
-                fontSize: 13,
+                ...TYPOGRAPHY.caption,
                 color: colors.textMuted,
-                marginTop: 2,
+                marginTop: SPACING.xxs,
               }}
             >
               {frames.length} frames from {platform}
@@ -332,7 +330,7 @@ export default function AnalysisScreen() {
                   style={{
                     width: 20,
                     height: 20,
-                    borderRadius: 10,
+                    borderRadius: RADIUS.md,
                     backgroundColor: step.active
                       ? colors.primaryBlue
                       : step.done
@@ -346,14 +344,14 @@ export default function AnalysisScreen() {
                   }}
                 >
                   {step.done && (
-                    <Text style={{ fontSize: 10, color: colors.textInverse }}>✓</Text>
+                    <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textInverse }}>✓</Text>
                   )}
                   {step.active && (
                     <View
                       style={{
                         width: 6,
                         height: 6,
-                        borderRadius: 3,
+                        borderRadius: RADIUS.xs,
                         backgroundColor: colors.textInverse,
                       }}
                     />
@@ -362,8 +360,7 @@ export default function AnalysisScreen() {
                 <View style={{ flex: 1 }}>
                   <Text
                     style={{
-                      fontSize: 14,
-                      fontWeight: '600',
+                      ...TYPOGRAPHY.labelBold,
                       color: step.active ? colors.textMain : colors.textSecondary,
                     }}
                   >
@@ -371,10 +368,9 @@ export default function AnalysisScreen() {
                   </Text>
                   <Text
                     style={{
-                      fontSize: 12,
+                      ...TYPOGRAPHY.caption,
                       color: colors.textMuted,
-                      lineHeight: 17,
-                      marginTop: 2,
+                      marginTop: SPACING.xxs,
                     }}
                   >
                     {step.description}

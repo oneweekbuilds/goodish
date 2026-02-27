@@ -98,7 +98,7 @@ function RecentScanCardComponent({ scan, onPress }: RecentScanCardProps) {
           style={{
             width: 32,
             height: 32,
-            borderRadius: 16,
+            borderRadius: RADIUS.lg,
             backgroundColor: colors.bgSecondary,
             justifyContent: 'center',
             alignItems: 'center',

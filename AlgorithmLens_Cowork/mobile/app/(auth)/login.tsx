@@ -233,7 +233,7 @@ export default function LoginScreen() {
                       alignItems: 'center',
                     }}
                   >
-                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>G</Text>
+                    <Text style={{ ...TYPOGRAPHY.buttonLg, fontWeight: 'bold' }}>G</Text>
                   </View>
                   <Text
                     style={{
@@ -282,7 +282,7 @@ export default function LoginScreen() {
                       alignItems: 'center',
                     }}
                   >
-                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>🍎</Text>
+                    <Text style={{ ...TYPOGRAPHY.buttonLg, fontWeight: 'bold' }}>🍎</Text>
                   </View>
                   <Text
                     style={{

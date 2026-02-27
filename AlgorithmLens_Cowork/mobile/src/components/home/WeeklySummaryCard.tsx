@@ -63,7 +63,7 @@ function WeeklySummaryCardComponent({ summary }: WeeklySummaryCardProps) {
           style={{
             width: 28,
             height: 28,
-            borderRadius: 14,
+            borderRadius: RADIUS.lg,
             backgroundColor: colors.green50,
             justifyContent: 'center',
             alignItems: 'center',
@@ -131,7 +131,7 @@ function WeeklySummaryCardComponent({ summary }: WeeklySummaryCardProps) {
               style={{
                 width: 20,
                 height: 20,
-                borderRadius: 10,
+                borderRadius: RADIUS.md,
                 backgroundColor: colors.blue50,
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -179,7 +179,7 @@ function MetricRow({
         style={{
           width: 20,
           height: 20,
-          borderRadius: 10,
+          borderRadius: RADIUS.md,
           justifyContent: 'center',
           alignItems: 'center',
         }}

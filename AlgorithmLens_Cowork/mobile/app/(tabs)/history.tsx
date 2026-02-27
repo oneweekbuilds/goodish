@@ -234,7 +234,7 @@ export default function HistoryScreen() {
               style={{
                 width: SPACING['3xl'],
                 height: SPACING['3xl'],
-                borderRadius: SPACING.lg,
+                borderRadius: RADIUS.lg,
                 backgroundColor: isSelected ? colors.primaryBlue : colors.borderLight,
                 justifyContent: 'center',
                 alignItems: 'center',

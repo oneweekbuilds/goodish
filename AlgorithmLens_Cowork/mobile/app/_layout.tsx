@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { ThemeProvider, useTheme } from '../src/context/ThemeContext';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { initSentry, addBreadcrumb, withSentry } from '../src/lib/sentry';
+import { SPACING, TYPOGRAPHY, RADIUS, SHADOWS } from '../src/lib/theme';
 
 // Initialize Sentry before any components render
 initSentry();
@@ -111,10 +112,7 @@ function WebConstrainedWrapper({ children }: { children: React.ReactNode }) {
           width: '100%',
           maxWidth: 428,
           backgroundColor: colors.bgPage,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 0 },
-          shadowOpacity: 0.12,
-          shadowRadius: 24,
+          ...SHADOWS.lg,
           overflow: 'hidden' as any,
         }}
       >
@@ -126,14 +124,14 @@ function WebConstrainedWrapper({ children }: { children: React.ReactNode }) {
             flexDirection: 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
-            paddingHorizontal: 20,
+            paddingHorizontal: SPACING.xl,
           }}
         >
-          <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textMain }}>
+          <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.textMain }}>
             9:41
           </Text>
-          <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
-            <View style={{ width: 16, height: 10, borderRadius: 2, borderWidth: 1, borderColor: colors.textMain, justifyContent: 'center', paddingLeft: 1 }}>
+          <View style={{ flexDirection: 'row', gap: SPACING.sm, alignItems: 'center' }}>
+            <View style={{ width: 16, height: 10, borderRadius: RADIUS.xs, borderWidth: 1, borderColor: colors.textMain, justifyContent: 'center', paddingLeft: 1 }}>
               <View style={{ width: 10, height: 6, backgroundColor: colors.textMain, borderRadius: 1 }} />
             </View>
           </View>

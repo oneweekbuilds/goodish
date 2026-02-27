@@ -126,7 +126,7 @@ export const AnalysisProgress = React.memo(function AnalysisProgress({
           style={{
             width: 40,
             height: 40,
-            borderRadius: 20,
+            borderRadius: RADIUS.xl,
             backgroundColor: stageInfo.bgColor(colors),
             justifyContent: 'center',
             alignItems: 'center',

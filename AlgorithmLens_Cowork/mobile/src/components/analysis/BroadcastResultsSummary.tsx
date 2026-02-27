@@ -91,7 +91,7 @@ export const BroadcastResultsSummary = React.memo(function BroadcastResultsSumma
           style={{
             width: 40,
             height: 40,
-            borderRadius: 20,
+            borderRadius: RADIUS.xl,
             backgroundColor: colors.successBgMedium,
             justifyContent: 'center',
             alignItems: 'center',

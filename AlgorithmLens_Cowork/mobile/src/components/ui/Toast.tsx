@@ -8,6 +8,7 @@ import {
   Platform,
 } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
+import { SPACING, TYPOGRAPHY, RADIUS } from '../../lib/theme';
 
 type ToastType = 'success' | 'error' | 'info';
 
@@ -24,7 +25,7 @@ const ToastComponent: React.FC<ToastProps> = ({
   visible,
   onDismiss,
 }) => {
-  const { colors } = useTheme();
+  const { colors, shadows } = useTheme();
   const slideAnim = useRef(new Animated.Value(300)).current;
 
   useEffect(() => {
@@ -94,24 +95,21 @@ const ToastComponent: React.FC<ToastProps> = ({
         <View
           style={{
             backgroundColor: colors.bgCard,
-            marginHorizontal: 16,
-            marginBottom: 16,
+            marginHorizontal: SPACING.lg,
+            marginBottom: SPACING.lg,
             borderLeftWidth: 4,
             borderLeftColor: borderColor,
-            borderRadius: 8,
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 8,
-            elevation: 4,
+            borderRadius: RADIUS.sm,
+            paddingHorizontal: SPACING.lg,
+            paddingVertical: SPACING.md,
+            ...shadows.card,
           }}
         >
           <Text
             style={{
-              fontSize: 14,
-              fontWeight: '500',
+              fontSize: TYPOGRAPHY.label.fontSize,
+              lineHeight: TYPOGRAPHY.label.lineHeight,
+              fontWeight: TYPOGRAPHY.label.fontWeight,
               color: colors.textMain,
             }}
           >

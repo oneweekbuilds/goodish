@@ -95,7 +95,7 @@ function StreakBadgeComponent({
           style={{
             width: 32,
             height: 32,
-            borderRadius: 16,
+            borderRadius: RADIUS.lg,
             backgroundColor: colors.blue50,
             justifyContent: 'center',
             alignItems: 'center',
@@ -147,7 +147,7 @@ function StreakBadgeComponent({
           style={{
             width: 32,
             height: 32,
-            borderRadius: 16,
+            borderRadius: RADIUS.lg,
             backgroundColor: colors.blue50,
             justifyContent: 'center',
             alignItems: 'center',
@@ -310,7 +310,7 @@ function StreakBadgeComponent({
             style={{
               width: 24,
               height: 24,
-              borderRadius: 12,
+              borderRadius: RADIUS.lg,
               backgroundColor: colors.blue50,
               justifyContent: 'center',
               alignItems: 'center',

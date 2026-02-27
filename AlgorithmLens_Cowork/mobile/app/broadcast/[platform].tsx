@@ -370,7 +370,7 @@ export default function BroadcastScreen() {
             style={{
               backgroundColor: colors.primaryBlue,
               borderRadius: RADIUS.md,
-              paddingVertical: 12,
+              paddingVertical: SPACING.md,
               paddingHorizontal: SPACING.xl,
             }}
           >
@@ -402,7 +402,7 @@ export default function BroadcastScreen() {
             style={{
               backgroundColor: colors.primaryBlue,
               borderRadius: RADIUS.md,
-              paddingVertical: 12,
+              paddingVertical: SPACING.md,
               paddingHorizontal: SPACING.xl,
             }}
           >
@@ -421,7 +421,7 @@ export default function BroadcastScreen() {
         contentContainerStyle={{
           flexGrow: 1,
           padding: SPACING.lg,
-          paddingBottom: 40,
+          paddingBottom: SPACING['4xl'],
         }}
         showsVerticalScrollIndicator={false}
       >
@@ -462,8 +462,7 @@ export default function BroadcastScreen() {
               </View>
               <Text
                 style={{
-                  ...TYPOGRAPHY.heroTitle,
-                  fontSize: 20,
+                  ...TYPOGRAPHY.scoreSmall,
                   color: colors.textMain,
                 }}
               >
@@ -472,10 +471,9 @@ export default function BroadcastScreen() {
             </View>
             <Text
               style={{
-                ...TYPOGRAPHY.body,
-                fontSize: 13,
+                ...TYPOGRAPHY.caption,
                 color: colors.textMuted,
-                marginTop: 2,
+                marginTop: SPACING.xxs,
               }}
             >
               Scanning {platformName}
@@ -497,7 +495,7 @@ export default function BroadcastScreen() {
           >
             <Text
               style={{
-                fontSize: 13,
+                ...TYPOGRAPHY.caption,
                 fontWeight: '600',
                 color: colors.primaryBlue,
                 textAlign: 'center',
@@ -591,7 +589,7 @@ export default function BroadcastScreen() {
               >
                 <Text
                   style={{
-                    fontSize: 13,
+                    ...TYPOGRAPHY.caption,
                     fontWeight: '600',
                     color: platformBrandColor,
                     width: 20,
@@ -601,10 +599,9 @@ export default function BroadcastScreen() {
                 </Text>
                 <Text
                   style={{
-                    fontSize: 13,
+                    ...TYPOGRAPHY.caption,
                     color: colors.textSecondary,
                     flex: 1,
-                    lineHeight: 19,
                   }}
                 >
                   {step}

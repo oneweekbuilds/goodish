@@ -465,7 +465,7 @@ function UpgradeModalComponent({ visible, onClose }: UpgradeModalProps) {
         {error && (
           <View
             style={{
-              backgroundColor: colors.red50 ?? '#FEF2F2',
+              backgroundColor: colors.errorLight,
               borderRadius: RADIUS.md,
               padding: SPACING.md,
               marginBottom: SPACING.md,
@@ -474,7 +474,7 @@ function UpgradeModalComponent({ visible, onClose }: UpgradeModalProps) {
             <Text
               style={{
                 ...TYPOGRAPHY.bodySmall,
-                color: colors.error ?? '#DC2626',
+                color: colors.error,
                 textAlign: 'center',
               }}
             >

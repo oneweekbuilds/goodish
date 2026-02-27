@@ -62,7 +62,7 @@ function SmartSuggestionComponent({ suggestion, onAction }: SmartSuggestionProps
           style={{
             width: 28,
             height: 28,
-            borderRadius: 14,
+            borderRadius: RADIUS.lg,
             backgroundColor: iconBgColor,
             justifyContent: 'center',
             alignItems: 'center',

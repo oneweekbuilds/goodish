@@ -2282,7 +2282,7 @@ export default function DashboardScreen() {
                           paddingVertical: 1,
                         }}>
                           <Text style={{
-                            fontSize: 10,
+                            ...TYPOGRAPHY.captionSmall,
                             fontWeight: '700',
                             color: isActive ? colors.white : colors.primaryBlue,
                             letterSpacing: 0.5,
