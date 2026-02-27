@@ -411,7 +411,7 @@ BroadcastOverlay.displayName = 'BroadcastOverlay';
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: RADIUS.xl,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: SPACING.xl,
     marginHorizontal: SPACING.md,

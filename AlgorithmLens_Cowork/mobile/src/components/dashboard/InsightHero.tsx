@@ -139,7 +139,7 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
           <View style={{ paddingLeft: SPACING.md }}>
             <Text
               style={{
-                ...TYPOGRAPHY.h1,
+                ...TYPOGRAPHY.heroTitle,
                 color: colors.textMain,
                 marginBottom: SPACING.md,
               }}

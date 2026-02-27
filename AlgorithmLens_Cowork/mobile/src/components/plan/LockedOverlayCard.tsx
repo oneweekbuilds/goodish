@@ -103,7 +103,7 @@ export const LockedOverlayCard = React.memo(LockedOverlayCardComponent);
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: RADIUS.xl,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: SPACING.lg,
     gap: SPACING.xs,

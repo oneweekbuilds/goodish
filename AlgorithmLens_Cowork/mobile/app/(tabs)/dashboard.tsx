@@ -26,6 +26,7 @@ import { MetricCard } from '../../src/components/dashboard/MetricCard';
 import { SectionHeader } from '../../src/components/dashboard/SectionHeader';
 import { LockedOverlayCard } from '../../src/components/plan/LockedOverlayCard';
 import { DashboardTour } from '../../src/components/dashboard/DashboardTour';
+import { Skeleton } from '../../src/components/ui/Skeleton';
 import { SPACING, RADIUS, TYPOGRAPHY, COLORS } from '../../src/lib/theme';
 import { triggerSelection } from '../../src/lib/haptics';
 import { captureError } from '../../src/lib/sentry';
@@ -2098,22 +2099,32 @@ export default function DashboardScreen() {
 
         {/* Loading — Skeleton shimmer matching dashboard layout */}
         {loading && !refreshing && scans.length === 0 && (
-          <View style={{ paddingHorizontal: SPACING.lg, paddingVertical: SPACING.xl, gap: SPACING.lg }}>
+          <View style={{ paddingHorizontal: SPACING.lg, paddingVertical: SPACING.xl, gap: SPACING.lg }}
+            accessible={true} accessibilityLabel="Loading dashboard" accessibilityRole="none">
             {/* Skeleton: tab bar placeholder */}
             <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
-              {[80, 70, 90].map((w, i) => (
-                <View key={i} style={{ width: w, height: 40, borderRadius: RADIUS.full, backgroundColor: colors.borderSoft }} />
-              ))}
+              <Skeleton width={80} height={40} borderRadius={RADIUS.full} />
+              <Skeleton width={70} height={40} borderRadius={RADIUS.full} />
+              <Skeleton width={90} height={40} borderRadius={RADIUS.full} />
             </View>
             {/* Skeleton: insight card placeholder */}
-            <View style={{ height: 140, borderRadius: RADIUS.lg, backgroundColor: colors.borderSoft }} />
+            <Skeleton height={140} borderRadius={RADIUS.lg} />
             {/* Skeleton: metrics row */}
             <View style={{ flexDirection: 'row', gap: SPACING.md }}>
-              <View style={{ flex: 1, height: 100, borderRadius: RADIUS.lg, backgroundColor: colors.borderSoft }} />
-              <View style={{ flex: 1, height: 100, borderRadius: RADIUS.lg, backgroundColor: colors.borderSoft }} />
+              <View style={{ flex: 1 }}>
+                <Skeleton height={100} borderRadius={RADIUS.lg} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Skeleton height={100} borderRadius={RADIUS.lg} />
+              </View>
             </View>
             {/* Skeleton: chart placeholder */}
-            <View style={{ height: 80, borderRadius: RADIUS.lg, backgroundColor: colors.borderSoft }} />
+            <Skeleton height={80} borderRadius={RADIUS.lg} />
+            {/* Skeleton: section header */}
+            <Skeleton width={120} height={16} borderRadius={RADIUS.sm} />
+            {/* Skeleton: detail rows */}
+            <Skeleton height={56} borderRadius={RADIUS.md} />
+            <Skeleton height={56} borderRadius={RADIUS.md} />
           </View>
         )}
 
@@ -2267,9 +2278,9 @@ export default function DashboardScreen() {
                         paddingHorizontal: SPACING.lg,
                         minHeight: 44,
                         borderRadius: RADIUS.full,
-                        backgroundColor: isActive ? colors.primaryBlue : colors.bgCard,
+                        backgroundColor: isActive ? colors.primaryBlue : colors.bgSecondary,
                         borderWidth: isActive ? 0 : 1,
-                        borderColor: colors.borderSlate200,
+                        borderColor: isActive ? 'transparent' : colors.borderLight,
                         flexDirection: 'row',
                         alignItems: 'center',
                         justifyContent: 'center',

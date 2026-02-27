@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, TYPOGRAPHY, RADIUS } from '../../lib/theme';
 
-export type BadgeVariant = 'default' | 'success' | 'warning' | 'error' | 'info' | 'accent';
+export type BadgeVariant = 'default' | 'success' | 'warning' | 'error' | 'info' | 'accent' | 'outline' | 'subtle';
 export type BadgeSize = 'sm' | 'md';
 
 interface BadgeProps {
@@ -36,10 +36,32 @@ const BadgeComponent: React.FC<BadgeProps> = ({
         return colors.primaryBlue;
       case 'accent':
         return colors.accentGreen;
+      case 'outline':
+        return 'transparent';
+      case 'subtle':
+        return colors.blue50 ?? '#EFF6FF';
       case 'default':
       default:
         return colors.primary;
     }
+  };
+
+  const getTextColor = (): string => {
+    switch (variant) {
+      case 'outline':
+        return colors.textSecondary;
+      case 'subtle':
+        return colors.primaryBlue;
+      default:
+        return colors.white;
+    }
+  };
+
+  const getBorderStyle = () => {
+    if (variant === 'outline') {
+      return { borderWidth: 1, borderColor: colors.borderLight };
+    }
+    return {};
   };
 
   const sizeConfig = {
@@ -72,9 +94,10 @@ const BadgeComponent: React.FC<BadgeProps> = ({
       paddingVertical: config.paddingVertical,
       alignSelf: 'flex-start',
       opacity: getOpacity(),
+      ...getBorderStyle(),
     },
     text: {
-      color: colors.white,
+      color: getTextColor(),
       fontSize: config.fontSize,
       lineHeight: config.lineHeight,
       fontWeight: '600',

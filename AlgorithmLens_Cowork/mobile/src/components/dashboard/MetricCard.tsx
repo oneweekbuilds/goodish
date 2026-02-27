@@ -76,9 +76,9 @@ const MetricCardComponent: React.FC<MetricCardProps> = ({
               {icon && (
                 <View
                   style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: RADIUS.md,
+                    width: 28,
+                    height: 28,
+                    borderRadius: RADIUS.sm,
                     backgroundColor: colors.blue50,
                     justifyContent: 'center',
                     alignItems: 'center',

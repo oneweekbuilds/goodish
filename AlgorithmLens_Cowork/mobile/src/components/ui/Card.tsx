@@ -66,9 +66,9 @@ const CardComponent: React.FC<CardProps> = ({
 
   const baseStyle: ViewStyle = {
     backgroundColor: colors.bgCard,
-    borderRadius: RADIUS.xl,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
-    borderColor: colors.borderSubtle,
+    borderColor: colors.borderLight,
     padding: SPACING.xl,
     ...getVariantShadow(),
   };

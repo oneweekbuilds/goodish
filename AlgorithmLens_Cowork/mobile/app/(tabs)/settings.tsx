@@ -315,7 +315,7 @@ export default function SettingsScreen() {
             marginHorizontal: SPACING.lg,
             marginBottom: SPACING['2xl'],
             backgroundColor: colors.primaryBlue,
-            borderRadius: RADIUS.xl,
+            borderRadius: RADIUS.lg,
             padding: SPACING.xl,
             ...shadows.medium,
           }}>

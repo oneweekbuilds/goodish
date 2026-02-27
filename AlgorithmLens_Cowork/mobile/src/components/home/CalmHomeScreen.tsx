@@ -249,7 +249,7 @@ function CalmHomeScreenComponent({
               marginBottom: SPACING.xl,
             }}
           >
-            See what's in your social media feed
+            {subheading}
           </Text>
         </View>
 
@@ -291,7 +291,7 @@ function CalmHomeScreenComponent({
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           style={{
             backgroundColor: colors.primary,
-            borderRadius: RADIUS.xl,
+            borderRadius: RADIUS.lg,
             paddingVertical: SPACING.xl,
             paddingHorizontal: SPACING['2xl'],
             alignItems: 'center',

@@ -110,7 +110,7 @@ const StackedBar100Component: React.FC<StackedBar100Props> = ({
         style={{
           flexDirection: 'row',
           height: 36,
-          borderRadius: RADIUS.xl,
+          borderRadius: RADIUS.md,
           overflow: 'hidden',
           marginBottom: SPACING.lg,
           backgroundColor: colors.stackedBarTrack,

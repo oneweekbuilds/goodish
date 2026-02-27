@@ -87,7 +87,7 @@ const BarChartComponent: React.FC<BarChartProps> = ({
 
   return (
     <View
-      style={{ gap: SPACING.xl }}
+      style={{ gap: SPACING.lg }}
       accessible={true}
       accessibilityRole="image"
       accessibilityLabel={
@@ -154,9 +154,9 @@ const BarChartComponent: React.FC<BarChartProps> = ({
               <Animated.View
                 style={{
                   width: widthAnim,
-                  height: 20,
+                  height: 24,
                   backgroundColor: barColor,
-                  borderRadius: RADIUS.sm,
+                  borderRadius: RADIUS.xs,
                 }}
               />
               <Text

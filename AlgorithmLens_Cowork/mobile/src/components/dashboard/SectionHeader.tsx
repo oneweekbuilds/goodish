@@ -50,7 +50,7 @@ const SectionHeaderComponent: React.FC<SectionHeaderProps> = ({
         flexDirection: 'row',
         gap: SPACING.md,
         marginBottom: SPACING.md,
-        marginTop: 0,
+        marginTop: SPACING.lg,
       }}
     >
       {/* Gradient Accent Bar */}
