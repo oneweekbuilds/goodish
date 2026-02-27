@@ -38,7 +38,7 @@ import {
 } from 'lucide-react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from '../../context/ThemeContext';
-import { RADIUS, SPACING, TYPOGRAPHY, COLORS, SHADOWS, ICON_SIZES } from 'from '../../lib/theme';'
+import { RADIUS, SPACING, TYPOGRAPHY, COLORS, SHADOWS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../lib/theme';
 import { withAlpha } from '../../lib/utils';
 
 // ─── Storage Key ─────────────────────────────────────────

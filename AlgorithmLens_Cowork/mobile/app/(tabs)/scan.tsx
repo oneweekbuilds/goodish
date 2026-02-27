@@ -21,7 +21,7 @@ import { router } from 'expo-router';
 import { triggerImpactLight } from '../../src/lib/haptics';
 import { Instagram, Youtube, Music, Facebook, MessageCircle, Type } from 'lucide-react-native';
 import { useTheme } from '../../src/context/ThemeContext';
-import { TYPOGRAPHY, SPACING, RADIUS, PLATFORMS } from 'from '../../src/lib/theme';'
+import { TYPOGRAPHY, SPACING, RADIUS, PLATFORMS, MIN_TOUCH_TARGET } from '../../src/lib/theme';
 import { XPlatformIcon } from '../../src/components/icons/XPlatformIcon';
 
 const PLATFORM_ICONS: Record<string, React.FC<{ size: number; color: string; strokeWidth?: number }>> = {

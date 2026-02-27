@@ -13,7 +13,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, Animated, AccessibilityInfo, Platform, StyleSheet } from 'react-native';
 import { Award } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY } from 'from '../../lib/theme';'
+import { SPACING, RADIUS, TYPOGRAPHY, MIN_TOUCH_TARGET } from '../../lib/theme';
 
 interface MilestoneModalProps {
   milestone: {

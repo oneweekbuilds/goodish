@@ -17,7 +17,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Eye, ScanSearch, BarChart3 } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY } from 'from '../../lib/theme';'
+import { SPACING, RADIUS, TYPOGRAPHY, MIN_TOUCH_TARGET } from '../../lib/theme';
 
 const STORAGE_KEY = '@algorithmlens_has_seen_walkthrough';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');

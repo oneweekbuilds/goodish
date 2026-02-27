@@ -13,7 +13,7 @@ import { View, Text, TouchableOpacity, Platform, Alert } from 'react-native';
 import { Radio, Type, Check } from 'lucide-react-native';
 import { triggerSelection } from '../../lib/haptics';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY } from 'from '../../lib/theme';'
+import { SPACING, RADIUS, TYPOGRAPHY, MIN_TOUCH_TARGET } from '../../lib/theme';
 import { isBroadcastModuleAvailable } from '../../lib/broadcastSessionManager';
 import type { ScanMode } from '../../types/broadcast';
 

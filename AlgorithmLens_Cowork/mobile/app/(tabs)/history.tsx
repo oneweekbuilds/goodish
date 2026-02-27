@@ -14,7 +14,7 @@ import { Zap, Users, Clock, ScanSearch, GitCompareArrows, Check, Radio, Filter, 
 import { Skeleton } from '../../src/components/ui/Skeleton';
 import { ContentFadeIn } from '../../src/components/ui/ContentFadeIn';
 import { useTheme } from '../../src/context/ThemeContext';
-import { TYPOGRAPHY, SPACING, RADIUS, PLATFORMS, COLORS } from 'from '../../src/lib/theme';'
+import { TYPOGRAPHY, SPACING, RADIUS, PLATFORMS, COLORS, MIN_TOUCH_TARGET } from '../../src/lib/theme';
 import { getQualityLevel } from '../../src/config/thresholds';
 import ComparisonView from '../../src/components/dashboard/ComparisonView';
 import { withAlpha } from '../../src/lib/utils';

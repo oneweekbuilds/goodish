@@ -12,7 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronDown } from 'lucide-react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from '../../context/ThemeContext';
-import { RADIUS, SPACING, COLORS, TYPOGRAPHY, withOpacity } from 'from '../../lib/theme';'
+import { RADIUS, SPACING, COLORS, TYPOGRAPHY, withOpacity, MIN_TOUCH_TARGET } from '../../lib/theme';
 
 interface HowWeMeasureData {
   what?: string | null;

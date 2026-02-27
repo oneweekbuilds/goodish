@@ -32,7 +32,7 @@ import {
   X,
 } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY, PLATFORMS } from 'from '../../lib/theme';'
+import { SPACING, RADIUS, TYPOGRAPHY, PLATFORMS, MIN_TOUCH_TARGET } from '../../lib/theme';
 import { ModeToggle } from './ModeToggle';
 import type { ScanMode, SupportedPlatform } from '../../types/broadcast';
 import { withAlpha } from '../../lib/utils';
