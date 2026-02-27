@@ -20,6 +20,8 @@ import { supabase } from '../../src/lib/supabase';
 import { router } from 'expo-router';
 import { ChevronDown, ChevronRight, TrendingUp, Check, ExternalLink } from 'lucide-react-native';
 import { TYPOGRAPHY, RADIUS, SPACING } from '../../src/lib/theme';
+import Divider from '../../src/components/ui/Divider';
+import { Card } from '../../src/components/ui/Card';
 import { UpgradeModal } from '../../src/components/plan/UpgradeModal';
 import { REMINDER_FREQUENCY_OPTIONS, type ReminderFrequency } from '../../src/config/thresholds';
 import {
@@ -76,12 +78,11 @@ const SettingSection = ({
       {children}
     </View>
     {/* Section divider line */}
-    <View style={{
-      height: 1,
-      backgroundColor: colors.borderLight,
-      marginTop: SPACING['2xl'],
-      marginHorizontal: SPACING.lg,
-    }} />
+    <Divider
+      spacing={SPACING['2xl']}
+      color={colors.borderLight}
+      thickness={1}
+    />
   </View>
 );
 
@@ -102,33 +103,40 @@ const SettingRow = ({
   accessibilityLabel?: string;
   accessibilityRole?: 'button' | 'link' | 'none' | 'header' | 'search' | 'image' | 'text' | 'adjustable' | 'imagebutton' | 'keyboardkey' | 'summary' | 'alert' | 'checkbox' | 'combobox' | 'menu' | 'menubar' | 'menuitem' | 'progressbar' | 'radio' | 'radiogroup' | 'scrollbar' | 'spinbutton' | 'switch' | 'tab' | 'tabbar' | 'tablist' | 'timer' | 'list' | 'toolbar';
 }) => (
-  <TouchableOpacity
-    onPress={onPress}
-    disabled={!onPress}
-    accessibilityRole={accessibilityRole || (onPress ? 'button' : undefined)}
-    accessibilityLabel={accessibilityLabel}
-    style={{
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.md,
-      minHeight: 44,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      borderBottomWidth: isLast ? 0 : 1,
-      borderBottomColor: colors.borderLight,
-    }}
-  >
-    <Text
+  <>
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={!onPress}
+      accessibilityRole={accessibilityRole || (onPress ? 'button' : undefined)}
+      accessibilityLabel={accessibilityLabel}
       style={{
-        ...TYPOGRAPHY.body,
-        fontWeight: '500',
-        color: colors.textMain,
+        paddingHorizontal: SPACING.lg,
+        paddingVertical: SPACING.md,
+        minHeight: 44,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
       }}
     >
-      {label}
-    </Text>
-    {value}
-  </TouchableOpacity>
+      <Text
+        style={{
+          ...TYPOGRAPHY.body,
+          fontWeight: '500',
+          color: colors.textMain,
+        }}
+      >
+        {label}
+      </Text>
+      {value}
+    </TouchableOpacity>
+    {!isLast && (
+      <View style={{
+        height: 1,
+        backgroundColor: colors.borderLight,
+        marginHorizontal: SPACING.lg,
+      }} />
+    )}
+  </>
 );
 
 const InfoText = ({ children, colors }: { children: string; colors: ReturnType<typeof useTheme>['colors'] }) => (
@@ -341,6 +349,7 @@ export default function SettingsScreen() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: SPACING.sm,
+                minHeight: 44,
               }}
             >
               {portalLoading ? (
@@ -448,13 +457,13 @@ export default function SettingsScreen() {
           {pushNotifications && showFrequencyPicker && (
             <View
               style={{
-                borderTopWidth: 1,
-                borderTopColor: colors.borderLight,
                 paddingHorizontal: SPACING.lg,
                 paddingVertical: SPACING.md,
+                borderTopWidth: 1,
+                borderTopColor: colors.borderLight,
               }}
             >
-              {REMINDER_FREQUENCY_OPTIONS.map((freq) => (
+              {REMINDER_FREQUENCY_OPTIONS.map((freq, idx) => (
                 <TouchableOpacity
                   key={freq}
                   onPress={() => handleFrequencyChange(freq)}
@@ -539,6 +548,7 @@ export default function SettingsScreen() {
               </Text>
             }
             colors={colors}
+            isLast={false}
           />
           <TouchableOpacity
             onPress={handleSignOut}
@@ -549,8 +559,6 @@ export default function SettingsScreen() {
               paddingHorizontal: SPACING.lg,
               paddingVertical: SPACING.md,
               minHeight: 44,
-              borderTopWidth: 1,
-              borderTopColor: colors.borderLight,
             }}
           >
             {loading ? (
@@ -567,8 +575,9 @@ export default function SettingsScreen() {
               </Text>
             )}
           </TouchableOpacity>
+          <View style={{ height: 1, backgroundColor: colors.borderLight, marginHorizontal: SPACING.lg }} />
           {/* M-07 FIX: Extra spacing above Delete Account to separate from Sign Out */}
-          <View style={{ height: SPACING.xl, borderTopWidth: 1, borderTopColor: colors.borderLight }} />
+          <View style={{ height: SPACING.xl }} />
           {/* M-12 FIX: Delete Account with type-to-confirm gate */}
           <TouchableOpacity
             onPress={() => {
@@ -581,8 +590,6 @@ export default function SettingsScreen() {
               paddingHorizontal: SPACING.lg,
               paddingVertical: SPACING.md,
               minHeight: 44,
-              borderTopWidth: 1,
-              borderTopColor: colors.borderLight,
             }}
           >
             <Text
@@ -681,6 +688,7 @@ export default function SettingsScreen() {
                 colors={colors}
                 accessibilityLabel="Privacy Policy"
                 accessibilityRole="link"
+                isLast={false}
               />
               <SettingRow
                 label="Terms of Service"
@@ -689,6 +697,7 @@ export default function SettingsScreen() {
                 colors={colors}
                 accessibilityLabel="Terms of Service"
                 accessibilityRole="link"
+                isLast={false}
               />
               <SettingRow
                 label="Website"
@@ -815,7 +824,8 @@ export default function SettingsScreen() {
                   borderWidth: 1,
                   borderColor: colors.borderDefault,
                   alignItems: 'center',
-                  minHeight: 44,
+                  justifyContent: 'center',
+                  minHeight: 48,
                 }}
               >
                 <Text style={{ ...TYPOGRAPHY.buttonSm, color: colors.textSecondary }}>
@@ -840,7 +850,8 @@ export default function SettingsScreen() {
                   borderRadius: RADIUS.md,
                   backgroundColor: deleteConfirmText === 'DELETE' ? colors.error : colors.borderSlate200,
                   alignItems: 'center',
-                  minHeight: 44,
+                  justifyContent: 'center',
+                  minHeight: 48,
                 }}
               >
                 <Text style={{
