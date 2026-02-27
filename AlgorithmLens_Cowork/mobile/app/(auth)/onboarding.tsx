@@ -49,7 +49,7 @@ import {
   ChevronLeft,
 } from 'lucide-react-native';
 import { triggerImpactMedium, triggerImpactLight } from '../../src/lib/haptics';
-import { TYPOGRAPHY, SPACING, RADIUS, PLATFORMS } from '../../src/lib/theme';
+import { TYPOGRAPHY, SPACING, RADIUS, PLATFORMS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../src/lib/theme';
 import Constants from 'expo-constants';
 import type { SupportedPlatform } from '../../src/types/broadcast';
 import { withAlpha } from '../../src/lib/utils';
@@ -237,9 +237,9 @@ export default function OnboardingScreen() {
                   position: 'absolute',
                   top: 36,
                   left: 36,
-                  width: 48,
-                  height: 48,
-                  borderRadius: 24,
+                  width: ICON_SIZES['3xl'],
+                  height: ICON_SIZES['3xl'],
+                  borderRadius: ICON_SIZES['3xl'] / 2,
                   backgroundColor: colors.primary,
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -331,8 +331,8 @@ export default function OnboardingScreen() {
                   >
                     <View
                       style={{
-                        width: 48,
-                        height: 48,
+                        width: ICON_SIZES['3xl'],
+                        height: ICON_SIZES['3xl'],
                         borderRadius: RADIUS['2xl'],
                         backgroundColor: colors.blue50,
                         justifyContent: 'center',
@@ -429,7 +429,7 @@ export default function OnboardingScreen() {
                       style={{
                         alignItems: 'center',
                         width: 100,
-                        minHeight: 44,
+                        minHeight: MIN_TOUCH_TARGET,
                       }}
                     >
                       <View

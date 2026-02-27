@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { AlertCircle } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, TYPOGRAPHY, RADIUS } from '../../lib/theme';
+import { SPACING, TYPOGRAPHY, RADIUS, MIN_TOUCH_TARGET } from '../../lib/theme';
 
 interface ErrorStateProps {
   message: string;
@@ -58,7 +58,7 @@ const ErrorStateComponent: React.FC<ErrorStateProps> = ({
       borderRadius: RADIUS.md,
       borderWidth: 1,
       borderColor: colors.error,
-      minHeight: 44,
+      minHeight: MIN_TOUCH_TARGET,
       justifyContent: 'center',
       alignItems: 'center',
     },

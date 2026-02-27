@@ -10,7 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, TYPOGRAPHY, RADIUS } from '../../lib/theme';
+import { SPACING, TYPOGRAPHY, RADIUS, MIN_TOUCH_TARGET } from '../../lib/theme';
 import { flattenStyle } from '../../lib/styles';
 import { triggerImpactLight } from '../../lib/haptics';
 
@@ -69,7 +69,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
           container: {
             paddingHorizontal: SPACING.sm,
             paddingVertical: SPACING.xs,
-            minHeight: 44,
+            minHeight: MIN_TOUCH_TARGET,
           },
           text: {
             ...TYPOGRAPHY.buttonSm,
@@ -80,7 +80,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
           container: {
             paddingHorizontal: SPACING.lg,
             paddingVertical: SPACING.md,
-            minHeight: 44,
+            minHeight: MIN_TOUCH_TARGET,
           },
           text: {
             ...TYPOGRAPHY.buttonLg,
@@ -92,7 +92,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
           container: {
             paddingHorizontal: SPACING.md,
             paddingVertical: SPACING.sm,
-            minHeight: 44,
+            minHeight: MIN_TOUCH_TARGET,
           },
           text: {
             ...TYPOGRAPHY.buttonMd,

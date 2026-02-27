@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, TYPOGRAPHY, RADIUS } from '../../lib/theme';
+import { SPACING, TYPOGRAPHY, RADIUS, MIN_TOUCH_TARGET } from '../../lib/theme';
 
 export type ChipVariant = 'default' | 'outline';
 
@@ -57,7 +57,7 @@ const ChipComponent: React.FC<ChipProps> = ({
       paddingHorizontal: SPACING.md,
       paddingVertical: SPACING.sm,
       borderRadius: RADIUS.pill,
-      minHeight: 44,
+      minHeight: MIN_TOUCH_TARGET,
       backgroundColor: getBackgroundColor(),
       borderWidth: variant === 'outline' ? 1 : 0,
       borderColor: getBorderColor() || 'transparent',

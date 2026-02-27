@@ -16,7 +16,7 @@ import { supabase } from '../../src/lib/supabase';
 import { authenticatedFetch } from '../../src/lib/api';
 import { classifyPostTexts } from '../../src/lib/analysis/textClassificationService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { RADIUS, SPACING, TYPOGRAPHY } from '../../src/lib/theme';
+import { RADIUS, SPACING, TYPOGRAPHY, MIN_TOUCH_TARGET } from '../../src/lib/theme';
 import { X, Check, ChartBar, AlertTriangle, ChevronLeft } from 'lucide-react-native';
 import { MIN_POSTS_GOOD, MIN_POSTS_OK, MIN_POSTS_REQUIRED, MIN_SCAN_DURATION_SECS } from '../../src/config/thresholds';
 import { recordScanDate } from '../../src/services/notifications';
@@ -627,8 +627,8 @@ export default function ScannerScreen() {
           style={{
             width: 36,
             height: 36,
-            minHeight: 44,
-            minWidth: 44,
+            minHeight: MIN_TOUCH_TARGET,
+            minWidth: MIN_TOUCH_TARGET,
             justifyContent: 'center',
             alignItems: 'center',
             borderRadius: RADIUS.sm,

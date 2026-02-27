@@ -25,7 +25,7 @@ import {
 } from 'lucide-react-native';
 import { triggerNotificationSuccess, triggerNotificationError } from '../../lib/haptics';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, TYPOGRAPHY, RADIUS, COLORS } from '../../lib/theme';
+import { SPACING, TYPOGRAPHY, RADIUS, COLORS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../lib/theme';
 import type { PipelineProgress, PipelineStage } from '../../lib/analysis/broadcastAnalysisPipeline';
 
 interface AnalysisProgressProps {
@@ -124,8 +124,8 @@ export const AnalysisProgress = React.memo(function AnalysisProgress({
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.md }}>
         <View
           style={{
-            width: 40,
-            height: 40,
+            width: ICON_SIZES['2xl'],
+            height: ICON_SIZES['2xl'],
             borderRadius: RADIUS.xl,
             backgroundColor: stageInfo.bgColor(colors),
             justifyContent: 'center',
@@ -256,7 +256,7 @@ export const AnalysisProgress = React.memo(function AnalysisProgress({
               flex: 1,
               borderRadius: RADIUS.md,
               paddingVertical: SPACING.md,
-              minHeight: 44,
+              minHeight: MIN_TOUCH_TARGET,
               borderWidth: 1,
               borderColor: colors.borderSoft,
               alignItems: 'center',
@@ -280,7 +280,7 @@ export const AnalysisProgress = React.memo(function AnalysisProgress({
               backgroundColor: colors.primaryBlue,
               borderRadius: RADIUS.md,
               paddingVertical: SPACING.md,
-              minHeight: 44,
+              minHeight: MIN_TOUCH_TARGET,
               alignItems: 'center',
               justifyContent: 'center',
             }}
@@ -303,7 +303,7 @@ export const AnalysisProgress = React.memo(function AnalysisProgress({
                 backgroundColor: colors.primaryBlue,
                 borderRadius: RADIUS.md,
                 paddingVertical: SPACING.md,
-                minHeight: 44,
+                minHeight: MIN_TOUCH_TARGET,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}

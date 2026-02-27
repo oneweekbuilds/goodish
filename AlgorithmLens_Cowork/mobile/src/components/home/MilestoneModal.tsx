@@ -13,7 +13,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, Animated, AccessibilityInfo, Platform, StyleSheet } from 'react-native';
 import { Award } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
+import { SPACING, RADIUS, TYPOGRAPHY } from 'from '../../lib/theme';'
 
 interface MilestoneModalProps {
   milestone: {
@@ -183,7 +183,7 @@ function MilestoneModalComponent({ milestone, onDismiss }: MilestoneModalProps) 
             borderRadius: RADIUS.md,
             paddingHorizontal: SPACING['2xl'],
             paddingVertical: SPACING.md,
-            minHeight: 44,
+            minHeight: MIN_TOUCH_TARGET,
             minWidth: 100,
           }}
         >

@@ -23,6 +23,7 @@
 
 import React from 'react';
 import { Platform, View } from 'react-native';
+import { ICON_SIZES } from '../../lib/theme';
 
 let NativePickerView: React.ComponentType<{
   preferredExtension?: string;
@@ -88,7 +89,7 @@ export function NativeBroadcastPicker({
     >
       <NativePickerView
         preferredExtension={preferredExtension}
-        style={{ width: 60, height: 60 }}
+        style={{ width: ICON_SIZES['4xl'], height: ICON_SIZES['4xl'] }}
       />
     </View>
   );

@@ -13,7 +13,7 @@ import { View, Text, TouchableOpacity, Platform, Alert } from 'react-native';
 import { Radio, Type, Check } from 'lucide-react-native';
 import { triggerSelection } from '../../lib/haptics';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
+import { SPACING, RADIUS, TYPOGRAPHY } from 'from '../../lib/theme';'
 import { isBroadcastModuleAvailable } from '../../lib/broadcastSessionManager';
 import type { ScanMode } from '../../types/broadcast';
 
@@ -72,7 +72,7 @@ function ModeToggleComponent({ selectedMode, onModeChange }: ModeToggleProps) {
           padding: SPACING.md,
           borderWidth: 1,
           borderColor: selectedMode === 'broadcast' ? colors.primaryBlue : colors.borderSoft,
-          minHeight: 44,
+          minHeight: MIN_TOUCH_TARGET,
           ...(selectedMode === 'broadcast' ? shadows.soft : {}),
         }}
       >
@@ -137,7 +137,7 @@ function ModeToggleComponent({ selectedMode, onModeChange }: ModeToggleProps) {
           padding: SPACING.md,
           borderWidth: 1,
           borderColor: selectedMode === 'precision' ? colors.primaryBlue : colors.borderSoft,
-          minHeight: 44,
+          minHeight: MIN_TOUCH_TARGET,
           ...(selectedMode === 'precision' ? shadows.soft : {}),
         }}
       >

@@ -19,7 +19,7 @@ import { useTheme } from '../../src/context/ThemeContext';
 import { supabase } from '../../src/lib/supabase';
 import { router } from 'expo-router';
 import { ChevronDown, ChevronRight, TrendingUp, Check, ExternalLink } from 'lucide-react-native';
-import { TYPOGRAPHY, RADIUS, SPACING } from '../../src/lib/theme';
+import { TYPOGRAPHY, RADIUS, SPACING, MIN_TOUCH_TARGET } from '../../src/lib/theme';
 import Divider from '../../src/components/ui/Divider';
 import { Card } from '../../src/components/ui/Card';
 import { UpgradeModal } from '../../src/components/plan/UpgradeModal';
@@ -112,7 +112,7 @@ const SettingRow = ({
       style={{
         paddingHorizontal: SPACING.lg,
         paddingVertical: SPACING.md,
-        minHeight: 44,
+        minHeight: MIN_TOUCH_TARGET,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -349,7 +349,7 @@ export default function SettingsScreen() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: SPACING.sm,
-                minHeight: 44,
+                minHeight: MIN_TOUCH_TARGET,
               }}
             >
               {portalLoading ? (
@@ -472,7 +472,7 @@ export default function SettingsScreen() {
                   accessibilityLabel={`Every ${freq} days`}
                   style={{
                     paddingVertical: SPACING.sm,
-                    minHeight: 44,
+                    minHeight: MIN_TOUCH_TARGET,
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     alignItems: 'center',
@@ -559,7 +559,7 @@ export default function SettingsScreen() {
             style={{
               paddingHorizontal: SPACING.lg,
               paddingVertical: SPACING.md,
-              minHeight: 44,
+              minHeight: MIN_TOUCH_TARGET,
             }}
           >
             {loading ? (
@@ -590,7 +590,7 @@ export default function SettingsScreen() {
             style={{
               paddingHorizontal: SPACING.lg,
               paddingVertical: SPACING.md,
-              minHeight: 44,
+              minHeight: MIN_TOUCH_TARGET,
             }}
           >
             <Text
@@ -810,7 +810,7 @@ export default function SettingsScreen() {
                 ...TYPOGRAPHY.body,
                 color: colors.textMain,
                 marginBottom: SPACING.xl,
-                minHeight: 44,
+                minHeight: MIN_TOUCH_TARGET,
               }}
               accessibilityLabel="Type DELETE to confirm account deletion"
             />

@@ -20,7 +20,7 @@ import {
   Clock,
 } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, TYPOGRAPHY, RADIUS } from '../../lib/theme';
+import { SPACING, TYPOGRAPHY, RADIUS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../lib/theme';
 import type { UnifiedScanResult } from '../../types';
 
 interface BroadcastResultsSummaryProps {
@@ -89,8 +89,8 @@ export const BroadcastResultsSummary = React.memo(function BroadcastResultsSumma
       >
         <View
           style={{
-            width: 40,
-            height: 40,
+            width: ICON_SIZES['2xl'],
+            height: ICON_SIZES['2xl'],
             borderRadius: RADIUS.lg,
             backgroundColor: colors.successBgMedium,
             justifyContent: 'center',
@@ -196,7 +196,7 @@ export const BroadcastResultsSummary = React.memo(function BroadcastResultsSumma
             borderRadius: RADIUS.md,
             paddingVertical: SPACING.lg,
             marginTop: SPACING.lg,
-            minHeight: 44,
+            minHeight: MIN_TOUCH_TARGET,
             flexDirection: 'row',
             justifyContent: 'center',
             alignItems: 'center',

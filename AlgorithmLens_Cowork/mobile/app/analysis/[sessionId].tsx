@@ -14,7 +14,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft, Sparkles } from 'lucide-react-native';
 import { triggerImpactMedium } from '../../src/lib/haptics';
 import { useTheme } from '../../src/context/ThemeContext';
-import { SPACING, TYPOGRAPHY, RADIUS, PLATFORMS } from '../../src/lib/theme';
+import { SPACING, TYPOGRAPHY, RADIUS, PLATFORMS, MIN_TOUCH_TARGET } from '../../src/lib/theme';
 import { useAnalysis } from '../../src/hooks/useAnalysis';
 import { AnalysisProgress } from '../../src/components/analysis/AnalysisProgress';
 import { BroadcastResultsSummary } from '../../src/components/analysis/BroadcastResultsSummary';
@@ -150,7 +150,7 @@ export default function AnalysisScreen() {
               borderRadius: RADIUS.md,
               paddingVertical: SPACING.md,
               paddingHorizontal: SPACING.xl,
-              minHeight: 44,
+              minHeight: MIN_TOUCH_TARGET,
               justifyContent: 'center',
               alignItems: 'center',
             }}
@@ -185,7 +185,7 @@ export default function AnalysisScreen() {
               borderRadius: RADIUS.md,
               paddingVertical: SPACING.md,
               paddingHorizontal: SPACING.xl,
-              minHeight: 44,
+              minHeight: MIN_TOUCH_TARGET,
               justifyContent: 'center',
               alignItems: 'center',
             }}

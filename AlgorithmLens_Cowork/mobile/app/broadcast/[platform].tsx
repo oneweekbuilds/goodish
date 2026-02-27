@@ -35,7 +35,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft, Radio, Shield } from 'lucide-react-native';
 import { triggerNotificationWarning, triggerImpactMedium } from '../../src/lib/haptics';
 import { useTheme } from '../../src/context/ThemeContext';
-import { SPACING, TYPOGRAPHY, RADIUS, PLATFORMS } from '../../src/lib/theme';
+import { SPACING, TYPOGRAPHY, RADIUS, PLATFORMS, ICON_SIZES } from '../../src/lib/theme';
 import { MIN_FRAMES_REQUIRED, MIN_SCAN_DURATION_SECS } from '../../src/config/thresholds';
 import { useBroadcast } from '../../src/hooks/useBroadcast';
 import { BroadcastOverlay } from '../../src/components/broadcast/BroadcastOverlay';
@@ -433,9 +433,9 @@ export default function BroadcastScreen() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
             style={{
-              width: 36,
-              height: 36,
-              borderRadius: 18,
+              width: ICON_SIZES.xl,
+              height: ICON_SIZES.xl,
+              borderRadius: ICON_SIZES.xl / 2,
               backgroundColor: colors.bgCard,
               justifyContent: 'center',
               alignItems: 'center',
@@ -450,9 +450,9 @@ export default function BroadcastScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs }}>
               <View
                 style={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: 12,
+                  width: ICON_SIZES.md,
+                  height: ICON_SIZES.md,
+                  borderRadius: ICON_SIZES.md / 2,
                   backgroundColor: `${platformBrandColor}18`,
                   justifyContent: 'center',
                   alignItems: 'center',

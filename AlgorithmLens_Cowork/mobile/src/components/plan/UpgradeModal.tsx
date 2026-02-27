@@ -37,7 +37,7 @@ import {
   Check,
 } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
+import { SPACING, RADIUS, TYPOGRAPHY } from 'from '../../lib/theme';'
 import { startCheckout, type PlanType } from '../../lib/checkout';
 import { triggerImpactLight, triggerImpactMedium } from '../../lib/haptics';
 
@@ -254,7 +254,7 @@ function UpgradeModalComponent({ visible, onClose }: UpgradeModalProps) {
             style={{
               width: 44,
               height: 44,
-              minHeight: 44,
+              minHeight: MIN_TOUCH_TARGET,
               minWidth: 44,
               justifyContent: 'center',
               alignItems: 'center',

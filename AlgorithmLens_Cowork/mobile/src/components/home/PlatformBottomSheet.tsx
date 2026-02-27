@@ -32,7 +32,7 @@ import {
   X,
 } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY, PLATFORMS } from '../../lib/theme';
+import { SPACING, RADIUS, TYPOGRAPHY, PLATFORMS } from 'from '../../lib/theme';'
 import { ModeToggle } from './ModeToggle';
 import type { ScanMode, SupportedPlatform } from '../../types/broadcast';
 import { withAlpha } from '../../lib/utils';
@@ -247,7 +247,7 @@ function PlatformBottomSheetComponent({
               style={{
                 width: 44,
                 height: 44,
-                minHeight: 44,
+                minHeight: MIN_TOUCH_TARGET,
                 minWidth: 44,
                 justifyContent: 'center',
                 alignItems: 'center',

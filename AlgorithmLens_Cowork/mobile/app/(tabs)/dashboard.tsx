@@ -27,7 +27,7 @@ import { SectionHeader } from '../../src/components/dashboard/SectionHeader';
 import { LockedOverlayCard } from '../../src/components/plan/LockedOverlayCard';
 import { DashboardTour } from '../../src/components/dashboard/DashboardTour';
 import { Skeleton } from '../../src/components/ui/Skeleton';
-import { SPACING, RADIUS, TYPOGRAPHY, COLORS } from '../../src/lib/theme';
+import { SPACING, RADIUS, TYPOGRAPHY, COLORS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../src/lib/theme';
 import { triggerSelection } from '../../src/lib/haptics';
 import { captureError } from '../../src/lib/sentry';
 import { getPlatformDisplayName } from '../../src/lib/utils';
@@ -471,7 +471,7 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
                 accessibilityRole="button"
                 accessibilityLabel={showAllIdeas ? 'Hide ideas' : 'See all ideas'}
                 accessibilityState={{ expanded: showAllIdeas }}
-                style={{ marginTop: SPACING.sm, minHeight: 44, justifyContent: 'center' }}
+                style={{ marginTop: SPACING.sm, minHeight: MIN_TOUCH_TARGET, justifyContent: 'center' }}
               >
                 <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.primaryBlue }}>
                   {showAllIdeas ? 'Hide ideas' : 'See all ideas'}
@@ -649,11 +649,10 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
           ...shadows.card,
         }}>
           <BarChart
-            items={data.topCreators.slice(0, 8).map((creator, i) => ({
+            items={data.topCreators.slice(0, 8).map((creator) => ({
               label: `@${creator.name}`,
               value: creator.count,
               percentage: creator.percentage,
-              color: i === 0 ? colors.barDarkest : i < 3 ? colors.primaryBlue : colors.blue200,
             }))}
           />
         </View>
@@ -673,7 +672,7 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
             justifyContent: 'space-between',
             paddingVertical: SPACING.md,
             paddingHorizontal: SPACING.lg,
-            minHeight: 44,
+            minHeight: MIN_TOUCH_TARGET,
             borderRadius: RADIUS.lg,
             backgroundColor: colors.bgCard,
             borderWidth: 1,
@@ -1151,7 +1150,7 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
     )}
 
     {/* PD-002/MC-004 FIX: Collapsible "Ideas to explore" with softer framing */}
-    {/* A-004 FIX: minHeight 44 ensures accessible tap target */}
+    {/* A-004 FIX: MIN_TOUCH_TARGET ensures accessible tap target */}
     <TouchableOpacity
       onPress={() => setShowIdeas(!showIdeas)}
       activeOpacity={0.7}
@@ -1161,7 +1160,7 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
         justifyContent: 'space-between',
         paddingVertical: SPACING.md,
         paddingHorizontal: SPACING.lg,
-        minHeight: 44,
+        minHeight: MIN_TOUCH_TARGET,
         borderRadius: RADIUS.lg,
         backgroundColor: colors.bgCard,
         borderWidth: 1,
@@ -1689,7 +1688,7 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
       </View>
 
       {/* PD-001 FIX: Collapsible detail sections */}
-      {/* A-004 FIX: minHeight 44 ensures accessible tap target */}
+      {/* A-004 FIX: MIN_TOUCH_TARGET ensures accessible tap target */}
       {(data.topPositiveSources.length > 0 || data.topNegativeSources.length > 0 || data.toneBySourceOrigin) && (
         <TouchableOpacity
           onPress={() => setShowToneDetails(!showToneDetails)}
@@ -1700,7 +1699,7 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
             justifyContent: 'space-between',
             paddingVertical: SPACING.md,
             paddingHorizontal: SPACING.lg,
-            minHeight: 44,
+            minHeight: MIN_TOUCH_TARGET,
             borderRadius: RADIUS.lg,
             backgroundColor: colors.bgCard,
             borderWidth: 1,
@@ -1903,7 +1902,7 @@ const TabErrorFallback = ({ tabLabel, colors }: { tabLabel: string; colors: Retu
     gap: SPACING.sm,
   }}>
     <View style={{
-      width: 44, height: 44, borderRadius: 22,
+      width: ICON_SIZES.touch, height: ICON_SIZES.touch, borderRadius: ICON_SIZES.touch / 2,
       backgroundColor: colors.warningLight, justifyContent: 'center', alignItems: 'center',
     }}>
       <Info size={20} color={colors.warning} strokeWidth={1.5} />
@@ -1949,7 +1948,7 @@ const AiConsentCard = ({
     gap: SPACING.sm,
   }}>
     <View style={{
-      width: 44, height: 44, borderRadius: 22,
+      width: ICON_SIZES.touch, height: ICON_SIZES.touch, borderRadius: ICON_SIZES.touch / 2,
       backgroundColor: colors.blue50, justifyContent: 'center', alignItems: 'center',
     }}>
       <Sparkles size={20} color={colors.primaryBlue} strokeWidth={1.5} />
@@ -1968,7 +1967,7 @@ const AiConsentCard = ({
         backgroundColor: colors.primaryBlue, borderRadius: RADIUS.md,
         paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm,
         flexDirection: 'row', alignItems: 'center', gap: SPACING.xs,
-        minHeight: 44,
+        minHeight: MIN_TOUCH_TARGET,
       }}
     >
       <Settings size={13} color={colors.white} strokeWidth={2} />
@@ -2002,7 +2001,7 @@ const AiProcessingCard = ({
     gap: SPACING.sm,
   }}>
     <View style={{
-      width: 44, height: 44, borderRadius: 22,
+      width: ICON_SIZES.touch, height: ICON_SIZES.touch, borderRadius: ICON_SIZES.touch / 2,
       backgroundColor: colors.blue50, justifyContent: 'center', alignItems: 'center',
     }}>
       <Info size={20} color={colors.primaryBlue} strokeWidth={1.5} />
@@ -2036,7 +2035,7 @@ const PlusTierBanner = ({ isPlus, colors }: { isPlus: boolean; colors: ReturnTyp
         borderRadius: RADIUS.lg,
         paddingHorizontal: SPACING.lg,
         paddingVertical: SPACING.sm,
-        minHeight: 44,
+        minHeight: MIN_TOUCH_TARGET,
         flexDirection: 'row',
         alignItems: 'center',
         gap: SPACING.sm,
@@ -2217,7 +2216,7 @@ export default function DashboardScreen() {
               style={{
                 backgroundColor: colors.primaryBlue, borderRadius: RADIUS.md,
                 paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm,
-                minHeight: 44,
+                minHeight: MIN_TOUCH_TARGET,
                 flexDirection: 'row', alignItems: 'center', gap: SPACING.xs,
               }}
             >
@@ -2297,7 +2296,7 @@ export default function DashboardScreen() {
               style={{
                 backgroundColor: colors.primaryBlue, borderRadius: RADIUS.md,
                 paddingHorizontal: SPACING.xl, paddingVertical: SPACING.md,
-                minHeight: 44,
+                minHeight: MIN_TOUCH_TARGET,
                 justifyContent: 'center', alignItems: 'center',
               }}
             >
@@ -2408,7 +2407,7 @@ export default function DashboardScreen() {
                       style={{
                         paddingVertical: SPACING.md,
                         paddingHorizontal: SPACING.lg,
-                        minHeight: 44,
+                        minHeight: MIN_TOUCH_TARGET,
                         borderRadius: RADIUS.full,
                         backgroundColor: isActive ? colors.primaryBlue : colors.bgSecondary,
                         borderWidth: isActive ? 0 : 1,

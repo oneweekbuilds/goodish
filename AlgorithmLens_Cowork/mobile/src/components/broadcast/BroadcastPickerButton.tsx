@@ -26,7 +26,7 @@ import {
 } from 'react-native';
 import { Radio, Smartphone } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, TYPOGRAPHY, RADIUS } from '../../lib/theme';
+import { SPACING, TYPOGRAPHY, RADIUS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../lib/theme';
 
 interface BroadcastPickerButtonProps {
   /** Called when the user taps the broadcast picker button. */
@@ -77,14 +77,14 @@ export const BroadcastPickerButton = React.memo(function BroadcastPickerButton({
         ...styles.button,
         backgroundColor: disabled ? colors.bgPage : colors.primaryBlue,
         opacity: disabled ? 0.5 : 1,
-        minHeight: 44,
+        minHeight: MIN_TOUCH_TARGET,
         ...shadows.soft,
       } : [
         styles.button,
         {
           backgroundColor: disabled ? colors.bgPage : colors.primaryBlue,
           opacity: disabled ? 0.5 : 1,
-          minHeight: 44,
+          minHeight: MIN_TOUCH_TARGET,
           ...shadows.soft,
         },
       ]}
@@ -149,8 +149,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.xl,
   },
   iconCircle: {
-    width: 40,
-    height: 40,
+    width: ICON_SIZES['2xl'],
+    height: ICON_SIZES['2xl'],
     borderRadius: RADIUS.xl,
     backgroundColor: 'rgba(255,255,255,0.15)',
     justifyContent: 'center',

@@ -10,7 +10,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { AlertCircle } from 'lucide-react-native';
 import { captureError } from '../lib/sentry';
-import { SPACING, TYPOGRAPHY, RADIUS, COLORS } from '../lib/theme';
+import { SPACING, TYPOGRAPHY, RADIUS, COLORS, ICON_SIZES } from '../lib/theme';
 
 interface Props {
   children: ReactNode;
@@ -109,8 +109,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.bgPrimary,
   },
   iconContainer: {
-    width: 64,
-    height: 64,
+    width: ICON_SIZES['5xl'],
+    height: ICON_SIZES['5xl'],
     borderRadius: RADIUS['2xl'],
     // L-17 FIX: Neutral background instead of warning yellow
     backgroundColor: COLORS.bgSecondary,

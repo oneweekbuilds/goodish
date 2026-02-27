@@ -38,7 +38,7 @@ import {
 } from 'lucide-react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from '../../context/ThemeContext';
-import { RADIUS, SPACING, TYPOGRAPHY, COLORS, SHADOWS, ICON_SIZES } from '../../lib/theme';
+import { RADIUS, SPACING, TYPOGRAPHY, COLORS, SHADOWS, ICON_SIZES } from 'from '../../lib/theme';'
 import { withAlpha } from '../../lib/utils';
 
 // ─── Storage Key ─────────────────────────────────────────
@@ -400,12 +400,12 @@ export const DashboardTour: React.FC<DashboardTourProps> = ({
                   style={Platform.OS === 'web' ? {
                     ...styles.backButton,
                     borderColor: colors.borderSlate200,
-                    minHeight: 44,
+                    minHeight: MIN_TOUCH_TARGET,
                   } : [
                     styles.backButton,
                     {
                       borderColor: colors.borderSlate200,
-                      minHeight: 44,
+                      minHeight: MIN_TOUCH_TARGET,
                     },
                   ]}
                   accessibilityRole="button"
@@ -425,10 +425,10 @@ export const DashboardTour: React.FC<DashboardTourProps> = ({
                 style={Platform.OS === 'web' ? {
                   ...styles.nextButton,
                   backgroundColor: step.accent,
-                  minHeight: 44,
+                  minHeight: MIN_TOUCH_TARGET,
                 } : [
                   styles.nextButton,
-                  { backgroundColor: step.accent, minHeight: 44 },
+                  { backgroundColor: step.accent, minHeight: MIN_TOUCH_TARGET },
                 ]}
                 accessibilityRole="button"
                 accessibilityLabel={isLastStep ? 'Finish tour' : `Next tab: ${TOUR_STEPS[Math.min(currentStep + 1, TOUR_STEPS.length - 1)]?.title ?? 'next'}`}

@@ -14,7 +14,7 @@ import { Zap, Users, Clock, ScanSearch, GitCompareArrows, Check, Radio, Filter, 
 import { Skeleton } from '../../src/components/ui/Skeleton';
 import { ContentFadeIn } from '../../src/components/ui/ContentFadeIn';
 import { useTheme } from '../../src/context/ThemeContext';
-import { TYPOGRAPHY, SPACING, RADIUS, PLATFORMS, COLORS } from '../../src/lib/theme';
+import { TYPOGRAPHY, SPACING, RADIUS, PLATFORMS, COLORS } from 'from '../../src/lib/theme';'
 import { getQualityLevel } from '../../src/config/thresholds';
 import ComparisonView from '../../src/components/dashboard/ComparisonView';
 import { withAlpha } from '../../src/lib/utils';
@@ -570,7 +570,7 @@ export default function HistoryScreen() {
                   backgroundColor: compareMode ? colors.cancelButtonBg : colors.blue50,
                   paddingHorizontal: SPACING.md,
                   paddingVertical: SPACING.sm,
-                  minHeight: 44,
+                  minHeight: MIN_TOUCH_TARGET,
                   borderRadius: RADIUS.md,
                 }}
               >
@@ -644,7 +644,7 @@ export default function HistoryScreen() {
                 paddingVertical: SPACING.sm,
                 borderRadius: RADIUS.pill,
                 backgroundColor: !filterPlatform ? colors.primaryBlue : colors.bgSecondary,
-                minHeight: 44,
+                minHeight: MIN_TOUCH_TARGET,
                 minWidth: 44,
                 justifyContent: 'center',
               }}
@@ -668,7 +668,7 @@ export default function HistoryScreen() {
                     paddingVertical: SPACING.sm,
                     borderRadius: RADIUS.pill,
                     backgroundColor: isActive ? colors.primaryBlue : colors.bgSecondary,
-                    minHeight: 44,
+                    minHeight: MIN_TOUCH_TARGET,
                     minWidth: 44,
                     justifyContent: 'center',
                   }}

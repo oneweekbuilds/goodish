@@ -14,7 +14,7 @@ import { useAuth } from '../../src/context/AuthContext';
 import { supabase } from '../../src/lib/supabase';
 import { useTheme } from '../../src/context/ThemeContext';
 import { Eye } from 'lucide-react-native';
-import { TYPOGRAPHY, SPACING, RADIUS, COLORS } from '../../src/lib/theme';
+import { TYPOGRAPHY, SPACING, RADIUS, COLORS, ICON_SIZES } from '../../src/lib/theme';
 import { Button } from '../../src/components/ui/Button';
 import Divider from '../../src/components/ui/Divider';
 
@@ -157,8 +157,8 @@ export default function LoginScreen() {
           {/* App Icon */}
           <View
             style={{
-              width: 72,
-              height: 72,
+              width: ICON_SIZES['6xl'],
+              height: ICON_SIZES['6xl'],
               backgroundColor: colors.primaryBlue,
               borderRadius: RADIUS.xl,
               justifyContent: 'center',

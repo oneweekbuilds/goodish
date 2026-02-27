@@ -35,7 +35,7 @@ import {
   ArrowRight,
 } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, TYPOGRAPHY, RADIUS, COLORS } from '../../lib/theme';
+import { SPACING, TYPOGRAPHY, RADIUS, COLORS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../lib/theme';
 import type { BroadcastStatus } from '../../types/broadcast';
 import { PLATFORM_BROADCAST_CONFIGS, type SupportedPlatform } from '../../types/broadcast';
 
@@ -143,7 +143,7 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
               activeOpacity={0.7}
               accessibilityRole="button"
               accessibilityLabel={`Open ${platformName}`}
-              style={[styles.secondaryButton, { borderColor: colors.borderSlate200, minHeight: 44 }]}
+              style={[styles.secondaryButton, { borderColor: colors.borderSlate200, minHeight: MIN_TOUCH_TARGET }]}
             >
               <Text style={[styles.secondaryButtonText, { color: colors.primaryBlue }]}>
                 Open {platformName}
@@ -155,7 +155,7 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
               activeOpacity={0.7}
               accessibilityRole="button"
               accessibilityLabel="Cancel broadcast session"
-              style={{ minHeight: 44 }}
+              style={{ minHeight: MIN_TOUCH_TARGET }}
             >
               <Text style={[styles.cancelText, { color: colors.textMuted }]}>
                 Cancel
@@ -219,7 +219,7 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
                 activeOpacity={0.7}
                 accessibilityRole="button"
                 accessibilityLabel={`Open ${platformName} in another app`}
-                style={[styles.secondaryButton, { borderColor: colors.borderSlate200, minHeight: 44 }]}
+                style={[styles.secondaryButton, { borderColor: colors.borderSlate200, minHeight: MIN_TOUCH_TARGET }]}
               >
                 <Text style={[styles.secondaryButtonText, { color: colors.primaryBlue }]}>
                   Back to {platformName}
@@ -259,7 +259,7 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
               activeOpacity={0.7}
               accessibilityRole="button"
               accessibilityLabel="View analysis results"
-              style={[styles.primaryButton, { backgroundColor: colors.primaryBlue, minHeight: 44 }]}
+              style={[styles.primaryButton, { backgroundColor: colors.primaryBlue, minHeight: MIN_TOUCH_TARGET }]}
             >
               <Text style={styles.primaryButtonText}>
                 View Results
@@ -290,7 +290,7 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
                 activeOpacity={0.7}
                 accessibilityRole="button"
                 accessibilityLabel="Retry broadcast session"
-                style={[styles.primaryButton, { backgroundColor: colors.primaryBlue, flex: 1, minHeight: 44 }]}
+                style={[styles.primaryButton, { backgroundColor: colors.primaryBlue, flex: 1, minHeight: MIN_TOUCH_TARGET }]}
               >
                 <Text style={styles.primaryButtonText}>Try Again</Text>
               </TouchableOpacity>
@@ -300,7 +300,7 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
                   activeOpacity={0.7}
                   accessibilityRole="button"
                   accessibilityLabel="View partial results from captured frames"
-                  style={[styles.secondaryButton, { borderColor: colors.borderSlate200, flex: 1, minHeight: 44 }]}
+                  style={[styles.secondaryButton, { borderColor: colors.borderSlate200, flex: 1, minHeight: MIN_TOUCH_TARGET }]}
                 >
                   <Text style={[styles.secondaryButtonText, { color: colors.primaryBlue }]}>
                     View Partial Results
@@ -395,8 +395,8 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.xs,
   },
   recordingDot: {
-    width: 10,
-    height: 10,
+    width: ICON_SIZES.dot,
+    height: ICON_SIZES.dot,
     borderRadius: RADIUS.sm,
   },
   buttonRow: {

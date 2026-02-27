@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, TYPOGRAPHY, RADIUS } from '../../lib/theme';
+import { SPACING, TYPOGRAPHY, RADIUS, MIN_TOUCH_TARGET } from '../../lib/theme';
 
 interface EmptyStateAction {
   label: string;
@@ -61,7 +61,7 @@ const EmptyStateComponent: React.FC<EmptyStateProps> = ({
       borderRadius: RADIUS.md,
       alignItems: 'center',
       justifyContent: 'center',
-      minHeight: 44,
+      minHeight: MIN_TOUCH_TARGET,
     },
     buttonText: {
       color: colors.white,
@@ -85,7 +85,7 @@ const EmptyStateComponent: React.FC<EmptyStateProps> = ({
       borderRadius: RADIUS.md,
       alignItems: 'center',
       justifyContent: 'center',
-      minHeight: 44,
+      minHeight: MIN_TOUCH_TARGET,
       flex: 1,
     },
     secondaryButtonText: {
