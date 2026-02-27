@@ -168,7 +168,7 @@ const Sparkline = React.memo(function Sparkline({
         height: CHART_HEIGHT + SPACING.sm,
         flexDirection: 'row',
         alignItems: 'flex-end',
-        gap: 2,
+        gap: SPACING.xxs,
       }}
     >
       {scores.map((score, index) => {
