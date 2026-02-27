@@ -2,7 +2,7 @@
  * Skeleton Component (#21)
  *
  * Reusable skeleton/placeholder component for loading states.
- * Uses Tailwind CSS animate-pulse for the loading animation.
+ * Now powered by shadcn/ui pattern with cn() for class merging.
  *
  * Usage:
  * ```jsx
@@ -11,6 +11,8 @@
  * ```
  */
 
+import { cn } from "@/lib/utils";
+
 export default function Skeleton({ className = '' }) {
-  return <div className={`animate-pulse bg-gray-200 rounded ${className}`} />;
+  return <div className={cn("animate-pulse rounded-md bg-muted", className)} />;
 }

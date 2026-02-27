@@ -10,6 +10,7 @@ export default {
                 sans: ['Inter', 'Plus Jakarta Sans', 'sans-serif'],
             },
             colors: {
+                // === Existing AlgorithmLens design tokens (preserved) ===
                 'bg-page': '#F7F8FC',
                 'surface-default': '#FFFFFF',
                 'primary-blue': '#2563EB', // 70% dominance
@@ -34,12 +35,51 @@ export default {
                 'green-500': '#10B981',
                 'green-600': '#059669',
                 'green-700': '#047857',
+                // === shadcn/ui CSS variable-based colors ===
+                border: "hsl(var(--border))",
+                input: "hsl(var(--input))",
+                ring: "hsl(var(--ring))",
+                background: "hsl(var(--background))",
+                foreground: "hsl(var(--foreground))",
+                primary: {
+                    DEFAULT: "hsl(var(--primary))",
+                    foreground: "hsl(var(--primary-foreground))",
+                },
+                secondary: {
+                    DEFAULT: "hsl(var(--secondary))",
+                    foreground: "hsl(var(--secondary-foreground))",
+                },
+                destructive: {
+                    DEFAULT: "hsl(var(--destructive))",
+                    foreground: "hsl(var(--destructive-foreground))",
+                },
+                muted: {
+                    DEFAULT: "hsl(var(--muted))",
+                    foreground: "hsl(var(--muted-foreground))",
+                },
+                accent: {
+                    DEFAULT: "hsl(var(--accent))",
+                    foreground: "hsl(var(--accent-foreground))",
+                },
+                popover: {
+                    DEFAULT: "hsl(var(--popover))",
+                    foreground: "hsl(var(--popover-foreground))",
+                },
+                card: {
+                    DEFAULT: "hsl(var(--card))",
+                    foreground: "hsl(var(--card-foreground))",
+                },
             },
             borderRadius: {
+                // Existing AlgorithmLens tokens (preserved)
                 'radius-sm': '12px',
                 'radius-md': '20px',
                 'radius-lg': '28px',
                 'pill': '9999px',
+                // shadcn/ui radius tokens
+                lg: "var(--radius)",
+                md: "calc(var(--radius) - 2px)",
+                sm: "calc(var(--radius) - 4px)",
             },
             boxShadow: {
                 'soft': '0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02)',
@@ -53,6 +93,9 @@ export default {
             animation: {
                 'pulse-slow': 'pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                 'scroll-slow': 'scroll 40s linear infinite',
+                // shadcn/ui animations
+                "accordion-down": "accordion-down 0.2s ease-out",
+                "accordion-up": "accordion-up 0.2s ease-out",
             },
             letterSpacing: {
                 'tight-hero': '-0.03em',
@@ -68,9 +111,18 @@ export default {
                 scroll: {
                     '0%': { transform: 'translateX(0)' },
                     '100%': { transform: 'translateX(-50%)' },
-                }
+                },
+                // shadcn/ui keyframes
+                "accordion-down": {
+                    from: { height: "0" },
+                    to: { height: "var(--radix-accordion-content-height)" },
+                },
+                "accordion-up": {
+                    from: { height: "var(--radix-accordion-content-height)" },
+                    to: { height: "0" },
+                },
             }
         },
     },
-    plugins: [],
+    plugins: [require("tailwindcss-animate")],
 }

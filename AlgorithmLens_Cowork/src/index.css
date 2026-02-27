@@ -5,6 +5,30 @@
 @tailwind utilities;
 
 @layer base {
+  /* shadcn/ui CSS variables — mapped to AlgorithmLens design tokens */
+  :root {
+    --background: 228 33% 97%; /* #F7F8FC (bg-page) */
+    --foreground: 215 28% 17%; /* #1E293B (text-main) */
+    --card: 0 0% 100%; /* #FFFFFF (surface-default) */
+    --card-foreground: 215 28% 17%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 28% 17%;
+    --primary: 217 91% 60%; /* #2563EB (primary-blue) */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 160 84% 39%; /* #10B981 (accent-green) */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 220 9% 46%; /* #64748B */
+    --muted-foreground: 215 14% 34%; /* #4B5563 (text-muted) */
+    --accent: 217 91% 95%; /* #EFF6FF (blue-50) */
+    --accent-foreground: 217 91% 60%;
+    --destructive: 0 72% 51%; /* #DC2626 (status-error) */
+    --destructive-foreground: 0 0% 100%;
+    --border: 215 28% 17% / 0.08; /* border-light */
+    --input: 215 28% 17% / 0.08;
+    --ring: 217 91% 60%;
+    --radius: 0.75rem; /* 12px — radius-sm */
+  }
+
   html {
     scroll-behavior: smooth;
   }

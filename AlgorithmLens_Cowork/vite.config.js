@@ -1,10 +1,16 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { sentryVitePlugin } from '@sentry/vite-plugin'
+import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
   cacheDir: '/tmp/.vite',
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
   plugins: [
     react(),
     // Sentry source map upload — only active in production builds

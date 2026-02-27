@@ -5,6 +5,35 @@ Claude Code updates this file during autonomous loops.
 
 ---
 
+## 2026-02-26 — Add shadcn/ui Component Library to Website
+
+### Phase 1: Setup (Complete)
+- Installed shadcn/ui dependencies: `tailwindcss-animate`, `class-variance-authority`, `@radix-ui/react-slot`, `@radix-ui/react-dialog`, `@radix-ui/react-tabs`, `@radix-ui/react-tooltip`, `@radix-ui/react-dropdown-menu`, `@radix-ui/react-separator`, `@radix-ui/react-label`
+- Created `src/lib/utils.js` with `cn()` utility function (clsx + tailwind-merge)
+- Added shadcn CSS variables to `src/index.css`, mapped to AlgorithmLens design tokens
+- Updated `tailwind.config.js` to add shadcn color/radius/animation tokens (merged with existing, no overwrites)
+- Updated `vite.config.js` to add `@/` path alias resolution
+- Created 13 shadcn/ui component files in `src/components/ui/`: button-shadcn, card, dialog, tabs, tooltip, badge, separator, sheet, dropdown-menu, alert, input, label, skeleton-shadcn
+
+### Phase 2: Audit (Complete)
+- Created `SHADCN_MIGRATION_PLAN.md` documenting all existing UI components, import counts, risk levels, and migration recommendations
+
+### Phase 3: Refactor (Complete)
+- Migrated `Skeleton.jsx` to use shadcn pattern (cn() utility + muted bg color). Same API, 2 importers updated seamlessly.
+- Button.jsx left as-is (0 importers; shadcn Button available separately at button-shadcn.jsx)
+- Toast, ErrorBoundary, BackLink, PlatformBadge, MetricCard all deferred (high risk or no shadcn equivalent)
+
+### Phase 4: Extension (Skipped)
+- Chrome extension uses vanilla JS with no React — shadcn/ui is not compatible. Documented in migration plan.
+
+### Phase 5: Consistency (N/A)
+- Extension does not use shadcn, so no cross-platform component consistency to verify.
+
+### Build Verification
+- All builds pass with no new errors throughout the process.
+
+---
+
 ## 2026-02-22 — Browser Scan Feature Audit (Ralph Loop)
 
 ### STEP 1: DISCOVER — Complete
