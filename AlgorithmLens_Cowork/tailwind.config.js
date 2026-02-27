@@ -7,7 +7,7 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Inter', 'Plus Jakarta Sans', 'sans-serif'],
+                sans: ['Geist', 'Plus Jakarta Sans', 'sans-serif'],
             },
             colors: {
                 // === Existing AlgorithmLens design tokens (preserved) ===

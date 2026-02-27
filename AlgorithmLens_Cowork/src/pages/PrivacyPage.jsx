@@ -25,7 +25,7 @@ export default function PrivacyPage() {
         description="Learn how AlgorithmLens collects, uses, and protects your data."
         path="/privacy"
       />
-      <div className="min-h-screen bg-bg-page pt-20 md:pt-24 pb-16 px-4 sm:px-6">
+      <div className="min-h-[100dvh] bg-bg-page pt-20 md:pt-24 pb-16 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto">
           {/* Back link */}
           <BackLink to="/" label="Back to home" />

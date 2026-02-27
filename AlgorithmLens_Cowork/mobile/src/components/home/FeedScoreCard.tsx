@@ -13,10 +13,30 @@
  */
 
 import React, { useRef, useEffect, useState } from 'react';
-import { View, Text, Animated } from 'react-native';
+import { View, Text, Animated, Platform } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { BarChart3, Info } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, RADIUS, TYPOGRAPHY, ICON_SIZES } from '../../lib/theme';
+import { Skeleton } from '../ui/Skeleton';
+
+// Web-safe gradient wrapper for LinearGradient
+const GradientWrapper = Platform.OS === 'web'
+  ? ({ colors: gradientColors, start, end, style, children, ...props }: any) => {
+      const flatStyle = style ? (Array.isArray(style) ? Object.assign({}, ...style) : style) : {};
+      return (
+        <View
+          style={{
+            ...flatStyle,
+            background: `linear-gradient(to bottom, ${gradientColors[0]} 0%, ${gradientColors[1]} 100%)`,
+          }}
+          {...props}
+        >
+          {children}
+        </View>
+      );
+    }
+  : LinearGradient;
 import type { FeedScore } from '../../types/streak';
 
 interface FeedScoreCardProps {
@@ -61,66 +81,55 @@ function useCountUp(target: number, duration: number = 600): string {
 function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
   const { colors, shadows } = useTheme();
 
-  // H-02 FIX: While data is loading (undefined), show a neutral loading card
+  // H-02 FIX: While data is loading (undefined), show a skeleton loading card
   // instead of flashing the "Complete 2 scans" empty state.
   if (feedScore === undefined) {
     return (
-      <View
+      <GradientWrapper
+        colors={[colors.bgCard, colors.bgCardGradientEnd]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
         style={{
-          backgroundColor: colors.bgCard,
           borderRadius: RADIUS.lg,
           padding: SPACING.lg,
           borderWidth: 1,
           borderColor: colors.borderSoft,
           ...shadows.card,
         }}
+        accessible
+        accessibilityRole="progressbar"
+        accessibilityLabel="Loading Feed Score"
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.sm }}>
-          <View
-            style={{
-              width: ICON_SIZES.lg,
-              height: ICON_SIZES.lg,
-              borderRadius: RADIUS.lg,
-              backgroundColor: colors.blue50,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <BarChart3 size={14} color={colors.primaryBlue} strokeWidth={2} />
-          </View>
-          <Text
-            style={{
-              ...TYPOGRAPHY.labelBold,
-              color: colors.textMain,
-            }}
-          >
-            Feed Score
-          </Text>
+        {/* Header skeleton: icon placeholder + title placeholder */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.md }}>
+          <Skeleton width={ICON_SIZES.lg} height={ICON_SIZES.lg} borderRadius={RADIUS.lg} />
+          <Skeleton width={80} height={14} borderRadius={RADIUS.xs} />
         </View>
-        <Text
-          style={{
-            ...TYPOGRAPHY.caption,
-            color: colors.textSecondary,
-          }}
-        >
-          Loading...
-        </Text>
-      </View>
+        {/* Score skeleton */}
+        <Skeleton width={64} height={32} borderRadius={RADIUS.sm} style={{ marginBottom: SPACING.sm }} />
+        {/* Summary text skeleton */}
+        <Skeleton width={120} height={12} borderRadius={RADIUS.xs} />
+      </GradientWrapper>
     );
   }
 
-  // Not enough data state
+  // Not enough data — tinted empty state with encouraging prompt
   if (!feedScore || feedScore.label === 'Not enough data') {
     return (
-      <View
+      <GradientWrapper
+        colors={[colors.bgCard, colors.bgCardGradientEnd]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
         style={{
-          backgroundColor: colors.bgCard,
           borderRadius: RADIUS.lg,
           padding: SPACING.lg,
           borderWidth: 1,
           borderColor: colors.borderSoft,
           ...shadows.card,
         }}
+        accessible
+        accessibilityRole="summary"
+        accessibilityLabel="Feed Score: Complete 2 scans to see your Feed Score"
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.sm }}>
           <View
@@ -133,7 +142,7 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
               alignItems: 'center',
             }}
           >
-            <BarChart3 size={14} color={colors.primaryBlue} strokeWidth={2} />
+            <BarChart3 size={16} color={colors.primaryBlue} strokeWidth={1.8} />
           </View>
           <Text
             style={{
@@ -144,22 +153,31 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
             Feed Score
           </Text>
         </View>
-        <Text
+        <View
           style={{
-            ...TYPOGRAPHY.caption,
-            color: colors.textSecondary,
+            backgroundColor: colors.brandTintBg,
+            borderRadius: RADIUS.md,
+            padding: SPACING.md,
           }}
         >
-          {/* H-4 FIX: Shortened empty state text */}
-          {'Complete 2 scans to see your Feed Score.'}
-        </Text>
-      </View>
+          <Text
+            style={{
+              ...TYPOGRAPHY.bodySmall,
+              color: colors.textSecondary,
+            }}
+          >
+            Complete 2 scans to see your Feed Score.
+          </Text>
+        </View>
+      </GradientWrapper>
     );
   }
 
-  // Score color — muted scale, never alarming
+  // Score color — semantic scale based on feed health
   const getScoreColor = (score: number): string => {
+    if (score >= 70) return colors.success;
     if (score >= 50) return colors.primaryBlue;
+    if (score >= 30) return colors.warning;
     return colors.textMuted;
   };
 
@@ -167,14 +185,16 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
   const animatedScore = useCountUp(feedScore.score);
 
   return (
-    <View
+    <GradientWrapper
+      colors={[colors.bgCard, colors.bgCardGradientEnd]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
       style={{
-        backgroundColor: colors.bgCard,
         borderRadius: RADIUS.lg,
         padding: SPACING.lg,
         borderWidth: 1,
-        borderColor: colors.borderSoft,
-        ...shadows.card,
+        borderColor: colors.brandTintBorder,
+        ...shadows.lg,
       }}
       accessibilityRole="summary"
       accessibilityLabel={`Feed score: ${feedScore.score} - ${feedScore.label}`}
@@ -182,15 +202,15 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.md }}>
         <View
           style={{
-            width: 28,
-            height: 28,
+            width: ICON_SIZES.lg,
+            height: ICON_SIZES.lg,
             borderRadius: RADIUS.lg,
             backgroundColor: colors.blue50,
             justifyContent: 'center',
             alignItems: 'center',
           }}
         >
-          <BarChart3 size={14} color={colors.primaryBlue} strokeWidth={2} />
+          <BarChart3 size={16} color={colors.primaryBlue} strokeWidth={1.8} />
         </View>
         <Text
           style={{
@@ -203,7 +223,7 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
         </Text>
         <Text
           style={{
-            fontSize: TYPOGRAPHY.captionSmall.fontSize,
+            ...TYPOGRAPHY.captionSmall,
             color: colors.textSecondary,
           }}
         >
@@ -265,7 +285,7 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
           Based on source diversity, ad density, and content balance across recent scans
         </Text>
       </View>
-    </View>
+    </GradientWrapper>
   );
 }
 

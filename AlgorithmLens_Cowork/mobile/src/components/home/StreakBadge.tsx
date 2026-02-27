@@ -17,9 +17,28 @@
 
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Animated, AccessibilityInfo, Platform, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Flame, Pause, Sparkles, Snowflake, Clock } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
+import { SPACING, RADIUS, TYPOGRAPHY, ICON_SIZES } from '../../lib/theme';
+
+// Web-safe gradient wrapper for LinearGradient
+const GradientWrapper = Platform.OS === 'web'
+  ? ({ colors: gradientColors, start, end, style, children, ...props }: any) => {
+      const flatStyle = style ? (Array.isArray(style) ? Object.assign({}, ...style) : style) : {};
+      return (
+        <View
+          style={{
+            ...flatStyle,
+            background: `linear-gradient(to bottom, ${gradientColors[0]} 0%, ${gradientColors[1]} 100%)`,
+          }}
+          {...props}
+        >
+          {children}
+        </View>
+      );
+    }
+  : LinearGradient;
 import type { StreakData, StreakDisplayState } from '../../types/streak';
 import { getStreakVisualTier } from '../../types/streak';
 
@@ -77,12 +96,14 @@ function StreakBadgeComponent({
 
   if (displayState === 'NEW') {
     return (
-      <View
+      <GradientWrapper
+        colors={[colors.bgCard, colors.bgCardGradientEnd]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
         style={{
           flexDirection: 'row',
           alignItems: 'center',
           gap: SPACING.sm,
-          backgroundColor: colors.bgCard,
           borderRadius: RADIUS.lg,
           paddingHorizontal: SPACING.lg,
           paddingVertical: SPACING.md,
@@ -93,16 +114,16 @@ function StreakBadgeComponent({
       >
         <View
           style={{
-            width: 32,
-            height: 32,
+            width: ICON_SIZES.xl,
+            height: ICON_SIZES.xl,
             borderRadius: RADIUS.lg,
-            backgroundColor: colors.blue50,
+            backgroundColor: colors.streakOrangeBg,
             justifyContent: 'center',
             alignItems: 'center',
           }}
         >
           {/* H-3 FIX: Use Flame icon instead of Sparkles — more recognizable for streaks */}
-          <Flame size={18} color={colors.streakOrange} strokeWidth={1.8} />
+          <Flame size={20} color={colors.streakOrange} strokeWidth={1.8} />
         </View>
         <View style={{ flex: 1 }}>
           <Text
@@ -123,18 +144,20 @@ function StreakBadgeComponent({
             Scan once to begin tracking your feed awareness
           </Text>
         </View>
-      </View>
+      </GradientWrapper>
     );
   }
 
   if (displayState === 'PAUSED') {
     return (
-      <View
+      <GradientWrapper
+        colors={[colors.bgCard, colors.bgCardGradientEnd]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
         style={{
           flexDirection: 'row',
           alignItems: 'center',
           gap: SPACING.sm,
-          backgroundColor: colors.bgCard,
           borderRadius: RADIUS.lg,
           paddingHorizontal: SPACING.lg,
           paddingVertical: SPACING.md,
@@ -145,15 +168,15 @@ function StreakBadgeComponent({
       >
         <View
           style={{
-            width: 32,
-            height: 32,
+            width: ICON_SIZES.xl,
+            height: ICON_SIZES.xl,
             borderRadius: RADIUS.lg,
             backgroundColor: colors.blue50,
             justifyContent: 'center',
             alignItems: 'center',
           }}
         >
-          <Pause size={14} color={colors.primaryBlue} strokeWidth={2} />
+          <Pause size={20} color={colors.primaryBlue} strokeWidth={1.8} />
         </View>
         <View style={{ flex: 1 }}>
           <Text
@@ -176,7 +199,7 @@ function StreakBadgeComponent({
               : 'Scan today to start a new streak.'}
           </Text>
         </View>
-      </View>
+      </GradientWrapper>
     );
   }
 
@@ -206,7 +229,7 @@ function StreakBadgeComponent({
 
   const flameColor = getFlameColor();
   const flameBgColor = getBackgroundColor();
-  const iconSize = Math.round(16 * tier.iconScale);
+  const iconSize = Math.round(18 * tier.iconScale);
   const containerSize = Math.round(32 * Math.min(tier.iconScale, 1.3));
 
   return (
@@ -220,18 +243,20 @@ function StreakBadgeComponent({
           }
       }
     >
-      <View
+      <GradientWrapper
+        colors={[colors.bgCard, colors.bgCardGradientEnd]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
         style={{
           flexDirection: 'row',
           alignItems: 'center',
           gap: SPACING.sm,
-          backgroundColor: colors.bgCard,
           borderRadius: RADIUS.lg,
           paddingHorizontal: SPACING.lg,
           paddingVertical: SPACING.md,
           borderWidth: 1,
-          borderColor: atRisk ? colors.warningBorder : isGrace ? colors.lowSampleBorder : colors.borderSoft,
-          ...shadows.card,
+          borderColor: atRisk ? colors.warningBorder : isGrace ? colors.lowSampleBorder : colors.brandTintBorder,
+          ...shadows.lg,
         }}
       >
         {/* Progressive flame icon */}
@@ -253,7 +278,7 @@ function StreakBadgeComponent({
           <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: SPACING.xs }}>
             <Text
               style={{
-                ...TYPOGRAPHY.scoreSmall,
+                ...(streakData.current_streak >= 7 ? TYPOGRAPHY.scoreLarge : TYPOGRAPHY.scoreSmall),
                 color: colors.textMain,
               }}
             >
@@ -308,8 +333,8 @@ function StreakBadgeComponent({
         {freezeAvailable && (
           <View
             style={{
-              width: 24,
-              height: 24,
+              width: ICON_SIZES.md,
+              height: ICON_SIZES.md,
               borderRadius: RADIUS.lg,
               backgroundColor: colors.blue50,
               justifyContent: 'center',
@@ -318,10 +343,10 @@ function StreakBadgeComponent({
             accessibilityLabel={`Scan streak: ${streakData.current_streak} days`}
             accessible
           >
-            <Snowflake size={12} color={colors.primaryBlue} strokeWidth={2} />
+            <Snowflake size={14} color={colors.primaryBlue} strokeWidth={1.8} />
           </View>
         )}
-      </View>
+      </GradientWrapper>
     </Animated.View>
   );
 }

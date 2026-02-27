@@ -271,28 +271,28 @@ export const DARK_COLORS = {
   bgElevated: '#1E293B',
   bgPage: '#0F172A',
   bgCard: '#1E293B',
-  bgCardGradientEnd: '#1E293B',
+  bgCardGradientEnd: '#232F42',
 
   // ── Semantic Borders ──
-  borderDefault: 'rgba(148, 163, 184, 0.18)',
+  borderDefault: 'rgba(148, 163, 184, 0.25)',
   borderSubtle: 'rgba(148, 163, 184, 0.08)',
-  borderLight: 'rgba(148, 163, 184, 0.12)',
-  borderSoft: 'rgba(148, 163, 184, 0.08)',
-  borderMedium: 'rgba(148, 163, 184, 0.18)',
+  borderLight: 'rgba(148, 163, 184, 0.18)',
+  borderSoft: 'rgba(148, 163, 184, 0.22)',
+  borderMedium: 'rgba(148, 163, 184, 0.28)',
   borderSlate200: 'rgba(148, 163, 184, 0.15)',
   borderSlate300: 'rgba(148, 163, 184, 0.20)',
 
   // ── Brand Tints ──
-  brandTintBg: 'rgba(59, 130, 246, 0.06)',
-  brandTintBorder: 'rgba(59, 130, 246, 0.20)',
-  accentTintBg: 'rgba(52, 211, 153, 0.06)',
+  brandTintBg: 'rgba(59, 130, 246, 0.10)',
+  brandTintBorder: 'rgba(59, 130, 246, 0.28)',
+  accentTintBg: 'rgba(52, 211, 153, 0.10)',
 
   // ── Surface Colors ──
   inputBg: '#334155',
   overlayBg: 'rgba(15, 23, 42, 0.92)',
   overlayDimBg: 'rgba(0, 0, 0, 0.6)',
   scanOverlayBg: '#1E293B',
-  dividerColor: 'rgba(148, 163, 184, 0.15)',
+  dividerColor: 'rgba(148, 163, 184, 0.20)',
   cancelButtonBg: '#334155',
   timerBg: '#334155',
   savingOverlayBg: 'rgba(0, 0, 0, 0.6)',
@@ -379,7 +379,7 @@ export const DARK_COLORS = {
   white: '#FFFFFF',
   black: '#000000',
   transparent: 'transparent',
-  separator: 'rgba(148, 163, 184, 0.20)',
+  separator: 'rgba(148, 163, 184, 0.25)',
 
   // ── Backward Compat Aliases ──
   primaryBlue: '#3B82F6',
@@ -736,10 +736,10 @@ export const ICON_SIZES = {
 
 export const PLATFORMS = {
   instagram: { name: 'Instagram', color: '#E4405F', icon: 'instagram' },
-  twitter: { name: 'X', color: '#000000', icon: 'twitter' },
+  twitter: { name: 'X', color: '#14171A', icon: 'twitter' },
   youtube: { name: 'YouTube', color: '#D32F2F', icon: 'youtube' },
   // O-4 FIX: Use music-2 icon which is slightly more recognizable for TikTok
-  tiktok: { name: 'TikTok', color: '#000000', icon: 'music-2' },
+  tiktok: { name: 'TikTok', color: '#161823', icon: 'music-2' },
   facebook: { name: 'Facebook', color: '#1877F2', icon: 'facebook' },
   reddit: { name: 'Reddit', color: '#FF4500', icon: 'message-circle' },
 } as const;

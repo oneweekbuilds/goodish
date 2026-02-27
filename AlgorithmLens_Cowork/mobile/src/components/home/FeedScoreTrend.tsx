@@ -5,17 +5,39 @@
  * - A small SVG-like sparkline (drawn with View elements)
  * - Color-coded direction arrow (green up, orange down, gray dash)
  * - Contextual summary text
+ * - Gradient card surface with brand-tint border
+ * - Area fill below sparkline bars with subtle gradient
+ * - Current value emphasis dot on last data point
  *
  * Design: Compact, informational. Fits below or beside the FeedScoreCard.
  * Uses the design system's color tokens. Never alarming.
  */
 
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Platform } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { TrendingUp, TrendingDown, Minus, Activity } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, RADIUS, TYPOGRAPHY, ICON_SIZES } from '../../lib/theme';
 import type { FeedScoreTrendPoint, TrendDirection } from '../../types/achievements';
+
+// Web-safe gradient wrapper for LinearGradient
+const GradientWrapper = Platform.OS === 'web'
+  ? ({ colors: gradientColors, start, end, style, children, ...props }: any) => {
+      const flatStyle = style ? (Array.isArray(style) ? Object.assign({}, ...style) : style) : {};
+      return (
+        <View
+          style={{
+            ...flatStyle,
+            background: `linear-gradient(to bottom, ${gradientColors[0]} 0%, ${gradientColors[1]} 100%)`,
+          }}
+          {...props}
+        >
+          {children}
+        </View>
+      );
+    }
+  : LinearGradient;
 
 interface FeedScoreTrendProps {
   points: FeedScoreTrendPoint[];
@@ -29,13 +51,15 @@ function FeedScoreTrendComponent({ points, direction, changePercent }: FeedScore
   // Need at least 2 points for a meaningful trend
   if (points.length < 2) {
     return (
-      <View
+      <GradientWrapper
+        colors={[colors.bgCard, colors.bgCardGradientEnd]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
         style={{
-          backgroundColor: colors.bgCard,
           borderRadius: RADIUS.lg,
           padding: SPACING.lg,
           borderWidth: 1,
-          borderColor: colors.borderSoft,
+          borderColor: colors.brandTintBorder,
           ...shadows.card,
         }}
       >
@@ -50,13 +74,13 @@ function FeedScoreTrendComponent({ points, direction, changePercent }: FeedScore
               alignItems: 'center',
             }}
           >
-            <Activity size={12} color={colors.primaryBlue} strokeWidth={2} />
+            <Activity size={14} color={colors.primaryBlue} strokeWidth={2} />
           </View>
           <Text style={{ ...TYPOGRAPHY.caption, color: colors.textSecondary, flex: 1 }}>
             Your score trend will appear here after a few scans on different days.
           </Text>
         </View>
-      </View>
+      </GradientWrapper>
     );
   }
 
@@ -65,13 +89,15 @@ function FeedScoreTrendComponent({ points, direction, changePercent }: FeedScore
   const summaryText = getSummaryText(direction, changePercent);
 
   return (
-    <View
+    <GradientWrapper
+      colors={[colors.bgCard, colors.bgCardGradientEnd]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
       style={{
-        backgroundColor: colors.bgCard,
         borderRadius: RADIUS.lg,
         padding: SPACING.lg,
         borderWidth: 1,
-        borderColor: colors.borderSoft,
+        borderColor: colors.brandTintBorder,
         ...shadows.card,
       }}
       accessibilityRole="image"
@@ -88,15 +114,15 @@ function FeedScoreTrendComponent({ points, direction, changePercent }: FeedScore
       >
         <View
           style={{
-            width: 24,
-            height: 24,
+            width: ICON_SIZES.md,
+            height: ICON_SIZES.md,
             borderRadius: RADIUS.md,
             backgroundColor: colors.blue50,
             justifyContent: 'center',
             alignItems: 'center',
           }}
         >
-          <Activity size={12} color={colors.primaryBlue} strokeWidth={2} />
+          <Activity size={14} color={colors.primaryBlue} strokeWidth={2} />
         </View>
         <Text
           style={{
@@ -136,7 +162,7 @@ function FeedScoreTrendComponent({ points, direction, changePercent }: FeedScore
       >
         {summaryText}
       </Text>
-    </View>
+    </GradientWrapper>
   );
 }
 
@@ -162,6 +188,11 @@ const Sparkline = React.memo(function Sparkline({
   const CHART_WIDTH_PER_POINT = 36;
   const chartWidth = Math.max(points.length * CHART_WIDTH_PER_POINT, 100);
 
+  // Primary color with 15% opacity for area fill gradient
+  const primaryColor = colors.primary as string;
+  const areaFillTop = primaryColor + '26'; // ~15% opacity hex
+  const areaFillBottom = primaryColor + '00'; // fully transparent
+
   return (
     <View
       style={{
@@ -185,28 +216,55 @@ const Sparkline = React.memo(function Sparkline({
               maxWidth: CHART_WIDTH_PER_POINT,
             }}
           >
-            {/* Score label on top of last bar */}
+            {/* Score label + emphasis dot on last bar */}
             {isLast && (
-              <Text
-                style={{
-                  ...TYPOGRAPHY.captionSmall,
-                  color: color,
-                  fontWeight: '600',
-                  marginBottom: SPACING.xxs,
-                }}
-              >
-                {score}
-              </Text>
+              <View style={{ alignItems: 'center' }}>
+                <Text
+                  style={{
+                    ...TYPOGRAPHY.captionSmall,
+                    color: color,
+                    fontWeight: '600',
+                    marginBottom: SPACING.xxs,
+                  }}
+                >
+                  {score}
+                </Text>
+                {/* Current value glow + dot */}
+                <View
+                  style={{
+                    position: 'absolute',
+                    bottom: -3,
+                    width: 14,
+                    height: 14,
+                    borderRadius: 7,
+                    backgroundColor: primaryColor + '33', // 20% opacity glow
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: 3,
+                      backgroundColor: primaryColor,
+                    }}
+                  />
+                </View>
+              </View>
             )}
 
-            {/* Bar */}
-            <View
+            {/* Bar with area fill gradient */}
+            <GradientWrapper
+              colors={isLast ? [color, color] : [areaFillTop, areaFillBottom]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
               style={{
                 width: '70%',
                 height: barHeight,
                 borderRadius: RADIUS.xs,
-                backgroundColor: isLast ? color : (colors.blue100 as string),
                 minWidth: 8,
+                backgroundColor: isLast ? color : (colors.blue100 as string),
               }}
             />
 
@@ -229,9 +287,9 @@ const Sparkline = React.memo(function Sparkline({
 
 function getDirectionColor(direction: TrendDirection, colors: Record<string, string | readonly string[]>): string {
   switch (direction) {
-    case 'improving': return colors.accentGreen as string;
-    case 'declining': return colors.warning as string;
-    default: return colors.textTertiary as string;
+    case 'improving': return colors.success as string;
+    case 'declining': return colors.error as string;
+    default: return colors.textSecondary as string;
   }
 }
 

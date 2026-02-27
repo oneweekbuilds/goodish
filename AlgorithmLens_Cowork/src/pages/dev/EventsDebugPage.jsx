@@ -38,7 +38,7 @@ const EventsDebugPage = () => {
 
   if (!isAuthorized) {
     return (
-      <div className="min-h-screen bg-bg-page pt-28 pb-16 flex items-center justify-center px-4">
+      <div className="min-h-[100dvh] bg-bg-page pt-28 pb-16 flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-lg border border-slate-200 p-8 text-center">
           <h1 className="text-2xl font-bold text-slate-900 mb-3">Not available</h1>
           <p className="text-slate-600">
@@ -50,7 +50,7 @@ const EventsDebugPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-bg-page pt-24 pb-16 px-4">
+    <div className="min-h-[100dvh] bg-bg-page pt-24 pb-16 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-6">

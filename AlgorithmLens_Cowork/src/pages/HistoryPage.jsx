@@ -187,7 +187,7 @@ const HistoryPage = () => {
   // Loading State (#21 Skeleton Loading)
   if (loading) {
     return (
-      <div className="min-h-screen bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
+      <div className="min-h-[100dvh] bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
         <div className="max-w-4xl mx-auto">
           {/* Header Skeleton */}
           <div className="mb-8">
@@ -220,7 +220,7 @@ const HistoryPage = () => {
   // Error State
   if (error) {
     return (
-      <div className="min-h-screen bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
+      <div className="min-h-[100dvh] bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
         <div className="max-w-4xl mx-auto">
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-8 text-center">
             <AlertCircle size={48} className="text-slate-400 mx-auto mb-4" />
@@ -241,7 +241,7 @@ const HistoryPage = () => {
   // Empty State
   if (scans.length === 0) {
     return (
-      <div className="min-h-screen bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
+      <div className="min-h-[100dvh] bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-text-main">Scan History</h1>
@@ -274,7 +274,7 @@ const HistoryPage = () => {
   return (
     <>
       <SEO title="Scan History" description="View your past scans and track how your algorithmic profile has changed over time." path="/history" noIndex={true} />
-      <div className="min-h-screen bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
+      <div className="min-h-[100dvh] bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
         <div className="max-w-4xl mx-auto">
 
         {/* Delete error banner */}

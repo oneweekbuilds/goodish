@@ -95,7 +95,7 @@ const BarChartComponent: React.FC<BarChartProps> = ({
 
   return (
     <View
-      style={{ gap: SPACING.lg }}
+      style={{ gap: SPACING.xl }}
       accessible={true}
       accessibilityRole="image"
       accessibilityLabel={
@@ -153,28 +153,35 @@ const BarChartComponent: React.FC<BarChartProps> = ({
                   marginLeft: SPACING.sm,
                 }}
               >
-                {item.value}
+                {item.value} ({itemPercentageOfTotal}%)
               </Text>
             </View>
 
-            {/* Bar with percentage label */}
+            {/* Bar with background track */}
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs }}>
-              <Animated.View
-                style={{
-                  width: widthAnim,
-                  height: 24,
-                  backgroundColor: barColor,
-                  borderRadius: RADIUS.xs,
-                }}
-              />
-              <Text
-                style={{
-                  ...TYPOGRAPHY.label,
-                  color: colors.textSecondary,
-                  minWidth: 32,
-                }}
-              >
-                {Math.round(normalizedPercentage)}%
+              <View style={{
+                flex: 1,
+                height: 28,
+                backgroundColor: colors.stackedBarTrack,
+                borderRadius: RADIUS.xs,
+                overflow: 'hidden',
+              }}>
+                <Animated.View
+                  style={{
+                    width: widthAnim,
+                    height: 28,
+                    backgroundColor: barColor,
+                    borderRadius: RADIUS.xs,
+                  }}
+                />
+              </View>
+              <Text style={{
+                ...TYPOGRAPHY.label,
+                color: colors.textSecondary,
+                minWidth: 36,
+                textAlign: 'right',
+              }}>
+                {itemPercentageOfTotal}%
               </Text>
             </View>
           </View>
@@ -209,6 +216,8 @@ const BarChartComponent: React.FC<BarChartProps> = ({
                   height: ICON_SIZES.dot,
                   borderRadius: ICON_SIZES.dot / 2,
                   backgroundColor: entry.color,
+                  borderWidth: 1,
+                  borderColor: colors.borderSubtle,
                 }}
               />
               <Text

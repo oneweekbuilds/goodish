@@ -56,12 +56,10 @@ const SettingSection = ({
   }}>
     <Text
       style={{
-        ...TYPOGRAPHY.caption,
-        color: colors.textSecondary,
+        ...TYPOGRAPHY.overline,
+        color: colors.textTertiary,
         marginBottom: SPACING.sm,
         paddingHorizontal: SPACING.lg,
-        fontWeight: '500',
-        letterSpacing: 0.2,
       }}
     >
       {title}
@@ -69,7 +67,7 @@ const SettingSection = ({
     <View
       style={{
         backgroundColor: colors.bgCard,
-        borderRadius: RADIUS.md,
+        borderRadius: RADIUS.lg,
         borderWidth: 1,
         borderColor: colors.borderLight,
         overflow: 'hidden',
@@ -295,7 +293,7 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
-      <ScrollView scrollEventThrottle={16}>
+      <ScrollView scrollEventThrottle={16} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={{ paddingHorizontal: SPACING.lg, paddingVertical: SPACING.xl }}>
           <Text

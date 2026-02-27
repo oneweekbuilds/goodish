@@ -21,7 +21,7 @@ const TAB_PREVIEWS = [
 
 const EmptyDashboard = () => {
   return (
-    <div className="min-h-screen bg-bg-page pt-24 md:pt-28 pb-16 px-4 md:px-6">
+    <div className="min-h-[100dvh] bg-bg-page pt-24 md:pt-28 pb-16 px-4 md:px-6">
       <div className="max-w-2xl mx-auto">
         {/* Main card */}
         <motion.div

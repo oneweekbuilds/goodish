@@ -4,11 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AlgorithmLens v1.1</title>
-  <!-- [Audit 6 H1] Import Inter font to match web app typography -->
+  <!-- Design system: Geist font (replaces Inter per ui-ux-philosophy v0.2.0) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- (Audit 8 Cycle 4 H6) Reduced font weights: removed 500/800, kept 400/600/700 for performance -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -16,14 +15,51 @@
       box-sizing: border-box;
     }
 
+    /* [Design System] CSS Custom Properties for Light & Dark Themes */
+    :root {
+      --bg-page: #F7F8FC;
+      --bg-surface: #FFFFFF;
+      --text-primary: #1e293b;
+      --text-secondary: #4B5563;
+      --text-muted: #64748B;
+      --border-light: rgba(30, 41, 59, 0.08);
+      --accent-blue: #2563EB;
+      --accent-blue-hover: #1d4ed8;
+      --accent-green: #10B981;
+      --status-success: #059669;
+      --status-error: #DC2626;
+      --status-warning: #D97706;
+      --shadow-soft: 0 2px 8px rgba(0,0,0,0.04);
+      --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(15,23,42,0.04);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-page: #0f172a;
+        --bg-surface: #1e293b;
+        --text-primary: #f1f5f9;
+        --text-secondary: #94a3b8;
+        --text-muted: #64748b;
+        --border-light: rgba(248, 250, 252, 0.08);
+        --accent-blue: #3b82f6;
+        --accent-blue-hover: #2563eb;
+        --accent-green: #34d399;
+        --status-success: #34d399;
+        --status-error: #f87171;
+        --status-warning: #fbbf24;
+        --shadow-soft: 0 2px 8px rgba(0,0,0,0.2);
+        --shadow-card: 0 1px 3px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.15);
+      }
+    }
+
     body {
       width: 360px;
       min-height: 200px;
-      /* [Audit 6 H1] Match web app font: Inter with system fallbacks */
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      /* Design system: Geist font (replaces Inter per ui-ux-philosophy v0.2.0) */
+      font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       /* [Audit 6] Match app's bg-page color */
-      background: #F7F8FC;
-      color: #1e293b;
+      background: var(--bg-page);
+      color: var(--text-primary);
     }
 
     /* [Audit 6 C3-M2] Scrollbar styling matching web app */
@@ -70,7 +106,7 @@
     }
 
     .version-tag {
-      font-size: 9px;
+      font-size: 12px;
       /* [Accessibility] Fixed contrast: #9ca3af (3.8:1) → #6b7280 (4.7:1) for WCAG AA */
       color: #6b7280;
       margin-left: auto;
@@ -173,7 +209,7 @@
 
     .session-timer small {
       display: block;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 500;
       color: #6b7280;
       margin-top: 3px;
@@ -353,7 +389,7 @@
     .dash-card[data-tab="suggested"] .dash-card-indicator { background: #10b981; }
 
     .dash-card-name {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       /* [Audit 6] Match app's text-muted */
       color: #4B5563;
@@ -384,7 +420,7 @@
     }
 
     .dash-card-detail {
-      font-size: 11px;
+      font-size: 12px;
       /* [Accessibility] Fixed contrast: #9ca3af (3.8:1) → #6b7280 (4.7:1) for WCAG AA */
       color: #6b7280;
       line-height: 1.35;
@@ -433,7 +469,7 @@
       position: absolute;
       bottom: 12px;
       right: 12px;
-      font-size: 11px;
+      font-size: 12px;
       color: #d1d5db;
       transition: all 0.2s ease;
     }
@@ -509,7 +545,7 @@
     .saved-text small {
       display: block;
       /* [Audit 6 C2-M3] Increase minimum text size for readability */
-      font-size: 11px;
+      font-size: 12px;
       color: #2563eb;
     }
 
@@ -591,7 +627,7 @@
     .ai-consent-info {
       margin-top: 6px;
       /* [Audit 6 C2-M3] Increased from 10px for readability */
-      font-size: 11px;
+      font-size: 12px;
       /* [Accessibility] Fixed contrast: #9ca3af (3.8:1) → #6b7280 (4.7:1) for WCAG AA */
       color: #6b7280;
       line-height: 1.5;
@@ -604,7 +640,7 @@
     /* ============================================ */
 
     .session-hint {
-      font-size: 11px;
+      font-size: 12px;
       /* [Accessibility] Fixed contrast: #9ca3af (3.8:1) → #6b7280 (4.7:1) for WCAG AA */
       color: #6b7280;
       line-height: 1.5;
@@ -623,7 +659,7 @@
       border-top: 1px solid rgba(30, 41, 59, 0.08);
       text-align: center;
       /* [Audit 6 L1] Slightly larger footer text */
-      font-size: 11px;
+      font-size: 12px;
       /* [Accessibility] Fixed contrast: #9ca3af (3.8:1) → #6b7280 (4.7:1) for WCAG AA */
       color: #6b7280;
       display: flex;
@@ -655,7 +691,7 @@
       display: inline-block;
       padding: 1px 6px;
       border-radius: 4px;
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 600;
       letter-spacing: 0.03em;
       text-transform: uppercase;
@@ -673,7 +709,7 @@
 
     .footer-separator {
       color: #d1d5db;
-      font-size: 10px;
+      font-size: 12px;
     }
 
     /* [Equalization P2] Recent Scans section */
@@ -693,7 +729,7 @@
     }
 
     .recent-scans-title {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       color: #4B5563;
       text-transform: uppercase;
@@ -701,7 +737,7 @@
     }
 
     .recent-scans-toggle {
-      font-size: 10px;
+      font-size: 12px;
       color: #94A3B8;
       transition: transform 0.2s ease;
     }
@@ -745,7 +781,7 @@
     }
 
     .scan-history-platform {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       color: #1e293b;
       min-width: 60px;
@@ -753,7 +789,7 @@
 
     .scan-history-summary {
       flex: 1;
-      font-size: 11px;
+      font-size: 12px;
       color: #6b7280;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -761,13 +797,13 @@
     }
 
     .scan-history-date {
-      font-size: 10px;
+      font-size: 12px;
       color: #94A3B8;
       white-space: nowrap;
     }
 
     .scan-history-arrow {
-      font-size: 10px;
+      font-size: 12px;
       color: #d1d5db;
       transition: color 0.15s ease;
     }
@@ -777,7 +813,7 @@
     }
 
     .scan-history-empty {
-      font-size: 11px;
+      font-size: 12px;
       color: #94A3B8;
       text-align: center;
       padding: 12px 8px;
@@ -785,7 +821,7 @@
     }
 
     .scan-history-signin {
-      font-size: 11px;
+      font-size: 12px;
       color: #6b7280;
       text-align: center;
       padding: 12px 8px;
@@ -809,7 +845,7 @@
       background: #EFF6FF;
       color: #2563EB;
       border-radius: 4px;
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 600;
       margin-left: 4px;
     }
@@ -820,7 +856,7 @@
     }
 
     .ai-upsell-hint {
-      font-size: 11px;
+      font-size: 12px;
       color: #D97706;
       margin-top: 4px;
       padding-left: 50px;
@@ -1081,7 +1117,7 @@
       background: #fff;
       border: 1px solid rgba(30, 41, 59, 0.08);
       border-radius: 6px;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       color: #4B5563;
     }
@@ -1108,7 +1144,7 @@
     }
 
     .onboarding-consent-detail {
-      font-size: 11px;
+      font-size: 12px;
       color: #6b7280;
       line-height: 1.5;
       margin-top: 8px;
@@ -1116,7 +1152,7 @@
 
     .onboarding-consent-detail strong {
       display: block;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       color: #4B5563;
       margin-bottom: 2px;
@@ -1128,7 +1164,7 @@
     }
 
     .onboarding-consent-detail .detail-body {
-      font-size: 11px;
+      font-size: 12px;
       color: #6b7280;
       margin-bottom: 6px;
     }
@@ -1217,7 +1253,7 @@
       transition: all 0.2s ease;
       box-shadow: 0 0 20px rgba(37, 99, 235, 0.15), 0 4px 14px rgba(37, 99, 235, 0.2);
       letter-spacing: -0.01em;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
     .onboarding-nav-btn:hover {
@@ -1263,7 +1299,7 @@
       background: rgba(217, 119, 6, 0.08);
       border: 1px solid rgba(217, 119, 6, 0.15);
       border-radius: 6px;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       color: #92400E;
     }
@@ -1273,7 +1309,7 @@
     /* ============================================ */
 
     .beta-tag {
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 500;
       color: #6b7280;
     }
@@ -1292,7 +1328,7 @@
       padding: 10px 12px;
       background: #1e293b;
       color: #e2e8f0;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 400;
       line-height: 1.45;
       border-radius: 8px;
@@ -1321,7 +1357,7 @@
     .dashboard-cta-methodology {
       display: block;
       text-align: center;
-      font-size: 11px;
+      font-size: 12px;
       color: #6b7280;
       margin-top: 8px;
       line-height: 1.5;
@@ -1345,7 +1381,7 @@
         </p>
         <div style="padding: 12px 14px; background: #EFF6FF; border-radius: 12px;">
           <p style="font-size: 12px; font-weight: 600; color: #1e40af; margin-bottom: 2px;">Free to use — Plus available</p>
-          <p style="font-size: 11px; color: #2563EB; line-height: 1.5;">All 6 analysis tabs are free. Upgrade to Plus for trend tracking over time.</p>
+          <p style="font-size: 12px; color: #2563EB; line-height: 1.5;">All 6 analysis tabs are free. Upgrade to Plus for trend tracking over time.</p>
         </div>
       </div>
 
@@ -1375,7 +1411,7 @@
         <p class="onboarding-description" style="margin-bottom: 12px;">
           We capture what appears in your feed — nothing is stored on our servers until you choose to save.
         </p>
-        <p style="font-size: 11px; color: #6b7280; font-weight: 600; margin-bottom: 6px;">Supported platforms</p>
+        <p style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 6px;">Supported platforms</p>
         <div class="onboarding-platform-list">
           <span class="onboarding-platform-tag">Instagram</span>
           <span class="onboarding-platform-tag">TikTok</span>
@@ -1395,7 +1431,7 @@
         <div class="onboarding-consent-card">
           <label class="onboarding-consent-row">
             <span class="onboarding-consent-label">Enable AI analysis</span>
-            <input type="checkbox" id="onboardingAiToggle" checked>
+            <input type="checkbox" id="onboardingAiToggle" aria-label="Enable AI analysis during onboarding" checked>
             <span class="onboarding-toggle-slider"></span>
           </label>
           <div class="onboarding-consent-detail">
@@ -1405,7 +1441,7 @@
             <div id="notSentDetailsBody" class="detail-body" style="display: none;">Your identity, photos, videos, or browsing history.</div>
           </div>
         </div>
-        <p style="font-size: 11px; color: #6b7280; line-height: 1.5;">
+        <p style="font-size: 12px; color: #6b7280; line-height: 1.5;">
           You can change this anytime from the extension popup. AI analysis sends post text to Google's Gemini AI for processing. Google does not use this data to train AI models.
         </p>
       </div>
@@ -1448,7 +1484,7 @@
     <!-- AI Analysis Consent Toggle -->
     <div id="aiConsentSection" class="ai-consent-section">
       <label class="toggle-container">
-        <input type="checkbox" id="aiConsentToggle">
+        <input type="checkbox" id="aiConsentToggle" aria-label="Include AI analysis in results">
         <span class="toggle-slider"></span>
         <span class="toggle-label">Include AI analysis <span class="beta-tag">(beta, limited accuracy)</span></span>
       </label>

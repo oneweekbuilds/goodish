@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   },
   body: {
     ...TYPOGRAPHY.caption,
-    lineHeight: 18,
+    lineHeight: TYPOGRAPHY.bodySmall.lineHeight,
     paddingLeft: SPACING.sm + 16, // align with title text (icon width + gap)
   },
   ctaLink: {

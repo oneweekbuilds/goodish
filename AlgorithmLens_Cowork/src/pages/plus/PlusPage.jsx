@@ -169,7 +169,7 @@ const PlusPage = () => {
   return (
     <>
       <SEO title="Plus" description="Your scan shows the surface. Plus shows the story — evidence-based analysis, AI-powered Q&A, and trend tracking with AlgorithmLens Plus." path="/plus" />
-      <div className="min-h-screen bg-bg-page">
+      <div className="min-h-[100dvh] bg-bg-page">
 
         {/* ── Hero Section ── */}
         <section className="relative overflow-hidden pt-16 sm:pt-24 pb-12 sm:pb-20">

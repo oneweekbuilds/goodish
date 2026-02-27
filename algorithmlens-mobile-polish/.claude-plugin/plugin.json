@@ -1,0 +1,8 @@
+{
+  "name": "algorithmlens-mobile-polish",
+  "description": "Visual polish skill for AlgorithmLens mobile app UI. Codifies the visual language of best-in-class iOS apps (Spotify, Apple Podcasts, App Store) adapted to AlgorithmLens's blue/green brand identity. Triggers on mobile UI, visual design, component styling, screen layouts, dark mode, animations, and micro-interactions.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Justin"
+  }
+}

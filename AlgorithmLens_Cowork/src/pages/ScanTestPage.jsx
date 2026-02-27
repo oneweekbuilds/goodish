@@ -159,7 +159,7 @@ const ScanTestPage = () => {
     const displayData = result ? getDisplayData(result) : null;
 
     return (
-        <div className="min-h-screen bg-slate-50 py-20 px-6 font-sans text-slate-900">
+        <div className="min-h-[100dvh] bg-slate-50 py-20 px-6 font-sans text-slate-900">
             <div className="max-w-4xl mx-auto">
                 <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200 mb-8">
                     <h1 className="text-3xl font-bold text-slate-900 mb-2">Scan Test (Internal)</h1>

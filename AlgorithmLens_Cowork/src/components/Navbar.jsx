@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { X, Home, LayoutDashboard, ScanLine, Clock, Star, Settings } from 'lucide-react';
 import { useUserProfile } from '../context/UserProfileContext';
 import { useAuth } from '../lib/auth/useAuth';
 import Logo from './Logo';
@@ -14,11 +13,8 @@ const Navbar = () => {
     const isSignedIn = authReady && !!session;
     const comingSoonMode = isComingSoon();
     const location = useLocation();
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [showSignInModal, setShowSignInModal] = useState(false);
     const [scrolled, setScrolled] = useState(false);
-    const mobileMenuRef = useRef(null);
-    const menuButtonRef = useRef(null);
 
     // Track scroll for frosted glass shadow
     useEffect(() => {
@@ -27,36 +23,26 @@ const Navbar = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Close mobile menu on route change
-    useEffect(() => {
-        setMobileMenuOpen(false);
-    }, [location.pathname]);
-
-    // Close mobile menu on Escape key
+    // Close sign-in modal on Escape key
     useEffect(() => {
         const handleEsc = (e) => {
-            if (e.key === 'Escape') {
-                if (showSignInModal) {
-                    setShowSignInModal(false);
-                } else if (mobileMenuOpen) {
-                    setMobileMenuOpen(false);
-                    menuButtonRef.current?.focus();
-                }
+            if (e.key === 'Escape' && showSignInModal) {
+                setShowSignInModal(false);
             }
         };
         window.addEventListener('keydown', handleEsc);
         return () => window.removeEventListener('keydown', handleEsc);
-    }, [mobileMenuOpen, showSignInModal]);
+    }, [showSignInModal]);
 
-    // Lock body scroll for modals and mobile menu (C4, sign-in modal)
+    // Lock body scroll for sign-in modal
     useEffect(() => {
-        if (showSignInModal || mobileMenuOpen) {
+        if (showSignInModal) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = '';
         }
         return () => { document.body.style.overflow = ''; };
-    }, [showSignInModal, mobileMenuOpen]);
+    }, [showSignInModal]);
 
     // Check if a path is the current route
     const isActive = (path) => {
@@ -100,29 +86,36 @@ const Navbar = () => {
         </span>
     );
 
-    // Mobile nav link with active state
-    const MobileNavLink = ({ to, label }) => (
-        <Link
-            to={to}
-            className={`block px-4 py-3 text-base font-medium rounded-lg transition-colors ${
-                isActive(to)
-                    ? 'text-primary-blue bg-primary-blue/5'
-                    : 'text-text-main hover:bg-primary-blue/5 hover:text-primary-blue'
-            }`}
-            aria-current={isActive(to) ? 'page' : undefined}
-            onClick={() => setMobileMenuOpen(false)}
-        >
-            {label}
-        </Link>
-    );
+    // Icon map for bottom tab bar
+    const iconMap = {
+        '/': Home,
+        '/dashboard': LayoutDashboard,
+        '/start': ScanLine,
+        '/history': Clock,
+        '/plus': Star,
+        '/settings': Settings,
+    };
 
-    // Mobile disabled link for Coming Soon mode
-    const MobileDisabledLink = ({ label }) => (
-        <span className="block px-4 py-3 text-base font-medium text-text-muted/40 cursor-not-allowed">
-            {label}
-            <span className="text-xs ml-2 text-text-muted/30">(Coming soon)</span>
-        </span>
-    );
+    // Bottom tab bar link for mobile
+    const TabBarLink = ({ to, label }) => {
+        const Icon = iconMap[to] || Home;
+        const active = isActive(to);
+        return (
+            <Link
+                to={to}
+                className={`flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 min-w-0 transition-colors ${
+                    active
+                        ? 'text-primary-blue'
+                        : 'text-text-muted hover:text-primary-blue'
+                }`}
+                aria-current={active ? 'page' : undefined}
+                aria-label={label}
+            >
+                <Icon size={20} strokeWidth={active ? 2.5 : 2} />
+                <span className="text-[10px] font-medium leading-none truncate">{label}</span>
+            </Link>
+        );
+    };
 
     const navItems = [
         { to: '/', label: 'Home', ariaLabel: 'Navigate to home page' },
@@ -195,82 +188,39 @@ const Navbar = () => {
                         )
                     )}
 
-                    {/* Mobile hamburger button (#1: Mobile menu) */}
-                    <button
-                        ref={menuButtonRef}
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        className="md:hidden p-2 rounded-lg text-text-main hover:bg-primary-blue/5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue min-h-[44px] min-w-[44px] flex items-center justify-center"
-                        aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-                        aria-expanded={mobileMenuOpen}
-                        aria-controls="mobile-nav-menu"
-                    >
-                        {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-                    </button>
                 </div>
             </nav>
 
-            {/* Mobile slide-in menu (#1: Mobile hamburger menu) */}
-            <AnimatePresence>
-                {mobileMenuOpen && (
-                    <div className="fixed inset-0 z-40 md:hidden" role="dialog" aria-modal="true" aria-label="Navigation menu">
-                        {/* Backdrop */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
-                            onClick={() => setMobileMenuOpen(false)}
-                            aria-hidden="true"
-                        />
-
-                        {/* Menu panel */}
-                        <motion.div
-                            ref={mobileMenuRef}
-                            id="mobile-nav-menu"
-                            initial={{ x: '100%' }}
-                            animate={{ x: 0 }}
-                            exit={{ x: '100%' }}
-                            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                            className="absolute top-16 right-0 w-72 max-h-[calc(100vh-4rem)] bg-white border-l border-border-light shadow-strong overflow-y-auto pb-8 safe-area-inset-bottom"
-                            style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}
-                        >
-                            {/* User greeting */}
-                            {!comingSoonMode && (
-                                <div className="px-4 py-3 border-b border-border-light">
-                                    <p className="text-sm text-text-muted">
-                                        {userProfile?.name ? `Hi, ${userProfile.name}` : 'Hi there'}
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* Nav links */}
-                            <div className="py-2 px-2">
-                                {comingSoonMode ? (
-                                    <>
-                                        <MobileNavLink to="/" label="Home" />
-                                        <MobileDisabledLink label="Dashboard" />
-                                        <MobileDisabledLink label="Scan" />
-                                        <MobileDisabledLink label="History" />
-                                        <MobileDisabledLink label="Plus" />
-                                        <MobileDisabledLink label="Settings" />
-                                    </>
-                                ) : (
-                                    navItems.map(item => (
-                                        <MobileNavLink key={item.to} to={item.to} label={item.label} />
-                                    ))
-                                )}
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
+            {/* Mobile persistent bottom tab bar (replaces hamburger menu per design system) */}
+            <nav
+                className="fixed bottom-0 left-0 w-full z-40 md:hidden bg-white/90 backdrop-blur-lg border-t border-border-light safe-area-inset-bottom"
+                style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+                aria-label="Mobile navigation"
+            >
+                <div className="grid grid-cols-6 items-center h-14">
+                    {comingSoonMode ? (
+                        <>
+                            <TabBarLink to="/" label="Home" />
+                            {['Dashboard', 'Scan', 'History', 'Plus', 'Settings'].map(label => (
+                                <span key={label} className="flex flex-col items-center justify-center gap-0.5 py-1.5 text-text-muted/30 cursor-not-allowed" aria-disabled="true">
+                                    {(() => { const Icon = iconMap[navItems.find(i => i.label === label)?.to] || Home; return <Icon size={20} strokeWidth={2} />; })()}
+                                    <span className="text-[10px] font-medium leading-none">{label}</span>
+                                </span>
+                            ))}
+                        </>
+                    ) : (
+                        navItems.map(item => (
+                            <TabBarLink key={item.to} to={item.to} label={item.label} />
+                        ))
+                    )}
+                </div>
+            </nav>
 
             {/* Sign In Modal (#2: Wire Sign In button) */}
             {showSignInModal && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Sign in">
                     <div
-                        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                        className="absolute inset-0 bg-zinc-950/50 backdrop-blur-sm"
                         onClick={() => setShowSignInModal(false)}
                         aria-hidden="true"
                     />

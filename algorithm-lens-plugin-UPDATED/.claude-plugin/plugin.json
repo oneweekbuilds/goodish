@@ -1,0 +1,9 @@
+{
+  "name": "algorithm-lens",
+  "version": "0.2.0",
+  "description": "Project knowledge and audit toolkit for AlgorithmLens — a consumer AI transparency tool that documents social media feed composition with epistemic restraint",
+  "author": {
+    "name": "Justin"
+  },
+  "keywords": ["algorithmlens", "transparency", "social-media", "audit", "epistemic-restraint", "goodish"]
+}

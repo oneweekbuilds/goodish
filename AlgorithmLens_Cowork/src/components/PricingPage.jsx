@@ -8,7 +8,7 @@ const PricingPage = () => {
     const [isAnnual, setIsAnnual] = useState(true);
 
     return (
-        <div className="bg-bg-page min-h-screen font-sans selection:bg-primary-blue/20 overflow-x-hidden pt-20 md:pt-24 pb-20">
+        <div className="bg-bg-page min-h-[100dvh] font-sans selection:bg-primary-blue/20 overflow-x-hidden pt-20 md:pt-24 pb-20">
             {/* Background Grid - Fading out */}
             <div className="fixed inset-0 pointer-events-none z-0">
                 <div className="absolute top-0 left-0 w-full h-[600px] bg-gradient-to-b from-primary-blue/5 to-transparent opacity-40" />

@@ -64,7 +64,7 @@ const AuthCallbackPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-bg-page pt-28 pb-16 flex items-center justify-center px-4">
+      <div className="min-h-[100dvh] bg-bg-page pt-28 pb-16 flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
           <div className="flex justify-center mb-6">
             <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
@@ -92,9 +92,9 @@ const AuthCallbackPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-bg-page pt-28 pb-16 flex items-center justify-center">
+    <div className="min-h-[100dvh] bg-bg-page pt-28 pb-16 flex items-center justify-center">
       <div className="text-center">
-        <Loader2 size={48} className="animate-spin text-primary-blue mx-auto mb-4" />
+        <div className="w-12 h-12 bg-primary-blue/20 rounded-full animate-pulse mx-auto mb-4" />
         <p className="text-slate-600 text-lg">Signing you in...</p>
       </div>
     </div>

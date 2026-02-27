@@ -2,6 +2,7 @@ import React, { ReactNode, useRef, useCallback } from 'react';
 import {
   Pressable,
   Text,
+  View,
   ViewStyle,
   TextStyle,
   ActivityIndicator,
@@ -9,6 +10,7 @@ import {
   Animated,
   Platform,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, TYPOGRAPHY, RADIUS, MIN_TOUCH_TARGET } from '../../lib/theme';
 import { flattenStyle } from '../../lib/styles';
@@ -138,8 +140,9 @@ const ButtonComponent: React.FC<ButtonProps> = ({
       default:
         return {
           container: {
-            backgroundColor: colors.primary,
+            backgroundColor: 'transparent',
             borderWidth: 0,
+            overflow: 'hidden' as const,
           },
           text: {
             color: colors.textInverse,
@@ -168,6 +171,29 @@ const ButtonComponent: React.FC<ButtonProps> = ({
     return 1;
   };
 
+  const renderContent = () => (
+    <>
+      {loading ? (
+        <ActivityIndicator
+          color={variantStyles.text.color as string}
+          size="small"
+        />
+      ) : (
+        <>
+          {icon && <Text style={{ marginRight: SPACING.xs }}>{icon}</Text>}
+          <Text
+            style={flattenStyle([
+              sizeStyles.text,
+              variantStyles.text,
+            ])}
+          >
+            {title}
+          </Text>
+        </>
+      )}
+    </>
+  );
+
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
       <Pressable
@@ -182,37 +208,37 @@ const ButtonComponent: React.FC<ButtonProps> = ({
         style={({ pressed }) => flattenStyle([
           {
             borderRadius: RADIUS.md,
-            justifyContent: 'center',
-            alignItems: 'center',
-            flexDirection: 'row',
             opacity: disabled ? 0.4 : pressed ? getPressedOpacity() : 1,
           },
-          sizeStyles.container,
+          variant !== 'primary' && {
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'row' as const,
+          },
+          variant !== 'primary' && sizeStyles.container,
           variantStyles.container,
           style,
         ])}
       >
-        {({ pressed }) => (
-          <>
-            {loading ? (
-              <ActivityIndicator
-                color={variantStyles.text.color as string}
-                size="small"
-              />
-            ) : (
-              <>
-                {icon && <Text style={{ marginRight: SPACING.xs }}>{icon}</Text>}
-                <Text
-                  style={flattenStyle([
-                    sizeStyles.text,
-                    variantStyles.text,
-                  ])}
-                >
-                  {title}
-                </Text>
-              </>
-            )}
-          </>
+        {variant === 'primary' ? (
+          <LinearGradient
+            colors={[colors.gradientPrimaryStart, colors.gradientPrimaryEnd]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={flattenStyle([
+              {
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexDirection: 'row' as const,
+                borderRadius: RADIUS.md,
+              },
+              sizeStyles.container,
+            ])}
+          >
+            {renderContent()}
+          </LinearGradient>
+        ) : (
+          renderContent()
         )}
       </Pressable>
     </Animated.View>

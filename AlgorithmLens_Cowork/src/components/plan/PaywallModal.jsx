@@ -88,7 +88,7 @@ const PaywallModal = ({ open, onClose, onStartTrial, source, checkoutError, isPr
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/50 backdrop-blur-sm"
       onClick={onClose}
       role="dialog"
       aria-modal="true"

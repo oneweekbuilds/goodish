@@ -34,7 +34,7 @@ const HeroSection = () => {
     };
 
     return (
-        <section className="relative w-full min-h-screen flex flex-col items-center justify-center pt-24 sm:pt-20 pb-12 bg-bg-page overflow-hidden">
+        <section className="relative w-full min-h-[100dvh] flex flex-col items-center justify-center pt-24 sm:pt-20 pb-12 bg-bg-page overflow-hidden">
 
             {/* Soft Radial Gradient */}
             <div className="absolute inset-0 pointer-events-none z-0 flex justify-center items-center">
@@ -48,7 +48,7 @@ const HeroSection = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                    className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight text-text-main mb-6 sm:mb-8 leading-[1.1] max-w-full"
+                    className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight text-text-main mb-6 sm:mb-8 leading-tight max-w-full"
                 >
                     <span className="font-bold text-text-main">See how the </span>
                     <br />

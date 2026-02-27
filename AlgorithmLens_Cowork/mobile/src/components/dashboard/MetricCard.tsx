@@ -5,7 +5,6 @@ import {
   Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, RADIUS, TYPOGRAPHY, ICON_SIZES } from '../../lib/theme';
 
@@ -38,6 +37,8 @@ interface MetricCardProps {
   hasData: boolean;
   /** Optional icon rendered to the left of the value */
   icon?: React.ReactNode;
+  /** Optional color override for the contextLine text */
+  contextLineColor?: string;
 }
 
 const MetricCardComponent: React.FC<MetricCardProps> = ({
@@ -49,6 +50,7 @@ const MetricCardComponent: React.FC<MetricCardProps> = ({
   fallbackText = 'This data appears after scanning more content',
   hasData,
   icon,
+  contextLineColor,
 }) => {
   const { colors, shadows } = useTheme();
   const accessibilityLabel = `${headline}${value ? ': ' + value : ''}${microLine ? '. ' + microLine : ''}${contextLine ? '. ' + contextLine : ''}`;
@@ -78,7 +80,7 @@ const MetricCardComponent: React.FC<MetricCardProps> = ({
                   style={{
                     width: ICON_SIZES.lg,
                     height: ICON_SIZES.lg,
-                    borderRadius: RADIUS.sm,
+                    borderRadius: RADIUS.md,
                     backgroundColor: colors.blue50,
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -89,10 +91,9 @@ const MetricCardComponent: React.FC<MetricCardProps> = ({
               )}
               <Text
                 style={{
-                  fontSize: RFValue(20),
-                  fontWeight: '700',
+                  ...(value && value.length <= 4 ? TYPOGRAPHY.bigNumber : TYPOGRAPHY.h2),
                   color: colors.textMain,
-                  letterSpacing: -0.3,
+                  ...(value && value.length > 4 ? { letterSpacing: TYPOGRAPHY.h2.letterSpacing } : {}),
                 }}
               >
                 {value}
@@ -126,7 +127,7 @@ const MetricCardComponent: React.FC<MetricCardProps> = ({
             <Text
               style={{
                 ...TYPOGRAPHY.caption,
-                color: colors.primary,
+                color: contextLineColor || colors.primary,
                 fontWeight: '500',
                 marginTop: SPACING.xs,
               }}

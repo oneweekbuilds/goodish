@@ -37,21 +37,18 @@ const PostItem = ({
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-      <div 
-        className="p-4 flex items-start gap-4 cursor-pointer hover:bg-slate-50 transition-colors"
+      <button
+        className="p-4 w-full flex items-start gap-4 cursor-pointer hover:bg-slate-50 transition-colors text-left"
         onClick={handleToggle}
-        onKeyDown={handleKeyDown}
-        role="button"
-        tabIndex={0}
         aria-expanded={expanded}
         aria-label={expanded ? `Collapse details for post by ${creator || 'creator'}` : `Expand details for post by ${creator || 'creator'}`}
       >
         {/* Thumbnail */}
         {thumbnail ? (
           <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-slate-100">
-            <img 
-              src={thumbnail} 
-              alt="" 
+            <img
+              src={thumbnail}
+              alt="Post thumbnail"
               className="w-full h-full object-cover"
               onError={(e) => {
                 e.target.style.display = 'none';
@@ -105,7 +102,7 @@ const PostItem = ({
         <div className="flex-shrink-0 p-1 text-slate-400" aria-hidden="true">
           {expanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
         </div>
-      </div>
+      </button>
 
       {/* Expanded details */}
       {expanded && details && (

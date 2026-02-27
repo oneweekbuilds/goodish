@@ -694,14 +694,14 @@ const OverviewTab = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {algorithmicProfile.topInterests && (
               <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-1.5">
-                <div className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Top interests</div>
+                <div className="text-xs font-medium uppercase tracking-wider text-slate-400">Top interests</div>
                 <div className="text-sm font-semibold text-slate-800">
                   {algorithmicProfile.topInterests.join(', ')}
                 </div>
                 {algorithmicProfile.topInterestsWithPercent && (
                   <div className="flex gap-1 mt-1.5">
                     {algorithmicProfile.topInterestsWithPercent.map((t, i) => (
-                      <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">{t.percent}%</span>
+                      <span key={i} className="text-xs px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">{t.percent}%</span>
                     ))}
                   </div>
                 )}
@@ -709,30 +709,30 @@ const OverviewTab = ({
             )}
             {algorithmicProfile.emotionalPattern && (
               <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-1.5">
-                <div className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Emotional signal</div>
+                <div className="text-xs font-medium uppercase tracking-wider text-slate-400">Emotional signal</div>
                 <div className="text-sm font-semibold text-slate-800">{algorithmicProfile.emotionalPattern}</div>
               </div>
             )}
             {algorithmicProfile.politicalExposure && (
               <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-1.5">
-                <div className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Political exposure</div>
+                <div className="text-xs font-medium uppercase tracking-wider text-slate-400">Political exposure</div>
                 <div className="text-sm font-semibold text-slate-800">{algorithmicProfile.politicalExposure}</div>
               </div>
             )}
             {algorithmicProfile.contentStyle && (
               <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-1.5">
-                <div className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Content style</div>
+                <div className="text-xs font-medium uppercase tracking-wider text-slate-400">Content style</div>
                 <div className="text-sm font-semibold text-slate-800">{algorithmicProfile.contentStyle}</div>
               </div>
             )}
             {algorithmicProfile.sourceDiversity && (
               <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-1.5">
-                <div className="text-[10px] font-medium uppercase tracking-wider text-slate-400">Source diversity</div>
+                <div className="text-xs font-medium uppercase tracking-wider text-slate-400">Source diversity</div>
                 <div className="text-sm font-semibold text-slate-800">{algorithmicProfile.sourceDiversity}</div>
               </div>
             )}
           </div>
-          <p className="text-[11px] text-slate-400 mt-3 italic">
+          <p className="text-xs text-slate-400 mt-3 italic">
             These labels are inferred from feed content only. Actual platform categorization may differ.
           </p>
         </section>
@@ -918,7 +918,7 @@ const OverviewTab = ({
                 </div>
               </div>
             </div>
-            <p className="text-[11px] text-slate-400 italic">
+            <p className="text-xs text-slate-400 italic">
               AlgorithmLens shows you step 3 — what content actually appeared. The experiment suggestions above help you test step 1.
             </p>
           </div>

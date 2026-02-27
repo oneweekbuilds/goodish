@@ -6,13 +6,13 @@ import { getApiBaseUrl } from '../lib/apiConfig.js';
 
 // Platform options
 const PLATFORMS = [
-    { id: 'tiktok', name: 'TikTok', icon: '📱', color: 'bg-black text-white' },
-    { id: 'instagram', name: 'Instagram', icon: '📷', color: 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' },
-    { id: 'youtube', name: 'YouTube', icon: '▶️', color: 'bg-red-600 text-white' },
-    { id: 'facebook', name: 'Facebook', icon: '👤', color: 'bg-blue-600 text-white' },
-    { id: 'twitter', name: 'X', icon: '𝕏', color: 'bg-black text-white' },
-    { id: 'linkedin', name: 'LinkedIn', icon: '💼', color: 'bg-blue-700 text-white' },
-    { id: 'reddit', name: 'Reddit', icon: '🔗', color: 'bg-orange-600 text-white' },
+    { id: 'tiktok', name: 'TikTok', icon: 'TK', color: 'bg-zinc-950 text-white' },
+    { id: 'instagram', name: 'Instagram', icon: 'IG', color: 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' },
+    { id: 'youtube', name: 'YouTube', icon: 'YT', color: 'bg-red-600 text-white' },
+    { id: 'facebook', name: 'Facebook', icon: 'FB', color: 'bg-blue-600 text-white' },
+    { id: 'twitter', name: 'X', icon: 'X', color: 'bg-zinc-950 text-white' },
+    { id: 'linkedin', name: 'LinkedIn', icon: 'LI', color: 'bg-blue-700 text-white' },
+    { id: 'reddit', name: 'Reddit', icon: 'RD', color: 'bg-orange-600 text-white' },
 ];
 
 // Recording instructions per platform
@@ -173,7 +173,7 @@ const ScanPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 py-20 px-6 font-sans text-slate-900">
+        <div className="min-h-[100dvh] bg-slate-50 py-20 px-6 font-sans text-slate-900">
             <div className="max-w-2xl mx-auto">
                 {/* Header with back button */}
                 {step > 1 && step < 5 && (

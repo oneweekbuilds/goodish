@@ -101,7 +101,7 @@ function MilestoneModalComponent({ milestone, onDismiss }: MilestoneModalProps) 
         style={Platform.OS === 'web'
           ? {
               backgroundColor: colors.bgCard,
-              borderRadius: RADIUS.xl,
+              borderRadius: RADIUS['2xl'],
               padding: SPACING['3xl'],
               marginHorizontal: SPACING['3xl'],
               alignItems: 'center',
@@ -111,7 +111,7 @@ function MilestoneModalComponent({ milestone, onDismiss }: MilestoneModalProps) 
             }
           : {
               backgroundColor: colors.bgCard,
-              borderRadius: RADIUS.xl,
+              borderRadius: RADIUS['2xl'],
               padding: SPACING['3xl'],
               marginHorizontal: SPACING['3xl'],
               alignItems: 'center',

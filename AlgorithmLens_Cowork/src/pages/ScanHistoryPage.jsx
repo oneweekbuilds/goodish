@@ -104,7 +104,7 @@ const ScanHistoryPage = () => {
     // ============================================
     if (loading) {
         return (
-            <div className="min-h-screen bg-slate-50 py-20 px-6 font-sans text-slate-900">
+            <div className="min-h-[100dvh] bg-slate-50 py-20 px-6 font-sans text-slate-900">
                 <div className="max-w-4xl mx-auto text-center">
                     <Loader2 size={48} className="animate-spin text-blue-600 mx-auto mb-4" />
                     <p className="text-slate-600">Loading history...</p>
@@ -118,7 +118,7 @@ const ScanHistoryPage = () => {
     // ============================================
     if (error) {
         return (
-            <div className="min-h-screen bg-slate-50 py-20 px-6 font-sans text-slate-900">
+            <div className="min-h-[100dvh] bg-slate-50 py-20 px-6 font-sans text-slate-900">
                 <div className="max-w-4xl mx-auto">
                     <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
                         <AlertCircle size={48} className="text-red-500 mx-auto mb-4" />
@@ -141,7 +141,7 @@ const ScanHistoryPage = () => {
     // ============================================
     if (selectedScan) {
         return (
-            <div className="min-h-screen bg-slate-50 py-20 px-6 font-sans text-slate-900">
+            <div className="min-h-[100dvh] bg-slate-50 py-20 px-6 font-sans text-slate-900">
                 <div className="max-w-4xl mx-auto">
                     <button
                         onClick={handleBackToList}
@@ -173,7 +173,7 @@ const ScanHistoryPage = () => {
     // Render: Scans List View
     // ============================================
     return (
-        <div className="min-h-screen bg-slate-50 py-20 px-6 font-sans text-slate-900">
+        <div className="min-h-[100dvh] bg-slate-50 py-20 px-6 font-sans text-slate-900">
             <div className="max-w-4xl mx-auto">
                 <div className="flex items-center justify-between mb-8">
                     <div>

@@ -29,7 +29,7 @@ function SmartSuggestionComponent({ suggestion, onAction }: SmartSuggestionProps
 
   const Icon = suggestion.type === 'time_check' ? Clock : Compass;
   const iconBgColor = suggestion.type === 'time_check'
-    ? colors.gradientWarmStart
+    ? colors.lowSampleBg
     : colors.blue50;
   const iconColor = suggestion.type === 'time_check'
     ? colors.warning
@@ -69,7 +69,7 @@ function SmartSuggestionComponent({ suggestion, onAction }: SmartSuggestionProps
             marginTop: SPACING.xxs,
           }}
         >
-          <Icon size={14} color={iconColor} strokeWidth={2} />
+          <Icon size={16} color={iconColor} strokeWidth={1.8} />
         </View>
 
         {/* Content */}

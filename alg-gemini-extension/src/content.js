@@ -346,7 +346,7 @@ function createScanToast() {
       bottom: 24px !important;
       right: 24px !important;
       z-index: 2147483647 !important;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
       pointer-events: auto !important;
     }
     .al-toast {
@@ -401,6 +401,12 @@ function createScanToast() {
     @keyframes al-pulse {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.5; transform: scale(0.8); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .al-toast-container *, .al-toast * {
+        animation: none !important;
+        transition: none !important;
+      }
     }
     .al-text {
       flex: 1;

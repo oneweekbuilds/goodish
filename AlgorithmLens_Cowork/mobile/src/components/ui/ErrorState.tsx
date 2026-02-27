@@ -79,7 +79,7 @@ const ErrorStateComponent: React.FC<ErrorStateProps> = ({
       testID={testID}
     >
       <View style={styles.iconContainer}>
-        {icon || <AlertCircle color={colors.error} size={28} />}
+        {icon || <AlertCircle color={colors.error} size={32} />}
       </View>
       <Text style={styles.message}>{message}</Text>
       {errorCode && <Text style={styles.errorCode}>Error code: {errorCode}</Text>}

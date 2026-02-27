@@ -39,7 +39,7 @@ const BigNumberComponent: React.FC<BigNumberProps> = ({
           fontSize: fontSize,
           fontWeight: '700',
           color: textColor,
-          letterSpacing: -0.5,
+          letterSpacing: TYPOGRAPHY.scoreSmall.letterSpacing,
           marginBottom: SPACING.xs,
         }}
       >

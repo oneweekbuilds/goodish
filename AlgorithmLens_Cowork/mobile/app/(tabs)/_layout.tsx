@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform, TouchableOpacity } from 'react-native';
+import { Platform, TouchableOpacity, StyleSheet } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Home, LayoutDashboard, Clock, Settings } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -99,32 +99,35 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: Platform.OS === 'web' ? {
           backgroundColor: colors.bgCard,
-          borderTopWidth: 1,
+          borderTopWidth: StyleSheet.hairlineWidth,
           borderTopColor: colors.borderSoft,
-          paddingBottom: Math.max(insets.bottom, 12),
-          paddingTop: SPACING.sm,
-          height: 60 + Math.max(insets.bottom, 0),
+          paddingBottom: Math.max(insets.bottom, 8),
+          paddingTop: 6,
+          height: 49 + Math.max(insets.bottom, 0),
           maxWidth: 428,
           alignSelf: 'center' as const,
           width: '100%',
         } : {
           backgroundColor: colors.bgCard,
-          borderTopWidth: 1,
+          borderTopWidth: StyleSheet.hairlineWidth,
           borderTopColor: colors.borderSoft,
-          paddingBottom: Math.max(insets.bottom, 12),
-          paddingTop: SPACING.sm,
-          height: 60 + Math.max(insets.bottom, 0),
+          paddingBottom: Math.max(insets.bottom, 8),
+          paddingTop: 6,
+          height: 49 + Math.max(insets.bottom, 0),
         },
         tabBarLabelStyle: {
           ...TYPOGRAPHY.captionSmall,
-          fontWeight: '600',
-          marginTop: SPACING.xxs,
+          fontWeight: '500',
+          marginTop: 2,
         },
-        // T-1 FIX: Add active indicator style — top border line on active tab
         tabBarActiveBackgroundColor: 'transparent',
         tabBarItemStyle: {
-          borderTopWidth: 2,
-          borderTopColor: 'transparent',
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingTop: 4,
+        },
+        tabBarIconStyle: {
+          marginBottom: 0,
         },
       }}
     >

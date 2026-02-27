@@ -33,9 +33,11 @@ import {
   Text,
   ScrollView,
   RefreshControl,
-  TouchableOpacity,
+  Pressable,
+  Animated,
   AccessibilityInfo,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Scan } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
@@ -53,6 +55,7 @@ import { DailyTipCard } from './DailyTipCard';
 import { WeeklySummaryCard } from './WeeklySummaryCard';
 import { AchievementBadges } from './AchievementBadges';
 import { SmartSuggestion } from './SmartSuggestion';
+import { StaggeredList } from '../ui/StaggeredList';
 import type { ScanMode, SupportedPlatform } from '../../types/broadcast';
 import type { FeedScore } from '../../types/streak';
 import type { WeeklySummaryData, FeedScoreTrendPoint, TrendDirection, EarnedAchievement } from '../../types/achievements';
@@ -187,10 +190,20 @@ function CalmHomeScreenComponent({
     }
   }, [refreshStreak, onRefreshDashboard]);
 
+  const ctaScale = useRef(new Animated.Value(1)).current;
+
   const handleCtaPress = useCallback(() => {
     triggerImpactMedium();
     setSheetVisible(true);
   }, []);
+
+  const handleCtaPressIn = useCallback(() => {
+    Animated.timing(ctaScale, { toValue: 0.97, duration: 80, useNativeDriver: true }).start();
+  }, [ctaScale]);
+
+  const handleCtaPressOut = useCallback(() => {
+    Animated.timing(ctaScale, { toValue: 1, duration: 150, useNativeDriver: true }).start();
+  }, [ctaScale]);
 
   const handleSheetClose = useCallback(() => {
     setSheetVisible(false);
@@ -218,8 +231,8 @@ function CalmHomeScreenComponent({
         contentContainerStyle={{
           flexGrow: 1,
           paddingHorizontal: SPACING.xl,
-          paddingTop: SPACING.lg,
-          paddingBottom: SPACING['5xl'],
+          paddingTop: SPACING['2xl'],
+          paddingBottom: SPACING['6xl'],
         }}
         refreshControl={
           <RefreshControl
@@ -231,10 +244,10 @@ function CalmHomeScreenComponent({
         showsVerticalScrollIndicator={false}
       >
         {/* ── Greeting ── */}
-        <View style={{ marginBottom: SPACING['2xl'] }} accessibilityLiveRegion="polite">
+        <View style={{ marginBottom: SPACING['3xl'] }} accessibilityLiveRegion="polite">
           <Text
             style={{
-              ...TYPOGRAPHY.h1,
+              ...TYPOGRAPHY.heroTitle,
               color: colors.textMain,
               marginBottom: SPACING.xs,
             }}
@@ -253,111 +266,121 @@ function CalmHomeScreenComponent({
           </Text>
         </View>
 
-        {/* ── Streak Badge (enhanced) ── */}
-        {!streakLoading && (
-          <View style={{ marginBottom: SPACING.xl }}>
-            <StreakBadge
-              streakData={streakData}
-              displayState={displayState}
-              freezeAvailable={freezeAvailable}
-              atRisk={streakAtRisk}
-            />
+        {/* ── Staggered card entrance animations ── */}
+        <StaggeredList staggerDelay={50} duration={300}>
+          {/* ── Streak Badge (delay=0) ── */}
+          {!streakLoading && (
+            <View style={{ marginBottom: SPACING.lg }}>
+              <StreakBadge
+                streakData={streakData}
+                displayState={displayState}
+                freezeAvailable={freezeAvailable}
+                atRisk={streakAtRisk}
+              />
+            </View>
+          )}
+
+          {/* ── Feed Score Card (delay=50) ── */}
+          <View style={{ marginBottom: SPACING.lg }}>
+            <FeedScoreCard feedScore={feedScore} />
           </View>
-        )}
 
-        {/* ── Feed Score Card ── */}
-        <View style={{ marginBottom: SPACING.xl }}>
-          <FeedScoreCard feedScore={feedScore} />
-        </View>
+          {/* ── Feed Score Trend (delay=100) ── */}
+          {scoreTrendPoints.length >= 2 && (
+            <View style={{ marginBottom: SPACING['2xl'] }}>
+              <FeedScoreTrend
+                points={scoreTrendPoints}
+                direction={scoreTrendDirection}
+                changePercent={scoreTrendChangePercent}
+              />
+            </View>
+          )}
 
-        {/* ── Feed Score Trend (sparkline) ── */}
-        {scoreTrendPoints.length >= 2 && (
-          <View style={{ marginBottom: SPACING.xl }}>
-            <FeedScoreTrend
-              points={scoreTrendPoints}
-              direction={scoreTrendDirection}
-              changePercent={scoreTrendChangePercent}
-            />
+          {/* ── Primary CTA (delay=150) ── */}
+          <Animated.View style={{ transform: [{ scale: ctaScale }], marginBottom: SPACING['3xl'] }}>
+            <Pressable
+              onPress={handleCtaPress}
+              onPressIn={handleCtaPressIn}
+              onPressOut={handleCtaPressOut}
+              accessibilityRole="button"
+              accessibilityLabel="Scan your feed"
+              accessibilityHint="Opens platform selection to start a new scan"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <LinearGradient
+                colors={[colors.gradientPrimaryStart, colors.gradientPrimaryEnd]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={{
+                  borderRadius: RADIUS.lg,
+                  paddingVertical: SPACING.xl,
+                  paddingHorizontal: SPACING['2xl'],
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexDirection: 'row',
+                  gap: SPACING.md,
+                  minHeight: 60,
+                  ...shadows.hero,
+                }}
+              >
+                {/* H-2 FIX: Updated CTA text to indicate platform selection step */}
+                {/* H-7 FIX: Increased icon size for better visual balance */}
+                <Scan size={26} color={colors.textInverse} strokeWidth={2} />
+                <Text
+                  style={{
+                    ...TYPOGRAPHY.buttonLg,
+                    color: colors.textInverse,
+                    fontSize: TYPOGRAPHY.h2.fontSize,
+                  }}
+                >
+                  Choose a Platform to Scan
+                </Text>
+              </LinearGradient>
+            </Pressable>
+          </Animated.View>
+
+          {/* ── Weekly Summary (delay=200) ── */}
+          {weeklySummary && weeklySummary.scanCount > 0 && (
+            <View style={{ marginBottom: SPACING['2xl'] }}>
+              <WeeklySummaryCard summary={weeklySummary} />
+            </View>
+          )}
+
+          {/* ── Achievement Badges (delay=250) ── */}
+          {streakData.total_scans > 0 && (
+            <View style={{ marginBottom: SPACING['2xl'] }}>
+              <AchievementBadges
+                earnedAchievements={earnedAchievements}
+                newlyEarnedId={newlyEarnedId}
+              />
+            </View>
+          )}
+
+          {/* ── Smart Suggestion (delay=300) ── */}
+          {suggestion && (
+            <View style={{ marginBottom: SPACING.xl }}>
+              <SmartSuggestion
+                suggestion={suggestion}
+                onAction={handleCtaPress}
+              />
+            </View>
+          )}
+
+          {/* ── Recent Scan Preview (delay=350) ── */}
+          {recentScan && (
+            <View style={{ marginBottom: SPACING.xl }}>
+              <RecentScanCard
+                scan={recentScan}
+                onPress={onRecentScanPress}
+              />
+            </View>
+          )}
+
+          {/* ── Daily Tip (delay=400) ── */}
+          <View style={{ marginBottom: SPACING['3xl'] }}>
+            <DailyTipCard />
           </View>
-        )}
-
-        {/* ── Primary CTA: Scan Your Feed ── */}
-        <TouchableOpacity
-          onPress={handleCtaPress}
-          activeOpacity={0.85}
-          accessibilityRole="button"
-          accessibilityLabel="Scan your feed"
-          accessibilityHint="Opens platform selection to start a new scan"
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          style={{
-            backgroundColor: colors.primary,
-            borderRadius: RADIUS.lg,
-            paddingVertical: SPACING.xl,
-            paddingHorizontal: SPACING['2xl'],
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexDirection: 'row',
-            gap: SPACING.md,
-            marginBottom: SPACING['3xl'],
-            minHeight: 60,
-            ...shadows.hero,
-          }}
-        >
-          {/* H-2 FIX: Updated CTA text to indicate platform selection step */}
-          {/* H-7 FIX: Increased icon size for better visual balance */}
-          <Scan size={26} color={colors.textInverse} strokeWidth={2} />
-          <Text
-            style={{
-              ...TYPOGRAPHY.buttonLg,
-              color: colors.textInverse,
-              fontSize: TYPOGRAPHY.h2.fontSize,
-            }}
-          >
-            Choose a Platform to Scan
-          </Text>
-        </TouchableOpacity>
-
-        {/* ── Weekly Summary ── */}
-        {weeklySummary && weeklySummary.scanCount > 0 && (
-          <View style={{ marginBottom: SPACING.xl }}>
-            <WeeklySummaryCard summary={weeklySummary} />
-          </View>
-        )}
-
-        {/* ── Achievement Badges (shows teaser even with 0 earned) ── */}
-        {streakData.total_scans > 0 && (
-          <View style={{ marginBottom: SPACING.xl }}>
-            <AchievementBadges
-              earnedAchievements={earnedAchievements}
-              newlyEarnedId={newlyEarnedId}
-            />
-          </View>
-        )}
-
-        {/* ── Smart Suggestion ── */}
-        {suggestion && (
-          <View style={{ marginBottom: SPACING.xl }}>
-            <SmartSuggestion
-              suggestion={suggestion}
-              onAction={handleCtaPress}
-            />
-          </View>
-        )}
-
-        {/* ── Recent Scan Preview ── */}
-        {recentScan && (
-          <View style={{ marginBottom: SPACING.xl }}>
-            <RecentScanCard
-              scan={recentScan}
-              onPress={onRecentScanPress}
-            />
-          </View>
-        )}
-
-        {/* ── Daily Tip ── */}
-        <View style={{ marginBottom: SPACING.lg }}>
-          <DailyTipCard />
-        </View>
+        </StaggeredList>
       </ScrollView>
 
       {/* Platform selection bottom sheet — M-24 FIX: pass last platform for default selection */}

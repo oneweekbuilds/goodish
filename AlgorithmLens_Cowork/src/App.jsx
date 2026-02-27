@@ -45,10 +45,11 @@ const TermsPage = React.lazy(() => import('./pages/TermsPage'));
 // Loading fallback component
 function LoadingFallback() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-page">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-4 border-border-light/30 border-t-primary-blue rounded-full animate-spin"></div>
-        <p className="text-text-muted text-sm font-medium">Loading...</p>
+    <div className="min-h-[100dvh] flex items-center justify-center bg-bg-page">
+      <div className="space-y-4 w-64">
+        <div className="h-4 bg-slate-200 rounded animate-pulse" />
+        <div className="h-4 bg-slate-200 rounded animate-pulse w-3/4" />
+        <div className="h-4 bg-slate-200 rounded animate-pulse w-1/2" />
       </div>
     </div>
   );
@@ -87,7 +88,7 @@ function App() {
     <AuthProvider>
       <PaywallProvider>
         <ToastProvider>
-          <div className="min-h-screen bg-bg-page font-sans text-text-main selection:bg-primary-blue/20">
+          <div className="min-h-[100dvh] bg-bg-page font-sans text-text-main selection:bg-primary-blue/20">
             {/* Skip to content link - visible on focus for keyboard navigation */}
             <a
               href="#main-content"

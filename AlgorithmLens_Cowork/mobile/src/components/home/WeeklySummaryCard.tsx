@@ -14,7 +14,7 @@
 
 import React from 'react';
 import { View, Text } from 'react-native';
-import { Calendar, TrendingUp, TrendingDown, Minus, Scan } from 'lucide-react-native';
+import { Calendar, TrendingUp, TrendingDown, Minus } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, RADIUS, TYPOGRAPHY, ICON_SIZES } from '../../lib/theme';
 import { PLATFORMS } from '../../lib/theme';
@@ -69,7 +69,7 @@ function WeeklySummaryCardComponent({ summary }: WeeklySummaryCardProps) {
             alignItems: 'center',
           }}
         >
-          <Calendar size={14} color={colors.accentGreen} strokeWidth={2} />
+          <Calendar size={16} color={colors.accentGreen} strokeWidth={2} />
         </View>
         <Text
           style={{
@@ -91,15 +91,15 @@ function WeeklySummaryCardComponent({ summary }: WeeklySummaryCardProps) {
       </View>
 
       {/* Scan count — headline metric */}
-      <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: SPACING.xs, marginBottom: SPACING.md }}>
-        <Scan size={14} color={colors.primaryBlue} strokeWidth={2} />
-        <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMain }}>
-          You scanned{' '}
-          <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.primaryBlue }}>
-            {summary.scanCount} {summary.scanCount === 1 ? 'time' : 'times'}
+      <View style={{ marginBottom: SPACING.md }}>
+        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: SPACING.xs }}>
+          <Text style={{ ...TYPOGRAPHY.scoreLarge, color: colors.primaryBlue }}>
+            {summary.scanCount}
           </Text>
-          {' '}this week
-        </Text>
+          <Text style={{ ...TYPOGRAPHY.label, color: colors.textMuted }}>
+            {summary.scanCount === 1 ? 'scan' : 'scans'} this week
+          </Text>
+        </View>
       </View>
 
       {/* Metrics grid */}
@@ -126,25 +126,9 @@ function WeeklySummaryCardComponent({ summary }: WeeklySummaryCardProps) {
 
         {/* Top platform */}
         {topPlatformName && summary.topPlatformCount > 1 && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
-            <View
-              style={{
-                width: 20,
-                height: 20,
-                borderRadius: RADIUS.md,
-                backgroundColor: colors.blue50,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              <Text style={{ fontSize: TYPOGRAPHY.captionSmall.fontSize - 1 }}>
-                {getPlatformEmoji(summary.topPlatform || '')}
-              </Text>
-            </View>
-            <Text style={{ ...TYPOGRAPHY.caption, color: colors.textSecondary }}>
-              Most scanned: {topPlatformName} ({summary.topPlatformCount} scans)
-            </Text>
-          </View>
+          <Text style={{ ...TYPOGRAPHY.caption, color: colors.textSecondary }}>
+            Most scanned: {topPlatformName} ({summary.topPlatformCount} scans)
+          </Text>
         )}
 
         {/* Total posts */}
@@ -245,10 +229,11 @@ function getAdIcon(summary: WeeklySummaryData) {
 }
 
 function getAdIconColor(summary: WeeklySummaryData, colors: Record<string, string | readonly string[]>): string {
-  if (summary.prevWeekAvgAdPercentage === null) return colors.textTertiary as string;
+  if (summary.prevWeekAvgAdPercentage === null) return colors.textSecondary as string;
   const change = summary.avgAdPercentage - summary.prevWeekAvgAdPercentage;
-  if (Math.abs(change) < 0.5) return colors.textTertiary as string;
-  return change < 0 ? (colors.accentGreen as string) : (colors.warning as string);
+  if (Math.abs(change) < 0.5) return colors.textSecondary as string;
+  // Lower ad density is positive, higher is negative
+  return change < 0 ? (colors.success as string) : (colors.error as string);
 }
 
 function getScoreIcon(summary: WeeklySummaryData) {
@@ -259,20 +244,9 @@ function getScoreIcon(summary: WeeklySummaryData) {
 }
 
 function getScoreIconColor(summary: WeeklySummaryData, colors: Record<string, string | readonly string[]>): string {
-  if (summary.prevWeekAvgFeedScore === null) return colors.textTertiary as string;
+  if (summary.prevWeekAvgFeedScore === null) return colors.textSecondary as string;
   const change = summary.avgFeedScore - summary.prevWeekAvgFeedScore;
-  if (Math.abs(change) < 2) return colors.textTertiary as string;
-  return change > 0 ? (colors.accentGreen as string) : (colors.warning as string);
+  if (Math.abs(change) < 2) return colors.textSecondary as string;
+  return change > 0 ? (colors.success as string) : (colors.error as string);
 }
 
-function getPlatformEmoji(platform: string): string {
-  const emojis: Record<string, string> = {
-    instagram: '📷',
-    twitter: '🐦',
-    youtube: '▶️',
-    tiktok: '🎵',
-    facebook: '👤',
-    reddit: '💬',
-  };
-  return emojis[platform] || '📱';
-}

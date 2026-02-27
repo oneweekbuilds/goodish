@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   View,
   Text,
   Animated,
+  Pressable,
   TouchableOpacity,
   Platform,
   StyleSheet,
@@ -60,13 +61,22 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
   counterfactual = null,
   howWeMeasure = null,
 }) => {
-  const { colors } = useTheme();
+  const { colors, shadows } = useTheme();
   // L3: Use useRef to persist animated value across re-renders
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const chevronRotateAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
   const [expanded, setExpanded] = useState(false);
   const [showCounterfactual, setShowCounterfactual] = useState(false);
   const [showHowWeMeasure, setShowHowWeMeasure] = useState(false);
+
+  const handlePressIn = useCallback(() => {
+    Animated.spring(scaleAnim, { toValue: 0.97, useNativeDriver: true, speed: 50, bounciness: 4 }).start();
+  }, [scaleAnim]);
+
+  const handlePressOut = useCallback(() => {
+    Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, speed: 40, bounciness: 6 }).start();
+  }, [scaleAnim]);
 
   useEffect(() => {
     fadeAnim.setValue(0);
@@ -90,56 +100,49 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
     }).start();
   }, [expanded]);
 
-  // Use theme utility for accent-based background tint
-  const accentBg = (hex: string): string => {
-    try {
-      return withOpacity(hex, 0.08);
-    } catch {
-      return 'rgba(37, 99, 235, 0.08)';
-    }
-  };
-
   return (
-    <Animated.View style={{ opacity: fadeAnim }}>
-      <TouchableOpacity
-        activeOpacity={0.9}
+    <Animated.View style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }] }}>
+      <Pressable
         onPress={() => setExpanded(!expanded)}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
         accessible={true}
         accessibilityRole="button"
         accessibilityLabel={`Insight: ${title}. ${meaning}`}
         accessibilityHint={whyCare || meta ? 'Tap to expand for more context' : undefined}
         accessibilityState={{expanded}}
       >
-        <GradientWrapper
-          colors={[accentBg(accent), colors.bgCard]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{
-            borderRadius: RADIUS.lg,
-            padding: SPACING.xl,
-            marginBottom: SPACING.md,
-            borderWidth: 1,
-            borderColor: colors.borderSoft,
-          }}
-        >
-          {/* Accent Bar */}
+        <View style={{
+          borderRadius: RADIUS.xl,
+          overflow: 'hidden',
+          marginBottom: SPACING.md,
+          ...shadows.card,
+        }}>
+          {/* Accent top edge — subtle colored bar for visual pop */}
+          <View style={{
+            height: 3,
+            backgroundColor: accent,
+            borderTopLeftRadius: RADIUS.xl,
+            borderTopRightRadius: RADIUS.xl,
+          }} />
           <View
             style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: 4,
-              backgroundColor: accent,
-              borderTopLeftRadius: RADIUS.lg,
-              borderBottomLeftRadius: RADIUS.lg,
+              padding: SPACING['2xl'],
+              backgroundColor: colors.bgCard,
+              borderBottomLeftRadius: RADIUS.xl,
+              borderBottomRightRadius: RADIUS.xl,
+              borderWidth: 1,
+              borderTopWidth: 0,
+              borderColor: colors.borderSoft,
             }}
-          />
-
-          <View style={{ paddingLeft: SPACING.md }}>
+          >
+            {/* Title — large, bold, headline-first */}
             <Text
               style={{
-                ...TYPOGRAPHY.heroTitle,
+                fontSize: RFValue(22),
+                fontWeight: '700',
+                lineHeight: RFValue(30),
+                letterSpacing: -0.4,
                 color: colors.textMain,
                 marginBottom: SPACING.md,
               }}
@@ -149,10 +152,12 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
               {title}
             </Text>
 
+            {/* Meaning — secondary text */}
             <Text
               style={{
-                ...TYPOGRAPHY.bodySmall,
-                color: colors.textMuted,
+                ...TYPOGRAPHY.body,
+                color: colors.textSecondary,
+                lineHeight: RFValue(22),
               }}
               numberOfLines={expanded ? undefined : 3}
             >
@@ -167,7 +172,7 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
                     style={{
                       ...TYPOGRAPHY.bodySmall,
                       color: colors.textSecondary,
-                      marginTop: SPACING.sm,
+                      marginTop: SPACING.md,
                     }}
                   >
                     {whyCare}
@@ -187,25 +192,25 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
               </>
             )}
 
-            {/* Expand hint */}
-            {!expanded && (whyCare || meta) && (
+            {/* Expand hint — subtle inline with chevron */}
+            {(whyCare || meta) && (
               <View
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
-                  gap: SPACING.sm,
-                  marginTop: SPACING.sm,
-                  backgroundColor: 'transparent',
-                  borderWidth: 1,
-                  borderColor: accent,
-                  alignSelf: 'flex-start',
-                  paddingHorizontal: SPACING.md,
-                  paddingVertical: SPACING.xs,
-                  borderRadius: RADIUS.full,
+                  gap: SPACING.xs,
+                  marginTop: SPACING.lg,
+                  paddingTop: SPACING.md,
+                  borderTopWidth: StyleSheet.hairlineWidth,
+                  borderTopColor: colors.borderSoft,
                 }}
               >
-                <Text style={{ ...TYPOGRAPHY.labelBold, color: accent }}>
-                  Tap for more context
+                <Text style={{
+                  ...TYPOGRAPHY.caption,
+                  fontWeight: '500',
+                  color: colors.primaryBlue,
+                }}>
+                  {expanded ? 'Show less' : 'Tap for more context'}
                 </Text>
                 <Animated.View
                   style={Platform.OS === 'web'
@@ -224,13 +229,13 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
                       }
                   }
                 >
-                  <ChevronDown size={14} color={accent} />
+                  <ChevronDown size={13} color={colors.primaryBlue} strokeWidth={2.5} />
                 </Animated.View>
               </View>
             )}
           </View>
-        </GradientWrapper>
-      </TouchableOpacity>
+        </View>
+      </Pressable>
 
       {/* About this analysis — combined counterfactual + methodology */}
       {(counterfactual || (howWeMeasure && (howWeMeasure.what || howWeMeasure.how || howWeMeasure.limitations))) && (
@@ -241,8 +246,9 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
             setShowHowWeMeasure(!showCounterfactual);
           }}
           style={{
-            marginTop: SPACING.sm,
-            borderRadius: RADIUS.md,
+            marginTop: SPACING.xs,
+            marginBottom: SPACING.sm,
+            borderRadius: RADIUS.lg,
             borderWidth: 1,
             borderColor: colors.borderSoft,
             backgroundColor: colors.bgCardGradientEnd,
@@ -262,14 +268,15 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
             paddingVertical: SPACING.md,
           }}>
             <Text style={{
-              ...TYPOGRAPHY.label,
+              ...TYPOGRAPHY.caption,
+              fontWeight: '500',
               color: colors.textMuted,
             }}>
               About this analysis
             </Text>
             <ChevronDown
-              size={14}
-              color={colors.textSecondary}
+              size={13}
+              color={colors.textMuted}
               strokeWidth={2}
               style={{
                 transform: [{ rotate: showCounterfactual ? '180deg' : '0deg' }],
@@ -277,33 +284,34 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
             />
           </View>
           {showCounterfactual && (
-            <View style={{ paddingHorizontal: SPACING.lg, paddingBottom: SPACING.lg, gap: SPACING.lg }}>
+            <View style={{ paddingHorizontal: SPACING.lg, paddingBottom: SPACING.lg, gap: SPACING.md }}>
               {counterfactual && (
                 <Text style={{
                   ...TYPOGRAPHY.caption,
                   color: colors.textSecondary,
                   fontStyle: 'italic',
+                  lineHeight: RFValue(18),
                 }}>
                   {counterfactual}
                 </Text>
               )}
               {counterfactual && howWeMeasure && (howWeMeasure.what || howWeMeasure.how) && (
-                <View style={{ height: 1, backgroundColor: colors.borderSoft }} />
+                <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.borderSoft }} />
               )}
               {howWeMeasure?.what && (
-                <Text style={{ ...TYPOGRAPHY.caption, color: colors.textMuted }}>
+                <Text style={{ ...TYPOGRAPHY.caption, color: colors.textMuted, lineHeight: RFValue(18) }}>
                   <Text style={{ fontWeight: '600', color: colors.textMain }}>What this measures: </Text>
                   {howWeMeasure.what}
                 </Text>
               )}
               {howWeMeasure?.how && (
-                <Text style={{ ...TYPOGRAPHY.caption, color: colors.textMuted }}>
+                <Text style={{ ...TYPOGRAPHY.caption, color: colors.textMuted, lineHeight: RFValue(18) }}>
                   <Text style={{ fontWeight: '600', color: colors.textMain }}>How we measure it: </Text>
                   {howWeMeasure.how}
                 </Text>
               )}
               {howWeMeasure?.limitations && (
-                <Text style={{ ...TYPOGRAPHY.caption, color: colors.textMuted }}>
+                <Text style={{ ...TYPOGRAPHY.caption, color: colors.textMuted, lineHeight: RFValue(18) }}>
                   <Text style={{ fontWeight: '600', color: colors.textMain }}>Limitations: </Text>
                   {howWeMeasure.limitations}
                 </Text>

@@ -10,7 +10,7 @@ const NotFoundPage = () => {
   return (
     <>
       <SEO title="Page Not Found" noIndex={true} />
-      <div className="min-h-screen bg-bg-page flex items-center justify-center py-24 px-6">
+      <div className="min-h-[100dvh] bg-bg-page flex items-center justify-center py-24 px-6">
       <div className="max-w-md w-full text-center">
         {/* Icon */}
         <div className="w-20 h-20 bg-primary-blue/10 rounded-full flex items-center justify-center mx-auto mb-6">

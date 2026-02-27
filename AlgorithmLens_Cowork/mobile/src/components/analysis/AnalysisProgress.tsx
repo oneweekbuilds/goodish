@@ -326,7 +326,7 @@ AnalysisProgress.displayName = 'AnalysisProgress';
 // ============================================
 
 function StageIcon({ stage, color }: { stage: PipelineStage; color: string }) {
-  const size = 20;
+  const size = 22;
   const strokeWidth = 2;
 
   switch (stage) {

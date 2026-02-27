@@ -41,7 +41,7 @@ const SimpleTable = ({ columns = [], rows = [], maxRows = 10 }) => {
   const hasRankColumn = columns[0]?.key === 'rank';
 
   return (
-    <div className="relative rounded-xl" style={{ border: '1px solid rgba(37, 99, 235, 0.08)', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)' }}>
+    <div className="relative rounded-xl border border-primary-blue/8 shadow-sm">
       <div
         ref={scrollRef}
         className="overflow-x-auto rounded-xl"
@@ -51,21 +51,14 @@ const SimpleTable = ({ columns = [], rows = [], maxRows = 10 }) => {
       <table className="w-full text-sm" style={{ minWidth: '480px' }} aria-label={columns.length > 1 ? `Data table with ${columns.length} columns and ${displayRows.length} rows` : undefined}>
         <thead>
           <tr
-            style={{
-              background: 'linear-gradient(180deg, #F8FAFF 0%, #F1F5FE 100%)',
-              borderBottom: '1px solid rgba(37, 99, 235, 0.1)',
-            }}
+            className="bg-gradient-to-b from-blue-50 to-blue-100 border-b border-primary-blue/10"
           >
             {columns.map((col, i) => (
               <th
                 key={i}
                 scope="col"
-                className={`py-3 px-3 sm:px-4 font-semibold ${getAlignment(col.align)}`}
+                className={`py-3 px-3 sm:px-4 font-semibold text-xs text-slate-600 uppercase tracking-wide ${getAlignment(col.align)}`}
                 style={{
-                  fontSize: '0.75rem',
-                  color: '#475569',
-                  letterSpacing: '0.03em',
-                  textTransform: 'uppercase',
                   width: col.width || 'auto',
                 }}
               >
@@ -82,17 +75,7 @@ const SimpleTable = ({ columns = [], rows = [], maxRows = 10 }) => {
             return (
               <tr
                 key={rowIndex}
-                className="transition-colors duration-150"
-                style={{
-                  background: isEven ? '#FFFFFF' : 'rgba(248, 250, 255, 0.6)',
-                  borderBottom: rowIndex < displayRows.length - 1 ? '1px solid rgba(226, 232, 240, 0.6)' : 'none',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(37, 99, 235, 0.04)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = isEven ? '#FFFFFF' : 'rgba(248, 250, 255, 0.6)';
-                }}
+                className={`transition-colors duration-150 hover:bg-primary-blue/4 ${isEven ? 'bg-white' : 'bg-blue-50/60'} ${rowIndex < displayRows.length - 1 ? 'border-b border-slate-200/60' : ''}`}
               >
                 {columns.map((col, colIndex) => {
                   const cellValue = row[col.key] ?? '-';
@@ -101,24 +84,15 @@ const SimpleTable = ({ columns = [], rows = [], maxRows = 10 }) => {
                   return (
                     <td
                       key={colIndex}
-                      className={`py-3 px-3 sm:px-4 ${getAlignment(col.align)}`}
-                      style={{
-                        fontWeight: isTop3 ? 600 : 400,
-                        color: isTop3 ? '#1E293B' : '#4B5563',
-                        fontSize: '0.875rem',
-                        letterSpacing: '-0.005em',
-                      }}
+                      className={`py-3 px-3 sm:px-4 text-sm ${isTop3 ? 'font-semibold text-slate-900' : 'font-normal text-slate-700'} tracking-tight ${getAlignment(col.align)}`}
                     >
                       {isRankCell && isTop3 ? (
                         <span
-                          className="inline-flex items-center justify-center w-6 h-6 rounded-md text-xs font-bold"
-                          style={{
-                            background: rowIndex === 0 ? 'linear-gradient(135deg, #2563EB, #3B82F6)'
-                              : rowIndex === 1 ? 'linear-gradient(135deg, rgba(37, 99, 235, 0.15), rgba(37, 99, 235, 0.1))'
-                              : 'linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(37, 99, 235, 0.05))',
-                            color: rowIndex === 0 ? '#FFFFFF' : '#2563EB',
-                            boxShadow: rowIndex === 0 ? '0 2px 6px rgba(37, 99, 235, 0.3)' : 'none',
-                          }}
+                          className={`inline-flex items-center justify-center w-6 h-6 rounded-md text-xs font-bold ${
+                            rowIndex === 0 ? 'bg-gradient-to-br from-primary-blue to-blue-500 text-white shadow-lg shadow-primary-blue/30' :
+                            rowIndex === 1 ? 'bg-gradient-to-br from-primary-blue/15 to-primary-blue/10 text-primary-blue' :
+                            'bg-gradient-to-br from-primary-blue/8 to-primary-blue/5 text-primary-blue'
+                          }`}
                         >
                           {cellValue}
                         </span>
@@ -135,11 +109,7 @@ const SimpleTable = ({ columns = [], rows = [], maxRows = 10 }) => {
       </table>
       {rows.length > maxRows && (
         <div
-          className="text-center py-3"
-          style={{
-            background: 'rgba(248, 250, 255, 0.8)',
-            borderTop: '1px solid rgba(226, 232, 240, 0.6)',
-          }}
+          className="text-center py-3 bg-blue-50/80 border-t border-slate-200/60"
         >
           <p className="text-sm text-text-muted font-medium">
             Showing {maxRows} of {rows.length} rows
@@ -150,10 +120,7 @@ const SimpleTable = ({ columns = [], rows = [], maxRows = 10 }) => {
       {/* Scroll affordance: subtle right-edge shadow when table overflows */}
       {canScrollRight && (
         <div
-          className="absolute top-0 right-0 bottom-0 w-6 pointer-events-none rounded-r-xl"
-          style={{
-            background: 'linear-gradient(to left, rgba(0,0,0,0.06), transparent)',
-          }}
+          className="absolute top-0 right-0 bottom-0 w-6 pointer-events-none rounded-r-xl bg-gradient-to-l from-black/6 to-transparent"
           aria-hidden="true"
         />
       )}

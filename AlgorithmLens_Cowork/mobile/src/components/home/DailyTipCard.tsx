@@ -9,10 +9,29 @@
  */
 
 import React, { useMemo } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Platform } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Lightbulb } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
+import { SPACING, RADIUS, TYPOGRAPHY, ICON_SIZES } from '../../lib/theme';
+
+// Web-safe gradient wrapper for LinearGradient
+const GradientWrapper = Platform.OS === 'web'
+  ? ({ colors: gradientColors, start, end, style, children, ...props }: any) => {
+      const flatStyle = style ? (Array.isArray(style) ? Object.assign({}, ...style) : style) : {};
+      return (
+        <View
+          style={{
+            ...flatStyle,
+            background: `linear-gradient(to bottom, ${gradientColors[0]} 0%, ${gradientColors[1]} 100%)`,
+          }}
+          {...props}
+        >
+          {children}
+        </View>
+      );
+    }
+  : LinearGradient;
 
 /**
  * Epistemically restrained tips — describe observable patterns,
@@ -40,9 +59,11 @@ function DailyTipCardComponent() {
   }, []);
 
   return (
-    <View
+    <GradientWrapper
+      colors={[colors.bgCard, colors.bgCardGradientEnd]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
       style={{
-        backgroundColor: colors.bgCard,
         borderRadius: RADIUS.lg,
         padding: SPACING.lg,
         borderWidth: 1,
@@ -58,16 +79,16 @@ function DailyTipCardComponent() {
     >
       <View
         style={{
-          width: SPACING['3xl'],
-          height: SPACING['3xl'],
-          borderRadius: SPACING.lg,
-          backgroundColor: `${colors.accentGreen}18`,
+          width: ICON_SIZES.lg,
+          height: ICON_SIZES.lg,
+          borderRadius: RADIUS.md,
+          backgroundColor: colors.green50,
           justifyContent: 'center',
           alignItems: 'center',
           marginTop: SPACING.xxs,
         }}
       >
-        <Lightbulb size={14} color={colors.accentGreen} strokeWidth={2} />
+        <Lightbulb size={16} color={colors.accentGreen} strokeWidth={1.8} />
       </View>
 
       <View style={{ flex: 1 }}>
@@ -90,7 +111,7 @@ function DailyTipCardComponent() {
           {tip}
         </Text>
       </View>
-    </View>
+    </GradientWrapper>
   );
 }
 

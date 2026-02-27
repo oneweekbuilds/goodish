@@ -284,7 +284,7 @@ const DashboardPage = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-bg-page pt-28 pb-16 flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-bg-page pt-28 pb-16 flex items-center justify-center">
         <div className="text-center">
           <Loader2 size={48} className="animate-spin text-primary-blue mx-auto mb-4" />
           <p className="text-text-muted">Loading dashboard...</p>
@@ -300,7 +300,7 @@ const DashboardPage = () => {
 
     if (isAuthError && authReady) {
       return (
-        <div className="min-h-screen bg-bg-page pt-24 md:pt-28 pb-16">
+        <div className="min-h-[100dvh] bg-bg-page pt-24 md:pt-28 pb-16">
           <SignInPrompt
             title="Sign in to view your results"
             body="Your scans are saved to your account. Sign in to see your dashboard."
@@ -314,7 +314,7 @@ const DashboardPage = () => {
 
     if (isNetworkError) {
       return (
-        <div className="min-h-screen bg-bg-page pt-24 md:pt-28 pb-16 px-4 md:px-6">
+        <div className="min-h-[100dvh] bg-bg-page pt-24 md:pt-28 pb-16 px-4 md:px-6">
           <div className="max-w-2xl mx-auto px-2 sm:px-4 md:px-6">
             <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-6 sm:p-8 md:p-12 text-center">
               <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -361,7 +361,7 @@ const DashboardPage = () => {
     }
 
     return (
-      <div className="min-h-screen bg-bg-page pt-24 md:pt-28 pb-16 px-4 md:px-6">
+      <div className="min-h-[100dvh] bg-bg-page pt-24 md:pt-28 pb-16 px-4 md:px-6">
         <div className="max-w-2xl mx-auto px-2 sm:px-4 md:px-6">
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-8 text-center">
             <h2 className="text-xl font-bold mb-2 text-text-main">

@@ -255,7 +255,7 @@ export default function HistoryScreen() {
               width: SPACING['4xl'],
               height: SPACING['4xl'],
               backgroundColor: withAlpha(platformColor, 0.08),
-              borderRadius: RADIUS.sm,
+              borderRadius: RADIUS.md,
               justifyContent: 'center',
               alignItems: 'center',
               marginRight: SPACING.md,
@@ -313,7 +313,7 @@ export default function HistoryScreen() {
               backgroundColor: colors.blue50,
               paddingHorizontal: SPACING.md,
               paddingVertical: SPACING.xs,
-              borderRadius: RADIUS.sm,
+              borderRadius: RADIUS.md,
               gap: SPACING.xs,
             }}
           >
@@ -336,7 +336,7 @@ export default function HistoryScreen() {
               backgroundColor: colors.green50,
               paddingHorizontal: SPACING.md,
               paddingVertical: SPACING.xs,
-              borderRadius: RADIUS.sm,
+              borderRadius: RADIUS.md,
               gap: SPACING.xs,
             }}
           >
@@ -357,11 +357,11 @@ export default function HistoryScreen() {
               flexDirection: 'row',
               alignItems: 'center',
               backgroundColor: qualityLevel.colorKey === 'accentGreen' ? colors.blue50
-                : qualityLevel.colorKey === 'warning' ? 'rgba(245, 158, 11, 0.08)'
-                : 'rgba(239, 68, 68, 0.08)',
+                : qualityLevel.colorKey === 'warning' ? colors.warningLight
+                : colors.errorLight,
               paddingHorizontal: SPACING.md,
               paddingVertical: SPACING.xs,
-              borderRadius: RADIUS.sm,
+              borderRadius: RADIUS.md,
               gap: SPACING.xs,
             }}
           >
@@ -369,8 +369,8 @@ export default function HistoryScreen() {
               style={{
                 ...TYPOGRAPHY.labelBold,
                 color: qualityLevel.colorKey === 'accentGreen' ? colors.primaryBlue
-                  : qualityLevel.colorKey === 'warning' ? '#b45309'
-                  : '#dc2626',
+                  : qualityLevel.colorKey === 'warning' ? colors.warning
+                  : colors.error,
               }}
             >
               {/* M-04 FIX: Show threshold hint to explain what quality means */}
@@ -644,10 +644,12 @@ export default function HistoryScreen() {
             <TouchableOpacity
               onPress={() => setFilterPlatform(null)}
               style={{
-                paddingHorizontal: SPACING.md,
+                paddingHorizontal: 18,
                 paddingVertical: SPACING.sm,
                 borderRadius: RADIUS.pill,
-                backgroundColor: !filterPlatform ? colors.primaryBlue : colors.bgSecondary,
+                backgroundColor: !filterPlatform ? colors.primaryBlue : 'transparent',
+                borderWidth: 1.5,
+                borderColor: !filterPlatform ? colors.primaryBlue : colors.borderSlate200,
                 minHeight: MIN_TOUCH_TARGET,
                 minWidth: 44,
                 justifyContent: 'center',
@@ -656,7 +658,7 @@ export default function HistoryScreen() {
               accessibilityState={{ selected: !filterPlatform }}
               accessibilityLabel="All platforms"
             >
-              <Text style={{ ...TYPOGRAPHY.buttonSm, color: !filterPlatform ? colors.white : colors.textSecondary }}>
+              <Text style={{ ...TYPOGRAPHY.buttonSm, color: !filterPlatform ? colors.white : colors.textMain }}>
                 All platforms
               </Text>
             </TouchableOpacity>
@@ -668,10 +670,12 @@ export default function HistoryScreen() {
                   key={p}
                   onPress={() => setFilterPlatform(isActive ? null : p)}
                   style={{
-                    paddingHorizontal: SPACING.md,
+                    paddingHorizontal: 18,
                     paddingVertical: SPACING.sm,
                     borderRadius: RADIUS.pill,
-                    backgroundColor: isActive ? colors.primaryBlue : colors.bgSecondary,
+                    backgroundColor: isActive ? colors.primaryBlue : 'transparent',
+                    borderWidth: 1.5,
+                    borderColor: isActive ? colors.primaryBlue : colors.borderSlate200,
                     minHeight: MIN_TOUCH_TARGET,
                     minWidth: 44,
                     justifyContent: 'center',
@@ -680,7 +684,7 @@ export default function HistoryScreen() {
                   accessibilityState={{ selected: isActive }}
                   accessibilityLabel={`Filter by ${pName}`}
                 >
-                  <Text style={{ ...TYPOGRAPHY.buttonSm, color: isActive ? colors.white : colors.textSecondary }}>
+                  <Text style={{ ...TYPOGRAPHY.buttonSm, color: isActive ? colors.white : colors.textMain }}>
                     {pName}
                   </Text>
                 </TouchableOpacity>

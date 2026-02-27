@@ -257,7 +257,7 @@ const ScanPlatformPage = () => {
   // Show sign-in prompt if 401 error
   if (showSignInPrompt) {
     return (
-      <div className="min-h-screen bg-bg-page pt-24 md:pt-28 pb-16">
+      <div className="min-h-[100dvh] bg-bg-page pt-24 md:pt-28 pb-16">
         <SignInPrompt
           title="Please sign in to run a scan"
           body="Sign in to start analyzing your social media feeds. Your scans will be saved to your account."
@@ -272,7 +272,7 @@ const ScanPlatformPage = () => {
   return (
     <>
     <SEO title={`Scan ${platformName}`} description={`Analyze your ${platformName} feed with AlgorithmLens.`} path={`/scan/platform/${platform}`} noIndex={true} />
-    <div className="min-h-screen bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
+    <div className="min-h-[100dvh] bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
       <div className="max-w-4xl mx-auto">
         {/* Back Button */}
         <Link

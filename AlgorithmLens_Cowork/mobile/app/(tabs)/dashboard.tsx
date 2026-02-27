@@ -2029,37 +2029,54 @@ const AiProcessingCard = ({
   </View>
 );
 
-const PlusTierBanner = ({ isPlus, colors }: { isPlus: boolean; colors: ReturnType<typeof useTheme>['colors'] }) => {
+const PlusTierBanner = ({ isPlus, colors, shadows }: { isPlus: boolean; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
   if (isPlus) return null;
   return (
     <TouchableOpacity
       onPress={() => router.push('/(tabs)/settings')}
-      activeOpacity={0.8}
+      activeOpacity={0.85}
       accessibilityRole="button"
       accessibilityLabel="Unlock trend analysis with Plus"
       style={{
         marginHorizontal: SPACING.lg,
-        marginBottom: SPACING.sm,
-        backgroundColor: colors.blue800,
+        marginBottom: SPACING.lg,
         borderRadius: RADIUS.lg,
-        paddingHorizontal: SPACING.lg,
-        paddingVertical: SPACING.sm,
-        minHeight: MIN_TOUCH_TARGET,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: SPACING.sm,
+        overflow: 'hidden',
       }}
     >
-      <TrendingUp size={16} color={colors.white} strokeWidth={2} />
-      <Text style={{ ...TYPOGRAPHY.small, fontWeight: '600', color: colors.white, flex: 1 }}>
-        Unlock trend analysis with Plus
-      </Text>
-      <View style={{
-        backgroundColor: colors.accentGreen, borderRadius: RADIUS.sm,
-        paddingHorizontal: SPACING.sm, paddingVertical: SPACING.xs,
-      }}>
-        <Text style={{ ...TYPOGRAPHY.captionSmall, fontWeight: '700', color: colors.white }}>Try Free</Text>
-      </View>
+      <LinearGradient
+        colors={[colors.gradientPrimaryStart, colors.gradientPrimaryEnd]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0.5 }}
+        style={{
+          paddingHorizontal: SPACING.lg,
+          paddingVertical: SPACING.md,
+          minHeight: MIN_TOUCH_TARGET,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: SPACING.md,
+        }}
+      >
+        <View style={{
+          width: 32, height: 32, borderRadius: 10,
+          backgroundColor: 'rgba(255,255,255,0.18)',
+          justifyContent: 'center', alignItems: 'center',
+        }}>
+          <TrendingUp size={16} color="#FFFFFF" strokeWidth={2.5} />
+        </View>
+        <Text style={{
+          ...TYPOGRAPHY.label, fontWeight: '600',
+          color: '#FFFFFF', flex: 1, letterSpacing: -0.1,
+        }}>
+          Unlock trend analysis with Plus
+        </Text>
+        <View style={{
+          backgroundColor: 'rgba(255,255,255,0.22)', borderRadius: RADIUS.full,
+          paddingHorizontal: SPACING.md, paddingVertical: SPACING.xs + 2,
+        }}>
+          <Text style={{ ...TYPOGRAPHY.caption, fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.3 }}>Try Free</Text>
+        </View>
+      </LinearGradient>
     </TouchableOpacity>
   );
 };
@@ -2190,10 +2207,10 @@ export default function DashboardScreen() {
         }
         scrollEventThrottle={16}
       >
-        {/* Header with scan button — M-07 FIX: Added gap + marginRight to prevent overlap */}
+        {/* Header with scan button */}
         <View style={{
           flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
-          paddingHorizontal: SPACING.lg, paddingTop: SPACING.lg, paddingBottom: SPACING.xs,
+          paddingHorizontal: SPACING.lg, paddingTop: SPACING.xl, paddingBottom: SPACING.md,
           gap: SPACING.md,
         }}>
           <View style={{ flex: 1, marginRight: SPACING.sm }}>
@@ -2317,38 +2334,41 @@ export default function DashboardScreen() {
                 {/* Empty state */}
         {!loading && !hasData && (
           <>
-            {/* D-2 FIX: Show tab strip even in empty state so users understand dashboard structure */}
-            <View style={{ paddingHorizontal: SPACING.lg, marginTop: SPACING.xs, marginBottom: SPACING.sm, opacity: 0.5 }}>
-              {[TABS.slice(0, 3), TABS.slice(3, 6)].map((row, rowIdx) => (
-                <View key={rowIdx} style={{ flexDirection: 'row', gap: SPACING.sm, marginBottom: SPACING.sm }}>
-                  {row.map((tab) => (
-                    <View
-                      key={tab.id}
-                      style={{
-                        flex: 1,
-                        paddingVertical: SPACING.md,
-                        minHeight: 48,
-                        borderRadius: RADIUS.md,
-                        backgroundColor: colors.bgCard,
-                        borderWidth: 1,
-                        borderColor: colors.borderSlate200,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Text style={{
-                        ...TYPOGRAPHY.buttonSm,
-                        color: colors.textTertiary,
-                        textAlign: 'center',
-                      }}>
-                        {tab.label}
-                      </Text>
-                    </View>
-                  ))}
+            {/* Show tab strip in empty state so users understand dashboard structure */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{
+                paddingHorizontal: SPACING.lg,
+                gap: SPACING.sm,
+                paddingVertical: SPACING.xs,
+                marginBottom: SPACING.md,
+              }}
+              scrollEnabled={false}
+              style={{ opacity: 0.4 }}
+            >
+              {TABS.map((tab) => (
+                <View
+                  key={tab.id}
+                  style={{
+                    paddingVertical: SPACING.sm + 2,
+                    paddingHorizontal: SPACING.lg,
+                    borderRadius: RADIUS.full,
+                    borderWidth: 1.5,
+                    borderColor: colors.borderSlate200,
+                    backgroundColor: 'transparent',
+                  }}
+                >
+                  <Text style={{
+                    ...TYPOGRAPHY.buttonSm,
+                    fontSize: 13,
+                    color: colors.textTertiary,
+                  }}>
+                    {tab.label}
+                  </Text>
                 </View>
               ))}
-            </View>
+            </ScrollView>
 
             {/* D-5 FIX: Position empty state in upper portion instead of centered */}
             <View style={{ paddingHorizontal: SPACING['2xl'], paddingTop: SPACING['2xl'], paddingBottom: SPACING['4xl'], alignItems: 'center' }}>
@@ -2387,102 +2407,73 @@ export default function DashboardScreen() {
         {/* Tab bar + content */}
         {hasData && (
           <>
-            {/* H-05 FIX: Plus banner only shows on Overview tab, not all 6 */}
-            {activeTab === 'overview' && <PlusTierBanner isPlus={isPlus} colors={colors} />}
+            {/* Plus banner — visible on all tabs for free-tier users */}
+            <PlusTierBanner isPlus={isPlus} colors={colors} shadows={shadows} />
 
-            {/* Horizontally scrollable tab bar — single row, no wrapping */}
-            <View style={{ position: 'relative' }}>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{
-                  paddingHorizontal: SPACING.lg,
-                  paddingRight: SPACING.lg + SPACING.sm,
-                  gap: SPACING.sm,
-                  marginTop: SPACING.xs,
-                  marginBottom: SPACING.sm,
-                }}
-                accessibilityRole="tablist"
-              >
-                {TABS.map((tab) => {
-                  const isActive = activeTab === tab.id;
-                  return (
-                    <TouchableOpacity
-                      key={tab.id}
-                      onPress={() => switchTab(tab.id)}
-                      activeOpacity={0.7}
-                      accessibilityRole="tab"
-                      accessibilityState={{ selected: isActive }}
-                      accessibilityLabel={`${tab.label} tab`}
-                      style={{
-                        paddingVertical: SPACING.md,
-                        paddingHorizontal: SPACING.lg,
-                        minHeight: MIN_TOUCH_TARGET,
-                        borderRadius: RADIUS.full,
-                        backgroundColor: isActive ? colors.primaryBlue : colors.bgSecondary,
-                        borderWidth: isActive ? 0 : 1,
-                        borderColor: isActive ? 'transparent' : colors.borderLight,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: tab.needsAi ? 4 : 0,
-                        ...(isActive ? shadows.soft : {}),
-                      }}
-                    >
-                      {tab.needsAi && (
-                        <View style={{
-                          backgroundColor: isActive ? 'rgba(255,255,255,0.25)' : colors.blue50,
-                          borderRadius: RADIUS.xs,
-                          paddingHorizontal: SPACING.xxs,
-                          paddingVertical: 1,
-                        }}>
-                          <Text style={{
-                            ...TYPOGRAPHY.captionSmall,
-                            fontWeight: '700',
-                            color: isActive ? colors.white : colors.primaryBlue,
-                            letterSpacing: 0.5,
-                          }}>AI</Text>
-                        </View>
-                      )}
-                      <Text style={{
-                        ...TYPOGRAPHY.buttonSm,
-                        color: isActive ? colors.white : colors.textMuted,
+            {/* Horizontally scrollable tab strip */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{
+                paddingHorizontal: SPACING.lg,
+                paddingRight: SPACING['3xl'],
+                gap: SPACING.sm,
+                paddingVertical: SPACING.xs,
+                marginBottom: SPACING.lg,
+              }}
+              accessibilityRole="tablist"
+            >
+              {TABS.map((tab) => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <TouchableOpacity
+                    key={tab.id}
+                    onPress={() => switchTab(tab.id)}
+                    activeOpacity={0.75}
+                    accessibilityRole="tab"
+                    accessibilityState={{ selected: isActive }}
+                    accessibilityLabel={`${tab.label} tab`}
+                    style={{
+                      paddingVertical: SPACING.sm + 2,
+                      paddingHorizontal: SPACING.lg,
+                      minHeight: 36,
+                      borderRadius: RADIUS.full,
+                      backgroundColor: isActive ? colors.primaryBlue : 'transparent',
+                      borderWidth: 1.5,
+                      borderColor: isActive ? colors.primaryBlue : colors.borderSlate200,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: tab.needsAi ? 5 : 0,
+                      ...(isActive ? shadows.soft : {}),
+                    }}
+                  >
+                    {tab.needsAi && (
+                      <View style={{
+                        backgroundColor: isActive ? 'rgba(255,255,255,0.22)' : colors.blue50,
+                        borderRadius: RADIUS.xs,
+                        paddingHorizontal: 5,
+                        paddingVertical: 1,
                       }}>
-                        {tab.label}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-              {/* Left fade */}
-              <LinearGradient
-                colors={[colors.bgPage, 'transparent']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: 20,
-                  pointerEvents: 'none',
-                }}
-              />
-              {/* Right fade */}
-              <LinearGradient
-                colors={['transparent', colors.bgPage]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={{
-                  position: 'absolute',
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: 20,
-                  pointerEvents: 'none',
-                }}
-              />
-            </View>
+                        <Text style={{
+                          fontSize: 9,
+                          fontWeight: '700',
+                          color: isActive ? colors.white : colors.primaryBlue,
+                          letterSpacing: 0.5,
+                        }}>AI</Text>
+                      </View>
+                    )}
+                    <Text style={{
+                      ...TYPOGRAPHY.buttonSm,
+                      fontSize: 13,
+                      color: isActive ? colors.white : colors.textSecondary,
+                    }}>
+                      {tab.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
 
             {/* Tab Content with fade */}
             <Animated.View style={{

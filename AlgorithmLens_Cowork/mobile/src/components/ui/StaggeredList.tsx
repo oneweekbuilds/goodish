@@ -11,8 +11,8 @@
  *   </StaggeredList>
  */
 
-import React, { useRef, useEffect, Children } from 'react';
-import { Animated, ViewStyle } from 'react-native';
+import React, { useRef, useEffect, useState, Children } from 'react';
+import { Animated, AccessibilityInfo, ViewStyle } from 'react-native';
 
 interface StaggeredListProps {
   children: React.ReactNode;
@@ -28,15 +28,16 @@ interface StaggeredItemProps {
   children: React.ReactNode;
   delay: number;
   duration: number;
+  reduceMotion: boolean;
 }
 
-const StaggeredItem: React.FC<StaggeredItemProps> = ({ children, delay, duration }) => {
+const StaggeredItem: React.FC<StaggeredItemProps> = ({ children, delay, duration, reduceMotion }) => {
   const hasMounted = useRef(false);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(8)).current;
+  const fadeAnim = useRef(new Animated.Value(reduceMotion ? 1 : 0)).current;
+  const slideAnim = useRef(new Animated.Value(reduceMotion ? 0 : 8)).current;
 
   useEffect(() => {
-    if (hasMounted.current) return;
+    if (reduceMotion || hasMounted.current) return;
     hasMounted.current = true;
 
     const timer = setTimeout(() => {
@@ -55,7 +56,7 @@ const StaggeredItem: React.FC<StaggeredItemProps> = ({ children, delay, duration
     }, delay);
 
     return () => clearTimeout(timer);
-  }, [fadeAnim, slideAnim, delay, duration]);
+  }, [fadeAnim, slideAnim, delay, duration, reduceMotion]);
 
   return (
     <Animated.View
@@ -75,6 +76,17 @@ const StaggeredListComponent: React.FC<StaggeredListProps> = ({
   duration = 250,
   style,
 }) => {
+  const [reduceMotion, setReduceMotion] = useState(false);
+
+  useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
+    const subscription = AccessibilityInfo.addEventListener(
+      'reduceMotionChanged',
+      setReduceMotion,
+    );
+    return () => subscription.remove();
+  }, []);
+
   const childArray = Children.toArray(children);
 
   return (
@@ -84,6 +96,7 @@ const StaggeredListComponent: React.FC<StaggeredListProps> = ({
           key={index}
           delay={index * staggerDelay}
           duration={duration}
+          reduceMotion={reduceMotion}
         >
           {child}
         </StaggeredItem>

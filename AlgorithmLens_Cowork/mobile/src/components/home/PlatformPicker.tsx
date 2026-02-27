@@ -149,7 +149,7 @@ function PlatformPickerComponent({ onScanStart }: PlatformPickerProps) {
               >
                 {IconComponent && (
                   <IconComponent
-                    size={24}
+                    size={32}
                     color={isSelected ? platform.color : colors.textMuted}
                     strokeWidth={1.8}
                   />

@@ -119,7 +119,7 @@ const ResultsPage = () => {
   // --- Loading State --- (#21 Skeleton Loading)
   if (loading) {
     return (
-      <main className="min-h-screen bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
+      <main className="min-h-[100dvh] bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
         <div className="max-w-5xl mx-auto">
           {/* Back Link Skeleton */}
           <Skeleton className="h-6 w-20 mb-8" />
@@ -168,7 +168,7 @@ const ResultsPage = () => {
   // --- Error State ---
   if (error) {
     return (
-      <div className="min-h-screen bg-bg-page py-24 px-6 flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-bg-page py-24 px-6 flex items-center justify-center">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-md border border-border-light p-8 text-center">
           <div className="w-16 h-16 bg-status-error/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertTriangle size={32} className="text-status-error" />
@@ -198,7 +198,7 @@ const ResultsPage = () => {
 
   if (parseError) {
     return (
-      <div className="min-h-screen bg-bg-page py-24 px-6 flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-bg-page py-24 px-6 flex items-center justify-center">
         <div className="max-w-2xl w-full bg-white rounded-2xl shadow-md border border-border-light p-8 text-center">
           <AlertTriangle size={48} className="text-status-error mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-text-main mb-2">Error Rendering Results</h1>
@@ -231,7 +231,7 @@ const ResultsPage = () => {
 
   if (!displayData) {
     return (
-      <div className="min-h-screen bg-bg-page py-24 px-6 flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-bg-page py-24 px-6 flex items-center justify-center">
         <div className="max-w-2xl w-full bg-white rounded-2xl shadow-md border border-border-light p-8">
           <div className="text-center mb-6">
             <AlertTriangle size={48} className="text-status-warning mx-auto mb-4" />
@@ -315,7 +315,7 @@ const ResultsPage = () => {
   return (
     <>
       <SEO title="Scan Results" noIndex={true} />
-      <main className="min-h-screen bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
+      <main className="min-h-[100dvh] bg-bg-page pt-20 pb-24 md:pt-24 px-4 md:px-6">
         <div className="max-w-5xl mx-auto">
         {/* Back Navigation */}
         <BackLink to="/start" label="Back" />

@@ -9,10 +9,29 @@
  */
 
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Platform } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Clock, ChevronRight } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
+
+// Web-safe gradient wrapper for LinearGradient
+const GradientWrapper = Platform.OS === 'web'
+  ? ({ colors: gradientColors, start, end, style, children, ...props }: any) => {
+      const flatStyle = style ? (Array.isArray(style) ? Object.assign({}, ...style) : style) : {};
+      return (
+        <View
+          style={{
+            ...flatStyle,
+            background: `linear-gradient(to bottom, ${gradientColors[0]} 0%, ${gradientColors[1]} 100%)`,
+          }}
+          {...props}
+        >
+          {children}
+        </View>
+      );
+    }
+  : LinearGradient;
 
 interface RecentScanData {
   platform: string;
@@ -82,9 +101,11 @@ function RecentScanCardComponent({ scan, onPress }: RecentScanCardProps) {
       accessibilityHint={onPress ? 'Opens dashboard with full scan results' : undefined}
       hitSlop={onPress ? { top: 8, bottom: 8, left: 8, right: 8 } : undefined}
     >
-      <View
+      <GradientWrapper
+        colors={[colors.bgCard, colors.bgCardGradientEnd]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
         style={{
-          backgroundColor: colors.bgCard,
           borderRadius: RADIUS.lg,
           padding: SPACING.lg,
           borderWidth: 1,
@@ -144,7 +165,7 @@ function RecentScanCardComponent({ scan, onPress }: RecentScanCardProps) {
             strokeWidth={2}
           />
         )}
-      </View>
+      </GradientWrapper>
     </TouchableOpacity>
   );
 }

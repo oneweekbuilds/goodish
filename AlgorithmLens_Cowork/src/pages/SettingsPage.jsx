@@ -229,7 +229,7 @@ export default function SettingsPage() {
   return (
     <>
       <SEO path="/settings" />
-      <div className="min-h-screen bg-bg-page pt-20 md:pt-24 pb-16 px-4 sm:px-6">
+      <div className="min-h-[100dvh] bg-bg-page pt-20 md:pt-24 pb-16 px-4 sm:px-6">
         <div className="max-w-2xl mx-auto space-y-6">
           {/* Page header */}
           <div className="flex items-center gap-3 mb-2">

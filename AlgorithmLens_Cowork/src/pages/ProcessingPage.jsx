@@ -305,7 +305,7 @@ const ProcessingPage = () => {
     return (
       <>
         <SEO title="Processing Scan" noIndex={true} />
-        <div className="min-h-screen bg-bg-page pt-24 md:pt-28 pb-16">
+        <div className="min-h-[100dvh] bg-bg-page pt-24 md:pt-28 pb-16">
           <SignInPrompt
           title="Please sign in to continue"
           body="Sign in to view the status of your scan. Your scans are saved to your account."
@@ -323,7 +323,7 @@ const ProcessingPage = () => {
     return (
       <>
         <SEO title="Processing Scan" noIndex={true} />
-        <div className="min-h-screen bg-bg-page py-24 px-6 flex items-center justify-center">
+        <div className="min-h-[100dvh] bg-bg-page py-24 px-6 flex items-center justify-center">
           <div className="max-w-md w-full bg-white rounded-2xl shadow-md border border-border-light p-8 text-center">
             <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
               <Clock size={32} className="text-amber-500" />
@@ -365,7 +365,7 @@ const ProcessingPage = () => {
     return (
       <>
         <SEO title="Processing Scan" noIndex={true} />
-        <div className="min-h-screen bg-bg-page py-24 px-6 flex items-center justify-center">
+        <div className="min-h-[100dvh] bg-bg-page py-24 px-6 flex items-center justify-center">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-md border border-border-light p-8 text-center">
           <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle size={32} className="text-slate-500" />
@@ -400,20 +400,14 @@ const ProcessingPage = () => {
   return (
     <>
       <SEO title="Processing Scan" noIndex={true} />
-      <div className="min-h-screen bg-bg-page py-24 px-6 flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-bg-page py-24 px-6 flex items-center justify-center">
       <div className="max-w-lg w-full">
         {/* Main Card */}
         <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-8 text-center">
-          {/* Animated Spinner */}
-          <div className="relative w-20 h-20 mx-auto mb-8">
-            {/* Track ring */}
-            <div className="absolute inset-0 border-4 border-border-light rounded-full" />
-            {/* Spinning ring */}
-            <div className="absolute inset-0 border-4 border-transparent border-t-primary-blue rounded-full animate-spin" />
-            {/* Center dot */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-3 h-3 rounded-full bg-primary-blue/40" />
-            </div>
+          {/* Animated Pulse */}
+          <div className="relative w-20 h-20 mx-auto mb-8 flex items-center justify-center">
+            <div className="absolute inset-0 border-4 border-primary-blue/20 rounded-full" />
+            <div className="w-3 h-3 rounded-full bg-primary-blue animate-pulse" />
           </div>
 
           {/* Title */}
