@@ -2278,7 +2278,7 @@ export default function DashboardScreen() {
                         <View style={{
                           backgroundColor: isActive ? 'rgba(255,255,255,0.25)' : colors.blue50,
                           borderRadius: RADIUS.xs,
-                          paddingHorizontal: 4,
+                          paddingHorizontal: SPACING.xxs,
                           paddingVertical: 1,
                         }}>
                           <Text style={{

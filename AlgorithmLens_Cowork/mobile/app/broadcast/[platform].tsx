@@ -447,7 +447,7 @@ export default function BroadcastScreen() {
             <ArrowLeft size={18} color={colors.textMain} strokeWidth={2} />
           </TouchableOpacity>
           <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs }}>
               <View
                 style={{
                   width: 24,

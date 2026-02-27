@@ -57,11 +57,11 @@ export default function ScanScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
       <ScrollView
         scrollEventThrottle={16}
-        contentContainerStyle={{ padding: SPACING.lg }}
+        contentContainerStyle={{ padding: SPACING.lg, paddingBottom: SPACING['6xl'] }}
       >
         {/* Header */}
         <View style={{ marginBottom: SPACING.xl }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs, marginBottom: SPACING.sm }}>
             <View
               style={{
                 width: 28,

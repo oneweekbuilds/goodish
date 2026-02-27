@@ -738,8 +738,8 @@ export default function SettingsScreen() {
           </View>
         </SettingSection>
 
-        {/* Spacing */}
-        <View style={{ height: SPACING['4xl'] }} />
+        {/* Spacing — account for tab bar height */}
+        <View style={{ height: SPACING['6xl'] }} />
       </ScrollView>
 
       {/* H-16 FIX: Branded upgrade modal replaces generic native Alert */}

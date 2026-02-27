@@ -724,7 +724,7 @@ export default function HistoryScreen() {
             }}
             windowSize={10}
             maxToRenderPerBatch={10}
-            contentContainerStyle={{ paddingVertical: SPACING.xs, flexGrow: 1 }}
+            contentContainerStyle={{ paddingVertical: SPACING.xs, paddingBottom: SPACING['6xl'], flexGrow: 1 }}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primaryBlue} />
             }
