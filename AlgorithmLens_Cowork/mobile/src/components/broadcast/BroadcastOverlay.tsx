@@ -24,7 +24,6 @@ import {
   TouchableOpacity,
   Animated,
   StyleSheet,
-  AccessibilityInfo,
   Platform,
 } from 'react-native';
 import {
@@ -33,8 +32,6 @@ import {
   CheckCircle,
   AlertCircle,
   XCircle,
-  Clock,
-  Layers,
   ArrowRight,
 } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
@@ -115,12 +112,6 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
     }
   }, [status, pulseAnim]);
 
-  const formatBytes = (bytes: number): string => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
-
   const renderContent = () => {
     switch (status) {
       case 'INITIALIZING':
@@ -176,85 +167,35 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
       case 'RECORDING':
         return (
           <View style={styles.contentSection}>
-            {/* Recording indicator */}
-            <View style={styles.recordingRow}>
-              <Animated.View
-                style={Platform.OS === 'web' ? {
-                  ...styles.recordingDot,
-                  backgroundColor: colors.recordingDot,
-                  opacity: 1,
-                } : [
-                  styles.recordingDot,
-                  { backgroundColor: colors.recordingDot, opacity: pulseAnim },
-                ]}
-              />
-              <Text style={[styles.recordingLabel, { color: colors.textMain }]}>
-                Recording
-              </Text>
-            </View>
-
-            {/* Stats row */}
-            <View
-              style={styles.statsRow}
-              accessibilityLiveRegion="polite"
-              accessible={true}
-              accessibilityLabel={`Broadcast recording: ${frameCount} frames captured, ${elapsedTime} elapsed`}
-            >
-              <View style={styles.statItem}>
-                <Layers size={14} color={colors.primaryBlue} strokeWidth={2} />
-                <Text style={[styles.statValue, { color: colors.textMain }]}>
-                  {frameCount}
-                </Text>
-                <Text style={[styles.statLabel, { color: colors.textMuted }]}>
-                  frames
-                </Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Clock size={14} color={colors.primaryBlue} strokeWidth={2} />
-                <Text style={[styles.statValue, { color: colors.textMain }]}>
+            {/* Hero: pulsing dot + elapsed time */}
+            <View style={{ alignItems: 'center', gap: SPACING.md }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
+                <Animated.View
+                  style={Platform.OS === 'web' ? {
+                    ...styles.recordingDot,
+                    backgroundColor: colors.recordingDot,
+                    opacity: 1,
+                  } : [
+                    styles.recordingDot,
+                    { backgroundColor: colors.recordingDot, opacity: pulseAnim },
+                  ]}
+                />
+                <Text style={{ ...TYPOGRAPHY.h2, color: colors.textMain, fontVariant: ['tabular-nums'] }}>
                   {elapsedTime}
                 </Text>
-                <Text style={[styles.statLabel, { color: colors.textMuted }]}>
-                  elapsed
-                </Text>
               </View>
-              {storageUsed > 0 && (
-                <>
-                  <View style={styles.statDivider} />
-                  <View style={styles.statItem}>
-                    <Text style={[styles.statValue, { color: colors.textMain }]}>
-                      {formatBytes(storageUsed)}
-                    </Text>
-                  </View>
-                </>
+              <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textSecondary, textAlign: 'center' }}>
+                {frameCount} frames captured from {platformName}
+              </Text>
+              {!thresholdsMet && (
+                <Text style={{ ...TYPOGRAPHY.caption, color: colors.warning, textAlign: 'center' }}>
+                  Keep scrolling — need more data for accurate analysis
+                </Text>
               )}
             </View>
 
-            <Text style={[styles.hintText, { color: colors.textSecondary }]}>
-              Scroll your {platformName} feed normally. Come back here when you're done.
-            </Text>
-
-            {/* Threshold status hint */}
-            {!thresholdsMet && (
-              <Text style={[styles.hintText, { color: colors.warning, fontWeight: '500' }]}>
-                Keep recording — more frames and time needed for accurate analysis.
-              </Text>
-            )}
-
-            {/* Action buttons */}
-            <View style={styles.buttonRow}>
-              <TouchableOpacity
-                onPress={onOpenPlatform}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                accessibilityLabel={`Open ${platformName} in another app`}
-                style={[styles.secondaryButton, { borderColor: colors.borderSlate200, flex: 1, minHeight: 44 }]}
-              >
-                <Text style={[styles.secondaryButtonText, { color: colors.primaryBlue }]}>
-                  Open {platformName}
-                </Text>
-              </TouchableOpacity>
+            {/* Actions: stop (primary, full-width) + back to platform (secondary) */}
+            <View style={{ gap: SPACING.sm, marginTop: SPACING.lg }}>
               <TouchableOpacity
                 onPress={() => {
                   triggerImpactMedium();
@@ -263,12 +204,27 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
                 activeOpacity={0.7}
                 accessibilityRole="button"
                 accessibilityLabel="Stop recording broadcast"
-                style={[styles.stopButton, { backgroundColor: colors.stopButtonBg }]}
+                style={[styles.primaryButton, {
+                  backgroundColor: colors.stopButtonBg,
+                  minHeight: 48,
+                }]}
               >
                 <StopCircle size={16} color={colors.errorBright} strokeWidth={2} />
-                <Text style={[styles.stopButtonText, { color: colors.stopButtonText }]}>
-                  Stop
+                <Text style={[styles.primaryButtonText, { color: colors.stopButtonText }]}>
+                  Stop Recording
                 </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={onOpenPlatform}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={`Open ${platformName} in another app`}
+                style={[styles.secondaryButton, { borderColor: colors.borderSlate200, minHeight: 44 }]}
+              >
+                <Text style={[styles.secondaryButtonText, { color: colors.primaryBlue }]}>
+                  Back to {platformName}
+                </Text>
+                <ArrowRight size={14} color={colors.primaryBlue} strokeWidth={2} />
               </TouchableOpacity>
             </View>
           </View>
@@ -278,10 +234,7 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
         return (
           <View style={styles.contentSection}>
             <Text style={[styles.statusText, { color: colors.textMain }]}>
-              Processing captured frames...
-            </Text>
-            <Text style={[styles.hintText, { color: colors.textMuted }]}>
-              {frameCount} frames captured in {elapsedTime}
+              Processing {frameCount} frames...
             </Text>
           </View>
         );
@@ -296,8 +249,7 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
               </Text>
             </View>
             <Text style={[styles.completeSummary, { color: colors.textSecondary }]}>
-              Captured {frameCount} unique frames in {elapsedTime} from {platformName}.
-              {storageUsed > 0 ? ` (${formatBytes(storageUsed)})` : ''}
+              {frameCount} frames captured in {elapsedTime}
             </Text>
             <TouchableOpacity
               onPress={() => {
@@ -442,40 +394,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingVertical: SPACING.xs,
   },
-  recordingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-  },
   recordingDot: {
     width: 10,
     height: 10,
     borderRadius: RADIUS.sm,
-  },
-  recordingLabel: {
-    ...TYPOGRAPHY.buttonMd,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.md,
-    paddingVertical: SPACING.sm,
-  },
-  statItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.xs,
-  },
-  statValue: {
-    ...TYPOGRAPHY.labelBold,
-  },
-  statLabel: {
-    fontSize: TYPOGRAPHY.caption.fontSize,
-  },
-  statDivider: {
-    width: 1,
-    height: 16,
-    backgroundColor: COLORS.borderSlate200,
   },
   buttonRow: {
     flexDirection: 'row',
@@ -505,19 +427,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
   },
   secondaryButtonText: {
-    ...TYPOGRAPHY.labelBold,
-  },
-  stopButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: SPACING.sm,
-    borderRadius: RADIUS.md,
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    minHeight: 48,
-  },
-  stopButtonText: {
     ...TYPOGRAPHY.labelBold,
   },
   completeHeader: {
