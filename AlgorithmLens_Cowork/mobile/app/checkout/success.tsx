@@ -20,6 +20,7 @@ import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
 import { TYPOGRAPHY, SPACING, RADIUS } from '../../src/lib/theme';
 import { Check } from 'lucide-react-native';
+import { triggerNotificationSuccess } from '../../src/lib/haptics';
 
 // Navigation delay after successful checkout (ms)
 const CHECKOUT_SUCCESS_REDIRECT_DELAY_MS = 2500;
@@ -45,6 +46,7 @@ export default function CheckoutSuccessScreen() {
 
       if (!mounted) return;
       setSyncing(false);
+      triggerNotificationSuccess();
 
       // Auto-navigate to dashboard after a brief success display
       setTimeout(() => {

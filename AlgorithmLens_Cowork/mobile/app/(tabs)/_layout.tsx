@@ -5,6 +5,7 @@ import { Home, LayoutDashboard, Clock, Settings } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/context/ThemeContext';
 import { SPACING, TYPOGRAPHY } from '../../src/lib/theme';
+import { triggerImpactLight } from '../../src/lib/haptics';
 
 /**
  * Tabs layout — updated for broadcast-first architecture.
@@ -61,10 +62,14 @@ function WebCompatibleTabButton(props: any) {
       </div>
     );
   }
-  // On native, use standard TouchableOpacity
-  const { children, style, ...rest } = props;
+  // On native, use standard TouchableOpacity with haptic feedback
+  const { children, style, onPress, ...rest } = props;
+  const handlePress = () => {
+    triggerImpactLight();
+    onPress?.();
+  };
   return (
-    <TouchableOpacity {...rest} style={Platform.OS === 'web' ? {
+    <TouchableOpacity {...rest} onPress={handlePress} style={Platform.OS === 'web' ? {
       ...style,
       flex: 1,
       justifyContent: 'center',
@@ -126,8 +131,8 @@ export default function TabsLayout() {
             <Home size={24} color={color} strokeWidth={2} />
           ),
           tabBarAccessibilityLabel: 'Home tab',
-          // G-3 FIX: Web-compatible click handling
-          ...(Platform.OS === 'web' ? { tabBarButton: (props: any) => <WebCompatibleTabButton {...props} /> } : {}),
+          // G-3 FIX: Web-compatible click handling + haptic feedback on native
+          tabBarButton: (props: any) => <WebCompatibleTabButton {...props} />,
         }}
       />
       <Tabs.Screen

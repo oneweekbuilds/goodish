@@ -12,6 +12,7 @@ import {
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, TYPOGRAPHY, RADIUS } from '../../lib/theme';
 import { flattenStyle } from '../../lib/styles';
+import { triggerImpactLight } from '../../lib/haptics';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -45,6 +46,7 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressInAnim = useCallback(() => {
+    triggerImpactLight();
     Animated.timing(scaleAnim, {
       toValue: 0.97,
       duration: 80,
