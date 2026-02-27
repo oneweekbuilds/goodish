@@ -414,8 +414,8 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
                 <TrendingUp size={16} color={colors.primaryBlue} strokeWidth={2} />
                 <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain }}>Content Patterns</Text>
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, flex: 1, justifyContent: 'flex-end' }}>
-                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted }} numberOfLines={1}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, flexShrink: 1, justifyContent: 'flex-end' }}>
+                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, maxWidth: 160 }} numberOfLines={1}>
                   {emotionalSummary ?? sourceDiversitySummary ?? ''}
                 </Text>
                 <ChevronDown
@@ -459,7 +459,16 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
 
       {/* ── 4. IDEAS TO EXPLORE (simplified) ── */}
       {suggestions.length > 0 && (
-        <View>
+        <View style={{
+          backgroundColor: colors.bgCard,
+          borderRadius: RADIUS.lg,
+          padding: SPACING.lg,
+          borderWidth: 1,
+          borderColor: colors.borderSoft,
+        }}>
+          <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain, marginBottom: SPACING.sm }}>
+            Ideas to explore
+          </Text>
           <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted }}>
             {suggestions[0]}
           </Text>
@@ -2388,6 +2397,7 @@ export default function DashboardScreen() {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={{
                   paddingHorizontal: SPACING.lg,
+                  paddingRight: SPACING.lg + SPACING.sm,
                   gap: SPACING.sm,
                   marginTop: SPACING.xs,
                   marginBottom: SPACING.sm,

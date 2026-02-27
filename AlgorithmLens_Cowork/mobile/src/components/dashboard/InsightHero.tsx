@@ -277,7 +277,7 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
             />
           </View>
           {showCounterfactual && (
-            <View style={{ paddingHorizontal: SPACING.lg, paddingBottom: SPACING.md, gap: SPACING.md }}>
+            <View style={{ paddingHorizontal: SPACING.lg, paddingBottom: SPACING.lg, gap: SPACING.lg }}>
               {counterfactual && (
                 <Text style={{
                   ...TYPOGRAPHY.caption,

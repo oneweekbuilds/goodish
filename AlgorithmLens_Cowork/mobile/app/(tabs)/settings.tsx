@@ -56,12 +56,12 @@ const SettingSection = ({
   }}>
     <Text
       style={{
-        ...TYPOGRAPHY.xsmall,
-        color: colors.textMuted,
-        marginBottom: SPACING.md,
+        ...TYPOGRAPHY.caption,
+        color: colors.textSecondary,
+        marginBottom: SPACING.sm,
         paddingHorizontal: SPACING.lg,
-        textTransform: 'uppercase',
-        letterSpacing: 0.5,
+        fontWeight: '500',
+        letterSpacing: 0.2,
       }}
     >
       {title}

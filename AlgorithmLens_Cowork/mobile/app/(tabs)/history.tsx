@@ -356,7 +356,9 @@ export default function HistoryScreen() {
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              backgroundColor: colors.blue50,
+              backgroundColor: qualityLevel.colorKey === 'accentGreen' ? colors.blue50
+                : qualityLevel.colorKey === 'warning' ? 'rgba(245, 158, 11, 0.08)'
+                : 'rgba(239, 68, 68, 0.08)',
               paddingHorizontal: SPACING.md,
               paddingVertical: SPACING.xs,
               borderRadius: RADIUS.sm,
@@ -366,7 +368,9 @@ export default function HistoryScreen() {
             <Text
               style={{
                 ...TYPOGRAPHY.labelBold,
-                color: colors.primaryBlue,
+                color: qualityLevel.colorKey === 'accentGreen' ? colors.primaryBlue
+                  : qualityLevel.colorKey === 'warning' ? '#b45309'
+                  : '#dc2626',
               }}
             >
               {/* M-04 FIX: Show threshold hint to explain what quality means */}
