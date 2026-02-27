@@ -69,12 +69,17 @@ function WebCompatibleTabButton(props: any) {
     onPress?.();
   };
   return (
-    <TouchableOpacity {...rest} onPress={handlePress} style={Platform.OS === 'web' ? {
-      ...style,
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-    } : [style, { flex: 1, justifyContent: 'center', alignItems: 'center' }]}>
+    <TouchableOpacity
+      {...rest}
+      onPress={handlePress}
+      accessibilityRole="tab"
+      accessibilityLabel={rest.accessibilityLabel || 'Tab'}
+      style={Platform.OS === 'web' ? {
+        ...style,
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+      } : [style, { flex: 1, justifyContent: 'center', alignItems: 'center' }]}>
       {children}
     </TouchableOpacity>
   );

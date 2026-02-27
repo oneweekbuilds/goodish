@@ -19,6 +19,7 @@ interface CardProps {
   variant?: CardVariant;
   style?: ViewStyle;
   onPress?: () => void;
+  accessibilityLabel?: string;
 }
 
 const CardComponent: React.FC<CardProps> = ({
@@ -26,6 +27,7 @@ const CardComponent: React.FC<CardProps> = ({
   variant = 'default',
   style,
   onPress,
+  accessibilityLabel,
 }) => {
   const { colors, shadows } = useTheme();
   const hasMounted = useRef(false);
@@ -82,6 +84,7 @@ const CardComponent: React.FC<CardProps> = ({
         <Pressable
           onPress={onPress}
           accessibilityRole="button"
+          accessibilityLabel={accessibilityLabel || 'Interactive card'}
           style={({ pressed }) => Platform.OS === 'web' ? {
             ...baseStyle,
             opacity: pressed ? 0.9 : 1,

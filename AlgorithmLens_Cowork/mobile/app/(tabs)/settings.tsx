@@ -524,6 +524,7 @@ export default function SettingsScreen() {
             <TouchableOpacity
               onPress={() => openLink('https://algorithmlens.com/privacy')}
               accessibilityRole="link"
+              accessibilityLabel="Learn more about our data practices"
               style={{ marginTop: SPACING.sm }}
             >
               <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.primaryBlue, fontWeight: '500' }}>
@@ -729,6 +730,7 @@ export default function SettingsScreen() {
               <Text
                 onPress={() => openLink('https://goodish.com')}
                 accessibilityRole="link"
+                accessibilityLabel="Visit Goodish"
                 style={{ color: colors.primaryBlue, textDecorationLine: 'underline' }}
               >
                 Goodish

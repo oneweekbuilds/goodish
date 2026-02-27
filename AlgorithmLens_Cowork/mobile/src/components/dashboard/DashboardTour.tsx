@@ -243,6 +243,8 @@ export const DashboardTour: React.FC<DashboardTourProps> = ({
       <TouchableOpacity
         activeOpacity={1}
         onPress={handleSkip}
+        accessibilityRole="button"
+        accessibilityLabel="Skip tour"
         style={styles.overlay}
       >
         <View style={styles.overlayBg} />

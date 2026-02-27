@@ -236,6 +236,7 @@ export default function AnalysisScreen() {
                   ...TYPOGRAPHY.scoreSmall,
                   color: colors.textMain,
                 }}
+                accessibilityRole="header"
               >
                 Analyzing Feed
               </Text>

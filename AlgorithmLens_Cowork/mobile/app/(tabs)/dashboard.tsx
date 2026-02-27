@@ -1833,6 +1833,7 @@ const AiConsentCard = ({
     <TouchableOpacity
       onPress={onPress}
       accessibilityRole="button"
+      accessibilityLabel={buttonLabel}
       style={{
         backgroundColor: colors.primaryBlue, borderRadius: RADIUS.md,
         paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm,

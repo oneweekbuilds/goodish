@@ -465,6 +465,7 @@ export default function BroadcastScreen() {
                   ...TYPOGRAPHY.scoreSmall,
                   color: colors.textMain,
                 }}
+                accessibilityRole="header"
               >
                 Broadcast Mode
               </Text>

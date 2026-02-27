@@ -83,7 +83,10 @@ export default function CheckoutSuccessScreen() {
             <Check size={32} color={colors.accentGreen} strokeWidth={2.5} />
           </View>
 
-          <Text style={{ ...TYPOGRAPHY.heroTitle, color: colors.textMain, textAlign: 'center' }}>
+          <Text
+            style={{ ...TYPOGRAPHY.heroTitle, color: colors.textMain, textAlign: 'center' }}
+            accessibilityRole="header"
+          >
             Welcome to Plus
           </Text>
 

@@ -78,6 +78,8 @@ export class ErrorBoundary extends Component<Props, State> {
             style={styles.button}
             onPress={this.handleRestart}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Try again"
           >
             <Text style={styles.buttonText}>Try Again</Text>
           </TouchableOpacity>
@@ -85,6 +87,8 @@ export class ErrorBoundary extends Component<Props, State> {
             style={[styles.button, { backgroundColor: 'transparent', marginTop: SPACING.sm }]}
             onPress={this.handleGoHome}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Go home"
           >
             <Text style={[styles.buttonText, { color: COLORS.primary }]}>Go Home</Text>
           </TouchableOpacity>

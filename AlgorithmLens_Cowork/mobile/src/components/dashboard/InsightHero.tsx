@@ -313,6 +313,7 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
                   onPress={() => Linking.openURL(howWeMeasure.learnMoreUrl!)}
                   activeOpacity={0.7}
                   accessibilityRole="link"
+                  accessibilityLabel="Learn more"
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
                   <Text style={{

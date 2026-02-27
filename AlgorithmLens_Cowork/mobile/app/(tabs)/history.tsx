@@ -216,6 +216,7 @@ export default function HistoryScreen() {
         activeOpacity={0.7}
         accessible={true}
         accessibilityLabel={`${platformName} scan, ${postCount} posts, ${adPercentage}% ads, ${suggestedPct}% suggested${isBroadcast ? ', broadcast' : ''}`}
+        accessibilityRole="button"
         style={{
           backgroundColor: colors.bgCard,
           borderRadius: RADIUS.lg,

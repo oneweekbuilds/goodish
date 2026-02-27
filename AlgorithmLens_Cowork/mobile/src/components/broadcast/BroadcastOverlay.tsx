@@ -370,6 +370,8 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
             <TouchableOpacity
               onPress={onRetry}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Start a new session"
               style={[styles.secondaryButton, { borderColor: colors.borderSlate200 }]}
             >
               <Text style={[styles.secondaryButtonText, { color: colors.primaryBlue }]}>

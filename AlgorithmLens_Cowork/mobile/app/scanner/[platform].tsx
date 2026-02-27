@@ -493,6 +493,8 @@ export default function ScannerScreen() {
               router.replace('/(tabs)/dashboard');
             }}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={navigatingToDashboard ? 'Loading dashboard' : 'View your dashboard'}
             style={{
               backgroundColor: colors.primaryBlue,
               borderRadius: RADIUS.md,

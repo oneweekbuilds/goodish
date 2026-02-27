@@ -8,15 +8,33 @@
  */
 
 import { useEffect } from 'react';
+import { View, Text, SafeAreaView } from 'react-native';
 import { router } from 'expo-router';
+import { useTheme } from '../../src/context/ThemeContext';
+import { TYPOGRAPHY, SPACING } from '../../src/lib/theme';
+import { ActivityIndicator } from 'react-native';
 
 export default function CheckoutCancelScreen() {
+  const { colors } = useTheme();
+
   useEffect(() => {
     // Navigate back to settings — the user cancelled checkout.
     // Using replace so pressing back doesn't return to this transient screen.
     router.replace('/(tabs)/settings');
   }, []);
 
-  // Render nothing — this is a transient redirect screen
-  return null;
+  // Render a brief loading state for accessibility
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ alignItems: 'center', gap: SPACING.lg }}>
+        <ActivityIndicator size="large" color={colors.primaryBlue} />
+        <Text
+          style={{ ...TYPOGRAPHY.body, color: colors.textMuted }}
+          accessibilityRole="header"
+        >
+          Returning to settings...
+        </Text>
+      </View>
+    </SafeAreaView>
+  );
 }
