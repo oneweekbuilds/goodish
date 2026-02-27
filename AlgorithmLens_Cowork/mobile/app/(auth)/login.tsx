@@ -15,6 +15,8 @@ import { supabase } from '../../src/lib/supabase';
 import { useTheme } from '../../src/context/ThemeContext';
 import { Eye } from 'lucide-react-native';
 import { TYPOGRAPHY, SPACING, RADIUS, COLORS } from '../../src/lib/theme';
+import { Button } from '../../src/components/ui/Button';
+import Divider from '../../src/components/ui/Divider';
 
 // Email validation — checks for user@domain.tld pattern
 const isValidEmail = (email: string): boolean => {
@@ -199,103 +201,29 @@ export default function LoginScreen() {
         {authMethod === 'oauth' ? (
           <>
             {/* OAuth Buttons */}
-            <TouchableOpacity
+            <Button
+              title="Continue with Google"
               onPress={handleGoogleSignIn}
               disabled={loading}
+              loading={loading}
+              variant="secondary"
+              size="lg"
               accessibilityLabel="Continue with Google"
-              accessibilityRole="button"
-              accessibilityState={{ disabled: loading, busy: loading }}
-              style={{
-                backgroundColor: colors.bgCard,
-                borderWidth: 1,
-                borderColor: colors.borderSlate200,
-                borderRadius: RADIUS.md,
-                paddingVertical: SPACING.md,
-                paddingHorizontal: SPACING.lg,
-                marginBottom: SPACING.md,
-                alignItems: 'center',
-                minHeight: 48,
-                justifyContent: 'center',
-                flexDirection: 'row',
-                ...shadows.soft,
-              }}
-            >
-              {loading ? (
-                <ActivityIndicator color={colors.primaryBlue} />
-              ) : (
-                <>
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      marginRight: SPACING.sm,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Text style={{ ...TYPOGRAPHY.buttonLg, fontWeight: 'bold' }}>G</Text>
-                  </View>
-                  <Text
-                    style={{
-                      ...TYPOGRAPHY.body,
-                      fontWeight: '600',
-                      color: colors.textMain,
-                    }}
-                  >
-                    Continue with Google
-                  </Text>
-                </>
-              )}
-            </TouchableOpacity>
+              icon={<Text style={{ fontWeight: 'bold', fontSize: 16 }}>G</Text>}
+              style={{ marginBottom: SPACING.md }}
+            />
 
-            <TouchableOpacity
+            <Button
+              title="Continue with Apple"
               onPress={handleAppleSignIn}
               disabled={loading}
+              loading={loading}
+              variant="secondary"
+              size="lg"
               accessibilityLabel="Continue with Apple"
-              accessibilityRole="button"
-              accessibilityState={{ disabled: loading, busy: loading }}
-              style={{
-                backgroundColor: colors.bgCard,
-                borderWidth: 1,
-                borderColor: colors.borderSlate200,
-                borderRadius: RADIUS.md,
-                paddingVertical: SPACING.md,
-                paddingHorizontal: SPACING.lg,
-                marginBottom: SPACING.xl,
-                alignItems: 'center',
-                minHeight: 48,
-                justifyContent: 'center',
-                flexDirection: 'row',
-                ...shadows.soft,
-              }}
-            >
-              {loading ? (
-                <ActivityIndicator color={colors.primaryBlue} />
-              ) : (
-                <>
-                  <View
-                    style={{
-                      width: 20,
-                      height: 20,
-                      marginRight: SPACING.sm,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Text style={{ ...TYPOGRAPHY.buttonLg, fontWeight: 'bold' }}>🍎</Text>
-                  </View>
-                  <Text
-                    style={{
-                      ...TYPOGRAPHY.body,
-                      fontWeight: '600',
-                      color: colors.textMain,
-                    }}
-                  >
-                    Continue with Apple
-                  </Text>
-                </>
-              )}
-            </TouchableOpacity>
+              icon={<Text style={{ fontSize: 18 }}>🍎</Text>}
+              style={{ marginBottom: SPACING.xl }}
+            />
 
             {/* Error Message for OAuth */}
             {authError ? (
@@ -312,7 +240,7 @@ export default function LoginScreen() {
               </Text>
             ) : null}
 
-            {/* Divider */}
+            {/* Divider with "or" label */}
             <View
               style={{
                 flexDirection: 'row',
@@ -483,71 +411,28 @@ export default function LoginScreen() {
             ) : null}
 
             {/* Sign In Button */}
-            <TouchableOpacity
+            <Button
+              title="Sign In"
               onPress={handleEmailSignIn}
               disabled={loading}
+              loading={loading}
+              variant="primary"
+              size="lg"
               accessibilityLabel="Sign in"
-              accessibilityRole="button"
-              accessibilityState={{ disabled: loading, busy: loading }}
-              style={{
-                backgroundColor: colors.primaryBlue,
-                borderRadius: RADIUS.md,
-                paddingVertical: SPACING.md,
-                marginBottom: SPACING.md,
-                alignItems: 'center',
-                minHeight: 48,
-                justifyContent: 'center',
-                ...shadows.medium,
-              }}
-            >
-              {loading ? (
-                <ActivityIndicator color={colors.white} />
-              ) : (
-                <Text
-                  style={{
-                    ...TYPOGRAPHY.body,
-                    fontWeight: '600',
-                    color: colors.white,
-                  }}
-                >
-                  Sign In
-                </Text>
-              )}
-            </TouchableOpacity>
+              style={{ marginBottom: SPACING.md }}
+            />
 
             {/* Sign Up Button */}
-            <TouchableOpacity
+            <Button
+              title="Create Account"
               onPress={handleEmailSignUp}
               disabled={loading}
+              loading={loading}
+              variant="secondary"
+              size="lg"
               accessibilityLabel="Create account"
-              accessibilityRole="button"
-              accessibilityState={{ disabled: loading, busy: loading }}
-              style={{
-                backgroundColor: colors.bgCard,
-                borderWidth: 1,
-                borderColor: colors.borderSlate200,
-                borderRadius: RADIUS.md,
-                paddingVertical: SPACING.md,
-                marginBottom: SPACING.xl,
-                alignItems: 'center',
-                minHeight: 48,
-                justifyContent: 'center',
-              }}
-            >
-              {loading ? (
-                <ActivityIndicator color={colors.primaryBlue} />
-              ) : (
-                <Text
-                  style={{
-                    ...TYPOGRAPHY.body,
-                    fontWeight: '600',
-                    color: colors.primaryBlue,
-                  }}
-                >
-                  Create Account
-                </Text>
-              )}
-            </TouchableOpacity>
+              style={{ marginBottom: SPACING.xl }}
+            />
 
             {/* Back to OAuth Link */}
             <TouchableOpacity
