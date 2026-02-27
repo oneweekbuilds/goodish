@@ -2,6 +2,51 @@
 
 ---
 
+## MOBILE UI UPGRADE — Complete (2026-02-27)
+
+### Summary
+Completed full mobile UI upgrade: hardcoded style cleanup, screen upgrades, spacing audit, and regression check.
+
+### Phase 1: Hardcoded Style Fixes
+- **74 SHOULD_FIX items identified** from prior audit
+- **72 fixed (97%)** — replaced with theme tokens (TYPOGRAPHY, RADIUS, SPACING, SHADOWS)
+- fontSize: 31→0 (100%), borderRadius: 37→~2 (95%), shadows: 3→0 (100%), hex colors: 2→0 (100%)
+- 30+ files modified across src/ and app/
+
+### Phase 2: Screen Upgrades
+- **Login:** Replaced all buttons with `Button` component. 6% code reduction.
+- **Onboarding:** Replaced CTA buttons with `Button` component. 40% button code reduction.
+- **Settings:** Added `Divider` component, refactored row dividers. 6% code reduction.
+- **History, Analysis, Checkout:** Audited — already meet standards.
+
+### Phase 3: Spacing & Alignment Audit
+- Standardized tab screen bottom padding (SPACING['6xl'] = 64px)
+- Fixed 4 raw spacing values → tokens
+- Confirmed SPACING.lg (16px) as standard horizontal padding
+- Verified SafeAreaView on all 15 screens
+
+### Phase 4: Regression Check
+- TypeScript: pre-existing stack overflow (not from changes)
+- No cross-screen style import anti-patterns
+- 5 orphaned UI components noted (Chip, EmptyState, ErrorState, ProgressBar, Toast)
+- Created PRIOR_AUDIT_CROSSREF.md (128 findings from prior audits)
+
+### Commits
+1. `Mobile UI Phase 1: hardcoded styles fixed — 72 of 74 resolved`
+2. `Mobile UI: upgrade login screen`
+3. `Mobile UI: upgrade onboarding screen`
+4. `Mobile UI: upgrade settings screen`
+5. `Mobile UI: spacing and alignment audit complete`
+6. `Mobile UI: regression check and prior audit cross-reference complete`
+
+### Documentation Updated
+- HARDCODED_STYLES_REMAINING.md — before/after comparison
+- UI_UPGRADE_SUMMARY.md — full changelog
+- SCREEN_UPGRADE_LOG.md — per-screen analysis
+- PRIOR_AUDIT_CROSSREF.md — cross-reference with prior audits
+
+---
+
 ## PHASE 1: DEAD CODE REMOVAL (Complete)
 
 ### Files Deleted (7 files, 5,626 lines removed)

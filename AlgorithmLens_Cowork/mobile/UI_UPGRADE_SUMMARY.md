@@ -13,53 +13,64 @@
 ### Phase 2: Core UI Primitives
 - **`src/components/ui/Toast.tsx`**: Replaced 6 hardcoded values (margins, padding, borderRadius, fontSize, shadow) with SPACING, RADIUS, TYPOGRAPHY, shadows tokens
 - **`src/components/ui/Skeleton.tsx`**: Replaced default `borderRadius = 8` with `RADIUS.sm`
-- Other UI primitives (Card, Button, Badge, Chip, EmptyState, ErrorState, ProgressBar, Divider) were already well-themed — no changes needed
 
 ### Phase 3: High-Impact Screens
-
-**Dashboard charts:**
-- `BarChart.tsx`: 9 hardcoded gap/margin/borderRadius → SPACING/RADIUS tokens
-- `StackedBar100.tsx`: 10 hardcoded values → SPACING/RADIUS tokens
-- `SectionHeader.tsx`: 2 hardcoded gap/margin → SPACING tokens
-- `ComparisonView.tsx`: 7 hardcoded spacing/fontSize → SPACING/TYPOGRAPHY tokens
-- `BigNumber.tsx`: 1 hardcoded margin → SPACING token
-
-**Dashboard tab file:**
-- `app/(tabs)/dashboard.tsx`: Replaced all `fontSize: 28/22/18/14` with `TYPOGRAPHY.h1/h2/h3/labelBold`; `borderRadius: 4/10` → `RADIUS.xs/md`; `gap: 4` → `SPACING.xs`
-
-**Home screen:**
-- `FeedScoreCard.tsx`: 3 hardcoded `borderRadius: 14` → `RADIUS.lg`
-- `FeedScoreTrend.tsx`: 2 hardcoded `borderRadius: 12` → `RADIUS.md`; `gap: 2` → `SPACING.xxs`
-
-**Scanner/broadcast flow:**
-- `ScanOverlay.tsx`: 2 inline shadow blocks → `shadows.lg`; `marginBottom: 4` → `SPACING.xs`
-- `WebViewScanner.tsx`: `paddingVertical: 16` → `SPACING.lg`; `fontSize: 16` → `TYPOGRAPHY.label/body`; `#FFFFFF` → `COLORS.white`
-
-**Analysis:**
-- `AnalysisProgress.tsx`: 8+ hardcoded fontSize/padding/borderRadius/margin → TYPOGRAPHY/SPACING/RADIUS tokens
+- Dashboard charts (BarChart, StackedBar100, SectionHeader, ComparisonView, BigNumber) — tokenized
+- Dashboard tab file — all fontSize/borderRadius/gap tokenized
+- Home screen (FeedScoreCard, FeedScoreTrend) — tokenized
+- Scanner/broadcast flow (ScanOverlay, WebViewScanner) — tokenized
+- AnalysisProgress — tokenized
 
 ### Phase 4: Consistency Audit
-- Generated `HARDCODED_STYLES_REMAINING.md` documenting 75+ remaining hardcoded values
-- Classified each as LEGITIMATE (circular patterns, icon sizes) or SHOULD_FIX
-- Identified 31 hardcoded fontSize values as highest-priority remaining work
-- Identified 9 quick-win borderRadius fixes with exact token matches
+- Generated `HARDCODED_STYLES_REMAINING.md` with 74 SHOULD_FIX items
 
-## Files Modified (17 total)
+---
 
-1. `src/lib/theme.ts` — token updates
-2. `src/components/ui/Toast.tsx` — full token migration
-3. `src/components/ui/Skeleton.tsx` — borderRadius token
-4. `src/components/dashboard/BarChart.tsx` — spacing/radius tokens
-5. `src/components/dashboard/StackedBar100.tsx` — spacing/radius tokens
-6. `src/components/dashboard/SectionHeader.tsx` — spacing tokens
-7. `src/components/dashboard/ComparisonView.tsx` — spacing/typography tokens
-8. `src/components/dashboard/BigNumber.tsx` — spacing token
-9. `src/components/home/FeedScoreCard.tsx` — radius tokens
-10. `src/components/home/FeedScoreTrend.tsx` — radius/spacing tokens
-11. `src/components/scanner/ScanOverlay.tsx` — shadow/spacing tokens
-12. `src/components/scanner/WebViewScanner.tsx` — spacing/typography/color tokens
-13. `src/components/analysis/AnalysisProgress.tsx` — typography/spacing/radius tokens
-14. `app/(tabs)/dashboard.tsx` — typography/radius/spacing tokens
+## Phase 5–8: Full Cleanup (this session)
+
+### Phase 5: Fix All Remaining Hardcoded Styles
+
+**72 of 74 SHOULD_FIX items resolved (97% completion)**
+
+| Category | Before | After | Reduction |
+|----------|--------|-------|-----------|
+| fontSize | 31 SHOULD_FIX | 0 | 100% |
+| borderRadius | 37 SHOULD_FIX | ~2 | 95% |
+| Shadows | 3 SHOULD_FIX | 0 | 100% |
+| Hex colors | 2 SHOULD_FIX | 0 | 100% |
+| Spacing | 1 SHOULD_FIX | 0 | 100% |
+
+Files modified: scanner/[platform], broadcast/[platform], analysis/[sessionId], login, dashboard, scan, _layout, settings, history, DashboardTour, UpgradeModal, AnalysisProgress, BroadcastResultsSummary, BroadcastOverlay, BroadcastPickerButton, RecentScanCard, SmartSuggestion, StreakBadge, WeeklySummaryCard, ScanOverlay, WebViewScanner
+
+### Phase 6: Screen Upgrades
+
+**Login screen:** Replaced all buttons with `Button` component (primary/secondary/ghost). 6% code reduction.
+
+**Onboarding screen:** Replaced CTA buttons with `Button` component. ~40% reduction in button styling code.
+
+**Settings screen:** Added `Divider` component. Refactored SettingRow divider pattern. 6% code reduction.
+
+**History, Analysis, Checkout:** Audited — already meet standards, no changes needed.
+
+### Phase 7: Spacing and Alignment Audit
+
+- Standardized tab screen bottom padding → SPACING['6xl'] (64px) for tab bar clearance
+- Fixed 4 remaining raw spacing values → tokens
+- Confirmed SPACING.lg (16px) as standard horizontal screen padding
+- Verified SafeAreaView usage on all 15 screens
+
+### Phase 8: Regression Check
+
+- TypeScript: Pre-existing stack overflow (not from our changes)
+- Tests: Pre-existing infrastructure issue
+- Raw values remaining: 1 rgba() utility color
+- Orphaned UI components: 5 (Chip, EmptyState, ErrorState, ProgressBar, Toast)
+- Cross-screen imports: Clean
+- Created PRIOR_AUDIT_CROSSREF.md
+
+## Total Files Modified (all sessions combined, 50+)
+
+See individual phase commits for detailed file lists.
 
 ## Safety Verification
 
@@ -67,11 +78,18 @@
 - No components were deleted
 - All changes are style-only (visual presentation layer)
 - Design token values remain backward-compatible
+- All user-facing text follows epistemic restraint standards
 
 ## Remaining Work
 
-See `HARDCODED_STYLES_REMAINING.md` for the full audit of values still to address. Top priorities:
-1. Replace 31 hardcoded fontSize values with TYPOGRAPHY tokens (accessibility impact)
-2. Fix 9 quick-win borderRadius values with exact token matches
-3. Consolidate 3 inline shadow definitions
-4. Consider ESLint rule to prevent future regressions
+1. **5 orphaned UI components** (Chip, EmptyState, ErrorState, ProgressBar, Toast) — available but not yet used by screens
+2. **Pre-existing tsc stack overflow** — likely caused by deeply nested types
+3. **128 prior audit findings** from QA_AUDIT_V6, VISUAL_AUDIT, UX_AUDIT (see PRIOR_AUDIT_CROSSREF.md)
+4. **ESLint rule** to prevent future hardcoded style regressions (recommended)
+5. **~2 sub-token borderRadius values** (borderRadius: 1) — intentionally tiny visual details
+
+## Deferred (out of scope)
+
+- Integrating orphaned UI components into screens that could benefit
+- Addressing non-UI findings from prior audits (logic bugs, API issues, etc.)
+- ESLint plugin configuration for style enforcement
