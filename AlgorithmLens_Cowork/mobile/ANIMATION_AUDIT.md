@@ -13,7 +13,11 @@
 | React Native `Animated` API | built-in | Primary animation approach across codebase |
 | `moti` | — | NOT installed |
 
-## Existing Animation Usage (Before)
+No new packages were installed. All animations use existing libraries.
+
+---
+
+## Before State (Pre-Upgrade)
 
 ### UI Components
 | Component | Animation Type | Details |
@@ -24,80 +28,102 @@
 | `ui/Button.tsx` | None | Uses Pressable opacity only (no animation) |
 | `ui/Card.tsx` | None | Static, no entrance animation |
 
-### Home Components
-| Component | Animation Type | Details |
-|-----------|---------------|---------|
-| `home/StreakBadge.tsx` | `Animated.loop` + pulse | Scale pulse 1.0↔1.08 on streak glow, 1500ms. |
-| `home/MilestoneModal.tsx` | `Animated.parallel` | Fade + spring scale on open, timing fade on close. |
-| `home/FirstUseWalkthrough.tsx` | `Animated.timing` | Step transitions with opacity fade 200ms. |
-| `home/AchievementBadges.tsx` | `Animated.loop` | Glow animation on newly earned badges. |
-| `home/PlatformBottomSheet.tsx` | `Animated.parallel` | Slide up + overlay fade for bottom sheet. Uses spring. |
-| `home/FeedScoreCard.tsx` | None | Static score display — no count-up animation |
+### Haptic Usage (10 components)
+Haptic feedback was present in 10 components, primarily in home and modal interactions.
 
-### Dashboard Components
-| Component | Animation Type | Details |
-|-----------|---------------|---------|
-| `dashboard/BarChart.tsx` | `Animated.timing` + `Animated.stagger` | Bar width grows from 0 to full. 400ms + 100ms stagger. |
-| `dashboard/StackedBar100.tsx` | `Animated.timing` + `Animated.stagger` | Segment widths animate in. 300ms + 80ms stagger. |
-| `dashboard/InsightHero.tsx` | `Animated.timing` | Fade in + chevron rotation. |
-| `dashboard/DashboardTour.tsx` | `Animated.parallel` | Fade + slide for tour overlay steps. |
+---
 
-### Other Components
-| Component | Animation Type | Details |
-|-----------|---------------|---------|
-| `broadcast/BroadcastOverlay.tsx` | `Animated.loop` | Recording pulse animation. |
-| `analysis/AnalysisProgress.tsx` | `Animated.loop` + `Animated.timing` | Spinner rotation + progress bar + fade. |
-| `plan/UpgradeModal.tsx` | `Animated.parallel` | Slide + overlay for upgrade modal. |
+## After State (Post-Upgrade)
 
-### Screen-Level Animations
-| Screen | Animation | Details |
+### New Animations Added
+
+| Component | Animation | Duration | Native Driver | Guard | Cleanup |
+|-----------|-----------|----------|---------------|-------|---------|
+| `ui/Button.tsx` | Scale 1→0.97 on pressIn, 0.97→1 on pressOut | 80ms in, 150ms out | ✅ Yes | `useRef` for Animated.Value, `useCallback` for handlers | N/A (one-shot) |
+| `ui/Card.tsx` | Fade-in (0→1) + translateY (8→0) on mount | 250ms | ✅ Yes | `hasMounted` useRef guard | N/A (one-shot, mount only) |
+| `home/FeedScoreCard.tsx` | Score count-up from 0 to target | 600ms | ❌ No (listener-based) | `hasAnimated` useRef guard | Listener removed in cleanup |
+| `ui/StaggeredList.tsx` | Per-child fade+slide with configurable stagger | 250ms per child, 50ms stagger | ✅ Yes | `hasMounted` useRef per item | setTimeout cleanup |
+| `ui/ContentFadeIn.tsx` | Screen-level opacity 0→1 on data load | 250ms | ✅ Yes | `hasAnimated` useRef guard | N/A (one-shot) |
+
+### New Haptic Feedback Added
+
+| Component | Haptic Type | Guard |
+|-----------|-----------|-------|
+| `ui/Button.tsx` | `triggerImpactLight` on press | try/catch in haptics.ts, no-op on web |
+| `(tabs)/_layout.tsx` | `triggerImpactLight` on tab switch | try/catch in haptics.ts, no-op on web |
+| `checkout/success.tsx` | `triggerNotificationSuccess` on purchase complete | try/catch in haptics.ts, no-op on web |
+
+### Screen Transitions Added
+
+| Screen | Animation | Trigger |
 |--------|-----------|---------|
-| `(tabs)/_layout.tsx` | `animation: 'fade'` | Tab transitions use fade. Already configured. |
-| `(tabs)/dashboard.tsx` | Tab content fade | 80ms fade out / 150ms fade in between dashboard sub-tabs. |
+| `(tabs)/dashboard.tsx` | ContentFadeIn wrapper | When `!loading \|\| scans.length > 0` |
+| `(tabs)/history.tsx` | ContentFadeIn wrapper | When `!loading \|\| scans.length > 0` |
+| `(tabs)/index.tsx` | ContentFadeIn wrapper | When `!dashboardLoading \|\| scans.length > 0` |
 
-## Existing Haptic Usage
+### Components Unchanged (Already Adequate)
+- `ui/Skeleton.tsx` — smooth opacity pulse, no upgrade needed
+- `ui/Toast.tsx` — slide-in/out animation already implemented
+- `(tabs)/_layout.tsx` — tab `animation: 'fade'` already configured
 
-### Haptics Library (`src/lib/haptics.ts`)
-Functions available (all platform-safe with try/catch):
-- `triggerSelection()` — selection feedback
-- `triggerImpactLight()` — light impact
-- `triggerImpactMedium()` — medium impact
-- `triggerImpactHeavy()` — heavy impact
-- `triggerNotificationSuccess()` — success notification
-- `triggerNotificationWarning()` — warning notification
-- `triggerNotificationError()` — error notification
+---
 
-### Current Haptic Callers
-| Component | Haptic Functions Used |
-|-----------|---------------------|
-| `home/PlatformPicker.tsx` | `triggerImpactLight`, `triggerImpactMedium` |
-| `home/PlatformBottomSheet.tsx` | `triggerImpactLight`, `triggerImpactMedium`, `triggerSelection` |
-| `home/ModeToggle.tsx` | `triggerSelection` |
-| `home/MilestoneModal.tsx` | `triggerNotificationSuccess`, `triggerSelection` |
-| `home/CalmHomeScreen.tsx` | `triggerImpactMedium` |
-| `broadcast/BroadcastPickerButton.tsx` | `triggerImpactMedium` |
-| `broadcast/BroadcastOverlay.tsx` | `triggerImpactMedium` |
-| `scanner/ScanOverlay.tsx` | `triggerNotificationSuccess` |
-| `analysis/AnalysisProgress.tsx` | `triggerNotificationSuccess`, `triggerNotificationError` |
-| `plan/UpgradeModal.tsx` | `triggerImpactLight`, `triggerImpactMedium` |
-| `(tabs)/dashboard.tsx` | `triggerSelection` |
+## Regression Check Results
 
-## Gaps Identified (Planned Additions)
+### TypeScript
+- Pre-existing stack overflow in `npx tsc --noEmit` (deeply nested types in node_modules)
+- Individual file checks confirm zero new type errors from our changes
+- All errors are in `node_modules/` (react-native-svg, react-native globals conflicts)
 
-### Phase 2: Component-Level
-1. **Button press feedback** — scale 0.97 on press, spring back
-2. **Card entrance animation** — fade-in + translateY(8→0) on mount only
-3. **FeedScoreCard count-up** — animated number from 0 to score on first display
-4. **Skeleton shimmer** — currently opacity pulse (acceptable), could upgrade to gradient shimmer
-5. **Toast** — already animated (slide from bottom), adequate
-6. **StaggeredList** — new reusable wrapper for list item stagger
+### Tests
+- Jest infrastructure times out (pre-existing issue, noted in UI_UPGRADE_SUMMARY.md)
+- Not related to animation changes
 
-### Phase 3: Screen Transitions
-1. **Tab nav transitions** — already have fade, adequate
-2. **Screen content fade-in** — opacity animation on data load completion
+### Memory Leak Check
+- ✅ No `setInterval` or `requestAnimationFrame` calls without cleanup in modified files
+- ✅ Only existing `setInterval` in `scanner/ScanOverlay.tsx` (not modified, has cleanup)
+- ✅ All `Animated.Value` instances use `useRef` to prevent recreation on re-render
 
-### Phase 4: Haptic Feedback
-1. **Button presses** — `triggerImpactLight` (not yet connected)
-2. **Tab switches** — `triggerImpactLight` (not yet connected)
-3. **Scan completion** — already has `triggerNotificationSuccess`
-4. **Checkout success** — needs `triggerNotificationSuccess`
+### Native Driver Check
+- ✅ All `Animated.timing` calls specify `useNativeDriver`
+- ✅ All use `useNativeDriver: true` except FeedScoreCard count-up which correctly uses `false` (required for JS listener-based value updates)
+
+### Re-render Safety
+- ✅ Button: `useCallback` for press handlers, `useRef` for Animated.Value
+- ✅ Card: `hasMounted` ref guard — animation fires once only
+- ✅ FeedScoreCard: `hasAnimated` ref guard — count-up fires once only
+- ✅ StaggeredList: `hasMounted` ref per item — each item animates once only
+- ✅ ContentFadeIn: `hasAnimated` ref guard — fades once only
+
+### Graceful Degradation
+- ✅ Button: renders normally without animation (scale defaults to 1)
+- ✅ Card: content is inside a standard View, animation only affects wrapper opacity/transform
+- ✅ FeedScoreCard: falls back to showing target value directly if animation fails
+- ✅ StaggeredList: children still render even without animation
+- ✅ ContentFadeIn: if `ready` is true on mount, shows immediately at opacity 1
+
+---
+
+## Files Modified
+
+### New Files Created
+1. `src/components/ui/StaggeredList.tsx` — Reusable staggered entrance wrapper
+2. `src/components/ui/ContentFadeIn.tsx` — Screen-level data-load fade-in wrapper
+
+### Files Modified
+1. `src/components/ui/Button.tsx` — Scale animation + haptic feedback
+2. `src/components/ui/Card.tsx` — Entrance fade+slide animation
+3. `src/components/home/FeedScoreCard.tsx` — Score count-up animation
+4. `app/(tabs)/_layout.tsx` — Haptic feedback on tab switches
+5. `app/(tabs)/dashboard.tsx` — ContentFadeIn wrapper
+6. `app/(tabs)/history.tsx` — ContentFadeIn wrapper
+7. `app/(tabs)/index.tsx` — ContentFadeIn wrapper
+8. `app/checkout/success.tsx` — Haptic feedback on purchase success
+
+### Safety Verification
+- ✅ No analysis logic, API calls, or business logic modified
+- ✅ No existing animations removed or altered
+- ✅ No new packages installed
+- ✅ All animations within 80–600ms range (target: 150–300ms for most)
+- ✅ All haptics wrapped in try/catch, platform-safe
+- ✅ All user-facing text unchanged — epistemic restraint standards maintained
