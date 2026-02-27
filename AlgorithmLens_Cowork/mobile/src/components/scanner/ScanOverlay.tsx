@@ -79,7 +79,7 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
   onDone,
 }) => {
   const insets = useSafeAreaInsets();
-  const { colors } = useTheme();
+  const { colors, shadows } = useTheme();
   const [minimized, setMinimized] = useState(false);
   const [, forceUpdate] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -145,11 +145,7 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
           flexDirection: 'row',
           alignItems: 'center',
           gap: SPACING.sm,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.15,
-          shadowRadius: 12,
-          elevation: 6,
+          ...shadows.lg,
         }}
       >
         <View style={{
@@ -178,11 +174,7 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
         paddingHorizontal: SPACING.md,
         paddingTop: SPACING.sm,
         paddingBottom: SPACING.sm + insets.bottom,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 10,
-        elevation: 6,
+        ...shadows.lg,
       }}
     >
       {/* Milestone indicator + minimize button — L-05: tighter spacing */}
@@ -246,7 +238,7 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
       <View style={{ marginBottom: SPACING.sm, gap: SPACING.xs }}>
         {/* Posts progress */}
         <View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: SPACING.xs }}>
             <Text style={{ ...TYPOGRAPHY.caption, fontWeight: '600', color: postsMet ? colors.accentGreen : colors.textMain }}>
               Posts: {postCount}/{MIN_POSTS_REQUIRED}
             </Text>
@@ -271,7 +263,7 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
 
         {/* Time progress */}
         <View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: SPACING.xs }}>
             <Text style={{ ...TYPOGRAPHY.caption, fontWeight: '600', color: timeMet ? colors.accentGreen : colors.textMain }}>
               Time: {timeString}/{timeReqString}
             </Text>

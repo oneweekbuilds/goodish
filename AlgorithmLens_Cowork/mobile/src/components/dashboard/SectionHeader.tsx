@@ -48,7 +48,7 @@ const SectionHeaderComponent: React.FC<SectionHeaderProps> = ({
     <View
       style={{
         flexDirection: 'row',
-        gap: 12,
+        gap: SPACING.md,
         marginBottom: SPACING.md,
         marginTop: 0,
       }}
@@ -75,7 +75,7 @@ const SectionHeaderComponent: React.FC<SectionHeaderProps> = ({
           style={{
             ...titleStyle,
             color: colors.textMain,
-            marginBottom: subtitle ? 4 : 0,
+            marginBottom: subtitle ? SPACING.xs : 0,
           }}
           accessibilityRole="header"
         >

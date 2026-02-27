@@ -44,7 +44,7 @@ function FeedScoreTrendComponent({ points, direction, changePercent }: FeedScore
             style={{
               width: 24,
               height: 24,
-              borderRadius: 12,
+              borderRadius: RADIUS.md,
               backgroundColor: colors.blue50,
               justifyContent: 'center',
               alignItems: 'center',
@@ -90,7 +90,7 @@ function FeedScoreTrendComponent({ points, direction, changePercent }: FeedScore
           style={{
             width: 24,
             height: 24,
-            borderRadius: 12,
+            borderRadius: RADIUS.md,
             backgroundColor: colors.blue50,
             justifyContent: 'center',
             alignItems: 'center',

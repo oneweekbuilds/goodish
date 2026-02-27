@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from '../../context/ThemeContext';
-import { TYPOGRAPHY } from '../../lib/theme';
+import { TYPOGRAPHY, SPACING } from '../../lib/theme';
 
 interface BigNumberProps {
   value: string | number;
@@ -39,7 +39,7 @@ const BigNumberComponent: React.FC<BigNumberProps> = ({
           fontWeight: '700',
           color: textColor,
           letterSpacing: -0.03,
-          marginBottom: 8,
+          marginBottom: SPACING.sm,
         }}
       >
         {value}

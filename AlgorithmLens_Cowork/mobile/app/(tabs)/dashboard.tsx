@@ -261,7 +261,7 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
               borderWidth: 1,
               borderColor: colors.blue200,
             }}>
-              <Text style={{ fontSize: 28, fontWeight: '700', color: colors.textMain }}>
+              <Text style={{ ...TYPOGRAPHY.h1, color: colors.textMain }}>
                 {formatMinutes(adMinutes)}
               </Text>
               <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
@@ -276,7 +276,7 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
               borderWidth: 1,
               borderColor: colors.borderSoft,
             }}>
-              <Text style={{ fontSize: 28, fontWeight: '700', color: colors.textMain }}>
+              <Text style={{ ...TYPOGRAPHY.h1, color: colors.textMain }}>
                 {formatMinutes(politicalMinutes)}
               </Text>
               <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
@@ -458,7 +458,7 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
             <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
               Top 5
             </Text>
-            <Text style={{ fontSize: 22, fontWeight: '700', color: colors.textMain, marginTop: SPACING.xxs }}>
+            <Text style={{ ...TYPOGRAPHY.h2, color: colors.textMain, marginTop: SPACING.xxs }}>
               {data.top5Pct}%
             </Text>
             <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2 }}>
@@ -477,7 +477,7 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
             <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
               Top Source
             </Text>
-            <Text style={{ fontSize: 14, fontWeight: '700', color: colors.textMain, marginTop: SPACING.xxs }} numberOfLines={1}>
+            <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.textMain, marginTop: SPACING.xxs }} numberOfLines={1}>
               @{data.topCreators[0]?.name ?? '—'}
             </Text>
             <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2 }}>
@@ -496,7 +496,7 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
             <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
               Sources
             </Text>
-            <Text style={{ fontSize: 22, fontWeight: '700', color: colors.textMain, marginTop: SPACING.xxs }}>
+            <Text style={{ ...TYPOGRAPHY.h2, color: colors.textMain, marginTop: SPACING.xxs }}>
               {data.uniqueCreatorCount}
             </Text>
             <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2 }}>
@@ -676,7 +676,7 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
           <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
             Ad Posts
           </Text>
-          <Text style={{ fontSize: 22, fontWeight: '700', color: colors.textMain, marginTop: SPACING.xxs }}>
+          <Text style={{ ...TYPOGRAPHY.h2, color: colors.textMain, marginTop: SPACING.xxs }}>
             {data.adCount}
           </Text>
           <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2 }}>
@@ -696,7 +696,7 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
             <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
               Top Advertiser
             </Text>
-            <Text style={{ fontSize: 14, fontWeight: '700', color: colors.textMain, marginTop: SPACING.xxs }} numberOfLines={1}>
+            <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.textMain, marginTop: SPACING.xxs }} numberOfLines={1}>
               @{data.topAdvertisers[0]?.name ?? '—'}
             </Text>
             <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2 }}>
@@ -717,7 +717,7 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
             <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
               Ad Density
             </Text>
-            <Text style={{ fontSize: 22, fontWeight: '700', color: colors.textMain, marginTop: SPACING.xxs }}>
+            <Text style={{ ...TYPOGRAPHY.h2, color: colors.textMain, marginTop: SPACING.xxs }}>
               1:{data.adPct > 0 ? Math.round(100 / data.adPct) : '—'}
             </Text>
             <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: 2 }}>
@@ -954,7 +954,7 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
               padding: SPACING.md,
               alignItems: 'center',
             }}>
-              <Text style={{ fontSize: 18, fontWeight: '700', color: colors.textMain }}>
+              <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain }}>
                 {data.creatorNovelty.suggestedCreatorCount}
               </Text>
               <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, textAlign: 'center', marginTop: 2 }}>
@@ -968,7 +968,7 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
               padding: SPACING.md,
               alignItems: 'center',
             }}>
-              <Text style={{ fontSize: 18, fontWeight: '700', color: colors.textMain }}>
+              <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain }}>
                 {data.creatorNovelty.overlapCount}
               </Text>
               <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, textAlign: 'center', marginTop: 2 }}>
@@ -982,7 +982,7 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
               padding: SPACING.md,
               alignItems: 'center',
             }}>
-              <Text style={{ fontSize: 18, fontWeight: '700', color: colors.textMain }}>
+              <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain }}>
                 {data.creatorNovelty.followedCreatorCount}
               </Text>
               <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, textAlign: 'center', marginTop: 2 }}>
@@ -1285,11 +1285,11 @@ const PoliticsContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgra
                   {analysis.topPoliticalSource.pctOfPolitical}%
                 </Text>
               </View>
-              <View style={{ height: 8, backgroundColor: colors.borderSoft, borderRadius: 4, overflow: 'hidden' }}>
+              <View style={{ height: 8, backgroundColor: colors.borderSoft, borderRadius: RADIUS.xs, overflow: 'hidden' }}>
                 <View style={{
                   height: 8,
                   backgroundColor: colors.primaryBlue,
-                  borderRadius: 4,
+                  borderRadius: RADIUS.xs,
                   width: `${analysis.topPoliticalSource.pctOfPolitical}%`,
                 }} />
               </View>
@@ -1668,7 +1668,7 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
               <Text style={{ ...TYPOGRAPHY.overline, color: colors.textMuted }}>
                 Tone of Suggested Content
               </Text>
-              <View style={{ height: 20, flexDirection: 'row', borderRadius: 10, overflow: 'hidden' }}>
+              <View style={{ height: 20, flexDirection: 'row', borderRadius: RADIUS.md, overflow: 'hidden' }}>
                 <View style={{ width: `${data.toneBySourceOrigin.suggested.positivePct}%`, backgroundColor: colors.tonePositive }} />
                 <View style={{ width: `${data.toneBySourceOrigin.suggested.neutralPct}%`, backgroundColor: colors.toneNeutral }} />
                 <View style={{ width: `${data.toneBySourceOrigin.suggested.negativePct}%`, backgroundColor: colors.toneNegative }} />
@@ -1683,7 +1683,7 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
               <Text style={{ ...TYPOGRAPHY.overline, color: colors.textMuted }}>
                 Tone of Followed Content
               </Text>
-              <View style={{ height: 20, flexDirection: 'row', borderRadius: 10, overflow: 'hidden' }}>
+              <View style={{ height: 20, flexDirection: 'row', borderRadius: RADIUS.md, overflow: 'hidden' }}>
                 <View style={{ width: `${data.toneBySourceOrigin.followed.positivePct}%`, backgroundColor: colors.tonePositive }} />
                 <View style={{ width: `${data.toneBySourceOrigin.followed.neutralPct}%`, backgroundColor: colors.toneNeutral }} />
                 <View style={{ width: `${data.toneBySourceOrigin.followed.negativePct}%`, backgroundColor: colors.toneNegative }} />
@@ -1695,15 +1695,15 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
 
             {/* Legend */}
             <View style={{ flexDirection: 'row', gap: SPACING.md, justifyContent: 'center', paddingTop: SPACING.xxs }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs }}>
                 <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.tonePositive }} />
                 <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>Positive</Text>
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs }}>
                 <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.toneNeutral }} />
                 <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>Neutral</Text>
               </View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs }}>
                 <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.toneNegative }} />
                 <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>Negative</Text>
               </View>

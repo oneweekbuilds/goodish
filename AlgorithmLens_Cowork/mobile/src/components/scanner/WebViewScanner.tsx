@@ -399,12 +399,12 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
                 style={{
                   backgroundColor: COLORS.primaryBlue,
                   borderRadius: RADIUS.md,
-                  paddingVertical: 16,
+                  paddingVertical: SPACING.lg,
                   alignItems: 'center',
                   marginBottom: SPACING.md,
                 }}
               >
-                <Text style={{ fontSize: 16, fontWeight: '600', color: COLORS.white }}>
+                <Text style={{ ...TYPOGRAPHY.label, fontSize: TYPOGRAPHY.body.fontSize, fontWeight: '600', color: COLORS.white }}>
                   Try Again ({MAX_RETRY_ATTEMPTS - retryCount} {MAX_RETRY_ATTEMPTS - retryCount === 1 ? 'attempt' : 'attempts'} left)
                 </Text>
               </TouchableOpacity>
@@ -418,12 +418,12 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
                 style={{
                   backgroundColor: COLORS.primaryBlue,
                   borderRadius: RADIUS.md,
-                  paddingVertical: 16,
+                  paddingVertical: SPACING.lg,
                   alignItems: 'center',
                   marginBottom: SPACING.md,
                 }}
               >
-                <Text style={{ fontSize: 16, fontWeight: '600', color: COLORS.white }}>
+                <Text style={{ ...TYPOGRAPHY.label, fontSize: TYPOGRAPHY.body.fontSize, fontWeight: '600', color: COLORS.white }}>
                   Report This Issue
                 </Text>
               </TouchableOpacity>
@@ -494,8 +494,8 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
             setStatus((prev) => (prev === 'loading' ? 'scanning' : prev));
           }, 5000);
         }}
-        style={{ flex: 1, backgroundColor: '#FFFFFF' } as ViewStyle}
-        containerStyle={{ backgroundColor: '#FFFFFF' }}
+        style={{ flex: 1, backgroundColor: COLORS.white } as ViewStyle}
+        containerStyle={{ backgroundColor: COLORS.white }}
       />
 
       {/* Loading indicator — visible while page is loading, before scanning starts */}

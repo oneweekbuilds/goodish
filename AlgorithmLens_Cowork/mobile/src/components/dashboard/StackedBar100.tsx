@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from '../../context/ThemeContext';
-import { TYPOGRAPHY } from '../../lib/theme';
+import { TYPOGRAPHY, SPACING, RADIUS } from '../../lib/theme';
 
 interface Segment {
   label: string;
@@ -76,7 +76,7 @@ const StackedBar100Component: React.FC<StackedBar100Props> = ({
 
   return (
     <View
-      style={{ marginBottom: 20 }}
+      style={{ marginBottom: SPACING.xl }}
       accessible={true}
       accessibilityRole="image"
       accessibilityLabel={
@@ -87,15 +87,15 @@ const StackedBar100Component: React.FC<StackedBar100Props> = ({
     >
       {/* CD-001 FIX: External labels for segments 3–10% that can't fit internal text */}
       {normalizedSegments.some((s) => s.percentage > 0 && s.visualPct < 15) && (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 6 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm, marginBottom: SPACING.sm }}>
           {normalizedSegments.map((segment, index) => {
             if (segment.percentage === 0 || segment.visualPct >= 15) return null;
             return (
               <View
                 key={`ext-label-${segment.label}-${index}`}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs }}
               >
-                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: segment.color }} />
+                <View style={{ width: 8, height: 8, borderRadius: RADIUS.xs, backgroundColor: segment.color }} />
                 <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontWeight: '500' }}>
                   {segment.label} {Math.round(segment.percentage)}%
                 </Text>
@@ -110,9 +110,9 @@ const StackedBar100Component: React.FC<StackedBar100Props> = ({
         style={{
           flexDirection: 'row',
           height: 36,
-          borderRadius: 18,
+          borderRadius: RADIUS.xl,
           overflow: 'hidden',
-          marginBottom: 16,
+          marginBottom: SPACING.lg,
           backgroundColor: colors.stackedBarTrack,
         }}
       >
@@ -163,7 +163,7 @@ const StackedBar100Component: React.FC<StackedBar100Props> = ({
         style={{
           flexDirection: 'row',
           flexWrap: 'wrap',
-          gap: 12,
+          gap: SPACING.md,
         }}
       >
         {segments.map((segment, index) => (
@@ -172,7 +172,7 @@ const StackedBar100Component: React.FC<StackedBar100Props> = ({
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 6,
+              gap: SPACING.sm,
             }}
             accessible={true}
             accessibilityLabel={`${segment.label}: ${Math.round(segment.percentage)}% (${segment.count})`}
@@ -207,7 +207,7 @@ function LegendShape({ index, color }: { index: number; color: string }) {
   const shape = index % 4;
   switch (shape) {
     case 0: // circle
-      return <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: color }} />;
+      return <View style={{ width: 10, height: 10, borderRadius: RADIUS.full, backgroundColor: color }} />;
     case 1: // square
       return <View style={{ width: 10, height: 10, borderRadius: 1, backgroundColor: color }} />;
     case 2: // diamond (rotated square)
@@ -232,7 +232,7 @@ function LegendShape({ index, color }: { index: number; color: string }) {
         />
       );
     default:
-      return <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: color }} />;
+      return <View style={{ width: 10, height: 10, borderRadius: RADIUS.full, backgroundColor: color }} />;
   }
 }
 

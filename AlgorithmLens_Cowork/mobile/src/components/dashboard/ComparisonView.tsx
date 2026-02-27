@@ -103,7 +103,7 @@ function DeltaRow({
         <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain }}>
           {metric.label}
         </Text>
-        <View style={{ flexDirection: 'row', gap: SPACING.md, marginTop: 4 }}>
+        <View style={{ flexDirection: 'row', gap: SPACING.md, marginTop: SPACING.xs }}>
           <Text style={{ ...TYPOGRAPHY.small, color: colors.textSecondary }}>
             {formatValue(metric.olderValue, metric.unit, decimals)}
           </Text>
@@ -119,12 +119,12 @@ function DeltaRow({
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          gap: 4,
+          gap: SPACING.xs,
           backgroundColor: isFlat
             ? colors.borderLight
             : colors.blue50,
           paddingHorizontal: SPACING.md,
-          paddingVertical: 6,
+          paddingVertical: SPACING.sm,
           borderRadius: RADIUS.sm,
         }}
       >
@@ -301,12 +301,12 @@ function ComparisonViewComponent({
       >
         <View style={{ flex: 1 }}>
           <Text
-            style={{ ...TYPOGRAPHY.heroTitle, fontSize: 22, color: colors.textMain }}
+            style={{ ...TYPOGRAPHY.heroTitle, fontSize: TYPOGRAPHY.h1.fontSize,color: colors.textMain }}
             accessibilityRole="header"
           >
             Scan Comparison
           </Text>
-          <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textSecondary, marginTop: 4 }}>
+          <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textSecondary, marginTop: SPACING.xs }}>
             {platform}
           </Text>
         </View>
@@ -348,10 +348,10 @@ function ComparisonViewComponent({
           <Text style={{ ...TYPOGRAPHY.small, color: colors.textSecondary }}>
             Older Scan
           </Text>
-          <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain, marginTop: 2 }}>
+          <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain, marginTop: SPACING.xxs }}>
             {olderDate}
           </Text>
-          <Text style={{ ...TYPOGRAPHY.small, color: colors.textMuted, marginTop: 2 }}>
+          <Text style={{ ...TYPOGRAPHY.small, color: colors.textMuted, marginTop: SPACING.xxs }}>
             {olderData.totalPosts} posts
           </Text>
         </View>
@@ -368,10 +368,10 @@ function ComparisonViewComponent({
           <Text style={{ ...TYPOGRAPHY.small, color: colors.primaryBlue }}>
             Newer Scan
           </Text>
-          <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain, marginTop: 2 }}>
+          <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain, marginTop: SPACING.xxs }}>
             {newerDate}
           </Text>
-          <Text style={{ ...TYPOGRAPHY.small, color: colors.textMuted, marginTop: 2 }}>
+          <Text style={{ ...TYPOGRAPHY.small, color: colors.textMuted, marginTop: SPACING.xxs }}>
             {newerData.totalPosts} posts
           </Text>
         </View>
@@ -433,9 +433,9 @@ function ComparisonViewComponent({
           gap: SPACING.md,
         }}
       >
-        <Info size={16} color={colors.textSecondary} strokeWidth={1.5} style={{ marginTop: 2 }} />
+        <Info size={16} color={colors.textSecondary} strokeWidth={1.5} style={{ marginTop: SPACING.xxs }} />
         <View style={{ flex: 1 }}>
-          <Text style={{ ...TYPOGRAPHY.label, color: colors.textSecondary, marginBottom: 4 }}>
+          <Text style={{ ...TYPOGRAPHY.label, color: colors.textSecondary, marginBottom: SPACING.xs }}>
             About these comparisons
           </Text>
           <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted }}>

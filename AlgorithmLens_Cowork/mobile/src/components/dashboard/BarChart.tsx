@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from '../../context/ThemeContext';
-import { TYPOGRAPHY } from '../../lib/theme';
+import { TYPOGRAPHY, SPACING, RADIUS } from '../../lib/theme';
 
 interface BarChartItem {
   label: string;
@@ -87,7 +87,7 @@ const BarChartComponent: React.FC<BarChartProps> = ({
 
   return (
     <View
-      style={{ gap: 20 }}
+      style={{ gap: SPACING.xl }}
       accessible={true}
       accessibilityRole="image"
       accessibilityLabel={
@@ -114,7 +114,7 @@ const BarChartComponent: React.FC<BarChartProps> = ({
           <View
             key={`${item.label}-${index}`}
             style={{
-              gap: 8,
+              gap: SPACING.sm,
             }}
             accessible={true}
             accessibilityLabel={`${item.label}: ${item.value} posts, ${itemPercentageOfTotal}% of total`}
@@ -142,7 +142,7 @@ const BarChartComponent: React.FC<BarChartProps> = ({
                 style={{
                   ...TYPOGRAPHY.bodySmall,
                   color: colors.textSecondary,
-                  marginLeft: 8,
+                  marginLeft: SPACING.sm,
                 }}
               >
                 {item.value}
@@ -150,13 +150,13 @@ const BarChartComponent: React.FC<BarChartProps> = ({
             </View>
 
             {/* Bar with percentage label */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs }}>
               <Animated.View
                 style={{
                   width: widthAnim,
                   height: 20,
                   backgroundColor: barColor,
-                  borderRadius: 6,
+                  borderRadius: RADIUS.sm,
                 }}
               />
               <Text
@@ -179,9 +179,9 @@ const BarChartComponent: React.FC<BarChartProps> = ({
           style={{
             flexDirection: 'row',
             flexWrap: 'wrap',
-            gap: 12,
-            marginTop: 8,
-            paddingTop: 12,
+            gap: SPACING.md,
+            marginTop: SPACING.sm,
+            paddingTop: SPACING.md,
             borderTopWidth: 1,
             borderTopColor: colors.borderSoft,
           }}
@@ -192,7 +192,7 @@ const BarChartComponent: React.FC<BarChartProps> = ({
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                gap: 6,
+                gap: SPACING.sm,
               }}
             >
               <View

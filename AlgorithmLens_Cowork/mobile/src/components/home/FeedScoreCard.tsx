@@ -46,7 +46,7 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
             style={{
               width: 28,
               height: 28,
-              borderRadius: 14,
+              borderRadius: RADIUS.lg,
               backgroundColor: colors.blue50,
               justifyContent: 'center',
               alignItems: 'center',
@@ -93,7 +93,7 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
             style={{
               width: 28,
               height: 28,
-              borderRadius: 14,
+              borderRadius: RADIUS.lg,
               backgroundColor: colors.blue50,
               justifyContent: 'center',
               alignItems: 'center',
@@ -149,7 +149,7 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
           style={{
             width: 28,
             height: 28,
-            borderRadius: 14,
+            borderRadius: RADIUS.lg,
             backgroundColor: colors.blue50,
             justifyContent: 'center',
             alignItems: 'center',

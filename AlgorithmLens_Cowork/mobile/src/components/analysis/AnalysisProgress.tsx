@@ -153,20 +153,17 @@ export const AnalysisProgress = React.memo(function AnalysisProgress({
         <View style={{ flex: 1 }}>
           <Text
             style={{
-              ...TYPOGRAPHY.body,
-              fontWeight: '600',
+              ...TYPOGRAPHY.labelBold,
               color: colors.textMain,
-              fontSize: 15,
             }}
           >
             {stageInfo.title}
           </Text>
           <Text
             style={{
-              ...TYPOGRAPHY.body,
-              fontSize: 13,
+              ...TYPOGRAPHY.caption,
               color: colors.textSecondary,
-              marginTop: 2,
+              marginTop: SPACING.xxs,
             }}
             accessibilityLiveRegion="polite"
             accessible={true}
@@ -181,7 +178,7 @@ export const AnalysisProgress = React.memo(function AnalysisProgress({
         <View
           style={{
             height: 6,
-            borderRadius: 3,
+            borderRadius: RADIUS.xs,
             backgroundColor: colors.bgPage,
             marginBottom: SPACING.md,
             overflow: 'hidden',
@@ -198,7 +195,7 @@ export const AnalysisProgress = React.memo(function AnalysisProgress({
           <Animated.View
             style={{
               height: '100%',
-              borderRadius: 3,
+              borderRadius: RADIUS.xs,
               backgroundColor:
                 progress.stage === 'COMPLETE'
                   ? colors.accentGreen
@@ -258,7 +255,7 @@ export const AnalysisProgress = React.memo(function AnalysisProgress({
             style={{
               flex: 1,
               borderRadius: RADIUS.md,
-              paddingVertical: 12,
+              paddingVertical: SPACING.md,
               minHeight: 44,
               borderWidth: 1,
               borderColor: colors.borderSoft,
@@ -266,7 +263,7 @@ export const AnalysisProgress = React.memo(function AnalysisProgress({
               justifyContent: 'center',
             }}
           >
-            <Text style={{ fontSize: 14, fontWeight: '500', color: colors.textSecondary }}>
+            <Text style={{ ...TYPOGRAPHY.label, color: colors.textSecondary }}>
               Cancel
             </Text>
           </TouchableOpacity>
@@ -282,13 +279,13 @@ export const AnalysisProgress = React.memo(function AnalysisProgress({
               flex: 1,
               backgroundColor: colors.primaryBlue,
               borderRadius: RADIUS.md,
-              paddingVertical: 12,
+              paddingVertical: SPACING.md,
               minHeight: 44,
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <Text style={{ fontSize: 14, fontWeight: '600', color: colors.white }}>
+            <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.white }}>
               View Results
             </Text>
           </TouchableOpacity>
@@ -305,13 +302,13 @@ export const AnalysisProgress = React.memo(function AnalysisProgress({
                 flex: 1,
                 backgroundColor: colors.primaryBlue,
                 borderRadius: RADIUS.md,
-                paddingVertical: 12,
+                paddingVertical: SPACING.md,
                 minHeight: 44,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <Text style={{ fontSize: 14, fontWeight: '600', color: colors.white }}>
+              <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.white }}>
                 Retry Analysis
               </Text>
             </TouchableOpacity>
@@ -365,8 +362,8 @@ function StatItem({
     <View style={{ alignItems: 'center' }}>
       <Text
         style={{
-          fontSize: 16,
-          fontWeight: '700',
+          ...TYPOGRAPHY.labelBold,
+          fontSize: TYPOGRAPHY.body.fontSize,
           color: colors.textMain,
           fontVariant: ['tabular-nums'],
         }}
@@ -375,9 +372,9 @@ function StatItem({
       </Text>
       <Text
         style={{
-          fontSize: 11,
+          ...TYPOGRAPHY.captionSmall,
           color: colors.textMuted,
-          marginTop: 2,
+          marginTop: SPACING.xxs,
         }}
       >
         {label}
