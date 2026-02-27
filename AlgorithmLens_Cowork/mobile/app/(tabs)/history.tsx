@@ -12,6 +12,7 @@ import { useDashboard, ScanDetail } from '../../src/hooks/useDashboard';
 import { router } from 'expo-router';
 import { Zap, Users, Clock, ScanSearch, GitCompareArrows, Check, Radio, Filter, Calendar } from 'lucide-react-native';
 import { Skeleton } from '../../src/components/ui/Skeleton';
+import { ContentFadeIn } from '../../src/components/ui/ContentFadeIn';
 import { useTheme } from '../../src/context/ThemeContext';
 import { TYPOGRAPHY, SPACING, RADIUS, PLATFORMS, COLORS } from '../../src/lib/theme';
 import { getQualityLevel } from '../../src/config/thresholds';
@@ -516,6 +517,7 @@ export default function HistoryScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
+      <ContentFadeIn ready={!loading || scans.length > 0} style={{ flex: 1 }}>
       <View style={{ flex: 1 }}>
         {/* Header — H-06 FIX: ensure right-side elements have adequate safe-area padding and don't clip */}
         <View style={{ paddingHorizontal: SPACING.lg, paddingRight: Math.max(SPACING.lg, insets.right + SPACING.sm), paddingVertical: SPACING.xl, overflow: 'visible' }}>
@@ -735,6 +737,7 @@ export default function HistoryScreen() {
           />
         )}
       </View>
+      </ContentFadeIn>
     </SafeAreaView>
   );
 }

@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { ErrorBoundary } from '../../src/components/ErrorBoundary';
+import { ContentFadeIn } from '../../src/components/ui/ContentFadeIn';
 import { useDashboard } from '../../src/hooks/useDashboard';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
@@ -2040,6 +2041,7 @@ export default function DashboardScreen() {
         />
       )}
 
+      <ContentFadeIn ready={!loading || scans.length > 0} style={{ flex: 1 }}>
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         nestedScrollEnabled={true}
@@ -2340,6 +2342,7 @@ export default function DashboardScreen() {
           </>
         )}
       </ScrollView>
+      </ContentFadeIn>
     </SafeAreaView>
   );
 }

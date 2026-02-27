@@ -18,6 +18,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import { CalmHomeScreen } from '../../src/components/home/CalmHomeScreen';
+import { ContentFadeIn } from '../../src/components/ui/ContentFadeIn';
 import { FirstUseWalkthrough } from '../../src/components/home/FirstUseWalkthrough';
 import { useDashboard } from '../../src/hooks/useDashboard';
 import { useStreak } from '../../src/hooks/useStreak';
@@ -168,7 +169,7 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <>
+    <ContentFadeIn ready={!dashboardLoading || scans.length > 0} style={{ flex: 1 }}>
     {/* M-22 FIX: First-use walkthrough for new users */}
     <FirstUseWalkthrough />
     <CalmHomeScreen
@@ -188,6 +189,6 @@ export default function HomeScreen() {
       dbScanCount={scans.length}
       onRefreshDashboard={refreshDashboard}
     />
-    </>
+    </ContentFadeIn>
   );
 }
