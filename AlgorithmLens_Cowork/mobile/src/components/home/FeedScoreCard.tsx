@@ -12,8 +12,8 @@
  * empty state inviting the user to scan more.
  */
 
-import React from 'react';
-import { View, Text } from 'react-native';
+import React, { useRef, useEffect, useState } from 'react';
+import { View, Text, Animated } from 'react-native';
 import { BarChart3, Info } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
@@ -22,6 +22,40 @@ import type { FeedScore } from '../../types/streak';
 interface FeedScoreCardProps {
   /** FeedScore data, null if not enough scans, or undefined if still loading. */
   feedScore: FeedScore | null | undefined;
+}
+
+/**
+ * useCountUp — Animates a number from 0 to target on first display only.
+ * Returns the current displayed value as a string.
+ */
+function useCountUp(target: number, duration: number = 600): string {
+  const [displayValue, setDisplayValue] = useState(0);
+  const hasAnimated = useRef(false);
+  const animRef = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (hasAnimated.current || target <= 0) {
+      setDisplayValue(target);
+      return;
+    }
+    hasAnimated.current = true;
+
+    const listenerId = animRef.addListener(({ value }) => {
+      setDisplayValue(Math.round(value));
+    });
+
+    Animated.timing(animRef, {
+      toValue: target,
+      duration,
+      useNativeDriver: false, // Cannot use native driver for listener-based updates
+    }).start();
+
+    return () => {
+      animRef.removeListener(listenerId);
+    };
+  }, [target, duration, animRef]);
+
+  return String(displayValue);
 }
 
 function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
@@ -130,6 +164,7 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
   };
 
   const scoreColor = getScoreColor(feedScore.score);
+  const animatedScore = useCountUp(feedScore.score);
 
   return (
     <View
@@ -184,7 +219,7 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
             color: scoreColor,
           }}
         >
-          {feedScore.score}
+          {animatedScore}
         </Text>
         <Text
           style={{

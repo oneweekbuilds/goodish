@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useRef, useCallback } from 'react';
 import {
   Pressable,
   Text,
@@ -6,6 +6,8 @@ import {
   TextStyle,
   ActivityIndicator,
   StyleSheet,
+  Animated,
+  Platform,
 } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, TYPOGRAPHY, RADIUS } from '../../lib/theme';
@@ -40,6 +42,23 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   accessibilityHint,
 }) => {
   const { colors } = useTheme();
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressInAnim = useCallback(() => {
+    Animated.timing(scaleAnim, {
+      toValue: 0.97,
+      duration: 80,
+      useNativeDriver: true,
+    }).start();
+  }, [scaleAnim]);
+
+  const handlePressOutAnim = useCallback(() => {
+    Animated.timing(scaleAnim, {
+      toValue: 1,
+      duration: 150,
+      useNativeDriver: true,
+    }).start();
+  }, [scaleAnim]);
 
   const getSizeStyles = (): { container: ViewStyle; text: TextStyle } => {
     switch (size) {
@@ -148,49 +167,53 @@ const ButtonComponent: React.FC<ButtonProps> = ({
   };
 
   return (
-    <Pressable
-      onPress={onPress}
-      disabled={disabled || loading}
-      accessibilityLabel={accessibilityLabel || title}
-      accessibilityHint={accessibilityHint}
-      accessibilityRole="button"
-      accessibilityState={{disabled: disabled || loading}}
-      style={({ pressed }) => flattenStyle([
-        {
-          borderRadius: RADIUS.md,
-          justifyContent: 'center',
-          alignItems: 'center',
-          flexDirection: 'row',
-          opacity: disabled ? 0.4 : pressed ? getPressedOpacity() : 1,
-        },
-        sizeStyles.container,
-        variantStyles.container,
-        style,
-      ])}
-    >
-      {({ pressed }) => (
-        <>
-          {loading ? (
-            <ActivityIndicator
-              color={variantStyles.text.color as string}
-              size="small"
-            />
-          ) : (
-            <>
-              {icon && <Text style={{ marginRight: SPACING.xs }}>{icon}</Text>}
-              <Text
-                style={flattenStyle([
-                  sizeStyles.text,
-                  variantStyles.text,
-                ])}
-              >
-                {title}
-              </Text>
-            </>
-          )}
-        </>
-      )}
-    </Pressable>
+    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <Pressable
+        onPress={onPress}
+        onPressIn={handlePressInAnim}
+        onPressOut={handlePressOutAnim}
+        disabled={disabled || loading}
+        accessibilityLabel={accessibilityLabel || title}
+        accessibilityHint={accessibilityHint}
+        accessibilityRole="button"
+        accessibilityState={{disabled: disabled || loading}}
+        style={({ pressed }) => flattenStyle([
+          {
+            borderRadius: RADIUS.md,
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'row',
+            opacity: disabled ? 0.4 : pressed ? getPressedOpacity() : 1,
+          },
+          sizeStyles.container,
+          variantStyles.container,
+          style,
+        ])}
+      >
+        {({ pressed }) => (
+          <>
+            {loading ? (
+              <ActivityIndicator
+                color={variantStyles.text.color as string}
+                size="small"
+              />
+            ) : (
+              <>
+                {icon && <Text style={{ marginRight: SPACING.xs }}>{icon}</Text>}
+                <Text
+                  style={flattenStyle([
+                    sizeStyles.text,
+                    variantStyles.text,
+                  ])}
+                >
+                  {title}
+                </Text>
+              </>
+            )}
+          </>
+        )}
+      </Pressable>
+    </Animated.View>
   );
 };
 
