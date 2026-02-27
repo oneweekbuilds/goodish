@@ -2,6 +2,46 @@
 
 ---
 
+## ANIMATION & MICRO-INTERACTIONS — Complete (2026-02-27)
+
+### Summary
+Added polish animations and micro-interactions across the mobile app. No new packages installed — all animations use existing `Animated` API and `expo-haptics`.
+
+### Phase 1: Animation Infrastructure Audit
+- Documented all existing animations across 15+ components
+- Cataloged haptic usage across 10 components
+- Identified gaps for Button, Card, FeedScoreCard, screen transitions
+
+### Phase 2: Component-Level Animations
+- **Button:** Scale 0.97 on press (80ms), spring back (150ms). Native driver.
+- **Card:** Fade-in + translateY(8→0) on mount only (250ms). useRef guard.
+- **FeedScoreCard:** Score count-up from 0 to target value (600ms). One-shot only.
+- **StaggeredList:** New reusable wrapper — per-child fade+slide with 50ms stagger.
+- Skeleton and Toast already animated — skipped.
+
+### Phase 3: Screen Transitions
+- **ContentFadeIn:** New reusable wrapper for screen-level data-load fade-in (250ms).
+- Applied to Dashboard, History, and Home screens.
+- Tab navigation already had fade animation — no changes needed.
+
+### Phase 4: Haptic Feedback
+- **Button:** Light impact on every press.
+- **Tab bar:** Light impact on tab switches (native only).
+- **Checkout success:** Success notification haptic on purchase complete.
+
+### Phase 5: Regression Check
+- All Animated.timing calls have useNativeDriver specified.
+- No setInterval/requestAnimationFrame without cleanup.
+- All animations have useRef guards to prevent re-render firing.
+- All components degrade gracefully if animation fails.
+- tsc and jest have pre-existing issues (not from our changes).
+
+### Files Modified: 8 existing + 2 new
+New: `StaggeredList.tsx`, `ContentFadeIn.tsx`
+Modified: `Button.tsx`, `Card.tsx`, `FeedScoreCard.tsx`, `_layout.tsx`, `dashboard.tsx`, `history.tsx`, `index.tsx`, `checkout/success.tsx`
+
+---
+
 ## MOBILE UI UPGRADE — Complete (2026-02-27)
 
 ### Summary
