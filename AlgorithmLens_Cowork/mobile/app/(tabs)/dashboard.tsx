@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useRef, useCallback, memo } from 'react';
 import {
   View,
-  Text,
   ScrollView,
   TouchableOpacity,
   RefreshControl,
@@ -12,22 +11,23 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { RFValue } from 'react-native-responsive-fontsize';
 import { ErrorBoundary } from '../../src/components/ErrorBoundary';
-import { ContentFadeIn } from '../../src/components/ui/ContentFadeIn';
+import { ContentFadeIn, Skeleton } from '../../src/components/glue';
 import { useDashboard } from '../../src/hooks/useDashboard';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
 import { computeDashboardData, DashboardData, PoliticalAnalysis, ToneAnalysis, AdvertiserStat, ToneSourceStat, ToneBySourceOrigin, CreatorNovelty } from '../../src/lib/computeDashboardData';
 import { InsightHero } from '../../src/components/dashboard/InsightHero';
-import { BarChart } from '../../src/components/dashboard/BarChart';
-import { StackedBar100 } from '../../src/components/dashboard/StackedBar100';
+import { ALBarChart, ALStackedBar, ALPieChart, ALRadarChart, ALScoreGauge } from '../../src/components/charts';
 import { BigNumber } from '../../src/components/dashboard/BigNumber';
 import { MetricCard } from '../../src/components/dashboard/MetricCard';
 import { SectionHeader } from '../../src/components/dashboard/SectionHeader';
 import { LockedOverlayCard } from '../../src/components/plan/LockedOverlayCard';
 import { DashboardTour } from '../../src/components/dashboard/DashboardTour';
-import { Skeleton } from '../../src/components/ui/Skeleton';
-import { SPACING, RADIUS, TYPOGRAPHY, COLORS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../src/lib/theme';
+import { Text } from '../../src/components/glue';
+import { SPACING, RADIUS, GL_TYPOGRAPHY } from '../../src/lib/gluestackTheme';
+import { COLORS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../src/lib/theme';
 import { triggerSelection } from '../../src/lib/haptics';
 import { captureError } from '../../src/lib/sentry';
 import { getPlatformDisplayName } from '../../src/lib/utils';
@@ -55,12 +55,12 @@ const ANIMATION = {
 // ─── Tab Definitions ─────────────────────────────────────
 
 const TABS = [
-  { id: 'overview', label: 'Overview', needsAi: false },
-  { id: 'sources', label: 'Who Shapes Your Feed', needsAi: false },
-  { id: 'ads', label: 'Ads & Promotions', needsAi: false },
-  { id: 'politics', label: 'Political Exposure', needsAi: true },
-  { id: 'tone', label: 'Emotional Tone', needsAi: true },
-  { id: 'suggested_vs_followed', label: 'Suggested vs. Followed', needsAi: false },
+  { id: 'overview', label: 'Overview', needsAi: false, accent: 'tourOverview' },
+  { id: 'sources', label: 'Who Shapes Your Feed', needsAi: false, accent: 'tourSources' },
+  { id: 'ads', label: 'Ads & Promotions', needsAi: false, accent: 'tourAds' },
+  { id: 'politics', label: 'Political Exposure', needsAi: true, accent: 'tourPolitics' },
+  { id: 'tone', label: 'Emotional Tone', needsAi: true, accent: 'tourTone' },
+  { id: 'suggested_vs_followed', label: 'Suggested vs. Followed', needsAi: false, accent: 'tourSuggested' },
 ];
 
 // Friendly content type labels
@@ -221,7 +221,7 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
             label={heroStat.label}
             suffix={heroStat.suffix}
           />
-          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic', marginTop: SPACING.sm }}>
+          <Text variant="captionSmall" color={colors.textSecondary} style={{ fontStyle: "italic", marginTop: SPACING.sm  }}>
             {heroStat.caption}
           </Text>
         </View>
@@ -234,10 +234,10 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
           <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
             {supportingMetrics.map((metric, i) => (
               <View key={i} style={{ alignItems: 'center' }}>
-                <Text style={{ ...TYPOGRAPHY.h3, fontWeight: '700', color: colors.textMain }}>
+                <Text variant="h3" color={colors.textMain } style={{ fontWeight: "700" }}>
                   {metric.value}
                 </Text>
-                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
+                <Text variant="captionSmall" color={colors.textMuted} style={{ marginTop: SPACING.xxs  }}>
                   {metric.label}
                 </Text>
               </View>
@@ -247,7 +247,7 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
       )}
 
       {/* ── 3. EXPLORE YOUR DATA (accordion) ── */}
-      <Text style={{ ...TYPOGRAPHY.overline, color: colors.textMuted, marginTop: SPACING['2xl'] }}>
+      <Text variant="overline" color={colors.textMuted} style={{ marginTop: SPACING['2xl'] }}>
         EXPLORE YOUR DATA
       </Text>
       <View style={{
@@ -276,10 +276,10 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
                 <BarChart3 size={16} color={colors.primaryBlue} strokeWidth={2} />
-                <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain }}>Content Types</Text>
+                <Text variant="label" color={colors.textMain }>Content Types</Text>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
-                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted }}>
+                <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textMuted }}>
                   {data.contentTypes.length} types
                 </Text>
                 <ChevronDown
@@ -292,7 +292,7 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
             </TouchableOpacity>
             {showContentTypes && (
               <View style={{ paddingHorizontal: SPACING.lg, paddingBottom: SPACING.lg }}>
-                <StackedBar100
+                <ALStackedBar
                   segments={data.contentTypes.map((ct, i) => ({
                     label: CONTENT_TYPE_LABELS[ct.label] || ct.label,
                     percentage: ct.percentage,
@@ -329,10 +329,10 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
                 <Clock size={16} color={colors.primaryBlue} strokeWidth={2} />
-                <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain }}>Time Estimate</Text>
+                <Text variant="label" color={colors.textMain }>Time Estimate</Text>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
-                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted }}>
+                <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textMuted }}>
                   {formatMinutes(adMinutes)} min ads/day
                 </Text>
                 <ChevronDown
@@ -354,10 +354,10 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
                     borderWidth: 1,
                     borderColor: colors.blue200,
                   }}>
-                    <Text style={{ ...TYPOGRAPHY.h1, color: colors.textMain }}>
+                    <Text variant="h1" color={colors.textMain }>
                       {formatMinutes(adMinutes)}
                     </Text>
-                    <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
+                    <Text variant="captionSmall" color={colors.textMuted} style={{ marginTop: SPACING.xxs  }}>
                       min/day on ads
                     </Text>
                   </View>
@@ -369,17 +369,17 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
                     borderWidth: 1,
                     borderColor: colors.borderSoft,
                   }}>
-                    <Text style={{ ...TYPOGRAPHY.h1, color: colors.textMain }}>
+                    <Text variant="h1" color={colors.textMain }>
                       {formatMinutes(politicalMinutes)}
                     </Text>
-                    <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
+                    <Text variant="captionSmall" color={colors.textMuted} style={{ marginTop: SPACING.xxs  }}>
                       min/day on political content
                     </Text>
                   </View>
                 </View>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xxs, paddingHorizontal: SPACING.xs }}>
                   <Info size={11} color={colors.textSecondary} strokeWidth={2} />
-                  <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic' }}>
+                  <Text variant="captionSmall" color={colors.textSecondary} style={{ fontStyle: "italic" }}>
                     Based on average daily social media usage of 45 minutes
                   </Text>
                 </View>
@@ -412,10 +412,10 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
                 <TrendingUp size={16} color={colors.primaryBlue} strokeWidth={2} />
-                <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain }}>Content Patterns</Text>
+                <Text variant="label" color={colors.textMain }>Content Patterns</Text>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, flexShrink: 1, justifyContent: 'flex-end' }}>
-                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, maxWidth: 160 }} numberOfLines={1}>
+                <Text variant="captionSmall" color={colors.textMuted} style={{ maxWidth: 160  }} numberOfLines={1}>
                   {emotionalSummary ?? sourceDiversitySummary ?? ''}
                 </Text>
                 <ChevronDown
@@ -430,25 +430,25 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
               <View style={{ paddingHorizontal: SPACING.lg, paddingBottom: SPACING.lg, gap: SPACING.sm }}>
                 {emotionalSummary && (
                   <View style={{ gap: SPACING.xxs }}>
-                    <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
+                    <Text variant="overline" color={colors.textSecondary }>
                       Emotional Signal
                     </Text>
-                    <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '600' }}>
+                    <Text variant="body" color={colors.textMain} style={{ fontWeight: "600" }}>
                       {emotionalSummary}
                     </Text>
                   </View>
                 )}
                 {sourceDiversitySummary && (
                   <View style={{ gap: SPACING.xxs }}>
-                    <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
+                    <Text variant="overline" color={colors.textSecondary }>
                       Source Diversity
                     </Text>
-                    <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '600' }}>
+                    <Text variant="body" color={colors.textMain} style={{ fontWeight: "600" }}>
                       {sourceDiversitySummary}
                     </Text>
                   </View>
                 )}
-                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic', marginTop: SPACING.xxs }}>
+                <Text variant="captionSmall" color={colors.textSecondary} style={{ fontStyle: "italic", marginTop: SPACING.xxs  }}>
                   These labels are inferred from feed content only. Actual platform categorization may differ.
                 </Text>
               </View>
@@ -466,10 +466,10 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
           borderWidth: 1,
           borderColor: colors.borderSoft,
         }}>
-          <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain, marginBottom: SPACING.sm }}>
+          <Text variant="label" color={colors.textMain} style={{ marginBottom: SPACING.sm }}>
             Ideas to explore
           </Text>
-          <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted }}>
+          <Text variant="bodySmall" color={colors.textMuted }>
             {suggestions[0]}
           </Text>
           {suggestions.length > 1 && (
@@ -482,14 +482,14 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
                 accessibilityState={{ expanded: showAllIdeas }}
                 style={{ marginTop: SPACING.sm, minHeight: MIN_TOUCH_TARGET, justifyContent: 'center' }}
               >
-                <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.primaryBlue }}>
+                <Text variant="labelBold" color={colors.primaryBlue }>
                   {showAllIdeas ? 'Hide ideas' : 'See all ideas'}
                 </Text>
               </TouchableOpacity>
               {showAllIdeas && (
                 <View style={{ marginTop: SPACING.sm, gap: SPACING.sm }}>
                   {suggestions.slice(1).map((suggestion, i) => (
-                    <Text key={i} style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted }}>
+                    <Text key={i} variant="bodySmall" color={colors.textMuted }>
                       {'\u2022'} {suggestion}
                     </Text>
                   ))}
@@ -535,17 +535,17 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
         borderTopColor: colors.borderSoft,
         marginTop: SPACING.sm,
       }}>
-        <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
+        <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
           {data.platform}
         </Text>
-        <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>{'\u00B7'}</Text>
-        <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
+        <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>{'\u00B7'}</Text>
+        <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
           {data.totalPosts} posts
         </Text>
         {data.scanDate && (
           <>
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>{'\u00B7'}</Text>
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
+            <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>{'\u00B7'}</Text>
+            <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
               {new Date(data.scanDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
             </Text>
           </>
@@ -595,13 +595,13 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
             borderColor: colors.borderSoft,
             ...shadows.card,
           }}>
-            <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
+            <Text variant="overline" color={colors.textSecondary }>
               Top 5
             </Text>
-            <Text style={{ ...TYPOGRAPHY.h2, color: colors.textMain, marginTop: SPACING.xxs }}>
+            <Text style={{ ...GL_TYPOGRAPHY.h2, color: colors.textMain, marginTop: SPACING.xxs }}>
               {data.top5Pct}%
             </Text>
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
+            <Text variant="captionSmall" color={colors.textMuted} style={{ marginTop: SPACING.xxs  }}>
               of posts from top 5
             </Text>
           </View>
@@ -614,13 +614,13 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
             borderColor: colors.borderSoft,
             ...shadows.card,
           }}>
-            <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
+            <Text variant="overline" color={colors.textSecondary }>
               Top Source
             </Text>
-            <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.textMain, marginTop: SPACING.xxs }} numberOfLines={1}>
+            <Text variant="labelBold" color={colors.textMain} style={{ marginTop: SPACING.xxs }} numberOfLines={1}>
               @{data.topCreators[0]?.name ?? '—'}
             </Text>
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
+            <Text variant="captionSmall" color={colors.textMuted} style={{ marginTop: SPACING.xxs  }}>
               most frequent
             </Text>
           </View>
@@ -633,13 +633,13 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
             borderColor: colors.borderSoft,
             ...shadows.card,
           }}>
-            <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
+            <Text variant="overline" color={colors.textSecondary }>
               Sources
             </Text>
-            <Text style={{ ...TYPOGRAPHY.h2, color: colors.textMain, marginTop: SPACING.xxs }}>
+            <Text style={{ ...GL_TYPOGRAPHY.h2, color: colors.textMain, marginTop: SPACING.xxs }}>
               {data.uniqueCreatorCount}
             </Text>
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
+            <Text variant="captionSmall" color={colors.textMuted} style={{ marginTop: SPACING.xxs  }}>
               unique creators
             </Text>
           </View>
@@ -657,8 +657,8 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
           borderColor: colors.borderSoft,
           ...shadows.card,
         }}>
-          <BarChart
-            items={data.topCreators.slice(0, 8).map((creator) => ({
+          <ALBarChart
+            data={data.topCreators.slice(0, 8).map((creator) => ({
               label: `@${creator.name}`,
               value: creator.count,
               percentage: creator.percentage,
@@ -691,7 +691,7 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
           accessibilityLabel={showConcentration ? 'Hide concentration analysis' : 'How concentrated is your feed?'}
           accessibilityState={{ expanded: showConcentration }}
         >
-          <Text style={{ ...TYPOGRAPHY.label, color: colors.textMuted }}>
+          <Text variant="label" color={colors.textMuted }>
             How concentrated is your feed?
           </Text>
           <ChevronDown
@@ -719,7 +719,7 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
               label="of your feed from top 5 accounts"
               suffix="%"
             />
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, marginTop: SPACING.xxs }}>
+            <Text variant="captionSmall" color={colors.textSecondary} style={{ marginTop: SPACING.xxs  }}>
               Typical range: 40–60%
             </Text>
           </View>
@@ -738,14 +738,14 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
             borderColor: colors.borderSoft,
             ...shadows.card,
           }}>
-            <StackedBar100
+            <ALStackedBar
               segments={[
                 { label: 'Top 5', percentage: top5ConcPct, count: top5Count, color: colors.primaryBlue },
                 ...(top6to10Pct > 0 ? [{ label: 'Top 6–10', percentage: top6to10Pct, count: top6to10Count, color: colors.blue200 }] : []),
                 { label: 'Others', percentage: othersPct, count: othersCount, color: colors.textTertiary },
               ]}
             />
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic', marginTop: SPACING.sm }}>
+            <Text variant="captionSmall" color={colors.textSecondary} style={{ fontStyle: "italic", marginTop: SPACING.sm  }}>
               Higher values for top sources indicate a more concentrated feed.
             </Text>
           </View>
@@ -812,13 +812,13 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
           borderColor: colors.borderSoft,
           ...shadows.card,
         }}>
-          <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
+          <Text variant="overline" color={colors.textSecondary }>
             Ad Posts
           </Text>
-          <Text style={{ ...TYPOGRAPHY.h2, color: colors.textMain, marginTop: SPACING.xxs }}>
+          <Text style={{ ...GL_TYPOGRAPHY.h2, color: colors.textMain, marginTop: SPACING.xxs }}>
             {data.adCount}
           </Text>
-          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
+          <Text variant="captionSmall" color={colors.textMuted} style={{ marginTop: SPACING.xxs  }}>
             {data.adPct}% of posts
           </Text>
         </View>
@@ -832,13 +832,13 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
             borderColor: colors.borderSoft,
             ...shadows.card,
           }}>
-            <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
+            <Text variant="overline" color={colors.textSecondary }>
               Top Advertiser
             </Text>
-            <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.textMain, marginTop: SPACING.xxs }} numberOfLines={1}>
+            <Text variant="labelBold" color={colors.textMain} style={{ marginTop: SPACING.xxs }} numberOfLines={1}>
               @{data.topAdvertisers[0]?.name ?? '—'}
             </Text>
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
+            <Text variant="captionSmall" color={colors.textMuted} style={{ marginTop: SPACING.xxs  }}>
               {data.topAdvertisers[0]?.percent ?? 0}% of ads
             </Text>
           </View>
@@ -853,13 +853,13 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
             borderColor: colors.borderSoft,
             ...shadows.card,
           }}>
-            <Text style={{ ...TYPOGRAPHY.overline, color: colors.textSecondary }}>
+            <Text variant="overline" color={colors.textSecondary }>
               Ad Density
             </Text>
-            <Text style={{ ...TYPOGRAPHY.h2, color: colors.textMain, marginTop: SPACING.xxs }}>
+            <Text style={{ ...GL_TYPOGRAPHY.h2, color: colors.textMain, marginTop: SPACING.xxs }}>
               1:{data.adPct > 0 ? Math.round(100 / data.adPct) : '—'}
             </Text>
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
+            <Text variant="captionSmall" color={colors.textMuted} style={{ marginTop: SPACING.xxs  }}>
               post ratio
             </Text>
           </View>
@@ -878,7 +878,7 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
             borderColor: colors.borderSoft,
             ...shadows.card,
           }}>
-            <StackedBar100
+            <ALStackedBar
               segments={[
                 { label: 'Non-sponsored', percentage: organicPct, count: organicCount, color: colors.primaryBlue },
                 { label: 'Sponsored', percentage: data.adPct, count: data.adCount, color: colors.blue200 },
@@ -899,16 +899,16 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
           ...shadows.card,
           gap: SPACING.sm,
         }}>
-          <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '600' }}>
+          <Text variant="body" color={colors.textMain} style={{ fontWeight: "600" }}>
             No labeled ads appeared in this scan
           </Text>
-          <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted, lineHeight: 20 }}>
+          <Text variant="bodySmall" color={colors.textMuted} style={{ lineHeight: 20 }}>
             We look for platform-provided ad labels (like "Sponsored" or "Ad" badges). Some promotional content doesn't carry visible labels.
           </Text>
-          <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted, lineHeight: 20 }}>
+          <Text variant="bodySmall" color={colors.textMuted} style={{ lineHeight: 20 }}>
             Native advertising, influencer partnerships, and product placements may not have standard ad markers.
           </Text>
-          <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted, lineHeight: 20 }}>
+          <Text variant="bodySmall" color={colors.textMuted} style={{ lineHeight: 20 }}>
             Scan longer and scroll through more content — ads may appear at different points in your feed.
           </Text>
         </View>
@@ -943,7 +943,7 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
               paddingVertical: SPACING.md,
             }}
           >
-            <Text style={{ ...TYPOGRAPHY.label, color: colors.textMuted }}>
+            <Text variant="label" color={colors.textMuted }>
               Top advertised companies
             </Text>
             <ChevronDown
@@ -968,15 +968,15 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
             }}>
               {data.topAdvertisers.map((advertiser, idx) => (
                 <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '500' }}>
+                  <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textMain, fontWeight: '500' }}>
                     @{advertiser.name}
                   </Text>
-                  <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
+                  <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
                     {advertiser.percent}% of ads ({advertiser.count})
                   </Text>
                 </View>
               ))}
-              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic', marginTop: SPACING.xxs }}>
+              <Text variant="captionSmall" color={colors.textSecondary} style={{ fontStyle: "italic", marginTop: SPACING.xxs  }}>
                 Based on {data.adCount} labeled ad posts
               </Text>
             </View>
@@ -1036,7 +1036,7 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
       borderColor: colors.borderSoft,
       ...shadows.card,
     }}>
-      <StackedBar100
+      <ALStackedBar
         segments={[
           { label: 'Following', percentage: data.followedPct, count: data.followedCount, color: colors.primaryBlue },
           { label: 'Suggested', percentage: data.suggestedPct, count: data.suggestedCount, color: colors.blue200 },
@@ -1052,7 +1052,7 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
       borderColor: colors.borderSoft,
       ...shadows.card,
     }}>
-      <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted }}>
+      <Text variant="bodySmall" color={colors.textMuted }>
         {data.suggestedPct >= 50
           ? `${data.suggestedPct}% of the posts in your feed came from accounts you don't follow. Most of what appeared in your feed came from accounts you don't follow.`
           : data.suggestedPct >= 20
@@ -1093,10 +1093,10 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
               padding: SPACING.md,
               alignItems: 'center',
             }}>
-              <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain }}>
+              <Text style={{ ...GL_TYPOGRAPHY.h3, color: colors.textMain }}>
                 {data.creatorNovelty.suggestedCreatorCount}
               </Text>
-              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, textAlign: 'center', marginTop: SPACING.xxs }}>
+              <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary, textAlign: 'center', marginTop: SPACING.xxs }}>
                 Suggested{'\n'}creators
               </Text>
             </View>
@@ -1107,10 +1107,10 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
               padding: SPACING.md,
               alignItems: 'center',
             }}>
-              <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain }}>
+              <Text style={{ ...GL_TYPOGRAPHY.h3, color: colors.textMain }}>
                 {data.creatorNovelty.overlapCount}
               </Text>
-              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, textAlign: 'center', marginTop: SPACING.xxs }}>
+              <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary, textAlign: 'center', marginTop: SPACING.xxs }}>
                 Overlap
               </Text>
             </View>
@@ -1121,17 +1121,17 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
               padding: SPACING.md,
               alignItems: 'center',
             }}>
-              <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain }}>
+              <Text style={{ ...GL_TYPOGRAPHY.h3, color: colors.textMain }}>
                 {data.creatorNovelty.followedCreatorCount}
               </Text>
-              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, textAlign: 'center', marginTop: SPACING.xxs }}>
+              <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary, textAlign: 'center', marginTop: SPACING.xxs }}>
                 Followed{'\n'}creators
               </Text>
             </View>
           </View>
 
           {/* Contextual interpretation */}
-          <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted, lineHeight: 19 }}>
+          <Text variant="bodySmall" color={colors.textMuted} style={{ lineHeight: 19 }}>
             {data.creatorNovelty.noveltyPercent >= 60
               ? 'Most suggested content appeared to come from creators you don\'t follow — lots of new voices in the mix.'
               : data.creatorNovelty.noveltyPercent >= 40
@@ -1149,7 +1149,7 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
               paddingTop: SPACING.xxs,
             }}>
               <Info size={12} color={colors.textSecondary} strokeWidth={2} />
-              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic', flex: 1 }}>
+              <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic', flex: 1 }}>
                 Follow detection is limited on some platforms. These numbers are approximate.
               </Text>
             </View>
@@ -1179,7 +1179,7 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
       accessibilityLabel={showIdeas ? 'Hide ideas to explore' : 'Show ideas to explore'}
       accessibilityState={{ expanded: showIdeas }}
     >
-      <Text style={{ ...TYPOGRAPHY.label, color: colors.textMuted }}>
+      <Text variant="label" color={colors.textMuted }>
         Ideas to explore
       </Text>
       <ChevronDown
@@ -1212,10 +1212,10 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
         borderColor: colors.blue200,
       }}>
         <View style={{ flex: 1 }}>
-          <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '600' }}>
+          <Text variant="body" color={colors.textMain} style={{ fontWeight: "600" }}>
             Diversify your follows
           </Text>
-          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs, lineHeight: 17 }}>
+          <Text variant="captionSmall" color={colors.textMuted} style={{ marginTop: SPACING.xxs, lineHeight: 17  }}>
             Some people find that following a wider range of accounts changes what their feed recommends over time.
           </Text>
         </View>
@@ -1232,10 +1232,10 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
         borderColor: colors.blue200,
       }}>
         <View style={{ flex: 1 }}>
-          <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '600' }}>
+          <Text variant="body" color={colors.textMain} style={{ fontWeight: "600" }}>
             Try chronological mode
           </Text>
-          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs, lineHeight: 17 }}>
+          <Text variant="captionSmall" color={colors.textMuted} style={{ marginTop: SPACING.xxs, lineHeight: 17  }}>
             Some platforms offer a "Following" or "Latest" feed mode that shows only posts from accounts you follow, in chronological order.
           </Text>
         </View>
@@ -1252,10 +1252,10 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
         borderColor: colors.blue200,
       }}>
         <View style={{ flex: 1 }}>
-          <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '600' }}>
+          <Text variant="body" color={colors.textMain} style={{ fontWeight: "600" }}>
             Engage intentionally
           </Text>
-          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs, lineHeight: 17 }}>
+          <Text variant="captionSmall" color={colors.textMuted} style={{ marginTop: SPACING.xxs, lineHeight: 17  }}>
             Platforms often describe engagement (likes, shares, comments) as a factor in feed ranking, though the exact effect is not publicly documented.
           </Text>
         </View>
@@ -1274,17 +1274,17 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
       borderTopColor: colors.borderSoft,
       marginTop: SPACING.sm,
     }}>
-      <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
+      <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
         {data.platform}
       </Text>
-      <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>{'\u00B7'}</Text>
-      <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
+      <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>{'\u00B7'}</Text>
+      <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
         {data.totalPosts} posts
       </Text>
       {data.scanDate && (
         <>
-          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>{'\u00B7'}</Text>
-          <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
+          <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>{'\u00B7'}</Text>
+          <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
             {new Date(data.scanDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
           </Text>
         </>
@@ -1368,7 +1368,7 @@ const PoliticsContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgra
           gap: SPACING.xs,
         }}>
           <Info size={14} color={colors.warning} strokeWidth={2} />
-          <Text style={{ ...TYPOGRAPHY.caption, color: colors.warning, flex: 1 }}>
+          <Text style={{ ...GL_TYPOGRAPHY.caption, color: colors.warning, flex: 1 }}>
             Low sample — fewer than 10 political posts. Results may not reflect typical patterns.
           </Text>
         </View>
@@ -1390,7 +1390,7 @@ const PoliticsContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgra
           label="of your feed contained political content"
           suffix="%"
         />
-        <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, marginTop: SPACING.xxs }}>
+        <Text variant="captionSmall" color={colors.textSecondary} style={{ marginTop: SPACING.xxs  }}>
           {analysis?.politicalCount ?? 0} of {analysis?.totalAnalyzed ?? 0} posts
         </Text>
       </View>
@@ -1408,19 +1408,19 @@ const PoliticsContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgra
             ...shadows.card,
             gap: SPACING.sm,
           }}>
-            <Text style={{ ...TYPOGRAPHY.h2, color: colors.textMain }}>
+            <Text style={{ ...GL_TYPOGRAPHY.h2, color: colors.textMain }}>
               @{analysis.topPoliticalSource.handle}
             </Text>
-            <Text style={{ ...TYPOGRAPHY.body, color: colors.textMuted }}>
+            <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textMuted }}>
               {analysis.topPoliticalSource.count} of {analysis.politicalCount} political posts ({analysis.topPoliticalSource.pctOfPolitical}%)
             </Text>
             {/* Progress bar */}
             <View style={{ gap: SPACING.xxs }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontWeight: '600' }}>
+                <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontWeight: '600' }}>
                   Share of political posts
                 </Text>
-                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontWeight: '600' }}>
+                <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontWeight: '600' }}>
                   {analysis.topPoliticalSource.pctOfPolitical}%
                 </Text>
               </View>
@@ -1447,7 +1447,7 @@ const PoliticsContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgra
           borderColor: colors.borderSoft,
           ...shadows.card,
         }}>
-          <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted, lineHeight: 20, fontStyle: 'italic' }}>
+          <Text variant="bodySmall" color={colors.textMuted} style={{ lineHeight: 20, fontStyle: 'italic' }}>
             {data.politicalSummary}
           </Text>
         </View>
@@ -1464,7 +1464,7 @@ const PoliticsContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgra
           paddingVertical: SPACING.md,
         }}
       >
-        <Text style={{ ...TYPOGRAPHY.label, color: colors.textMuted }}>
+        <Text variant="label" color={colors.textMuted }>
           Show ideological breakdown
         </Text>
         <ChevronDown
@@ -1489,17 +1489,17 @@ const PoliticsContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgra
               ...shadows.card,
               gap: SPACING.sm,
             }}>
-              <StackedBar100
+              <ALStackedBar
                 segments={[
                   { label: 'Left', percentage: analysis.ideology.left, count: analysis.ideology.leftCount, color: colors.ideologyLeft },
                   { label: 'Center', percentage: analysis.ideology.center, count: analysis.ideology.centerCount, color: colors.ideologyCenter },
                   { label: 'Right', percentage: analysis.ideology.right, count: analysis.ideology.rightCount, color: colors.ideologyRight },
                 ]}
               />
-              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic' }}>
+              <Text variant="captionSmall" color={colors.textSecondary} style={{ fontStyle: "italic" }}>
                 Each segment shows what share of political posts showed keywords associated with that direction. This is approximate and may not capture nuance.
               </Text>
-              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted }}>
+              <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textMuted }}>
                 Based on {analysis.ideology.knownTotal} political posts with identifiable alignment
               </Text>
             </View>
@@ -1512,7 +1512,7 @@ const PoliticsContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgra
               borderColor: colors.borderSoft,
               alignItems: 'center',
             }}>
-              <Text style={{ ...TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center', fontStyle: 'italic' }}>
+              <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center', fontStyle: 'italic' }}>
                 Not enough political posts with identifiable alignment to show a reliable distribution.
               </Text>
             </View>
@@ -1553,10 +1553,10 @@ const PoliticsMethodologyDisclaimer = ({ colors }: { colors: ReturnType<typeof u
     borderWidth: 1,
     borderColor: colors.borderSoft,
   }}>
-    <Text style={{ ...TYPOGRAPHY.overline, color: colors.textMuted, marginBottom: SPACING.xxs }}>
+    <Text variant="overline" color={colors.textMuted} style={{ marginBottom: SPACING.xxs }}>
       How We Measure
     </Text>
-    <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
+    <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
       Political classification uses Google's Gemini AI to identify posts containing political keywords and themes. Ideological alignment (left/center/right) is approximate, based on stance keywords found in post text. This analysis describes what appeared in your feed — it does not infer your personal views or the platform's intent.
     </Text>
   </View>
@@ -1644,7 +1644,7 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
           gap: SPACING.xs,
         }}>
           <Info size={14} color={colors.warning} strokeWidth={2} />
-          <Text style={{ ...TYPOGRAPHY.caption, color: colors.warning, flex: 1 }}>
+          <Text style={{ ...GL_TYPOGRAPHY.caption, color: colors.warning, flex: 1 }}>
             Low sample — fewer than 10 posts with tone data. Results may not reflect typical patterns.
           </Text>
         </View>
@@ -1660,17 +1660,17 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
         borderColor: colors.borderSoft,
         ...shadows.card,
       }}>
-        <StackedBar100
+        <ALStackedBar
           segments={[
             { label: 'Positive', percentage: analysis?.positivePct ?? 0, count: analysis?.positiveCount ?? 0, color: TONE_COLORS.positive },
             { label: 'Neutral', percentage: analysis?.neutralPct ?? 0, count: analysis?.neutralCount ?? 0, color: TONE_COLORS.neutral },
             { label: 'Negative', percentage: analysis?.negativePct ?? 0, count: analysis?.negativeCount ?? 0, color: TONE_COLORS.negative },
           ]}
         />
-        <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic', marginTop: SPACING.xxs }}>
+        <Text variant="captionSmall" color={colors.textSecondary} style={{ fontStyle: "italic", marginTop: SPACING.xxs  }}>
           Each segment shows what share of posts fell into that emotional category.
         </Text>
-        <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted, marginTop: SPACING.xxs }}>
+        <Text variant="captionSmall" color={colors.textMuted} style={{ marginTop: SPACING.xxs  }}>
           Based on {analysis?.knownValenceTotal ?? 0} posts with identifiable tone
         </Text>
       </View>
@@ -1684,7 +1684,7 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
         borderColor: colors.borderSoft,
         ...shadows.card,
       }}>
-        <Text style={{ ...TYPOGRAPHY.body, color: colors.textMuted }}>
+        <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textMuted }}>
           {(analysis?.negativePct ?? 0) >= 35
             ? `Negative or conflict-focused tone appeared in ${analysis?.negativePct}% of posts. In a 60-minute session, that would represent about ${Math.round(60 * (analysis?.negativePct ?? 0) / 100)} minutes of negatively-framed content.`
             : (analysis?.positivePct ?? 0) >= 35
@@ -1718,7 +1718,7 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
           accessibilityLabel={showToneDetails ? 'Hide tone details' : 'Show tone details'}
           accessibilityState={{ expanded: showToneDetails }}
         >
-          <Text style={{ ...TYPOGRAPHY.label, color: colors.textMuted }}>
+          <Text variant="label" color={colors.textMuted }>
             Deeper analysis
           </Text>
           <ChevronDown
@@ -1745,15 +1745,15 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
               ...shadows.card,
               gap: SPACING.xs,
             }}>
-              <Text style={{ ...TYPOGRAPHY.overline, color: colors.textMuted, marginBottom: SPACING.xxs }}>
+              <Text variant="overline" color={colors.textMuted} style={{ marginBottom: SPACING.xxs }}>
                 Most Positive Sources
               </Text>
               {data.topPositiveSources.map((source, i) => (
                 <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '500' }}>
+                  <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textMain, fontWeight: '500' }}>
                     @{source.handle}
                   </Text>
-                  <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
+                  <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
                     {source.count} positive post{source.count !== 1 ? 's' : ''}
                   </Text>
                 </View>
@@ -1771,15 +1771,15 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
               ...shadows.card,
               gap: SPACING.xs,
             }}>
-              <Text style={{ ...TYPOGRAPHY.overline, color: colors.textMuted, marginBottom: SPACING.xxs }}>
+              <Text variant="overline" color={colors.textMuted} style={{ marginBottom: SPACING.xxs }}>
                 Most Negative Sources
               </Text>
               {data.topNegativeSources.map((source, i) => (
                 <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text style={{ ...TYPOGRAPHY.body, color: colors.textMain, fontWeight: '500' }}>
+                  <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textMain, fontWeight: '500' }}>
                     @{source.handle}
                   </Text>
-                  <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
+                  <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
                     {source.count} negative post{source.count !== 1 ? 's' : ''}
                   </Text>
                 </View>
@@ -1804,7 +1804,7 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
           }}>
             {/* Suggested tone mini bar */}
             <View style={{ gap: SPACING.xxs }}>
-              <Text style={{ ...TYPOGRAPHY.overline, color: colors.textMuted }}>
+              <Text variant="overline" color={colors.textMuted }>
                 Tone of Suggested Content
               </Text>
               <View style={{ height: 20, flexDirection: 'row', borderRadius: RADIUS.md, overflow: 'hidden' }}>
@@ -1812,14 +1812,14 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
                 <View style={{ width: `${data.toneBySourceOrigin.suggested.neutralPct}%`, backgroundColor: colors.toneNeutral }} />
                 <View style={{ width: `${data.toneBySourceOrigin.suggested.negativePct}%`, backgroundColor: colors.toneNegative }} />
               </View>
-              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
+              <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
                 {data.toneBySourceOrigin.suggested.positivePct}% pos · {data.toneBySourceOrigin.suggested.neutralPct}% neut · {data.toneBySourceOrigin.suggested.negativePct}% neg ({data.toneBySourceOrigin.suggested.total} posts)
               </Text>
             </View>
 
             {/* Followed tone mini bar */}
             <View style={{ gap: SPACING.xxs }}>
-              <Text style={{ ...TYPOGRAPHY.overline, color: colors.textMuted }}>
+              <Text variant="overline" color={colors.textMuted }>
                 Tone of Followed Content
               </Text>
               <View style={{ height: 20, flexDirection: 'row', borderRadius: RADIUS.md, overflow: 'hidden' }}>
@@ -1827,7 +1827,7 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
                 <View style={{ width: `${data.toneBySourceOrigin.followed.neutralPct}%`, backgroundColor: colors.toneNeutral }} />
                 <View style={{ width: `${data.toneBySourceOrigin.followed.negativePct}%`, backgroundColor: colors.toneNegative }} />
               </View>
-              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
+              <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
                 {data.toneBySourceOrigin.followed.positivePct}% pos · {data.toneBySourceOrigin.followed.neutralPct}% neut · {data.toneBySourceOrigin.followed.negativePct}% neg ({data.toneBySourceOrigin.followed.total} posts)
               </Text>
             </View>
@@ -1835,20 +1835,20 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
             {/* Legend */}
             <View style={{ flexDirection: 'row', gap: SPACING.md, justifyContent: 'center', paddingTop: SPACING.xxs }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs }}>
-                <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.tonePositive }} />
-                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>Positive</Text>
+                <View style={{ width: ICON_SIZES.dot, height: ICON_SIZES.dot, borderRadius: ICON_SIZES.dot / 2, backgroundColor: colors.tonePositive }} />
+                <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>Positive</Text>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs }}>
-                <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.toneNeutral }} />
-                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>Neutral</Text>
+                <View style={{ width: ICON_SIZES.dot, height: ICON_SIZES.dot, borderRadius: ICON_SIZES.dot / 2, backgroundColor: colors.toneNeutral }} />
+                <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>Neutral</Text>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs }}>
-                <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.toneNegative }} />
-                <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>Negative</Text>
+                <View style={{ width: ICON_SIZES.dot, height: ICON_SIZES.dot, borderRadius: ICON_SIZES.dot / 2, backgroundColor: colors.toneNegative }} />
+                <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>Negative</Text>
               </View>
             </View>
 
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontStyle: 'italic' }}>
+            <Text variant="captionSmall" color={colors.textSecondary} style={{ fontStyle: "italic" }}>
               Based on observable tone signals. This comparison may not be available for all scans.
             </Text>
           </View>
@@ -1888,10 +1888,10 @@ const ToneMethodologyDisclaimer = ({ colors }: { colors: ReturnType<typeof useTh
     borderWidth: 1,
     borderColor: colors.borderSoft,
   }}>
-    <Text style={{ ...TYPOGRAPHY.overline, color: colors.textMuted, marginBottom: SPACING.xxs }}>
+    <Text variant="overline" color={colors.textMuted} style={{ marginBottom: SPACING.xxs }}>
       How We Measure
     </Text>
-    <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
+    <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
       Emotional tone classification uses Google's Gemini AI to categorize posts as positive, neutral, or negative based on language patterns. Sentiment analysis is approximate — tone is subjective, and short posts may be misclassified. This analysis describes what appeared in your feed — it does not infer your emotional state or the platform's intent.
     </Text>
   </View>
@@ -1916,10 +1916,10 @@ const TabErrorFallback = ({ tabLabel, colors }: { tabLabel: string; colors: Retu
     }}>
       <Info size={20} color={colors.warning} strokeWidth={1.5} />
     </View>
-    <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain, textAlign: 'center' }}>
+    <Text style={{ ...GL_TYPOGRAPHY.h3, color: colors.textMain, textAlign: 'center' }}>
       This section couldn't load
     </Text>
-    <Text style={{ ...TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center' }}>
+    <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center' }}>
       The {tabLabel} tab ran into an issue. Try switching to another tab or refreshing the dashboard.
     </Text>
   </View>
@@ -1934,7 +1934,7 @@ const EmptySection = ({ message, colors }: { message: string; colors: ReturnType
     borderColor: colors.borderSoft,
     alignItems: 'center',
   }}>
-    <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textSecondary, textAlign: 'center' }}>
+    <Text variant="bodySmall" color={colors.textSecondary} style={{ textAlign: 'center' }}>
       {message}
     </Text>
   </View>
@@ -1962,10 +1962,10 @@ const AiConsentCard = ({
     }}>
       <Sparkles size={20} color={colors.primaryBlue} strokeWidth={1.5} />
     </View>
-    <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain, textAlign: 'center' }}>
+    <Text style={{ ...GL_TYPOGRAPHY.h3, color: colors.textMain, textAlign: 'center' }}>
       {title}
     </Text>
-    <Text style={{ ...TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center' }}>
+    <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center' }}>
       {description}
     </Text>
     <TouchableOpacity
@@ -1980,7 +1980,7 @@ const AiConsentCard = ({
       }}
     >
       <Settings size={13} color={colors.white} strokeWidth={2} />
-      <Text style={{ ...TYPOGRAPHY.buttonSm, color: colors.white }}>{buttonLabel}</Text>
+      <Text style={{ ...GL_TYPOGRAPHY.buttonSm, color: colors.white }}>{buttonLabel}</Text>
     </TouchableOpacity>
   </View>
 );
@@ -2015,14 +2015,14 @@ const AiProcessingCard = ({
     }}>
       <Info size={20} color={colors.primaryBlue} strokeWidth={1.5} />
     </View>
-    <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain, textAlign: 'center' }}>
+    <Text style={{ ...GL_TYPOGRAPHY.h3, color: colors.textMain, textAlign: 'center' }}>
       {title}
     </Text>
-    <Text style={{ ...TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center' }}>
+    <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center' }}>
       {message}
     </Text>
     {subtitle && (
-      <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted, textAlign: 'center' }}>
+      <Text variant="bodySmall" color={colors.textMuted} style={{ textAlign: 'center' }}>
         {subtitle}
       </Text>
     )}
@@ -2058,15 +2058,15 @@ const PlusTierBanner = ({ isPlus, colors, shadows }: { isPlus: boolean; colors: 
         }}
       >
         <View style={{
-          width: 32, height: 32, borderRadius: 10,
+          width: 32, height: 32, borderRadius: RADIUS.md,
           backgroundColor: 'rgba(255,255,255,0.18)',
           justifyContent: 'center', alignItems: 'center',
         }}>
-          <TrendingUp size={16} color="#FFFFFF" strokeWidth={2.5} />
+          <TrendingUp size={16} color={colors.textInverse} strokeWidth={2.5} />
         </View>
         <Text style={{
-          ...TYPOGRAPHY.label, fontWeight: '600',
-          color: '#FFFFFF', flex: 1, letterSpacing: -0.1,
+          ...GL_TYPOGRAPHY.label, fontWeight: '600',
+          color: colors.textInverse, flex: 1, letterSpacing: -0.1,
         }}>
           Unlock trend analysis with Plus
         </Text>
@@ -2074,7 +2074,7 @@ const PlusTierBanner = ({ isPlus, colors, shadows }: { isPlus: boolean; colors: 
           backgroundColor: 'rgba(255,255,255,0.22)', borderRadius: RADIUS.full,
           paddingHorizontal: SPACING.md, paddingVertical: SPACING.xs + 2,
         }}>
-          <Text style={{ ...TYPOGRAPHY.caption, fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.3 }}>Try Free</Text>
+          <Text style={{ ...GL_TYPOGRAPHY.caption, fontWeight: '700', color: colors.textInverse, letterSpacing: 0.3 }}>Try Free</Text>
         </View>
       </LinearGradient>
     </TouchableOpacity>
@@ -2214,11 +2214,11 @@ export default function DashboardScreen() {
           gap: SPACING.md,
         }}>
           <View style={{ flex: 1, marginRight: SPACING.sm }}>
-            <Text style={{ ...TYPOGRAPHY.h1, color: colors.textMain, marginBottom: SPACING.xxs }} accessibilityRole="header">
+            <Text variant="h1" color={colors.textMain} style={{ marginBottom: SPACING.xxs }} accessibilityRole="header">
               Your Dashboard
             </Text>
             {activeScan ? (
-              <Text style={{ ...TYPOGRAPHY.caption, color: colors.textMuted }}>
+              <Text style={{ ...GL_TYPOGRAPHY.caption, color: colors.textMuted }}>
                 {new Date(activeScan.created_at).toLocaleDateString(undefined, {
                   month: 'short', day: 'numeric', year: 'numeric',
                   hour: 'numeric', minute: '2-digit',
@@ -2227,7 +2227,7 @@ export default function DashboardScreen() {
                 ({activeScan.post_count} posts)
               </Text>
             ) : (
-              <Text style={{ ...TYPOGRAPHY.caption, color: colors.textSecondary }}>
+              <Text style={{ ...GL_TYPOGRAPHY.caption, color: colors.textSecondary }}>
                 {loading ? 'Loading...' : 'No scans yet'}
               </Text>
             )}
@@ -2247,7 +2247,7 @@ export default function DashboardScreen() {
               }}
             >
               <ScanSearch size={14} color={colors.white} strokeWidth={2} />
-              <Text style={{ ...TYPOGRAPHY.buttonSm, color: colors.white }}>Scan</Text>
+              <Text style={{ ...GL_TYPOGRAPHY.buttonSm, color: colors.white }}>Scan</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -2292,7 +2292,7 @@ export default function DashboardScreen() {
             flexDirection: 'row', alignItems: 'center', gap: SPACING.xs,
           }} accessibilityRole="alert" accessibilityLiveRegion="assertive">
             <Info size={16} color={colors.warning} strokeWidth={2} />
-            <Text style={{ ...TYPOGRAPHY.body, color: colors.warning, flex: 1 }}>
+            <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.warning, flex: 1 }}>
               {fetchError}
             </Text>
           </View>
@@ -2302,16 +2302,16 @@ export default function DashboardScreen() {
         {dashboardComputeError && (
           <View style={{ paddingHorizontal: SPACING.xl, paddingVertical: SPACING['4xl'], alignItems: 'center' }}>
             <View style={{
-              width: 56, height: 56, backgroundColor: colors.warningLight, borderRadius: 28,
+              width: 56, height: 56, backgroundColor: colors.warningLight, borderRadius: RADIUS['2xl'],
               justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.lg,
             }}>
               <Info size={24} color={colors.warning} strokeWidth={1.5} />
             </View>
-            <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain, marginBottom: SPACING.sm }}>
+            <Text style={{ ...GL_TYPOGRAPHY.h3, color: colors.textMain, marginBottom: SPACING.sm }}>
               This scan couldn't be displayed
             </Text>
             <Text style={{
-              ...TYPOGRAPHY.body, color: colors.textMuted, textAlign: 'center', marginBottom: SPACING.xl,
+              ...GL_TYPOGRAPHY.body, color: colors.textMuted, textAlign: 'center', marginBottom: SPACING.xl,
             }}>
               We had trouble reading this scan's data. Try refreshing, or start a new scan to get fresh results.
             </Text>
@@ -2326,7 +2326,7 @@ export default function DashboardScreen() {
                 justifyContent: 'center', alignItems: 'center',
               }}
             >
-              <Text style={{ ...TYPOGRAPHY.buttonSm, color: colors.white }}>Refresh</Text>
+              <Text style={{ ...GL_TYPOGRAPHY.buttonSm, color: colors.white }}>Refresh</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -2360,8 +2360,8 @@ export default function DashboardScreen() {
                   }}
                 >
                   <Text style={{
-                    ...TYPOGRAPHY.buttonSm,
-                    fontSize: 13,
+                    ...GL_TYPOGRAPHY.buttonSm,
+                    fontSize: RFValue(13),
                     color: colors.textTertiary,
                   }}>
                     {tab.label}
@@ -2374,17 +2374,17 @@ export default function DashboardScreen() {
             <View style={{ paddingHorizontal: SPACING['2xl'], paddingTop: SPACING['2xl'], paddingBottom: SPACING['4xl'], alignItems: 'center' }}>
             {/* D-4 FIX: Use AlgorithmLens Eye icon instead of generic search icon */}
             <View style={{
-              width: 56, height: 56, backgroundColor: colors.blue50, borderRadius: 28,
+              width: 56, height: 56, backgroundColor: colors.blue50, borderRadius: RADIUS['2xl'],
               justifyContent: 'center', alignItems: 'center', marginBottom: SPACING.lg,
             }}>
               <Search size={24} color={colors.primaryBlue} strokeWidth={1.5} />
             </View>
             {/* D-3 FIX: Improved empty state subtitle */}
-            <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain, marginBottom: SPACING.sm }}>
+            <Text style={{ ...GL_TYPOGRAPHY.h3, color: colors.textMain, marginBottom: SPACING.sm }}>
               No scans yet
             </Text>
             <Text style={{
-              ...TYPOGRAPHY.body, color: colors.textMuted, textAlign: 'center', marginBottom: SPACING.xl,
+              ...GL_TYPOGRAPHY.body, color: colors.textMuted, textAlign: 'center', marginBottom: SPACING.xl,
             }}>
               Complete your first scan to unlock insights about your feed — ads, suggested content, top sources, and more.
             </Text>
@@ -2398,7 +2398,7 @@ export default function DashboardScreen() {
                 paddingHorizontal: SPACING.xl, paddingVertical: SPACING.md,
               }}
             >
-              <Text style={{ ...TYPOGRAPHY.buttonSm, color: colors.white }}>Start Your First Scan</Text>
+              <Text style={{ ...GL_TYPOGRAPHY.buttonSm, color: colors.white }}>Start Your First Scan</Text>
             </TouchableOpacity>
           </View>
           </>
@@ -2438,9 +2438,9 @@ export default function DashboardScreen() {
                       paddingHorizontal: SPACING.lg,
                       minHeight: 36,
                       borderRadius: RADIUS.full,
-                      backgroundColor: isActive ? colors.primaryBlue : 'transparent',
+                      backgroundColor: isActive ? (colors as any)[tab.accent] : 'transparent',
                       borderWidth: 1.5,
-                      borderColor: isActive ? colors.primaryBlue : colors.borderSlate200,
+                      borderColor: isActive ? (colors as any)[tab.accent] : colors.borderSlate200,
                       flexDirection: 'row',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -2452,11 +2452,11 @@ export default function DashboardScreen() {
                       <View style={{
                         backgroundColor: isActive ? 'rgba(255,255,255,0.22)' : colors.blue50,
                         borderRadius: RADIUS.xs,
-                        paddingHorizontal: 5,
+                        paddingHorizontal: SPACING.xs,
                         paddingVertical: 1,
                       }}>
                         <Text style={{
-                          fontSize: 9,
+                          fontSize: RFValue(9),
                           fontWeight: '700',
                           color: isActive ? colors.white : colors.primaryBlue,
                           letterSpacing: 0.5,
@@ -2464,8 +2464,8 @@ export default function DashboardScreen() {
                       </View>
                     )}
                     <Text style={{
-                      ...TYPOGRAPHY.buttonSm,
-                      fontSize: 13,
+                      ...GL_TYPOGRAPHY.buttonSm,
+                      fontSize: RFValue(13),
                       color: isActive ? colors.white : colors.textSecondary,
                     }}>
                       {tab.label}

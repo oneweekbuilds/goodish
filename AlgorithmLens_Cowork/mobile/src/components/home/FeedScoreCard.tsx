@@ -13,12 +13,14 @@
  */
 
 import React, { useRef, useEffect, useState } from 'react';
-import { View, Text, Animated, Platform } from 'react-native';
+import { View, Animated, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BarChart3, Info } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY, ICON_SIZES } from '../../lib/theme';
-import { Skeleton } from '../ui/Skeleton';
+import { SPACING, RADIUS, ICON_SIZES } from '../../lib/theme';
+import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
+import { Text, Skeleton } from '../glue';
+import { ALScoreGauge } from '../charts';
 
 // Web-safe gradient wrapper for LinearGradient
 const GradientWrapper = Platform.OS === 'web'
@@ -146,7 +148,7 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
           </View>
           <Text
             style={{
-              ...TYPOGRAPHY.labelBold,
+              ...GL_TYPOGRAPHY.labelBold,
               color: colors.textMain,
             }}
           >
@@ -162,7 +164,7 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
         >
           <Text
             style={{
-              ...TYPOGRAPHY.bodySmall,
+              ...GL_TYPOGRAPHY.bodySmall,
               color: colors.textSecondary,
             }}
           >
@@ -173,20 +175,16 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
     );
   }
 
-  // Score color — semantic scale based on feed health
-  const getScoreColor = (score: number): string => {
-    if (score >= 70) return colors.success;
-    if (score >= 50) return colors.primaryBlue;
-    if (score >= 30) return colors.warning;
-    return colors.textMuted;
-  };
-
-  const scoreColor = getScoreColor(feedScore.score);
-  const animatedScore = useCountUp(feedScore.score);
+  // Score-tinted gradient for visual emphasis
+  const scoreTintBg = feedScore.score >= 70
+    ? colors.green50
+    : feedScore.score >= 50
+      ? colors.blue50
+      : colors.bgCard;
 
   return (
     <GradientWrapper
-      colors={[colors.bgCard, colors.bgCardGradientEnd]}
+      colors={[scoreTintBg, colors.bgCardGradientEnd]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
       style={{
@@ -194,7 +192,7 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
         padding: SPACING.lg,
         borderWidth: 1,
         borderColor: colors.brandTintBorder,
-        ...shadows.lg,
+        ...shadows.hero,
       }}
       accessibilityRole="summary"
       accessibilityLabel={`Feed score: ${feedScore.score} - ${feedScore.label}`}
@@ -214,7 +212,7 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
         </View>
         <Text
           style={{
-            ...TYPOGRAPHY.labelBold,
+            ...GL_TYPOGRAPHY.labelBold,
             color: colors.textMain,
             flex: 1,
           }}
@@ -223,7 +221,7 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
         </Text>
         <Text
           style={{
-            ...TYPOGRAPHY.captionSmall,
+            ...GL_TYPOGRAPHY.captionSmall,
             color: colors.textSecondary,
           }}
         >
@@ -231,30 +229,21 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
         </Text>
       </View>
 
-      {/* Score display */}
-      <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: SPACING.sm }}>
-        <Text
-          style={{
-            ...TYPOGRAPHY.scoreLarge,
-            color: scoreColor,
-          }}
-        >
-          {animatedScore}
-        </Text>
-        <Text
-          style={{
-            ...TYPOGRAPHY.label,
-            color: colors.textMuted,
-          }}
-        >
-          {feedScore.label}
-        </Text>
+      {/* Score gauge ring + label */}
+      <View style={{ alignItems: 'center', marginVertical: SPACING.sm }}>
+        <ALScoreGauge
+          score={feedScore.score}
+          label={feedScore.label}
+          radius={60}
+          strokeWidth={8}
+          animated={true}
+        />
       </View>
 
       {/* Summary */}
       <Text
         style={{
-          ...TYPOGRAPHY.caption,
+          ...GL_TYPOGRAPHY.caption,
           color: colors.textSecondary,
           marginTop: SPACING.sm,
         }}
@@ -277,7 +266,7 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
         <Info size={10} color={colors.textSecondary} strokeWidth={2} />
         <Text
           style={{
-            fontSize: TYPOGRAPHY.captionSmall.fontSize,
+            ...GL_TYPOGRAPHY.captionSmall,
             color: colors.textSecondary,
             fontStyle: 'italic',
           }}

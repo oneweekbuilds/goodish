@@ -2,23 +2,24 @@
  * FeedScoreTrend — 7-day sparkline showing feed health score over time.
  *
  * Shows a compact trend visualization on the home screen with:
- * - A small SVG-like sparkline (drawn with View elements)
+ * - ALLineChart smooth curve with gradient area fill
  * - Color-coded direction arrow (green up, orange down, gray dash)
  * - Contextual summary text
  * - Gradient card surface with brand-tint border
- * - Area fill below sparkline bars with subtle gradient
- * - Current value emphasis dot on last data point
  *
- * Design: Compact, informational. Fits below or beside the FeedScoreCard.
- * Uses the design system's color tokens. Never alarming.
+ * Phase 3 upgrade: Replaced custom SVG bar sparkline with ALLineChart
+ * (react-native-gifted-charts) for smooth bezier curves and area fill.
  */
 
 import React from 'react';
-import { View, Text, Platform } from 'react-native';
+import { View, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { TrendingUp, TrendingDown, Minus, Activity } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY, ICON_SIZES } from '../../lib/theme';
+import { SPACING, RADIUS, ICON_SIZES } from '../../lib/theme';
+import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
+import { Text } from '../glue';
+import { ALLineChart } from '../charts';
 import type { FeedScoreTrendPoint, TrendDirection } from '../../types/achievements';
 
 // Web-safe gradient wrapper for LinearGradient
@@ -76,7 +77,7 @@ function FeedScoreTrendComponent({ points, direction, changePercent }: FeedScore
           >
             <Activity size={14} color={colors.primaryBlue} strokeWidth={2} />
           </View>
-          <Text style={{ ...TYPOGRAPHY.caption, color: colors.textSecondary, flex: 1 }}>
+          <Text style={{ ...GL_TYPOGRAPHY.caption, color: colors.textSecondary, flex: 1 }}>
             Your score trend will appear here after a few scans on different days.
           </Text>
         </View>
@@ -87,6 +88,12 @@ function FeedScoreTrendComponent({ points, direction, changePercent }: FeedScore
   const directionColor = getDirectionColor(direction, colors);
   const DirectionIcon = getDirectionIcon(direction);
   const summaryText = getSummaryText(direction, changePercent);
+
+  // Prepare data for ALLineChart
+  const lineData = points.map((point) => ({
+    value: point.score,
+    label: formatDayLabel(point.date),
+  }));
 
   return (
     <GradientWrapper
@@ -126,7 +133,7 @@ function FeedScoreTrendComponent({ points, direction, changePercent }: FeedScore
         </View>
         <Text
           style={{
-            ...TYPOGRAPHY.labelBold,
+            ...GL_TYPOGRAPHY.labelBold,
             color: colors.textMain,
             flex: 1,
           }}
@@ -138,7 +145,7 @@ function FeedScoreTrendComponent({ points, direction, changePercent }: FeedScore
           {changePercent !== 0 && (
             <Text
               style={{
-                ...TYPOGRAPHY.captionSmall,
+                ...GL_TYPOGRAPHY.captionSmall,
                 color: directionColor,
                 fontWeight: '600',
               }}
@@ -149,13 +156,21 @@ function FeedScoreTrendComponent({ points, direction, changePercent }: FeedScore
         </View>
       </View>
 
-      {/* Sparkline */}
-      <Sparkline points={points} color={directionColor} colors={colors} />
+      {/* Line Chart — replaces old bar sparkline */}
+      <ALLineChart
+        data={lineData}
+        height={48}
+        color={directionColor}
+        areaChart={true}
+        hideAxes={true}
+        showDots={true}
+        accessibilitySummary="7-day feed score trend"
+      />
 
       {/* Summary text */}
       <Text
         style={{
-          ...TYPOGRAPHY.caption,
+          ...GL_TYPOGRAPHY.caption,
           color: colors.textSecondary,
           marginTop: SPACING.sm,
         }}
@@ -167,123 +182,6 @@ function FeedScoreTrendComponent({ points, direction, changePercent }: FeedScore
 }
 
 export const FeedScoreTrend = React.memo(FeedScoreTrendComponent);
-
-// ─── Sparkline Component ────────────────────────────────
-
-const Sparkline = React.memo(function Sparkline({
-  points,
-  color,
-  colors,
-}: {
-  points: FeedScoreTrendPoint[];
-  color: string;
-  colors: Record<string, string | readonly string[]>;
-}) {
-  const scores = points.map((p) => p.score);
-  const min = Math.max(0, Math.min(...scores) - 5);
-  const max = Math.min(100, Math.max(...scores) + 5);
-  const range = Math.max(max - min, 10); // Minimum range prevents exaggerated visualization
-
-  const CHART_HEIGHT = 40;
-  const CHART_WIDTH_PER_POINT = 36;
-  const chartWidth = Math.max(points.length * CHART_WIDTH_PER_POINT, 100);
-
-  // Primary color with 15% opacity for area fill gradient
-  const primaryColor = colors.primary as string;
-  const areaFillTop = primaryColor + '26'; // ~15% opacity hex
-  const areaFillBottom = primaryColor + '00'; // fully transparent
-
-  return (
-    <View
-      style={{
-        height: CHART_HEIGHT + SPACING.sm,
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-        gap: SPACING.xxs,
-      }}
-    >
-      {scores.map((score, index) => {
-        const normalized = (score - min) / range;
-        const barHeight = Math.max(4, normalized * CHART_HEIGHT);
-        const isLast = index === scores.length - 1;
-
-        return (
-          <View
-            key={points[index]?.date ?? index}
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              maxWidth: CHART_WIDTH_PER_POINT,
-            }}
-          >
-            {/* Score label + emphasis dot on last bar */}
-            {isLast && (
-              <View style={{ alignItems: 'center' }}>
-                <Text
-                  style={{
-                    ...TYPOGRAPHY.captionSmall,
-                    color: color,
-                    fontWeight: '600',
-                    marginBottom: SPACING.xxs,
-                  }}
-                >
-                  {score}
-                </Text>
-                {/* Current value glow + dot */}
-                <View
-                  style={{
-                    position: 'absolute',
-                    bottom: -3,
-                    width: 14,
-                    height: 14,
-                    borderRadius: 7,
-                    backgroundColor: primaryColor + '33', // 20% opacity glow
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                >
-                  <View
-                    style={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: 3,
-                      backgroundColor: primaryColor,
-                    }}
-                  />
-                </View>
-              </View>
-            )}
-
-            {/* Bar with area fill gradient */}
-            <GradientWrapper
-              colors={isLast ? [color, color] : [areaFillTop, areaFillBottom]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 0, y: 1 }}
-              style={{
-                width: '70%',
-                height: barHeight,
-                borderRadius: RADIUS.xs,
-                minWidth: 8,
-                backgroundColor: isLast ? color : (colors.blue100 as string),
-              }}
-            />
-
-            {/* Day label — TS-001 FIX: was ~9px, now uses captionSmall (11px) minimum */}
-            <Text
-              style={{
-                fontSize: TYPOGRAPHY.captionSmall.fontSize,
-                color: colors.textTertiary as string,
-                marginTop: SPACING.xxs,
-              }}
-            >
-              {formatDayLabel(points[index]?.date ?? '')}
-            </Text>
-          </View>
-        );
-      })}
-    </View>
-  );
-});
 
 function getDirectionColor(direction: TrendDirection, colors: Record<string, string | readonly string[]>): string {
   switch (direction) {
