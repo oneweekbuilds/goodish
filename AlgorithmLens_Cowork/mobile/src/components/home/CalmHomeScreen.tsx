@@ -40,7 +40,8 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Scan, Eye, BarChart3 } from 'lucide-react-native';
+import { Scan, Eye, BarChart3, Sparkles } from 'lucide-react-native';
+import { router } from 'expo-router';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useStreak } from '../../hooks/useStreak';
@@ -342,20 +343,33 @@ function CalmHomeScreenComponent({
                   alignItems: 'center',
                   borderWidth: 1,
                   borderColor: colors.borderSubtle,
+                  ...shadows.card,
                 }}
               >
-                {/* Icon pair: Eye + BarChart3 */}
-                <View style={{ flexDirection: 'row', gap: SPACING.md, marginBottom: SPACING.lg, alignItems: 'center' }}>
-                  <Eye size={32} color={colors.primary} strokeWidth={1.5} />
-                  <BarChart3 size={32} color={colors.primary} strokeWidth={1.5} />
+                {/* Icon pair: Eye + BarChart3 in a tinted circle */}
+                <View
+                  style={{
+                    width: 72,
+                    height: 72,
+                    borderRadius: 36,
+                    backgroundColor: colors.brandTintBg,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginBottom: SPACING.xl,
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', gap: SPACING.sm, alignItems: 'center' }}>
+                    <Eye size={26} color={colors.primary} strokeWidth={1.5} />
+                    <BarChart3 size={26} color={colors.primary} strokeWidth={1.5} />
+                  </View>
                 </View>
 
                 {/* Title */}
                 <Text
                   style={{
-                    ...GL_TYPOGRAPHY.h3,
+                    ...GL_TYPOGRAPHY.h2,
                     color: colors.textMain,
-                    marginBottom: SPACING.md,
+                    marginBottom: SPACING.sm,
                     textAlign: 'center',
                   }}
                   accessibilityRole="header"
@@ -366,51 +380,74 @@ function CalmHomeScreenComponent({
                 {/* Subtitle */}
                 <Text
                   style={{
-                    ...GL_TYPOGRAPHY.bodySmall,
+                    ...GL_TYPOGRAPHY.body,
                     color: colors.textSecondary,
                     marginBottom: SPACING.xl,
                     textAlign: 'center',
+                    maxWidth: 280,
                   }}
                 >
-                  Scan your first feed to see what's really in your content
+                  Scan your first feed to see what's in your content
                 </Text>
 
-                {/* Preview mockup with placeholder score ring + metric cards */}
+                {/* Preview mockup — muted dashboard preview */}
                 <View
                   style={{
                     width: '100%',
                     backgroundColor: colors.bgSecondary,
-                    borderRadius: RADIUS.md,
+                    borderRadius: RADIUS.lg,
                     padding: SPACING.lg,
                     gap: SPACING.md,
+                    opacity: 0.7,
                   }}
                 >
                   {/* Placeholder score ring area */}
                   <View
                     style={{
                       alignSelf: 'center',
-                      width: 64,
-                      height: 64,
-                      borderRadius: 32,
-                      backgroundColor: colors.borderSubtle,
+                      width: 72,
+                      height: 72,
+                      borderRadius: 36,
+                      borderWidth: 6,
+                      borderColor: colors.borderLight,
+                      marginBottom: SPACING.xs,
                     }}
                   />
 
-                  {/* Placeholder metric cards (muted) */}
+                  {/* Placeholder metric bars (staggered widths for realism) */}
                   <View style={{ gap: SPACING.sm }}>
+                    <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
+                      <View
+                        style={{
+                          flex: 1,
+                          height: 28,
+                          borderRadius: RADIUS.md,
+                          backgroundColor: colors.borderLight,
+                        }}
+                      />
+                      <View
+                        style={{
+                          flex: 1,
+                          height: 28,
+                          borderRadius: RADIUS.md,
+                          backgroundColor: colors.borderLight,
+                        }}
+                      />
+                    </View>
                     <View
                       style={{
-                        height: 12,
+                        height: 10,
                         borderRadius: RADIUS.sm,
                         backgroundColor: colors.borderLight,
+                        width: '70%',
                       }}
                     />
                     <View
                       style={{
-                        height: 12,
+                        height: 10,
                         borderRadius: RADIUS.sm,
                         backgroundColor: colors.borderLight,
-                        width: '80%',
+                        width: '50%',
                       }}
                     />
                   </View>
@@ -495,24 +532,29 @@ function CalmHomeScreenComponent({
               {/* ── Upgrade to Plus Card (for free users with scans) ── */}
               {shouldShowUpgradeCard && (
                 <View style={{ marginBottom: SPACING['3xl'] }}>
-                  <View
-                    style={{
+                  <Pressable
+                    onPress={() => router.push('/(tabs)/settings')}
+                    style={({ pressed }) => ({
                       borderWidth: 1,
-                      borderColor: colors.borderDefault,
+                      borderColor: pressed ? colors.primary : colors.borderDefault,
                       borderRadius: RADIUS.lg,
                       padding: SPACING['2xl'],
-                      backgroundColor: 'transparent',
-                    }}
+                      backgroundColor: pressed ? colors.brandTintBg : 'transparent',
+                    })}
+                    accessibilityLabel="Upgrade to AlgorithmLens Plus for detailed insights"
+                    accessibilityRole="button"
                   >
-                    <Text
-                      style={{
-                        ...GL_TYPOGRAPHY.h3,
-                        color: colors.textMain,
-                        marginBottom: SPACING.md,
-                      }}
-                    >
-                      Unlock detailed insights
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.md }}>
+                      <Sparkles size={18} color={colors.primary} strokeWidth={1.8} />
+                      <Text
+                        style={{
+                          ...GL_TYPOGRAPHY.h3,
+                          color: colors.textMain,
+                        }}
+                      >
+                        Unlock detailed insights
+                      </Text>
+                    </View>
                     <Text
                       style={{
                         ...GL_TYPOGRAPHY.bodySmall,
@@ -520,19 +562,17 @@ function CalmHomeScreenComponent({
                         marginBottom: SPACING.lg,
                       }}
                     >
-                      Unlock detailed charts, 7-day trends, and full analysis
+                      Get detailed charts, 7-day trends, and full 6-dimension analysis with Plus.
                     </Text>
-                    <Pressable hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}>
-                      <Text
-                        style={{
-                          ...GL_TYPOGRAPHY.buttonMd,
-                          color: colors.primary,
-                        }}
-                      >
-                        Learn More
-                      </Text>
-                    </Pressable>
-                  </View>
+                    <Text
+                      style={{
+                        ...GL_TYPOGRAPHY.buttonMd,
+                        color: colors.primary,
+                      }}
+                    >
+                      Learn More
+                    </Text>
+                  </Pressable>
                 </View>
               )}
 

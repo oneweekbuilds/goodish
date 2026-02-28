@@ -24,7 +24,7 @@
  * - All text maintains epistemic restraint
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 
 const NAVIGATION_DELAY_MS = 300;
 import {
@@ -32,14 +32,19 @@ import {
   TouchableOpacity,
   Dimensions,
   Platform,
+  Pressable,
 } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
   withSpring,
+  withDelay,
+  withSequence,
   interpolate,
   Extrapolate,
+  Easing,
+  runOnJS,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../src/context/AuthContext';
@@ -95,6 +100,10 @@ export default function OnboardingScreen() {
   const fadeAnim = useSharedValue(1);
   const slideAnim = useSharedValue(0);
 
+  // Screen-level exit animation for smooth transition to home
+  const screenOpacity = useSharedValue(1);
+  const screenScale = useSharedValue(1);
+
   // Platform selection scale animations (one per platform)
   const platformScales = useSharedValue<Record<string, number>>({
     instagram: 1,
@@ -141,6 +150,24 @@ export default function OnboardingScreen() {
     }
   }, [currentPage, handleGoToPage]);
 
+  const performNavigation = useCallback(() => {
+    completeOnboarding(true);
+
+    if (selectedPlatform) {
+      const isExpoGo = Constants.appOwnership === 'expo';
+      const useScanner = isExpoGo || Platform.OS === 'android';
+      router.replace('/(tabs)');
+      setTimeout(() => {
+        router.push({
+          pathname: useScanner ? '/scanner/[platform]' : '/broadcast/[platform]',
+          params: { platform: selectedPlatform },
+        });
+      }, NAVIGATION_DELAY_MS);
+    } else {
+      router.replace('/(tabs)');
+    }
+  }, [completeOnboarding, selectedPlatform]);
+
   const handleGetStarted = useCallback(async () => {
     triggerImpactMedium();
     try {
@@ -159,23 +186,14 @@ export default function OnboardingScreen() {
     } catch {
       // Non-blocking — continue to the app
     }
-    completeOnboarding(true);
 
-    // Navigate to main app, optionally starting a scan
-    if (selectedPlatform) {
-      const isExpoGo = Constants.appOwnership === 'expo';
-      const useScanner = isExpoGo || Platform.OS === 'android';
-      router.replace('/(tabs)');
-      setTimeout(() => {
-        router.push({
-          pathname: useScanner ? '/scanner/[platform]' : '/broadcast/[platform]',
-          params: { platform: selectedPlatform },
-        });
-      }, NAVIGATION_DELAY_MS);
-    } else {
-      router.replace('/(tabs)');
-    }
-  }, [user, completeOnboarding, selectedPlatform]);
+    // Smooth exit: fade out + subtle scale down before navigating
+    screenOpacity.value = withTiming(0, { duration: 250, easing: Easing.out(Easing.quad) });
+    screenScale.value = withTiming(0.97, { duration: 250, easing: Easing.out(Easing.quad) });
+    setTimeout(() => {
+      runOnJS(performNavigation)();
+    }, 260);
+  }, [user, performNavigation, screenOpacity, screenScale]);
 
   const handlePlatformTap = useCallback((slug: SupportedPlatform) => {
     triggerImpactLight();
@@ -191,14 +209,37 @@ export default function OnboardingScreen() {
 
   const isLastPage = currentPage === TOTAL_PAGES - 1;
 
-  // Animated styles for main content
+  // Animated styles for main content (per-page transition)
   const contentAnimatedStyle = useAnimatedStyle(() => ({
     opacity: fadeAnim.value,
     transform: [{ translateY: slideAnim.value }],
   }));
 
+  // Screen-level exit animation style
+  const screenAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: screenOpacity.value,
+    transform: [{ scale: screenScale.value }],
+  }));
+
+  // Entrance animation for Screen 1 illustration
+  const illustrationScale = useSharedValue(0.85);
+  const illustrationOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    if (currentPage === 0) {
+      illustrationScale.value = withSpring(1, { damping: 12, stiffness: 80 });
+      illustrationOpacity.value = withTiming(1, { duration: 400 });
+    }
+  }, [currentPage]);
+
+  const illustrationStyle = useAnimatedStyle(() => ({
+    opacity: illustrationOpacity.value,
+    transform: [{ scale: illustrationScale.value }],
+  }));
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
+    <Animated.View style={[{ flex: 1 }, screenAnimatedStyle]}>
       {/* ── Header: Back button ── */}
       <View
         style={{
@@ -232,14 +273,14 @@ export default function OnboardingScreen() {
               alignItems: 'center',
             }}
           >
-            {/* Polished phone frame with overlapping analysis icons */}
-            <View
-              style={{
+            {/* Polished phone frame with overlapping analysis icons — animated entrance */}
+            <Animated.View
+              style={[{
                 width: 140,
                 height: 140,
                 marginBottom: SPACING['4xl'],
                 position: 'relative',
-              }}
+              }, illustrationStyle]}
               accessible
               accessibilityLabel="Phone frame with analysis icons illustration"
             >
@@ -321,7 +362,7 @@ export default function OnboardingScreen() {
               >
                 <Shield size={20} color={colors.textInverse} strokeWidth={2} />
               </View>
-            </View>
+            </Animated.View>
 
             <View style={{ maxWidth: MAX_CONTENT_WIDTH }}>
               <Text
@@ -582,11 +623,11 @@ export default function OnboardingScreen() {
         {/* CTA button */}
         {isLastPage ? (
           <Button
-            title="Let's go"
+            title={selectedPlatform ? "Let's go" : "Get Started"}
             onPress={handleGetStarted}
             variant="primary"
             size="lg"
-            accessibilityLabel={selectedPlatform ? `Let's go — scan ${selectedPlatform}` : "Let's go"}
+            accessibilityLabel={selectedPlatform ? `Let's go — scan ${selectedPlatform}` : "Get started — explore the app"}
           />
         ) : (
           <Button
@@ -598,18 +639,34 @@ export default function OnboardingScreen() {
           />
         )}
 
-        {/* Skip option (screens 1–2 only) */}
-        {!isLastPage && (
+        {/* Skip option — subtle but accessible on all screens */}
+        {!isLastPage ? (
           <Button
             title="Skip"
             onPress={() => handleGoToPage(TOTAL_PAGES - 1)}
             variant="ghost"
             size="md"
-            accessibilityLabel="Skip onboarding"
+            accessibilityLabel="Skip to platform selection"
             style={{ marginTop: SPACING.md }}
           />
-        )}
+        ) : !selectedPlatform ? (
+          <Pressable
+            onPress={handleGetStarted}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityLabel="Skip platform selection and go to home screen"
+            style={{ marginTop: SPACING.md, alignSelf: 'center', paddingVertical: SPACING.sm }}
+          >
+            <Text
+              variant="bodySmall"
+              color={colors.textSecondary}
+              align="center"
+            >
+              Skip for now
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
+    </Animated.View>
     </SafeAreaView>
   );
 }

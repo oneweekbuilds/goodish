@@ -26,6 +26,7 @@ import {
   Facebook,
   MessageCircle,
   X,
+  Info,
 } from 'lucide-react-native';
 import {
   BottomSheet,
@@ -33,7 +34,9 @@ import {
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 import Animated, {
+  useSharedValue,
   useAnimatedStyle,
+  withSpring,
 } from 'react-native-reanimated';
 import { useTheme } from '../../context/ThemeContext';
 import { SPACING, RADIUS, PLATFORMS, MIN_TOUCH_TARGET } from '../../lib/theme';
@@ -212,7 +215,7 @@ function PlatformBottomSheetComponent({
           </TouchableOpacity>
         </View>
 
-        {/* Platform grid — 3 columns */}
+        {/* Platform grid — 3 columns, 64x64 icons with spring press animation */}
         <View
           style={{
             flexDirection: 'row',
@@ -222,70 +225,20 @@ function PlatformBottomSheetComponent({
             marginBottom: SPACING['2xl'],
           }}
         >
-          {PLATFORM_LIST.map((platform) => {
-            const IconComponent = PLATFORM_ICONS[platform.slug];
-            const isSelected = selectedPlatform === platform.slug;
-
-            return (
-              <TouchableOpacity
-                key={platform.slug}
-                onPress={() => handlePlatformTap(platform.slug)}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                accessibilityLabel={`${platform.name}${isSelected ? ', selected' : ''}`}
-                accessibilityState={{ selected: isSelected }}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                style={{
-                  alignItems: 'center',
-                  width: 88,
-                  minHeight: 100,
-                  transform: [{ scale: 1 }],
-                }}
-              >
-                <View
-                  style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: RADIUS['2xl'],
-                    backgroundColor: isSelected
-                      ? withAlpha(platform.color, 0.15)
-                      : withAlpha(platform.color, 0.06),
-                    borderWidth: isSelected ? 2 : 1,
-                    borderColor: isSelected
-                      ? platform.color
-                      : colors.borderSoft,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    ...(isSelected ? shadows.soft : {}),
-                  }}
-                >
-                  {IconComponent && (
-                    <IconComponent
-                      size={24}
-                      color={isSelected ? platform.color : colors.textMuted}
-                      strokeWidth={1.8}
-                    />
-                  )}
-                </View>
-                <Text
-                  style={{
-                    ...GL_TYPOGRAPHY.captionSmall,
-                    fontWeight: isSelected ? '600' : '500',
-                    color: isSelected ? colors.textMain : colors.textMuted,
-                    marginTop: SPACING.sm,
-                    textAlign: 'center',
-                  }}
-                  numberOfLines={1}
-                >
-                  {platform.name}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+          {PLATFORM_LIST.map((platform) => (
+            <BottomSheetPlatformCard
+              key={platform.slug}
+              platform={platform}
+              isSelected={selectedPlatform === platform.slug}
+              onPress={() => handlePlatformTap(platform.slug)}
+              colors={colors}
+              shadows={shadows}
+            />
+          ))}
         </View>
 
-        {/* Screen Capture mode toggle — hidden until feature is ready */}
-        {false && selectedPlatform && (
+        {/* Mode toggle — visible when a platform is selected */}
+        {selectedPlatform && (
           <View style={{ marginBottom: SPACING.lg }}>
             <ModeToggle
               selectedMode={scanMode}
@@ -345,6 +298,99 @@ function PlatformBottomSheetComponent({
         )}
       </BottomSheetScrollView>
     </BottomSheet>
+  );
+}
+
+/**
+ * BottomSheetPlatformCard — 64x64 platform card with spring press animation.
+ * Matches Phase 5 PlatformPicker spec: 10% opacity backgrounds, spring scale.
+ */
+interface BottomSheetPlatformCardProps {
+  platform: (typeof PLATFORM_LIST)[0];
+  isSelected: boolean;
+  onPress: () => void;
+  colors: any;
+  shadows: any;
+}
+
+function BottomSheetPlatformCard({
+  platform,
+  isSelected,
+  onPress,
+  colors,
+  shadows,
+}: BottomSheetPlatformCardProps) {
+  const pressScale = useSharedValue(1);
+  const IconComponent = PLATFORM_ICONS[platform.slug];
+
+  const handlePressIn = () => {
+    pressScale.value = withSpring(0.93, { damping: 12, stiffness: 200 });
+  };
+
+  const handlePressOut = () => {
+    pressScale.value = withSpring(1, { damping: 12, stiffness: 200 });
+  };
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pressScale.value }],
+  }));
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={`${platform.name}${isSelected ? ', selected' : ''}`}
+      accessibilityState={{ selected: isSelected }}
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      style={{
+        alignItems: 'center',
+        width: 96,
+        minHeight: MIN_TOUCH_TARGET,
+      }}
+    >
+      <Animated.View style={animatedStyle}>
+        <View
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: RADIUS.lg,
+            backgroundColor: isSelected
+              ? withAlpha(platform.color, 0.1)
+              : withAlpha(colors.textMuted, 0.04),
+            borderWidth: isSelected ? 2 : 1,
+            borderColor: isSelected
+              ? platform.color
+              : colors.borderSoft,
+            justifyContent: 'center',
+            alignItems: 'center',
+            ...(isSelected ? shadows.card : {}),
+          }}
+        >
+          {IconComponent && (
+            <IconComponent
+              size={28}
+              color={isSelected ? platform.color : colors.textMuted}
+              strokeWidth={1.8}
+            />
+          )}
+        </View>
+      </Animated.View>
+      <Text
+        style={{
+          ...GL_TYPOGRAPHY.captionSmall,
+          fontWeight: isSelected ? '600' : '500',
+          color: isSelected ? colors.textMain : colors.textMuted,
+          marginTop: SPACING.sm,
+          textAlign: 'center',
+        }}
+        numberOfLines={1}
+      >
+        {platform.name}
+      </Text>
+    </TouchableOpacity>
   );
 }
 
