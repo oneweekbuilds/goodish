@@ -1,23 +1,27 @@
 /**
  * Onboarding — 3-screen flow designed to take 15 seconds max.
  *
- * Screen 1: "See what's really in your feed" — value prop with abstract graphic
- * Screen 2: "How it works" — 3 steps with icons
- * Screen 3: "Start your first scan" — platform selection with "Let's go" button
+ * Screen 1: "See what's really in your feed" — value prop with polished illustration
+ * Screen 2: "How it works" — 3 steps with animated vertical connector
+ * Screen 3: "Start your first scan" — platform selection with spring animations
  *
  * Design principles:
  * - No walls of text — every screen scannable in 2 seconds
  * - CTA is always the most visually prominent element
  * - Epistemically restrained: describes, never accuses
+ * - Smooth 200ms transitions with subtle 4px translateY slide (reanimated)
+ * - Platform picker with 64x64 icons, 10% opacity backgrounds, spring scale (0.95/1.02)
+ * - Progress dots with smooth width animation
+ * - AI consent notice: small, trustworthy, not a wall
  *
- * REFACTORED:
- * - State-based rendering (O-1, O-2) — replaces horizontal ScrollView with conditional rendering
- * - Fade transitions between screens
- * - Back button on screens 1-2 (O-5)
- * - Platform labels fixed: increased width to 100, using "X" instead of "Twitter / X" (O-3)
- * - Centered content blocks with maxWidth constraints (O-7)
- * - Fixed vertical whitespace with flex layout (O-8)
- * - Increased opacity of concentric circles (O-9)
+ * IMPROVEMENTS (Phase 6 Part A):
+ * - Replaced Animated.timing with react-native-reanimated for smoother transitions
+ * - Screen 1: New "phone frame" visual with layered analysis icons (Eye, BarChart3, Shield)
+ * - Screen 2: Added vertical connector line between steps, larger icon containers (48px)
+ * - Screen 3: Upgraded platform picker (64x64 icons, 10% opacity, spring scale animation)
+ * - Added AI consent notice with Shield icon
+ * - Progress dots with smooth width animation using reanimated
+ * - All text maintains epistemic restraint
  */
 
 import React, { useState, useCallback } from 'react';
@@ -27,9 +31,16 @@ import {
   View,
   TouchableOpacity,
   Dimensions,
-  Animated,
   Platform,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+  interpolate,
+  Extrapolate,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../src/context/AuthContext';
 import { supabase } from '../../src/lib/supabase';
@@ -46,6 +57,7 @@ import {
   Facebook,
   MessageCircle,
   ChevronLeft,
+  Shield,
 } from 'lucide-react-native';
 import { triggerImpactMedium, triggerImpactLight } from '../../src/lib/haptics';
 import { GL_TYPOGRAPHY, SPACING, RADIUS } from '../../src/lib/gluestackTheme';
@@ -70,8 +82,6 @@ const PLATFORM_LIST: {
   { slug: 'instagram', name: 'Instagram', color: PLATFORMS.instagram.color, Icon: Instagram },
   { slug: 'twitter', name: 'X', color: PLATFORMS.twitter.color, Icon: XPlatformIcon },
   { slug: 'youtube', name: 'YouTube', color: PLATFORMS.youtube.color, Icon: Youtube },
-  // O-4 FIX: TikTok uses Music2 icon — slightly more recognizable than Music.
-  // Lucide doesn't have a TikTok icon. Consider custom SVG if branding becomes critical.
   { slug: 'tiktok', name: 'TikTok', color: PLATFORMS.tiktok.color, Icon: Music2 },
   { slug: 'facebook', name: 'Facebook', color: PLATFORMS.facebook.color, Icon: Facebook },
   { slug: 'reddit', name: 'Reddit', color: PLATFORMS.reddit.color, Icon: MessageCircle },
@@ -80,27 +90,44 @@ const PLATFORM_LIST: {
 export default function OnboardingScreen() {
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedPlatform, setSelectedPlatform] = useState<SupportedPlatform | null>(null);
-  const fadeAnim = React.useRef(new Animated.Value(1)).current;
+
+  // Reanimated shared values for cross-fade + slide transitions
+  const fadeAnim = useSharedValue(1);
+  const slideAnim = useSharedValue(0);
+
+  // Platform selection scale animations (one per platform)
+  const platformScales = useSharedValue<Record<string, number>>({
+    instagram: 1,
+    twitter: 1,
+    youtube: 1,
+    tiktok: 1,
+    facebook: 1,
+    reddit: 1,
+  });
+
+  // Progress dot widths animation
+  const dotWidths = useSharedValue<number[]>([24, 8, 8]);
+
   const { user, completeOnboarding } = useAuth();
   const { colors, shadows } = useTheme();
 
   const animatePageTransition = useCallback((nextPage: number) => {
-    // Fade out
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 150,
-      useNativeDriver: true,
-    }).start(() => {
-      // Update page
+    // Fade out + slide up
+    fadeAnim.value = withTiming(0, { duration: 200 });
+    slideAnim.value = withTiming(4, { duration: 200 });
+
+    setTimeout(() => {
       setCurrentPage(nextPage);
-      // Fade in
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 150,
-        useNativeDriver: true,
-      }).start();
-    });
-  }, [fadeAnim]);
+      // Fade in + slide down
+      fadeAnim.value = withTiming(1, { duration: 200 });
+      slideAnim.value = withTiming(0, { duration: 200 });
+
+      // Update dot widths
+      const newWidths = Array(TOTAL_PAGES).fill(8);
+      newWidths[nextPage] = 24;
+      dotWidths.value = newWidths;
+    }, 200);
+  }, [fadeAnim, slideAnim, dotWidths]);
 
   const handleGoToPage = useCallback((page: number) => {
     if (page !== currentPage && page >= 0 && page < TOTAL_PAGES) {
@@ -136,11 +163,9 @@ export default function OnboardingScreen() {
 
     // Navigate to main app, optionally starting a scan
     if (selectedPlatform) {
-      // In Expo Go or on Android, use precision mode (scanner) instead of broadcast
       const isExpoGo = Constants.appOwnership === 'expo';
       const useScanner = isExpoGo || Platform.OS === 'android';
       router.replace('/(tabs)');
-      // Small delay to let the tab mount before pushing scan
       setTimeout(() => {
         router.push({
           pathname: useScanner ? '/scanner/[platform]' : '/broadcast/[platform]',
@@ -155,9 +180,22 @@ export default function OnboardingScreen() {
   const handlePlatformTap = useCallback((slug: SupportedPlatform) => {
     triggerImpactLight();
     setSelectedPlatform((prev) => (prev === slug ? null : slug));
-  }, []);
+
+    // Animate platform scale: scale down then up for selection feedback
+    const newScale = selectedPlatform === slug ? 1 : 1.02;
+    platformScales.value = {
+      ...platformScales.value,
+      [slug]: withSpring(newScale, { damping: 6, mass: 1 }),
+    };
+  }, [selectedPlatform, platformScales]);
 
   const isLastPage = currentPage === TOTAL_PAGES - 1;
+
+  // Animated styles for main content
+  const contentAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: fadeAnim.value,
+    transform: [{ translateY: slideAnim.value }],
+  }));
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
@@ -183,12 +221,7 @@ export default function OnboardingScreen() {
       </View>
 
       {/* ── Main content (animated) ── */}
-      <Animated.View
-        style={{
-          flex: 1,
-          opacity: fadeAnim,
-        }}
-      >
+      <Animated.View style={[{ flex: 1 }, contentAnimatedStyle]}>
         {/* ── Screen 1: Value Prop ── */}
         {currentPage === 0 && (
           <View
@@ -199,53 +232,94 @@ export default function OnboardingScreen() {
               alignItems: 'center',
             }}
           >
-            {/* Abstract graphic — layered circles representing feed composition */}
+            {/* Polished phone frame with overlapping analysis icons */}
             <View
               style={{
-                width: 120,
-                height: 120,
+                width: 140,
+                height: 140,
                 marginBottom: SPACING['4xl'],
+                position: 'relative',
               }}
               accessible
-              accessibilityLabel="Abstract illustration of feed composition"
+              accessibilityLabel="Phone frame with analysis icons illustration"
             >
-              {/* Outer circle */}
+              {/* Outer blue circle (background) */}
               <View
                 style={{
                   position: 'absolute',
-                  width: 120,
-                  height: 120,
+                  width: 140,
+                  height: 140,
                   borderRadius: RADIUS.full,
-                  backgroundColor: withAlpha(colors.blue50, 0.7),
+                  backgroundColor: withAlpha(colors.blue50, 0.6),
+                  top: 0,
+                  left: 0,
                 }}
               />
-              {/* Middle circle */}
+
+              {/* Middle blue circle */}
               <View
                 style={{
                   position: 'absolute',
-                  top: 20,
-                  left: 20,
+                  width: 110,
+                  height: 110,
+                  borderRadius: RADIUS.full,
+                  backgroundColor: withAlpha(colors.blue100, 0.8),
+                  top: 15,
+                  left: 15,
+                }}
+              />
+
+              {/* Inner primary blue circle (phone frame base) */}
+              <View
+                style={{
+                  position: 'absolute',
                   width: 80,
                   height: 80,
                   borderRadius: RADIUS.full,
-                  backgroundColor: withAlpha(colors.blue100, 0.8),
+                  backgroundColor: colors.primary,
+                  top: 30,
+                  left: 30,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  overflow: 'hidden',
                 }}
-              />
-              {/* Inner circle with icon */}
+              >
+                {/* Eye icon center */}
+                <Eye size={32} color={colors.textInverse} strokeWidth={1.5} />
+              </View>
+
+              {/* Overlapping BarChart3 icon (bottom-right) */}
               <View
                 style={{
                   position: 'absolute',
-                  top: 36,
-                  left: 36,
-                  width: ICON_SIZES['3xl'],
-                  height: ICON_SIZES['3xl'],
-                  borderRadius: ICON_SIZES['3xl'] / 2,
-                  backgroundColor: colors.primary,
+                  width: 44,
+                  height: 44,
+                  borderRadius: RADIUS.lg,
+                  backgroundColor: withAlpha(colors.primary, 0.9),
+                  bottom: 12,
+                  right: 8,
                   justifyContent: 'center',
                   alignItems: 'center',
                 }}
               >
-                <Eye size={24} color={colors.textInverse} strokeWidth={1.8} />
+                <BarChart3 size={20} color={colors.textInverse} strokeWidth={2} />
+              </View>
+
+              {/* Overlapping Shield icon (top-right) */}
+              <View
+                style={{
+                  position: 'absolute',
+                  width: 44,
+                  height: 44,
+                  borderRadius: RADIUS.lg,
+                  backgroundColor: withAlpha(colors.secondary, 0.85),
+                  top: 8,
+                  right: 8,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <Shield size={20} color={colors.textInverse} strokeWidth={2} />
               </View>
             </View>
 
@@ -296,7 +370,20 @@ export default function OnboardingScreen() {
                 How it works
               </Text>
 
-              <View style={{ gap: SPACING['2xl'] }}>
+              <View style={{ gap: 0, position: 'relative' }}>
+                {/* Vertical connector line (2px width, positioned absolutely) */}
+                <View
+                  style={{
+                    position: 'absolute',
+                    left: 23, // Align with center of icon container
+                    top: 60,
+                    bottom: 60,
+                    width: 2,
+                    backgroundColor: colors.borderLight,
+                    zIndex: 0,
+                  }}
+                />
+
                 {[
                   {
                     Icon: Smartphone,
@@ -316,34 +403,41 @@ export default function OnboardingScreen() {
                     label: 'Discover',
                     detail: 'See what appeared in your feed',
                   },
-                ].map((item) => (
+                ].map((item, idx) => (
                   <View
                     key={item.step}
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
                       gap: SPACING.lg,
+                      marginBottom: idx < 2 ? SPACING['2xl'] : 0,
+                      position: 'relative',
+                      zIndex: 1,
                     }}
                     accessible
                     accessibilityLabel={`Step ${item.step}: ${item.label} — ${item.detail}`}
                   >
+                    {/* Step number in primary blue circle */}
                     <View
                       style={{
-                        width: ICON_SIZES['3xl'],
-                        height: ICON_SIZES['3xl'],
+                        width: 48,
+                        height: 48,
                         borderRadius: RADIUS['2xl'],
-                        backgroundColor: colors.blue50,
+                        backgroundColor: colors.primary,
                         justifyContent: 'center',
                         alignItems: 'center',
                         flexShrink: 0,
                       }}
                     >
-                      <item.Icon
-                        size={22}
-                        color={colors.primary}
-                        strokeWidth={1.8}
-                      />
+                      <Text
+                        variant="h3"
+                        color={colors.textInverse}
+                        align="center"
+                      >
+                        {item.step}
+                      </Text>
                     </View>
+
                     <View style={{ flex: 1 }}>
                       <Text
                         variant="h3"
@@ -378,7 +472,7 @@ export default function OnboardingScreen() {
               alignItems: 'center',
             }}
           >
-            <View style={{ maxWidth: MAX_CONTENT_WIDTH, width: '100%' }}>
+            <View style={{ maxWidth: MAX_CONTENT_WIDTH, width: '100%', flex: 1, justifyContent: 'center' }}>
               <Text
                 variant="display"
                 color={colors.textMain}
@@ -402,69 +496,55 @@ export default function OnboardingScreen() {
                 Pick a platform to begin
               </Text>
 
-              {/* Platform grid */}
+              {/* Platform grid with upgraded styling */}
               <View
                 style={{
                   flexDirection: 'row',
                   flexWrap: 'wrap',
                   justifyContent: 'center',
                   gap: SPACING.lg,
+                  marginBottom: SPACING['3xl'],
                 }}
               >
                 {PLATFORM_LIST.map((platform) => {
                   const isSelected = selectedPlatform === platform.slug;
 
                   return (
-                    <TouchableOpacity
+                    <PlatformCard
                       key={platform.slug}
+                      platform={platform}
+                      isSelected={isSelected}
                       onPress={() => handlePlatformTap(platform.slug)}
-                      activeOpacity={0.7}
-                      accessibilityRole="button"
-                      accessibilityLabel={`${platform.name}${isSelected ? ', selected' : ''}`}
-                      accessibilityState={{ selected: isSelected }}
-                      style={{
-                        alignItems: 'center',
-                        width: 100,
-                        minHeight: MIN_TOUCH_TARGET,
-                      }}
-                    >
-                      <View
-                        style={{
-                          width: 56,
-                          height: 56,
-                          borderRadius: RADIUS['2xl'],
-                          backgroundColor: isSelected
-                            ? withAlpha(platform.color, 0.09)
-                            : colors.bgCard,
-                          borderWidth: isSelected ? 2 : 1,
-                          borderColor: isSelected
-                            ? platform.color
-                            : colors.borderSoft,
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          ...(isSelected ? shadows.soft : {}),
-                        }}
-                      >
-                        <platform.Icon
-                          size={24}
-                          color={isSelected ? platform.color : colors.textMuted}
-                          strokeWidth={1.8}
-                        />
-                      </View>
-                      <Text
-                        variant="captionSmall"
-                        color={isSelected ? colors.textMain : colors.textMuted}
-                        align="center"
-                        style={{
-                          fontWeight: isSelected ? '600' : '500',
-                          marginTop: SPACING.sm,
-                        }}
-                      >
-                        {platform.name}
-                      </Text>
-                    </TouchableOpacity>
+                      colors={colors}
+                      shadows={shadows}
+                    />
                   );
                 })}
+              </View>
+
+              {/* AI Consent Notice */}
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: SPACING.sm,
+                  paddingHorizontal: SPACING.md,
+                  paddingVertical: SPACING.md,
+                  backgroundColor: withAlpha(colors.blue50, 0.4),
+                  borderRadius: RADIUS.md,
+                }}
+                accessible
+                accessibilityLabel="AlgorithmLens analyzes your feed locally using AI. Your data stays on your device."
+              >
+                <Shield size={16} color={colors.primary} strokeWidth={2} />
+                <Text
+                  variant="bodySmall"
+                  color={colors.textMuted}
+                  align="left"
+                  style={{ flex: 1 }}
+                >
+                  AlgorithmLens analyzes your feed locally using AI. Your data stays on your device.
+                </Text>
               </View>
             </View>
           </View>
@@ -479,7 +559,7 @@ export default function OnboardingScreen() {
           paddingBottom: SPACING['2xl'],
         }}
       >
-        {/* Dot indicators */}
+        {/* Dot indicators with smooth width animation */}
         <View
           style={{
             flexDirection: 'row',
@@ -491,15 +571,10 @@ export default function OnboardingScreen() {
           accessibilityLabel={`Page ${currentPage + 1} of ${TOTAL_PAGES}`}
         >
           {Array.from({ length: TOTAL_PAGES }).map((_, idx) => (
-            <View
+            <AnimatedDot
               key={idx}
-              style={{
-                width: currentPage === idx ? 24 : 8,
-                height: 8,
-                backgroundColor:
-                  currentPage === idx ? colors.primary : colors.borderSlate300,
-                borderRadius: RADIUS.full,
-              }}
+              isActive={currentPage === idx}
+              colors={colors}
             />
           ))}
         </View>
@@ -536,5 +611,132 @@ export default function OnboardingScreen() {
         )}
       </View>
     </SafeAreaView>
+  );
+}
+
+/**
+ * PlatformCard — Upgraded platform picker with spring scale animation
+ *
+ * Features:
+ * - 64x64 icon container with 10% opacity background
+ * - Spring scale on selection (1.02)
+ * - Press scale feedback (0.95)
+ */
+interface PlatformCardProps {
+  platform: (typeof PLATFORM_LIST)[0];
+  isSelected: boolean;
+  onPress: () => void;
+  colors: any;
+  shadows: any;
+}
+
+function PlatformCard({
+  platform,
+  isSelected,
+  onPress,
+  colors,
+  shadows,
+}: PlatformCardProps) {
+  const scaleAnim = useSharedValue(1);
+  const pressAnim = useSharedValue(0);
+
+  const handlePressIn = () => {
+    pressAnim.value = withSpring(0.95, { damping: 8, mass: 1 });
+  };
+
+  const handlePressOut = () => {
+    pressAnim.value = withSpring(1, { damping: 8, mass: 1 });
+  };
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pressAnim.value }],
+  }));
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={`${platform.name}${isSelected ? ', selected' : ''}`}
+      accessibilityState={{ selected: isSelected }}
+      style={{
+        alignItems: 'center',
+        width: 100,
+        minHeight: MIN_TOUCH_TARGET,
+      }}
+    >
+      <Animated.View style={animatedStyle}>
+        <View
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: RADIUS.lg,
+            backgroundColor: isSelected
+              ? withAlpha(platform.color, 0.1)
+              : withAlpha(colors.textMuted, 0.04),
+            borderWidth: isSelected ? 2 : 1,
+            borderColor: isSelected
+              ? platform.color
+              : colors.borderSoft,
+            justifyContent: 'center',
+            alignItems: 'center',
+            ...(isSelected ? shadows.soft : {}),
+          }}
+        >
+          <platform.Icon
+            size={28}
+            color={isSelected ? platform.color : colors.textMuted}
+            strokeWidth={1.8}
+          />
+        </View>
+      </Animated.View>
+
+      <Text
+        variant="captionSmall"
+        color={isSelected ? colors.textMain : colors.textMuted}
+        align="center"
+        style={{
+          fontWeight: isSelected ? '600' : '500',
+          marginTop: SPACING.sm,
+        }}
+      >
+        {platform.name}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
+/**
+ * AnimatedDot — Progress indicator with smooth width animation
+ */
+interface AnimatedDotProps {
+  isActive: boolean;
+  colors: any;
+}
+
+function AnimatedDot({ isActive, colors }: AnimatedDotProps) {
+  const widthAnim = useSharedValue(isActive ? 24 : 8);
+
+  React.useEffect(() => {
+    widthAnim.value = withTiming(isActive ? 24 : 8, { duration: 300 });
+  }, [isActive, widthAnim]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    width: widthAnim.value,
+  }));
+
+  return (
+    <Animated.View
+      style={[
+        {
+          height: 8,
+          backgroundColor: isActive ? colors.primary : colors.borderSlate300,
+          borderRadius: RADIUS.full,
+        },
+        animatedStyle,
+      ]}
+    />
   );
 }

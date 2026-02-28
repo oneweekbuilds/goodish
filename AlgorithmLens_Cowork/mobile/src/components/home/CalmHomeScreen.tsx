@@ -7,15 +7,16 @@
  *
  * Layout (top to bottom):
  * 1. Greeting with contextual subheading
- * 2. Streak badge (progressive flame, freeze indicator, at-risk)
- * 3. Feed Score card (or inviting prompt for new users)
- * 4. Feed Score Trend sparkline (7-day)
- * 5. Primary CTA: "Scan Your Feed" — big, beautiful, unmissable
- * 6. Weekly Summary card (when available)
- * 7. Achievement badges (earned collection)
- * 8. Smart scan suggestion (contextual)
- * 9. Recent scan preview (if they have history)
- * 10. Daily tip card (rotating insight)
+ * 2. Primary CTA: "Scan Your Feed" — big, beautiful, unmissable (MOVED UP for prominence)
+ * 3. Streak badge (progressive flame, freeze indicator, at-risk)
+ * 4. Feed Score card (or inviting empty state for new users)
+ * 5. Feed Score Trend sparkline (7-day) with section header
+ * 6. "This Week" header + Weekly Summary card (when available)
+ * 7. "Your Progress" header + Achievement badges (earned collection)
+ * 8. Upgrade to Plus card (for free users with some scans)
+ * 9. Smart scan suggestion (contextual)
+ * 10. Recent scan preview (if they have history)
+ * 11. Daily tip card (rotating insight)
  *
  * On CTA tap → PlatformBottomSheet slides up for platform selection.
  *
@@ -24,6 +25,7 @@
  * - One clear action per screen
  * - Calm, sophisticated, never busy
  * - Generous white space
+ * - Epistemic restraint: describe observable patterns, never accuse
  */
 
 import { triggerImpactMedium } from '../../lib/haptics';
@@ -38,7 +40,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Scan } from 'lucide-react-native';
+import { Scan, Eye, BarChart3 } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useStreak } from '../../hooks/useStreak';
@@ -120,7 +122,7 @@ function CalmHomeScreenComponent({
   onRefreshDashboard,
 }: CalmHomeScreenProps) {
   const { colors, shadows } = useTheme();
-  const { user } = useAuth();
+  const { user, isPlus } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [sheetVisible, setSheetVisible] = useState(false);
 
@@ -218,6 +220,13 @@ function CalmHomeScreenComponent({
     [onScanStart]
   );
 
+  // Determine if user is new (no scans at all)
+  const isNewUser = feedScore === null && !recentScan;
+
+  // Determine if user qualifies for "Upgrade to Plus" card
+  // Show for free users with at least 1 scan who are not Plus
+  const shouldShowUpgradeCard = !isPlus && (streakData.total_scans > 0 || dbScanCount > 0);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
       {/* Milestone celebration modal */}
@@ -269,35 +278,7 @@ function CalmHomeScreenComponent({
 
         {/* ── Staggered card entrance animations ── */}
         <StaggeredList staggerDelay={50} duration={300}>
-          {/* ── Streak Badge (delay=0) ── */}
-          {!streakLoading && (
-            <View style={{ marginBottom: SPACING['2xl'] }}>
-              <StreakBadge
-                streakData={streakData}
-                displayState={displayState}
-                freezeAvailable={freezeAvailable}
-                atRisk={streakAtRisk}
-              />
-            </View>
-          )}
-
-          {/* ── Feed Score Card (delay=50) ── */}
-          <View style={{ marginBottom: SPACING['2xl'] }}>
-            <FeedScoreCard feedScore={feedScore} />
-          </View>
-
-          {/* ── Feed Score Trend (delay=100) ── */}
-          {scoreTrendPoints.length >= 2 && (
-            <View style={{ marginBottom: SPACING['3xl'] }}>
-              <FeedScoreTrend
-                points={scoreTrendPoints}
-                direction={scoreTrendDirection}
-                changePercent={scoreTrendChangePercent}
-              />
-            </View>
-          )}
-
-          {/* ── Primary CTA (delay=150) ── */}
+          {/* ── Primary CTA (delay=0) — NOW AT TOP FOR MAXIMUM PROMINENCE ── */}
           <Animated.View style={{ transform: [{ scale: ctaScale }], marginBottom: SPACING['3xl'] }}>
             <Pressable
               onPress={handleCtaPress}
@@ -324,8 +305,6 @@ function CalmHomeScreenComponent({
                   ...shadows.hero,
                 }}
               >
-                {/* H-2 FIX: Updated CTA text to indicate platform selection step */}
-                {/* H-7 FIX: Increased icon size for better visual balance */}
                 <Scan size={26} color={colors.textInverse} strokeWidth={2} />
                 <Text
                   style={{
@@ -334,50 +313,252 @@ function CalmHomeScreenComponent({
                     fontSize: GL_TYPOGRAPHY.h2.fontSize,
                   }}
                 >
-                  Choose a Platform to Scan
+                  Scan Your Feed
                 </Text>
               </LinearGradient>
             </Pressable>
           </Animated.View>
 
-          {/* ── Weekly Summary (delay=200) ── */}
-          {weeklySummary && weeklySummary.scanCount > 0 && (
+          {/* ── Streak Badge (delay=50) ── */}
+          {!streakLoading && (
             <View style={{ marginBottom: SPACING['2xl'] }}>
-              <WeeklySummaryCard summary={weeklySummary} />
-            </View>
-          )}
-
-          {/* ── Achievement Badges (delay=250) ── */}
-          {streakData.total_scans > 0 && (
-            <View style={{ marginBottom: SPACING['2xl'] }}>
-              <AchievementBadges
-                earnedAchievements={earnedAchievements}
-                newlyEarnedId={newlyEarnedId}
+              <StreakBadge
+                streakData={streakData}
+                displayState={displayState}
+                freezeAvailable={freezeAvailable}
+                atRisk={streakAtRisk}
               />
             </View>
           )}
 
-          {/* ── Smart Suggestion (delay=300) ── */}
-          {suggestion && (
-            <View style={{ marginBottom: SPACING.xl }}>
-              <SmartSuggestion
-                suggestion={suggestion}
-                onAction={handleCtaPress}
-              />
+          {/* ── EMPTY STATE for new users (delay=100) ── */}
+          {isNewUser && (
+            <View style={{ marginBottom: SPACING['3xl'] }}>
+              <View
+                style={{
+                  backgroundColor: colors.bgCard,
+                  borderRadius: RADIUS.lg,
+                  padding: SPACING['2xl'],
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: colors.borderSubtle,
+                }}
+              >
+                {/* Icon pair: Eye + BarChart3 */}
+                <View style={{ flexDirection: 'row', gap: SPACING.md, marginBottom: SPACING.lg, alignItems: 'center' }}>
+                  <Eye size={32} color={colors.primary} strokeWidth={1.5} />
+                  <BarChart3 size={32} color={colors.primary} strokeWidth={1.5} />
+                </View>
+
+                {/* Title */}
+                <Text
+                  style={{
+                    ...GL_TYPOGRAPHY.h3,
+                    color: colors.textMain,
+                    marginBottom: SPACING.md,
+                    textAlign: 'center',
+                  }}
+                  accessibilityRole="header"
+                >
+                  Your feed insights will appear here
+                </Text>
+
+                {/* Subtitle */}
+                <Text
+                  style={{
+                    ...GL_TYPOGRAPHY.bodySmall,
+                    color: colors.textSecondary,
+                    marginBottom: SPACING.xl,
+                    textAlign: 'center',
+                  }}
+                >
+                  Scan your first feed to see what's really in your content
+                </Text>
+
+                {/* Preview mockup with placeholder score ring + metric cards */}
+                <View
+                  style={{
+                    width: '100%',
+                    backgroundColor: colors.bgSecondary,
+                    borderRadius: RADIUS.md,
+                    padding: SPACING.lg,
+                    gap: SPACING.md,
+                  }}
+                >
+                  {/* Placeholder score ring area */}
+                  <View
+                    style={{
+                      alignSelf: 'center',
+                      width: 64,
+                      height: 64,
+                      borderRadius: 32,
+                      backgroundColor: colors.borderSubtle,
+                    }}
+                  />
+
+                  {/* Placeholder metric cards (muted) */}
+                  <View style={{ gap: SPACING.sm }}>
+                    <View
+                      style={{
+                        height: 12,
+                        borderRadius: RADIUS.sm,
+                        backgroundColor: colors.borderLight,
+                      }}
+                    />
+                    <View
+                      style={{
+                        height: 12,
+                        borderRadius: RADIUS.sm,
+                        backgroundColor: colors.borderLight,
+                        width: '80%',
+                      }}
+                    />
+                  </View>
+                </View>
+              </View>
             </View>
           )}
 
-          {/* ── Recent Scan Preview (delay=350) ── */}
-          {recentScan && (
-            <View style={{ marginBottom: SPACING.xl }}>
-              <RecentScanCard
-                scan={recentScan}
-                onPress={onRecentScanPress}
-              />
-            </View>
+          {/* ── Feed Score Card (delay=150 or later if showing empty state) ── */}
+          {!isNewUser && (
+            <>
+              {/* "Your Score" section header */}
+              <Text
+                style={{
+                  ...GL_TYPOGRAPHY.overline,
+                  color: colors.textTertiary,
+                  marginBottom: SPACING.md,
+                  marginTop: SPACING.xl,
+                }}
+                accessibilityRole="header"
+              >
+                YOUR SCORE
+              </Text>
+              <View style={{ marginBottom: SPACING['3xl'] }}>
+                <FeedScoreCard feedScore={feedScore} />
+              </View>
+
+              {/* ── Feed Score Trend (with section header) ── */}
+              {scoreTrendPoints.length >= 2 && (
+                <View style={{ marginBottom: SPACING['3xl'] }}>
+                  <FeedScoreTrend
+                    points={scoreTrendPoints}
+                    direction={scoreTrendDirection}
+                    changePercent={scoreTrendChangePercent}
+                  />
+                </View>
+              )}
+
+              {/* ── Weekly Summary with section header ── */}
+              {weeklySummary && weeklySummary.scanCount > 0 && (
+                <>
+                  <Text
+                    style={{
+                      ...GL_TYPOGRAPHY.overline,
+                      color: colors.textTertiary,
+                      marginBottom: SPACING.md,
+                      marginTop: SPACING.xl,
+                    }}
+                    accessibilityRole="header"
+                  >
+                    THIS WEEK
+                  </Text>
+                  <View style={{ marginBottom: SPACING['3xl'] }}>
+                    <WeeklySummaryCard summary={weeklySummary} />
+                  </View>
+                </>
+              )}
+
+              {/* ── Achievement Badges with section header ── */}
+              {streakData.total_scans > 0 && (
+                <>
+                  <Text
+                    style={{
+                      ...GL_TYPOGRAPHY.overline,
+                      color: colors.textTertiary,
+                      marginBottom: SPACING.md,
+                      marginTop: SPACING.xl,
+                    }}
+                    accessibilityRole="header"
+                  >
+                    YOUR PROGRESS
+                  </Text>
+                  <View style={{ marginBottom: SPACING['3xl'] }}>
+                    <AchievementBadges
+                      earnedAchievements={earnedAchievements}
+                      newlyEarnedId={newlyEarnedId}
+                    />
+                  </View>
+                </>
+              )}
+
+              {/* ── Upgrade to Plus Card (for free users with scans) ── */}
+              {shouldShowUpgradeCard && (
+                <View style={{ marginBottom: SPACING['3xl'] }}>
+                  <View
+                    style={{
+                      borderWidth: 1,
+                      borderColor: colors.borderDefault,
+                      borderRadius: RADIUS.lg,
+                      padding: SPACING['2xl'],
+                      backgroundColor: 'transparent',
+                    }}
+                  >
+                    <Text
+                      style={{
+                        ...GL_TYPOGRAPHY.h3,
+                        color: colors.textMain,
+                        marginBottom: SPACING.md,
+                      }}
+                    >
+                      Unlock detailed insights
+                    </Text>
+                    <Text
+                      style={{
+                        ...GL_TYPOGRAPHY.bodySmall,
+                        color: colors.textSecondary,
+                        marginBottom: SPACING.lg,
+                      }}
+                    >
+                      Unlock detailed charts, 7-day trends, and full analysis
+                    </Text>
+                    <Pressable hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}>
+                      <Text
+                        style={{
+                          ...GL_TYPOGRAPHY.buttonMd,
+                          color: colors.primary,
+                        }}
+                      >
+                        Learn More
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+              )}
+
+              {/* ── Smart Suggestion ── */}
+              {suggestion && (
+                <View style={{ marginBottom: SPACING.xl }}>
+                  <SmartSuggestion
+                    suggestion={suggestion}
+                    onAction={handleCtaPress}
+                  />
+                </View>
+              )}
+
+              {/* ── Recent Scan Preview ── */}
+              {recentScan && (
+                <View style={{ marginBottom: SPACING.xl }}>
+                  <RecentScanCard
+                    scan={recentScan}
+                    onPress={onRecentScanPress}
+                  />
+                </View>
+              )}
+            </>
           )}
 
-          {/* ── Daily Tip (delay=400) ── */}
+          {/* ── Daily Tip (always last) ── */}
           <View style={{ marginBottom: SPACING['3xl'] }}>
             <DailyTipCard />
           </View>
