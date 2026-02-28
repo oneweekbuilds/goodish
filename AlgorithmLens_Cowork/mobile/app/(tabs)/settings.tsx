@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
-  Text,
   ScrollView,
   TouchableOpacity,
   Switch,
@@ -19,9 +18,9 @@ import { useTheme } from '../../src/context/ThemeContext';
 import { supabase } from '../../src/lib/supabase';
 import { router } from 'expo-router';
 import { ChevronDown, ChevronRight, TrendingUp, Check, ExternalLink } from 'lucide-react-native';
-import { TYPOGRAPHY, RADIUS, SPACING, MIN_TOUCH_TARGET } from '../../src/lib/theme';
-import Divider from '../../src/components/ui/Divider';
-import { Card } from '../../src/components/ui/Card';
+import { RADIUS, SPACING, MIN_TOUCH_TARGET } from '../../src/lib/theme';
+import { GL_TYPOGRAPHY } from '../../src/lib/gluestackTheme';
+import { Divider, Text } from '../../src/components/glue';
 import { UpgradeModal } from '../../src/components/plan/UpgradeModal';
 import { REMINDER_FREQUENCY_OPTIONS, type ReminderFrequency } from '../../src/config/thresholds';
 import {
@@ -35,6 +34,7 @@ import {
 
 import { authenticatedFetch } from '../../src/lib/api';
 import { captureError } from '../../src/lib/sentry';
+import { getSubscriptionSource, restorePurchases, IS_MOCK_MODE } from '../../src/services/revenueCat';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '0.0.0';
 
@@ -55,9 +55,9 @@ const SettingSection = ({
     paddingBottom: SPACING.xl,
   }}>
     <Text
+      variant="overline"
+      color={colors.textTertiary}
       style={{
-        ...TYPOGRAPHY.overline,
-        color: colors.textTertiary,
         marginBottom: SPACING.sm,
         paddingHorizontal: SPACING.lg,
       }}
@@ -117,10 +117,10 @@ const SettingRow = ({
       }}
     >
       <Text
+        variant="body"
+        color={colors.textMain}
         style={{
-          ...TYPOGRAPHY.body,
           fontWeight: '500',
-          color: colors.textMain,
         }}
       >
         {label}
@@ -139,9 +139,9 @@ const SettingRow = ({
 
 const InfoText = ({ children, colors }: { children: string; colors: ReturnType<typeof useTheme>['colors'] }) => (
   <Text
+    variant="label"
+    color={colors.textMuted}
     style={{
-      ...TYPOGRAPHY.label,
-      color: colors.textMuted,
       marginHorizontal: SPACING.lg,
       marginTop: SPACING.sm,
     }}
@@ -151,7 +151,7 @@ const InfoText = ({ children, colors }: { children: string; colors: ReturnType<t
 );
 
 export default function SettingsScreen() {
-  const { user, userProfile, signOut, updateAiConsent, isPlus, subscription } = useAuth();
+  const { user, userProfile, signOut, updateAiConsent, isPlus, entitlementSource, subscription, refreshEntitlements } = useAuth();
   const { colors, shadows } = useTheme();
   const [aiConsent, setAiConsent] = useState(
     userProfile?.ai_analysis_consent ?? true
@@ -259,37 +259,75 @@ export default function SettingsScreen() {
     setShowUpgradeModal(true);
   };
 
-  // I9 FIX: Open Stripe billing portal for Plus subscribers
+  // Phase 4: Detect subscription source and route to appropriate management
   const [portalLoading, setPortalLoading] = useState(false);
+  const [restoreLoading, setRestoreLoading] = useState(false);
+
   const handleManageSubscription = useCallback(async () => {
     setPortalLoading(true);
     try {
-      const response = await authenticatedFetch('/api/stripe/create-portal-session', {
-        method: 'POST',
-        body: JSON.stringify({
-          returnUrl: 'algorithmlens://settings',
-        }),
-      });
+      // Determine where the subscription came from
+      const source = entitlementSource === 'revenuecat' ? 'app_store' : 'stripe';
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || 'Could not open billing portal.');
-      }
-
-      const data = await response.json();
-      if (data.url) {
-        await Linking.openURL(data.url);
+      if (source === 'app_store') {
+        // App Store subscription — open iOS/Android subscription management
+        if (Platform.OS === 'ios') {
+          await Linking.openURL('https://apps.apple.com/account/subscriptions');
+        } else if (Platform.OS === 'android') {
+          await Linking.openURL('https://play.google.com/store/account/subscriptions');
+        } else {
+          // Web fallback — shouldn't happen but handle gracefully
+          Alert.alert('Manage Subscription', 'Please manage your subscription through the App Store or Google Play.');
+        }
       } else {
-        throw new Error('No portal URL returned.');
+        // Stripe subscription — open billing portal (existing flow)
+        const response = await authenticatedFetch('/api/stripe/create-portal-session', {
+          method: 'POST',
+          body: JSON.stringify({
+            returnUrl: 'algorithmlens://settings',
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.detail || 'Could not open billing portal.');
+        }
+
+        const data = await response.json();
+        if (data.url) {
+          await Linking.openURL(data.url);
+        } else {
+          throw new Error('No portal URL returned.');
+        }
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Could not open billing portal.';
-      captureError(err instanceof Error ? err : new Error(message), 'settings:billing-portal');
-      Alert.alert('Billing Portal', message);
+      const message = err instanceof Error ? err.message : 'Could not open subscription management.';
+      captureError(err instanceof Error ? err : new Error(message), 'settings:manage-subscription');
+      Alert.alert('Manage Subscription', message);
     } finally {
       setPortalLoading(false);
     }
-  }, []);
+  }, [entitlementSource]);
+
+  // Phase 4: Restore purchases (for reinstalls or switching devices)
+  const handleRestorePurchases = useCallback(async () => {
+    setRestoreLoading(true);
+    try {
+      const restored = await restorePurchases();
+      if (restored) {
+        await refreshEntitlements();
+        Alert.alert('Purchases Restored', 'Your Plus subscription has been restored.');
+      } else {
+        Alert.alert('No Purchases Found', 'No active subscriptions were found to restore.');
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Could not restore purchases.';
+      captureError(err instanceof Error ? err : new Error(message), 'settings:restore-purchases');
+      Alert.alert('Restore Failed', message);
+    } finally {
+      setRestoreLoading(false);
+    }
+  }, [refreshEntitlements]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
@@ -297,10 +335,8 @@ export default function SettingsScreen() {
         {/* Header */}
         <View style={{ paddingHorizontal: SPACING.lg, paddingVertical: SPACING.xl }}>
           <Text
-            style={{
-              ...TYPOGRAPHY.heroTitle,
-              color: colors.textMain,
-            }}
+            variant="heroTitle"
+            color={colors.textMain}
             accessibilityRole="header"
           >
             Settings
@@ -319,24 +355,24 @@ export default function SettingsScreen() {
           }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.sm }}>
               <Check size={18} color={colors.white} strokeWidth={2.5} />
-              <Text style={{ ...TYPOGRAPHY.h3, color: colors.white }}>
+              <Text variant="h3" color={colors.white}>
                 AlgorithmLens Plus
               </Text>
             </View>
-            <Text style={{ ...TYPOGRAPHY.label, color: 'rgba(255, 255, 255, 0.8)' }}>
+            <Text variant="label" color="rgba(255, 255, 255, 0.8)">
               You have access to longitudinal trend analysis and all premium features.
             </Text>
             {subscription?.trial_days_remaining != null && subscription.trial_days_remaining > 0 && (
-              <Text style={{ ...TYPOGRAPHY.small, color: 'rgba(255, 255, 255, 0.65)', marginTop: SPACING.xs }}>
+              <Text variant="small" color="rgba(255, 255, 255, 0.65)" style={{ marginTop: SPACING.xs }}>
                 Trial: {subscription.trial_days_remaining} day{subscription.trial_days_remaining !== 1 ? 's' : ''} remaining
               </Text>
             )}
-            {/* I9 FIX: Manage Subscription button — opens Stripe billing portal */}
+            {/* Phase 4: Manage Subscription — routes to App Store or Stripe based on source */}
             <TouchableOpacity
               onPress={handleManageSubscription}
               disabled={portalLoading}
               accessibilityRole="button"
-              accessibilityLabel="Manage subscription"
+              accessibilityLabel={`Manage subscription via ${entitlementSource === 'revenuecat' ? 'App Store' : 'Stripe'}`}
               style={{
                 marginTop: SPACING.md,
                 backgroundColor: 'rgba(255, 255, 255, 0.2)',
@@ -355,7 +391,7 @@ export default function SettingsScreen() {
               ) : (
                 <>
                   <ExternalLink size={14} color={colors.white} strokeWidth={2} />
-                  <Text style={{ ...TYPOGRAPHY.buttonSm, color: colors.white }}>
+                  <Text variant="buttonSm" color={colors.white}>
                     Manage Subscription
                   </Text>
                 </>
@@ -415,7 +451,7 @@ export default function SettingsScreen() {
           {/* S-3 FIX: Show frequency preview even when notifications are off */}
           {!pushNotifications && (
             <View style={{ paddingHorizontal: SPACING.lg, paddingBottom: SPACING.sm }}>
-              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
+              <Text variant="captionSmall" color={colors.textTertiary}>
                 Default: Every {notificationFrequency} days
               </Text>
             </View>
@@ -432,10 +468,10 @@ export default function SettingsScreen() {
                   }}
                 >
                   <Text
+                    variant="bodySmall"
+                    color={colors.primaryBlue}
                     style={{
-                      ...TYPOGRAPHY.bodySmall,
                       fontWeight: '600',
-                      color: colors.primaryBlue,
                     }}
                   >
                     Every {notificationFrequency} days
@@ -477,9 +513,9 @@ export default function SettingsScreen() {
                   }}
                 >
                   <Text
+                    variant="bodySmall"
+                    color={colors.textMain}
                     style={{
-                      ...TYPOGRAPHY.bodySmall,
-                      color: colors.textMain,
                       fontWeight:
                         notificationFrequency === freq ? '600' : '400',
                     }}
@@ -491,7 +527,7 @@ export default function SettingsScreen() {
                       style={{
                         width: 8,
                         height: 8,
-                        borderRadius: 4,
+                        borderRadius: RADIUS.full,
                         backgroundColor: colors.primaryBlue,
                       }}
                     />
@@ -511,9 +547,9 @@ export default function SettingsScreen() {
             }}
           >
             <Text
+              variant="bodySmall"
+              color={colors.textMuted}
               style={{
-                ...TYPOGRAPHY.bodySmall,
-                color: colors.textMuted,
                 flexWrap: 'wrap',
               }}
             >
@@ -525,7 +561,7 @@ export default function SettingsScreen() {
               accessibilityLabel="Learn more about our data practices"
               style={{ marginTop: SPACING.sm }}
             >
-              <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.primaryBlue, fontWeight: '500' }}>
+              <Text variant="bodySmall" color={colors.primaryBlue} style={{ fontWeight: '500' }}>
                 Learn more about our data practices
               </Text>
             </TouchableOpacity>
@@ -538,10 +574,8 @@ export default function SettingsScreen() {
             label="Email"
             value={
               <Text
-                style={{
-                  ...TYPOGRAPHY.bodySmall,
-                  color: colors.textMuted,
-                }}
+                variant="bodySmall"
+                color={colors.textMuted}
               >
                 {user?.email}
               </Text>
@@ -564,10 +598,10 @@ export default function SettingsScreen() {
               <ActivityIndicator size="small" color={colors.textMuted} />
             ) : (
               <Text
+                variant="body"
+                color={colors.textMuted}
                 style={{
-                  ...TYPOGRAPHY.body,
                   fontWeight: '500',
-                  color: colors.textMuted,
                 }}
               >
                 Sign Out
@@ -592,10 +626,10 @@ export default function SettingsScreen() {
             }}
           >
             <Text
+              variant="body"
+              color={colors.error}
               style={{
-                ...TYPOGRAPHY.body,
                 fontWeight: '500',
-                color: colors.error,
               }}
             >
               Delete Account
@@ -631,10 +665,10 @@ export default function SettingsScreen() {
                   <TrendingUp size={16} color={colors.primaryBlue} />
                 </View>
                 <View>
-                  <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain }}>
+                  <Text variant="label" color={colors.textMain}>
                     Upgrade to Plus
                   </Text>
-                  <Text style={{ ...TYPOGRAPHY.caption, color: colors.textSecondary }}>
+                  <Text variant="caption" color={colors.textSecondary}>
                     Track trends over time
                   </Text>
                 </View>
@@ -642,15 +676,43 @@ export default function SettingsScreen() {
               <ChevronRight size={16} color={colors.textTertiary} />
             </TouchableOpacity>
           )}
+          {/* Phase 4: Restore Purchases row — for reinstalls or switching devices */}
+          {!isPlus && (
+            <TouchableOpacity
+              onPress={handleRestorePurchases}
+              disabled={restoreLoading}
+              accessibilityRole="button"
+              accessibilityLabel="Restore purchases"
+              style={{
+                paddingHorizontal: SPACING.lg,
+                paddingVertical: SPACING.md,
+                minHeight: MIN_TOUCH_TARGET,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                borderBottomWidth: 1,
+                borderBottomColor: colors.borderLight,
+              }}
+            >
+              <Text
+                variant="body"
+                color={colors.primaryBlue}
+                style={{ fontWeight: '500' }}
+              >
+                Restore Purchases
+              </Text>
+              {restoreLoading && (
+                <ActivityIndicator size="small" color={colors.primaryBlue} />
+              )}
+            </TouchableOpacity>
+          )}
           {/* S-8 FIX: Show build number alongside version */}
           <SettingRow
             label="App Version"
             value={
               <Text
-                style={{
-                  ...TYPOGRAPHY.bodySmall,
-                  color: colors.textMuted,
-                }}
+                variant="bodySmall"
+                color={colors.textMuted}
               >
                 {APP_VERSION} (1)
               </Text>
@@ -663,7 +725,7 @@ export default function SettingsScreen() {
             onPress={() => setLegalExpanded(!legalExpanded)}
             value={
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs }}>
-                <Text style={{ ...TYPOGRAPHY.caption, color: colors.textTertiary }}>
+                <Text variant="caption" color={colors.textTertiary}>
                   Privacy, Terms, Website
                 </Text>
                 <ChevronDown
@@ -719,17 +781,17 @@ export default function SettingsScreen() {
           >
             {/* S-7 FIX: Goodish is now a tappable link */}
             <Text
-              style={{
-                ...TYPOGRAPHY.bodySmall,
-                color: colors.textMuted,
-              }}
+              variant="bodySmall"
+              color={colors.textMuted}
             >
               Part of{' '}
               <Text
+                variant="bodySmall"
+                color={colors.primaryBlue}
                 onPress={() => openLink('https://goodish.com')}
                 accessibilityRole="link"
                 accessibilityLabel="Visit Goodish"
-                style={{ color: colors.primaryBlue, textDecorationLine: 'underline' }}
+                style={{ textDecorationLine: 'underline' }}
               >
                 Goodish
               </Text>
@@ -771,25 +833,13 @@ export default function SettingsScreen() {
             maxWidth: 340,
             ...shadows.xl,
           }}>
-            <Text style={{
-              ...TYPOGRAPHY.h2,
-              color: colors.error,
-              marginBottom: SPACING.md,
-            }}>
+            <Text variant="h2" color={colors.error} style={{ marginBottom: SPACING.md }}>
               Delete Account
             </Text>
-            <Text style={{
-              ...TYPOGRAPHY.body,
-              color: colors.textMain,
-              marginBottom: SPACING.lg,
-            }}>
+            <Text variant="body" color={colors.textMain} style={{ marginBottom: SPACING.lg }}>
               This will permanently delete your account and all scan history. This cannot be undone.
             </Text>
-            <Text style={{
-              ...TYPOGRAPHY.label,
-              color: colors.textSecondary,
-              marginBottom: SPACING.sm,
-            }}>
+            <Text variant="label" color={colors.textSecondary} style={{ marginBottom: SPACING.sm }}>
               Type DELETE to confirm:
             </Text>
             <TextInput
@@ -805,7 +855,7 @@ export default function SettingsScreen() {
                 borderRadius: RADIUS.md,
                 paddingHorizontal: SPACING.md,
                 paddingVertical: SPACING.sm,
-                ...TYPOGRAPHY.body,
+                ...GL_TYPOGRAPHY.body,
                 color: colors.textMain,
                 marginBottom: SPACING.xl,
                 minHeight: MIN_TOUCH_TARGET,
@@ -828,7 +878,7 @@ export default function SettingsScreen() {
                   minHeight: 48,
                 }}
               >
-                <Text style={{ ...TYPOGRAPHY.buttonSm, color: colors.textSecondary }}>
+                <Text variant="buttonSm" color={colors.textSecondary}>
                   Cancel
                 </Text>
               </TouchableOpacity>
@@ -854,10 +904,10 @@ export default function SettingsScreen() {
                   minHeight: 48,
                 }}
               >
-                <Text style={{
-                  ...TYPOGRAPHY.buttonSm,
-                  color: deleteConfirmText === 'DELETE' ? colors.white : colors.textTertiary,
-                }}>
+                <Text
+                  variant="buttonSm"
+                  color={deleteConfirmText === 'DELETE' ? colors.white : colors.textTertiary}
+                >
                   Delete Account
                 </Text>
               </TouchableOpacity>

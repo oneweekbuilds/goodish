@@ -35,11 +35,13 @@ interface AuthContextType {
   /** @deprecated Use `loading` instead. This property will be removed in a future version. */
   isLoading: boolean;
   userProfile: UserProfile | null;
-  /** Whether the user has active Plus entitlements (backend source of truth). */
+  /** Whether the user has active Plus entitlements (RevenueCat → backend fallback). */
   isPlus: boolean;
+  /** Source of Plus entitlement: 'revenuecat', 'backend', or null. */
+  entitlementSource: 'revenuecat' | 'backend' | null;
   /** Subscription details from backend entitlements. */
   subscription: EntitlementsResponse['subscription'] | null;
-  /** Re-fetch entitlements from backend (e.g. after Stripe checkout return). */
+  /** Re-fetch entitlements (e.g. after purchase or Stripe checkout return). */
   refreshEntitlements: () => Promise<void>;
   signOut: () => Promise<void>;
   signInWithOAuth: (provider: 'google' | 'apple') => Promise<void>;
@@ -60,6 +62,7 @@ const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   userProfile: null,
   isPlus: false,
+  entitlementSource: null,
   subscription: null,
   refreshEntitlements: async () => {},
   signOut: async () => {},
@@ -270,13 +273,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoading: loading,
     userProfile,
     isPlus: entitlements.isPlus,
+    entitlementSource: entitlements.source,
     subscription: entitlements.subscription,
     refreshEntitlements: entitlements.refresh,
     signOut,
     signInWithOAuth,
     completeOnboarding,
     updateAiConsent,
-  }), [session, loading, userProfile, entitlements.isPlus, entitlements.subscription, entitlements.refresh, signOut, signInWithOAuth, completeOnboarding, updateAiConsent]);
+  }), [session, loading, userProfile, entitlements.isPlus, entitlements.source, entitlements.subscription, entitlements.refresh, signOut, signInWithOAuth, completeOnboarding, updateAiConsent]);
 
   return (
     <AuthContext.Provider value={contextValue}>

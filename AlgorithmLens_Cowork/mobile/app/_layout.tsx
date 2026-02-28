@@ -1,14 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { View, Text, ActivityIndicator, Platform, LogBox } from 'react-native';
 import { Stack, router, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
+import { useFonts } from 'expo-font';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { ThemeProvider, useTheme } from '../src/context/ThemeContext';
+import { GluestackUIProvider } from '../src/providers/GluestackUIProvider';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { initSentry, addBreadcrumb, withSentry } from '../src/lib/sentry';
-import { SPACING, TYPOGRAPHY, RADIUS, SHADOWS } from '../src/lib/theme';
+import { initRevenueCat } from '../src/services/revenueCat';
+import { SPACING, RADIUS, SHADOWS } from '../src/lib/theme';
+import { GL_TYPOGRAPHY } from '../src/lib/gluestackTheme';
+
 
 // Initialize Sentry before any components render
 initSentry();
@@ -29,6 +34,17 @@ function RootLayoutNav() {
   const { user, isLoading, userProfile } = useAuth();
   const { colors, statusBarStyle } = useTheme();
   const pathname = usePathname();
+
+  // Phase 4: Initialize RevenueCat after auth is established
+  useEffect(() => {
+    if (user?.id) {
+      initRevenueCat(user.id).catch((err) => {
+        if (__DEV__) {
+          console.warn('RevenueCat init failed (falling back to free tier):', err);
+        }
+      });
+    }
+  }, [user?.id]);
 
   useEffect(() => {
     if (pathname) {
@@ -85,6 +101,14 @@ function RootLayoutNav() {
             animation: 'slide_from_bottom',
           }}
         />
+        {/* Temporary: GL* Component Showcase for visual verification */}
+        <Stack.Screen
+          name="showcase"
+          options={{
+            headerShown: false,
+            presentation: 'modal',
+          }}
+        />
       </Stack>
     </>
   );
@@ -127,7 +151,7 @@ function WebConstrainedWrapper({ children }: { children: React.ReactNode }) {
             paddingHorizontal: SPACING.xl,
           }}
         >
-          <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.textMain }}>
+          <Text style={{ ...GL_TYPOGRAPHY.labelBold, color: colors.textMain }}>
             9:41
           </Text>
           <View style={{ flexDirection: 'row', gap: SPACING.sm, alignItems: 'center' }}>
@@ -143,18 +167,41 @@ function WebConstrainedWrapper({ children }: { children: React.ReactNode }) {
 }
 
 function RootLayout() {
+  const [fontsLoaded, fontError] = useFonts({
+    'Geist-Regular': require('../assets/fonts/Geist_400Regular.ttf'),
+    'Geist-Medium': require('../assets/fonts/Geist_500Medium.ttf'),
+    'Geist-SemiBold': require('../assets/fonts/Geist_600SemiBold.ttf'),
+    'Geist-Bold': require('../assets/fonts/Geist_700Bold.ttf'),
+  });
+
+  // Keep splash visible until fonts are loaded
+  // Auth loading is handled separately in RootLayoutNav
+  useEffect(() => {
+    if (fontError) {
+      // If fonts fail to load, hide splash anyway so the app doesn't hang
+      console.warn('Font loading error:', fontError);
+    }
+  }, [fontError]);
+
+  // Don't render anything until fonts are ready
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
+
   return (
-    <SafeAreaProvider>
-      <ThemeProvider>
-        <AuthProvider>
-          <ErrorBoundary>
-            <WebConstrainedWrapper>
-              <RootLayoutNav />
-            </WebConstrainedWrapper>
-          </ErrorBoundary>
-        </AuthProvider>
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <GluestackUIProvider>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <ErrorBoundary>
+              <WebConstrainedWrapper>
+                <RootLayoutNav />
+              </WebConstrainedWrapper>
+            </ErrorBoundary>
+          </AuthProvider>
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </GluestackUIProvider>
   );
 }
 
