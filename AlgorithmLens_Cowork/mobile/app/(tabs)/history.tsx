@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
-  Text,
   FlatList,
   SectionList,
   TouchableOpacity,
@@ -11,10 +10,11 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDashboard, ScanDetail } from '../../src/hooks/useDashboard';
 import { router } from 'expo-router';
 import { Zap, Users, Clock, ScanSearch, GitCompareArrows, Check, Radio, Filter, Calendar } from 'lucide-react-native';
-import { Skeleton } from '../../src/components/ui/Skeleton';
-import { ContentFadeIn } from '../../src/components/ui/ContentFadeIn';
+import { Skeleton, Text } from '../../src/components/glue';
+import { ContentFadeIn } from '../../src/components/glue';
 import { useTheme } from '../../src/context/ThemeContext';
-import { TYPOGRAPHY, SPACING, RADIUS, PLATFORMS, COLORS, MIN_TOUCH_TARGET } from '../../src/lib/theme';
+import { GL_TYPOGRAPHY } from '../../src/lib/gluestackTheme';
+import { SPACING, RADIUS, PLATFORMS, MIN_TOUCH_TARGET } from '../../src/lib/theme';
 import { getQualityLevel } from '../../src/config/thresholds';
 import ComparisonView from '../../src/components/dashboard/ComparisonView';
 import { withAlpha } from '../../src/lib/utils';
@@ -244,7 +244,7 @@ export default function HistoryScreen() {
               }}
             >
               {isSelected ? (
-                <Text style={{ ...TYPOGRAPHY.label, fontWeight: '700', color: colors.white }}>
+                <Text variant="label" style={{ fontWeight: '700', color: colors.white }}>
                   {selectionIndex + 1}
                 </Text>
               ) : null}
@@ -262,7 +262,9 @@ export default function HistoryScreen() {
             }}
           >
             <Text
-              style={{ ...TYPOGRAPHY.label, fontWeight: '700', color: platformColor }}
+              variant="label"
+              color={platformColor}
+              style={{ fontWeight: '700' }}
             >
               {platformLabel}
             </Text>
@@ -270,10 +272,8 @@ export default function HistoryScreen() {
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs }}>
               <Text
-                style={{
-                  ...TYPOGRAPHY.h3,
-                  color: colors.textMain,
-                }}
+                variant="h3"
+                color={colors.textMain}
               >
                 {platformName}
               </Text>
@@ -290,13 +290,13 @@ export default function HistoryScreen() {
                   }}
                 >
                   <Radio size={10} color={colors.primaryBlue} strokeWidth={2.5} />
-                  <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.primaryBlue }}>
+                  <Text variant="captionSmall" color={colors.primaryBlue}>
                     Broadcast
                   </Text>
                 </View>
               )}
             </View>
-            <Text style={{ ...TYPOGRAPHY.small, color: colors.textSecondary, marginTop: SPACING.xxs }}>
+            <Text variant="small" color={colors.textSecondary} style={{ marginTop: SPACING.xxs }}>
               {getRelativeTime(item.created_at)} — {postCount} posts
               {isBroadcast && durationSecs > 0 ? ` · ${formatDuration(durationSecs)}` : ''}
             </Text>
@@ -319,10 +319,8 @@ export default function HistoryScreen() {
           >
             <Zap size={13} color={colors.primaryBlue} strokeWidth={2} />
             <Text
-              style={{
-                ...TYPOGRAPHY.labelBold,
-                color: colors.blue700,
-              }}
+              variant="labelBold"
+              color={colors.blue700}
             >
               {adPercentage}% ads
             </Text>
@@ -342,10 +340,8 @@ export default function HistoryScreen() {
           >
             <Users size={13} color={colors.green600} strokeWidth={2} />
             <Text
-              style={{
-                ...TYPOGRAPHY.labelBold,
-                color: colors.green700,
-              }}
+              variant="labelBold"
+              color={colors.green700}
             >
               {suggestedPct}% suggested
             </Text>
@@ -366,12 +362,10 @@ export default function HistoryScreen() {
             }}
           >
             <Text
-              style={{
-                ...TYPOGRAPHY.labelBold,
-                color: qualityLevel.colorKey === 'accentGreen' ? colors.primaryBlue
-                  : qualityLevel.colorKey === 'warning' ? colors.warning
-                  : colors.error,
-              }}
+              variant="labelBold"
+              color={qualityLevel.colorKey === 'accentGreen' ? colors.primaryBlue
+                : qualityLevel.colorKey === 'warning' ? colors.warning
+                : colors.error}
             >
               {/* M-04 FIX: Show threshold hint to explain what quality means */}
               {qualityLevel.labelWithHint}
@@ -404,22 +398,22 @@ export default function HistoryScreen() {
         {/* M-03 FIX: Legend explaining composition bar colors */}
         <View style={{ flexDirection: 'row', gap: SPACING.md, marginTop: SPACING.xs, alignItems: 'center' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.primaryBlue }} />
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>Followed</Text>
+            <View style={{ width: 6, height: 6, borderRadius: RADIUS.full, backgroundColor: colors.primaryBlue }} />
+            <Text variant="captionSmall" color={colors.textTertiary}>Followed</Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.accentGreen }} />
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>Suggested</Text>
+            <View style={{ width: 6, height: 6, borderRadius: RADIUS.full, backgroundColor: colors.accentGreen }} />
+            <Text variant="captionSmall" color={colors.textTertiary}>Suggested</Text>
           </View>
           {adPercentage > 0 && (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.iconAds }} />
-              <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>Ads</Text>
+              <View style={{ width: 6, height: 6, borderRadius: RADIUS.full, backgroundColor: colors.iconAds }} />
+              <Text variant="captionSmall" color={colors.textTertiary}>Ads</Text>
             </View>
           )}
           {/* L-16 FIX: Indicate dashboard is viewable */}
           {!compareMode && (
-            <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.primaryBlue, marginLeft: 'auto' }}>
+            <Text variant="captionSmall" color={colors.primaryBlue} style={{ marginLeft: 'auto' }}>
               View Results →
             </Text>
           )}
@@ -469,7 +463,7 @@ export default function HistoryScreen() {
           width: 64,
           height: 64,
           backgroundColor: colors.blue50,
-          borderRadius: 32,
+          borderRadius: RADIUS.full,
           justifyContent: 'center',
           alignItems: 'center',
           marginBottom: SPACING.xl,
@@ -479,21 +473,17 @@ export default function HistoryScreen() {
         <Clock size={32} color={colors.primaryBlue} strokeWidth={1.5} />
       </View>
       <Text
-        style={{
-          ...TYPOGRAPHY.h2,
-          color: colors.textMain,
-          marginBottom: SPACING.sm,
-        }}
+        variant="h2"
+        color={colors.textMain}
+        style={{ marginBottom: SPACING.sm }}
       >
         Your history starts here
       </Text>
       <Text
-        style={{
-          ...TYPOGRAPHY.body,
-          color: colors.textMuted,
-          textAlign: 'center',
-          marginBottom: SPACING.xl,
-        }}
+        variant="body"
+        color={colors.textMuted}
+        align="center"
+        style={{ marginBottom: SPACING.xl }}
       >
         Each scan adds a new snapshot of your feed. Over time you can compare them to spot patterns and changes.
       </Text>
@@ -513,7 +503,7 @@ export default function HistoryScreen() {
         }}
       >
         <ScanSearch size={18} color={colors.white} strokeWidth={2} />
-        <Text style={{ ...TYPOGRAPHY.h3, color: colors.white }}>
+        <Text variant="h3" color={colors.white}>
           Start a Scan
         </Text>
       </TouchableOpacity>
@@ -529,27 +519,25 @@ export default function HistoryScreen() {
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <View style={{ flex: 1, marginRight: SPACING.sm }}>
               <Text
-                style={{
-                  ...TYPOGRAPHY.heroTitle,
-                  color: colors.textMain,
-                  marginBottom: SPACING.xs,
-                }}
+                variant="heroTitle"
+                color={colors.textMain}
+                style={{ marginBottom: SPACING.xs }}
               >
                 {compareMode ? 'Select Two Scans' : 'Scan History'}
               </Text>
               {/* Hi-3 FIX: Added subtitle to orient users */}
               {!compareMode && scans.length > 0 && (
-                <Text style={{ ...TYPOGRAPHY.label, color: colors.textSecondary }}>
+                <Text variant="label" color={colors.textSecondary}>
                   Review your past feed analyses · {scans.length} scan{scans.length !== 1 ? 's' : ''} total
                 </Text>
               )}
               {!compareMode && scans.length === 0 && (
-                <Text style={{ ...TYPOGRAPHY.label, color: colors.textSecondary }}>
+                <Text variant="label" color={colors.textSecondary}>
                   Review your past feed analyses
                 </Text>
               )}
               {compareMode && (
-                <Text style={{ ...TYPOGRAPHY.label, color: colors.textSecondary }}>
+                <Text variant="label" color={colors.textSecondary}>
                   {selectedScans.length}/2 selected — tap scans to compare
                 </Text>
               )}
@@ -584,10 +572,8 @@ export default function HistoryScreen() {
                   strokeWidth={2}
                 />
                 <Text
-                  style={{
-                    ...TYPOGRAPHY.label,
-                    color: compareMode ? colors.textSecondary : colors.primaryBlue,
-                  }}
+                  variant="label"
+                  color={compareMode ? colors.textSecondary : colors.primaryBlue}
                 >
                   {compareMode ? 'Cancel' : 'Compare'}
                 </Text>
@@ -620,7 +606,7 @@ export default function HistoryScreen() {
               }}
             >
               <GitCompareArrows size={18} color={colors.white} strokeWidth={2} />
-              <Text style={{ ...TYPOGRAPHY.h3, color: colors.white }}>
+              <Text variant="h3" color={colors.white}>
                 Compare Selected Scans
               </Text>
             </TouchableOpacity>
@@ -658,7 +644,7 @@ export default function HistoryScreen() {
               accessibilityState={{ selected: !filterPlatform }}
               accessibilityLabel="All platforms"
             >
-              <Text style={{ ...TYPOGRAPHY.buttonSm, color: !filterPlatform ? colors.white : colors.textMain }}>
+              <Text variant="buttonSm" color={!filterPlatform ? colors.white : colors.textMain}>
                 All platforms
               </Text>
             </TouchableOpacity>
@@ -684,7 +670,7 @@ export default function HistoryScreen() {
                   accessibilityState={{ selected: isActive }}
                   accessibilityLabel={`Filter by ${pName}`}
                 >
-                  <Text style={{ ...TYPOGRAPHY.buttonSm, color: isActive ? colors.white : colors.textMain }}>
+                  <Text variant="buttonSm" color={isActive ? colors.white : colors.textMain}>
                     {pName}
                   </Text>
                 </TouchableOpacity>
@@ -706,7 +692,7 @@ export default function HistoryScreen() {
               borderColor: colors.warningBorder,
             }}
           >
-            <Text style={{ ...TYPOGRAPHY.body, color: colors.warning, textAlign: 'center' }}>
+            <Text variant="body" color={colors.warning} align="center">
               {fetchError}
             </Text>
           </View>
@@ -724,7 +710,7 @@ export default function HistoryScreen() {
             renderSectionHeader={({ section: { title } }: { section: { title: string } }) => (
               /* L-03 FIX: Add marginBottom for proper header spacing */
               <View style={{ paddingHorizontal: SPACING.lg, paddingTop: SPACING.lg, paddingBottom: SPACING.sm, marginBottom: SPACING.sm }}>
-                <Text style={{ ...TYPOGRAPHY.overline, color: colors.textTertiary }} accessibilityRole="header">
+                <Text variant="overline" color={colors.textTertiary} accessibilityRole="header">
                   {title}
                 </Text>
               </View>

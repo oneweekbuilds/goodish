@@ -18,7 +18,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import { CalmHomeScreen } from '../../src/components/home/CalmHomeScreen';
-import { ContentFadeIn } from '../../src/components/ui/ContentFadeIn';
+import { ContentFadeIn } from '../../src/components/glue';
 import { FirstUseWalkthrough } from '../../src/components/home/FirstUseWalkthrough';
 import { useDashboard } from '../../src/hooks/useDashboard';
 import { useStreak } from '../../src/hooks/useStreak';

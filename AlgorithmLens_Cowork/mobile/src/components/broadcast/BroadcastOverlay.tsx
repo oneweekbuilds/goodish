@@ -20,7 +20,6 @@ import { triggerImpactMedium } from '../../lib/haptics';
 import React, { useRef, useEffect } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   Animated,
   StyleSheet,
@@ -35,7 +34,9 @@ import {
   ArrowRight,
 } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, TYPOGRAPHY, RADIUS, COLORS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
+import { SPACING, RADIUS, COLORS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { Text } from '../glue';
 import type { BroadcastStatus } from '../../types/broadcast';
 import { PLATFORM_BROADCAST_CONFIGS, type SupportedPlatform } from '../../types/broadcast';
 
@@ -117,7 +118,11 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
       case 'INITIALIZING':
         return (
           <View style={styles.contentSection}>
-            <Text style={[styles.statusText, { color: colors.textMuted }]}>
+            <Text
+              variant="body"
+              color={colors.textMuted}
+              align="center"
+            >
               Preparing broadcast session...
             </Text>
           </View>
@@ -128,12 +133,17 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
           <View style={styles.contentSection}>
             <View style={styles.instructionRow}>
               <Radio size={18} color={colors.primaryBlue} strokeWidth={2} />
-              <Text style={[styles.instructionText, { color: colors.textMain }]}>
+              <Text
+                variant="buttonMd"
+                color={colors.textMain}
+                style={{ flex: 1 }}
+              >
                 Tap the broadcast button above to start recording
               </Text>
             </View>
             <Text
-              style={[styles.hintText, { color: colors.textSecondary }]}
+              variant="bodySmall"
+              color={colors.textSecondary}
               accessibilityLiveRegion="polite"
             >
               Once recording starts, open {platformName} and scroll your feed normally.
@@ -145,7 +155,10 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
               accessibilityLabel={`Open ${platformName}`}
               style={[styles.secondaryButton, { borderColor: colors.borderSlate200, minHeight: MIN_TOUCH_TARGET }]}
             >
-              <Text style={[styles.secondaryButtonText, { color: colors.primaryBlue }]}>
+              <Text
+                variant="labelBold"
+                color={colors.primaryBlue}
+              >
                 Open {platformName}
               </Text>
               <ArrowRight size={14} color={colors.primaryBlue} strokeWidth={2} />
@@ -157,7 +170,11 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
               accessibilityLabel="Cancel broadcast session"
               style={{ minHeight: MIN_TOUCH_TARGET }}
             >
-              <Text style={[styles.cancelText, { color: colors.textMuted }]}>
+              <Text
+                variant="body"
+                color={colors.textMuted}
+                align="center"
+              >
                 Cancel
               </Text>
             </TouchableOpacity>
@@ -180,15 +197,27 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
                     { backgroundColor: colors.recordingDot, opacity: pulseAnim },
                   ]}
                 />
-                <Text style={{ ...TYPOGRAPHY.h2, color: colors.textMain, fontVariant: ['tabular-nums'] }}>
+                <Text
+                  variant="h2"
+                  color={colors.textMain}
+                  style={{ fontVariant: ['tabular-nums'] }}
+                >
                   {elapsedTime}
                 </Text>
               </View>
-              <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textSecondary, textAlign: 'center' }}>
+              <Text
+                variant="bodySmall"
+                color={colors.textSecondary}
+                align="center"
+              >
                 {frameCount} frames captured from {platformName}
               </Text>
               {!thresholdsMet && (
-                <Text style={{ ...TYPOGRAPHY.caption, color: colors.warning, textAlign: 'center' }}>
+                <Text
+                  variant="caption"
+                  color={colors.warning}
+                  align="center"
+                >
                   Keep scrolling — need more data for accurate analysis
                 </Text>
               )}
@@ -210,7 +239,10 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
                 }]}
               >
                 <StopCircle size={16} color={colors.errorBright} strokeWidth={2} />
-                <Text style={[styles.primaryButtonText, { color: colors.stopButtonText }]}>
+                <Text
+                  variant="labelBold"
+                  color={colors.stopButtonText}
+                >
                   Stop Recording
                 </Text>
               </TouchableOpacity>
@@ -221,7 +253,10 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
                 accessibilityLabel={`Open ${platformName} in another app`}
                 style={[styles.secondaryButton, { borderColor: colors.borderSlate200, minHeight: MIN_TOUCH_TARGET }]}
               >
-                <Text style={[styles.secondaryButtonText, { color: colors.primaryBlue }]}>
+                <Text
+                  variant="labelBold"
+                  color={colors.primaryBlue}
+                >
                   Back to {platformName}
                 </Text>
                 <ArrowRight size={14} color={colors.primaryBlue} strokeWidth={2} />
@@ -233,7 +268,11 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
       case 'PROCESSING':
         return (
           <View style={styles.contentSection}>
-            <Text style={[styles.statusText, { color: colors.textMain }]}>
+            <Text
+              variant="body"
+              color={colors.textMain}
+              align="center"
+            >
               Processing {frameCount} frames...
             </Text>
           </View>
@@ -244,11 +283,17 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
           <View style={styles.contentSection}>
             <View style={styles.completeHeader}>
               <CheckCircle size={20} color={colors.accentGreen} strokeWidth={2} />
-              <Text style={[styles.completeTitle, { color: colors.textMain }]}>
+              <Text
+                variant="h3"
+                color={colors.textMain}
+              >
                 Broadcast complete
               </Text>
             </View>
-            <Text style={[styles.completeSummary, { color: colors.textSecondary }]}>
+            <Text
+              variant="bodySmall"
+              color={colors.textSecondary}
+            >
               {frameCount} frames captured in {elapsedTime}
             </Text>
             <TouchableOpacity
@@ -261,7 +306,10 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
               accessibilityLabel="View analysis results"
               style={[styles.primaryButton, { backgroundColor: colors.primaryBlue, minHeight: MIN_TOUCH_TARGET }]}
             >
-              <Text style={styles.primaryButtonText}>
+              <Text
+                variant="labelBold"
+                color={colors.textInverse}
+              >
                 View Results
               </Text>
               <ArrowRight size={16} color={colors.textInverse} strokeWidth={2} />
@@ -274,11 +322,17 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
           <View style={styles.contentSection}>
             <View style={styles.completeHeader}>
               <AlertCircle size={20} color={colors.error} strokeWidth={2} />
-              <Text style={[styles.completeTitle, { color: colors.textMain }]}>
+              <Text
+                variant="h3"
+                color={colors.textMain}
+              >
                 Broadcast ended
               </Text>
             </View>
-            <Text style={[styles.completeSummary, { color: colors.textSecondary }]}>
+            <Text
+              variant="bodySmall"
+              color={colors.textSecondary}
+            >
               {errorMessage || 'The broadcast session ended unexpectedly.'}
               {frameCount > 0
                 ? ` ${frameCount} frames were captured before it ended.`
@@ -292,7 +346,12 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
                 accessibilityLabel="Retry broadcast session"
                 style={[styles.primaryButton, { backgroundColor: colors.primaryBlue, flex: 1, minHeight: MIN_TOUCH_TARGET }]}
               >
-                <Text style={styles.primaryButtonText}>Try Again</Text>
+                <Text
+                  variant="labelBold"
+                  color={colors.textInverse}
+                >
+                  Try Again
+                </Text>
               </TouchableOpacity>
               {frameCount > 0 && (
                 <TouchableOpacity
@@ -302,7 +361,10 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
                   accessibilityLabel="View partial results from captured frames"
                   style={[styles.secondaryButton, { borderColor: colors.borderSlate200, flex: 1, minHeight: MIN_TOUCH_TARGET }]}
                 >
-                  <Text style={[styles.secondaryButtonText, { color: colors.primaryBlue }]}>
+                  <Text
+                    variant="labelBold"
+                    color={colors.primaryBlue}
+                  >
                     View Partial Results
                   </Text>
                 </TouchableOpacity>
@@ -316,7 +378,10 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
           <View style={styles.contentSection}>
             <View style={styles.completeHeader}>
               <XCircle size={20} color={colors.textMuted} strokeWidth={2} />
-              <Text style={[styles.completeTitle, { color: colors.textMain }]}>
+              <Text
+                variant="h3"
+                color={colors.textMain}
+              >
                 Session cancelled
               </Text>
             </View>
@@ -327,7 +392,10 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
               accessibilityLabel="Start a new session"
               style={[styles.secondaryButton, { borderColor: colors.borderSlate200 }]}
             >
-              <Text style={[styles.secondaryButtonText, { color: colors.primaryBlue }]}>
+              <Text
+                variant="labelBold"
+                color={colors.primaryBlue}
+              >
                 Start a new session
               </Text>
             </TouchableOpacity>
@@ -372,27 +440,10 @@ const styles = StyleSheet.create({
   contentSection: {
     gap: SPACING.md,
   },
-  statusText: {
-    ...TYPOGRAPHY.body,
-    textAlign: 'center',
-  },
   instructionRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-  },
-  instructionText: {
-    ...TYPOGRAPHY.buttonMd,
-    flex: 1,
-  },
-  hintText: {
-    fontSize: TYPOGRAPHY.bodySmall.fontSize,
-    lineHeight: TYPOGRAPHY.bodySmall.lineHeight,
-  },
-  cancelText: {
-    ...TYPOGRAPHY.body,
-    textAlign: 'center',
-    paddingVertical: SPACING.xs,
   },
   recordingDot: {
     width: ICON_SIZES.dot,
@@ -412,10 +463,6 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.lg,
   },
-  primaryButtonText: {
-    ...TYPOGRAPHY.labelBold,
-    color: COLORS.white,
-  },
   secondaryButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -426,19 +473,9 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.lg,
   },
-  secondaryButtonText: {
-    ...TYPOGRAPHY.labelBold,
-  },
   completeHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-  },
-  completeTitle: {
-    ...TYPOGRAPHY.h3,
-  },
-  completeSummary: {
-    fontSize: TYPOGRAPHY.bodySmall.fontSize,
-    lineHeight: TYPOGRAPHY.bodySmall.lineHeight,
   },
 });

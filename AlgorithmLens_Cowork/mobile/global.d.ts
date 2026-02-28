@@ -4,3 +4,5 @@
  * Used to conditionally enable development-only logging and debugging features.
  */
 declare const __DEV__: boolean;
+
+/// <reference types="nativewind/types" />

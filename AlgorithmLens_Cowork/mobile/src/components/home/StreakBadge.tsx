@@ -16,11 +16,13 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Animated, AccessibilityInfo, Platform, StyleSheet } from 'react-native';
+import { View, Animated, AccessibilityInfo, Platform, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Flame, Pause, Sparkles, Snowflake, Clock } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY, ICON_SIZES } from '../../lib/theme';
+import { SPACING, RADIUS, ICON_SIZES } from '../../lib/theme';
+import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
+import { Text } from '../glue';
 
 // Web-safe gradient wrapper for LinearGradient
 const GradientWrapper = Platform.OS === 'web'
@@ -128,7 +130,7 @@ function StreakBadgeComponent({
         <View style={{ flex: 1 }}>
           <Text
             style={{
-              ...TYPOGRAPHY.labelBold,
+              ...GL_TYPOGRAPHY.labelBold,
               color: colors.textMain,
             }}
           >
@@ -136,7 +138,7 @@ function StreakBadgeComponent({
           </Text>
           <Text
             style={{
-              fontSize: TYPOGRAPHY.caption.fontSize,
+              ...GL_TYPOGRAPHY.caption,
               color: colors.textSecondary,
               marginTop: SPACING.xxs,
             }}
@@ -151,7 +153,7 @@ function StreakBadgeComponent({
   if (displayState === 'PAUSED') {
     return (
       <GradientWrapper
-        colors={[colors.bgCard, colors.bgCardGradientEnd]}
+        colors={[colors.bgSecondary, colors.bgCardGradientEnd]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={{
@@ -163,7 +165,7 @@ function StreakBadgeComponent({
           paddingVertical: SPACING.md,
           borderWidth: 1,
           borderColor: colors.borderSoft,
-          ...shadows.card,
+          ...shadows.sm,
         }}
       >
         <View
@@ -181,7 +183,7 @@ function StreakBadgeComponent({
         <View style={{ flex: 1 }}>
           <Text
             style={{
-              ...TYPOGRAPHY.labelBold,
+              ...GL_TYPOGRAPHY.labelBold,
               color: colors.textMain,
             }}
           >
@@ -189,7 +191,7 @@ function StreakBadgeComponent({
           </Text>
           <Text
             style={{
-              fontSize: TYPOGRAPHY.caption.fontSize,
+              ...GL_TYPOGRAPHY.caption,
               color: colors.textSecondary,
               marginTop: SPACING.xxs,
             }}
@@ -278,7 +280,7 @@ function StreakBadgeComponent({
           <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: SPACING.xs }}>
             <Text
               style={{
-                ...(streakData.current_streak >= 7 ? TYPOGRAPHY.scoreLarge : TYPOGRAPHY.scoreSmall),
+                ...(streakData.current_streak >= 7 ? GL_TYPOGRAPHY.scoreLarge : GL_TYPOGRAPHY.scoreSmall),
                 color: colors.textMain,
               }}
             >
@@ -286,7 +288,7 @@ function StreakBadgeComponent({
             </Text>
             <Text
               style={{
-                ...TYPOGRAPHY.label,
+                ...GL_TYPOGRAPHY.label,
                 color: colors.textMuted,
               }}
             >
@@ -295,7 +297,7 @@ function StreakBadgeComponent({
             {tier.minDays >= 3 && (
               <Text
                 style={{
-                  ...TYPOGRAPHY.captionSmall,
+                  ...GL_TYPOGRAPHY.captionSmall,
                   color: colors.textTertiary,
                 }}
               >
@@ -306,7 +308,7 @@ function StreakBadgeComponent({
           {isGrace && (
             <Text
               style={{
-                fontSize: TYPOGRAPHY.captionSmall.fontSize,
+                ...GL_TYPOGRAPHY.captionSmall,
                 color: colors.warning,
                 marginTop: SPACING.xxs,
               }}
@@ -319,7 +321,7 @@ function StreakBadgeComponent({
               <Clock size={10} color={colors.warning} strokeWidth={2} />
               <Text
                 style={{
-                  fontSize: TYPOGRAPHY.captionSmall.fontSize,
+                  ...GL_TYPOGRAPHY.captionSmall,
                   color: colors.warning,
                 }}
               >

@@ -13,12 +13,14 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
-import { TYPOGRAPHY, SPACING, RADIUS } from '../../src/lib/theme';
+import { GL_TYPOGRAPHY } from '../../src/lib/gluestackTheme';
+import { SPACING, RADIUS } from '../../src/lib/theme';
+import { Text } from '../../src/components/glue';
 import { Check } from 'lucide-react-native';
 import { triggerNotificationSuccess } from '../../src/lib/haptics';
 
@@ -67,7 +69,7 @@ export default function CheckoutSuccessScreen() {
       {syncing ? (
         <View style={{ alignItems: 'center', gap: SPACING.lg }}>
           <ActivityIndicator size="large" color={colors.primaryBlue} />
-          <Text style={{ ...TYPOGRAPHY.body, color: colors.textMuted }}>
+          <Text variant="body" color={colors.textMuted}>
             Activating your subscription...
           </Text>
         </View>
@@ -75,7 +77,7 @@ export default function CheckoutSuccessScreen() {
         <View style={{ alignItems: 'center', paddingHorizontal: SPACING['3xl'], gap: SPACING.lg }}>
           {/* Success icon */}
           <View style={{
-            width: 64, height: 64, borderRadius: 32,
+            width: 64, height: 64, borderRadius: RADIUS.full,
             backgroundColor: colors.green50,
             justifyContent: 'center', alignItems: 'center',
             ...shadows.soft,
@@ -84,20 +86,27 @@ export default function CheckoutSuccessScreen() {
           </View>
 
           <Text
-            style={{ ...TYPOGRAPHY.heroTitle, color: colors.textMain, textAlign: 'center' }}
+            variant="heroTitle"
+            color={colors.textMain}
+            align="center"
             accessibilityRole="header"
           >
             Welcome to Plus
           </Text>
 
-          <Text style={{ ...TYPOGRAPHY.body, color: colors.textMuted, textAlign: 'center', lineHeight: 22 }}>
+          <Text
+            variant="body"
+            color={colors.textMuted}
+            align="center"
+            style={{ lineHeight: 22 }}
+          >
             {trialDays && trialDays > 0
               ? `Your ${trialDays}-day free trial has started. You won't be charged until the trial ends.`
               : 'Your subscription is active. Trend analysis and premium features are now unlocked.'
             }
           </Text>
 
-          <Text style={{ ...TYPOGRAPHY.small, color: colors.textSecondary, textAlign: 'center' }}>
+          <Text variant="small" color={colors.textSecondary} align="center">
             Redirecting to your dashboard...
           </Text>
         </View>

@@ -1,12 +1,12 @@
 import React from 'react';
 import {
   View,
-  Text,
   Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../context/ThemeContext';
-import { TYPOGRAPHY, SPACING } from '../../lib/theme';
+import { GL_TYPOGRAPHY, SPACING } from '../../lib/gluestackTheme';
+import { Text } from '../glue';
 
 // Web-safe gradient wrapper for LinearGradient
 const GradientWrapper = Platform.OS === 'web'
@@ -42,7 +42,7 @@ const SectionHeaderComponent: React.FC<SectionHeaderProps> = ({
   const { colors } = useTheme();
   const isH2 = level === 'h2';
   const barHeight = isH2 ? 20 : 16;
-  const titleStyle = isH2 ? TYPOGRAPHY.h2 : TYPOGRAPHY.h3;
+  const titleVariant = isH2 ? 'h2' : 'h3';
 
   return (
     <View
@@ -72,9 +72,9 @@ const SectionHeaderComponent: React.FC<SectionHeaderProps> = ({
         }}
       >
         <Text
+          variant={titleVariant}
+          color={colors.textMain}
           style={{
-            ...titleStyle,
-            color: colors.textMain,
             marginBottom: subtitle ? SPACING.xs : 0,
           }}
           accessibilityRole="header"
@@ -84,9 +84,9 @@ const SectionHeaderComponent: React.FC<SectionHeaderProps> = ({
 
         {subtitle && (
           <Text
+            variant="bodySmall"
+            color={colors.textSecondary}
             style={{
-              ...TYPOGRAPHY.bodySmall,
-              color: colors.textSecondary,
               maxWidth: 560,
             }}
           >

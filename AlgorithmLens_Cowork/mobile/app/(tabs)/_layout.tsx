@@ -4,7 +4,8 @@ import { Tabs } from 'expo-router';
 import { Home, LayoutDashboard, Clock, Settings } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/context/ThemeContext';
-import { SPACING, TYPOGRAPHY } from '../../src/lib/theme';
+import { SPACING } from '../../src/lib/theme';
+import { GL_TYPOGRAPHY } from '../../src/lib/gluestackTheme';
 import { triggerImpactLight } from '../../src/lib/haptics';
 
 /**
@@ -102,7 +103,7 @@ export default function TabsLayout() {
           borderTopWidth: StyleSheet.hairlineWidth,
           borderTopColor: colors.borderSoft,
           paddingBottom: Math.max(insets.bottom, 8),
-          paddingTop: 6,
+          paddingTop: SPACING.sm,
           height: 49 + Math.max(insets.bottom, 0),
           maxWidth: 428,
           alignSelf: 'center' as const,
@@ -112,19 +113,19 @@ export default function TabsLayout() {
           borderTopWidth: StyleSheet.hairlineWidth,
           borderTopColor: colors.borderSoft,
           paddingBottom: Math.max(insets.bottom, 8),
-          paddingTop: 6,
+          paddingTop: SPACING.sm,
           height: 49 + Math.max(insets.bottom, 0),
         },
         tabBarLabelStyle: {
-          ...TYPOGRAPHY.captionSmall,
+          ...GL_TYPOGRAPHY.captionSmall,
           fontWeight: '500',
-          marginTop: 2,
+          marginTop: SPACING.xxs,
         },
         tabBarActiveBackgroundColor: 'transparent',
         tabBarItemStyle: {
           justifyContent: 'center',
           alignItems: 'center',
-          paddingTop: 4,
+          paddingTop: SPACING.xs,
         },
         tabBarIconStyle: {
           marginBottom: 0,

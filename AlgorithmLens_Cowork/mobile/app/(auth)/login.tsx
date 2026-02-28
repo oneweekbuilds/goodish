@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
-  Text,
   ScrollView,
   TouchableOpacity,
   TextInput,
@@ -14,9 +13,9 @@ import { useAuth } from '../../src/context/AuthContext';
 import { supabase } from '../../src/lib/supabase';
 import { useTheme } from '../../src/context/ThemeContext';
 import { Eye } from 'lucide-react-native';
-import { TYPOGRAPHY, SPACING, RADIUS, COLORS, ICON_SIZES } from '../../src/lib/theme';
-import { Button } from '../../src/components/ui/Button';
-import Divider from '../../src/components/ui/Divider';
+import { SPACING, RADIUS, ICON_SIZES } from '../../src/lib/theme';
+import { GL_TYPOGRAPHY } from '../../src/lib/gluestackTheme';
+import { Button, Text, Divider } from '../../src/components/glue';
 
 // Email validation — checks for user@domain.tld pattern
 const isValidEmail = (email: string): boolean => {
@@ -175,20 +174,18 @@ export default function LoginScreen() {
             <Eye size={36} color={colors.white} strokeWidth={1.5} />
           </View>
           <Text
-            style={{
-              ...TYPOGRAPHY.display,
-              color: colors.primaryBlue,
-              marginBottom: SPACING.xs,
-            }}
+            variant="display"
+            color={colors.primaryBlue}
+            style={{ marginBottom: SPACING.xs }}
             accessibilityRole="header"
           >
             AlgorithmLens
           </Text>
           <Text
+            variant="bodySmall"
+            color={colors.textMuted}
+            align="center"
             style={{
-              ...TYPOGRAPHY.bodySmall,
-              color: colors.textMuted,
-              textAlign: 'center',
               letterSpacing: 0.3,
               fontWeight: '500',
             }}
@@ -209,7 +206,7 @@ export default function LoginScreen() {
               variant="secondary"
               size="lg"
               accessibilityLabel="Continue with Google"
-              icon={<Text style={{ fontWeight: 'bold', fontSize: TYPOGRAPHY.body.fontSize }}>G</Text>}
+              icon={<Text style={{ fontWeight: 'bold', fontSize: GL_TYPOGRAPHY.body.fontSize }}>G</Text>}
               style={{ marginBottom: SPACING.md }}
             />
 
@@ -221,19 +218,19 @@ export default function LoginScreen() {
               variant="secondary"
               size="lg"
               accessibilityLabel="Continue with Apple"
-              icon={<Text style={{ fontSize: TYPOGRAPHY.h3.fontSize }}>🍎</Text>}
+              icon={<Text style={{ fontSize: GL_TYPOGRAPHY.h3.fontSize }}>🍎</Text>}
               style={{ marginBottom: SPACING.xl }}
             />
 
             {/* Error Message for OAuth */}
             {authError ? (
               <Text
+                variant="small"
+                color={colors.error}
+                align="center"
                 style={{
-                  ...TYPOGRAPHY.small,
-                  color: colors.error,
                   marginBottom: SPACING.md,
                   marginLeft: SPACING.xs,
-                  textAlign: 'center',
                 }}
               >
                 {authError}
@@ -253,7 +250,7 @@ export default function LoginScreen() {
                 style={{
                   marginHorizontal: SPACING.md,
                   color: colors.textSecondary,
-                  ...TYPOGRAPHY.bodySmall,
+                  ...GL_TYPOGRAPHY.bodySmall,
                 }}
               >
                 or
@@ -275,7 +272,7 @@ export default function LoginScreen() {
             >
               <Text
                 style={{
-                  ...TYPOGRAPHY.bodySmall,
+                  ...GL_TYPOGRAPHY.bodySmall,
                   color: colors.primaryBlue,
                   fontWeight: '600',
                 }}
@@ -311,7 +308,7 @@ export default function LoginScreen() {
                 paddingHorizontal: SPACING.md,
                 paddingVertical: SPACING.md,
                 marginBottom: emailError ? SPACING.xs : SPACING.md,
-                ...TYPOGRAPHY.body,
+                ...GL_TYPOGRAPHY.body,
                 color: colors.textMain,
                 minHeight: 48,
                 ...(Platform.OS === 'web' && { outlineStyle: 'none' } as any),
@@ -320,9 +317,9 @@ export default function LoginScreen() {
             />
             {emailError ? (
               <Text
+                variant="small"
+                color={colors.error}
                 style={{
-                  ...TYPOGRAPHY.small,
-                  color: colors.error,
                   marginBottom: SPACING.md,
                   marginLeft: SPACING.xs,
                 }}
@@ -350,7 +347,7 @@ export default function LoginScreen() {
                 paddingHorizontal: SPACING.md,
                 paddingVertical: SPACING.md,
                 marginBottom: SPACING.sm,
-                ...TYPOGRAPHY.body,
+                ...GL_TYPOGRAPHY.body,
                 color: colors.textMain,
                 minHeight: 48,
                 ...(Platform.OS === 'web' && { outlineStyle: 'none' } as any),
@@ -386,7 +383,7 @@ export default function LoginScreen() {
             >
               <Text
                 style={{
-                  ...TYPOGRAPHY.small,
+                  ...GL_TYPOGRAPHY.small,
                   color: colors.primaryBlue,
                   fontWeight: '500',
                 }}
@@ -398,12 +395,12 @@ export default function LoginScreen() {
             {/* Error Message for Email Auth */}
             {authError ? (
               <Text
+                variant="small"
+                color={colors.error}
+                align="center"
                 style={{
-                  ...TYPOGRAPHY.small,
-                  color: colors.error,
                   marginBottom: SPACING.md,
                   marginLeft: SPACING.xs,
-                  textAlign: 'center',
                 }}
               >
                 {authError}
@@ -448,7 +445,7 @@ export default function LoginScreen() {
             >
               <Text
                 style={{
-                  ...TYPOGRAPHY.bodySmall,
+                  ...GL_TYPOGRAPHY.bodySmall,
                   color: colors.primaryBlue,
                   fontWeight: '600',
                 }}

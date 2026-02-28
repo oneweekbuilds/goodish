@@ -12,10 +12,12 @@
  */
 
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity } from 'react-native';
 import { Compass, Clock, ArrowRight } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY, ICON_SIZES } from '../../lib/theme';
+import { SPACING, RADIUS, ICON_SIZES } from '../../lib/theme';
+import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
+import { Text } from '../glue';
 import type { ScanSuggestion } from '../../lib/achievements';
 
 interface SmartSuggestionProps {
@@ -76,7 +78,7 @@ function SmartSuggestionComponent({ suggestion, onAction }: SmartSuggestionProps
         <View style={{ flex: 1 }}>
           <Text
             style={{
-              ...TYPOGRAPHY.overline,
+              ...GL_TYPOGRAPHY.overline,
               color: colors.textTertiary,
               marginBottom: SPACING.xs,
             }}
@@ -85,9 +87,9 @@ function SmartSuggestionComponent({ suggestion, onAction }: SmartSuggestionProps
           </Text>
           <Text
             style={{
-              ...TYPOGRAPHY.bodySmall,
+              ...GL_TYPOGRAPHY.bodySmall,
               color: colors.textSecondary,
-              lineHeight: TYPOGRAPHY.bodySmall.lineHeight,
+              lineHeight: GL_TYPOGRAPHY.bodySmall.lineHeight,
             }}
           >
             {suggestion.message}

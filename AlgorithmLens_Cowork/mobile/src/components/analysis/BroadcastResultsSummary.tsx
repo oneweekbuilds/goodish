@@ -8,7 +8,7 @@
  */
 
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity } from 'react-native';
 import {
   CheckCircle,
   ShoppingBag,
@@ -20,7 +20,9 @@ import {
   Clock,
 } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, TYPOGRAPHY, RADIUS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
+import { SPACING, RADIUS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { Text } from '../glue';
 import type { UnifiedScanResult } from '../../types';
 
 interface BroadcastResultsSummaryProps {
@@ -100,10 +102,17 @@ export const BroadcastResultsSummary = React.memo(function BroadcastResultsSumma
           <CheckCircle size={22} color={colors.successBright} strokeWidth={2} />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain }}>
+          <Text
+            variant="h3"
+            color={colors.textMain}
+          >
             Scan Complete
           </Text>
-          <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textSecondary, marginTop: SPACING.xxs }}>
+          <Text
+            variant="bodySmall"
+            color={colors.textSecondary}
+            style={{ marginTop: SPACING.xxs }}
+          >
             {totalItems} feed items found from {framesUsed} frames
           </Text>
         </View>
@@ -135,11 +144,9 @@ export const BroadcastResultsSummary = React.memo(function BroadcastResultsSumma
 
         {/* Findings grid */}
         <Text
-          style={{
-            ...TYPOGRAPHY.overline,
-            color: colors.textMuted,
-            marginBottom: SPACING.sm,
-          }}
+          variant="overline"
+          color={colors.textMuted}
+          style={{ marginBottom: SPACING.sm }}
         >
           Key findings
         </Text>
@@ -203,7 +210,10 @@ export const BroadcastResultsSummary = React.memo(function BroadcastResultsSumma
             gap: SPACING.sm,
           }}
         >
-          <Text style={{ ...TYPOGRAPHY.buttonMd, color: colors.textInverse }}>
+          <Text
+            variant="buttonMd"
+            color={colors.textInverse}
+          >
             View Full Dashboard
           </Text>
           <ArrowRight size={16} color={colors.textInverse} strokeWidth={2} />
@@ -244,8 +254,18 @@ function MiniStat({
     >
       {icon}
       <View>
-        <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textMuted }}>{label}</Text>
-        <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.textMain }}>{value}</Text>
+        <Text
+          variant="captionSmall"
+          color={colors.textMuted}
+        >
+          {label}
+        </Text>
+        <Text
+          variant="labelBold"
+          color={colors.textMain}
+        >
+          {value}
+        </Text>
       </View>
     </View>
   );
@@ -272,8 +292,18 @@ function FindingRow({
       }}
     >
       {icon}
-      <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textSecondary, width: 120 }}>{label}</Text>
-      <Text style={{ ...TYPOGRAPHY.bodySmall, fontWeight: '600', color: colors.textMain, flex: 1 }}>
+      <Text
+        variant="bodySmall"
+        color={colors.textSecondary}
+        style={{ width: 120 }}
+      >
+        {label}
+      </Text>
+      <Text
+        variant="bodySmall"
+        color={colors.textMain}
+        style={{ flex: 1, fontWeight: '600' }}
+      >
         {value}
       </Text>
     </View>

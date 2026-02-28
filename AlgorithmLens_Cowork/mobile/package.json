@@ -15,6 +15,7 @@
     "@gluestack-ui/nativewind-utils": "^1.0.28",
     "@gluestack-ui/overlay": "^0.1.22",
     "@gluestack-ui/toast": "^1.0.9",
+    "@gorhom/bottom-sheet": "^5.2.8",
     "@react-native-async-storage/async-storage": "^2.1.2",
     "@sentry/react-native": "^8.0.0",
     "@supabase/supabase-js": "^2.95.3",

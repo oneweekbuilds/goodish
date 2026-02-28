@@ -25,7 +25,6 @@ import React, { useState, useCallback } from 'react';
 const NAVIGATION_DELAY_MS = 300;
 import {
   View,
-  Text,
   TouchableOpacity,
   Dimensions,
   Animated,
@@ -49,12 +48,13 @@ import {
   ChevronLeft,
 } from 'lucide-react-native';
 import { triggerImpactMedium, triggerImpactLight } from '../../src/lib/haptics';
-import { TYPOGRAPHY, SPACING, RADIUS, PLATFORMS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../src/lib/theme';
+import { GL_TYPOGRAPHY, SPACING, RADIUS } from '../../src/lib/gluestackTheme';
+import { PLATFORMS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../src/lib/theme';
 import Constants from 'expo-constants';
 import type { SupportedPlatform } from '../../src/types/broadcast';
 import { withAlpha } from '../../src/lib/utils';
 import { XPlatformIcon } from '../../src/components/icons/XPlatformIcon';
-import { Button } from '../../src/components/ui/Button';
+import { Button, Text } from '../../src/components/glue';
 
 const { width } = Dimensions.get('window');
 
@@ -215,7 +215,7 @@ export default function OnboardingScreen() {
                   position: 'absolute',
                   width: 120,
                   height: 120,
-                  borderRadius: 60,
+                  borderRadius: RADIUS.full,
                   backgroundColor: withAlpha(colors.blue50, 0.7),
                 }}
               />
@@ -227,7 +227,7 @@ export default function OnboardingScreen() {
                   left: 20,
                   width: 80,
                   height: 80,
-                  borderRadius: 40,
+                  borderRadius: RADIUS.full,
                   backgroundColor: withAlpha(colors.blue100, 0.8),
                 }}
               />
@@ -251,10 +251,10 @@ export default function OnboardingScreen() {
 
             <View style={{ maxWidth: MAX_CONTENT_WIDTH }}>
               <Text
+                variant="display"
+                color={colors.textMain}
+                align="center"
                 style={{
-                  ...TYPOGRAPHY.display,
-                  color: colors.textMain,
-                  textAlign: 'center',
                   marginBottom: SPACING.lg,
                 }}
                 accessibilityRole="header"
@@ -263,11 +263,9 @@ export default function OnboardingScreen() {
               </Text>
 
               <Text
-                style={{
-                  ...TYPOGRAPHY.bodyLarge,
-                  color: colors.textMuted,
-                  textAlign: 'center',
-                }}
+                variant="bodyLarge"
+                color={colors.textMuted}
+                align="center"
               >
                 A clear picture of what appears — sources, ads, tone, and more.
               </Text>
@@ -287,10 +285,10 @@ export default function OnboardingScreen() {
           >
             <View style={{ maxWidth: MAX_CONTENT_WIDTH, width: '100%' }}>
               <Text
+                variant="display"
+                color={colors.textMain}
+                align="center"
                 style={{
-                  ...TYPOGRAPHY.display,
-                  color: colors.textMain,
-                  textAlign: 'center',
                   marginBottom: SPACING['4xl'],
                 }}
                 accessibilityRole="header"
@@ -348,17 +346,15 @@ export default function OnboardingScreen() {
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text
-                        style={{
-                          ...TYPOGRAPHY.h3,
-                          color: colors.textMain,
-                        }}
+                        variant="h3"
+                        color={colors.textMain}
                       >
                         {item.label}
                       </Text>
                       <Text
+                        variant="bodySmall"
+                        color={colors.textMuted}
                         style={{
-                          ...TYPOGRAPHY.bodySmall,
-                          color: colors.textMuted,
                           marginTop: SPACING.xxs,
                         }}
                       >
@@ -384,10 +380,10 @@ export default function OnboardingScreen() {
           >
             <View style={{ maxWidth: MAX_CONTENT_WIDTH, width: '100%' }}>
               <Text
+                variant="display"
+                color={colors.textMain}
+                align="center"
                 style={{
-                  ...TYPOGRAPHY.display,
-                  color: colors.textMain,
-                  textAlign: 'center',
                   marginBottom: SPACING.md,
                 }}
                 accessibilityRole="header"
@@ -396,10 +392,10 @@ export default function OnboardingScreen() {
               </Text>
 
               <Text
+                variant="body"
+                color={colors.textMuted}
+                align="center"
                 style={{
-                  ...TYPOGRAPHY.body,
-                  color: colors.textMuted,
-                  textAlign: 'center',
                   marginBottom: SPACING['3xl'],
                 }}
               >
@@ -456,14 +452,13 @@ export default function OnboardingScreen() {
                         />
                       </View>
                       <Text
+                        variant="captionSmall"
+                        color={isSelected ? colors.textMain : colors.textMuted}
+                        align="center"
                         style={{
-                          ...TYPOGRAPHY.captionSmall,
                           fontWeight: isSelected ? '600' : '500',
-                          color: isSelected ? colors.textMain : colors.textMuted,
                           marginTop: SPACING.sm,
-                          textAlign: 'center',
                         }}
-                        numberOfLines={1}
                       >
                         {platform.name}
                       </Text>

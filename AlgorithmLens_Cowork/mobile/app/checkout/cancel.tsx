@@ -8,11 +8,12 @@
  */
 
 import { useEffect } from 'react';
-import { View, Text, SafeAreaView } from 'react-native';
+import { View, SafeAreaView, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { useTheme } from '../../src/context/ThemeContext';
-import { TYPOGRAPHY, SPACING } from '../../src/lib/theme';
-import { ActivityIndicator } from 'react-native';
+import { GL_TYPOGRAPHY } from '../../src/lib/gluestackTheme';
+import { SPACING } from '../../src/lib/theme';
+import { Text } from '../../src/components/glue';
 
 export default function CheckoutCancelScreen() {
   const { colors } = useTheme();
@@ -29,7 +30,8 @@ export default function CheckoutCancelScreen() {
       <View style={{ alignItems: 'center', gap: SPACING.lg }}>
         <ActivityIndicator size="large" color={colors.primaryBlue} />
         <Text
-          style={{ ...TYPOGRAPHY.body, color: colors.textMuted }}
+          variant="body"
+          color={colors.textMuted}
           accessibilityRole="header"
         >
           Returning to settings...

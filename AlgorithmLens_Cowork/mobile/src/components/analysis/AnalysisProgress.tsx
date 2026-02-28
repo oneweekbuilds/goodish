@@ -12,7 +12,7 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, Animated, Easing, AccessibilityInfo as RNAccessibilityInfo, Platform, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Animated, Easing, AccessibilityInfo as RNAccessibilityInfo, Platform, StyleSheet } from 'react-native';
 import {
   Sparkles,
   CheckCircle,
@@ -25,7 +25,9 @@ import {
 } from 'lucide-react-native';
 import { triggerNotificationSuccess, triggerNotificationError } from '../../lib/haptics';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, TYPOGRAPHY, RADIUS, COLORS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
+import { SPACING, RADIUS, COLORS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { Text } from '../glue';
 import type { PipelineProgress, PipelineStage } from '../../lib/analysis/broadcastAnalysisPipeline';
 
 interface AnalysisProgressProps {
@@ -152,19 +154,15 @@ export const AnalysisProgress = React.memo(function AnalysisProgress({
         </View>
         <View style={{ flex: 1 }}>
           <Text
-            style={{
-              ...TYPOGRAPHY.labelBold,
-              color: colors.textMain,
-            }}
+            variant="labelBold"
+            color={colors.textMain}
           >
             {stageInfo.title}
           </Text>
           <Text
-            style={{
-              ...TYPOGRAPHY.caption,
-              color: colors.textSecondary,
-              marginTop: SPACING.xxs,
-            }}
+            variant="caption"
+            color={colors.textSecondary}
+            style={{ marginTop: SPACING.xxs }}
             accessibilityLiveRegion="polite"
             accessible={true}
           >
@@ -263,7 +261,10 @@ export const AnalysisProgress = React.memo(function AnalysisProgress({
               justifyContent: 'center',
             }}
           >
-            <Text style={{ ...TYPOGRAPHY.label, color: colors.textSecondary }}>
+            <Text
+              variant="label"
+              color={colors.textSecondary}
+            >
               Cancel
             </Text>
           </TouchableOpacity>
@@ -285,7 +286,10 @@ export const AnalysisProgress = React.memo(function AnalysisProgress({
               justifyContent: 'center',
             }}
           >
-            <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.white }}>
+            <Text
+              variant="labelBold"
+              color={colors.white}
+            >
               View Results
             </Text>
           </TouchableOpacity>
@@ -308,7 +312,10 @@ export const AnalysisProgress = React.memo(function AnalysisProgress({
                 justifyContent: 'center',
               }}
             >
-              <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.white }}>
+              <Text
+                variant="labelBold"
+                color={colors.white}
+              >
                 Retry Analysis
               </Text>
             </TouchableOpacity>
@@ -361,21 +368,16 @@ function StatItem({
   return (
     <View style={{ alignItems: 'center' }}>
       <Text
-        style={{
-          ...TYPOGRAPHY.labelBold,
-          fontSize: TYPOGRAPHY.body.fontSize,
-          color: colors.textMain,
-          fontVariant: ['tabular-nums'],
-        }}
+        variant="labelBold"
+        color={colors.textMain}
+        style={{ fontVariant: ['tabular-nums'] }}
       >
         {value}
       </Text>
       <Text
-        style={{
-          ...TYPOGRAPHY.captionSmall,
-          color: colors.textMuted,
-          marginTop: SPACING.xxs,
-        }}
+        variant="captionSmall"
+        color={colors.textMuted}
+        style={{ marginTop: SPACING.xxs }}
       >
         {label}
       </Text>

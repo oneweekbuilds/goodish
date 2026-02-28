@@ -1,14 +1,21 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
   Animated,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
+import RNAnimated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  Easing as REasing,
+} from 'react-native-reanimated';
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { WebViewScanner, ScanResult, WebViewScannerHandle } from '../../src/components/scanner/WebViewScanner';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
@@ -16,10 +23,14 @@ import { supabase } from '../../src/lib/supabase';
 import { authenticatedFetch } from '../../src/lib/api';
 import { classifyPostTexts } from '../../src/lib/analysis/textClassificationService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { RADIUS, SPACING, TYPOGRAPHY, MIN_TOUCH_TARGET } from '../../src/lib/theme';
+import { GL_TYPOGRAPHY } from '../../src/lib/gluestackTheme';
+import { RADIUS, SPACING, MIN_TOUCH_TARGET } from '../../src/lib/theme';
 import { X, Check, ChartBar, AlertTriangle, ChevronLeft } from 'lucide-react-native';
+import { Text } from '../../src/components/glue';
 import { MIN_POSTS_GOOD, MIN_POSTS_OK, MIN_POSTS_REQUIRED, MIN_SCAN_DURATION_SECS } from '../../src/config/thresholds';
 import { recordScanDate } from '../../src/services/notifications';
+import { ALScoreGauge } from '../../src/components/charts';
+import { ALPieChart } from '../../src/components/charts';
 
 // PIPELINE FIX: Gemini API key for client-side text classification (political/tone)
 const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY || '';
@@ -86,6 +97,13 @@ export default function ScannerScreen() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const successAnim = useRef(new Animated.Value(0)).current;
   const scannerRef = useRef<WebViewScannerHandle>(null);
+  const resultsSheetRef = useRef<BottomSheet>(null);
+
+  // Progress bar animation
+  const progressWidth = useSharedValue(0);
+
+  // Bottom sheet snap points
+  const snapPoints = ['12%', '50%', '90%'];
 
   // Live timer — single source of truth from startTimeRef
   useEffect(() => {
@@ -96,6 +114,29 @@ export default function ScannerScreen() {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
+
+  // Progress bar animation
+  useEffect(() => {
+    if (scanStatus === 'loading') {
+      // Animate from 0% to 80% over 3 seconds
+      progressWidth.value = withTiming(0.8, {
+        duration: 3000,
+        easing: REasing.out(REasing.quad),
+      });
+    } else if (scanStatus === 'scanning') {
+      // Snap to 100% over 300ms
+      progressWidth.value = withTiming(1, {
+        duration: 300,
+        easing: REasing.out(REasing.quad),
+      });
+    } else {
+      // Hide progress bar
+      progressWidth.value = withTiming(0, {
+        duration: 200,
+        easing: REasing.out(REasing.quad),
+      });
+    }
+  }, [scanStatus]);
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -301,24 +342,20 @@ export default function ScannerScreen() {
           setSavedAdPct(adPercentage);
           setSavedSuggestedPct(suggestedPercentage);
           setShowSuccess(true);
-          Animated.spring(successAnim, {
-            toValue: 1,
-            tension: 50,
-            friction: 8,
-            useNativeDriver: true,
-          }).start();
+          // Expand bottom sheet to half-screen (index 1 = 50%)
+          setTimeout(() => {
+            resultsSheetRef.current?.snapToIndex(1);
+          }, 100);
           return;
         }
 
-        // Show success screen instead of Alert
+        // Show success screen (expand bottom sheet) instead of Alert
         setSaving(false);
         setShowSuccess(true);
-        Animated.spring(successAnim, {
-          toValue: 1,
-          tension: 50,
-          friction: 8,
-          useNativeDriver: true,
-        }).start();
+        // Expand bottom sheet to half-screen (index 1 = 50%)
+        setTimeout(() => {
+          resultsSheetRef.current?.snapToIndex(1);
+        }, 100);
       } catch (error) {
         if (__DEV__) {
           console.error('Error completing scan:', error);
@@ -373,201 +410,25 @@ export default function ScannerScreen() {
     }
   };
 
-  // Success screen — smooth transition instead of Alert
-  if (showSuccess) {
-    const scale = successAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0.8, 1],
-    });
 
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
-        <Animated.View style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          paddingHorizontal: SPACING['3xl'],
-          opacity: successAnim,
-          transform: [{ scale }],
-        }}>
-          {/* L-12 FIX: Success icon uses brand blue instead of green */}
-          <View style={{
-            width: 80,
-            height: 80,
-            borderRadius: 40,
-            backgroundColor: colors.primaryBlue,
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginBottom: SPACING['2xl'],
-            ...shadows.hero,
-          }}>
-            <Check size={40} color={colors.white} strokeWidth={2.5} />
-          </View>
-
-          <Text style={{
-            ...TYPOGRAPHY.h1,
-            color: colors.textMain,
-            textAlign: 'center',
-            marginBottom: SPACING.sm,
-          }}>
-            Scan Complete
-          </Text>
-
-          <Text style={{
-            ...TYPOGRAPHY.body,
-            color: colors.textMuted,
-            textAlign: 'center',
-            marginBottom: SPACING.sm,
-          }}>
-            Your {platformName} feed has been analyzed
-          </Text>
-          {/* L-10 FIX: Add insight sentence to fill white space */}
-          <Text style={{
-            ...TYPOGRAPHY.caption,
-            color: colors.textTertiary,
-            textAlign: 'center',
-            marginBottom: SPACING['2xl'],
-          }}>
-            Here's a quick snapshot of what we captured
-          </Text>
-
-          {/* Warn if metrics look like detection failure (H-08/A-03) */}
-          {((savedAdPct === 0 && savedSuggestedPct === 0 && savedPostCount > 0) ||
-            (savedSuggestedPct === 0 && savedPostCount > 5 && platformStr !== 'reddit')) && (
-            <View style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              backgroundColor: colors.lowSampleBg,
-              borderRadius: RADIUS.md,
-              padding: SPACING.md,
-              marginBottom: SPACING.lg,
-              gap: SPACING.sm,
-            }}>
-              <AlertTriangle size={16} color={colors.warning} strokeWidth={2} />
-              <Text style={{ ...TYPOGRAPHY.caption, color: colors.warning, flex: 1 }}>
-                {savedSuggestedPct === 0 && savedAdPct > 0
-                  ? `0% suggested content detected across ${savedPostCount} posts. This may indicate a classification issue — your dashboard data for this scan may be incomplete.`
-                  : `We couldn't detect ads or suggested content. ${platformName} may have updated their layout.`}
-              </Text>
-            </View>
-          )}
-
-          {/* Quick stats — Apple Health summary style */}
-          <View style={{
-            flexDirection: 'row',
-            justifyContent: 'space-evenly',
-            paddingVertical: SPACING.xl,
-            marginBottom: SPACING['4xl'],
-            width: '100%',
-          }}>
-            {[
-              { value: String(savedPostCount), label: 'Posts' },
-              { value: `${savedAdPct}%`, label: 'Ads' },
-              { value: `${savedSuggestedPct}%`, label: 'Suggested' },
-            ].map((stat) => (
-              <View key={stat.label} style={{ alignItems: 'center' }}>
-                <Text
-                  style={{ ...TYPOGRAPHY.h1, color: colors.primaryBlue }}
-                  adjustsFontSizeToFit
-                  numberOfLines={1}
-                >
-                  {stat.value}
-                </Text>
-                <Text style={{ ...TYPOGRAPHY.caption, color: colors.textSecondary, marginTop: SPACING.xs }}>
-                  {stat.label}
-                </Text>
-              </View>
-            ))}
-          </View>
-
-          {/* View Dashboard button — L-07 FIX: Always tappable, timeout spinner after 5s */}
-          <TouchableOpacity
-            onPress={async () => {
-              if (!navigatingToDashboard) {
-                setNavigatingToDashboard(true);
-                // L-07: Set a 5-second timeout — if still loading, hide spinner
-                setTimeout(() => setNavigatingToDashboard(false), 5000);
-              }
-              // Always navigate, even if already "loading" — let the dashboard load in place
-              await new Promise(resolve => setTimeout(resolve, 300));
-              router.replace('/(tabs)/dashboard');
-            }}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel={navigatingToDashboard ? 'Loading dashboard' : 'View your dashboard'}
-            style={{
-              backgroundColor: colors.primaryBlue,
-              borderRadius: RADIUS.md,
-              paddingHorizontal: SPACING['3xl'],
-              paddingVertical: SPACING.lg,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: SPACING.sm,
-              ...shadows.medium,
-            }}
-          >
-            {navigatingToDashboard ? (
-              <ActivityIndicator size="small" color={colors.white} />
-            ) : (
-              <ChartBar size={18} color={colors.white} strokeWidth={2} />
-            )}
-            <Text style={{ ...TYPOGRAPHY.buttonLg, color: colors.white }}>
-              {navigatingToDashboard ? 'Loading Dashboard...' : 'View Your Dashboard'}
-            </Text>
-          </TouchableOpacity>
-
-          {/* M-17 FIX: "Scan Another Platform" as proper outline button */}
-          <View style={{ gap: SPACING.md, marginTop: SPACING.lg, alignItems: 'center' }}>
-            <TouchableOpacity
-              onPress={() => router.replace('/(tabs)/scan')}
-              accessibilityRole="button"
-              accessibilityLabel="Scan Another Platform"
-              style={{
-                borderWidth: 1,
-                borderColor: colors.primaryBlue,
-                borderRadius: RADIUS.md,
-                paddingVertical: SPACING.md,
-                paddingHorizontal: SPACING['2xl'],
-                alignItems: 'center',
-                minWidth: 200,
-              }}
-            >
-              <Text style={{ ...TYPOGRAPHY.buttonMd, color: colors.primaryBlue }}>
-                Scan Another Platform
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => router.replace('/(tabs)')}
-              accessibilityRole="button"
-              accessibilityLabel="Go Home"
-              style={{
-                paddingVertical: SPACING.sm,
-                paddingHorizontal: SPACING.xl,
-              }}
-            >
-              <Text style={{ ...TYPOGRAPHY.label, color: colors.textSecondary }}>
-                Go Home
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-      </SafeAreaView>
-    );
-  }
+  // Animated style for progress bar
+  const progressAnimatedStyle = useAnimatedStyle(() => ({
+    width: `${progressWidth.value * 100}%`,
+  }));
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
-      {/* Header */}
+      {/* Header with cleaner minimal toolbar */}
       <View
         style={{
           paddingHorizontal: SPACING.lg,
-          paddingVertical: SPACING.md,
+          paddingVertical: SPACING.sm,
           backgroundColor: colors.bgCard,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.borderSlate200,
+          opacity: 0.98,
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
+          ...shadows.sm,
         }}
       >
         {/* Back button for in-WebView navigation */}
@@ -582,18 +443,20 @@ export default function ScannerScreen() {
             height: 36,
             justifyContent: 'center',
             alignItems: 'center',
-            borderRadius: RADIUS.sm,
+            borderRadius: RADIUS.md,
             marginRight: SPACING.sm,
+            backgroundColor: colors.bgSecondary,
           }}
         >
           <ChevronLeft size={20} color={colors.textMuted} strokeWidth={2} />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
-          <Text style={{
-            ...TYPOGRAPHY.h3,
-            color: colors.textMain,
-            marginBottom: SPACING.xxs,
-          }} accessibilityRole="header">
+          <Text
+            variant="h3"
+            color={colors.textMain}
+            style={{ marginBottom: SPACING.xxs }}
+            accessibilityRole="header"
+          >
             {platformName}
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
@@ -605,11 +468,11 @@ export default function ScannerScreen() {
                 backgroundColor: colors.primaryBlue,
               }} />
             )}
-            <Text style={{
-              ...TYPOGRAPHY.caption,
-              fontWeight: '500',
-              color: scanStatus === 'scanning' ? colors.primaryBlue : colors.textSecondary,
-            }}>
+            <Text
+              variant="caption"
+              color={scanStatus === 'scanning' ? colors.primaryBlue : colors.textSecondary}
+              style={{ fontWeight: '500' }}
+            >
               {/* M-10 FIX: Use platformName (correctly capitalized) in loading text */}
               {scanStatus === 'loading'
                 ? `Loading ${platformName}...`
@@ -632,7 +495,7 @@ export default function ScannerScreen() {
             justifyContent: 'center',
             alignItems: 'center',
             borderRadius: RADIUS.sm,
-            backgroundColor: colors.cancelButtonBg,
+            backgroundColor: 'transparent',
           }}
         >
           {saving ? (
@@ -643,6 +506,19 @@ export default function ScannerScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Smooth loading progress bar */}
+      <RNAnimated.View
+        style={[
+          {
+            height: 3,
+            backgroundColor: colors.primaryBlue,
+            width: '100%',
+            overflow: 'hidden',
+          },
+          progressAnimatedStyle,
+        ]}
+      />
+
       {/* WebView Scanner */}
       <View style={{ flex: 1 }}>
         <WebViewScanner
@@ -652,6 +528,284 @@ export default function ScannerScreen() {
           onScanStatusChange={(status) => setScanStatus(status)}
         />
       </View>
+
+      {/* Bottom Sheet Results Overlay */}
+      {showSuccess && (
+        <BottomSheet
+          ref={resultsSheetRef}
+          snapPoints={snapPoints}
+          animationConfigs={{
+            damping: 50,
+            stiffness: 500,
+          }}
+          enablePanDownToClose={false}
+          backgroundStyle={{ backgroundColor: colors.bgCard }}
+          handleIndicatorStyle={{ backgroundColor: colors.borderSlate300 }}
+        >
+          <BottomSheetView style={{ flex: 1 }}>
+            {/* Collapsed state (12%) — Summary line visible at bottom */}
+            <View style={{ paddingHorizontal: SPACING.lg, paddingBottom: SPACING.md }}>
+              <Text
+                variant="caption"
+                color={colors.textSecondary}
+              >
+                Scan complete — pull up for results
+              </Text>
+            </View>
+
+            {/* Half state (50%) + Full state (90%) content */}
+            <ScrollView
+              scrollEventThrottle={16}
+              style={{ flex: 1, paddingHorizontal: SPACING.lg }}
+              showsVerticalScrollIndicator={false}
+            >
+              {/* Success icon + heading */}
+              <View style={{ alignItems: 'center', marginBottom: SPACING['2xl'] }}>
+                <View style={{
+                  width: 60,
+                  height: 60,
+                  borderRadius: RADIUS.full,
+                  backgroundColor: colors.primaryBlue,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginBottom: SPACING.lg,
+                  ...shadows.hero,
+                }}>
+                  <Check size={32} color={colors.white} strokeWidth={2.5} />
+                </View>
+
+                <Text
+                  variant="h2"
+                  color={colors.textMain}
+                  align="center"
+                  style={{ marginBottom: SPACING.xs }}
+                >
+                  Scan Complete
+                </Text>
+
+                <Text
+                  variant="body"
+                  color={colors.textMuted}
+                  align="center"
+                  style={{ marginBottom: SPACING.sm }}
+                >
+                  Your {platformName} feed has been analyzed
+                </Text>
+              </View>
+
+              {/* Warn if metrics look like detection failure (H-08/A-03) */}
+              {((savedAdPct === 0 && savedSuggestedPct === 0 && savedPostCount > 0) ||
+                (savedSuggestedPct === 0 && savedPostCount > 5 && platformStr !== 'reddit')) && (
+                <View style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: colors.lowSampleBg,
+                  borderRadius: RADIUS.md,
+                  padding: SPACING.md,
+                  marginBottom: SPACING.lg,
+                  gap: SPACING.sm,
+                }}>
+                  <AlertTriangle size={16} color={colors.warning} strokeWidth={2} />
+                  <Text
+                    variant="caption"
+                    color={colors.warning}
+                    style={{ flex: 1 }}
+                  >
+                    {savedSuggestedPct === 0 && savedAdPct > 0
+                      ? `0% suggested content detected across ${savedPostCount} posts. This may indicate a classification issue — your dashboard data for this scan may be incomplete.`
+                      : `We couldn't detect ads or suggested content. ${platformName} may have updated their layout.`}
+                  </Text>
+                </View>
+              )}
+
+              {/* Quick stats — Apple Health summary style */}
+              <View style={{
+                flexDirection: 'row',
+                justifyContent: 'space-evenly',
+                paddingVertical: SPACING.lg,
+                marginBottom: SPACING['2xl'],
+                width: '100%',
+              }}>
+                {[
+                  { value: String(savedPostCount), label: 'Posts' },
+                  { value: `${savedAdPct}%`, label: 'Ads' },
+                  { value: `${savedSuggestedPct}%`, label: 'Suggested' },
+                ].map((stat) => (
+                  <View key={stat.label} style={{ alignItems: 'center' }}>
+                    <Text
+                      variant="h1"
+                      color={colors.primaryBlue}
+                      style={{ adjustFontSizeToFit: true, numberOfLines: 1 }}
+                    >
+                      {stat.value}
+                    </Text>
+                    <Text
+                      variant="caption"
+                      color={colors.textSecondary}
+                      style={{ marginTop: SPACING.xs }}
+                    >
+                      {stat.label}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+
+              {/* Feed quality score gauge (only if we have data) */}
+              {savedPostCount > 0 && (
+                <View style={{ marginBottom: SPACING['2xl'] }}>
+                  <Text
+                    variant="labelBold"
+                    color={colors.textMain}
+                    style={{ marginBottom: SPACING.md }}
+                  >
+                    Feed Quality
+                  </Text>
+                  <ALScoreGauge
+                    score={Math.min(Math.round((savedPostCount / 50) * 100), 100)}
+                    maxScore={100}
+                    colors={colors}
+                  />
+                </View>
+              )}
+
+              {/* Content breakdown pie chart (optional) */}
+              {savedPostCount > 0 && (
+                <View style={{ marginBottom: SPACING['2xl'] }}>
+                  <Text
+                    variant="labelBold"
+                    color={colors.textMain}
+                    style={{ marginBottom: SPACING.md }}
+                  >
+                    Content Breakdown
+                  </Text>
+                  <ALPieChart
+                    data={[
+                      { label: 'Suggested', value: savedSuggestedPct, color: colors.primaryBlue },
+                      { label: 'Followed', value: 100 - savedSuggestedPct - savedAdPct, color: colors.accentGreen },
+                      { label: 'Ads', value: savedAdPct, color: colors.warning },
+                    ]}
+                    colors={colors}
+                  />
+                </View>
+              )}
+
+              {/* 6 dimensions tabs placeholder (for future expansion) */}
+              <View style={{ marginBottom: SPACING['2xl'] }}>
+                <Text
+                  variant="labelBold"
+                  color={colors.textMain}
+                  style={{ marginBottom: SPACING.md }}
+                >
+                  Analysis Dimensions
+                </Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm }}>
+                  {['Overview', 'Sources', 'Ads', 'Politics', 'Tone', 'Suggested vs. Followed'].map((tab) => (
+                    <View
+                      key={tab}
+                      style={{
+                        paddingHorizontal: SPACING.md,
+                        paddingVertical: SPACING.sm,
+                        borderRadius: RADIUS.md,
+                        backgroundColor: colors.bgSecondary,
+                        borderWidth: 1,
+                        borderColor: colors.borderSlate300,
+                      }}
+                    >
+                      <Text
+                        variant="caption"
+                        color={colors.textSecondary}
+                      >
+                        {tab}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+
+              {/* View Dashboard button — L-07 FIX: Always tappable, timeout spinner after 5s */}
+              <TouchableOpacity
+                onPress={async () => {
+                  if (!navigatingToDashboard) {
+                    setNavigatingToDashboard(true);
+                    // L-07: Set a 5-second timeout — if still loading, hide spinner
+                    setTimeout(() => setNavigatingToDashboard(false), 5000);
+                  }
+                  // Always navigate, even if already "loading" — let the dashboard load in place
+                  await new Promise(resolve => setTimeout(resolve, 300));
+                  router.replace('/(tabs)/dashboard');
+                }}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={navigatingToDashboard ? 'Loading dashboard' : 'View your dashboard'}
+                style={{
+                  backgroundColor: colors.primaryBlue,
+                  borderRadius: RADIUS.md,
+                  paddingHorizontal: SPACING['3xl'],
+                  paddingVertical: SPACING.lg,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: SPACING.sm,
+                  ...shadows.medium,
+                }}
+              >
+                {navigatingToDashboard ? (
+                  <ActivityIndicator size="small" color={colors.white} />
+                ) : (
+                  <ChartBar size={18} color={colors.white} strokeWidth={2} />
+                )}
+                <Text
+                  variant="buttonLg"
+                  color={colors.white}
+                >
+                  {navigatingToDashboard ? 'Loading Dashboard...' : 'View Your Dashboard'}
+                </Text>
+              </TouchableOpacity>
+
+              {/* M-17 FIX: "Scan Another Platform" as proper outline button */}
+              <View style={{ gap: SPACING.md, marginTop: SPACING.lg, alignItems: 'center', paddingBottom: SPACING['3xl'] }}>
+                <TouchableOpacity
+                  onPress={() => router.replace('/(tabs)/scan')}
+                  accessibilityRole="button"
+                  accessibilityLabel="Scan Another Platform"
+                  style={{
+                    borderWidth: 1,
+                    borderColor: colors.primaryBlue,
+                    borderRadius: RADIUS.md,
+                    paddingVertical: SPACING.md,
+                    paddingHorizontal: SPACING['2xl'],
+                    alignItems: 'center',
+                    minWidth: 200,
+                  }}
+                >
+                  <Text
+                    variant="buttonMd"
+                    color={colors.primaryBlue}
+                  >
+                    Scan Another Platform
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => router.replace('/(tabs)')}
+                  accessibilityRole="button"
+                  accessibilityLabel="Go Home"
+                  style={{
+                    paddingVertical: SPACING.sm,
+                    paddingHorizontal: SPACING.xl,
+                  }}
+                >
+                  <Text
+                    variant="label"
+                    color={colors.textSecondary}
+                  >
+                    Go Home
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </BottomSheetView>
+        </BottomSheet>
+      )}
 
       {/* Saving overlay */}
       {saving && (
@@ -668,18 +822,18 @@ export default function ScannerScreen() {
         }}>
           <View style={{
             backgroundColor: colors.bgCard,
-            borderRadius: RADIUS.xl,
+            borderRadius: RADIUS.full,
             paddingHorizontal: SPACING['3xl'],
             paddingVertical: SPACING['2xl'],
             alignItems: 'center',
             ...shadows.hero,
           }}>
             <ActivityIndicator size="large" color={colors.primaryBlue} />
-            <Text style={{
-              ...TYPOGRAPHY.labelBold,
-              color: colors.textMain,
-              marginTop: SPACING.lg,
-            }}>
+            <Text
+              variant="labelBold"
+              color={colors.textMain}
+              style={{ marginTop: SPACING.lg }}
+            >
               Saving your scan...
             </Text>
           </View>

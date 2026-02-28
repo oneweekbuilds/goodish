@@ -1,11 +1,11 @@
 import React from 'react';
 import {
   View,
-  Text,
 } from 'react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from '../../context/ThemeContext';
-import { TYPOGRAPHY, SPACING } from '../../lib/theme';
+import { GL_TYPOGRAPHY, SPACING } from '../../lib/gluestackTheme';
+import { Text } from '../glue';
 
 interface BigNumberProps {
   value: string | number;
@@ -39,7 +39,7 @@ const BigNumberComponent: React.FC<BigNumberProps> = ({
           fontSize: fontSize,
           fontWeight: '700',
           color: textColor,
-          letterSpacing: TYPOGRAPHY.scoreSmall.letterSpacing,
+          letterSpacing: GL_TYPOGRAPHY.scoreSmall.letterSpacing,
           marginBottom: SPACING.xs,
         }}
       >
@@ -47,10 +47,8 @@ const BigNumberComponent: React.FC<BigNumberProps> = ({
         {suffix}
       </Text>
       <Text
-        style={{
-          ...TYPOGRAPHY.label,
-          color: colors.textMuted,
-        }}
+        variant="label"
+        color={colors.textMuted}
       >
         {label}
       </Text>

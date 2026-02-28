@@ -10,10 +10,12 @@
 
 import { triggerNotificationSuccess, triggerSelection } from '../../lib/haptics';
 import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, Animated, AccessibilityInfo, Platform, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Animated, AccessibilityInfo, Platform, StyleSheet } from 'react-native';
 import { Award } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { SPACING, RADIUS, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
+import { Text } from '../glue';
 
 interface MilestoneModalProps {
   milestone: {
@@ -139,7 +141,7 @@ function MilestoneModalComponent({ milestone, onDismiss }: MilestoneModalProps) 
         {/* Milestone title */}
         <Text
           style={{
-            ...TYPOGRAPHY.h2,
+            ...GL_TYPOGRAPHY.h2,
             color: colors.textMain,
             textAlign: 'center',
             marginBottom: SPACING.xs,
@@ -151,7 +153,7 @@ function MilestoneModalComponent({ milestone, onDismiss }: MilestoneModalProps) 
         {/* Day count */}
         <Text
           style={{
-            ...TYPOGRAPHY.label,
+            ...GL_TYPOGRAPHY.label,
             color: colors.primaryBlue,
             marginBottom: SPACING.md,
           }}
@@ -162,7 +164,7 @@ function MilestoneModalComponent({ milestone, onDismiss }: MilestoneModalProps) 
         {/* Encouraging message */}
         <Text
           style={{
-            ...TYPOGRAPHY.bodySmall,
+            ...GL_TYPOGRAPHY.bodySmall,
             color: colors.textSecondary,
             textAlign: 'center',
             marginBottom: SPACING.xl,
@@ -189,7 +191,7 @@ function MilestoneModalComponent({ milestone, onDismiss }: MilestoneModalProps) 
         >
           <Text
             style={{
-              ...TYPOGRAPHY.labelBold,
+              ...GL_TYPOGRAPHY.labelBold,
               color: colors.textInverse,
             }}
           >

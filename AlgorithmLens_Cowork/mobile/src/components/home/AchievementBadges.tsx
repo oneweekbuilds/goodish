@@ -12,7 +12,7 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { View, Text, ScrollView, Animated, AccessibilityInfo } from 'react-native';
+import { View, ScrollView, Animated, AccessibilityInfo } from 'react-native';
 import {
   Sparkles,
   Layers,
@@ -25,7 +25,9 @@ import {
   Award,
 } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY, ICON_SIZES } from '../../lib/theme';
+import { SPACING, RADIUS, ICON_SIZES } from '../../lib/theme';
+import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
+import { Text } from '../glue';
 import type { AchievementDefinition, EarnedAchievement } from '../../types/achievements';
 import { ACHIEVEMENT_DEFINITIONS } from '../../types/achievements';
 
@@ -87,7 +89,7 @@ function AchievementBadgesComponent({ earnedAchievements, newlyEarnedId }: Achie
         <Award size={14} color={colors.primaryBlue} strokeWidth={2} />
         <Text
           style={{
-            ...TYPOGRAPHY.overline,
+            ...GL_TYPOGRAPHY.overline,
             color: colors.textTertiary,
           }}
         >
@@ -96,7 +98,7 @@ function AchievementBadgesComponent({ earnedAchievements, newlyEarnedId }: Achie
         {!showTeaser && (
           <Text
             style={{
-              ...TYPOGRAPHY.captionSmall,
+              ...GL_TYPOGRAPHY.captionSmall,
               color: colors.textTertiary,
             }}
           >
@@ -225,7 +227,7 @@ function BadgeItem({
       </View>
       <Text
         style={{
-          ...TYPOGRAPHY.captionSmall,
+          ...GL_TYPOGRAPHY.captionSmall,
           color: earned ? colors.textSecondary : colors.textTertiary,
           textAlign: 'center',
         }}

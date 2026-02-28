@@ -30,7 +30,6 @@ import { triggerImpactMedium } from '../../lib/haptics';
 import React, { useCallback, useRef, useState } from 'react';
 import {
   View,
-  Text,
   ScrollView,
   RefreshControl,
   Pressable,
@@ -44,7 +43,9 @@ import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useStreak } from '../../hooks/useStreak';
 import { useHabitFeatures } from '../../hooks/useHabitFeatures';
-import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
+import { SPACING, RADIUS } from '../../lib/theme';
+import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
+import { Text } from '../../components/glue';
 import { StreakBadge } from './StreakBadge';
 import { FeedScoreCard } from './FeedScoreCard';
 import { FeedScoreTrend } from './FeedScoreTrend';
@@ -55,7 +56,7 @@ import { DailyTipCard } from './DailyTipCard';
 import { WeeklySummaryCard } from './WeeklySummaryCard';
 import { AchievementBadges } from './AchievementBadges';
 import { SmartSuggestion } from './SmartSuggestion';
-import { StaggeredList } from '../ui/StaggeredList';
+import { StaggeredList } from '../glue';
 import type { ScanMode, SupportedPlatform } from '../../types/broadcast';
 import type { FeedScore } from '../../types/streak';
 import type { WeeklySummaryData, FeedScoreTrendPoint, TrendDirection, EarnedAchievement } from '../../types/achievements';
@@ -244,10 +245,10 @@ function CalmHomeScreenComponent({
         showsVerticalScrollIndicator={false}
       >
         {/* ── Greeting ── */}
-        <View style={{ marginBottom: SPACING['3xl'] }} accessibilityLiveRegion="polite">
+        <View style={{ marginBottom: SPACING['2xl'] }} accessibilityLiveRegion="polite">
           <Text
             style={{
-              ...TYPOGRAPHY.heroTitle,
+              ...GL_TYPOGRAPHY.heroTitle,
               color: colors.textMain,
               marginBottom: SPACING.xs,
             }}
@@ -257,7 +258,7 @@ function CalmHomeScreenComponent({
           </Text>
           <Text
             style={{
-              ...TYPOGRAPHY.body,
+              ...GL_TYPOGRAPHY.body,
               color: colors.textSecondary,
               marginBottom: SPACING.xl,
             }}
@@ -270,7 +271,7 @@ function CalmHomeScreenComponent({
         <StaggeredList staggerDelay={50} duration={300}>
           {/* ── Streak Badge (delay=0) ── */}
           {!streakLoading && (
-            <View style={{ marginBottom: SPACING.lg }}>
+            <View style={{ marginBottom: SPACING['2xl'] }}>
               <StreakBadge
                 streakData={streakData}
                 displayState={displayState}
@@ -281,13 +282,13 @@ function CalmHomeScreenComponent({
           )}
 
           {/* ── Feed Score Card (delay=50) ── */}
-          <View style={{ marginBottom: SPACING.lg }}>
+          <View style={{ marginBottom: SPACING['2xl'] }}>
             <FeedScoreCard feedScore={feedScore} />
           </View>
 
           {/* ── Feed Score Trend (delay=100) ── */}
           {scoreTrendPoints.length >= 2 && (
-            <View style={{ marginBottom: SPACING['2xl'] }}>
+            <View style={{ marginBottom: SPACING['3xl'] }}>
               <FeedScoreTrend
                 points={scoreTrendPoints}
                 direction={scoreTrendDirection}
@@ -328,9 +329,9 @@ function CalmHomeScreenComponent({
                 <Scan size={26} color={colors.textInverse} strokeWidth={2} />
                 <Text
                   style={{
-                    ...TYPOGRAPHY.buttonLg,
+                    ...GL_TYPOGRAPHY.buttonLg,
                     color: colors.textInverse,
-                    fontSize: TYPOGRAPHY.h2.fontSize,
+                    fontSize: GL_TYPOGRAPHY.h2.fontSize,
                   }}
                 >
                   Choose a Platform to Scan

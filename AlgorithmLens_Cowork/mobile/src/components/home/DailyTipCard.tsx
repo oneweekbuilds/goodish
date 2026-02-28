@@ -9,11 +9,13 @@
  */
 
 import React, { useMemo } from 'react';
-import { View, Text, Platform } from 'react-native';
+import { View, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Lightbulb } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY, ICON_SIZES } from '../../lib/theme';
+import { SPACING, RADIUS, ICON_SIZES } from '../../lib/theme';
+import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
+import { Text } from '../glue';
 
 // Web-safe gradient wrapper for LinearGradient
 const GradientWrapper = Platform.OS === 'web'
@@ -94,7 +96,7 @@ function DailyTipCardComponent() {
       <View style={{ flex: 1 }}>
         <Text
           style={{
-            ...TYPOGRAPHY.overline,
+            ...GL_TYPOGRAPHY.overline,
             color: colors.textTertiary,
             marginBottom: SPACING.xs,
           }}
@@ -103,9 +105,9 @@ function DailyTipCardComponent() {
         </Text>
         <Text
           style={{
-            ...TYPOGRAPHY.bodySmall,
+            ...GL_TYPOGRAPHY.bodySmall,
             color: colors.textSecondary,
-            lineHeight: TYPOGRAPHY.bodySmall.lineHeight,
+            lineHeight: GL_TYPOGRAPHY.bodySmall.lineHeight,
           }}
         >
           {tip}

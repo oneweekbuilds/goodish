@@ -15,7 +15,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   Dimensions,
   Modal,
@@ -38,7 +37,9 @@ import {
 } from 'lucide-react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from '../../context/ThemeContext';
-import { RADIUS, SPACING, TYPOGRAPHY, COLORS, SHADOWS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { RADIUS, SPACING, GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
+import { COLORS, SHADOWS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { Text } from '../glue';
 import { withAlpha } from '../../lib/utils';
 
 // ─── Storage Key ─────────────────────────────────────────
@@ -330,9 +331,11 @@ export const DashboardTour: React.FC<DashboardTourProps> = ({
 
           {/* Title */}
           <Text
+            variant="h2"
+            color={colors.textMain}
             style={Platform.OS === 'web' ? {
-              ...styles.title,
-              color: colors.textMain,
+              fontWeight: '700',
+              marginBottom: SPACING.sm,
             } : [
               styles.title,
               { color: colors.textMain },
@@ -343,9 +346,11 @@ export const DashboardTour: React.FC<DashboardTourProps> = ({
 
           {/* Description */}
           <Text
+            variant="bodySmall"
+            color={colors.textMuted}
             style={Platform.OS === 'web' ? {
-              ...styles.description,
-              color: colors.textMuted,
+              lineHeight: RFValue(21),
+              marginBottom: SPACING.lg,
             } : [
               styles.description,
               { color: colors.textMuted },
@@ -385,10 +390,7 @@ export const DashboardTour: React.FC<DashboardTourProps> = ({
               accessibilityRole="button"
               accessibilityLabel="Skip tour"
             >
-              <Text style={Platform.OS === 'web' ? {
-                ...styles.skipText,
-                color: colors.textSecondary,
-              } : [styles.skipText, { color: colors.textSecondary }]}>
+              <Text variant="caption" color={colors.textSecondary} style={{ fontWeight: '500' }}>
                 Skip tour
               </Text>
             </TouchableOpacity>
@@ -412,10 +414,7 @@ export const DashboardTour: React.FC<DashboardTourProps> = ({
                   accessibilityLabel="Go back to previous step"
                 >
                   <ChevronLeft size={16} color={colors.textMuted} strokeWidth={2} />
-                  <Text style={Platform.OS === 'web' ? {
-                    ...styles.backText,
-                    color: colors.textMuted,
-                  } : [styles.backText, { color: colors.textMuted }]}>
+                  <Text variant="caption" color={colors.textMuted} style={{ fontWeight: '600' }}>
                     Back
                   </Text>
                 </TouchableOpacity>
@@ -508,17 +507,17 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.md,
   },
   stepBadgeText: {
-    ...TYPOGRAPHY.captionSmall,
+    ...GL_TYPOGRAPHY.captionSmall,
     fontWeight: '600',
     color: COLORS.white,
   },
   title: {
-    ...TYPOGRAPHY.h2,
+    ...GL_TYPOGRAPHY.h2,
     fontWeight: '700',
     marginBottom: SPACING.sm,
   },
   description: {
-    ...TYPOGRAPHY.bodySmall,
+    ...GL_TYPOGRAPHY.bodySmall,
     lineHeight: RFValue(21),
     marginBottom: SPACING.lg,
   },
@@ -542,7 +541,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.xs,
   },
   skipText: {
-    ...TYPOGRAPHY.caption,
+    ...GL_TYPOGRAPHY.caption,
     fontWeight: '500',
   },
   navButtons: {
@@ -572,7 +571,7 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.md,
   },
   nextText: {
-    ...TYPOGRAPHY.labelBold,
+    ...GL_TYPOGRAPHY.labelBold,
     color: COLORS.white,
   },
 });

@@ -12,7 +12,7 @@
 
 import React from 'react';
 import { Text, View } from 'react-native';
-import { TYPOGRAPHY } from '../../lib/theme';
+import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
 
 /** Font-to-container ratio for the X letterform — keeps the glyph optically centered. */
 const X_GLYPH_SCALE = 0.72;
@@ -40,7 +40,8 @@ export function XPlatformIcon({ size, color }: XPlatformIconProps) {
       <Text
         style={{
           fontSize: size * X_GLYPH_SCALE,
-          fontWeight: TYPOGRAPHY.labelBold.fontWeight,
+          fontFamily: GL_TYPOGRAPHY.labelBold.fontFamily,
+          fontWeight: GL_TYPOGRAPHY.labelBold.fontWeight,
           color,
           lineHeight: size,
           textAlign: 'center',

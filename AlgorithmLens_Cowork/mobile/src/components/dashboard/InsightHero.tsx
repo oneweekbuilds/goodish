@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   View,
-  Text,
   Animated,
   Pressable,
   TouchableOpacity,
@@ -13,7 +12,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronDown } from 'lucide-react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { useTheme } from '../../context/ThemeContext';
-import { RADIUS, SPACING, COLORS, TYPOGRAPHY, withOpacity, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { RADIUS, SPACING, GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
+import { COLORS, withOpacity, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { Text } from '../glue';
 
 interface HowWeMeasureData {
   what?: string | null;
@@ -154,9 +155,9 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
 
             {/* Meaning — secondary text */}
             <Text
+              variant="body"
+              color={colors.textSecondary}
               style={{
-                ...TYPOGRAPHY.body,
-                color: colors.textSecondary,
                 lineHeight: RFValue(22),
               }}
               numberOfLines={expanded ? undefined : 3}
@@ -169,9 +170,9 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
               <>
                 {whyCare && (
                   <Text
+                    variant="bodySmall"
+                    color={colors.textSecondary}
                     style={{
-                      ...TYPOGRAPHY.bodySmall,
-                      color: colors.textSecondary,
                       marginTop: SPACING.md,
                     }}
                   >
@@ -180,9 +181,9 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
                 )}
                 {meta && (
                   <Text
+                    variant="label"
+                    color={colors.textSecondary}
                     style={{
-                      ...TYPOGRAPHY.label,
-                      color: colors.textSecondary,
                       marginTop: SPACING.sm,
                     }}
                   >
@@ -205,11 +206,7 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
                   borderTopColor: colors.borderSoft,
                 }}
               >
-                <Text style={{
-                  ...TYPOGRAPHY.caption,
-                  fontWeight: '500',
-                  color: colors.primaryBlue,
-                }}>
+                <Text variant="caption" color={colors.primaryBlue} style={{ fontWeight: '500' }}>
                   {expanded ? 'Show less' : 'Tap for more context'}
                 </Text>
                 <Animated.View
@@ -267,11 +264,7 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
             paddingHorizontal: SPACING.lg,
             paddingVertical: SPACING.md,
           }}>
-            <Text style={{
-              ...TYPOGRAPHY.caption,
-              fontWeight: '500',
-              color: colors.textMuted,
-            }}>
+            <Text variant="caption" color={colors.textMuted} style={{ fontWeight: '500' }}>
               About this analysis
             </Text>
             <ChevronDown
@@ -286,9 +279,7 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
           {showCounterfactual && (
             <View style={{ paddingHorizontal: SPACING.lg, paddingBottom: SPACING.lg, gap: SPACING.md }}>
               {counterfactual && (
-                <Text style={{
-                  ...TYPOGRAPHY.caption,
-                  color: colors.textSecondary,
+                <Text variant="caption" color={colors.textSecondary} style={{
                   fontStyle: 'italic',
                   lineHeight: RFValue(18),
                 }}>
@@ -299,19 +290,19 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
                 <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.borderSoft }} />
               )}
               {howWeMeasure?.what && (
-                <Text style={{ ...TYPOGRAPHY.caption, color: colors.textMuted, lineHeight: RFValue(18) }}>
+                <Text variant="caption" color={colors.textMuted} style={{ lineHeight: RFValue(18) }}>
                   <Text style={{ fontWeight: '600', color: colors.textMain }}>What this measures: </Text>
                   {howWeMeasure.what}
                 </Text>
               )}
               {howWeMeasure?.how && (
-                <Text style={{ ...TYPOGRAPHY.caption, color: colors.textMuted, lineHeight: RFValue(18) }}>
+                <Text variant="caption" color={colors.textMuted} style={{ lineHeight: RFValue(18) }}>
                   <Text style={{ fontWeight: '600', color: colors.textMain }}>How we measure it: </Text>
                   {howWeMeasure.how}
                 </Text>
               )}
               {howWeMeasure?.limitations && (
-                <Text style={{ ...TYPOGRAPHY.caption, color: colors.textMuted, lineHeight: RFValue(18) }}>
+                <Text variant="caption" color={colors.textMuted} style={{ lineHeight: RFValue(18) }}>
                   <Text style={{ fontWeight: '600', color: colors.textMain }}>Limitations: </Text>
                   {howWeMeasure.limitations}
                 </Text>
@@ -324,11 +315,7 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
                   accessibilityLabel="Learn more"
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <Text style={{
-                    ...TYPOGRAPHY.caption,
-                    color: colors.primaryBlue,
-                    fontWeight: '500',
-                  }}>
+                  <Text variant="caption" color={colors.primaryBlue} style={{ fontWeight: '500' }}>
                     Learn more
                   </Text>
                 </TouchableOpacity>

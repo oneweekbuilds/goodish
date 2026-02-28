@@ -1,7 +1,6 @@
 import React, { useRef, useState, useCallback, useEffect, useImperativeHandle, forwardRef } from 'react';
 import {
   View,
-  Text,
   ViewStyle,
   Platform,
   ActivityIndicator,
@@ -15,8 +14,10 @@ import { ScanOverlay } from './ScanOverlay';
 import { getPlatformUrl, getPlatformScript } from '../../lib/platformScripts';
 import { captureError, addBreadcrumb } from '../../lib/sentry';
 import { markPlatformLoggedIn, isLoggedInUrl } from '../../lib/cookieManager';
-import { COLORS, TYPOGRAPHY, RADIUS, SPACING, SHADOWS } from '../../lib/theme';
+import { COLORS, RADIUS, SPACING, SHADOWS } from '../../lib/theme';
+import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
 import { getPlatformDisplayName } from '../../lib/utils';
+import { Text } from '../glue';
 
 export interface FeedItemCapture {
   platform: string;
@@ -362,29 +363,30 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
                 marginBottom: SPACING.lg,
               }}
             >
-              <Text style={{ ...TYPOGRAPHY.h1, color: COLORS.error }}>!</Text>
+              <Text
+                variant="h1"
+                color={COLORS.error}
+              >
+                !
+              </Text>
             </View>
 
             {/* Error heading */}
             <Text
-              style={{
-                ...TYPOGRAPHY.h2,
-                color: COLORS.textMain,
-                textAlign: 'center',
-                marginBottom: SPACING.sm,
-              }}
+              variant="h2"
+              color={COLORS.textMain}
+              align="center"
+              style={{ marginBottom: SPACING.sm }}
             >
               Scan couldn't capture posts
             </Text>
 
             {/* Error detail */}
             <Text
-              style={{
-                ...TYPOGRAPHY.body,
-                color: COLORS.textSecondary,
-                textAlign: 'center',
-                marginBottom: SPACING['2xl'],
-              }}
+              variant="body"
+              color={COLORS.textSecondary}
+              align="center"
+              style={{ marginBottom: SPACING['2xl'] }}
             >
               {getErrorMessage(scanError, hasReachedMaxRetries)}
             </Text>
@@ -404,7 +406,11 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
                   marginBottom: SPACING.md,
                 }}
               >
-                <Text style={{ ...TYPOGRAPHY.label, fontSize: TYPOGRAPHY.body.fontSize, fontWeight: '600', color: COLORS.white }}>
+                <Text
+                  variant="label"
+                  color={COLORS.white}
+                  style={{ fontWeight: '600' }}
+                >
                   Try Again ({MAX_RETRY_ATTEMPTS - retryCount} {MAX_RETRY_ATTEMPTS - retryCount === 1 ? 'attempt' : 'attempts'} left)
                 </Text>
               </TouchableOpacity>
@@ -423,7 +429,11 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
                   marginBottom: SPACING.md,
                 }}
               >
-                <Text style={{ ...TYPOGRAPHY.label, fontSize: TYPOGRAPHY.body.fontSize, fontWeight: '600', color: COLORS.white }}>
+                <Text
+                  variant="label"
+                  color={COLORS.white}
+                  style={{ fontWeight: '600' }}
+                >
                   Report This Issue
                 </Text>
               </TouchableOpacity>
@@ -431,12 +441,10 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
 
             {/* Suggestions */}
             <Text
-              style={{
-                ...TYPOGRAPHY.bodySmall,
-                color: COLORS.textMuted,
-                textAlign: 'center',
-                marginBottom: SPACING.sm,
-              }}
+              variant="bodySmall"
+              color={COLORS.textMuted}
+              align="center"
+              style={{ marginBottom: SPACING.sm }}
             >
               {hasReachedMaxRetries
                 ? 'We were unable to scan this platform after multiple attempts. Our team will look into it.'
@@ -446,12 +454,10 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
             {/* Retry count indicator */}
             {retryCount > 0 && (
               <Text
-                style={{
-                  ...TYPOGRAPHY.bodySmall,
-                  color: COLORS.textSecondary,
-                  textAlign: 'center',
-                  marginTop: SPACING.xs,
-                }}
+                variant="bodySmall"
+                color={COLORS.textSecondary}
+                align="center"
+                style={{ marginTop: SPACING.xs }}
               >
                 Attempt {retryCount} of {MAX_RETRY_ATTEMPTS}
               </Text>
@@ -526,20 +532,16 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
           >
             <ActivityIndicator size="large" color={COLORS.primaryBlue} />
             <Text
-              style={{
-                ...TYPOGRAPHY.h3,
-                color: COLORS.textMain,
-                marginTop: SPACING.lg,
-              }}
+              variant="h3"
+              color={COLORS.textMain}
+              style={{ marginTop: SPACING.lg }}
             >
               Loading {getPlatformDisplayName(platform)}
             </Text>
             <Text
-              style={{
-                ...TYPOGRAPHY.bodySmall,
-                color: COLORS.textSecondary,
-                marginTop: SPACING.xs,
-              }}
+              variant="bodySmall"
+              color={COLORS.textSecondary}
+              style={{ marginTop: SPACING.xs }}
             >
               Preparing to scan your feed...
             </Text>

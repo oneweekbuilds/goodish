@@ -12,7 +12,6 @@
 import React from 'react';
 import {
   View,
-  Text,
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
@@ -21,7 +20,9 @@ import { router } from 'expo-router';
 import { triggerImpactLight } from '../../src/lib/haptics';
 import { Instagram, Youtube, Music, Facebook, MessageCircle, Type } from 'lucide-react-native';
 import { useTheme } from '../../src/context/ThemeContext';
-import { TYPOGRAPHY, SPACING, RADIUS, PLATFORMS, MIN_TOUCH_TARGET } from '../../src/lib/theme';
+import { GL_TYPOGRAPHY } from '../../src/lib/gluestackTheme';
+import { SPACING, RADIUS, PLATFORMS, MIN_TOUCH_TARGET } from '../../src/lib/theme';
+import { Text } from '../../src/components/glue';
 import { XPlatformIcon } from '../../src/components/icons/XPlatformIcon';
 
 const PLATFORM_ICONS: Record<string, React.FC<{ size: number; color: string; strokeWidth?: number }>> = {
@@ -75,20 +76,16 @@ export default function ScanScreen() {
               <Type size={14} color={colors.primaryBlue} strokeWidth={2} />
             </View>
             <Text
-              style={{
-                ...TYPOGRAPHY.h1,
-                color: colors.textMain,
-              }}
+              variant="h1"
+              color={colors.textMain}
               accessibilityRole="header"
             >
               Precision Mode
             </Text>
           </View>
           <Text
-            style={{
-              ...TYPOGRAPHY.body,
-              color: colors.textMuted,
-            }}
+            variant="body"
+            color={colors.textMuted}
           >
             Text-only analysis using the built-in browser. Choose a platform to scan.
           </Text>
@@ -134,10 +131,8 @@ export default function ScanScreen() {
                   )}
                 </View>
                 <Text
-                  style={{
-                    ...TYPOGRAPHY.h3,
-                    color: colors.textMain,
-                  }}
+                  variant="h3"
+                  color={colors.textMain}
                 >
                   {platform.name}
                 </Text>
@@ -149,12 +144,10 @@ export default function ScanScreen() {
         {/* Bottom note */}
         <View style={{ marginTop: SPACING['3xl'], paddingBottom: SPACING.xl }}>
           <Text
-            style={{
-              ...TYPOGRAPHY.label,
-              color: colors.textSecondary,
-              textAlign: 'center',
-              lineHeight: 20,
-            }}
+            variant="label"
+            color={colors.textSecondary}
+            align="center"
+            style={{ lineHeight: 20 }}
           >
             Precision Mode scrolls through the built-in browser for text-only analysis. For richer insights including video and image content, use Broadcast mode from the Home screen.
           </Text>

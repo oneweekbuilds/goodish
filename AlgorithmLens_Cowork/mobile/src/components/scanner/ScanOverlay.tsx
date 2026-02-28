@@ -2,14 +2,24 @@ import { triggerNotificationSuccess } from '../../lib/haptics';
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   AccessibilityInfo,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button } from '../ui/Button';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  withSequence,
+  withRepeat,
+  Easing,
+} from 'react-native-reanimated';
+import { Button } from '../glue';
 import { useTheme } from '../../context/ThemeContext';
-import { RADIUS, SPACING, TYPOGRAPHY } from '../../lib/theme';
+import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
+import { RADIUS, SPACING } from '../../lib/theme';
+import { Text } from '../glue';
 import { MIN_POSTS_REQUIRED, MIN_SCAN_DURATION_SECS } from '../../config/thresholds';
 
 interface ScanOverlayProps {
@@ -83,6 +93,15 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
   const [minimized, setMinimized] = useState(false);
   const [, forceUpdate] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [canSaveTriggered, setCanSaveTriggered] = useState(false);
+
+  // Animation values
+  const overlayTranslateY = useSharedValue(20);
+  const overlayOpacity = useSharedValue(0);
+  const postProgressWidth = useSharedValue(0);
+  const timeProgressWidth = useSharedValue(0);
+  const pillDotOpacity = useSharedValue(1);
+  const saveButtonScale = useSharedValue(1);
 
   // Use useRef-based timer to update display without full re-renders
   useEffect(() => {
@@ -102,6 +121,29 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
     return () => clearTimeout(autoMinTimer);
   }, []);
 
+  // Animated entrance: fade-in + slide-up
+  useEffect(() => {
+    overlayTranslateY.value = withSpring(0, {
+      damping: 20,
+      stiffness: 150,
+    });
+    overlayOpacity.value = withTiming(1, {
+      duration: 300,
+      easing: Easing.ease,
+    });
+  }, []);
+
+  // Pill dot pulsing animation
+  useEffect(() => {
+    pillDotOpacity.value = withRepeat(
+      withSequence(
+        withTiming(0.4, { duration: 1000 }),
+        withTiming(1, { duration: 1000 }),
+      ),
+      -1,
+    );
+  }, []);
+
   // M4: Compute time from single source of truth (startTime prop)
   const elapsedSecs = Math.floor((Date.now() - startTime) / 1000);
   const minutes = Math.floor(elapsedSecs / 60);
@@ -113,11 +155,37 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
   const timeMet = elapsedSecs >= MIN_SCAN_DURATION_SECS;
   const canSave = postsMet && timeMet;
 
+  // Trigger save button pulse animation when canSave becomes true
+  useEffect(() => {
+    if (canSave && !canSaveTriggered) {
+      setCanSaveTriggered(true);
+      saveButtonScale.value = withSequence(
+        withSpring(1.05, { damping: 20, stiffness: 150 }),
+        withSpring(1, { damping: 20, stiffness: 150 }),
+      );
+    }
+  }, [canSave, canSaveTriggered]);
+
   const milestone = getMilestoneMessage(postCount, elapsedSecs, colors);
 
   // Progress bar percentages (capped at 100%)
   const postProgress = Math.min(postCount / MIN_POSTS_REQUIRED, 1);
   const timeProgress = Math.min(elapsedSecs / MIN_SCAN_DURATION_SECS, 1);
+
+  // Animate progress bar widths
+  useEffect(() => {
+    postProgressWidth.value = withTiming(postProgress * 100, {
+      duration: 300,
+      easing: Easing.inOut(Easing.ease),
+    });
+  }, [postProgress]);
+
+  useEffect(() => {
+    timeProgressWidth.value = withTiming(timeProgress * 100, {
+      duration: 300,
+      easing: Easing.inOut(Easing.ease),
+    });
+  }, [timeProgress]);
 
   // Format time requirement display
   const timeReqMinutes = Math.floor(MIN_SCAN_DURATION_SECS / 60);
@@ -125,6 +193,11 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
   const timeReqString = timeReqSeconds > 0
     ? `${timeReqMinutes}:${timeReqSeconds.toString().padStart(2, '0')}`
     : `${timeReqMinutes}:00`;
+
+  // Animated styles for minimized pill dot
+  const pillDotAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: pillDotOpacity.value,
+  }));
 
   // Minimized mode — small floating pill (L1: white dot on blue)
   if (minimized) {
@@ -148,25 +221,42 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
           ...shadows.lg,
         }}
       >
-        <View style={{
+        <Animated.View style={[{
           width: 8,
           height: 8,
           borderRadius: RADIUS.xs,
           backgroundColor: colors.white,
-        }} />
-        <Text style={{ ...TYPOGRAPHY.labelBold, color: colors.white }}>
+        }, pillDotAnimatedStyle]} />
+        <Text
+          variant="labelBold"
+          color={colors.white}
+        >
           {postCount}
         </Text>
-        <Text style={{ fontSize: TYPOGRAPHY.caption.fontSize, color: colors.whiteOverlay85 }}>
+        <Text
+          variant="caption"
+          color={colors.whiteOverlay85}
+        >
           {timeString}
         </Text>
       </TouchableOpacity>
     );
   }
 
+  // Animated styles for overlay entrance
+  const overlayAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: overlayOpacity.value,
+    transform: [{ translateY: overlayTranslateY.value }],
+  }));
+
+  // Animated styles for save button pulse
+  const saveButtonAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: saveButtonScale.value }],
+  }));
+
   return (
-    <View
-      style={{
+    <Animated.View
+      style={[{
         // L-05 FIX: More compact panel with higher opacity to prevent overlap with content
         backgroundColor: colors.scanOverlayBg,
         borderTopLeftRadius: RADIUS.xl,
@@ -175,7 +265,7 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
         paddingTop: SPACING.sm,
         paddingBottom: SPACING.sm + insets.bottom,
         ...shadows.lg,
-      }}
+      }, overlayAnimatedStyle]}
     >
       {/* Milestone indicator + minimize button — L-05: tighter spacing */}
       <View style={{
@@ -196,12 +286,11 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
             borderRadius: RADIUS.xs,
             backgroundColor: milestone.color,
           }} />
-          <Text style={{
-            ...TYPOGRAPHY.caption,
-            fontWeight: '600',
-            color: milestone.color,
-            flex: 1,
-          }} numberOfLines={2}>
+          <Text
+            variant="caption"
+            color={milestone.color}
+            style={{ flex: 1, fontWeight: '600' }}
+          >
             {canSave
               ? 'Great sample! You can save now or keep scrolling for richer insights.'
               : milestone.label}
@@ -214,7 +303,10 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
           accessibilityLabel="Hide panel — scanning continues in the background"
           accessibilityRole="button"
         >
-          <Text style={{ fontSize: TYPOGRAPHY.caption.fontSize, color: colors.textSecondary }}>
+          <Text
+            variant="caption"
+            color={colors.textSecondary}
+          >
             Hide panel
           </Text>
         </TouchableOpacity>
@@ -223,11 +315,9 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
       {/* Instruction hint for new users */}
       {postCount < MIN_POSTS_REQUIRED && (
         <Text
-          style={{
-            ...TYPOGRAPHY.caption,
-            color: colors.textSecondary,
-            marginBottom: SPACING.xs,
-          }}
+          variant="caption"
+          color={colors.textSecondary}
+          style={{ marginBottom: SPACING.xs }}
           accessibilityLiveRegion="polite"
         >
           Scroll through your feed — posts are captured automatically as they appear.
@@ -239,11 +329,21 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
         {/* Posts progress */}
         <View>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: SPACING.xs }}>
-            <Text style={{ ...TYPOGRAPHY.caption, fontWeight: '600', color: postsMet ? colors.accentGreen : colors.textMain }}>
+            <Text
+              variant="caption"
+              color={postsMet ? colors.accentGreen : colors.textMain}
+              style={{ fontWeight: '600' }}
+            >
               Posts: {postCount}/{MIN_POSTS_REQUIRED}
             </Text>
             {postsMet && (
-              <Text style={{ ...TYPOGRAPHY.caption, color: colors.accentGreen, fontWeight: '600' }}>✓</Text>
+              <Text
+                variant="caption"
+                color={colors.accentGreen}
+                style={{ fontWeight: '600' }}
+              >
+                ✓
+              </Text>
             )}
           </View>
           <View style={{
@@ -252,23 +352,46 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
             backgroundColor: colors.bgSecondary,
             overflow: 'hidden',
           }}>
-            <View style={{
-              height: '100%',
-              width: `${Math.round(postProgress * 100)}%`,
-              borderRadius: RADIUS.full,
-              backgroundColor: postsMet ? colors.accentGreen : colors.primaryBlue,
-            }} />
+            <Animated.View
+              style={useAnimatedStyle(() => ({
+                height: '100%',
+                width: `${postProgressWidth.value}%`,
+                borderRadius: RADIUS.full,
+                backgroundColor: postsMet ? colors.accentGreen : colors.primaryBlue,
+              }))}
+            >
+              {/* Bright highlight at the leading edge */}
+              <View style={{
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                bottom: 0,
+                width: 2,
+                backgroundColor: 'rgba(255,255,255,0.6)',
+                borderRadius: 1,
+              }} />
+            </Animated.View>
           </View>
         </View>
 
         {/* Time progress */}
         <View>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: SPACING.xs }}>
-            <Text style={{ ...TYPOGRAPHY.caption, fontWeight: '600', color: timeMet ? colors.accentGreen : colors.textMain }}>
+            <Text
+              variant="caption"
+              color={timeMet ? colors.accentGreen : colors.textMain}
+              style={{ fontWeight: '600' }}
+            >
               Time: {timeString}/{timeReqString}
             </Text>
             {timeMet && (
-              <Text style={{ ...TYPOGRAPHY.caption, color: colors.accentGreen, fontWeight: '600' }}>✓</Text>
+              <Text
+                variant="caption"
+                color={colors.accentGreen}
+                style={{ fontWeight: '600' }}
+              >
+                ✓
+              </Text>
             )}
           </View>
           <View style={{
@@ -277,12 +400,25 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
             backgroundColor: colors.bgSecondary,
             overflow: 'hidden',
           }}>
-            <View style={{
-              height: '100%',
-              width: `${Math.round(timeProgress * 100)}%`,
-              borderRadius: RADIUS.full,
-              backgroundColor: timeMet ? colors.accentGreen : colors.primaryBlue,
-            }} />
+            <Animated.View
+              style={useAnimatedStyle(() => ({
+                height: '100%',
+                width: `${timeProgressWidth.value}%`,
+                borderRadius: RADIUS.full,
+                backgroundColor: timeMet ? colors.accentGreen : colors.primaryBlue,
+              }))}
+            >
+              {/* Bright highlight at the leading edge */}
+              <View style={{
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                bottom: 0,
+                width: 2,
+                backgroundColor: 'rgba(255,255,255,0.6)',
+                borderRadius: 1,
+              }} />
+            </Animated.View>
           </View>
         </View>
       </View>
@@ -298,21 +434,40 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.md }}>
           <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: SPACING.xs }}>
-            <Text style={{ ...TYPOGRAPHY.h2, color: colors.primaryBlue }}>
+            <Text
+              variant="scoreSmall"
+              color={colors.primaryBlue}
+            >
               {postCount}
             </Text>
-            <Text style={{ fontSize: TYPOGRAPHY.bodySmall.fontSize, color: colors.textMuted }}>
+            <Text
+              variant="bodySmall"
+              color={colors.textMuted}
+            >
               posts
             </Text>
           </View>
 
-          <Text style={{ fontSize: TYPOGRAPHY.bodySmall.fontSize, color: colors.separator }}>|</Text>
+          {/* Visual divider separator */}
+          <View
+            style={{
+              width: 1,
+              height: 20,
+              backgroundColor: colors.borderLight,
+            }}
+          />
 
           <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: SPACING.xs }}>
-            <Text style={{ ...TYPOGRAPHY.h2, color: colors.primaryBlue }}>
+            <Text
+              variant="scoreSmall"
+              color={colors.primaryBlue}
+            >
               {adCount}
             </Text>
-            <Text style={{ fontSize: TYPOGRAPHY.bodySmall.fontSize, color: colors.textMuted }}>
+            <Text
+              variant="bodySmall"
+              color={colors.textMuted}
+            >
               ads
             </Text>
           </View>
@@ -327,7 +482,9 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
           }}
         >
           <Text
-            style={{ ...TYPOGRAPHY.labelBold, color: colors.textMuted, fontVariant: ['tabular-nums'] }}
+            variant="labelBold"
+            color={colors.textMuted}
+            style={{ fontVariant: ['tabular-nums'] }}
           >
             {timeString}
           </Text>
@@ -335,22 +492,24 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
       </View>
 
       {/* Done Button — disabled until both thresholds met */}
-      <Button
-        title={getButtonLabel(postCount, elapsedSecs)}
-        onPress={() => {
-          triggerNotificationSuccess();
-          onDone();
-        }}
-        variant="primary"
-        size="lg"
-        style={{ width: '100%' }}
-        disabled={!canSave}
-        accessibilityLabel={
-          canSave
-            ? `Save scan with ${postCount} posts`
-            : `Cannot save yet — need ${!postsMet ? `${MIN_POSTS_REQUIRED - postCount} more posts` : ''}${!postsMet && !timeMet ? ' and ' : ''}${!timeMet ? `${MIN_SCAN_DURATION_SECS - elapsedSecs} more seconds` : ''}`
-        }
-      />
-    </View>
+      <Animated.View style={saveButtonAnimatedStyle}>
+        <Button
+          title={getButtonLabel(postCount, elapsedSecs)}
+          onPress={() => {
+            triggerNotificationSuccess();
+            onDone();
+          }}
+          variant="primary"
+          size="lg"
+          style={{ width: '100%' }}
+          disabled={!canSave}
+          accessibilityLabel={
+            canSave
+              ? `Save scan with ${postCount} posts`
+              : `Cannot save yet — need ${!postsMet ? `${MIN_POSTS_REQUIRED - postCount} more posts` : ''}${!postsMet && !timeMet ? ' and ' : ''}${!timeMet ? `${MIN_SCAN_DURATION_SECS - elapsedSecs} more seconds` : ''}`
+          }
+        />
+      </Animated.View>
+    </Animated.View>
   );
 });

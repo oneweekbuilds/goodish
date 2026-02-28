@@ -23,7 +23,6 @@ import Constants from 'expo-constants';
 const BROADCAST_CLEANUP_DELAY_MS = 2000;
 import {
   View,
-  Text,
   ScrollView,
   TouchableOpacity,
   Alert,
@@ -35,7 +34,9 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft, Radio, Shield } from 'lucide-react-native';
 import { triggerNotificationWarning, triggerImpactMedium } from '../../src/lib/haptics';
 import { useTheme } from '../../src/context/ThemeContext';
-import { SPACING, TYPOGRAPHY, RADIUS, PLATFORMS, ICON_SIZES } from '../../src/lib/theme';
+import { GL_TYPOGRAPHY } from '../../src/lib/gluestackTheme';
+import { SPACING, RADIUS, PLATFORMS, ICON_SIZES } from '../../src/lib/theme';
+import { Text } from '../../src/components/glue';
 import { MIN_FRAMES_REQUIRED, MIN_SCAN_DURATION_SECS } from '../../src/config/thresholds';
 import { useBroadcast } from '../../src/hooks/useBroadcast';
 import { BroadcastOverlay } from '../../src/components/broadcast/BroadcastOverlay';
@@ -354,10 +355,20 @@ export default function BroadcastScreen() {
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: SPACING.xl }}>
           <Radio size={40} color={colors.primaryBlue} strokeWidth={1.5} />
-          <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain, textAlign: 'center', marginTop: SPACING.lg, marginBottom: SPACING.md }}>
+          <Text
+            variant="h3"
+            color={colors.textMain}
+            align="center"
+            style={{ marginTop: SPACING.lg, marginBottom: SPACING.md }}
+          >
             Coming to Android Soon
           </Text>
-          <Text style={{ ...TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center', marginBottom: SPACING.xl, lineHeight: 22 }}>
+          <Text
+            variant="body"
+            color={colors.textSecondary}
+            align="center"
+            style={{ marginBottom: SPACING.xl, lineHeight: 22 }}
+          >
             Screen recording is coming to Android soon. The iOS version is available now.{'\n\n'}In the meantime, you can use Precision Mode for text-based feed analysis.
           </Text>
           <TouchableOpacity
@@ -374,7 +385,10 @@ export default function BroadcastScreen() {
               paddingHorizontal: SPACING.xl,
             }}
           >
-            <Text style={{ ...TYPOGRAPHY.buttonMd, color: colors.textInverse }}>
+            <Text
+              variant="buttonMd"
+              color={colors.textInverse}
+            >
               Use Precision Mode
             </Text>
           </TouchableOpacity>
@@ -388,10 +402,20 @@ export default function BroadcastScreen() {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: SPACING.xl }}>
-          <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain, textAlign: 'center', marginBottom: SPACING.md }}>
+          <Text
+            variant="h3"
+            color={colors.textMain}
+            align="center"
+            style={{ marginBottom: SPACING.md }}
+          >
             Broadcast not available
           </Text>
-          <Text style={{ ...TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center', marginBottom: SPACING.xl }}>
+          <Text
+            variant="body"
+            color={colors.textSecondary}
+            align="center"
+            style={{ marginBottom: SPACING.xl }}
+          >
             Screen broadcast requires iOS 12+ and the AlgorithmLens development build. Please ensure you're running the app via a development build (not Expo Go). Use Quick Scan to analyze your feed in the meantime.
           </Text>
           <TouchableOpacity
@@ -406,7 +430,10 @@ export default function BroadcastScreen() {
               paddingHorizontal: SPACING.xl,
             }}
           >
-            <Text style={{ ...TYPOGRAPHY.buttonMd, color: colors.textInverse }}>
+            <Text
+              variant="buttonMd"
+              color={colors.textInverse}
+            >
               Go Back
             </Text>
           </TouchableOpacity>
@@ -461,21 +488,17 @@ export default function BroadcastScreen() {
                 <Radio size={12} color={platformBrandColor} strokeWidth={2} />
               </View>
               <Text
-                style={{
-                  ...TYPOGRAPHY.scoreSmall,
-                  color: colors.textMain,
-                }}
+                variant="scoreSmall"
+                color={colors.textMain}
                 accessibilityRole="header"
               >
                 Broadcast Mode
               </Text>
             </View>
             <Text
-              style={{
-                ...TYPOGRAPHY.caption,
-                color: colors.textMuted,
-                marginTop: SPACING.xxs,
-              }}
+              variant="caption"
+              color={colors.textMuted}
+              style={{ marginTop: SPACING.xxs }}
             >
               Scanning {platformName}
             </Text>
@@ -495,12 +518,10 @@ export default function BroadcastScreen() {
             }}
           >
             <Text
-              style={{
-                ...TYPOGRAPHY.caption,
-                fontWeight: '600',
-                color: colors.primaryBlue,
-                textAlign: 'center',
-              }}
+              variant="caption"
+              color={colors.primaryBlue}
+              align="center"
+              style={{ fontWeight: '600' }}
             >
               Launched from Shortcut — tap the button below to start broadcasting
             </Text>
@@ -589,21 +610,16 @@ export default function BroadcastScreen() {
                 }}
               >
                 <Text
-                  style={{
-                    ...TYPOGRAPHY.caption,
-                    fontWeight: '600',
-                    color: platformBrandColor,
-                    width: 20,
-                  }}
+                  variant="caption"
+                  color={platformBrandColor}
+                  style={{ fontWeight: '600', width: 20 }}
                 >
                   {index + 1}.
                 </Text>
                 <Text
-                  style={{
-                    ...TYPOGRAPHY.caption,
-                    color: colors.textSecondary,
-                    flex: 1,
-                  }}
+                  variant="caption"
+                  color={colors.textSecondary}
+                  style={{ flex: 1 }}
                 >
                   {step}
                 </Text>
@@ -616,11 +632,9 @@ export default function BroadcastScreen() {
         <View style={{ marginTop: SPACING['3xl'], alignItems: 'center', gap: SPACING.sm }}>
           <Shield size={16} color={colors.textTertiary} strokeWidth={1.5} />
           <Text
-            style={{
-              ...TYPOGRAPHY.captionSmall,
-              color: colors.textTertiary,
-              textAlign: 'center',
-            }}
+            variant="captionSmall"
+            color={colors.textTertiary}
+            align="center"
           >
             AlgorithmLens only captures visual frames from your feed.
             No audio is recorded. Frames are processed on-device and

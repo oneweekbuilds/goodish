@@ -1,12 +1,13 @@
 import React from 'react';
 import {
   View,
-  Text,
   Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY, ICON_SIZES } from '../../lib/theme';
+import { SPACING, RADIUS, GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
+import { ICON_SIZES } from '../../lib/theme';
+import { Text } from '../glue';
 
 // Web-safe gradient wrapper for LinearGradient
 const GradientWrapper = Platform.OS === 'web'
@@ -90,11 +91,9 @@ const MetricCardComponent: React.FC<MetricCardProps> = ({
                 </View>
               )}
               <Text
-                style={{
-                  ...(value && value.length <= 4 ? TYPOGRAPHY.bigNumber : TYPOGRAPHY.h2),
-                  color: colors.textMain,
-                  ...(value && value.length > 4 ? { letterSpacing: TYPOGRAPHY.h2.letterSpacing } : {}),
-                }}
+                variant={value && value.length <= 4 ? "bigNumber" : "h2"}
+                color={colors.textMain}
+                style={value && value.length > 4 ? { letterSpacing: GL_TYPOGRAPHY.h2.letterSpacing } : {}}
               >
                 {value}
               </Text>
@@ -102,9 +101,9 @@ const MetricCardComponent: React.FC<MetricCardProps> = ({
           )}
 
           <Text
+            variant="label"
+            color={colors.textMuted}
             style={{
-              ...TYPOGRAPHY.label,
-              color: colors.textMuted,
               marginBottom: microLine || denominatorText || contextLine ? SPACING.xxs : 0,
             }}
           >
@@ -113,9 +112,9 @@ const MetricCardComponent: React.FC<MetricCardProps> = ({
 
           {microLine && (
             <Text
+              variant="caption"
+              color={colors.textSecondary}
               style={{
-                ...TYPOGRAPHY.caption,
-                color: colors.textSecondary,
                 marginTop: SPACING.xxs,
               }}
             >
@@ -125,9 +124,9 @@ const MetricCardComponent: React.FC<MetricCardProps> = ({
 
           {contextLine && (
             <Text
+              variant="caption"
+              color={contextLineColor || colors.primary}
               style={{
-                ...TYPOGRAPHY.caption,
-                color: contextLineColor || colors.primary,
                 fontWeight: '500',
                 marginTop: SPACING.xs,
               }}
@@ -138,9 +137,9 @@ const MetricCardComponent: React.FC<MetricCardProps> = ({
 
           {denominatorText && (
             <Text
+              variant="caption"
+              color={colors.textSecondary}
               style={{
-                ...TYPOGRAPHY.caption,
-                color: colors.textSecondary,
                 marginTop: SPACING.xs,
               }}
             >
@@ -150,11 +149,11 @@ const MetricCardComponent: React.FC<MetricCardProps> = ({
         </>
       ) : (
         <Text
+          variant="bodySmall"
+          color={colors.textSecondary}
+          align="center"
           style={{
-            ...TYPOGRAPHY.bodySmall,
-            color: colors.textSecondary,
             fontStyle: 'italic',
-            textAlign: 'center',
             paddingVertical: SPACING.md,
           }}
         >

@@ -13,10 +13,12 @@
  */
 
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
 import { Calendar, TrendingUp, TrendingDown, Minus } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY, ICON_SIZES } from '../../lib/theme';
+import { SPACING, RADIUS, ICON_SIZES } from '../../lib/theme';
+import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
+import { Text } from '../glue';
 import { PLATFORMS } from '../../lib/theme';
 import type { WeeklySummaryData } from '../../types/achievements';
 
@@ -73,7 +75,7 @@ function WeeklySummaryCardComponent({ summary }: WeeklySummaryCardProps) {
         </View>
         <Text
           style={{
-            ...TYPOGRAPHY.labelBold,
+            ...GL_TYPOGRAPHY.labelBold,
             color: colors.textMain,
             flex: 1,
           }}
@@ -82,7 +84,7 @@ function WeeklySummaryCardComponent({ summary }: WeeklySummaryCardProps) {
         </Text>
         <Text
           style={{
-            ...TYPOGRAPHY.captionSmall,
+            ...GL_TYPOGRAPHY.captionSmall,
             color: colors.textTertiary,
           }}
         >
@@ -93,10 +95,10 @@ function WeeklySummaryCardComponent({ summary }: WeeklySummaryCardProps) {
       {/* Scan count — headline metric */}
       <View style={{ marginBottom: SPACING.md }}>
         <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: SPACING.xs }}>
-          <Text style={{ ...TYPOGRAPHY.scoreLarge, color: colors.primaryBlue }}>
+          <Text style={{ ...GL_TYPOGRAPHY.scoreLarge, color: colors.primaryBlue }}>
             {summary.scanCount}
           </Text>
-          <Text style={{ ...TYPOGRAPHY.label, color: colors.textMuted }}>
+          <Text style={{ ...GL_TYPOGRAPHY.label, color: colors.textMuted }}>
             {summary.scanCount === 1 ? 'scan' : 'scans'} this week
           </Text>
         </View>
@@ -126,14 +128,14 @@ function WeeklySummaryCardComponent({ summary }: WeeklySummaryCardProps) {
 
         {/* Top platform */}
         {topPlatformName && summary.topPlatformCount > 1 && (
-          <Text style={{ ...TYPOGRAPHY.caption, color: colors.textSecondary }}>
+          <Text style={{ ...GL_TYPOGRAPHY.caption, color: colors.textSecondary }}>
             Most scanned: {topPlatformName} ({summary.topPlatformCount} scans)
           </Text>
         )}
 
         {/* Total posts */}
         {summary.totalPosts > 0 && (
-          <Text style={{ ...TYPOGRAPHY.caption, color: colors.textTertiary, marginTop: SPACING.xs }}>
+          <Text style={{ ...GL_TYPOGRAPHY.caption, color: colors.textTertiary, marginTop: SPACING.xs }}>
             {summary.totalPosts} total posts analyzed across {summary.scanCount} sessions
           </Text>
         )}
@@ -170,7 +172,7 @@ function MetricRow({
       >
         <Icon size={12} color={iconColor} strokeWidth={2} />
       </View>
-      <Text style={{ ...TYPOGRAPHY.caption, color: colors.textSecondary as string }}>
+      <Text style={{ ...GL_TYPOGRAPHY.caption, color: colors.textSecondary as string }}>
         {text}
       </Text>
     </View>

@@ -8,7 +8,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   Modal,
   Dimensions,
@@ -17,7 +16,9 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Eye, ScanSearch, BarChart3 } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { SPACING, RADIUS, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
+import { Text } from '../glue';
 
 const STORAGE_KEY = '@algorithmlens_has_seen_walkthrough';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -151,7 +152,7 @@ function FirstUseWalkthroughComponent({ forceShow }: FirstUseWalkthroughProps) {
               style={{
                 width: 64,
                 height: 64,
-                borderRadius: 32,
+                borderRadius: RADIUS.full,
                 backgroundColor: colors.blue50,
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -164,7 +165,7 @@ function FirstUseWalkthroughComponent({ forceShow }: FirstUseWalkthroughProps) {
             {/* Title */}
             <Text
               style={{
-                ...TYPOGRAPHY.h2,
+                ...GL_TYPOGRAPHY.h2,
                 color: colors.textMain,
                 textAlign: 'center',
                 marginBottom: SPACING.sm,
@@ -176,7 +177,7 @@ function FirstUseWalkthroughComponent({ forceShow }: FirstUseWalkthroughProps) {
             {/* Description */}
             <Text
               style={{
-                ...TYPOGRAPHY.body,
+                ...GL_TYPOGRAPHY.body,
                 color: colors.textMuted,
                 textAlign: 'center',
                 marginBottom: SPACING.xl,
@@ -226,7 +227,7 @@ function FirstUseWalkthroughComponent({ forceShow }: FirstUseWalkthroughProps) {
               ...shadows.soft,
             }}
           >
-            <Text style={{ ...TYPOGRAPHY.buttonMd, color: colors.textInverse }}>
+            <Text style={{ ...GL_TYPOGRAPHY.buttonMd, color: colors.textInverse }}>
               {isLast ? 'Get Started' : 'Next'}
             </Text>
           </TouchableOpacity>
@@ -244,7 +245,7 @@ function FirstUseWalkthroughComponent({ forceShow }: FirstUseWalkthroughProps) {
                 justifyContent: 'center',
               }}
             >
-              <Text style={{ ...TYPOGRAPHY.label, color: colors.textTertiary }}>
+              <Text style={{ ...GL_TYPOGRAPHY.label, color: colors.textTertiary }}>
                 Skip
               </Text>
             </TouchableOpacity>

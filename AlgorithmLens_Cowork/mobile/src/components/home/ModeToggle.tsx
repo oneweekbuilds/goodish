@@ -9,11 +9,13 @@
  */
 
 import React, { useMemo } from 'react';
-import { View, Text, TouchableOpacity, Platform, Alert } from 'react-native';
+import { View, TouchableOpacity, Platform, Alert } from 'react-native';
 import { Radio, Type, Check } from 'lucide-react-native';
 import { triggerSelection } from '../../lib/haptics';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { SPACING, RADIUS, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
+import { Text } from '../glue';
 import { isBroadcastModuleAvailable } from '../../lib/broadcastSessionManager';
 import type { ScanMode } from '../../types/broadcast';
 
@@ -84,7 +86,7 @@ function ModeToggleComponent({ selectedMode, onModeChange }: ModeToggleProps) {
           />
           <Text
             style={{
-              ...TYPOGRAPHY.labelBold,
+              ...GL_TYPOGRAPHY.labelBold,
               color: selectedMode === 'broadcast' ? colors.textInverse : colors.textMain,
               flex: 1,
             }}
@@ -98,7 +100,7 @@ function ModeToggleComponent({ selectedMode, onModeChange }: ModeToggleProps) {
         </View>
         <Text
           style={{
-            ...TYPOGRAPHY.captionSmall,
+            ...GL_TYPOGRAPHY.captionSmall,
             color: selectedMode === 'broadcast' ? colors.whiteOverlay85 : colors.textSecondary,
           }}
         >
@@ -115,7 +117,7 @@ function ModeToggleComponent({ selectedMode, onModeChange }: ModeToggleProps) {
               alignSelf: 'flex-start',
             }}
           >
-            <Text style={{ ...TYPOGRAPHY.captionSmall, fontWeight: '700', color: colors.white }}>
+            <Text style={{ ...GL_TYPOGRAPHY.captionSmall, fontWeight: '700', color: colors.white }}>
               {broadcastAvailable ? 'RECOMMENDED' : 'COMING SOON'}
             </Text>
           </View>
@@ -149,7 +151,7 @@ function ModeToggleComponent({ selectedMode, onModeChange }: ModeToggleProps) {
           />
           <Text
             style={{
-              ...TYPOGRAPHY.labelBold,
+              ...GL_TYPOGRAPHY.labelBold,
               color: selectedMode === 'precision' ? colors.textInverse : colors.textMain,
               flex: 1,
             }}
@@ -163,7 +165,7 @@ function ModeToggleComponent({ selectedMode, onModeChange }: ModeToggleProps) {
         </View>
         <Text
           style={{
-            ...TYPOGRAPHY.captionSmall,
+            ...GL_TYPOGRAPHY.captionSmall,
             color: selectedMode === 'precision' ? colors.whiteOverlay85 : colors.textSecondary,
           }}
         >

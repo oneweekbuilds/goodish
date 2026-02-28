@@ -6,11 +6,13 @@
  */
 
 import React, { Component, type ErrorInfo, type ReactNode } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { AlertCircle } from 'lucide-react-native';
 import { captureError } from '../lib/sentry';
-import { SPACING, TYPOGRAPHY, RADIUS, COLORS, ICON_SIZES } from '../lib/theme';
+import { SPACING, RADIUS, COLORS, ICON_SIZES } from '../lib/theme';
+import { GL_TYPOGRAPHY } from '../lib/gluestackTheme';
+import { Text } from './glue';
 
 interface Props {
   children: ReactNode;
@@ -69,8 +71,20 @@ export class ErrorBoundary extends Component<Props, State> {
           <View style={styles.iconContainer}>
             <AlertCircle size={28} color={COLORS.textSecondary} strokeWidth={1.8} />
           </View>
-          <Text style={styles.title}>Something went wrong</Text>
-          <Text style={styles.message}>
+          <Text
+            variant="scoreSmall"
+            color={COLORS.textMain}
+            align="center"
+            style={{ marginBottom: SPACING.sm }}
+          >
+            Something went wrong
+          </Text>
+          <Text
+            variant="bodySmall"
+            color={COLORS.textSecondary}
+            align="center"
+            style={{ marginBottom: SPACING['2xl'], maxWidth: 300 }}
+          >
             We ran into an unexpected problem. This doesn't happen often — try
             restarting and things should be back to normal.
           </Text>
@@ -81,7 +95,12 @@ export class ErrorBoundary extends Component<Props, State> {
             accessibilityRole="button"
             accessibilityLabel="Try again"
           >
-            <Text style={styles.buttonText}>Try Again</Text>
+            <Text
+              variant="buttonMd"
+              color={COLORS.white}
+            >
+              Try Again
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, { backgroundColor: 'transparent', marginTop: SPACING.sm }]}
@@ -90,7 +109,12 @@ export class ErrorBoundary extends Component<Props, State> {
             accessibilityRole="button"
             accessibilityLabel="Go home"
           >
-            <Text style={[styles.buttonText, { color: COLORS.primary }]}>Go Home</Text>
+            <Text
+              variant="buttonMd"
+              color={COLORS.primary}
+            >
+              Go Home
+            </Text>
           </TouchableOpacity>
         </View>
       );
@@ -118,27 +142,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: SPACING.xl,
   },
-  title: {
-    ...TYPOGRAPHY.scoreSmall,
-    color: COLORS.textMain,
-    marginBottom: SPACING.sm,
-    textAlign: 'center',
-  },
-  message: {
-    ...TYPOGRAPHY.bodySmall,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginBottom: SPACING['2xl'],
-    maxWidth: 300,
-  },
   button: {
     backgroundColor: COLORS.primary,
     borderRadius: RADIUS.md,
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING['2xl'],
-  },
-  buttonText: {
-    ...TYPOGRAPHY.buttonMd,
-    color: COLORS.white,
   },
 });

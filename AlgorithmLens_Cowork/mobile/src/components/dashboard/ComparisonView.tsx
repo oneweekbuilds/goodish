@@ -13,13 +13,14 @@
 import React from 'react';
 import {
   View,
-  Text,
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
 import { ArrowUp, ArrowDown, Minus, Info, X } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { TYPOGRAPHY, SPACING, RADIUS, ICON_SIZES } from '../../lib/theme';
+import { GL_TYPOGRAPHY, SPACING, RADIUS } from '../../lib/gluestackTheme';
+import { ICON_SIZES } from '../../lib/theme';
+import { Text } from '../glue';
 import { computeDashboardData, type ScanRecord, type DashboardData } from '../../lib/computeDashboardData';
 import { getPlatformDisplayName } from '../../lib/utils';
 
@@ -100,15 +101,15 @@ function DeltaRow({
     >
       {/* Label */}
       <View style={{ flex: 1 }}>
-        <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain }}>
+        <Text variant="label" color={colors.textMain}>
           {metric.label}
         </Text>
         <View style={{ flexDirection: 'row', gap: SPACING.md, marginTop: SPACING.xs }}>
-          <Text style={{ ...TYPOGRAPHY.small, color: colors.textSecondary }}>
+          <Text variant="small" color={colors.textSecondary}>
             {formatValue(metric.olderValue, metric.unit, decimals)}
           </Text>
-          <Text style={{ ...TYPOGRAPHY.small, color: colors.textMuted }}>→</Text>
-          <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain }}>
+          <Text variant="small" color={colors.textMuted}>→</Text>
+          <Text variant="label" color={colors.textMain}>
             {formatValue(metric.newerValue, metric.unit, decimals)}
           </Text>
         </View>
@@ -132,10 +133,8 @@ function DeltaRow({
         {isDown && <ArrowDown size={14} color={deltaColor} strokeWidth={2.5} />}
         {isFlat && <Minus size={14} color={deltaColor} strokeWidth={2.5} />}
         <Text
-          style={{
-            ...TYPOGRAPHY.labelBold,
-            color: deltaColor,
-          }}
+          variant="labelBold"
+          color={deltaColor}
         >
           {isFlat
             ? 'No change'
@@ -301,12 +300,13 @@ function ComparisonViewComponent({
       >
         <View style={{ flex: 1 }}>
           <Text
-            style={{ ...TYPOGRAPHY.heroTitle, fontSize: TYPOGRAPHY.h1.fontSize,color: colors.textMain }}
+            variant="heroTitle"
+            color={colors.textMain}
             accessibilityRole="header"
           >
             Scan Comparison
           </Text>
-          <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textSecondary, marginTop: SPACING.xs }}>
+          <Text variant="bodySmall" color={colors.textSecondary} style={{ marginTop: SPACING.xs }}>
             {platform}
           </Text>
         </View>
@@ -345,13 +345,13 @@ function ComparisonViewComponent({
             borderColor: colors.borderLight,
           }}
         >
-          <Text style={{ ...TYPOGRAPHY.small, color: colors.textSecondary }}>
+          <Text variant="small" color={colors.textSecondary}>
             Older Scan
           </Text>
-          <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain, marginTop: SPACING.xxs }}>
+          <Text variant="label" color={colors.textMain} style={{ marginTop: SPACING.xxs }}>
             {olderDate}
           </Text>
-          <Text style={{ ...TYPOGRAPHY.small, color: colors.textMuted, marginTop: SPACING.xxs }}>
+          <Text variant="small" color={colors.textMuted} style={{ marginTop: SPACING.xxs }}>
             {olderData.totalPosts} posts
           </Text>
         </View>
@@ -365,13 +365,13 @@ function ComparisonViewComponent({
             borderColor: colors.brandTintBorder,
           }}
         >
-          <Text style={{ ...TYPOGRAPHY.small, color: colors.primaryBlue }}>
+          <Text variant="small" color={colors.primaryBlue}>
             Newer Scan
           </Text>
-          <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain, marginTop: SPACING.xxs }}>
+          <Text variant="label" color={colors.textMain} style={{ marginTop: SPACING.xxs }}>
             {newerDate}
           </Text>
-          <Text style={{ ...TYPOGRAPHY.small, color: colors.textMuted, marginTop: SPACING.xxs }}>
+          <Text variant="small" color={colors.textMuted} style={{ marginTop: SPACING.xxs }}>
             {newerData.totalPosts} posts
           </Text>
         </View>
@@ -389,10 +389,10 @@ function ComparisonViewComponent({
           ...shadows.card,
         }}
       >
-        <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain, marginBottom: SPACING.sm }}>
+        <Text variant="label" color={colors.textMain} style={{ marginBottom: SPACING.sm }}>
           Summary
         </Text>
-        <Text style={{ ...TYPOGRAPHY.body, color: colors.textMuted }}>
+        <Text variant="body" color={colors.textMuted}>
           {summaryNarrative}
         </Text>
       </View>
@@ -409,7 +409,7 @@ function ComparisonViewComponent({
           marginBottom: SPACING.xl,
         }}
       >
-        <Text style={{ ...TYPOGRAPHY.label, color: colors.textMain, marginBottom: SPACING.sm }}>
+        <Text variant="label" color={colors.textMain} style={{ marginBottom: SPACING.sm }}>
           Detailed Metrics
         </Text>
         {metrics.map((metric, index) => (
@@ -435,10 +435,10 @@ function ComparisonViewComponent({
       >
         <Info size={16} color={colors.textSecondary} strokeWidth={1.5} style={{ marginTop: SPACING.xxs }} />
         <View style={{ flex: 1 }}>
-          <Text style={{ ...TYPOGRAPHY.label, color: colors.textSecondary, marginBottom: SPACING.xs }}>
+          <Text variant="label" color={colors.textSecondary} style={{ marginBottom: SPACING.xs }}>
             About these comparisons
           </Text>
-          <Text style={{ ...TYPOGRAPHY.bodySmall, color: colors.textMuted }}>
+          <Text variant="bodySmall" color={colors.textMuted}>
             Comparisons reflect differences in what appeared during each scan session. Variations can result from different scroll depth, time of day, or platform changes.
           </Text>
         </View>

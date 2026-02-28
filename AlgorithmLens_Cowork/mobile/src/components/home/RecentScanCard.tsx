@@ -9,11 +9,13 @@
  */
 
 import React from 'react';
-import { View, Text, TouchableOpacity, Platform } from 'react-native';
+import { View, TouchableOpacity, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Clock, ChevronRight } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY } from '../../lib/theme';
+import { SPACING, RADIUS } from '../../lib/theme';
+import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
+import { Text } from '../glue';
 
 // Web-safe gradient wrapper for LinearGradient
 const GradientWrapper = Platform.OS === 'web'
@@ -132,7 +134,7 @@ function RecentScanCardComponent({ scan, onPress }: RecentScanCardProps) {
         <View style={{ flex: 1 }}>
           <Text
             style={{
-              ...TYPOGRAPHY.caption,
+              ...GL_TYPOGRAPHY.caption,
               color: colors.textTertiary,
               marginBottom: SPACING.xxs,
             }}
@@ -141,7 +143,7 @@ function RecentScanCardComponent({ scan, onPress }: RecentScanCardProps) {
           </Text>
           <Text
             style={{
-              ...TYPOGRAPHY.bodySmall,
+              ...GL_TYPOGRAPHY.bodySmall,
               color: colors.textMain,
             }}
           >
@@ -149,7 +151,7 @@ function RecentScanCardComponent({ scan, onPress }: RecentScanCardProps) {
           </Text>
           <Text
             style={{
-              ...TYPOGRAPHY.caption,
+              ...GL_TYPOGRAPHY.caption,
               color: colors.textSecondary,
               marginTop: SPACING.xxs,
             }}

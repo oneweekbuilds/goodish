@@ -5,18 +5,26 @@
  * When a platform is selected, the ModeToggle appears below it
  * for scan mode selection before navigating.
  *
- * Design: Clean, minimal circles with platform colors. Tapping a
- * platform triggers a light haptic and highlights the selection.
+ * Design: Card-like platform items with press animations, upgraded icons,
+ * and enhanced visual hierarchy. Tapping a platform triggers haptic feedback
+ * and highlights the selection with smooth spring animations.
  */
 
 import { triggerImpactLight, triggerImpactMedium } from '../../lib/haptics';
 import React, { useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, Animated, Platform } from 'react-native';
+import { View, Pressable, Platform } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from 'react-native-reanimated';
 import Constants from 'expo-constants';
 import { Instagram, Youtube, Music, Facebook, MessageCircle } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, TYPOGRAPHY, PLATFORMS } from '../../lib/theme';
+import { SPACING, RADIUS, PLATFORMS } from '../../lib/theme';
+import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
+import { Text } from '../glue';
 import { ModeToggle } from './ModeToggle';
 import type { ScanMode, SupportedPlatform } from '../../types/broadcast';
 import { withAlpha } from '../../lib/utils';
@@ -43,6 +51,102 @@ const PLATFORM_LIST: { slug: SupportedPlatform; name: string; color: string }[] 
 
 interface PlatformPickerProps {
   onScanStart?: (platform: SupportedPlatform, mode: ScanMode) => void;
+}
+
+interface PlatformItemProps {
+  platform: { slug: SupportedPlatform; name: string; color: string };
+  isSelected: boolean;
+  onPress: () => void;
+  colors: ReturnType<typeof useTheme>['colors'];
+  shadows: ReturnType<typeof useTheme>['shadows'];
+}
+
+/**
+ * PlatformItem — Individual platform card with press animation
+ */
+function PlatformItem({ platform, isSelected, onPress, colors, shadows }: PlatformItemProps) {
+  const IconComponent = PLATFORM_ICONS[platform.slug];
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.95, {
+      damping: 15,
+      stiffness: 150,
+    });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1.0, {
+      damping: 15,
+      stiffness: 150,
+    });
+  };
+
+  return (
+    <View
+      style={{
+        borderRadius: RADIUS.lg,
+        backgroundColor: colors.bgCard,
+        borderWidth: 1,
+        borderColor: colors.borderLight,
+        padding: SPACING.sm,
+        alignItems: 'center',
+      }}
+    >
+      <Pressable
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        accessibilityRole="button"
+        accessibilityLabel={`Scan ${platform.name}${isSelected ? ', selected — tap again to start scan' : ''}`}
+        accessibilityHint={isSelected ? 'Tap again to start scanning this platform' : `Select ${platform.name} for scanning`}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        style={{ alignItems: 'center' }}
+      >
+        <Animated.View
+          style={[
+            {
+              width: 64,
+              height: 64,
+              borderRadius: RADIUS['2xl'],
+              backgroundColor: isSelected ? withAlpha(platform.color, 0.15) : withAlpha(platform.color, 0.10),
+              borderWidth: isSelected ? 2 : 1,
+              borderColor: isSelected ? platform.color : colors.borderSoft,
+              justifyContent: 'center',
+              alignItems: 'center',
+              ...(isSelected ? shadows.card : {}),
+            },
+            animatedStyle,
+          ]}
+        >
+          {IconComponent && (
+            <IconComponent
+              size={32}
+              color={isSelected ? platform.color : colors.textMuted}
+              strokeWidth={1.8}
+            />
+          )}
+        </Animated.View>
+      </Pressable>
+
+      <Text
+        style={{
+          ...GL_TYPOGRAPHY.captionSmall,
+          fontWeight: isSelected ? '600' : '500',
+          color: isSelected ? colors.textMain : colors.textMuted,
+          marginTop: SPACING.sm,
+          textAlign: 'center',
+        }}
+        numberOfLines={1}
+      >
+        {platform.name}
+      </Text>
+    </View>
+  );
 }
 
 function PlatformPickerComponent({ onScanStart }: PlatformPickerProps) {
@@ -108,7 +212,7 @@ function PlatformPickerComponent({ onScanStart }: PlatformPickerProps) {
 
   return (
     <View>
-      {/* Platform grid — 3 columns of circles */}
+      {/* Platform grid — 3 columns of card-based platform items */}
       <View
         style={{
           flexDirection: 'row',
@@ -119,55 +223,17 @@ function PlatformPickerComponent({ onScanStart }: PlatformPickerProps) {
         }}
       >
         {PLATFORM_LIST.map((platform) => {
-          const IconComponent = PLATFORM_ICONS[platform.slug];
           const isSelected = selectedPlatform === platform.slug;
 
           return (
-            <TouchableOpacity
+            <PlatformItem
               key={platform.slug}
+              platform={platform}
+              isSelected={isSelected}
               onPress={() => handlePlatformTap(platform.slug)}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel={`Scan ${platform.name}${isSelected ? ', selected — tap again to start scan' : ''}`}
-              accessibilityHint={isSelected ? 'Tap again to start scanning this platform' : `Select ${platform.name} for scanning`}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              style={{ alignItems: 'center', width: 80, minHeight: 80 }}
-            >
-              <View
-                style={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: RADIUS['2xl'],
-                  // L-04 FIX: Brand colors at reduced opacity for unselected state
-                  backgroundColor: isSelected ? withAlpha(platform.color, 0.15) : withAlpha(platform.color, 0.06),
-                  borderWidth: isSelected ? 2 : 1,
-                  borderColor: isSelected ? platform.color : colors.borderSoft,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  ...(isSelected ? shadows.soft : {}),
-                }}
-              >
-                {IconComponent && (
-                  <IconComponent
-                    size={32}
-                    color={isSelected ? platform.color : colors.textMuted}
-                    strokeWidth={1.8}
-                  />
-                )}
-              </View>
-              <Text
-                style={{
-                  fontSize: TYPOGRAPHY.captionSmall.fontSize,
-                  fontWeight: isSelected ? '600' : '500',
-                  color: isSelected ? colors.textMain : colors.textMuted,
-                  marginTop: SPACING.sm,
-                  textAlign: 'center',
-                }}
-                numberOfLines={1}
-              >
-                {platform.name}
-              </Text>
-            </TouchableOpacity>
+              colors={colors}
+              shadows={shadows}
+            />
           );
         })}
       </View>
@@ -185,9 +251,8 @@ function PlatformPickerComponent({ onScanStart }: PlatformPickerProps) {
       {/* Start button — shown when a platform is selected */}
       {selectedPlatform && (
         <View style={{ marginTop: SPACING.xl }}>
-          <TouchableOpacity
+          <Pressable
             onPress={handleStartScan}
-            activeOpacity={0.7}
             accessibilityRole="button"
             accessibilityLabel="Start Scan"
             accessibilityHint="Begins your feed scan"
@@ -203,13 +268,13 @@ function PlatformPickerComponent({ onScanStart }: PlatformPickerProps) {
           >
             <Text
               style={{
-                ...TYPOGRAPHY.buttonMd,
+                ...GL_TYPOGRAPHY.buttonMd,
                 color: colors.textInverse,
               }}
             >
               Start Scan
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       )}
     </View>

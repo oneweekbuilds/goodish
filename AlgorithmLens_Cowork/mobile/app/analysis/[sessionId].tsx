@@ -8,13 +8,15 @@
  */
 
 import React, { useEffect, useCallback, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, BackHandler, Alert, Platform } from 'react-native';
+import { View, TouchableOpacity, BackHandler, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
-import { ArrowLeft, Sparkles } from 'lucide-react-native';
+import { ArrowLeft, Sparkles, Share2 } from 'lucide-react-native';
 import { triggerImpactMedium } from '../../src/lib/haptics';
 import { useTheme } from '../../src/context/ThemeContext';
-import { SPACING, TYPOGRAPHY, RADIUS, PLATFORMS, MIN_TOUCH_TARGET } from '../../src/lib/theme';
+import { GL_TYPOGRAPHY } from '../../src/lib/gluestackTheme';
+import { SPACING, RADIUS, PLATFORMS, MIN_TOUCH_TARGET } from '../../src/lib/theme';
+import { Text, ContentFadeIn } from '../../src/components/glue';
 import { useAnalysis } from '../../src/hooks/useAnalysis';
 import { AnalysisProgress } from '../../src/components/analysis/AnalysisProgress';
 import { BroadcastResultsSummary } from '../../src/components/analysis/BroadcastResultsSummary';
@@ -134,10 +136,20 @@ export default function AnalysisScreen() {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: SPACING.xl }}>
-          <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain, textAlign: 'center', marginBottom: SPACING.md }}>
+          <Text
+            variant="h3"
+            color={colors.textMain}
+            align="center"
+            style={{ marginBottom: SPACING.md }}
+          >
             No frames to analyze
           </Text>
-          <Text style={{ ...TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center', marginBottom: SPACING.xl }}>
+          <Text
+            variant="body"
+            color={colors.textSecondary}
+            align="center"
+            style={{ marginBottom: SPACING.xl }}
+          >
             The broadcast session data has expired or wasn't captured properly. Try scanning again.
           </Text>
           <TouchableOpacity
@@ -155,7 +167,10 @@ export default function AnalysisScreen() {
               alignItems: 'center',
             }}
           >
-            <Text style={{ ...TYPOGRAPHY.buttonMd, color: colors.textInverse }}>
+            <Text
+              variant="buttonMd"
+              color={colors.textInverse}
+            >
               Go Back
             </Text>
           </TouchableOpacity>
@@ -169,10 +184,20 @@ export default function AnalysisScreen() {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: SPACING.xl }}>
-          <Text style={{ ...TYPOGRAPHY.h3, color: colors.textMain, textAlign: 'center', marginBottom: SPACING.md }}>
+          <Text
+            variant="h3"
+            color={colors.textMain}
+            align="center"
+            style={{ marginBottom: SPACING.md }}
+          >
             Setup Required
           </Text>
-          <Text style={{ ...TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center', marginBottom: SPACING.xl }}>
+          <Text
+            variant="body"
+            color={colors.textSecondary}
+            align="center"
+            style={{ marginBottom: SPACING.xl }}
+          >
             Gemini API key is not configured. Add EXPO_PUBLIC_GEMINI_API_KEY to your environment to enable feed analysis.
           </Text>
           <TouchableOpacity
@@ -190,7 +215,10 @@ export default function AnalysisScreen() {
               alignItems: 'center',
             }}
           >
-            <Text style={{ ...TYPOGRAPHY.buttonMd, color: colors.textInverse }}>
+            <Text
+              variant="buttonMd"
+              color={colors.textInverse}
+            >
               Go Back
             </Text>
           </TouchableOpacity>
@@ -199,11 +227,24 @@ export default function AnalysisScreen() {
     );
   }
 
+  const handleSharePress = useCallback(() => {
+    console.log('[Analysis] Share tapped — not yet implemented');
+  }, []);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
       <View style={{ flex: 1, padding: SPACING.lg }}>
         {/* Header */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: SPACING['3xl'] }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: SPACING['3xl'],
+            paddingBottom: SPACING.lg,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.borderLight,
+          }}
+        >
           <TouchableOpacity
             onPress={handleBack}
             activeOpacity={0.7}
@@ -238,25 +279,40 @@ export default function AnalysisScreen() {
                 <Sparkles size={12} color={platformBrandColor} strokeWidth={2} />
               </View>
               <Text
-                style={{
-                  ...TYPOGRAPHY.scoreSmall,
-                  color: colors.textMain,
-                }}
+                variant="scoreSmall"
+                color={colors.textMain}
                 accessibilityRole="header"
               >
                 Analyzing Feed
               </Text>
             </View>
             <Text
-              style={{
-                ...TYPOGRAPHY.caption,
-                color: colors.textMuted,
-                marginTop: SPACING.xxs,
-              }}
+              variant="caption"
+              color={colors.textMuted}
+              style={{ marginTop: SPACING.xxs }}
             >
               {frames.length} frames from {platform}
             </Text>
           </View>
+          <TouchableOpacity
+            onPress={handleSharePress}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Share results"
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: RADIUS.md,
+              backgroundColor: colors.bgCard,
+              justifyContent: 'center',
+              alignItems: 'center',
+              borderWidth: 1,
+              borderColor: colors.borderSoft,
+              marginLeft: SPACING.md,
+            }}
+          >
+            <Share2 size={18} color={colors.textMain} strokeWidth={2} />
+          </TouchableOpacity>
         </View>
 
         {/* Analysis Progress Card — hidden when complete + results available */}
@@ -277,10 +333,17 @@ export default function AnalysisScreen() {
 
         {/* Results summary card — shown when analysis completes successfully */}
         {analysis.isComplete && analysis.result && (
-          <BroadcastResultsSummary
-            result={analysis.result}
-            onViewDashboard={handleViewResults}
-          />
+          <View style={{ flex: 1 }}>
+            <ContentFadeIn
+              ready={analysis.isComplete && !!analysis.result}
+              duration={250}
+            >
+              <BroadcastResultsSummary
+                result={analysis.result}
+                onViewDashboard={handleViewResults}
+              />
+            </ContentFadeIn>
+          </View>
         )}
 
         {/* Summary info during analysis (hidden once complete or failed) */}
@@ -296,106 +359,120 @@ export default function AnalysisScreen() {
             }}
           >
             <Text
-              style={{
-                ...TYPOGRAPHY.overline,
-                color: colors.textMuted,
-                marginBottom: SPACING.md,
-              }}
+              variant="overline"
+              color={colors.textMuted}
+              style={{ marginBottom: SPACING.md }}
             >
               What's happening
             </Text>
-            {[
-              {
-                label: 'Frame Analysis',
-                description: 'Examining your feed for hidden patterns — each screenshot reveals what the algorithm chose to show you',
-                active: analysis.progress.stage === 'ANALYZING',
-                done: ['DEDUPLICATING', 'BUILDING', 'SAVING', 'COMPLETE'].includes(analysis.progress.stage),
-              },
-              {
-                label: 'Deduplication',
-                description: 'Filtering duplicate posts across frames to build a clean picture of your unique feed content',
-                active: analysis.progress.stage === 'DEDUPLICATING',
-                done: ['BUILDING', 'SAVING', 'COMPLETE'].includes(analysis.progress.stage),
-              },
-              {
-                label: 'Report Building',
-                description: 'Compiling your personalized feed report — ads, sources, tone, and content patterns all in one place',
-                active: analysis.progress.stage === 'BUILDING' || analysis.progress.stage === 'SAVING',
-                done: analysis.progress.stage === 'COMPLETE',
-              },
-            ].map((step, index) => (
-              <View
-                key={index}
-                style={{
-                  flexDirection: 'row',
-                  gap: SPACING.sm,
-                  marginBottom: index < 2 ? SPACING.sm : 0,
-                  opacity: step.done ? 0.5 : 1,
-                }}
-              >
+            <View style={{ position: 'relative' }}>
+              {[
+                {
+                  label: 'Frame Analysis',
+                  description: 'Examining your feed for hidden patterns — each screenshot reveals what the algorithm chose to show you',
+                  active: analysis.progress.stage === 'ANALYZING',
+                  done: ['DEDUPLICATING', 'BUILDING', 'SAVING', 'COMPLETE'].includes(analysis.progress.stage),
+                },
+                {
+                  label: 'Deduplication',
+                  description: 'Filtering duplicate posts across frames to build a clean picture of your unique feed content',
+                  active: analysis.progress.stage === 'DEDUPLICATING',
+                  done: ['BUILDING', 'SAVING', 'COMPLETE'].includes(analysis.progress.stage),
+                },
+                {
+                  label: 'Report Building',
+                  description: 'Compiling your personalized feed report — ads, sources, tone, and content patterns all in one place',
+                  active: analysis.progress.stage === 'BUILDING' || analysis.progress.stage === 'SAVING',
+                  done: analysis.progress.stage === 'COMPLETE',
+                },
+              ].map((step, index) => (
                 <View
+                  key={index}
                   style={{
-                    width: 20,
-                    height: 20,
-                    borderRadius: RADIUS.md,
-                    backgroundColor: step.active
-                      ? colors.primaryBlue
-                      : step.done
-                        ? colors.accentGreen
-                        : colors.bgPage,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    borderWidth: step.active || step.done ? 0 : 1,
-                    borderColor: colors.borderSoft,
-                    marginTop: 1,
+                    flexDirection: 'row',
+                    gap: SPACING.sm,
+                    marginBottom: index < 2 ? SPACING.lg : 0,
+                    opacity: step.done ? 0.5 : 1,
+                    position: 'relative',
                   }}
                 >
-                  {step.done && (
-                    <Text style={{ ...TYPOGRAPHY.captionSmall, color: colors.textInverse }}>✓</Text>
-                  )}
-                  {step.active && (
+                  {/* Connector line between steps */}
+                  {index < 2 && (
                     <View
                       style={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: RADIUS.xs,
-                        backgroundColor: colors.textInverse,
+                        position: 'absolute',
+                        left: 9,
+                        top: 20,
+                        width: 2,
+                        height: SPACING.lg - SPACING.sm,
+                        backgroundColor: colors.borderLight,
                       }}
                     />
                   )}
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text
+                  <View
                     style={{
-                      ...TYPOGRAPHY.labelBold,
-                      color: step.active ? colors.textMain : colors.textSecondary,
+                      width: 20,
+                      height: 20,
+                      borderRadius: RADIUS.md,
+                      backgroundColor: step.active
+                        ? colors.primaryBlue
+                        : step.done
+                          ? colors.accentGreen
+                          : colors.bgPage,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      borderWidth: step.active || step.done ? 0 : 1,
+                      borderColor: colors.borderSoft,
+                      marginTop: 1,
+                      zIndex: 1,
                     }}
                   >
-                    {step.label}
-                  </Text>
-                  <Text
-                    style={{
-                      ...TYPOGRAPHY.caption,
-                      color: colors.textMuted,
-                      marginTop: SPACING.xxs,
-                    }}
-                  >
-                    {step.description}
-                  </Text>
+                    {step.done && (
+                      <Text
+                        variant="captionSmall"
+                        color={colors.textInverse}
+                      >
+                        ✓
+                      </Text>
+                    )}
+                    {step.active && (
+                      <View
+                        style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: RADIUS.xs,
+                          backgroundColor: colors.textInverse,
+                        }}
+                      />
+                    )}
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      variant="labelBold"
+                      color={step.active ? colors.textMain : colors.textSecondary}
+                    >
+                      {step.label}
+                    </Text>
+                    <Text
+                      variant="caption"
+                      color={colors.textMuted}
+                      style={{ marginTop: SPACING.xxs }}
+                    >
+                      {step.description}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            ))}
+              ))}
+            </View>
           </View>
         )}
 
         {/* Privacy note */}
         <View style={{ marginTop: 'auto', paddingTop: SPACING.xl }}>
           <Text
-            style={{
-              ...TYPOGRAPHY.captionSmall,
-              color: colors.textTertiary,
-              textAlign: 'center',
-            }}
+            variant="captionSmall"
+            color={colors.textTertiary}
+            align="center"
           >
             Frames are sent to Google's Gemini AI for analysis. No personal account
             credentials are shared. Results are stored in your AlgorithmLens account.

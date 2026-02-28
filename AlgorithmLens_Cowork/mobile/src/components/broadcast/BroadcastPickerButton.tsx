@@ -19,14 +19,15 @@ import { triggerImpactMedium } from '../../lib/haptics';
 import React from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   Platform,
   StyleSheet,
 } from 'react-native';
 import { Radio, Smartphone } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, TYPOGRAPHY, RADIUS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
+import { SPACING, RADIUS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { Text } from '../glue';
 
 interface BroadcastPickerButtonProps {
   /** Called when the user taps the broadcast picker button. */
@@ -48,7 +49,12 @@ export const BroadcastPickerButton = React.memo(function BroadcastPickerButton({
   if (Platform.OS !== 'ios' && Platform.OS !== 'android') {
     return (
       <View style={Platform.OS === 'web' ? { ...styles.container, opacity: 0.5 } : [styles.container, { opacity: 0.5 }]}>
-        <Text style={Platform.OS === 'web' ? { ...styles.unavailableText, color: colors.textMuted } : [styles.unavailableText, { color: colors.textMuted }]}>
+        <Text
+          variant="bodySmall"
+          color={colors.textMuted}
+          align="center"
+          style={{ fontWeight: '500' }}
+        >
           Broadcast recording requires iOS or Android
         </Text>
       </View>
@@ -102,24 +108,15 @@ export const BroadcastPickerButton = React.memo(function BroadcastPickerButton({
       </View>
       <View style={styles.textContainer}>
         <Text
-          style={Platform.OS === 'web' ? {
-            ...styles.buttonLabel,
-            color: disabled ? colors.textMuted : colors.textInverse,
-          } : [
-            styles.buttonLabel,
-            { color: disabled ? colors.textMuted : colors.textInverse },
-          ]}
+          variant="h3"
+          color={disabled ? colors.textMuted : colors.textInverse}
         >
           {buttonLabel}
         </Text>
         <Text
-          style={Platform.OS === 'web' ? {
-            ...styles.buttonHint,
-            color: disabled ? colors.textSecondary : 'rgba(255,255,255,0.7)',
-          } : [
-            styles.buttonHint,
-            { color: disabled ? colors.textSecondary : 'rgba(255,255,255,0.7)' },
-          ]}
+          variant="caption"
+          color={disabled ? colors.textSecondary : 'rgba(255,255,255,0.7)'}
+          style={{ marginTop: SPACING.xxs }}
         >
           {hintText}
         </Text>
@@ -134,11 +131,6 @@ const styles = StyleSheet.create({
   container: {
     paddingVertical: SPACING.lg,
     alignItems: 'center',
-  },
-  unavailableText: {
-    ...TYPOGRAPHY.bodySmall,
-    fontWeight: '500',
-    textAlign: 'center',
   },
   button: {
     flexDirection: 'row',
@@ -158,12 +150,5 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
-  },
-  buttonLabel: {
-    ...TYPOGRAPHY.h3,
-  },
-  buttonHint: {
-    fontSize: TYPOGRAPHY.caption.fontSize,
-    marginTop: SPACING.xxs,
   },
 });

@@ -11,10 +11,11 @@
  */
 
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Sparkles } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
-import { TYPOGRAPHY, SPACING, RADIUS } from '../../lib/theme';
+import { GL_TYPOGRAPHY, SPACING, RADIUS } from '../../lib/gluestackTheme';
+import { Text } from '../glue';
 
 interface LockedOverlayCardProps {
   /** When false, renders children without overlay. */
@@ -59,9 +60,9 @@ function LockedOverlayCardComponent({
       <View style={styles.headerRow}>
         <Sparkles size={16} color={colors.primaryBlue} strokeWidth={2} />
         <Text
-          style={Platform.OS === 'web'
-            ? { ...styles.title, color: colors.textMain }
-            : [styles.title, { color: colors.textMain }]}
+          variant="h3"
+          color={colors.textMain}
+          style={{ flexShrink: 1 }}
         >
           {title}
         </Text>
@@ -69,9 +70,11 @@ function LockedOverlayCardComponent({
 
       {/* Description */}
       <Text
-        style={Platform.OS === 'web'
-          ? { ...styles.body, color: colors.textSecondary }
-          : [styles.body, { color: colors.textSecondary }]}
+        variant="caption"
+        color={colors.textSecondary}
+        style={[
+          { lineHeight: GL_TYPOGRAPHY.bodySmall.lineHeight, paddingLeft: SPACING.sm + 16 }
+        ]}
       >
         {body}
       </Text>
@@ -87,9 +90,9 @@ function LockedOverlayCardComponent({
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <Text
-            style={Platform.OS === 'web'
-              ? { ...styles.ctaLink, color: colors.primaryBlue }
-              : [styles.ctaLink, { color: colors.primaryBlue }]}
+            variant="label"
+            color={colors.primaryBlue}
+            style={{ paddingLeft: SPACING.sm + 16, paddingTop: SPACING.xs }}
           >
             Try free for 14 days →
           </Text>
@@ -112,19 +115,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-  },
-  title: {
-    ...TYPOGRAPHY.h3,
-    flexShrink: 1,
-  },
-  body: {
-    ...TYPOGRAPHY.caption,
-    lineHeight: TYPOGRAPHY.bodySmall.lineHeight,
-    paddingLeft: SPACING.sm + 16, // align with title text (icon width + gap)
-  },
-  ctaLink: {
-    ...TYPOGRAPHY.label,
-    paddingLeft: SPACING.sm + 16,
-    paddingTop: SPACING.xs,
   },
 });
