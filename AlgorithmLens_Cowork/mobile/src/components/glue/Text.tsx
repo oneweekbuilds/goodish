@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text as RNText, TextProps as RNTextProps, TextStyle, Platform } from 'react-native';
+import { Text as RNText, TextProps as RNTextProps, TextStyle, Platform, StyleSheet } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
 
@@ -30,7 +30,7 @@ const TextComponent: React.FC<TextProps> = ({
 
   return (
     <RNText
-      style={Platform.OS === 'web' ? { ...textStyle, ...(style as any) } : [textStyle, style]}
+      style={Platform.OS === 'web' ? { ...textStyle, ...StyleSheet.flatten(style) } : [textStyle, style]}
       {...rest}
     >
       {children}

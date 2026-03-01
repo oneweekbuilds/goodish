@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { MessageCircle, Send, Sparkles, Lock, ShieldCheck, MessageSquare, EyeOff, AlertCircle, ChevronDown, Database } from 'lucide-react';
+import { MessageCircle, Send, Sparkles, Lock, ShieldCheck, EyeOff, AlertCircle, ChevronDown, Database } from 'lucide-react';
 import { useAdsTalkToAlgorithm, useAdsEvidenceBundle } from '../../hooks/useEvidenceBundle';
 
 /**

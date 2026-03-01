@@ -945,7 +945,7 @@ export const dashboardCatalog = [
     tab: 'creators',
     id: 'creators-cross-platform',
     title: 'Voices that appeared everywhere',
-    description: 'Accounts that surfaced across multiple platforms, potentially having outsized influence on your overall exposure.',
+    description: 'Accounts that surfaced across multiple platforms, representing a larger share of your cumulative exposure.',
     outputType: 'table',
     dataFn: 'getCrossplatformCreatorData',
     emptyStateType: 'needs_broader_behavior',
@@ -964,7 +964,7 @@ export const dashboardCatalog = [
       }
       return `${data.length} creators appeared across multiple platforms. A recurring set of voices shaping what you saw in different spaces.`;
     },
-    action: () => 'Accounts appearing on multiple platforms may have outsized influence on what you see.',
+    action: () => 'Accounts appearing on multiple platforms represent a larger share of your cumulative exposure.',
   },
 
   // --- HIDDEN: Removed for cognitive load reduction ---

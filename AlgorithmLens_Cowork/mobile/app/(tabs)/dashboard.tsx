@@ -17,13 +17,16 @@ import { ContentFadeIn, Skeleton } from '../../src/components/glue';
 import { useDashboard } from '../../src/hooks/useDashboard';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
-import { computeDashboardData, DashboardData, PoliticalAnalysis, ToneAnalysis, AdvertiserStat, ToneSourceStat, ToneBySourceOrigin, CreatorNovelty } from '../../src/lib/computeDashboardData';
+import { computeDashboardData, DashboardData, PoliticalAnalysis, ToneAnalysis, AdvertiserStat, ToneSourceStat, ToneBySourceOrigin, CreatorNovelty, AiContentAnalysis, UnlabeledPromos, AdvertisedProductType, ToneBySelling, ToneByPolitical, BrandsAndInfluencers, ByPlatformBreakdown, CommercialComparison, TopicFrequency, ContentFormatComparison } from '../../src/lib/computeDashboardData';
 import { InsightHero } from '../../src/components/dashboard/InsightHero';
 import { ALBarChart, ALStackedBar, ALPieChart, ALRadarChart, ALScoreGauge } from '../../src/components/charts';
 import { BigNumber } from '../../src/components/dashboard/BigNumber';
 import { MetricCard } from '../../src/components/dashboard/MetricCard';
 import { SectionHeader } from '../../src/components/dashboard/SectionHeader';
+import { ToneComparisonCard } from '../../src/components/dashboard/ToneComparisonCard';
 import { LockedOverlayCard } from '../../src/components/plan/LockedOverlayCard';
+import { EvidenceBundleTeaser } from '../../src/components/plan/EvidenceBundleTeaser';
+import { FreeAskTeaser } from '../../src/components/plan/FreeAskTeaser';
 import { DashboardTour } from '../../src/components/dashboard/DashboardTour';
 import { Text } from '../../src/components/glue';
 import { SPACING, RADIUS, GL_TYPOGRAPHY } from '../../src/lib/gluestackTheme';
@@ -44,6 +47,7 @@ import {
   Layers,
   BarChart3,
   Clock,
+  MessageCircleQuestion,
 } from 'lucide-react-native';
 
 // ─── Animation Constants ─────────────────────────────────
@@ -55,12 +59,12 @@ const ANIMATION = {
 // ─── Tab Definitions ─────────────────────────────────────
 
 const TABS = [
-  { id: 'overview', label: 'Overview', needsAi: false, accent: 'tourOverview' },
-  { id: 'sources', label: 'Who Shapes Your Feed', needsAi: false, accent: 'tourSources' },
-  { id: 'ads', label: 'Ads & Promotions', needsAi: false, accent: 'tourAds' },
-  { id: 'politics', label: 'Political Exposure', needsAi: true, accent: 'tourPolitics' },
-  { id: 'tone', label: 'Emotional Tone', needsAi: true, accent: 'tourTone' },
-  { id: 'suggested_vs_followed', label: 'Suggested vs. Followed', needsAi: false, accent: 'tourSuggested' },
+  { id: 'overview', label: 'Overview', accent: 'tourOverview' },
+  { id: 'sources', label: 'Who Shapes Your Feed', accent: 'tourSources' },
+  { id: 'ads', label: 'Ads & Promotions', accent: 'tourAds' },
+  { id: 'politics', label: 'Political Exposure', accent: 'tourPolitics' },
+  { id: 'tone', label: 'Emotional Tone', accent: 'tourTone' },
+  { id: 'suggested_vs_followed', label: 'Suggested vs. Followed', accent: 'tourSuggested' },
 ];
 
 // Friendly content type labels
@@ -83,6 +87,9 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
   const [showTimeEstimate, setShowTimeEstimate] = useState(false);
   const [showContentPatterns, setShowContentPatterns] = useState(false);
   const [showAllIdeas, setShowAllIdeas] = useState(false);
+  const [showFeedSummary, setShowFeedSummary] = useState(false);
+  const [showAiContent, setShowAiContent] = useState(false);
+  const [showFeedbackLoop, setShowFeedbackLoop] = useState(false);
 
   // ── Feed in Minutes calculations ──
   const DAILY_MINUTES = 45;
@@ -133,6 +140,62 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
     : null;
 
   const hasContentPatterns = emotionalSummary || sourceDiversitySummary;
+
+  // ── Content Patterns 6-card grid data ──
+  const topInterests = data.contentTypes.length > 0
+    ? data.contentTypes.slice(0, 3).map(ct => CONTENT_TYPE_LABELS[ct.label.toLowerCase()] || ct.label).join(', ')
+    : 'Varied content';
+
+  const emotionalSignal = data.toneAnalysis
+    ? data.toneAnalysis.positivePct > 50 ? 'Mostly positive'
+    : data.toneAnalysis.negativePct > 30 ? 'Notable negativity'
+    : 'Balanced'
+    : 'Not analyzed';
+
+  const politicalExposure = data.politicalAnalysis
+    ? data.politicalAnalysis.politicalPct > 30 ? 'High exposure'
+    : data.politicalAnalysis.politicalPct > 15 ? 'Moderate exposure'
+    : 'Light exposure'
+    : 'Not analyzed';
+
+  const contentStyle = data.suggestedPct > 60 ? 'Discovery-driven'
+    : data.suggestedPct < 30 ? 'Following-driven'
+    : 'Balanced';
+
+  const sourceDiversity = data.top5Pct > 60 ? 'Concentrated'
+    : data.top5Pct < 40 ? 'Diverse'
+    : 'Moderate';
+
+  const commercialPresence = data.adPct > 25 ? 'Ad-heavy'
+    : data.adPct > 15 ? 'Noticeable ads'
+    : 'Light ads';
+
+  const patternCards = [
+    { label: 'Top interests', value: topInterests },
+    { label: 'Emotional signal', value: emotionalSignal },
+    { label: 'Political exposure', value: politicalExposure },
+    { label: 'Content style', value: contentStyle },
+    { label: 'Source diversity', value: sourceDiversity },
+    { label: 'Commercial presence', value: commercialPresence },
+  ];
+
+  // ── Feed Summary bullets ──
+  const feedSummaryBullets: string[] = [];
+  if (data.totalPosts >= 10) {
+    feedSummaryBullets.push(`Your top 5 sources made up ${data.top5Pct}% of posts`);
+    if (data.adPct > 0) {
+      feedSummaryBullets.push(`Ad content was ${data.adPct}% of your feed`);
+    } else {
+      feedSummaryBullets.push('No ad content was detected');
+    }
+    if (data.suggestedPct > 0) {
+      feedSummaryBullets.push(`Suggested content made up ${data.suggestedPct}% of your feed`);
+    }
+    if (politicalPct > 0) {
+      feedSummaryBullets.push(`Political content was ${politicalPct}% of posts`);
+    }
+    feedSummaryBullets.push(`This scan included ${data.totalPosts} posts from ${data.platform}`);
+  }
 
   // ── Hero stat priority logic ──
   // Determine which single metric gets hero treatment
@@ -457,6 +520,311 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
         )}
       </View>
 
+      {/* ── 3b. CONTENT PATTERNS (6-card grid) ── */}
+      {data.totalPosts >= 10 && (
+        <View style={{
+          backgroundColor: colors.bgCard,
+          borderRadius: RADIUS.lg,
+          padding: SPACING.lg,
+          borderWidth: 1,
+          borderColor: colors.borderSoft,
+        }}>
+          <Text variant="label" color={colors.textMain} style={{ marginBottom: SPACING.md }}>
+            Content Patterns
+          </Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {patternCards.map((card, i) => (
+              <View key={i} style={{
+                backgroundColor: '#F8FAFC',
+                borderRadius: 10,
+                padding: 12,
+                flex: 1,
+                minWidth: '47%',
+              }}>
+                <Text style={{ fontSize: 11, color: colors.textTertiary, marginBottom: 2 }}>
+                  {card.label}
+                </Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary ?? colors.textMain }} numberOfLines={1}>
+                  {card.value}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
+
+      {/* ── 3c. FEED SUMMARY ── */}
+      {feedSummaryBullets.length > 0 && (
+        <View style={{
+          backgroundColor: colors.bgCard,
+          borderRadius: RADIUS.lg,
+          borderWidth: 1,
+          borderColor: colors.borderSoft,
+          overflow: 'hidden',
+        }}>
+          <TouchableOpacity
+            onPress={() => setShowFeedSummary(!showFeedSummary)}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={showFeedSummary ? 'Collapse feed summary' : 'Expand feed summary'}
+            accessibilityState={{ expanded: showFeedSummary }}
+            style={{
+              paddingHorizontal: SPACING.lg,
+              minHeight: 52,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
+              <Layers size={16} color={colors.primaryBlue} strokeWidth={2} />
+              <Text variant="label" color={colors.textMain}>Feed Summary</Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
+              <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textMuted }}>
+                {feedSummaryBullets.length} items
+              </Text>
+              <ChevronDown
+                size={16}
+                color={colors.textSecondary}
+                strokeWidth={2}
+                style={{ transform: [{ rotate: showFeedSummary ? '180deg' : '0deg' }] }}
+              />
+            </View>
+          </TouchableOpacity>
+          {showFeedSummary && (
+            <View style={{ paddingHorizontal: SPACING.lg, paddingBottom: SPACING.lg, gap: SPACING.sm }}>
+              {feedSummaryBullets.map((bullet, i) => (
+                <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: SPACING.sm }}>
+                  <View style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: 3,
+                    backgroundColor: colors.primaryBlue,
+                    marginTop: 6,
+                  }} />
+                  <Text variant="body" color={colors.textMain} style={{ flex: 1, fontSize: 14 }}>
+                    {bullet}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* ── 3d. BRANDS & INFLUENCERS (PLUS) ── */}
+      {data.brandsAndInfluencers && (
+        <LockedOverlayCard
+          locked={!isPlus}
+          title="Brands & Influencers"
+          body="See which accounts are brand-driven vs. organic influencers in your feed."
+          onUpgrade={onUpgrade}
+        >
+          <View style={{ gap: SPACING.md }}>
+            {data.brandsAndInfluencers.topBrands.length > 0 && (
+              <View style={{ gap: SPACING.sm }}>
+                <Text variant="overline" color={colors.textMuted}>Top Brands</Text>
+                {data.brandsAndInfluencers.topBrands.map((brand, i) => (
+                  <View key={i} style={{
+                    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+                    paddingVertical: SPACING.xs, paddingHorizontal: SPACING.sm,
+                    backgroundColor: colors.bgCardGradientEnd, borderRadius: RADIUS.md,
+                  }}>
+                    <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textMain, fontWeight: '500' }}>
+                      @{brand.handle}
+                    </Text>
+                    <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
+                      {brand.postCount} post{brand.postCount !== 1 ? 's' : ''} · {brand.adCount} ad{brand.adCount !== 1 ? 's' : ''}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+            {data.brandsAndInfluencers.topInfluencers.length > 0 && (
+              <View style={{ gap: SPACING.sm }}>
+                <Text variant="overline" color={colors.textMuted}>Top Influencers</Text>
+                {data.brandsAndInfluencers.topInfluencers.map((inf, i) => (
+                  <View key={i} style={{
+                    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+                    paddingVertical: SPACING.xs, paddingHorizontal: SPACING.sm,
+                    backgroundColor: colors.bgCardGradientEnd, borderRadius: RADIUS.md,
+                  }}>
+                    <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textMain, fontWeight: '500' }}>
+                      @{inf.handle}
+                    </Text>
+                    <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
+                      {inf.postCount} post{inf.postCount !== 1 ? 's' : ''} · {inf.adCount} ad{inf.adCount !== 1 ? 's' : ''}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        </LockedOverlayCard>
+      )}
+
+      {/* ── 3e. AI-MADE CONTENT ANALYSIS ── */}
+      {data.totalPosts >= 10 && (
+        <View style={{
+          backgroundColor: colors.bgCard,
+          borderRadius: RADIUS.lg,
+          borderWidth: 1,
+          borderColor: colors.borderSoft,
+          overflow: 'hidden',
+        }}>
+          <TouchableOpacity
+            onPress={() => setShowAiContent(!showAiContent)}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={showAiContent ? 'Collapse AI content analysis' : 'Expand AI content analysis'}
+            accessibilityState={{ expanded: showAiContent }}
+            style={{
+              paddingHorizontal: SPACING.lg,
+              minHeight: 52,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
+              <Sparkles size={16} color={colors.primaryBlue} strokeWidth={2} />
+              <Text variant="label" color={colors.textMain}>AI-Made Content</Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
+              <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textMuted }}>
+                {data.aiContentAnalysis ? `${data.aiContentAnalysis.labeledPct}% labeled` : 'No data'}
+              </Text>
+              <ChevronDown
+                size={16}
+                color={colors.textSecondary}
+                strokeWidth={2}
+                style={{ transform: [{ rotate: showAiContent ? '180deg' : '0deg' }] }}
+              />
+            </View>
+          </TouchableOpacity>
+          {showAiContent && (
+            <View style={{ paddingHorizontal: SPACING.lg, paddingBottom: SPACING.lg, gap: SPACING.md }}>
+              {data.aiContentAnalysis ? (
+                <>
+                  <ALStackedBar
+                    segments={[
+                      {
+                        label: 'AI-labeled',
+                        percentage: data.aiContentAnalysis.labeledPct,
+                        count: data.aiContentAnalysis.labeledCount,
+                        color: '#F59E0B',
+                      },
+                      {
+                        label: 'No strong AI signals',
+                        percentage: 100 - data.aiContentAnalysis.labeledPct,
+                        count: data.aiContentAnalysis.noSignalsCount,
+                        color: '#94A3B8',
+                      },
+                    ]}
+                  />
+                  <Text variant="bodySmall" color={colors.textSecondary} style={{ fontStyle: 'italic' }}>
+                    {data.aiContentAnalysis.labeledPct >= 5
+                      ? `About ${data.aiContentAnalysis.labeledPct}% of visual content shows signs of being AI-made`
+                      : 'Very little content shows strong signs of being AI-made'}
+                  </Text>
+                </>
+              ) : (
+                <View style={{
+                  backgroundColor: '#F8FAFC',
+                  borderRadius: RADIUS.md,
+                  padding: SPACING.lg,
+                }}>
+                  <Text variant="bodySmall" color={colors.textSecondary}>
+                    AI content detection data is not available for this scan. Future scans will include AI disclosure analysis for visual content.
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* ── 3e. HOW THE FEEDBACK LOOP WORKS ── */}
+      <View style={{
+        backgroundColor: colors.bgCard,
+        borderRadius: RADIUS.lg,
+        borderWidth: 1,
+        borderColor: colors.borderSoft,
+        overflow: 'hidden',
+      }}>
+        <TouchableOpacity
+          onPress={() => setShowFeedbackLoop(!showFeedbackLoop)}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={showFeedbackLoop ? 'Collapse feedback loop explanation' : 'Expand feedback loop explanation'}
+          accessibilityState={{ expanded: showFeedbackLoop }}
+          style={{
+            paddingHorizontal: SPACING.lg,
+            minHeight: 52,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.sm }}>
+            <Info size={16} color={colors.primaryBlue} strokeWidth={2} />
+            <Text variant="label" color={colors.textMain}>How the Feedback Loop Works</Text>
+          </View>
+          <ChevronDown
+            size={16}
+            color={colors.textSecondary}
+            strokeWidth={2}
+            style={{ transform: [{ rotate: showFeedbackLoop ? '180deg' : '0deg' }] }}
+          />
+        </TouchableOpacity>
+        {showFeedbackLoop && (
+          <View style={{
+            paddingHorizontal: SPACING.lg,
+            paddingBottom: SPACING.lg,
+            gap: SPACING.md,
+          }}>
+            <View style={{
+              backgroundColor: '#F8FAFC',
+              borderRadius: RADIUS.md,
+              padding: SPACING.lg,
+              gap: SPACING.lg,
+            }}>
+              {[
+                { step: 1, title: 'Your behavior', desc: 'What you pause on, like, share, and skip sends signals to the platform' },
+                { step: 2, title: 'Patterns accumulate', desc: 'Over time, recurring topics and content types form observable patterns in your feed' },
+                { step: 3, title: 'Content is tailored', desc: 'Your feed composition reflects what has appeared \u2014 we cannot know why specific content was selected' },
+                { step: 4, title: 'Your media diet evolves', desc: 'Each interaction reinforces or shifts the cycle. Small changes can move the needle' },
+              ].map((item) => (
+                <View key={item.step} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}>
+                  <View style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 14,
+                    backgroundColor: colors.primaryBlue,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>
+                    <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '700' }}>
+                      {item.step}
+                    </Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text variant="labelBold" color={colors.textMain}>
+                      {item.title}
+                    </Text>
+                    <Text variant="bodySmall" color={colors.textSecondary} style={{ marginTop: 2 }}>
+                      {item.desc}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+      </View>
+
       {/* ── 4. IDEAS TO EXPLORE (simplified) ── */}
       {suggestions.length > 0 && (
         <View style={{
@@ -658,12 +1026,17 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
           ...shadows.card,
         }}>
           <ALBarChart
-            data={data.topCreators.slice(0, 8).map((creator) => ({
+            data={data.topCreators.slice(0, isPlus ? 10 : 5).map((creator) => ({
               label: `@${creator.name}`,
               value: creator.count,
               percentage: creator.percentage,
             }))}
           />
+          {!isPlus && data.topCreators.length > 5 && (
+            <Text variant="captionSmall" color={colors.textTertiary} style={{ fontStyle: 'italic', marginTop: SPACING.sm, textAlign: 'center' }}>
+              See all 10 with Plus
+            </Text>
+          )}
         </View>
       ) : (
         <EmptySection message="Creator information builds up as you scan. Try scrolling through more content to capture source data." colors={colors} />
@@ -775,12 +1148,39 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
           </View>
         </View>
       </LockedOverlayCard>
+
+      {/* Plus teasers for free users */}
+      {!isPlus && (
+        <>
+          <EvidenceBundleTeaser text="Plus provides detailed creator analysis and source diversity tracking" onUpgrade={onUpgrade} />
+          <FreeAskTeaser exampleQuestion="Which creators dominate my feed the most?" onUpgrade={onUpgrade} />
+        </>
+      )}
+
+      {/* ── Footer Context ── */}
+      <View style={{ paddingVertical: SPACING.lg, alignItems: 'center' }}>
+        <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textTertiary, textAlign: 'center' }}>
+          Based on {data.totalPosts} posts · {data.platform}{data.scanDate ? ` · Scanned ${new Date(data.scanDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}` : ''}
+        </Text>
+      </View>
     </View>
   );
 });
 
 const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: DashboardData; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
   const [showAdvertisers, setShowAdvertisers] = useState(false);
+  const [showProductTypes, setShowProductTypes] = useState(false);
+
+  // Compute composition segments — 3-segment when unlabeled promo data exists
+  const hasUnlabeledPromos = data.unlabeledPromos !== null && data.unlabeledPromos.count > 0;
+  const unlabeledCount = hasUnlabeledPromos ? data.unlabeledPromos!.count : 0;
+  const unlabeledPct = hasUnlabeledPromos ? data.unlabeledPromos!.percentage : 0;
+  const labeledAdCount = data.adCount;
+  const labeledAdPct = data.adPct;
+  const notAdCount = data.totalPosts - labeledAdCount - unlabeledCount;
+  const notAdPct = 100 - labeledAdPct - unlabeledPct;
+
+  // Fallback 2-segment version
   const organicCount = data.totalPosts - data.adCount;
   const organicPct = 100 - data.adPct;
 
@@ -869,7 +1269,7 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
       {/* CD-005 FIX: Only show Ad Composition chart when there are both sponsored and non-sponsored segments */}
       {data.adCount > 0 && (
         <>
-          <SectionHeader title="Ad Composition" subtitle="Content labeled as sponsored" />
+          <SectionHeader title="Ad Composition" subtitle={hasUnlabeledPromos ? "Labeled ads, unlabeled promos, and organic content" : "Content labeled as sponsored"} />
           <View style={{
             backgroundColor: colors.bgCard,
             borderRadius: RADIUS.lg,
@@ -879,10 +1279,17 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
             ...shadows.card,
           }}>
             <ALStackedBar
-              segments={[
-                { label: 'Non-sponsored', percentage: organicPct, count: organicCount, color: colors.primaryBlue },
-                { label: 'Sponsored', percentage: data.adPct, count: data.adCount, color: colors.blue200 },
-              ]}
+              segments={hasUnlabeledPromos
+                ? [
+                    { label: 'Not ads', percentage: notAdPct, count: notAdCount, color: colors.primaryBlue },
+                    { label: 'Labeled ads', percentage: labeledAdPct, count: labeledAdCount, color: colors.blue200 },
+                    { label: 'Unlabeled promos', percentage: unlabeledPct, count: unlabeledCount, color: '#F59E0B' },
+                  ]
+                : [
+                    { label: 'Non-sponsored', percentage: organicPct, count: organicCount, color: colors.primaryBlue },
+                    { label: 'Sponsored', percentage: data.adPct, count: data.adCount, color: colors.blue200 },
+                  ]
+              }
             />
           </View>
         </>
@@ -984,6 +1391,163 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
         </>
       )}
 
+      {/* ── Top Advertised Product Types (collapsible) ── */}
+      {data.topAdvertisedProductTypes.length > 0 && (
+        <>
+          <TouchableOpacity
+            onPress={() => setShowProductTypes(!showProductTypes)}
+            activeOpacity={0.7}
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingVertical: SPACING.md,
+            }}
+          >
+            <Text variant="label" color={colors.textMuted}>
+              Top product types
+            </Text>
+            <ChevronDown
+              size={16}
+              color={colors.textSecondary}
+              strokeWidth={2}
+              style={{
+                transform: [{ rotate: showProductTypes ? '180deg' : '0deg' }],
+              }}
+            />
+          </TouchableOpacity>
+
+          {showProductTypes && (
+            <View style={{
+              backgroundColor: colors.bgCard,
+              borderRadius: RADIUS.lg,
+              padding: SPACING.lg,
+              borderWidth: 1,
+              borderColor: colors.borderSoft,
+              ...shadows.card,
+              gap: SPACING.sm,
+            }}>
+              {/* Header row */}
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingBottom: SPACING.xxs }}>
+                <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontWeight: '600', flex: 2 }}>
+                  Theme
+                </Text>
+                <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontWeight: '600', flex: 1, textAlign: 'right' }}>
+                  % of ads
+                </Text>
+                <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontWeight: '600', flex: 1, textAlign: 'right' }}>
+                  Count
+                </Text>
+              </View>
+              {data.topAdvertisedProductTypes.map((pt, idx) => (
+                <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textMain, fontWeight: '500', flex: 2 }}>
+                    {pt.theme}
+                  </Text>
+                  <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary, flex: 1, textAlign: 'right' }}>
+                    {pt.percentage}%
+                  </Text>
+                  <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary, flex: 1, textAlign: 'right' }}>
+                    {pt.count}
+                  </Text>
+                </View>
+              ))}
+              <Text variant="captionSmall" color={colors.textSecondary} style={{ fontStyle: "italic", marginTop: SPACING.xxs }}>
+                Based on {data.adCount} labeled ad posts
+              </Text>
+            </View>
+          )}
+        </>
+      )}
+
+      {/* ── Unlabeled Promotional Content ── */}
+      {hasUnlabeledPromos && (
+        <>
+          <SectionHeader title="Unlabeled Promotions" subtitle="Posts with promotional signals but no ad label" />
+          <View style={{
+            backgroundColor: colors.bgCard,
+            borderRadius: RADIUS.lg,
+            padding: SPACING.lg,
+            borderWidth: 1,
+            borderColor: colors.borderSoft,
+            ...shadows.card,
+            gap: SPACING.md,
+          }}>
+            <View style={{ alignItems: 'center' }}>
+              <BigNumber
+                value={data.unlabeledPromos!.percentage}
+                label="of posts showed promotional signals without ad labels"
+                suffix="%"
+              />
+            </View>
+
+            {/* Top triggers */}
+            {data.unlabeledPromos!.topTriggers.length > 0 && (
+              <View style={{ gap: SPACING.xs }}>
+                <Text variant="label" color={colors.textSecondary}>
+                  Top triggers
+                </Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.xs }}>
+                  {data.unlabeledPromos!.topTriggers.map((trigger, idx) => (
+                    <View key={idx} style={{
+                      backgroundColor: colors.blue50,
+                      borderRadius: RADIUS.md,
+                      paddingHorizontal: SPACING.sm,
+                      paddingVertical: SPACING.xxs,
+                      borderWidth: 1,
+                      borderColor: colors.blue200,
+                    }}>
+                      <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textMain }}>
+                        {trigger.name} ({trigger.count})
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* Example accounts */}
+            {data.unlabeledPromos!.exampleAccounts.length > 0 && (
+              <View style={{ gap: SPACING.xs }}>
+                <Text variant="label" color={colors.textSecondary}>
+                  Example accounts
+                </Text>
+                {data.unlabeledPromos!.exampleAccounts.map((handle, idx) => (
+                  <Text key={idx} style={{ ...GL_TYPOGRAPHY.body, color: colors.textMain }}>
+                    @{handle}
+                  </Text>
+                ))}
+              </View>
+            )}
+          </View>
+        </>
+      )}
+
+      {/* ── Tone: Selling vs Not Selling ── */}
+      {data.toneBySelling && (
+        <>
+          <SectionHeader title="Tone: Selling vs Not Selling" subtitle="Emotional tone comparison" />
+          <ToneComparisonCard
+            title="How does tone differ?"
+            leftLabel="Selling posts"
+            rightLabel="Non-selling posts"
+            leftSegments={[
+              { label: 'Positive', percentage: data.toneBySelling.selling.positivePct, count: Math.round(data.toneBySelling.selling.total * data.toneBySelling.selling.positivePct / 100), color: '#22C55E' },
+              { label: 'Neutral', percentage: data.toneBySelling.selling.neutralPct, count: Math.round(data.toneBySelling.selling.total * data.toneBySelling.selling.neutralPct / 100), color: colors.blue200 },
+              { label: 'Negative', percentage: data.toneBySelling.selling.negativePct, count: Math.round(data.toneBySelling.selling.total * data.toneBySelling.selling.negativePct / 100), color: '#EF4444' },
+            ]}
+            rightSegments={[
+              { label: 'Positive', percentage: data.toneBySelling.notSelling.positivePct, count: Math.round(data.toneBySelling.notSelling.total * data.toneBySelling.notSelling.positivePct / 100), color: '#22C55E' },
+              { label: 'Neutral', percentage: data.toneBySelling.notSelling.neutralPct, count: Math.round(data.toneBySelling.notSelling.total * data.toneBySelling.notSelling.neutralPct / 100), color: colors.blue200 },
+              { label: 'Negative', percentage: data.toneBySelling.notSelling.negativePct, count: Math.round(data.toneBySelling.notSelling.total * data.toneBySelling.notSelling.negativePct / 100), color: '#EF4444' },
+            ]}
+            leftDenominator={`${data.toneBySelling.selling.total} selling posts with known tone`}
+            rightDenominator={`${data.toneBySelling.notSelling.total} non-selling posts with known tone`}
+            deltaInsight={data.toneBySelling.biggestDifference ? `This pattern may suggest: ${data.toneBySelling.biggestDifference}` : null}
+          />
+        </>
+      )}
+
       {/* Premium: Ad trend over time — locked for free users */}
       <LockedOverlayCard
         locked={!isPlus}
@@ -1001,11 +1565,26 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
           </View>
         </View>
       </LockedOverlayCard>
+
+      {/* Plus teasers for free users */}
+      {!isPlus && (
+        <>
+          <EvidenceBundleTeaser text="Plus analyzes which advertisers appeared most and how ad patterns change" onUpgrade={onUpgrade} />
+          <FreeAskTeaser exampleQuestion="Why am I seeing so many ads from the same companies?" onUpgrade={onUpgrade} />
+        </>
+      )}
+
+      {/* ── Footer Context ── */}
+      <View style={{ paddingVertical: SPACING.lg, alignItems: 'center' }}>
+        <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textTertiary, textAlign: 'center' }}>
+          Based on {data.totalPosts} posts · {data.platform}{data.scanDate ? ` · Scanned ${new Date(data.scanDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}` : ''}
+        </Text>
+      </View>
     </View>
   );
 });
 
-const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
+const SuggestedContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: DashboardData; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
   // PD-002/MC-004 FIX: "What You Can Do" collapsed by default, reframed as optional
   const [showIdeas, setShowIdeas] = useState(false);
 
@@ -1158,6 +1737,184 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
       </>
     )}
 
+    {/* ── By Platform Breakdown (multi-platform only) ── */}
+    {data.byPlatform && data.byPlatform.length > 1 && (
+      <>
+        <SectionHeader title="By Platform" subtitle="Content origin per platform" />
+        {data.byPlatform.map((bp, idx) => (
+          <View key={idx} style={{
+            backgroundColor: colors.bgCard,
+            borderRadius: RADIUS.lg,
+            padding: SPACING.lg,
+            borderWidth: 1,
+            borderColor: colors.borderSoft,
+            ...shadows.card,
+            gap: SPACING.xs,
+          }}>
+            <Text variant="labelBold" color={colors.textMain}>
+              {bp.platform}
+            </Text>
+            <ALStackedBar
+              segments={[
+                { label: 'Following', percentage: bp.followedPct, count: bp.followedCount, color: colors.primaryBlue },
+                { label: 'Suggested', percentage: bp.suggestedPct, count: bp.suggestedCount, color: colors.blue200 },
+              ]}
+            />
+            <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
+              Followed: {bp.followedCount} ({bp.followedPct}%) · Suggested: {bp.suggestedCount} ({bp.suggestedPct}%)
+            </Text>
+          </View>
+        ))}
+      </>
+    )}
+
+    {/* ── Commercial Content: Suggested vs Followed ── */}
+    {data.commercialComparison && (
+      <>
+        <SectionHeader title="Commercial Content" subtitle="Ad presence in suggested vs followed" />
+        <ToneComparisonCard
+          title="Where do ads appear?"
+          leftLabel="Suggested posts"
+          rightLabel="Followed posts"
+          leftSegments={[
+            { label: 'Ads', percentage: data.commercialComparison.suggested.adPct, count: Math.round(data.commercialComparison.suggested.total * data.commercialComparison.suggested.adPct / 100), color: '#F59E0B' },
+            { label: 'Non-ads', percentage: 100 - data.commercialComparison.suggested.adPct, count: data.commercialComparison.suggested.total - Math.round(data.commercialComparison.suggested.total * data.commercialComparison.suggested.adPct / 100), color: colors.primaryBlue },
+          ]}
+          rightSegments={[
+            { label: 'Ads', percentage: data.commercialComparison.followed.adPct, count: Math.round(data.commercialComparison.followed.total * data.commercialComparison.followed.adPct / 100), color: '#F59E0B' },
+            { label: 'Non-ads', percentage: 100 - data.commercialComparison.followed.adPct, count: data.commercialComparison.followed.total - Math.round(data.commercialComparison.followed.total * data.commercialComparison.followed.adPct / 100), color: colors.primaryBlue },
+          ]}
+          leftDenominator={`${data.commercialComparison.suggested.total} suggested posts`}
+          rightDenominator={`${data.commercialComparison.followed.total} followed posts`}
+          deltaInsight={data.commercialComparison.biggestDifference ? `Based on observable data: ${data.commercialComparison.biggestDifference}` : null}
+        />
+      </>
+    )}
+
+    {/* ── Top Topics: Suggested vs Followed ── */}
+    {(data.topTopicsBySuggested.length > 0 || data.topTopicsByFollowed.length > 0) && (
+      <>
+        <SectionHeader title="Top Topics" subtitle="Most common themes by content origin" />
+        <View style={{
+          backgroundColor: colors.bgCard,
+          borderRadius: RADIUS.lg,
+          padding: SPACING.lg,
+          borderWidth: 1,
+          borderColor: colors.borderSoft,
+          ...shadows.card,
+          gap: SPACING.md,
+        }}>
+          <View style={{ flexDirection: 'row', gap: SPACING.md }}>
+            {/* Left: In Suggested */}
+            <View style={{ flex: 1, gap: SPACING.sm }}>
+              <Text variant="label" color={colors.textSecondary}>In Suggested</Text>
+              {data.topTopicsBySuggested.length > 0 ? (
+                data.topTopicsBySuggested.map((t, idx) => (
+                  <View key={idx} style={{ gap: SPACING.xxs }}>
+                    <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textMain }} numberOfLines={1}>
+                      {t.topic}
+                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs }}>
+                      <View style={{
+                        height: 6,
+                        borderRadius: 3,
+                        backgroundColor: colors.blue200,
+                        width: `${Math.max(t.percentage, 5)}%`,
+                      }} />
+                      <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
+                        {t.percentage}%
+                      </Text>
+                    </View>
+                  </View>
+                ))
+              ) : (
+                <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textTertiary, fontStyle: 'italic' }}>
+                  No topic data
+                </Text>
+              )}
+            </View>
+            {/* Right: In Followed */}
+            <View style={{ flex: 1, gap: SPACING.sm }}>
+              <Text variant="label" color={colors.textSecondary}>In Followed</Text>
+              {data.topTopicsByFollowed.length > 0 ? (
+                data.topTopicsByFollowed.map((t, idx) => (
+                  <View key={idx} style={{ gap: SPACING.xxs }}>
+                    <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textMain }} numberOfLines={1}>
+                      {t.topic}
+                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs }}>
+                      <View style={{
+                        height: 6,
+                        borderRadius: 3,
+                        backgroundColor: colors.primaryBlue,
+                        width: `${Math.max(t.percentage, 5)}%`,
+                      }} />
+                      <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textTertiary }}>
+                        {t.percentage}%
+                      </Text>
+                    </View>
+                  </View>
+                ))
+              ) : (
+                <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textTertiary, fontStyle: 'italic' }}>
+                  No topic data
+                </Text>
+              )}
+            </View>
+          </View>
+        </View>
+      </>
+    )}
+
+    {/* ── Content Formats: Suggested vs Followed ── */}
+    {data.contentFormatComparison.length > 0 && (
+      <>
+        <SectionHeader title="Content Formats" subtitle="How format preferences differ" />
+        <View style={{
+          backgroundColor: colors.bgCard,
+          borderRadius: RADIUS.lg,
+          padding: SPACING.lg,
+          borderWidth: 1,
+          borderColor: colors.borderSoft,
+          ...shadows.card,
+          gap: SPACING.sm,
+        }}>
+          {/* Header row */}
+          <View style={{ flexDirection: 'row', paddingBottom: SPACING.xxs }}>
+            <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontWeight: '600', flex: 2 }}>Format</Text>
+            <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontWeight: '600', flex: 1, textAlign: 'right' }}>Suggested</Text>
+            <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontWeight: '600', flex: 1, textAlign: 'right' }}>Followed</Text>
+            <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontWeight: '600', flex: 1, textAlign: 'right' }}>Diff</Text>
+          </View>
+          {data.contentFormatComparison.map((cf, idx) => (
+            <View key={idx} style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textMain, fontWeight: '500', flex: 2 }}>
+                {cf.format}
+              </Text>
+              <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary, flex: 1, textAlign: 'right' }}>
+                {cf.suggestedPct}%
+              </Text>
+              <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary, flex: 1, textAlign: 'right' }}>
+                {cf.followedPct}%
+              </Text>
+              <Text style={{
+                ...GL_TYPOGRAPHY.captionSmall,
+                color: cf.delta > 0 ? '#F59E0B' : cf.delta < 0 ? colors.primaryBlue : colors.textTertiary,
+                fontWeight: '600',
+                flex: 1,
+                textAlign: 'right',
+              }}>
+                {cf.delta > 0 ? '+' : ''}{cf.delta}
+              </Text>
+            </View>
+          ))}
+          <Text variant="captionSmall" color={colors.textTertiary} style={{ fontStyle: 'italic', marginTop: SPACING.xxs }}>
+            Positive difference = more common in suggested; negative = more common in followed
+          </Text>
+        </View>
+      </>
+    )}
+
     {/* PD-002/MC-004 FIX: Collapsible "Ideas to explore" with softer framing */}
     {/* A-004 FIX: MIN_TOUCH_TARGET ensures accessible tap target */}
     <TouchableOpacity
@@ -1263,6 +2020,14 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
     </View>
     )}
 
+    {/* Plus teasers for free users */}
+    {!isPlus && (
+      <>
+        <EvidenceBundleTeaser text="Plus analyzes the balance between content you chose and platform suggestions" onUpgrade={onUpgrade} />
+        <FreeAskTeaser exampleQuestion="How much of my feed was content I chose to follow versus suggestions?" onUpgrade={onUpgrade} />
+      </>
+    )}
+
     {/* ── Master Numbers Line ── */}
     <View style={{
       flexDirection: 'row',
@@ -1298,39 +2063,36 @@ const SuggestedContent = memo(({ data, colors, shadows }: { data: DashboardData;
 // Shows political share, top political source, ideological distribution,
 // and methodology disclaimer matching the main site's PoliticsTab.
 // Gates are mutually exclusive: only ONE state renders at a time.
-const PoliticsContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, colors, shadows }: { data: DashboardData; aiConsent: boolean; onGoToSettings: () => void; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
+const PoliticsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: DashboardData; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
   const [showIdeology, setShowIdeology] = useState(false);
   const analysis = data.politicalAnalysis;
   const totalAnalyzed = analysis?.totalAnalyzed ?? data.totalPosts;
   const isLowPostCount = totalAnalyzed < 20;
 
-  // ── Gate 1: No AI consent → show ONLY the consent card, nothing else ──
-  if (!aiConsent) {
-    return (
-      <View style={{ gap: SPACING.sm }}>
-        <AiConsentCard
-          title="Enable AI Insights"
-          description="Turn on AI analysis in Settings to see how much political content appears in your feed."
-          buttonLabel="Go to Settings"
-          onPress={onGoToSettings}
-          colors={colors}
-          shadows={shadows}
-        />
-      </View>
-    );
-  }
-
-  // ── Gate 2: AI consent given but no political data ──
+  // ── No political data → per-section empty state ──
   if (!data.hasPoliticsData) {
     return (
-      <View style={{ gap: SPACING.sm }}>
-        <AiProcessingCard
-          title="Political content wasn't prominent in this scan"
-          message={`Political keywords and themes weren't prominent among the ${totalAnalyzed} posts in this scan.${isLowPostCount ? ' Try scanning during peak news hours or scrolling through more content for a fuller picture.' : ' Each scan captures a different moment — try scanning at a different time.'}`}
-          subtitle={isLowPostCount ? undefined : 'Try scanning at a different time of day to see how results vary.'}
-          colors={colors}
-          shadows={shadows}
-        />
+      <View style={{ gap: SPACING['2xl'] }}>
+        <View style={{
+          backgroundColor: '#FAFBFE',
+          borderRadius: 12,
+          borderWidth: 1,
+          borderColor: 'rgba(37, 99, 235, 0.06)',
+          padding: 24,
+          alignItems: 'center',
+        }}>
+          <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: 'center' }}>
+            {isLowPostCount
+              ? 'Political exposure was light in this scan. Scan more content to see a full breakdown.'
+              : 'Political keywords and themes weren\'t prominent in this scan. Each scan captures a different moment — try scanning at a different time.'}
+          </Text>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+          <Sparkles size={12} color={colors.textTertiary} strokeWidth={1.5} />
+          <Text style={{ fontSize: 11, color: colors.textTertiary }}>
+            Political classification by Google Gemini AI · Your data is not used to train models
+          </Text>
+        </View>
         <PoliticsMethodologyDisclaimer colors={colors} />
       </View>
     );
@@ -1353,6 +2115,14 @@ const PoliticsContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgra
           learnMoreUrl: 'https://algorithmlens.com/dashboard#politics',
         }}
       />
+
+      {/* Gemini AI disclosure */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+        <Sparkles size={12} color={colors.textTertiary} strokeWidth={1.5} />
+        <Text style={{ fontSize: 11, color: colors.textTertiary }}>
+          Political classification by Google Gemini AI · Your data is not used to train models
+        </Text>
+      </View>
 
       {/* Low sample indicator */}
       {analysis?.lowSample && (
@@ -1540,6 +2310,21 @@ const PoliticsContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgra
 
       {/* PD-003 FIX: Removed redundant methodology disclaimer — InsightHero's
           "How we measure" section already provides this via progressive disclosure */}
+
+      {/* Plus teasers for free users */}
+      {!isPlus && (
+        <>
+          <EvidenceBundleTeaser text="Plus breaks down political content patterns across your scans" onUpgrade={onUpgrade} />
+          <FreeAskTeaser exampleQuestion="How much of my feed contains political content compared to other categories?" onUpgrade={onUpgrade} />
+        </>
+      )}
+
+      {/* ── Footer Context ── */}
+      <View style={{ paddingVertical: SPACING.lg, alignItems: 'center' }}>
+        <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textTertiary, textAlign: 'center' }}>
+          Based on {data.totalPosts} posts · {data.platform}{data.scanDate ? ` · Scanned ${new Date(data.scanDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}` : ''}
+        </Text>
+      </View>
     </View>
   );
 });
@@ -1566,7 +2351,7 @@ const PoliticsMethodologyDisclaimer = ({ colors }: { colors: ReturnType<typeof u
 // Shows tone composition bar, methodology disclaimer, and quality gating.
 // Matches the main site's ToneTab pattern with epistemic restraint.
 // Gates are mutually exclusive: only ONE state renders at a time.
-const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, colors, shadows }: { data: DashboardData; aiConsent: boolean; onGoToSettings: () => void; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
+const ToneContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: DashboardData; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
   const analysis = data.toneAnalysis;
   const totalAnalyzed = analysis?.totalAnalyzed ?? data.totalPosts;
   const isLowPostCount = totalAnalyzed < 20;
@@ -1580,33 +2365,28 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
     negative: colors.toneNegative,
   };
 
-  // ── Gate 1: No AI consent → show ONLY the consent card, nothing else ──
-  if (!aiConsent) {
-    return (
-      <View style={{ gap: SPACING.sm }}>
-        <AiConsentCard
-          title="Enable AI Insights"
-          description="Turn on AI analysis in Settings to unlock emotional tone classification for your feed content."
-          buttonLabel="Go to Settings"
-          onPress={onGoToSettings}
-          colors={colors}
-          shadows={shadows}
-        />
-      </View>
-    );
-  }
-
-  // ── Gate 2: AI consent given but no tone data ──
+  // ── No tone data → per-section empty state ──
   if (!data.hasToneData) {
     return (
-      <View style={{ gap: SPACING.sm }}>
-        <AiProcessingCard
-          title="Emotional tone wasn't prominent in this scan"
-          message={`Clear emotional tone signals weren't prominent among the ${totalAnalyzed} posts in this scan.${isLowPostCount ? ' Short video titles may not contain enough text for tone analysis. Try scanning longer or on a platform with more text-based posts.' : ' Each scan captures a different moment — try scanning at a different time.'}`}
-          subtitle={isLowPostCount ? undefined : 'Try scanning at a different time of day to see how results vary.'}
-          colors={colors}
-          shadows={shadows}
-        />
+      <View style={{ gap: SPACING['2xl'] }}>
+        <View style={{
+          backgroundColor: '#FAFBFE',
+          borderRadius: 12,
+          borderWidth: 1,
+          borderColor: 'rgba(37, 99, 235, 0.06)',
+          padding: 24,
+          alignItems: 'center',
+        }}>
+          <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: 'center' }}>
+            Tone analysis needs more data. Try scanning again to see emotional patterns.
+          </Text>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+          <Sparkles size={12} color={colors.textTertiary} strokeWidth={1.5} />
+          <Text style={{ fontSize: 11, color: colors.textTertiary }}>
+            Tone classification by Google Gemini AI · Your data is not used to train models
+          </Text>
+        </View>
         <ToneMethodologyDisclaimer colors={colors} />
       </View>
     );
@@ -1629,6 +2409,14 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
           learnMoreUrl: 'https://algorithmlens.com/dashboard#tone',
         }}
       />
+
+      {/* Gemini AI disclosure */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+        <Sparkles size={12} color={colors.textTertiary} strokeWidth={1.5} />
+        <Text style={{ fontSize: 11, color: colors.textTertiary }}>
+          Tone classification by Google Gemini AI · Your data is not used to train models
+        </Text>
+      </View>
 
       {/* Low sample indicator */}
       {analysis?.lowSample && (
@@ -1698,7 +2486,7 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
 
       {/* PD-001 FIX: Collapsible detail sections */}
       {/* A-004 FIX: MIN_TOUCH_TARGET ensures accessible tap target */}
-      {(data.topPositiveSources.length > 0 || data.topNegativeSources.length > 0 || data.toneBySourceOrigin) && (
+      {(data.topPositiveSources.length > 0 || data.topNegativeSources.length > 0 || data.toneBySourceOrigin || data.toneByPolitical || data.toneBySelling) && (
         <TouchableOpacity
           onPress={() => setShowToneDetails(!showToneDetails)}
           activeOpacity={0.7}
@@ -1855,6 +2643,56 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
         </>
       )}
 
+      {/* Section: Tone — Political vs Non-Political */}
+      {showToneDetails && data.toneByPolitical && (
+        <>
+          <SectionHeader title="Tone: Political vs Non-Political" subtitle="Emotional tone by content type" />
+          <ToneComparisonCard
+            title="How does tone differ?"
+            leftLabel="Political posts"
+            rightLabel="Non-political posts"
+            leftSegments={[
+              { label: 'Positive', percentage: data.toneByPolitical.political.positivePct, count: Math.round(data.toneByPolitical.political.total * data.toneByPolitical.political.positivePct / 100), color: '#22C55E' },
+              { label: 'Neutral', percentage: data.toneByPolitical.political.neutralPct, count: Math.round(data.toneByPolitical.political.total * data.toneByPolitical.political.neutralPct / 100), color: colors.blue200 },
+              { label: 'Negative', percentage: data.toneByPolitical.political.negativePct, count: Math.round(data.toneByPolitical.political.total * data.toneByPolitical.political.negativePct / 100), color: '#EF4444' },
+            ]}
+            rightSegments={[
+              { label: 'Positive', percentage: data.toneByPolitical.nonPolitical.positivePct, count: Math.round(data.toneByPolitical.nonPolitical.total * data.toneByPolitical.nonPolitical.positivePct / 100), color: '#22C55E' },
+              { label: 'Neutral', percentage: data.toneByPolitical.nonPolitical.neutralPct, count: Math.round(data.toneByPolitical.nonPolitical.total * data.toneByPolitical.nonPolitical.neutralPct / 100), color: colors.blue200 },
+              { label: 'Negative', percentage: data.toneByPolitical.nonPolitical.negativePct, count: Math.round(data.toneByPolitical.nonPolitical.total * data.toneByPolitical.nonPolitical.negativePct / 100), color: '#EF4444' },
+            ]}
+            leftDenominator={`${data.toneByPolitical.political.total} political posts with known tone`}
+            rightDenominator={`${data.toneByPolitical.nonPolitical.total} non-political posts with known tone`}
+            deltaInsight={data.toneByPolitical.biggestDifference ? `Based on observable data: ${data.toneByPolitical.biggestDifference}` : null}
+          />
+        </>
+      )}
+
+      {/* Section: Tone — Selling vs Not Selling */}
+      {showToneDetails && data.toneBySelling && (
+        <>
+          <SectionHeader title="Tone: Selling vs Not Selling" subtitle="Emotional tone by commercial intent" />
+          <ToneComparisonCard
+            title="How does tone differ?"
+            leftLabel="Selling posts"
+            rightLabel="Non-selling posts"
+            leftSegments={[
+              { label: 'Positive', percentage: data.toneBySelling.selling.positivePct, count: Math.round(data.toneBySelling.selling.total * data.toneBySelling.selling.positivePct / 100), color: '#22C55E' },
+              { label: 'Neutral', percentage: data.toneBySelling.selling.neutralPct, count: Math.round(data.toneBySelling.selling.total * data.toneBySelling.selling.neutralPct / 100), color: colors.blue200 },
+              { label: 'Negative', percentage: data.toneBySelling.selling.negativePct, count: Math.round(data.toneBySelling.selling.total * data.toneBySelling.selling.negativePct / 100), color: '#EF4444' },
+            ]}
+            rightSegments={[
+              { label: 'Positive', percentage: data.toneBySelling.notSelling.positivePct, count: Math.round(data.toneBySelling.notSelling.total * data.toneBySelling.notSelling.positivePct / 100), color: '#22C55E' },
+              { label: 'Neutral', percentage: data.toneBySelling.notSelling.neutralPct, count: Math.round(data.toneBySelling.notSelling.total * data.toneBySelling.notSelling.neutralPct / 100), color: colors.blue200 },
+              { label: 'Negative', percentage: data.toneBySelling.notSelling.negativePct, count: Math.round(data.toneBySelling.notSelling.total * data.toneBySelling.notSelling.negativePct / 100), color: '#EF4444' },
+            ]}
+            leftDenominator={`${data.toneBySelling.selling.total} selling posts with known tone`}
+            rightDenominator={`${data.toneBySelling.notSelling.total} non-selling posts with known tone`}
+            deltaInsight={data.toneBySelling.biggestDifference ? `This pattern may suggest: ${data.toneBySelling.biggestDifference}` : null}
+          />
+        </>
+      )}
+
       {/* Premium: Rare content detection — locked for free users */}
       <LockedOverlayCard
         locked={!isPlus}
@@ -1875,6 +2713,21 @@ const ToneContent = memo(({ data, aiConsent, onGoToSettings, isPlus, onUpgrade, 
 
       {/* PD-003 FIX: Removed redundant methodology disclaimer — InsightHero's
           "How we measure" section already provides this via progressive disclosure */}
+
+      {/* Plus teasers for free users */}
+      {!isPlus && (
+        <>
+          <EvidenceBundleTeaser text="Plus explains emotional patterns and how they shift over time" onUpgrade={onUpgrade} />
+          <FreeAskTeaser exampleQuestion="What is the overall emotional tone of my feed and how does it break down?" onUpgrade={onUpgrade} />
+        </>
+      )}
+
+      {/* ── Footer Context ── */}
+      <View style={{ paddingVertical: SPACING.lg, alignItems: 'center' }}>
+        <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textTertiary, textAlign: 'center' }}>
+          Based on {data.totalPosts} posts · {data.platform}{data.scanDate ? ` · Scanned ${new Date(data.scanDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}` : ''}
+        </Text>
+      </View>
     </View>
   );
 });
@@ -1940,94 +2793,7 @@ const EmptySection = ({ message, colors }: { message: string; colors: ReturnType
   </View>
 );
 
-// H8 FIX: Replaced red AiRequiredCard with blue-themed AiConsentCard
-const AiConsentCard = ({
-  title, description, buttonLabel, onPress, colors, shadows,
-}: {
-  title: string; description: string; buttonLabel: string; onPress: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'];
-}) => (
-  <View style={{
-    backgroundColor: colors.bgCard,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.xl,
-    borderWidth: 1,
-    borderColor: colors.borderSoft,
-    ...shadows.card,
-    alignItems: 'center',
-    gap: SPACING.sm,
-  }}>
-    <View style={{
-      width: ICON_SIZES.touch, height: ICON_SIZES.touch, borderRadius: ICON_SIZES.touch / 2,
-      backgroundColor: colors.blue50, justifyContent: 'center', alignItems: 'center',
-    }}>
-      <Sparkles size={20} color={colors.primaryBlue} strokeWidth={1.5} />
-    </View>
-    <Text style={{ ...GL_TYPOGRAPHY.h3, color: colors.textMain, textAlign: 'center' }}>
-      {title}
-    </Text>
-    <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center' }}>
-      {description}
-    </Text>
-    <TouchableOpacity
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={buttonLabel}
-      style={{
-        backgroundColor: colors.primaryBlue, borderRadius: RADIUS.md,
-        paddingHorizontal: SPACING.md, paddingVertical: SPACING.sm,
-        flexDirection: 'row', alignItems: 'center', gap: SPACING.xs,
-        minHeight: MIN_TOUCH_TARGET,
-      }}
-    >
-      <Settings size={13} color={colors.white} strokeWidth={2} />
-      <Text style={{ ...GL_TYPOGRAPHY.buttonSm, color: colors.white }}>{buttonLabel}</Text>
-    </TouchableOpacity>
-  </View>
-);
-
-// New: card for when AI is on but data isn't available yet
-const AiProcessingCard = ({
-  message,
-  title = 'Coming Soon',
-  subtitle,
-  colors,
-  shadows,
-}: {
-  message: string;
-  title?: string;
-  subtitle?: string;
-  colors: ReturnType<typeof useTheme>['colors'];
-  shadows: ReturnType<typeof useTheme>['shadows'];
-}) => (
-  <View style={{
-    backgroundColor: colors.bgCard,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.xl,
-    borderWidth: 1,
-    borderColor: colors.borderSoft,
-    ...shadows.card,
-    alignItems: 'center',
-    gap: SPACING.sm,
-  }}>
-    <View style={{
-      width: ICON_SIZES.touch, height: ICON_SIZES.touch, borderRadius: ICON_SIZES.touch / 2,
-      backgroundColor: colors.blue50, justifyContent: 'center', alignItems: 'center',
-    }}>
-      <Info size={20} color={colors.primaryBlue} strokeWidth={1.5} />
-    </View>
-    <Text style={{ ...GL_TYPOGRAPHY.h3, color: colors.textMain, textAlign: 'center' }}>
-      {title}
-    </Text>
-    <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center' }}>
-      {message}
-    </Text>
-    {subtitle && (
-      <Text variant="bodySmall" color={colors.textMuted} style={{ textAlign: 'center' }}>
-        {subtitle}
-      </Text>
-    )}
-  </View>
-);
+// AiConsentCard and AiProcessingCard removed — AI analysis is always on
 
 const PlusTierBanner = ({ isPlus, colors, shadows }: { isPlus: boolean; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
   if (isPlus) return null;
@@ -2092,8 +2858,6 @@ export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
-  const aiConsent = userProfile?.ai_analysis_consent === true;
-
   // C-03 FIX: Refresh scan data when this tab gains focus.
   // This ensures the dashboard always shows the newest scan data,
   // especially when navigating from Scan Complete → Dashboard.
@@ -2132,8 +2896,6 @@ export default function DashboardScreen() {
 
   const hasData = dashboardData !== null && dashboardData.hasData;
 
-  const goToSettings = () => router.push('/(tabs)/settings');
-
   // Tab switch with fade animation and haptic feedback
   const switchTab = useCallback((tabId: string) => {
     if (tabId === activeTab) return;
@@ -2171,9 +2933,9 @@ export default function DashboardScreen() {
       case 'overview': content = <OverviewContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
       case 'sources': content = <SourcesContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
       case 'ads': content = <AdsContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
-      case 'politics': content = <PoliticsContent data={dashboardData} aiConsent={aiConsent} onGoToSettings={goToSettings} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
-      case 'tone': content = <ToneContent data={dashboardData} aiConsent={aiConsent} onGoToSettings={goToSettings} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
-      case 'suggested_vs_followed': content = <SuggestedContent data={dashboardData} colors={colors} shadows={shadows} />; break;
+      case 'politics': content = <PoliticsContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
+      case 'tone': content = <ToneContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
+      case 'suggested_vs_followed': content = <SuggestedContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
       default: content = <OverviewContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
     }
     return (
@@ -2444,25 +3206,10 @@ export default function DashboardScreen() {
                       flexDirection: 'row',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: tab.needsAi ? 5 : 0,
+                      gap: 0,
                       ...(isActive ? shadows.soft : {}),
                     }}
                   >
-                    {tab.needsAi && (
-                      <View style={{
-                        backgroundColor: isActive ? 'rgba(255,255,255,0.22)' : colors.blue50,
-                        borderRadius: RADIUS.xs,
-                        paddingHorizontal: SPACING.xs,
-                        paddingVertical: 1,
-                      }}>
-                        <Text style={{
-                          fontSize: RFValue(9),
-                          fontWeight: '700',
-                          color: isActive ? colors.white : colors.primaryBlue,
-                          letterSpacing: 0.5,
-                        }}>AI</Text>
-                      </View>
-                    )}
                     <Text style={{
                       ...GL_TYPOGRAPHY.buttonSm,
                       fontSize: RFValue(13),

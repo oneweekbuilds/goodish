@@ -35,7 +35,7 @@ import {
 } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
-import { SPACING, RADIUS, COLORS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { SPACING, RADIUS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../lib/theme';
 import { Text } from '../glue';
 import type { BroadcastStatus } from '../../types/broadcast';
 import { PLATFORM_BROADCAST_CONFIGS, type SupportedPlatform } from '../../types/broadcast';

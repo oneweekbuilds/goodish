@@ -102,7 +102,7 @@ const TOUR_STEPS: TourStep[] = [
     icon: Compass,
     title: 'Suggested vs. Followed',
     description:
-      'How much of your feed comes from accounts you chose vs. algorithmic suggestions?',
+      'How much of your feed comes from accounts you follow vs. content suggested by the platform?',
     accent: COLORS.tourSuggested,
   },
 ];
@@ -458,7 +458,7 @@ const styles = StyleSheet.create({
   },
   overlayBg: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(15, 23, 42, 0.55)',
+    backgroundColor: 'rgba(15, 23, 42, 0.55)', // Matches overlayDimBg theme token (slate-900/55%)
   },
   tooltipContainer: {
     position: 'absolute',

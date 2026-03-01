@@ -724,6 +724,7 @@ export default function ScannerScreen() {
 
               {/* View Dashboard button — L-07 FIX: Always tappable, timeout spinner after 5s */}
               <TouchableOpacity
+                disabled={navigatingToDashboard}
                 onPress={async () => {
                   if (!navigatingToDashboard) {
                     setNavigatingToDashboard(true);
@@ -746,6 +747,7 @@ export default function ScannerScreen() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: SPACING.sm,
+                  opacity: navigatingToDashboard ? 0.5 : 1,
                   ...shadows.medium,
                 }}
               >

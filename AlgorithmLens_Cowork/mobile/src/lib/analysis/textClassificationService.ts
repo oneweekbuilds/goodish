@@ -47,6 +47,14 @@ export interface AnalyzedFeedItemResult {
   };
 }
 
+/** Shape of each item in the Gemini classification JSON response. */
+interface GeminiClassificationItem {
+  index: number;
+  is_political: boolean;
+  stance_or_alignment: string;
+  valence: string;
+}
+
 export interface TextAnalysisResult {
   ai_analyzed: true;
   feed_items: AnalyzedFeedItemResult[];
@@ -188,7 +196,7 @@ export async function classifyPostTexts(
     }
 
     // Parse the classification response
-    const classifications = safeJsonParse<any[]>(responseText);
+    const classifications = safeJsonParse<GeminiClassificationItem[]>(responseText);
 
     if (!Array.isArray(classifications)) {
       throw new Error('Gemini response is not an array');
@@ -196,7 +204,7 @@ export async function classifyPostTexts(
 
     // Build the analysis structure that computeDashboardData expects
     const feedItems: AnalyzedFeedItemResult[] = posts.map((post, i) => {
-      const classification = classifications.find((c: any) => c.index === i) || classifications[i];
+      const classification = classifications.find((c: GeminiClassificationItem) => c.index === i) || classifications[i];
 
       const isPolitical = classification?.is_political === true;
       const stance = typeof classification?.stance_or_alignment === 'string'

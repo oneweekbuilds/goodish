@@ -94,6 +94,16 @@ interface AnalyzedFeedItem {
   // A-06: also support flat creator fields from Gemini output
   creator_handle?: string;
   creator_display_name?: string;
+  // AI disclosure field (from unified scan result)
+  ai_disclosure?: 'LABELED_AI' | 'NOT_LABELED' | null;
+  content_type?: string;
+}
+
+// Unified FeedItem shape — used when raw_data contains the full UnifiedScanResult
+interface UnifiedFeedItemLike {
+  ai_disclosure?: 'LABELED_AI' | 'NOT_LABELED' | null;
+  content_type?: string;
+  [key: string]: unknown;
 }
 
 // Tone analysis types (from Gemini AI analysis)
@@ -140,6 +150,87 @@ export interface CreatorNovelty {
   followedCreatorCount: number;
   overlapCount: number;
   approximate: boolean; // true when follow detection is unreliable
+}
+
+// AI content analysis (for Overview tab)
+export interface AiContentAnalysis {
+  labeledCount: number;
+  noSignalsCount: number;
+  labeledPct: number;
+  totalVisualPosts: number;
+}
+
+// Unlabeled promotional content analysis (for Ads tab)
+export interface UnlabeledPromos {
+  count: number;
+  percentage: number;
+  topTriggers: { name: string; count: number }[];
+  exampleAccounts: string[];
+}
+
+// Advertised product type (for Ads tab)
+export interface AdvertisedProductType {
+  theme: string;
+  percentage: number;
+  count: number;
+  exampleAdvertisers: string[];
+}
+
+// Tone split: selling vs not selling (for Ads tab)
+export interface ToneBySelling {
+  selling: { positivePct: number; neutralPct: number; negativePct: number; total: number };
+  notSelling: { positivePct: number; neutralPct: number; negativePct: number; total: number };
+  biggestDifference: string | null;
+}
+
+// Tone split: political vs non-political (for Tone tab)
+export interface ToneByPolitical {
+  political: { positivePct: number; neutralPct: number; negativePct: number; total: number };
+  nonPolitical: { positivePct: number; neutralPct: number; negativePct: number; total: number };
+  biggestDifference: string | null;
+}
+
+// Brands & Influencers analysis (for Overview tab, Plus feature)
+export interface BrandOrInfluencer {
+  handle: string;
+  postCount: number;
+  adCount: number;
+}
+
+export interface BrandsAndInfluencers {
+  topBrands: BrandOrInfluencer[];
+  topInfluencers: BrandOrInfluencer[];
+}
+
+// By-platform breakdown (for Suggested tab, multi-platform scans)
+export interface ByPlatformBreakdown {
+  platform: string;
+  followedCount: number;
+  followedPct: number;
+  suggestedCount: number;
+  suggestedPct: number;
+}
+
+// Commercial content comparison: suggested vs followed (for Suggested tab)
+export interface CommercialComparison {
+  suggested: { adPct: number; total: number };
+  followed: { adPct: number; total: number };
+  biggestDifference: string | null;
+}
+
+// Topic frequency (for Suggested tab)
+export interface TopicFrequency {
+  topic: string;
+  count: number;
+  percentage: number;
+}
+
+// Content format comparison (for Suggested tab)
+export interface ContentFormatComparison {
+  format: string;
+  suggestedPct: number;
+  followedPct: number;
+  delta: number;
 }
 
 export interface InsightHeroData {
@@ -209,6 +300,23 @@ export interface DashboardData {
 
   // Political summary sentence
   politicalSummary: string | null;
+
+  // AI content analysis (for Overview tab)
+  aiContentAnalysis: AiContentAnalysis | null;
+
+  // Ads tab: new parity fields
+  unlabeledPromos: UnlabeledPromos | null;
+  topAdvertisedProductTypes: AdvertisedProductType[];
+  toneBySelling: ToneBySelling | null;
+  toneByPolitical: ToneByPolitical | null;
+  brandsAndInfluencers: BrandsAndInfluencers | null;
+
+  // Suggested tab: new parity fields
+  byPlatform: ByPlatformBreakdown[] | null;
+  commercialComparison: CommercialComparison | null;
+  topTopicsBySuggested: TopicFrequency[];
+  topTopicsByFollowed: TopicFrequency[];
+  contentFormatComparison: ContentFormatComparison[];
 
   // Scan metadata
   platform: string;
@@ -327,7 +435,7 @@ function buildSourcesInsight(
 
   if (top5Pct >= 75) {
     return {
-      title: `5 accounts shape ${top5Pct}% of everything you see`,
+      title: `5 accounts account for ${top5Pct}% of the content in your feed`,
       meaning: `@${topName} alone appeared in ${topPct}% of posts. Three-quarters of your feed came from a tiny group.`,
       whyCare: 'This is well above typical (40–60%). These creators have significant presence in your feed.',
       meta,
@@ -429,7 +537,7 @@ function buildSuggestedInsight(
     return {
       title: `${suggestedPct}% of your feed came from accounts you don't follow`,
       meaning: `Only ${followedCount} of ${totalPosts} posts were from accounts you follow. The vast majority appeared through the platform's recommendation system.`,
-      whyCare: 'When most content is suggested, your feed is shaped more by recommendation patterns than by your own follow choices.',
+      whyCare: 'When most content is suggested, your feed contains more content from accounts you don\'t follow than from those you do.',
       meta,
     };
   } else if (suggestedPct >= 50) {
@@ -442,7 +550,7 @@ function buildSuggestedInsight(
   } else if (suggestedPct >= 20) {
     return {
       title: `Your feed mixes followed and suggested content (${suggestedPct}% suggested)`,
-      meaning: `${followedCount} posts came from accounts you follow, with ${suggestedCount} suggested. Your follow choices still drive most of what you see.`,
+      meaning: `${followedCount} posts came from accounts you follow, with ${suggestedCount} suggested. Most of your feed comes from accounts you follow.`,
       whyCare: 'A balanced mix means your feed reflects both your own choices and platform recommendations.',
       meta,
     };
@@ -815,6 +923,51 @@ function extractCreatorNovelty(posts: RawPost[]): CreatorNovelty | null {
   };
 }
 
+// ─── AI Content Analysis Extraction ─────────────────────
+// Checks for AI-labeled content in the scan data.
+// Looks in analysis.feed_items and top-level feed_items for ai_disclosure field.
+
+const VISUAL_CONTENT_TYPES = new Set(['video', 'image', 'photo', 'reel', 'short', 'carousel']);
+
+function extractAiContentAnalysis(raw: ScanRecord['raw_data']): AiContentAnalysis | null {
+  // Try analysis.feed_items first (Gemini-enriched), then top-level feed_items (unified result)
+  const feedItems: UnifiedFeedItemLike[] =
+    (raw?.analysis?.feed_items as UnifiedFeedItemLike[] | undefined) ||
+    (raw as Record<string, unknown>)?.feed_items as UnifiedFeedItemLike[] ||
+    [];
+
+  if (feedItems.length === 0) return null;
+
+  // Check if any item actually has the ai_disclosure field
+  const hasAiField = feedItems.some(item => item.ai_disclosure !== undefined);
+  if (!hasAiField) return null;
+
+  let labeledCount = 0;
+  let totalVisualPosts = 0;
+
+  for (const item of feedItems) {
+    const contentType = (item.content_type || '').toLowerCase();
+    if (!VISUAL_CONTENT_TYPES.has(contentType)) continue;
+
+    totalVisualPosts++;
+    if (item.ai_disclosure === 'LABELED_AI') {
+      labeledCount++;
+    }
+  }
+
+  if (totalVisualPosts === 0) return null;
+
+  const noSignalsCount = totalVisualPosts - labeledCount;
+  const labeledPct = Math.round((labeledCount / totalVisualPosts) * 100);
+
+  return {
+    labeledCount,
+    noSignalsCount,
+    labeledPct,
+    totalVisualPosts,
+  };
+}
+
 // ─── Political Summary Builder ──────────────────────────
 // Generates a single summary sentence for the Political tab.
 
@@ -882,7 +1035,7 @@ function buildToneInsight(
     return {
       title: `Your feed has a balanced emotional mix (${pos}% positive, ${neut}% neutral, ${neg}% negative)`,
       meaning: 'No single emotional tone dominates. You encounter a roughly even spread of upbeat, informational, and conflict-focused content.',
-      whyCare: 'A balanced feed means your mood is not being pulled strongly in one direction by the content you consume.',
+      whyCare: 'A balanced feed means your feed shows a mix of emotional tones without a strong lean in one direction.',
       meta,
     };
   }
@@ -892,7 +1045,7 @@ function buildToneInsight(
     return {
       title: `${neg}% of your feed carried negative or conflict-focused tone`,
       meaning: `More than 1 in 3 posts appeared framed around conflict, outrage, or negativity. In a 60-minute session, that would be about ${negMinutesIn60} minutes of negative content.`,
-      whyCare: 'Typical negative tone is 20–30%. Above that, sustained exposure to negativity can shape how the world feels.',
+      whyCare: 'Typical negative tone is 20–30%. Above that, a feed with a high proportion of negative content may present a skewed picture.',
       meta,
     };
   }
@@ -910,7 +1063,7 @@ function buildToneInsight(
     return {
       title: `Your feed was mostly informational (${neut}% neutral tone)`,
       meaning: 'Most posts appeared balanced or factual rather than emotionally charged.',
-      whyCare: 'Neutral tone creates space for reflection without strong emotional pulls.',
+      whyCare: 'Neutral tone creates space for reflection without a dominant emotional tone.',
       meta,
     };
   }
@@ -920,7 +1073,7 @@ function buildToneInsight(
     return {
       title: `Negative tone appeared most often in your feed (${neg}%)`,
       meaning: `Negative or conflict-focused posts slightly outpaced positive (${pos}%) and neutral (${neut}%) content.`,
-      whyCare: 'Even a modest lean toward negativity can shape what problems feel most urgent.',
+      whyCare: 'A modest lean toward negative content is present in your feed.',
       meta,
     };
   } else if (pos === max) {
@@ -938,6 +1091,433 @@ function buildToneInsight(
       meta,
     };
   }
+}
+
+// ─── Unlabeled Promos Extraction ─────────────────────────
+// Identifies posts with influence signals that are not labeled as ads.
+// Returns null if the scan data doesn't contain influenceSignals fields.
+
+function extractUnlabeledPromos(posts: RawPost[], raw: ScanRecord['raw_data']): UnlabeledPromos | null {
+  const feedItems = raw?.analysis?.feed_items;
+  if (!feedItems || feedItems.length === 0) return null;
+
+  // Check if any item has influenceSignals field — if not, pipeline doesn't support it yet
+  const hasInfluenceField = feedItems.some(
+    (item: Record<string, unknown>) => Array.isArray((item as any).influenceSignals)
+  );
+  if (!hasInfluenceField) return null;
+
+  let count = 0;
+  const triggerCounts: Record<string, number> = {};
+  const accountSet = new Set<string>();
+
+  for (let i = 0; i < feedItems.length; i++) {
+    const item = feedItems[i] as any;
+    const signals: string[] = item.influenceSignals || [];
+    if (signals.length === 0) continue;
+
+    // Check if the corresponding raw post is NOT labeled as an ad
+    const rawPost = posts[i];
+    if (rawPost?.is_ad) continue;
+
+    count++;
+
+    // Track triggers
+    for (const signal of signals) {
+      triggerCounts[signal] = (triggerCounts[signal] || 0) + 1;
+    }
+
+    // Track accounts
+    const handle = item.creator?.handle || item.creator_handle || rawPost?.creator_handle || '';
+    if (handle) accountSet.add(handle);
+  }
+
+  if (count === 0) return null;
+
+  const totalPosts = posts.length || feedItems.length;
+  const percentage = totalPosts > 0 ? Math.round((count / totalPosts) * 100) : 0;
+
+  const topTriggers = Object.entries(triggerCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5)
+    .map(([name, cnt]) => ({ name, count: cnt }));
+
+  const exampleAccounts = [...accountSet].slice(0, 5);
+
+  return { count, percentage, topTriggers, exampleAccounts };
+}
+
+// ─── Top Advertised Product Types Extraction ─────────────
+// Groups ad posts by product category / primary topic.
+
+function extractTopAdvertisedProductTypes(posts: RawPost[], raw: ScanRecord['raw_data']): AdvertisedProductType[] {
+  const feedItems = raw?.analysis?.feed_items;
+  if (!feedItems) return [];
+
+  const adPosts = posts.filter(p => p.is_ad);
+  if (adPosts.length === 0) return [];
+
+  const themeCounts: Record<string, { count: number; advertisers: Set<string> }> = {};
+
+  for (let i = 0; i < posts.length; i++) {
+    if (!posts[i].is_ad) continue;
+
+    const analysisItem = feedItems[i] as any;
+    if (!analysisItem) continue;
+
+    // Try to extract category from topics.primary_category or ad_metadata.product_or_service
+    const category =
+      analysisItem?.topics?.primary_category ||
+      analysisItem?.ad_metadata?.product_or_service ||
+      null;
+
+    if (!category) continue;
+
+    const normalized = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
+
+    if (!themeCounts[normalized]) {
+      themeCounts[normalized] = { count: 0, advertisers: new Set() };
+    }
+    themeCounts[normalized].count++;
+
+    const handle = posts[i].creator_handle || posts[i].creator_display_name || '';
+    if (handle) themeCounts[normalized].advertisers.add(handle);
+  }
+
+  const totalAds = adPosts.length;
+
+  return Object.entries(themeCounts)
+    .sort(([, a], [, b]) => b.count - a.count)
+    .slice(0, 5)
+    .map(([theme, data]) => ({
+      theme,
+      percentage: totalAds > 0 ? Math.round((data.count / totalAds) * 100) : 0,
+      count: data.count,
+      exampleAdvertisers: [...data.advertisers].slice(0, 3),
+    }));
+}
+
+// ─── Tone by Selling Extraction ──────────────────────────
+// Splits posts into "selling" (is_ad or has influence signals) and "not selling",
+// then computes tone percentages for each group.
+
+function extractToneBySelling(posts: RawPost[], raw: ScanRecord['raw_data']): ToneBySelling | null {
+  const feedItems = raw?.analysis?.feed_items;
+  if (!feedItems || feedItems.length === 0) return null;
+
+  let sellPos = 0, sellNeut = 0, sellNeg = 0;
+  let nonPos = 0, nonNeut = 0, nonNeg = 0;
+
+  for (let i = 0; i < feedItems.length; i++) {
+    const item = feedItems[i] as any;
+    const valence = (item?.emotions?.valence || '').toUpperCase();
+    if (valence !== 'POSITIVE' && valence !== 'NEUTRAL' && valence !== 'NEGATIVE') continue;
+
+    const rawPost = posts[i];
+    const isSelling = rawPost?.is_ad ||
+      (Array.isArray(item.influenceSignals) && item.influenceSignals.length > 0);
+
+    if (isSelling) {
+      if (valence === 'POSITIVE') sellPos++;
+      else if (valence === 'NEUTRAL') sellNeut++;
+      else sellNeg++;
+    } else {
+      if (valence === 'POSITIVE') nonPos++;
+      else if (valence === 'NEUTRAL') nonNeut++;
+      else nonNeg++;
+    }
+  }
+
+  const sellTotal = sellPos + sellNeut + sellNeg;
+  const nonTotal = nonPos + nonNeut + nonNeg;
+
+  // Require >= 10 posts per group
+  if (sellTotal < 10 || nonTotal < 10) return null;
+
+  const pct = (n: number, total: number) => Math.round((n / total) * 100);
+
+  const selling = {
+    positivePct: pct(sellPos, sellTotal),
+    neutralPct: pct(sellNeut, sellTotal),
+    negativePct: pct(sellNeg, sellTotal),
+    total: sellTotal,
+  };
+
+  const notSelling = {
+    positivePct: pct(nonPos, nonTotal),
+    neutralPct: pct(nonNeut, nonTotal),
+    negativePct: pct(nonNeg, nonTotal),
+    total: nonTotal,
+  };
+
+  // Calculate biggest difference
+  const posDelta = Math.abs(selling.positivePct - notSelling.positivePct);
+  const neutDelta = Math.abs(selling.neutralPct - notSelling.neutralPct);
+  const negDelta = Math.abs(selling.negativePct - notSelling.negativePct);
+  const maxDelta = Math.max(posDelta, neutDelta, negDelta);
+
+  let biggestDifference: string | null = null;
+  if (maxDelta >= 5) {
+    if (posDelta === maxDelta) {
+      const direction = selling.positivePct > notSelling.positivePct ? 'more' : 'less';
+      biggestDifference = `Selling posts appeared ${posDelta} points ${direction} positive`;
+    } else if (negDelta === maxDelta) {
+      const direction = selling.negativePct > notSelling.negativePct ? 'more' : 'less';
+      biggestDifference = `Selling posts appeared ${negDelta} points ${direction} negative`;
+    } else {
+      const direction = selling.neutralPct > notSelling.neutralPct ? 'more' : 'less';
+      biggestDifference = `Selling posts appeared ${neutDelta} points ${direction} neutral`;
+    }
+  }
+
+  return { selling, notSelling, biggestDifference };
+}
+
+// ─── Tone by Political Extraction ──────────────────────────
+// Splits posts into political and non-political groups,
+// then computes tone percentages for each.
+
+function extractToneByPolitical(posts: RawPost[], raw: ScanRecord['raw_data']): ToneByPolitical | null {
+  const feedItems = raw?.analysis?.feed_items;
+  if (!feedItems || feedItems.length === 0) return null;
+
+  let polPos = 0, polNeut = 0, polNeg = 0;
+  let nonPos = 0, nonNeut = 0, nonNeg = 0;
+
+  for (let i = 0; i < feedItems.length; i++) {
+    const item = feedItems[i] as any;
+    const valence = (item?.emotions?.valence || '').toUpperCase();
+    if (valence !== 'POSITIVE' && valence !== 'NEUTRAL' && valence !== 'NEGATIVE') continue;
+
+    const isPolitical = item?.political?.is_political === true;
+
+    if (isPolitical) {
+      if (valence === 'POSITIVE') polPos++;
+      else if (valence === 'NEUTRAL') polNeut++;
+      else polNeg++;
+    } else {
+      if (valence === 'POSITIVE') nonPos++;
+      else if (valence === 'NEUTRAL') nonNeut++;
+      else nonNeg++;
+    }
+  }
+
+  const polTotal = polPos + polNeut + polNeg;
+  const nonTotal = nonPos + nonNeut + nonNeg;
+
+  // Require >= 10 posts per group
+  if (polTotal < 10 || nonTotal < 10) return null;
+
+  const pct = (n: number, total: number) => Math.round((n / total) * 100);
+
+  const political = {
+    positivePct: pct(polPos, polTotal),
+    neutralPct: pct(polNeut, polTotal),
+    negativePct: pct(polNeg, polTotal),
+    total: polTotal,
+  };
+
+  const nonPolitical = {
+    positivePct: pct(nonPos, nonTotal),
+    neutralPct: pct(nonNeut, nonTotal),
+    negativePct: pct(nonNeg, nonTotal),
+    total: nonTotal,
+  };
+
+  // Calculate biggest difference
+  const posDelta = Math.abs(political.positivePct - nonPolitical.positivePct);
+  const neutDelta = Math.abs(political.neutralPct - nonPolitical.neutralPct);
+  const negDelta = Math.abs(political.negativePct - nonPolitical.negativePct);
+  const maxDelta = Math.max(posDelta, neutDelta, negDelta);
+
+  let biggestDifference: string | null = null;
+  if (maxDelta >= 3) {
+    if (posDelta === maxDelta) {
+      const direction = political.positivePct > nonPolitical.positivePct ? 'more' : 'less';
+      biggestDifference = `Political posts appeared ${posDelta} points ${direction} positive`;
+    } else if (negDelta === maxDelta) {
+      const direction = political.negativePct > nonPolitical.negativePct ? 'more' : 'less';
+      biggestDifference = `Political posts appeared ${negDelta} points ${direction} negative`;
+    } else {
+      const direction = political.neutralPct > nonPolitical.neutralPct ? 'more' : 'less';
+      biggestDifference = `Political posts appeared ${neutDelta} points ${direction} neutral`;
+    }
+  }
+
+  return { political, nonPolitical, biggestDifference };
+}
+
+// ─── Brands & Influencers Extraction ────────────────────────
+// Brand accounts: creators where adCount/postCount >= 0.5 AND adCount >= 2
+// Influencers: creators where postCount >= 3 AND adCount/postCount < 0.5
+// Returns top 3 each.
+
+function extractBrandsAndInfluencers(posts: RawPost[]): BrandsAndInfluencers | null {
+  if (posts.length < 10) return null;
+
+  const creatorStats: Record<string, { postCount: number; adCount: number }> = {};
+
+  for (const p of posts) {
+    const handle = p.creator_handle || p.creator_display_name || '';
+    if (!handle || handle === 'Unknown') continue;
+    if (!creatorStats[handle]) {
+      creatorStats[handle] = { postCount: 0, adCount: 0 };
+    }
+    creatorStats[handle].postCount++;
+    if (p.is_ad) {
+      creatorStats[handle].adCount++;
+    }
+  }
+
+  const brands: BrandOrInfluencer[] = [];
+  const influencers: BrandOrInfluencer[] = [];
+
+  for (const [handle, stats] of Object.entries(creatorStats)) {
+    const adRatio = stats.postCount > 0 ? stats.adCount / stats.postCount : 0;
+    if (adRatio >= 0.5 && stats.adCount >= 2) {
+      brands.push({ handle, ...stats });
+    } else if (stats.postCount >= 3 && adRatio < 0.5) {
+      influencers.push({ handle, ...stats });
+    }
+  }
+
+  if (brands.length === 0 && influencers.length === 0) return null;
+
+  brands.sort((a, b) => b.adCount - a.adCount);
+  influencers.sort((a, b) => b.postCount - a.postCount);
+
+  return {
+    topBrands: brands.slice(0, 3),
+    topInfluencers: influencers.slice(0, 3),
+  };
+}
+
+// ─── Commercial Comparison Extraction ────────────────────
+// Compares ad percentage in suggested vs followed posts.
+
+function extractCommercialComparison(posts: RawPost[]): CommercialComparison | null {
+  const suggestedPosts = posts.filter(p => p.is_suggested === true);
+  const followedPosts = posts.filter(p => p.is_suggested === false);
+
+  if (suggestedPosts.length < 5 || followedPosts.length < 5) return null;
+
+  const sugAdCount = suggestedPosts.filter(p => p.is_ad).length;
+  const folAdCount = followedPosts.filter(p => p.is_ad).length;
+
+  const sugAdPct = Math.round((sugAdCount / suggestedPosts.length) * 100);
+  const folAdPct = Math.round((folAdCount / followedPosts.length) * 100);
+
+  const delta = Math.abs(sugAdPct - folAdPct);
+  let biggestDifference: string | null = null;
+  if (delta >= 5) {
+    const higherGroup = sugAdPct > folAdPct ? 'suggested' : 'followed';
+    biggestDifference = `${higherGroup === 'suggested' ? 'Suggested' : 'Followed'} posts contained ${delta} percentage points more ad content`;
+  }
+
+  return {
+    suggested: { adPct: sugAdPct, total: suggestedPosts.length },
+    followed: { adPct: folAdPct, total: followedPosts.length },
+    biggestDifference,
+  };
+}
+
+// ─── Top Topics by Source Origin Extraction ──────────────
+// Extracts top topics from suggested and followed posts separately.
+
+function extractTopicsBySourceOrigin(posts: RawPost[], raw: ScanRecord['raw_data']): { suggested: TopicFrequency[]; followed: TopicFrequency[] } {
+  const feedItems = raw?.analysis?.feed_items;
+  if (!feedItems) return { suggested: [], followed: [] };
+
+  const sugTopics: Record<string, number> = {};
+  const folTopics: Record<string, number> = {};
+  let sugTotal = 0;
+  let folTotal = 0;
+
+  for (let i = 0; i < Math.min(posts.length, feedItems.length); i++) {
+    const post = posts[i];
+    const item = feedItems[i] as any;
+    if (!post || !item) continue;
+
+    const topic = item?.topics?.primary_category || null;
+    if (!topic) {
+      // Fallback to hashtags
+      if (post.hashtags && post.hashtags.length > 0) {
+        const tag = post.hashtags[0];
+        if (post.is_suggested === true) {
+          sugTopics[tag] = (sugTopics[tag] || 0) + 1;
+          sugTotal++;
+        } else if (post.is_suggested === false) {
+          folTopics[tag] = (folTopics[tag] || 0) + 1;
+          folTotal++;
+        }
+      }
+      continue;
+    }
+
+    const normalized = topic.charAt(0).toUpperCase() + topic.slice(1).toLowerCase();
+
+    if (post.is_suggested === true) {
+      sugTopics[normalized] = (sugTopics[normalized] || 0) + 1;
+      sugTotal++;
+    } else if (post.is_suggested === false) {
+      folTopics[normalized] = (folTopics[normalized] || 0) + 1;
+      folTotal++;
+    }
+  }
+
+  const toFrequency = (counts: Record<string, number>, total: number): TopicFrequency[] =>
+    Object.entries(counts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 5)
+      .map(([topic, count]) => ({
+        topic,
+        count,
+        percentage: total > 0 ? Math.round((count / total) * 100) : 0,
+      }));
+
+  return {
+    suggested: toFrequency(sugTopics, sugTotal),
+    followed: toFrequency(folTopics, folTotal),
+  };
+}
+
+// ─── Content Format Comparison Extraction ────────────────
+// Compares content type distribution between suggested and followed posts.
+
+function extractContentFormatComparison(posts: RawPost[]): ContentFormatComparison[] {
+  const suggestedPosts = posts.filter(p => p.is_suggested === true);
+  const followedPosts = posts.filter(p => p.is_suggested === false);
+
+  if (suggestedPosts.length < 5 || followedPosts.length < 5) return [];
+
+  const allTypes = new Set<string>();
+  const sugCounts: Record<string, number> = {};
+  const folCounts: Record<string, number> = {};
+
+  for (const p of suggestedPosts) {
+    const type = p.content_type || 'unknown';
+    allTypes.add(type);
+    sugCounts[type] = (sugCounts[type] || 0) + 1;
+  }
+
+  for (const p of followedPosts) {
+    const type = p.content_type || 'unknown';
+    allTypes.add(type);
+    folCounts[type] = (folCounts[type] || 0) + 1;
+  }
+
+  return [...allTypes]
+    .map(format => {
+      const sugPct = Math.round(((sugCounts[format] || 0) / suggestedPosts.length) * 100);
+      const folPct = Math.round(((folCounts[format] || 0) / followedPosts.length) * 100);
+      return {
+        format: format.charAt(0).toUpperCase() + format.slice(1),
+        suggestedPct: sugPct,
+        followedPct: folPct,
+        delta: sugPct - folPct,
+      };
+    })
+    .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
 }
 
 // ─── Main Computation ────────────────────────────────────
@@ -968,6 +1548,7 @@ export function computeDashboardData(scan: ScanRecord): DashboardData {
     const suggestedPct = Math.round(scan?.suggested_percentage || 0);
 
     const toneSources = extractTopToneSources(raw);
+    const aiContentAnalysis = extractAiContentAnalysis(raw);
 
     return {
       totalPosts: fallbackTotal,
@@ -995,6 +1576,17 @@ export function computeDashboardData(scan: ScanRecord): DashboardData {
       toneBySourceOrigin: null,
       creatorNovelty: null,
       politicalSummary: buildPoliticalSummary(politicalAnalysis),
+      aiContentAnalysis,
+      unlabeledPromos: null,
+      topAdvertisedProductTypes: [],
+      toneBySelling: null,
+      toneByPolitical: null,
+      brandsAndInfluencers: null,
+      byPlatform: null,
+      commercialComparison: null,
+      topTopicsBySuggested: [],
+      topTopicsByFollowed: [],
+      contentFormatComparison: [],
       platform,
       scanDate: scan?.created_at || raw?.scanned_at || null,
       hasData: fallbackTotal > 0,
@@ -1086,6 +1678,22 @@ export function computeDashboardData(scan: ScanRecord): DashboardData {
   const toneBySourceOrigin = extractToneBySourceOrigin(posts, raw);
   const creatorNovelty = extractCreatorNovelty(posts);
   const politicalSummary = buildPoliticalSummary(politicalAnalysis);
+  const aiContentAnalysis = extractAiContentAnalysis(raw);
+
+  // ── Ads tab parity fields ──
+  const unlabeledPromos = extractUnlabeledPromos(posts, raw);
+  const topAdvertisedProductTypes = extractTopAdvertisedProductTypes(posts, raw);
+  const toneBySelling = extractToneBySelling(posts, raw);
+  const toneByPolitical = extractToneByPolitical(posts, raw);
+  const brandsAndInfluencers = extractBrandsAndInfluencers(posts);
+
+  // ── Suggested tab parity fields ──
+  // byPlatform: only relevant when multiple scans from different platforms are merged
+  // For single-scan data, this is always null. Multi-scan aggregation would happen upstream.
+  const byPlatform: ByPlatformBreakdown[] | null = null;
+  const commercialComparison = extractCommercialComparison(posts);
+  const topicsByOrigin = extractTopicsBySourceOrigin(posts, raw);
+  const contentFormatComparison = extractContentFormatComparison(posts);
 
   return {
     totalPosts,
@@ -1113,6 +1721,17 @@ export function computeDashboardData(scan: ScanRecord): DashboardData {
     toneBySourceOrigin,
     creatorNovelty,
     politicalSummary,
+    aiContentAnalysis,
+    unlabeledPromos,
+    topAdvertisedProductTypes,
+    toneBySelling,
+    toneByPolitical,
+    brandsAndInfluencers,
+    byPlatform,
+    commercialComparison,
+    topTopicsBySuggested: topicsByOrigin.suggested,
+    topTopicsByFollowed: topicsByOrigin.followed,
+    contentFormatComparison,
     platform,
     scanDate: scan?.created_at || raw?.scanned_at || null,
     hasData: totalPosts > 0,

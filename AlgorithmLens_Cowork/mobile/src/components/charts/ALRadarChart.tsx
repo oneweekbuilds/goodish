@@ -119,6 +119,8 @@ function ALRadarChartComponent({
     polarToCartesian(center, center, maxRadius + 18, i * angleStep),
   );
 
+  const defaultAccessibilityLabel = `Radar chart: ${axes.map(a => `${a.label} ${Math.round(a.value)}`).join(', ')}`;
+
   return (
     <View
       accessible={true}
@@ -126,7 +128,7 @@ function ALRadarChartComponent({
       accessibilityLabel={
         accessibilitySummary
           ? `Radar chart showing ${accessibilitySummary}`
-          : `Radar chart with ${axes.length} dimensions`
+          : defaultAccessibilityLabel
       }
     >
       <Animated.View style={{ alignItems: 'center', opacity: fadeAnim }}>
@@ -192,7 +194,7 @@ function ALRadarChartComponent({
               fill={colors.textSecondary as string}
               textAnchor="middle"
               alignmentBaseline="middle"
-              fontFamily="Geist-Regular"
+              fontFamily={GL_TYPOGRAPHY.captionSmall.fontFamily}
             >
               {axes[i]?.shortLabel ?? axes[i]?.label ?? ''}
             </SvgText>

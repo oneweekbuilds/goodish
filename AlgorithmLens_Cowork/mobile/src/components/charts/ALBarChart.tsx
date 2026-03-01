@@ -126,6 +126,11 @@ function ALBarChartComponent({
       }, [])
     : [];
 
+  const defaultAccessibilityLabel = `Bar chart: ${items.map((item, index) => {
+    const itemPct = totalValue > 0 ? Math.round((item.value / totalValue) * 100) : 0;
+    return `${item.label} ${item.value}`;
+  }).join(', ')}`;
+
   return (
     <View
       accessible={true}
@@ -133,7 +138,7 @@ function ALBarChartComponent({
       accessibilityLabel={
         accessibilitySummary
           ? `Bar chart showing ${accessibilitySummary}`
-          : `Bar chart showing ${items.length} items`
+          : defaultAccessibilityLabel
       }
     >
       <BarChart
@@ -167,10 +172,10 @@ function ALBarChartComponent({
         animationDuration={600}
         horizontal={horizontal}
         disablePress={false}
-        renderTooltip={(item: any, index: number) => (
+        renderTooltip={(item: { value: number; label?: string; frontColor?: string }, index: number) => (
           <View
             style={{
-              backgroundColor: '#1E293B',
+              backgroundColor: colors.textPrimary as string,
               paddingHorizontal: SPACING.sm,
               paddingVertical: SPACING.xs,
               borderRadius: RADIUS.sm,
@@ -180,7 +185,7 @@ function ALBarChartComponent({
             <Text
               style={{
                 ...GL_TYPOGRAPHY.captionSmall,
-                color: '#F1F5F9',
+                color: colors.bgCard as string,
                 fontWeight: '600',
               }}
             >

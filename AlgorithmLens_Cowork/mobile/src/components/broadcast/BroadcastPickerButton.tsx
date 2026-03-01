@@ -115,7 +115,7 @@ export const BroadcastPickerButton = React.memo(function BroadcastPickerButton({
         </Text>
         <Text
           variant="caption"
-          color={disabled ? colors.textSecondary : 'rgba(255,255,255,0.7)'}
+          color={disabled ? colors.textSecondary : colors.whiteOverlay85}
           style={{ marginTop: SPACING.xxs }}
         >
           {hintText}
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     width: ICON_SIZES['2xl'],
     height: ICON_SIZES['2xl'],
     borderRadius: RADIUS.xl,
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(255,255,255,0.15)', // White at 15% opacity on primary blue bg — intentional for contrast
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -157,6 +157,7 @@ function UpgradeModalComponent({ visible, onClose }: UpgradeModalProps) {
         await simulatePurchase(true);
       } else {
         // Real mode: RevenueCat native paywall would be triggered here
+        // TODO: Replace with real RevenueCat presentPaywall() when API keys are configured
         // const result = await presentPaywall();
         // if (result !== 'purchased') { setLoading(false); return; }
       }

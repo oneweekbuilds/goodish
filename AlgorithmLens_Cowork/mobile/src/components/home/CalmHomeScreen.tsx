@@ -351,7 +351,7 @@ function CalmHomeScreenComponent({
                   style={{
                     width: 72,
                     height: 72,
-                    borderRadius: 36,
+                    borderRadius: RADIUS.full,
                     backgroundColor: colors.brandTintBg,
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -407,7 +407,7 @@ function CalmHomeScreenComponent({
                       alignSelf: 'center',
                       width: 72,
                       height: 72,
-                      borderRadius: 36,
+                      borderRadius: RADIUS.full,
                       borderWidth: 6,
                       borderColor: colors.borderLight,
                       marginBottom: SPACING.xs,

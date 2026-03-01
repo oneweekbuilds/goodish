@@ -79,7 +79,7 @@ export const LIGHT_COLORS = {
   // ── Semantic Text ──
   textPrimary: '#1E293B',
   textSecondary: '#64748B',
-  textTertiary: '#708090',
+  textTertiary: '#5C6B7A',
   textInverse: '#FFFFFF',
   textMain: '#1E293B',
   textMuted: '#4B5563',

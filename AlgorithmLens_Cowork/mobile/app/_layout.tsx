@@ -101,14 +101,6 @@ function RootLayoutNav() {
             animation: 'slide_from_bottom',
           }}
         />
-        {/* Temporary: GL* Component Showcase for visual verification */}
-        <Stack.Screen
-          name="showcase"
-          options={{
-            headerShown: false,
-            presentation: 'modal',
-          }}
-        />
       </Stack>
     </>
   );

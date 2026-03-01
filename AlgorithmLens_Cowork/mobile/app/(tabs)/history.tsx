@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
-  FlatList,
   SectionList,
   TouchableOpacity,
   RefreshControl,
@@ -591,6 +590,7 @@ export default function HistoryScreen() {
             }}
           >
             <TouchableOpacity
+              disabled={selectedScans.length < 2}
               onPress={handleComparePress}
               accessibilityRole="button"
               accessibilityLabel="Compare selected scans"
@@ -680,7 +680,7 @@ export default function HistoryScreen() {
         )}
 
         {/* Fetch error banner */}
-        {fetchError && !loading && (
+        {fetchError && (
           <View
             style={{
               marginHorizontal: SPACING.lg,

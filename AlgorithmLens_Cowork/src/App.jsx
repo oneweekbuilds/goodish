@@ -185,7 +185,7 @@ function App() {
                               <section className="py-12 sm:py-26 mt-12 sm:mt-20 bg-bg-page text-center">
                                 <div className="max-w-4xl mx-auto px-4 sm:px-6">
                                   <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-main mb-6 sm:mb-8">
-                                    Ready to see what the algorithm sees?
+                                    Ready to see what's really in your feed?
                                   </h2>
                                   <p className="text-base sm:text-lg text-text-muted mb-8 sm:mb-12 max-w-xl mx-auto px-2">
                                     Scan your feed and get your AlgorithmLens dashboard in minutes.

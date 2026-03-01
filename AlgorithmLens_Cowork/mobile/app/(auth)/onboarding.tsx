@@ -39,10 +39,6 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
   withSpring,
-  withDelay,
-  withSequence,
-  interpolate,
-  Extrapolate,
   Easing,
   runOnJS,
 } from 'react-native-reanimated';
@@ -66,7 +62,7 @@ import {
 } from 'lucide-react-native';
 import { triggerImpactMedium, triggerImpactLight } from '../../src/lib/haptics';
 import { GL_TYPOGRAPHY, SPACING, RADIUS } from '../../src/lib/gluestackTheme';
-import { PLATFORMS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../src/lib/theme';
+import { PLATFORMS, ICON_SIZES, MIN_TOUCH_TARGET, type ThemeColors, type ThemeShadows } from '../../src/lib/theme';
 import Constants from 'expo-constants';
 import type { SupportedPlatform } from '../../src/types/broadcast';
 import { withAlpha } from '../../src/lib/utils';
@@ -104,19 +100,6 @@ export default function OnboardingScreen() {
   const screenOpacity = useSharedValue(1);
   const screenScale = useSharedValue(1);
 
-  // Platform selection scale animations (one per platform)
-  const platformScales = useSharedValue<Record<string, number>>({
-    instagram: 1,
-    twitter: 1,
-    youtube: 1,
-    tiktok: 1,
-    facebook: 1,
-    reddit: 1,
-  });
-
-  // Progress dot widths animation
-  const dotWidths = useSharedValue<number[]>([24, 8, 8]);
-
   const { user, completeOnboarding } = useAuth();
   const { colors, shadows } = useTheme();
 
@@ -130,13 +113,8 @@ export default function OnboardingScreen() {
       // Fade in + slide down
       fadeAnim.value = withTiming(1, { duration: 200 });
       slideAnim.value = withTiming(0, { duration: 200 });
-
-      // Update dot widths
-      const newWidths = Array(TOTAL_PAGES).fill(8);
-      newWidths[nextPage] = 24;
-      dotWidths.value = newWidths;
     }, 200);
-  }, [fadeAnim, slideAnim, dotWidths]);
+  }, [fadeAnim, slideAnim]);
 
   const handleGoToPage = useCallback((page: number) => {
     if (page !== currentPage && page >= 0 && page < TOTAL_PAGES) {
@@ -198,14 +176,7 @@ export default function OnboardingScreen() {
   const handlePlatformTap = useCallback((slug: SupportedPlatform) => {
     triggerImpactLight();
     setSelectedPlatform((prev) => (prev === slug ? null : slug));
-
-    // Animate platform scale: scale down then up for selection feedback
-    const newScale = selectedPlatform === slug ? 1 : 1.02;
-    platformScales.value = {
-      ...platformScales.value,
-      [slug]: withSpring(newScale, { damping: 6, mass: 1 }),
-    };
-  }, [selectedPlatform, platformScales]);
+  }, []);
 
   const isLastPage = currentPage === TOTAL_PAGES - 1;
 
@@ -683,8 +654,8 @@ interface PlatformCardProps {
   platform: (typeof PLATFORM_LIST)[0];
   isSelected: boolean;
   onPress: () => void;
-  colors: any;
-  shadows: any;
+  colors: ThemeColors;
+  shadows: ThemeShadows;
 }
 
 function PlatformCard({
@@ -770,7 +741,7 @@ function PlatformCard({
  */
 interface AnimatedDotProps {
   isActive: boolean;
-  colors: any;
+  colors: ThemeColors;
 }
 
 function AnimatedDot({ isActive, colors }: AnimatedDotProps) {

@@ -166,7 +166,7 @@ const HeroDashboardPreview = () => {
         <section className="py-24 bg-bg-page overflow-hidden">
             <div className="max-w-6xl mx-auto px-6">
                 <div className="text-center mb-12">
-                    <h2 className="text-4xl md:text-5xl font-bold text-text-main mb-4">AlgorithmLens shows you what the algorithm sees.</h2>
+                    <h2 className="text-4xl md:text-5xl font-bold text-text-main mb-4">AlgorithmLens shows you the patterns in your feed composition.</h2>
                 </div>
 
                 {/* Carousel Container */}

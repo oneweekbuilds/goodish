@@ -31,6 +31,7 @@ import {
 import {
   BottomSheet,
   BottomSheetBackdrop,
+  BottomSheetBackdropProps,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 import Animated, {
@@ -39,7 +40,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, PLATFORMS, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { SPACING, RADIUS, PLATFORMS, MIN_TOUCH_TARGET, ThemeColors, ThemeShadows } from '../../lib/theme';
 import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
 import { Text } from '../glue';
 import { ModeToggle } from './ModeToggle';
@@ -93,8 +94,6 @@ function PlatformBottomSheetComponent({
   const isExpoGo = Constants.appOwnership === 'expo';
   const isAndroid = Platform.OS === 'android';
   // Screen Capture hidden — default to precision (Quick Scan) for all users.
-  // Original logic preserved for when Screen Capture ships:
-  // const defaultMode: ScanMode = (!isExpoGo && !isAndroid && Platform.OS === 'ios') ? 'broadcast' : 'precision';
   const [scanMode, setScanMode] = useState<ScanMode>('precision');
   const [selectedPlatform, setSelectedPlatform] =
     useState<SupportedPlatform | null>(null);
@@ -135,7 +134,7 @@ function PlatformBottomSheetComponent({
 
   // Backdrop component with useCallback
   const renderBackdrop = useCallback(
-    (props: any) => (
+    (props: BottomSheetBackdropProps) => (
       <BottomSheetBackdrop
         {...props}
         disappearsOnIndex={-1}
@@ -211,7 +210,7 @@ function PlatformBottomSheetComponent({
               alignItems: 'center',
             }}
           >
-            <X size={20} color={colors.textSecondary} strokeWidth={2} />
+            <X size={24} color={colors.textSecondary} strokeWidth={2} />
           </TouchableOpacity>
         </View>
 
@@ -309,8 +308,8 @@ interface BottomSheetPlatformCardProps {
   platform: (typeof PLATFORM_LIST)[0];
   isSelected: boolean;
   onPress: () => void;
-  colors: any;
-  shadows: any;
+  colors: ThemeColors;
+  shadows: ThemeShadows;
 }
 
 function BottomSheetPlatformCard({

@@ -91,6 +91,10 @@ function ALLineChartComponent({
 
   const spacing = Math.max(20, (screenWidth - 100) / Math.max(data.length - 1, 1));
 
+  const minValue = Math.min(...data.map(d => d.value));
+  const maxValue = Math.max(...data.map(d => d.value));
+  const defaultAccessibilityLabel = `Line chart with data ranging from ${Math.round(minValue)} to ${Math.round(maxValue)} across ${data.length} data points`;
+
   return (
     <View
       accessible={true}
@@ -98,7 +102,7 @@ function ALLineChartComponent({
       accessibilityLabel={
         accessibilitySummary
           ? `Line chart showing ${accessibilitySummary}`
-          : `Line chart with ${data.length} points`
+          : defaultAccessibilityLabel
       }
     >
       <LineChart
@@ -161,7 +165,7 @@ function ALLineChartComponent({
             return (
               <View
                 style={{
-                  backgroundColor: '#1E293B',
+                  backgroundColor: colors.textPrimary as string,
                   paddingHorizontal: SPACING.sm,
                   paddingVertical: SPACING.xs,
                   borderRadius: RADIUS.sm,
@@ -170,7 +174,7 @@ function ALLineChartComponent({
                 <Text
                   style={{
                     ...GL_TYPOGRAPHY.captionSmall,
-                    color: '#F1F5F9',
+                    color: colors.bgCard as string,
                     fontWeight: '600',
                   }}
                 >

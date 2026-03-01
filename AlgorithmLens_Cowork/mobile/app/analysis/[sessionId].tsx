@@ -228,7 +228,7 @@ export default function AnalysisScreen() {
   }
 
   const handleSharePress = useCallback(() => {
-    console.log('[Analysis] Share tapped — not yet implemented');
+    // Share functionality not yet implemented
   }, []);
 
   return (

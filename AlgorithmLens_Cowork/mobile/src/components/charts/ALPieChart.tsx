@@ -129,6 +129,8 @@ function ALPieChartComponent({
     ? data[focusedIndex]!.label
     : centerSubLabel ?? '';
 
+  const defaultAccessibilityLabel = `Donut chart: ${data.map(s => `${s.label} ${s.percentage ?? Math.round((s.value / total) * 100)}%`).join(', ')}`;
+
   return (
     <View
       accessible={true}
@@ -136,7 +138,7 @@ function ALPieChartComponent({
       accessibilityLabel={
         accessibilitySummary
           ? `Donut chart showing ${accessibilitySummary}`
-          : `Donut chart with ${data.length} segments`
+          : defaultAccessibilityLabel
       }
     >
       {/* Chart */}

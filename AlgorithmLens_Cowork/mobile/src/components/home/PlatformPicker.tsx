@@ -22,7 +22,7 @@ import Constants from 'expo-constants';
 import { Instagram, Youtube, Music, Facebook, MessageCircle } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useTheme } from '../../context/ThemeContext';
-import { SPACING, RADIUS, PLATFORMS } from '../../lib/theme';
+import { SPACING, RADIUS, PLATFORMS, ThemeColors, ThemeShadows } from '../../lib/theme';
 import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
 import { Text } from '../glue';
 import { ModeToggle } from './ModeToggle';
@@ -149,14 +149,62 @@ function PlatformItem({ platform, isSelected, onPress, colors, shadows }: Platfo
   );
 }
 
+/**
+ * StartScanButton — Animated start scan button with press feedback (S-01 FIX)
+ */
+function StartScanButton({ onPress, colors, shadows }: { onPress: () => void; colors: ThemeColors; shadows: ThemeShadows }) {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.96, { damping: 15, stiffness: 150 });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, { damping: 15, stiffness: 150 });
+  };
+
+  return (
+    <View style={{ marginTop: SPACING.xl }}>
+      <Pressable
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        accessibilityRole="button"
+        accessibilityLabel="Start Scan"
+        accessibilityHint="Begins your feed scan"
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Animated.View
+          style={[{
+            backgroundColor: colors.accentGreen,
+            borderRadius: RADIUS.md,
+            paddingVertical: SPACING.lg,
+            alignItems: 'center',
+            minHeight: 48,
+            ...shadows.soft,
+          }, animatedStyle]}
+        >
+          <Text
+            style={{
+              ...GL_TYPOGRAPHY.buttonMd,
+              color: colors.textInverse,
+            }}
+          >
+            Start Scan
+          </Text>
+        </Animated.View>
+      </Pressable>
+    </View>
+  );
+}
+
 function PlatformPickerComponent({ onScanStart }: PlatformPickerProps) {
   const { colors, shadows } = useTheme();
   const [selectedPlatform, setSelectedPlatform] = useState<SupportedPlatform | null>(null);
-  // Screen Capture hidden — default to precision (Quick Scan) for all users.
-  // Original logic preserved for when Screen Capture ships:
-  // const isExpoGo = Constants.appOwnership === 'expo';
-  // const isAndroid = Platform.OS === 'android';
-  // const defaultMode: ScanMode = (!isExpoGo && !isAndroid && Platform.OS === 'ios') ? 'broadcast' : 'precision';
   const [scanMode, setScanMode] = useState<ScanMode>('precision');
 
   const handlePlatformTap = useCallback((slug: SupportedPlatform) => {
@@ -250,32 +298,7 @@ function PlatformPickerComponent({ onScanStart }: PlatformPickerProps) {
 
       {/* Start button — shown when a platform is selected */}
       {selectedPlatform && (
-        <View style={{ marginTop: SPACING.xl }}>
-          <Pressable
-            onPress={handleStartScan}
-            accessibilityRole="button"
-            accessibilityLabel="Start Scan"
-            accessibilityHint="Begins your feed scan"
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            style={{
-              backgroundColor: colors.accentGreen,
-              borderRadius: RADIUS.md,
-              paddingVertical: SPACING.lg,
-              alignItems: 'center',
-              minHeight: 48,
-              ...shadows.soft,
-            }}
-          >
-            <Text
-              style={{
-                ...GL_TYPOGRAPHY.buttonMd,
-                color: colors.textInverse,
-              }}
-            >
-              Start Scan
-            </Text>
-          </Pressable>
-        </View>
+        <StartScanButton onPress={handleStartScan} colors={colors} shadows={shadows} />
       )}
     </View>
   );

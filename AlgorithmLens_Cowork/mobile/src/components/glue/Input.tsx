@@ -5,6 +5,8 @@ import {
   Text,
   Animated,
   TextInputProps,
+  NativeSyntheticEvent,
+  TextInputFocusEventData,
   ViewStyle,
   Platform,
 } from 'react-native';
@@ -33,13 +35,13 @@ const InputComponent: React.FC<InputProps> = ({
   const [focused, setFocused] = useState(false);
   const borderAnim = useRef(new Animated.Value(0)).current;
 
-  const handleFocus = useCallback((e: any) => {
+  const handleFocus = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => {
     setFocused(true);
     Animated.timing(borderAnim, { toValue: 1, duration: 150, useNativeDriver: false }).start();
     onFocus?.(e);
   }, [borderAnim, onFocus]);
 
-  const handleBlur = useCallback((e: any) => {
+  const handleBlur = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => {
     setFocused(false);
     Animated.timing(borderAnim, { toValue: 0, duration: 150, useNativeDriver: false }).start();
     onBlur?.(e);

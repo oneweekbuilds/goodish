@@ -226,7 +226,7 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
                       }
                   }
                 >
-                  <ChevronDown size={13} color={colors.primaryBlue} strokeWidth={2.5} />
+                  <ChevronDown size={16} color={colors.primaryBlue} strokeWidth={2.5} />
                 </Animated.View>
               </View>
             )}

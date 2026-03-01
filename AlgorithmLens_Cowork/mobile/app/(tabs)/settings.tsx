@@ -151,11 +151,8 @@ const InfoText = ({ children, colors }: { children: string; colors: ReturnType<t
 );
 
 export default function SettingsScreen() {
-  const { user, userProfile, signOut, updateAiConsent, isPlus, entitlementSource, subscription, refreshEntitlements } = useAuth();
+  const { user, userProfile, signOut, isPlus, entitlementSource, subscription, refreshEntitlements } = useAuth();
   const { colors, shadows } = useTheme();
-  const [aiConsent, setAiConsent] = useState(
-    userProfile?.ai_analysis_consent ?? true
-  );
   const [pushNotifications, setPushNotifications] = useState(false);
   const [notificationFrequency, setNotificationFrequency] = useState<ReminderFrequency>('7');
   const [showFrequencyPicker, setShowFrequencyPicker] = useState(false);
@@ -214,19 +211,6 @@ export default function SettingsScreen() {
       await scheduleReminder(parseInt(freq, 10));
     }
   }, [pushNotifications]);
-
-  const handleAiConsentChange = async (value: boolean) => {
-    try {
-      setAiConsent(value);
-      await updateAiConsent(value);
-    } catch (error) {
-      if (__DEV__) {
-        console.error('Error updating AI consent:', error);
-      }
-      setAiConsent(!value); // Revert on error
-      Alert.alert('Error', 'Failed to update settings');
-    }
-  };
 
   const handleSignOut = async () => {
     Alert.alert('Sign out?', 'You will need to sign in again to use the app.', [
@@ -402,26 +386,23 @@ export default function SettingsScreen() {
 
         {/* AI Analysis */}
         <SettingSection title="AI Analysis" colors={colors}>
-          <SettingRow
-            label="Enable AI analysis"
-            value={
-              <Switch
-                value={aiConsent}
-                onValueChange={handleAiConsentChange}
-                trackColor={{ false: colors.borderSlate200, true: colors.blue100 }}
-                thumbColor={aiConsent ? colors.primaryBlue : colors.textSecondary}
-                accessibilityLabel={`Enable AI analysis, currently ${aiConsent ? 'on' : 'off'}`}
-                accessibilityHint="Turns on Gemini AI analysis for political content and tone"
-                accessible={true}
-              />
-            }
-            isLast={true}
-            colors={colors}
-          />
-          <InfoText colors={colors}>
-            AlgorithmLens uses Google Gemini to analyze political content and
-            emotional tone. Your data is not used to train AI models.
-          </InfoText>
+          <View
+            style={{
+              paddingHorizontal: SPACING.lg,
+              paddingVertical: SPACING.md,
+            }}
+          >
+            <Text
+              variant="bodySmall"
+              color={colors.textMuted}
+              style={{
+                flexWrap: 'wrap',
+              }}
+            >
+              AlgorithmLens uses Google Gemini to analyze political content and
+              emotional tone in your feed. Your data is not used to train AI models.
+            </Text>
+          </View>
         </SettingSection>
 
         {/* Scan Reminders */}
@@ -830,7 +811,7 @@ export default function SettingsScreen() {
             borderRadius: RADIUS.xl,
             padding: SPACING.xl,
             width: '100%',
-            maxWidth: 340,
+            maxWidth: '90%',
             ...shadows.xl,
           }}>
             <Text variant="h2" color={colors.error} style={{ marginBottom: SPACING.md }}>
@@ -887,8 +868,8 @@ export default function SettingsScreen() {
                   setShowDeleteModal(false);
                   // TODO: Implement actual account deletion API call
                   Alert.alert(
-                    'Request Submitted',
-                    'Your account deletion request has been submitted. You will receive a confirmation email.'
+                    'Feature Coming Soon',
+                    'Account deletion will be available in a future update. Contact support@algorithmlens.com for assistance.'
                   );
                 }}
                 disabled={deleteConfirmText !== 'DELETE'}

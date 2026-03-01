@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform, TouchableOpacity, StyleSheet } from 'react-native';
+import { Platform, TouchableOpacity, StyleSheet, type ViewStyle, type StyleProp } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Home, LayoutDashboard, Clock, Settings } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -25,13 +25,22 @@ import { triggerImpactLight } from '../../src/lib/haptics';
  * longer a top-level tab.
  */
 
+/** Props accepted by WebCompatibleTabButton — mirrors react-navigation's tab bar button shape. */
+interface TabBarButtonProps {
+  onPress?: () => void;
+  children?: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+  accessibilityRole?: string;
+  accessibilityLabel?: string;
+}
+
 /**
  * G-3 FIX: Web-compatible tab bar button.
  * react-native-web's Pressable/TouchableOpacity can fail to translate
  * mouse events to press events. This wrapper adds an explicit onClick
  * handler on web to ensure reliable mouse click handling.
  */
-function WebCompatibleTabButton(props: any) {
+function WebCompatibleTabButton(props: TabBarButtonProps) {
   if (Platform.OS === 'web') {
     const { onPress, children, style, accessibilityRole, ...rest } = props;
     return (
@@ -39,7 +48,7 @@ function WebCompatibleTabButton(props: any) {
         onClick={onPress}
         role="tab"
         tabIndex={0}
-        onKeyDown={(e: any) => {
+        onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             onPress?.();
@@ -141,7 +150,7 @@ export default function TabsLayout() {
           ),
           tabBarAccessibilityLabel: 'Home tab',
           // G-3 FIX: Web-compatible click handling + haptic feedback on native
-          tabBarButton: (props: any) => <WebCompatibleTabButton {...props} />,
+          tabBarButton: (props: TabBarButtonProps) => <WebCompatibleTabButton {...props} />,
         }}
       />
       <Tabs.Screen
@@ -152,7 +161,7 @@ export default function TabsLayout() {
             <LayoutDashboard size={24} color={color} strokeWidth={2} />
           ),
           tabBarAccessibilityLabel: 'Dashboard tab',
-          ...(Platform.OS === 'web' ? { tabBarButton: (props: any) => <WebCompatibleTabButton {...props} /> } : {}),
+          ...(Platform.OS === 'web' ? { tabBarButton: (props: TabBarButtonProps) => <WebCompatibleTabButton {...props} /> } : {}),
         }}
       />
       <Tabs.Screen
@@ -163,7 +172,7 @@ export default function TabsLayout() {
             <Clock size={24} color={color} strokeWidth={2} />
           ),
           tabBarAccessibilityLabel: 'History tab',
-          ...(Platform.OS === 'web' ? { tabBarButton: (props: any) => <WebCompatibleTabButton {...props} /> } : {}),
+          ...(Platform.OS === 'web' ? { tabBarButton: (props: TabBarButtonProps) => <WebCompatibleTabButton {...props} /> } : {}),
         }}
       />
       <Tabs.Screen
@@ -174,7 +183,7 @@ export default function TabsLayout() {
             <Settings size={24} color={color} strokeWidth={2} />
           ),
           tabBarAccessibilityLabel: 'Settings tab',
-          ...(Platform.OS === 'web' ? { tabBarButton: (props: any) => <WebCompatibleTabButton {...props} /> } : {}),
+          ...(Platform.OS === 'web' ? { tabBarButton: (props: TabBarButtonProps) => <WebCompatibleTabButton {...props} /> } : {}),
         }}
       />
       {/* Scan tab hidden from bar — accessed via Home platform picker */}

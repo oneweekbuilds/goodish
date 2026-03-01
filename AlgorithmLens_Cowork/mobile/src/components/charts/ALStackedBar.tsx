@@ -144,6 +144,8 @@ function ALStackedBarComponent({
     return <EmptyState icon="layers" message={emptyMessage} />;
   }
 
+  const defaultAccessibilityLabel = `Stacked bar chart: ${segments.map(s => `${s.label} ${Math.round(s.percentage)}%`).join(', ')}`;
+
   return (
     <View
       style={{ marginBottom: SPACING.xl }}
@@ -152,7 +154,7 @@ function ALStackedBarComponent({
       accessibilityLabel={
         accessibilitySummary
           ? `Stacked bar chart showing ${accessibilitySummary}`
-          : `Stacked bar chart with ${segments.length} segments`
+          : defaultAccessibilityLabel
       }
     >
       {/* External labels for small segments */}
@@ -179,7 +181,7 @@ function ALStackedBarComponent({
       {activeSegment !== null && normalizedSegments[activeSegment] && (
         <View
           style={{
-            backgroundColor: '#1E293B',
+            backgroundColor: colors.textPrimary as string,
             paddingHorizontal: SPACING.md,
             paddingVertical: SPACING.sm,
             borderRadius: RADIUS.sm,
@@ -187,7 +189,7 @@ function ALStackedBarComponent({
             alignSelf: 'center',
           }}
         >
-          <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: '#F1F5F9', fontWeight: '600' }}>
+          <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.bgCard as string, fontWeight: '600' }}>
             {normalizedSegments[activeSegment]!.label}: {Math.round(normalizedSegments[activeSegment]!.percentage)}% ({normalizedSegments[activeSegment]!.count})
           </Text>
         </View>

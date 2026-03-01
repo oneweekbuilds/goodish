@@ -7,6 +7,7 @@ import {
   Alert,
   ActivityIndicator,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../src/context/AuthContext';
@@ -143,6 +144,10 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,
@@ -150,6 +155,7 @@ export default function LoginScreen() {
           paddingHorizontal: SPACING.xl,
           paddingVertical: SPACING['4xl'],
         }}
+        keyboardShouldPersistTaps="handled"
       >
         {/* Logo and Branding */}
         <View style={{ alignItems: 'center', marginBottom: SPACING['5xl'] }}>
@@ -261,6 +267,7 @@ export default function LoginScreen() {
             {/* Email/Password Fallback Link */}
             <TouchableOpacity
               onPress={() => setAuthMethod('email')}
+              activeOpacity={0.6}
               accessibilityLabel="Sign in with email"
               accessibilityRole="button"
               style={{
@@ -357,6 +364,7 @@ export default function LoginScreen() {
 
             {/* Forgot Password Link — L-5 FIX */}
             <TouchableOpacity
+              activeOpacity={0.6}
               onPress={async () => {
                 if (!email || !isValidEmail(email)) {
                   setAuthError('Enter your email address first, then tap Forgot password.');
@@ -434,6 +442,7 @@ export default function LoginScreen() {
             {/* Back to OAuth Link */}
             <TouchableOpacity
               onPress={() => setAuthMethod('oauth')}
+              activeOpacity={0.6}
               accessibilityLabel="Other sign-in options"
               accessibilityRole="button"
               style={{
@@ -456,6 +465,7 @@ export default function LoginScreen() {
           </>
         )}
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
