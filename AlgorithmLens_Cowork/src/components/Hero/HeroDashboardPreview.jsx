@@ -305,12 +305,14 @@ const HeroDashboardPreview = () => {
                         <button
                             onClick={handlePrev}
                             className="w-12 h-12 rounded-full bg-white border border-border-light shadow-soft flex items-center justify-center text-text-muted hover:text-primary-blue"
+                            aria-label="Previous profile"
                         >
                             <ChevronLeft size={24} />
                         </button>
                         <button
                             onClick={handleNext}
                             className="w-12 h-12 rounded-full bg-white border border-border-light shadow-soft flex items-center justify-center text-text-muted hover:text-primary-blue"
+                            aria-label="Next profile"
                         >
                             <ChevronRight size={24} />
                         </button>

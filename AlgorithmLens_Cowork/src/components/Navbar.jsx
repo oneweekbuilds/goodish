@@ -202,8 +202,8 @@ const Navbar = () => {
                         <>
                             <TabBarLink to="/" label="Home" />
                             {['Dashboard', 'Scan', 'History', 'Plus', 'Settings'].map(label => (
-                                <span key={label} className="flex flex-col items-center justify-center gap-0.5 py-1.5 text-text-muted/30 cursor-not-allowed" aria-disabled="true">
-                                    {(() => { const Icon = iconMap[navItems.find(i => i.label === label)?.to] || Home; return <Icon size={20} strokeWidth={2} />; })()}
+                                <span key={label} className="flex flex-col items-center justify-center gap-0.5 py-1.5 text-text-muted/30 cursor-not-allowed" aria-disabled="true" aria-label={`${label} (coming soon)`} role="link">
+                                    {(() => { const Icon = iconMap[navItems.find(i => i.label === label)?.to] || Home; return <Icon size={20} strokeWidth={2} aria-hidden="true" />; })()}
                                     <span className="text-[10px] font-medium leading-none">{label}</span>
                                 </span>
                             ))}
