@@ -1,0 +1,128 @@
+name: Diagnose BroadcastExtension
+
+on:
+  workflow_dispatch: # Manual trigger only
+
+jobs:
+  diagnose:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run prebuild
+        run: npx expo prebuild --platform ios --no-install
+
+      - name: Diagnose BroadcastExtension in pbxproj
+        run: |
+          PBXPROJ="ios/AlgorithmLens.xcodeproj/project.pbxproj"
+          
+          echo "========================================="
+          echo "1. CHECK: Does BroadcastExtension target exist?"
+          echo "========================================="
+          grep -A 20 'name = BroadcastExtension' "$PBXPROJ" | grep -A 20 'PBXNativeTarget' || echo "NOT FOUND"
+          
+          echo ""
+          echo "========================================="
+          echo "2. CHECK: PBXSourcesBuildPhase for BroadcastExtension"
+          echo "========================================="
+          # Find all PBXSourcesBuildPhase entries
+          echo "All PBXSourcesBuildPhase entries:"
+          sed -n '/Begin PBXSourcesBuildPhase/,/End PBXSourcesBuildPhase/p' "$PBXPROJ"
+          
+          echo ""
+          echo "========================================="
+          echo "3. CHECK: PBXBuildFile entries for Swift files"
+          echo "========================================="
+          grep -i "SampleHandler\|FrameProcessor\|SharedContainer" "$PBXPROJ" || echo "NO SWIFT FILE REFERENCES FOUND"
+          
+          echo ""
+          echo "========================================="
+          echo "4. CHECK: PBXFileReference for Swift files"
+          echo "========================================="
+          grep "\.swift" "$PBXPROJ" | grep -i "sample\|frame\|shared" || echo "NO SWIFT FILE REFERENCES"
+          
+          echo ""
+          echo "========================================="
+          echo "5. CHECK: BroadcastExtension build settings"
+          echo "========================================="
+          # Dump build settings for the extension
+          grep -A 5 "SWIFT_VERSION" "$PBXPROJ" | head -30
+          
+          echo ""
+          echo "========================================="
+          echo "6. CHECK: All targets and their buildPhases"
+          echo "========================================="
+          python3 -c "
+          import re
+          
+          with open('$PBXPROJ', 'r') as f:
+              content = f.read()
+          
+          # Find PBXNativeTarget section
+          target_section = re.search(r'/\* Begin PBXNativeTarget section \*/(.*?)/\* End PBXNativeTarget section \*/', content, re.DOTALL)
+          if target_section:
+              section = target_section.group(1)
+              # Find each target
+              targets = re.finditer(r'(\w+)\s*/\*\s*(.*?)\s*\*/\s*=\s*\{(.*?)\};', section, re.DOTALL)
+              for t in targets:
+                  uuid = t.group(1)
+                  name = t.group(2)
+                  body = t.group(3)
+                  print(f'\nTarget: {name} (UUID: {uuid})')
+                  # Extract buildPhases
+                  phases = re.search(r'buildPhases\s*=\s*\((.*?)\)', body, re.DOTALL)
+                  if phases:
+                      phase_list = phases.group(1).strip()
+                      if phase_list:
+                          print(f'  buildPhases: {phase_list}')
+                      else:
+                          print('  buildPhases: EMPTY!')
+                  else:
+                      print('  buildPhases: NOT FOUND')
+          "
+          
+          echo ""
+          echo "========================================="
+          echo "7. CHECK: xcodebuild target list"
+          echo "========================================="
+          cd ios && xcodebuild -list -project AlgorithmLens.xcodeproj 2>&1 | head -30
+          
+          echo ""
+          echo "========================================="
+          echo "8. CHECK: xcodebuild build settings for BroadcastExtension"
+          echo "========================================="
+          cd ios && xcodebuild -showBuildSettings -target BroadcastExtension -project AlgorithmLens.xcodeproj 2>&1 | grep -E "SWIFT_VERSION|PRODUCT_NAME|INFOPLIST_FILE|ARCHS|PRODUCT_BUNDLE_IDENTIFIER|SWIFT_COMPILATION_MODE" || echo "COULD NOT GET BUILD SETTINGS"
+
+      - name: Try building BroadcastExtension target only
+        run: |
+          cd ios
+          pod install --repo-update 2>&1 | tail -20
+          echo ""
+          echo "========================================="
+          echo "Attempting to build BroadcastExtension target..."
+          echo "========================================="
+          xcodebuild build \
+            -workspace AlgorithmLens.xcworkspace \
+            -scheme BroadcastExtension \
+            -sdk iphoneos \
+            -configuration Release \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tail -50
+        continue-on-error: true
+
+      - name: Upload pbxproj for inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: pbxproj-dump
+          path: mobile/ios/AlgorithmLens.xcodeproj/project.pbxproj
