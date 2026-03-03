@@ -118,7 +118,7 @@ const FeedFingerprint = ({ displayData }) => {
           <Camera size={14} />
           Your Feed Fingerprint
         </h2>
-        <span className="text-xs text-slate-400">Screenshot to share</span>
+        <span className="text-xs text-slate-500">Screenshot to share</span>
       </div>
 
       {/* The actual card — optimized for screenshotting */}

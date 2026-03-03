@@ -450,3 +450,28 @@ No functional issues were identified. The broadcast feature is fully implemented
 - **1 critical error resilience fix** (API timeout)
 - **1 bug fix** (WebView back button)
 - **0 regressions introduced**
+
+---
+
+## 2026-03-03 — Git Repository Status Check
+
+### Findings
+
+**1. Is there a git repo?**
+- Yes. The main repo lives at `AlgorithmLens_Cowork/` — the `mobile/` directory is a subfolder within it (not a separate repo).
+- The `mobile/` folder has no `.git` of its own and no separate remote.
+
+**2. Remote URL**
+- `origin` → `https://github.com/oneweekbuilds/goodish.git` (fetch & push)
+- This is the only remote configured. The mobile code is tracked within this same repo.
+
+**3. Most recent commits**
+- **Main repo (AlgorithmLens_Cowork):** Last commit `b533423` on 2026-03-01 — "agent-loop cycle 4: fix accessibility — add aria-labels to nav/carousel, fix extension contrast" (2 days ago)
+- **Mobile subfolder:** Last mobile-specific commit `efe0a95` on 2026-02-28 — "Phase 2.5: Font verification, hardcoded style cleanup, card hierarchy, dark mode fixes" (3 days ago)
+
+**4. Uncommitted changes**
+- **Staged (main repo):** 2 files — `AdsEvidenceAnalysis.jsx`, `FeedFingerprint.jsx`
+- **Unstaged (main repo):** ~11 files including `TextRenderer.jsx`, `dashboardCatalog.js`, extension popup, and several mobile files
+- **Unstaged (mobile):** ~35 modified files across app screens, components, config, and packages
+- **Untracked (mobile):** `.easignore`, `scripts/`, `src/components/charts/`, `ToneComparisonCard.tsx`, `EvidenceBundleTeaser.tsx`, `FreeAskTeaser.tsx`, `revenueCat.ts`
+- **Note:** Main repo is **8 commits ahead of origin/master** — needs a `git push`.

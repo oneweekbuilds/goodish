@@ -50,7 +50,7 @@ export const EMPTY_STATE_TYPES = {
 // Tab-level trust sentences - grounded in observation, not identity
 // FIX X2, P1, C1: Use consistent observational language without implying single vs multiple scans
 export const TAB_TRUST_SENTENCES = {
-  ads: "This view estimates how often ads and sales-driven posts appeared in the content you scanned. It reflects what showed up, not what you believe or want.",
+  ads: "This view estimates how often ads and sales-driven posts appeared in your scans. It reflects what showed up, not what you believe or want.",
   politics: "Counts and percentages are based only on the posts included in your scans.",
   patterns: "Counts and percentages are based only on the posts included in your scans.",
   creators: "Counts and percentages are based only on the posts included in your scans.",

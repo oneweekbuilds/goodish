@@ -27,7 +27,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     backgroundColor: '#F7F8FC',
   },
   ios: {
-    supportsTablet: false,
+    supportsTablet: true,
     bundleIdentifier: 'com.algorithmlens.app',
     buildNumber: '1',
     config: {
@@ -86,14 +86,32 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ],
   extra: {
     eas: {
-      projectId: '',
+      projectId: 'e49ded34-bf98-45eb-a09c-0bc4721a65bf',
+      build: {
+        experimental: {
+          ios: {
+            appExtensions: [
+              {
+                targetName: 'BroadcastExtension',
+                bundleIdentifier: 'com.algorithmlens.app.BroadcastExtension',
+                entitlements: {
+                  'com.apple.security.application-groups': [
+                    'group.com.algorithmlens.broadcast',
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      },
     },
+    router: {},
   },
-  owner: 'algorithmlens',
+  owner: 'jwjwin0',
   runtimeVersion: {
     policy: 'appVersion',
   },
   updates: {
-    url: '',
+    url: `https://u.expo.dev/e49ded34-bf98-45eb-a09c-0bc4721a65bf`,
   },
 });

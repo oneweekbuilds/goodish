@@ -1054,7 +1054,7 @@ async function stopSessionAndAnalyze() {
   scanButton.textContent = 'Analyzing...';
   statusEl.className = 'status loading';
   // [Accessibility] aria-live will announce processing state to screen readers
-  statusEl.textContent = 'Scanning in progress';
+  statusEl.textContent = 'Analyzing your session...';
   stopTimer();
 
   try {

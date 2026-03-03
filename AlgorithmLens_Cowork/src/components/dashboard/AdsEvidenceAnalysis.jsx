@@ -67,10 +67,10 @@ const InsightCard = ({ title, analysis, citedFields }) => {
         <div className="mt-3 pt-3 border-t border-slate-100">
           <button
             onClick={() => setShowCitations(!showCitations)}
-            className="flex items-center gap-1 text-sm text-slate-400 hover:text-slate-600 transition-colors"
+            className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-600 transition-colors"
           >
             <Info size={12} aria-hidden="true" />
-            <span>Evidence source</span>
+            <span>Data sources</span>
             <ChevronDown
               size={12}
               className={`transition-transform ${showCitations ? 'rotate-180' : ''}`}
@@ -78,8 +78,8 @@ const InsightCard = ({ title, analysis, citedFields }) => {
             />
           </button>
           {showCitations && (
-            <div className="mt-2 text-xs text-slate-400 font-mono">
-              {citedFields.join(', ')}
+            <div className="mt-2 text-xs text-slate-500">
+              {citedFields.map(f => f.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())).join(', ')}
             </div>
           )}
         </div>
@@ -127,7 +127,7 @@ const CommercialExposureSpectrum = ({ observations, meta }) => {
           <TrendingUp size={18} className="text-slate-500" aria-hidden="true" />
           <h4 className="text-sm font-semibold text-slate-700">Commercial Exposure</h4>
         </div>
-        <p className="text-sm text-slate-500 italic">No high-confidence classifications available.</p>
+        <p className="text-sm text-slate-500 italic">Not enough data to reliably identify ad content in this scan.</p>
         {sourceType === 'MOBILE_VIDEO' && (
           <p className="text-sm text-amber-600 mt-2">
             Mobile video scans may miss ad labels. Use desktop extension for more complete detection.
@@ -153,7 +153,7 @@ const CommercialExposureSpectrum = ({ observations, meta }) => {
         <p className="text-sm text-slate-600">
           <span className="font-medium">Coverage:</span> {coverage_percent}% of posts confidently classified ({high_confidence_items} of {total_items}).
           {excludedCount > 0 && (
-            <span className="text-slate-400"> {excludedCount} posts excluded as ambiguous.</span>
+            <span className="text-slate-500"> {excludedCount} posts excluded as ambiguous.</span>
           )}
         </p>
       </div>
@@ -193,7 +193,7 @@ const PromotionTopics = ({ measurements }) => {
         }`}>
           {quality === 'ok' ? 'Surfaced' :
            quality === 'not_applicable' ? 'N/A' :
-           'Below threshold'}
+           'Not enough data'}
         </span>
       </div>
 
@@ -211,9 +211,9 @@ const PromotionTopics = ({ measurements }) => {
           </div>
           {/* Threshold shown per spec */}
           <p className="mt-3 text-sm text-slate-500">
-            <span className="font-medium">Threshold:</span> {threshold_rule || 'count ≥ 2 AND high_confidence ≥ 1'}
+            <span className="font-medium">Showing:</span> {threshold_rule || 'Topics appearing at least twice with strong detection'}
             {detected_but_excluded_count > 0 && (
-              <span className="text-slate-400"> · {detected_but_excluded_count} topics excluded</span>
+              <span className="text-slate-500"> · {detected_but_excluded_count} topics excluded</span>
             )}
           </p>
         </>
@@ -223,12 +223,12 @@ const PromotionTopics = ({ measurements }) => {
             {quality === 'not_applicable'
               ? 'No promotional content detected during this window.'
               : detected_but_excluded_count > 0
-              ? `${detected_but_excluded_count} topic${detected_but_excluded_count > 1 ? 's' : ''} detected but did not meet surfacing threshold.`
+              ? `${detected_but_excluded_count} topic${detected_but_excluded_count > 1 ? 's' : ''} detected but appeared too rarely to display reliably.`
               : 'No topic keywords matched in promotional content.'}
           </p>
           {threshold_rule && quality !== 'not_applicable' && (
-            <p className="mt-2 text-sm text-slate-400">
-              Threshold: {threshold_rule}
+            <p className="mt-2 text-sm text-slate-500">
+              Showing: {threshold_rule}
             </p>
           )}
         </div>
@@ -268,19 +268,19 @@ const TopCompanies = ({ observations, meta }) => {
               >
                 <span className="text-sm font-medium text-blue-800">{company.name}</span>
                 <span className="text-sm text-blue-600">
-                  {company.count}× ({company.high_confidence} high-conf)
+                  {company.count} appearances
                 </span>
               </div>
             ))}
           </div>
           <p className="mt-3 text-sm text-slate-500">
-            <span className="font-medium">Threshold:</span> count ≥ 2 AND high_confidence ≥ 1
+            <span className="font-medium">Showing:</span> Companies appearing at least twice with strong detection
           </p>
         </>
       ) : (
         <div>
           <p className="text-sm text-slate-500 italic">
-            {note || 'No companies met the surfacing threshold (count ≥ 2 AND high_confidence ≥ 1).'}
+            {note || 'No companies appeared frequently enough to display reliably.'}
           </p>
           {sourceType === 'MOBILE_VIDEO' && (
             <p className="text-sm text-amber-600 mt-2">
@@ -420,14 +420,14 @@ const AdsEvidenceAnalysis = ({ scanId }) => {
 
       {/* Evidence Bundle metadata footer */}
       <div className="flex items-center justify-between pt-4 border-t border-slate-100 mt-4">
-        <div className="flex items-center gap-2 text-sm text-slate-400">
+        <div className="flex items-center gap-2 text-sm text-slate-500">
           <Database size={12} aria-hidden="true" />
           <span>
             {bundle.meta.n_items} posts analyzed
             {bundle.meta.platform && ` on ${bundle.meta.platform}`}
           </span>
         </div>
-        <div className="text-sm text-slate-400">
+        <div className="text-sm text-slate-500">
           Generated {new Date(bundle.meta.generated_at).toLocaleTimeString()}
         </div>
       </div>

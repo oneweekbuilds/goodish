@@ -169,7 +169,7 @@ const TextRenderer = ({ data, view }) => {
       return (
         <div className="space-y-2">
           <p className="text-sm text-text-muted">
-            We do not have enough consistent co-occurrence signal yet to suggest related future themes.
+            We need more data to spot patterns of topics that appear together.
           </p>
           <p className="text-sm text-text-muted">
             As you scan more over time, this section will highlight topics that repeatedly appear together.

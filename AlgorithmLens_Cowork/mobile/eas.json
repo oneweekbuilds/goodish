@@ -7,9 +7,11 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "node": "20.18.0",
       "ios": {
         "simulator": false,
-        "buildConfiguration": "Debug"
+        "buildConfiguration": "Debug",
+        "image": "latest"
       },
       "env": {
         "APP_ENV": "development"
@@ -17,8 +19,10 @@
     },
     "preview": {
       "distribution": "internal",
+      "node": "20.18.0",
       "ios": {
-        "buildConfiguration": "Release"
+        "buildConfiguration": "Release",
+        "image": "latest"
       },
       "env": {
         "APP_ENV": "preview"
@@ -26,23 +30,22 @@
       "channel": "preview"
     },
     "production": {
+      "node": "20.18.0",
       "ios": {
         "buildConfiguration": "Release",
-        "autoIncrement": true
+        "autoIncrement": true,
+        "image": "latest"
       },
       "env": {
         "APP_ENV": "production"
       },
-      "channel": "production",
-      "autoSubmit": false
+      "channel": "production"
     }
   },
   "submit": {
     "production": {
       "ios": {
-        "appleId": "jwjwin0@gmail.com",
-        "ascAppId": "",
-        "appleTeamId": ""
+        "appleId": "jwjwin0@gmail.com"
       }
     }
   }
