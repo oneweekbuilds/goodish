@@ -69,7 +69,7 @@ jobs:
           FileUtils.mkdir_p(ext_dir)
           puts "#{PREFIX} Created directory: #{ext_dir}"
 
-          src_dir = "../modules/broadcast/ios/BroadcastExtension"
+          src_dir = "modules/broadcast/ios/BroadcastExtension"
 
           infoplist_src = "#{src_dir}/Info.plist"
           entitlements_src = "#{src_dir}/BroadcastExtension.entitlements"
