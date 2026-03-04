@@ -293,6 +293,31 @@ function withBroadcastExtension(config) {
     async (config) => {
       const iosProjRoot = path.join(config.modRequest.projectRoot, 'ios');
       patchPbxprojRawText(iosProjRoot);
+
+      // Step 4: Run the xcodeproj Ruby gem as the authoritative final pass.
+      // The xcodeproj gem (used by CocoaPods) properly manipulates Xcode projects,
+      // unlike the xcode npm library which often produces broken targets.
+      // This replaces whatever the JS plugin produced with a clean, correct target.
+      const { execSync } = require('child_process');
+      const projectRoot = config.modRequest.projectRoot;
+      const rubyScript = path.join(projectRoot, 'scripts', 'add-broadcast-extension.rb');
+
+      if (fs.existsSync(rubyScript)) {
+        console.log('[withBroadcastExtension] Running xcodeproj gem script for authoritative target creation...');
+        try {
+          execSync(
+            'gem install xcodeproj --no-document && ruby scripts/add-broadcast-extension.rb',
+            { cwd: projectRoot, stdio: 'inherit' }
+          );
+          console.log('[withBroadcastExtension] xcodeproj gem script completed successfully.');
+        } catch (err) {
+          console.warn(`[withBroadcastExtension] xcodeproj gem script failed (non-fatal): ${err.message}`);
+          console.warn('[withBroadcastExtension] Falling back to JS-based pbxproj patches.');
+        }
+      } else {
+        console.log(`[withBroadcastExtension] Ruby script not found at ${rubyScript} — skipping xcodeproj gem step.`);
+      }
+
       return config;
     },
   ]);
