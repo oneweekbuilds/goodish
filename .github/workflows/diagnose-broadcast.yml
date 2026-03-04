@@ -277,6 +277,12 @@ jobs:
           echo "========================================="
           cd ios && xcodebuild -showBuildSettings -target BroadcastExtension -project AlgorithmLens.xcodeproj 2>&1 | grep -E "SWIFT_VERSION|PRODUCT_NAME|INFOPLIST_FILE|ARCHS|PRODUCT_BUNDLE_IDENTIFIER|SWIFT_COMPILATION_MODE" || echo "COULD NOT GET BUILD SETTINGS"
 
+      - name: Verify Swift files in ios/BroadcastExtension
+        run: |
+          echo "=== SampleHandler.swift ===" && head -20 ios/BroadcastExtension/SampleHandler.swift
+          echo "=== FrameProcessor.swift ===" && head -20 ios/BroadcastExtension/FrameProcessor.swift
+          echo "=== SharedContainer.swift ===" && head -20 ios/BroadcastExtension/SharedContainer.swift
+
       - name: Try building BroadcastExtension target only
         run: |
           cd ios
@@ -286,12 +292,14 @@ jobs:
           echo "Attempting to build BroadcastExtension target..."
           echo "========================================="
           xcodebuild build \
-            -workspace AlgorithmLens.xcworkspace \
-            -scheme BroadcastExtension \
+            -project AlgorithmLens.xcodeproj \
+            -target BroadcastExtension \
             -sdk iphoneos \
             -configuration Release \
             CODE_SIGNING_ALLOWED=NO \
-            2>&1 | tail -50
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            2>&1 | tail -100
         continue-on-error: true
 
       - name: Upload pbxproj for inspection
