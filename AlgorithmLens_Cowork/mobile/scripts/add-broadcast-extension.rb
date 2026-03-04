@@ -40,6 +40,13 @@ if existing
   existing.remove_from_project
 end
 
+# ── Also remove any existing BroadcastExtension group to avoid duplicates ──
+existing_group = project.main_group.children.find { |g| g.display_name == "BroadcastExtension" }
+if existing_group
+  puts "#{PREFIX} Removing pre-existing BroadcastExtension group..."
+  existing_group.remove_from_project
+end
+
 # ── Create the app extension target ──
 puts "#{PREFIX} Creating BroadcastExtension native target..."
 ext_target = project.new_target(
@@ -52,18 +59,28 @@ ext_target = project.new_target(
 )
 puts "#{PREFIX} Target created: #{ext_target.name} (UUID: #{ext_target.uuid})"
 
-# ── Copy Info.plist and entitlements into ios/BroadcastExtension/ ──
+# ── Create ios/BroadcastExtension/ directory ──
 FileUtils.mkdir_p(ext_dir)
 puts "#{PREFIX} Created directory: #{ext_dir}"
 
-infoplist_src    = "#{src_dir}/Info.plist"
-entitlements_src = "#{src_dir}/BroadcastExtension.entitlements"
+# ── Copy ALL files from modules source into ios/BroadcastExtension/ (flat) ──
+swift_files = ["SampleHandler.swift", "FrameProcessor.swift", "SharedContainer.swift"]
+all_files_to_copy = swift_files + ["Info.plist", "BroadcastExtension.entitlements"]
 
-if File.exist?(infoplist_src)
-  FileUtils.cp(infoplist_src, "#{ext_dir}/Info.plist")
-  puts "#{PREFIX} Copied Info.plist -> #{ext_dir}/Info.plist"
-else
-  puts "#{PREFIX} WARNING: #{infoplist_src} not found, creating minimal Info.plist"
+all_files_to_copy.each do |filename|
+  src = "#{src_dir}/#{filename}"
+  dst = "#{ext_dir}/#{filename}"
+  if File.exist?(src)
+    FileUtils.cp(src, dst)
+    puts "#{PREFIX} Copied #{filename} -> #{dst}"
+  else
+    puts "#{PREFIX} WARNING: #{src} not found"
+  end
+end
+
+# ── Create fallback Info.plist if not present ──
+unless File.exist?("#{ext_dir}/Info.plist")
+  puts "#{PREFIX} Creating fallback Info.plist"
   File.write("#{ext_dir}/Info.plist", <<~PLIST)
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -97,11 +114,9 @@ else
   PLIST
 end
 
-if File.exist?(entitlements_src)
-  FileUtils.cp(entitlements_src, "#{ext_dir}/BroadcastExtension.entitlements")
-  puts "#{PREFIX} Copied entitlements -> #{ext_dir}/BroadcastExtension.entitlements"
-else
-  puts "#{PREFIX} WARNING: #{entitlements_src} not found, creating minimal entitlements"
+# ── Create fallback entitlements if not present ──
+unless File.exist?("#{ext_dir}/BroadcastExtension.entitlements")
+  puts "#{PREFIX} Creating fallback entitlements"
   File.write("#{ext_dir}/BroadcastExtension.entitlements", <<~ENT)
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -116,21 +131,29 @@ else
   ENT
 end
 
-# ── Add Swift source files ──
-swift_files = ["SampleHandler.swift", "FrameProcessor.swift", "SharedContainer.swift"]
-ext_group = project.main_group.new_group("BroadcastExtension", ext_dir)
-puts "#{PREFIX} Created PBX group: BroadcastExtension"
+# ── Create PBX group for BroadcastExtension ──
+# The group path is "BroadcastExtension" relative to the ios/ directory,
+# which matches where Xcode resolves paths from (the project root = ios/).
+ext_group = project.main_group.new_group("BroadcastExtension", "BroadcastExtension")
+puts "#{PREFIX} Created PBX group: BroadcastExtension (path: BroadcastExtension)"
 
+# ── Add Swift source files by filename only (they live in ios/BroadcastExtension/) ──
 swift_files.each do |filename|
-  src = "#{src_dir}/#{filename}"
-  if File.exist?(src)
-    ref = ext_group.new_file(src)
+  dst = "#{ext_dir}/#{filename}"
+  if File.exist?(dst)
+    # new_file with just the filename — Xcode resolves relative to group path
+    ref = ext_group.new_file(filename)
     ext_target.source_build_phase.add_file_reference(ref)
-    puts "#{PREFIX} Added source file: #{filename}"
+    puts "#{PREFIX} Added source file: #{filename} (resolved via group path)"
   else
-    puts "#{PREFIX} WARNING: #{src} not found -- skipping"
+    puts "#{PREFIX} WARNING: #{dst} not found -- skipping"
   end
 end
+
+# ── Add Info.plist and entitlements as file references (not compiled) ──
+ext_group.new_file("Info.plist")
+ext_group.new_file("BroadcastExtension.entitlements")
+puts "#{PREFIX} Added Info.plist and entitlements as file references"
 
 # ── Add frameworks ──
 frameworks = ["ReplayKit.framework", "Vision.framework", "UIKit.framework", "Foundation.framework"]
