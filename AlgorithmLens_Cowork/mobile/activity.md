@@ -2,6 +2,28 @@
 
 ---
 
+## TestFlight Build 12 splash hang: Supabase PostgREST timeout safety net (2026-03-14)
+
+**Context:** Build 12 still hung on splash despite the Build 11 env var fix. The env vars are now present, so `supabase.ts` and `api.ts` no longer throw at module load. Root cause shifted to a different code path.
+
+**Root cause identified:**
+When a user is already logged in (session stored in SecureStore), `AuthContext` calls `fetchOrCreateProfile(userId)` which makes a PostgREST network call to Supabase (`supabase.from('user_profiles').select(...)`). PostgREST has no built-in timeout. If this call hangs — due to a slow cold-start at Supabase, a network blip, or iOS not yet establishing connectivity — `setLoading(false)` is never called, `isLoading` stays `true` in `RootLayoutNav`, and `SplashScreen.hideAsync()` is never invoked. iOS's native fetch timeout is up to 60 seconds, so users see the splash hang that long before getting the login screen.
+
+**Fixes applied:**
+
+1. **`src/context/AuthContext.tsx`** — Added a 10-second safety net timer at the top of the auth `useEffect`. If `loading` hasn't resolved naturally (via getSession/fetchOrCreateProfile/onAuthStateChange), the timer forces `setLoading(false)` after 10 seconds. The timer is cleaned up in the `useEffect` return function (alongside `subscription.unsubscribe()`) so it never fires after unmount.
+
+2. **`app/_layout.tsx`** — Fixed the `fontError` handler: the comment already said "hide splash anyway so the app doesn't hang" but the actual `SplashScreen.hideAsync()` call was missing. Added `SplashScreen.hideAsync().catch(() => {})`. (This wasn't the cause of Build 12 hang, but it's a correctness fix for the edge case where fonts fail before `RootLayoutNav` mounts.)
+
+**Why not a timeout on the Supabase call itself?**
+The `try/catch/finally` in `fetchOrCreateProfile` already handles errors correctly — `setLoading(false)` is in `finally`. The issue is only when the network call hangs indefinitely before failing. A 10-second global safety net is simpler and more robust than wrapping every Supabase call in `Promise.race()`.
+
+**Files changed:**
+- `mobile/src/context/AuthContext.tsx`
+- `mobile/app/_layout.tsx`
+
+---
+
 ## EAS Secrets: EXPO_PUBLIC_GEMINI_API_KEY created; EXPO_PUBLIC_SENTRY_DSN pending (2026-03-14)
 
 **Context:** Following the splash-screen hang fix, two sensitive env vars (`EXPO_PUBLIC_GEMINI_API_KEY` and `EXPO_PUBLIC_SENTRY_DSN`) could not go into `eas.json` and needed to be stored as EAS Secrets instead.

@@ -172,6 +172,9 @@ function RootLayout() {
     if (fontError) {
       // If fonts fail to load, hide splash anyway so the app doesn't hang
       console.warn('Font loading error:', fontError);
+      // CRITICAL: Must call hideAsync here — without it the splash hangs if
+      // font loading fails before RootLayoutNav ever mounts.
+      SplashScreen.hideAsync().catch(() => {});
     }
   }, [fontError]);
 

@@ -82,6 +82,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const entitlements = useEntitlements(hasSession);
 
   useEffect(() => {
+    // SPLASH HANG SAFETY NET: If auth + profile loading hasn't resolved in 10 seconds,
+    // force loading to false. This prevents an eternal splash hang caused by a slow
+    // Supabase network call in fetchOrCreateProfile (PostgREST has no built-in timeout;
+    // iOS fetch can hang for up to 60s before timing out natively).
+    const safetyTimer = setTimeout(() => {
+      setLoading((prev) => {
+        if (prev) {
+          if (__DEV__) {
+            console.warn('[AuthContext] 10s safety timeout — forcing loading false to prevent splash hang');
+          }
+          return false;
+        }
+        return prev;
+      });
+    }, 10000);
+
     // Get initial session
     supabase.auth.getSession()
       .then(({ data: { session } }) => {
@@ -122,7 +138,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(safetyTimer);
+      subscription.unsubscribe();
+    };
   }, []);
 
   /**
