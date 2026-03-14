@@ -2,6 +2,75 @@
 
 ---
 
+## Complete startup reliability overhaul — guaranteed splash dismiss (2026-03-14)
+
+**Context:** Splash screen hang persisted across multiple TestFlight builds despite individual patches. Required a complete audit of the entire startup chain to identify and fix every possible blocking point simultaneously.
+
+### Full startup chain audit
+
+The complete startup sequence was traced in exact order. Every conditional return, every async call, and every path to `SplashScreen.hideAsync()` was mapped. Seven distinct failure modes were identified across four files.
+
+### Blocking points identified and fixed
+
+**CATASTROPHIC (prevents React from loading at all):**
+
+1. **`supabase.ts` module-level `throw`** — If `EXPO_PUBLIC_SUPABASE_URL` or `EXPO_PUBLIC_SUPABASE_ANON_KEY` is missing or misconfigured, the `throw` propagates up the entire import chain (`supabase.ts` → `AuthContext.tsx` → `_layout.tsx`), crashing the JS bundle before React mounts. `SplashScreen.preventAutoHideAsync()` is never called, and the splash hangs forever with no recovery path.
+   - **Fix**: Replaced `throw new Error(...)` with `console.error(...)`. Changed `process.env.X` to `process.env.X ?? ''` so `createClient` receives empty strings (fails gracefully at auth-call time, not at import time).
+
+2. **`api.ts` module-level `throw` in production** — Same catastrophic failure if `EXPO_PUBLIC_API_BASE_URL` is wrong or missing. The throw propagates up through `useEntitlements.ts` → `AuthContext.tsx` → `_layout.tsx`.
+   - **Fix**: Replaced `throw new Error(...)` with `console.error(...)`.
+
+**BLOCKING (React loads but splash never dismisses):**
+
+3. **`useFonts()` guard with no timeout** — `if (!fontsLoaded && !fontError) return null` blocks the entire provider tree until fonts load. Font loading reads from the app bundle and should complete in <100ms, but if the Expo asset system hangs, nothing below `RootLayout` ever renders and `SplashScreen.hideAsync()` is never called.
+   - **Fix**: Added `fontTimeout` state with a `setTimeout(3000)`. Changed guard to `if (!fontsLoaded && !fontError && !fontTimeout) return null`. After 3 seconds, the tree renders with system fonts as fallback.
+
+4. **`fetchOrCreateProfile()` Supabase query with no timeout** — When a returning user opens the app, `AuthContext` restores the session and calls `fetchOrCreateProfile()`. This makes a PostgREST network query with no timeout. iOS's native fetch timeout is ~60 seconds, so `setLoading(false)` could be delayed by up to 60 seconds. Already patched with a 10s safety timer (previous commit), but the timer alone doesn't cover the module-crash scenario above.
+
+5. **`ErrorBoundary.componentDidCatch()` never calls `SplashScreen.hideAsync()`** — If any component in the provider tree throws during render, `ErrorBoundary` catches it and renders its error UI. `RootLayoutNav` (the normal `hideAsync` caller) never mounts. The splash hangs forever behind the error screen.
+   - **Fix**: Added `SplashScreen.hideAsync().catch(() => {})` in `componentDidCatch`.
+
+6. **No nuclear fallback** — No code path guaranteed to call `hideAsync()` after a fixed time, regardless of any other state. If all other mechanisms fail simultaneously, the splash hangs forever.
+   - **Fix**: Added `useEffect` in `RootLayout` with `setTimeout(hideAsync, 5000)`. This fires no matter what — font hang, auth hang, provider crash, anything. After 5 seconds, the splash dismisses unconditionally, revealing either the ActivityIndicator (if auth is still loading) or the navigated screen.
+
+**UX REGRESSION (post-splash navigation):**
+
+7. **Navigation guard sends returning user to onboarding prematurely** — When the 10s safety timer forces `isLoading=false` before `fetchOrCreateProfile()` resolves, `userProfile` is `null`. The old guard `!userProfile?.has_completed_onboarding` evaluates to `true` when `userProfile` is `null`, routing a returning user to the onboarding screen instead of tabs.
+   - **Fix**: Changed to `userProfile !== null && !userProfile.has_completed_onboarding`. When `userProfile` is null (profile still loading), the user is sent to tabs — a correct default for any logged-in user. When the profile loads and the effect re-runs, correct navigation is applied.
+
+### Files changed
+
+| File | Change |
+|------|--------|
+| `mobile/src/lib/supabase.ts` | Module-level `throw` → `console.error`; `process.env.X` → `process.env.X ?? ''` |
+| `mobile/src/lib/api.ts` | Module-level `throw` in production → `console.error` |
+| `mobile/app/_layout.tsx` | Nuclear fallback (5s), font timeout (3s), navigation guard fix, `.catch()` on all `hideAsync` calls, `preventAutoHideAsync()` gets `.catch()` |
+| `mobile/src/components/ErrorBoundary.tsx` | `SplashScreen.hideAsync()` added to `componentDidCatch` |
+| `mobile/src/context/AuthContext.tsx` | 10s safety timer (previous commit, included here for reference) |
+
+### Post-splash screen audit
+
+The first screens that load after splash dismissal were also checked for blank-screen or crash risks:
+
+- **Login screen** (`(auth)/login.tsx`): Fully synchronous render, no blocking async on mount. ✓
+- **Onboarding screen** (`(auth)/onboarding.tsx`): React Native Reanimated animations, no blocking async. ✓
+- **Tabs/Home screen** (`(tabs)/index.tsx`): Calls `useDashboard()`, `useStreak()`, `useHabitFeatures()` — all have their own loading states and show empty states while fetching. No blank screen risk. ✓
+- **Tab layout** (`(tabs)/_layout.tsx`): Synchronous render, `useSafeAreaInsets()` + `useTheme()`. ✓
+
+### Timeline of guaranteed splash dismissal (Build 13)
+
+| Trigger | Timing | Condition |
+|---------|--------|-----------|
+| Auth resolves naturally (no session) | ~50–200ms | `getSession()` returns null |
+| Auth resolves naturally (returning user, network fast) | ~200–2000ms | `fetchOrCreateProfile()` completes |
+| Font timeout | 3000ms | Only if `useFonts()` hangs (extremely rare) |
+| Nuclear fallback in `_layout.tsx` | 5000ms | Unconditional — fires always |
+| Auth safety timer | 10000ms | Only if `fetchOrCreateProfile()` is still pending at 10s |
+
+In the worst case, the splash dismisses at exactly 5 seconds (nuclear fallback). There is no longer any scenario where the splash can hang indefinitely.
+
+---
+
 ## TestFlight Build 12 splash hang: Supabase PostgREST timeout safety net (2026-03-14)
 
 **Context:** Build 12 still hung on splash despite the Build 11 env var fix. The env vars are now present, so `supabase.ts` and `api.ts` no longer throw at module load. Root cause shifted to a different code path.

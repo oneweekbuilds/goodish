@@ -8,6 +8,7 @@
 import React, { Component, type ErrorInfo, type ReactNode } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { AlertCircle } from 'lucide-react-native';
 import { captureError } from '../lib/sentry';
 import { SPACING, RADIUS, COLORS, ICON_SIZES } from '../lib/theme';
@@ -48,6 +49,11 @@ export class ErrorBoundary extends Component<Props, State> {
     if (errorInfo.componentStack) {
       console.error('[ErrorBoundary] componentStack:', errorInfo.componentStack);
     }
+    // CRITICAL: If a render error is caught before SplashScreen.hideAsync() has been
+    // called, the splash will hang forever — the ErrorBoundary renders its own UI
+    // (not RootLayoutNav) so the normal hideAsync path in RootLayoutNav never runs.
+    // Calling hideAsync here guarantees the splash is dismissed even on crash.
+    SplashScreen.hideAsync().catch(() => {});
   }
 
   handleRestart = (): void => {

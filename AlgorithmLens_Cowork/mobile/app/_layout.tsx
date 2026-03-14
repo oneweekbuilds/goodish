@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, Platform, LogBox } from 'react-native';
 import { Stack, router, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -27,8 +27,12 @@ LogBox.ignoreLogs([
   'SyntaxError',
 ]);
 
-// Keep splash screen visible until auth loading completes
-SplashScreen.preventAutoHideAsync();
+// Keep splash screen visible until auth loading completes.
+// NOTE: Returns a Promise — not awaited here intentionally (standard Expo pattern
+// for module-level calls). The native side processes this synchronously.
+SplashScreen.preventAutoHideAsync().catch(() => {
+  // Ignore — means the splash was already hidden (e.g. hot reload in dev).
+});
 
 function RootLayoutNav() {
   const { user, isLoading, userProfile } = useAuth();
@@ -54,10 +58,17 @@ function RootLayoutNav() {
 
   useEffect(() => {
     if (!isLoading) {
-      SplashScreen.hideAsync();
+      // Always call hideAsync with catch — it's safe to call multiple times.
+      SplashScreen.hideAsync().catch(() => {});
+
       if (!user) {
         router.replace('/(auth)/login');
-      } else if (!userProfile?.has_completed_onboarding) {
+      } else if (userProfile !== null && !userProfile.has_completed_onboarding) {
+        // NAVIGATION GUARD FIX: Only route to onboarding if the profile is actually
+        // loaded AND onboarding is confirmed incomplete. When the 10s safety timer fires
+        // before fetchOrCreateProfile resolves, userProfile is null — in that case we
+        // send the user to tabs (a logged-in user who hasn't completed onboarding will
+        // be gated there), and when the profile loads the effect re-runs correctly.
         router.replace('/(auth)/onboarding');
       } else {
         router.replace('/(tabs)');
@@ -166,20 +177,42 @@ function RootLayout() {
     'Geist-Bold': require('../assets/fonts/Geist_700Bold.ttf'),
   });
 
-  // Keep splash visible until fonts are loaded
-  // Auth loading is handled separately in RootLayoutNav
+  // FONT TIMEOUT: After 3 seconds, proceed regardless of font load state.
+  // useFonts loads from the app bundle (not network) and should complete in <100ms,
+  // but if the asset system hangs, this prevents the return-null gate from blocking
+  // the entire provider tree indefinitely.
+  const [fontTimeout, setFontTimeout] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setFontTimeout(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Font error handler: call hideAsync so the splash doesn't hang if fonts fail
+  // before RootLayoutNav ever mounts (RootLayoutNav is the normal hideAsync caller).
   useEffect(() => {
     if (fontError) {
-      // If fonts fail to load, hide splash anyway so the app doesn't hang
-      console.warn('Font loading error:', fontError);
-      // CRITICAL: Must call hideAsync here — without it the splash hangs if
-      // font loading fails before RootLayoutNav ever mounts.
+      console.warn('[_layout] Font loading error — proceeding without custom fonts:', fontError);
       SplashScreen.hideAsync().catch(() => {});
     }
   }, [fontError]);
 
-  // Don't render anything until fonts are ready
-  if (!fontsLoaded && !fontError) {
+  // NUCLEAR FALLBACK: No matter what else fails — font hang, auth hang, render
+  // crash in a provider, anything — the splash is guaranteed to hide within 5 seconds.
+  // This is the last line of defense. After 5 seconds the user will see either
+  // the ActivityIndicator (if auth is still loading) or the navigated screen.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (__DEV__) {
+        console.warn('[_layout] Nuclear fallback fired — forcing SplashScreen.hideAsync() at 5s');
+      }
+      SplashScreen.hideAsync().catch(() => {});
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Block render only until fonts complete, a font error occurs, OR the 3s timeout fires.
+  // Without the fontTimeout guard this could block forever if useFonts hangs.
+  if (!fontsLoaded && !fontError && !fontTimeout) {
     return null;
   }
 

@@ -10,11 +10,16 @@ import { getUserFriendlyNetworkError } from './networkUtils';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000';
 
-/** Throw error in production if API_BASE_URL still points at localhost. */
+// Log loudly in production if URL is wrong, but do NOT throw.
+// A module-level throw here propagates up through useEntitlements.ts →
+// AuthContext.tsx → _layout.tsx, crashing the entire import chain before
+// React mounts — SplashScreen.preventAutoHideAsync() is never called and
+// the splash hangs forever. Individual API calls will fail with clear
+// error messages if the URL is misconfigured.
 if (__DEV__ === false && API_BASE_URL.includes('127.0.0.1')) {
-  throw new Error(
-    '[api] FATAL: API_BASE_URL points to localhost in a production build. '
-    + 'Set EXPO_PUBLIC_API_BASE_URL in your .env file.'
+  console.error(
+    '[api] CRITICAL: API_BASE_URL points to localhost in a production build. ' +
+    'Set EXPO_PUBLIC_API_BASE_URL in eas.json or as an EAS Secret.'
   );
 }
 

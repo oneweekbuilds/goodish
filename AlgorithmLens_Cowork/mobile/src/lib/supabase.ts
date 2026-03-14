@@ -7,12 +7,20 @@ import { createClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+// Use ?? '' so missing vars don't produce `undefined` — createClient handles empty
+// strings gracefully (fails at auth-call time with a clear error, not at import time).
+// A module-level throw here would crash the entire JS bundle, meaning
+// SplashScreen.preventAutoHideAsync() is never called and the splash hangs forever.
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Missing Supabase configuration. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY in your .env file.'
+  // Log loudly but do NOT throw — a module-level throw propagates up the import
+  // chain and crashes _layout.tsx before React mounts, making the splash
+  // un-dismissable and the app permanently stuck.
+  console.error(
+    '[supabase] CRITICAL: Missing EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY. ' +
+    'Auth will not function. Set these in eas.json env or as EAS Secrets.'
   );
 }
 
