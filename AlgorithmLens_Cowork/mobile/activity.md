@@ -2,6 +2,31 @@
 
 ---
 
+## EAS Secrets: EXPO_PUBLIC_GEMINI_API_KEY created; EXPO_PUBLIC_SENTRY_DSN pending (2026-03-14)
+
+**Context:** Following the splash-screen hang fix, two sensitive env vars (`EXPO_PUBLIC_GEMINI_API_KEY` and `EXPO_PUBLIC_SENTRY_DSN`) could not go into `eas.json` and needed to be stored as EAS Secrets instead.
+
+**Search results:**
+- `EXPO_PUBLIC_GEMINI_API_KEY` — found as `GOOGLE_API_KEY` in `.env.local` (web app). Same Google Cloud API key used for Gemini 2.0 Flash. Value confirmed.
+- `EXPO_PUBLIC_SENTRY_DSN` — not found anywhere in the codebase. No Sentry project has been created for AlgorithmLens. The `sentry.ts` module handles a missing DSN gracefully (detects placeholder, skips SDK init, logs a warning in dev — no crash).
+
+**What was done:**
+- Created EAS Secret `EXPO_PUBLIC_GEMINI_API_KEY` on project `e49ded34-bf98-45eb-a09c-0bc4721a65bf` via the Expo GraphQL API (authenticated as jwjwin0). Secret ID: `2603dd19-44af-44c2-a91f-290834c2d441`. Confirmed visible in project secrets.
+
+**Still needed — manual step:**
+- `EXPO_PUBLIC_SENTRY_DSN`: Create a React Native project on sentry.io, copy the DSN from Settings → Client Keys (DSN), then run:
+  `eas secret:create --scope project --name EXPO_PUBLIC_SENTRY_DSN --value <DSN> --type string`
+  from `mobile/`. This is non-blocking — the app launches and runs without it, errors just won't be forwarded to Sentry.
+
+**EAS Secret status summary for project `algorithmlens`:**
+- `EXPO_PUBLIC_SUPABASE_URL` — in `eas.json` ✅
+- `EXPO_PUBLIC_SUPABASE_ANON_KEY` — in `eas.json` ✅
+- `EXPO_PUBLIC_API_BASE_URL` — in `eas.json` ✅
+- `EXPO_PUBLIC_GEMINI_API_KEY` — EAS Secret ✅
+- `EXPO_PUBLIC_SENTRY_DSN` — ⚠️ not yet configured (non-blocking)
+
+---
+
 ## TestFlight splash-screen hang fix: missing EXPO_PUBLIC_* env vars in EAS build (2026-03-14)
 
 **Symptom:** Build 11 installed successfully on TestFlight but hung indefinitely on the splash screen (concentric circles logo visible, app never loaded).
