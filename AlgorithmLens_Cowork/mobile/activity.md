@@ -2,6 +2,20 @@
 
 ---
 
+## App Store rejection fix: remove unused `processing` from UIBackgroundModes (2026-03-14)
+
+**Rejection:** ITMS-90771 — Build 10 rejected by App Store Connect because `UIBackgroundModes` included `processing` but `BGTaskSchedulerPermittedIdentifiers` was absent from Info.plist. Apple requires that any app declaring the `processing` background mode must list at least one BGTaskScheduler task identifier.
+
+**Root cause:** `processing` was listed in `UIBackgroundModes` in `app.config.ts` (line 37) without a corresponding `BGTaskSchedulerPermittedIdentifiers` key. A full search of the codebase confirmed that `BGTaskScheduler`, `expo-background-fetch`, `expo-task-manager`, and `BackgroundFetch` are not used anywhere — the entry was spurious.
+
+**Fix:** Removed `processing` from the `UIBackgroundModes` array in `app.config.ts`. The remaining `fetch` entry is retained as-is. No `BGTaskSchedulerPermittedIdentifiers` key is needed.
+
+**File changed:** `mobile/app.config.ts` — `UIBackgroundModes: ['processing', 'fetch']` → `['fetch']`
+
+**Next step:** Submit Build 11 to App Store Connect.
+
+---
+
 ## NEW: patchPbxprojRawText — raw text safety net for pbxproj (2026-03-03)
 
 **Purpose:** Final layer of defense against empty binary / missing build phases. Runs AFTER the xcode npm library serializes the project to disk, reading the raw pbxproj text and verifying/fixing it with string manipulation (no xcode library dependency).
