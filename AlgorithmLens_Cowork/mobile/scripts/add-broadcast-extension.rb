@@ -66,14 +66,22 @@ begin
   puts "#{PREFIX} Created directory: #{ext_dir}"
 
   # ── Copy ALL files from modules source into ios/BroadcastExtension/ (flat) ──
-  swift_files = ["SampleHandler.swift", "FrameProcessor.swift", "SharedContainer.swift"]
-  all_files_to_copy = swift_files + ["Info.plist", "BroadcastExtension.entitlements"]
-
   puts "#{PREFIX} Source directory: #{src_dir}"
   puts "#{PREFIX} Source directory exists: #{File.directory?(src_dir)}"
-  if File.directory?(src_dir)
-    puts "#{PREFIX} Source directory contents: #{Dir.entries(src_dir).reject { |e| e.start_with?('.') }.join(', ')}"
+
+  if !File.directory?(src_dir)
+    abort "#{PREFIX} ERROR: Source directory not found: #{src_dir}"
   end
+
+  src_contents = Dir.entries(src_dir).reject { |e| e.start_with?('.') }
+  puts "#{PREFIX} Source directory contents: #{src_contents.join(', ')}"
+
+  # Dynamically discover all .swift files — no hardcoded list
+  swift_files = src_contents.select { |f| f.end_with?('.swift') }.sort
+  puts "#{PREFIX} Swift source files discovered: #{swift_files.join(', ')}"
+
+  non_swift_files = ["Info.plist", "BroadcastExtension.entitlements"]
+  all_files_to_copy = swift_files + non_swift_files
 
   all_files_to_copy.each do |filename|
     src = File.join(src_dir, filename)
