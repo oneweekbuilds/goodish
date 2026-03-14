@@ -2,6 +2,28 @@
 
 ---
 
+## TestFlight splash-screen hang fix: missing EXPO_PUBLIC_* env vars in EAS build (2026-03-14)
+
+**Symptom:** Build 11 installed successfully on TestFlight but hung indefinitely on the splash screen (concentric circles logo visible, app never loaded).
+
+**Root cause — two hard throws during module initialization:**
+
+1. `src/lib/supabase.ts` line 13: `throw new Error('Missing Supabase configuration...')` — fires when `EXPO_PUBLIC_SUPABASE_URL` or `EXPO_PUBLIC_SUPABASE_ANON_KEY` are undefined. This crashes the React Native JS runtime before any component renders, keeping the native splash permanently visible.
+
+2. `src/lib/api.ts` line 14: `throw new Error('[api] FATAL: API_BASE_URL points to localhost...')` — fires when `EXPO_PUBLIC_API_BASE_URL` is undefined (falls back to `127.0.0.1:8000`, which triggers the production localhost guard). Same outcome.
+
+**Why the env vars were missing:** The `.env` file is in `.gitignore`, so the EAS cloud build machine never sees it. The `eas.json` production profile only had `APP_ENV: "production"` — the three required `EXPO_PUBLIC_*` vars were never passed to the builder.
+
+**What was fixed:**
+- Added `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, and `EXPO_PUBLIC_API_BASE_URL` to all three EAS build profiles (development, preview, production) in `eas.json`. The Supabase anon key is a client-side key designed to be public; it is safe to commit. Its security model relies entirely on RLS policies.
+- Added a `.catch()` to `supabase.auth.getSession()` in `AuthContext.tsx` as a defensive belt: even if Supabase initialization fails for any future reason, `loading` will always resolve to `false` and the user will reach the login screen rather than seeing an eternal splash hang.
+
+**Still needed (manual step):** `EXPO_PUBLIC_GEMINI_API_KEY` and `EXPO_PUBLIC_SENTRY_DSN` should be set as EAS Secrets (not committed to git) via `eas secret:push` or the Expo dashboard. Gemini is only needed for scan analysis (won't block startup if missing), and Sentry is handled gracefully with a placeholder DSN check.
+
+**Files changed:** `mobile/eas.json`, `mobile/src/context/AuthContext.tsx`
+
+---
+
 ## App Store rejection fix: remove unused `processing` from UIBackgroundModes (2026-03-14)
 
 **Rejection:** ITMS-90771 — Build 10 rejected by App Store Connect because `UIBackgroundModes` included `processing` but `BGTaskSchedulerPermittedIdentifiers` was absent from Info.plist. Apple requires that any app declaring the `processing` background mode must list at least one BGTaskScheduler task identifier.

@@ -83,16 +83,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session?.user) {
-        setSentryUser(session.user.id, 'free');
-        addBreadcrumb('auth', 'Session restored on init');
-        fetchOrCreateProfile(session.user.id);
-      } else {
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        setSession(session);
+        if (session?.user) {
+          setSentryUser(session.user.id, 'free');
+          addBreadcrumb('auth', 'Session restored on init');
+          fetchOrCreateProfile(session.user.id);
+        } else {
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        // Supabase getSession should not normally reject, but if it does
+        // (e.g. misconfigured client, network error at init) we must still
+        // resolve loading so the splash screen is hidden and the user reaches
+        // the login screen rather than seeing an eternal splash hang.
+        if (__DEV__) {
+          console.error('[AuthContext] getSession() failed:', err);
+        }
         setLoading(false);
-      }
-    });
+      });
 
     // Listen for auth state changes
     const {
