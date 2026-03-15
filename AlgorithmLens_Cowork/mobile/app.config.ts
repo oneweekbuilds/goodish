@@ -77,11 +77,23 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
     },
   },
+  // URL scheme registered for deep linking and OAuth callbacks.
+  // Linking.createURL('/auth/callback') produces: algorithmlens://auth/callback
+  //
+  // ⚠️  REQUIRED MANUAL STEP: Add the following URL to your Supabase project's
+  //     Auth → URL Configuration → Redirect URLs allowlist:
+  //       algorithmlens://auth/callback
+  //     Without this, OAuth sign-in will fail with "redirect_uri_mismatch".
+  //
   scheme: 'algorithmlens',
   plugins: [
     'expo-router',
     'expo-secure-store',
     'expo-dev-client',
+    // expo-web-browser is required for OAuth sign-in on iOS (opens SFSafariViewController).
+    // The plugin registers the app's URL scheme so the in-app browser can redirect back
+    // to the app after OAuth completes.
+    'expo-web-browser',
     './plugins/withBroadcastExtension',
   ],
   extra: {

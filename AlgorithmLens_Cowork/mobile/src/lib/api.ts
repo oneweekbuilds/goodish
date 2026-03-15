@@ -8,6 +8,10 @@ import { supabase } from './supabase';
 import { captureError } from './sentry';
 import { getUserFriendlyNetworkError } from './networkUtils';
 
+// Production backend: https://api.algorithmlens.com (Python FastAPI)
+// Set via EXPO_PUBLIC_API_BASE_URL in eas.json env section (baked at build time).
+// Do NOT point this at https://algorithmlens.com — that is the Vite SPA frontend
+// and does not serve any /api/* routes the mobile app needs.
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000';
 
 // Log loudly in production if URL is wrong, but do NOT throw.

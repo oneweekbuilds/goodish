@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import * as WebBrowser from 'expo-web-browser';
 import {
   View,
   ScrollView,
@@ -17,6 +18,11 @@ import { Eye } from 'lucide-react-native';
 import { SPACING, RADIUS, ICON_SIZES } from '../../src/lib/theme';
 import { GL_TYPOGRAPHY } from '../../src/lib/gluestackTheme';
 import { Button, Text, Divider } from '../../src/components/glue';
+
+// Required by expo-web-browser: dismisses the in-app OAuth browser when the
+// deep-link callback fires and the app returns to the foreground.
+// Must be called at module level — not inside a component or useEffect.
+WebBrowser.maybeCompleteAuthSession();
 
 // Email validation — checks for user@domain.tld pattern
 const isValidEmail = (email: string): boolean => {
