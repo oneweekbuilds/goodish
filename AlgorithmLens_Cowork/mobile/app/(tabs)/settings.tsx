@@ -695,7 +695,7 @@ export default function SettingsScreen() {
                 variant="bodySmall"
                 color={colors.textMuted}
               >
-                {APP_VERSION} (1)
+                {APP_VERSION} ({Constants.nativeBuildVersion ?? '?'})
               </Text>
             }
             colors={colors}

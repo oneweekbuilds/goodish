@@ -110,7 +110,9 @@ function PlatformBottomSheetComponent({
     if (visible) {
       // M-24 FIX: Default to most recently scanned platform, or 'instagram' if no history
       setSelectedPlatform(lastPlatform || 'instagram');
-      bottomSheetRef.current?.expand();
+      // snapToIndex(0) opens to the first snap point ('60%') — avoids
+      // expand() jumping directly to the last snap point ('85%').
+      bottomSheetRef.current?.snapToIndex(0);
     } else {
       bottomSheetRef.current?.close();
     }
@@ -151,6 +153,7 @@ function PlatformBottomSheetComponent({
   return (
     <BottomSheet
       ref={bottomSheetRef}
+      index={-1}
       snapPoints={snapPoints}
       enablePanDownToClose
       onClose={handleClose}

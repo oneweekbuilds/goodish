@@ -59,12 +59,12 @@ export default function BroadcastScreen() {
   const broadcast = useBroadcast();
 
   // Safety guard: If running in Expo Go, redirect back immediately.
-  // ReplayKit requires native modules only available in development builds.
+  // ReplayKit requires native modules not compiled into Expo Go.
   useEffect(() => {
     if (Constants.appOwnership === 'expo') {
       Alert.alert(
-        'Development Build Required',
-        'Screen Capture requires the AlgorithmLens development build. Use Quick Scan instead.',
+        'Not Available in Expo Go',
+        'Screen Capture is not available in the Expo Go app. Use Quick Scan instead.',
         [{ text: 'OK', onPress: () => router.replace('/(tabs)/') }]
       );
     }
@@ -408,7 +408,7 @@ export default function BroadcastScreen() {
             align="center"
             style={{ marginBottom: SPACING.md }}
           >
-            Broadcast not available
+            Screen Capture unavailable
           </Text>
           <Text
             variant="body"
@@ -416,7 +416,7 @@ export default function BroadcastScreen() {
             align="center"
             style={{ marginBottom: SPACING.xl }}
           >
-            Screen broadcast requires iOS 12+ and the AlgorithmLens development build. Please ensure you're running the app via a development build (not Expo Go). Use Quick Scan to analyze your feed in the meantime.
+            Screen Capture is not available on this device. This feature requires iOS 12+. Use Quick Scan to analyze your feed via the built-in browser instead.
           </Text>
           <TouchableOpacity
             onPress={() => router.back()}

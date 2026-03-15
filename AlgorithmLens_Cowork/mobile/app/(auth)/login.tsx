@@ -98,10 +98,20 @@ export default function LoginScreen() {
       });
 
       if (error) {
-        setAuthError(error.message);
+        // Map raw Supabase error messages to user-friendly text
+        const msg = error.message?.toLowerCase() ?? '';
+        if (msg.includes('invalid login credentials') || msg.includes('invalid credentials') || msg.includes('wrong password')) {
+          setAuthError('Incorrect email or password. Try again or tap "Forgot password?"');
+        } else if (msg.includes('email not confirmed')) {
+          setAuthError('Please confirm your email address first — check your inbox for a verification link.');
+        } else if (msg.includes('too many requests') || msg.includes('rate limit')) {
+          setAuthError('Too many sign-in attempts. Please wait a moment and try again.');
+        } else {
+          setAuthError('Sign in failed. Check your email and password and try again.');
+        }
       }
     } catch (error) {
-      setAuthError(error instanceof Error ? error.message : 'Sign in failed. Try again');
+      setAuthError('Sign in failed. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -137,12 +147,22 @@ export default function LoginScreen() {
       });
 
       if (error) {
-        setAuthError(error.message);
+        // Map raw Supabase error messages to user-friendly text
+        const msg = error.message?.toLowerCase() ?? '';
+        if (msg.includes('user already registered') || msg.includes('already registered') || msg.includes('already exists')) {
+          setAuthError('An account with this email already exists. Tap "Sign In" to log in, or use "Forgot password?" if needed.');
+        } else if (msg.includes('weak password') || msg.includes('password should be')) {
+          setAuthError('Please choose a stronger password (at least 6 characters).');
+        } else if (msg.includes('invalid email') || msg.includes('unable to validate email')) {
+          setAuthError('That email address doesn\'t look valid. Please double-check it.');
+        } else {
+          setAuthError('Could not create account. Please try again.');
+        }
       } else {
         setAuthError('Account created! Signing you in...');
       }
     } catch (error) {
-      setAuthError(error instanceof Error ? error.message : 'Sign up failed. Try again');
+      setAuthError('Sign up failed. Check your connection and try again.');
     } finally {
       setLoading(false);
     }

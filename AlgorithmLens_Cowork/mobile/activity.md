@@ -2,6 +2,24 @@
 
 ---
 
+## Build 17 full audit: hooks crash, broadcast messages, build number, auth errors (2026-03-15)
+
+**Commit:** `fix: hooks violation crash, broadcast detection, build number, auth error messages`
+
+**Context:** Full video audit of Build 17 on TestFlight revealed four issues. All fixed in one pass.
+
+### Files changed
+
+| File | Reason |
+|------|--------|
+| `src/components/home/PlatformBottomSheet.tsx` | Issue 1: Added `index={-1}` to start BottomSheet in closed state; changed `expand()` to `snapToIndex(0)` to open to first snap point — prevents hooks violation crash in @gorhom/bottom-sheet v5 |
+| `app/broadcast/[platform].tsx` | Issue 2: Fixed "Development Build Required" alert to say "Not Available in Expo Go" (Expo Go only, not production); removed "development build" language from the `isAvailable` fallback screen |
+| `src/hooks/useBroadcast.ts` | Issue 2: Removed "development build" language from the `startSession` null-manager guard alert |
+| `app/(tabs)/settings.tsx` | Issue 3: Replaced hardcoded `(1)` build number with `Constants.nativeBuildVersion` |
+| `app/(auth)/login.tsx` | Issue 4: Mapped raw Supabase error messages to user-friendly text in both `handleEmailSignIn` and `handleEmailSignUp` — "Invalid login credentials" → clear retry prompt; "User already registered" → prompts user to sign in instead |
+
+---
+
 ## Build 17 fix: correct production API URL and fix broken OAuth flow (2026-03-15)
 
 **Commit:** `eba169f`

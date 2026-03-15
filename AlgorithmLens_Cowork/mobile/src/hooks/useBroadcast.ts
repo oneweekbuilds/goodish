@@ -172,7 +172,7 @@ export function useBroadcast(): UseBroadcastReturn {
 
   const startSession = useCallback(async (platform: SupportedPlatform) => {
     if (!managerRef.current) {
-      Alert.alert('Not Available', 'Screen broadcast is not available on this device. Please ensure you are running the AlgorithmLens development build on iOS 12+.');
+      Alert.alert('Not Available', 'Screen Capture is not available on this device. Use Quick Scan to analyze your feed instead.');
       return;
     }
 
