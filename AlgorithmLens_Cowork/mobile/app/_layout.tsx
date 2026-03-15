@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { ThemeProvider, useTheme } from '../src/context/ThemeContext';
 import { GluestackUIProvider } from '../src/providers/GluestackUIProvider';
@@ -217,19 +218,24 @@ function RootLayout() {
   }
 
   return (
-    <GluestackUIProvider>
-      <SafeAreaProvider>
-        <ThemeProvider>
-          <AuthProvider>
-            <ErrorBoundary>
-              <WebConstrainedWrapper>
-                <RootLayoutNav />
-              </WebConstrainedWrapper>
-            </ErrorBoundary>
-          </AuthProvider>
-        </ThemeProvider>
-      </SafeAreaProvider>
-    </GluestackUIProvider>
+    // GestureHandlerRootView must wrap the entire app tree for react-native-gesture-handler
+    // (and by extension @gorhom/bottom-sheet v5) to work correctly on iOS and Android.
+    // Without this, BottomSheet gestures may crash or silently fail at runtime.
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <GluestackUIProvider>
+        <SafeAreaProvider>
+          <ThemeProvider>
+            <AuthProvider>
+              <ErrorBoundary>
+                <WebConstrainedWrapper>
+                  <RootLayoutNav />
+                </WebConstrainedWrapper>
+              </ErrorBoundary>
+            </AuthProvider>
+          </ThemeProvider>
+        </SafeAreaProvider>
+      </GluestackUIProvider>
+    </GestureHandlerRootView>
   );
 }
 

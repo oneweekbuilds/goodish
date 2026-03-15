@@ -28,10 +28,13 @@ import {
   X,
   Info,
 } from 'lucide-react-native';
+// BottomSheet is the DEFAULT export from @gorhom/bottom-sheet v5.
+// Importing it as a named export gives `undefined` in production builds.
+// BottomSheetBackdropProps is a type-only import.
+import BottomSheet from '@gorhom/bottom-sheet';
 import {
-  BottomSheet,
   BottomSheetBackdrop,
-  BottomSheetBackdropProps,
+  type BottomSheetBackdropProps,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 import Animated, {
