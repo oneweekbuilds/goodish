@@ -5,6 +5,21 @@ Claude Code updates this file during autonomous loops.
 
 ---
 
+## STANDING RULES (enforced every session)
+
+### npm install after every package.json change — NO EXCEPTIONS
+**EAS Build uses `npm ci`, which requires `package-lock.json` to be in perfect sync with `package.json`.
+A mismatch causes an immediate build failure with no other error context.**
+
+**Rule:** Any time you add, remove, or update any package in `mobile/package.json`:
+1. Immediately run `cd mobile && npm install --prefer-offline`
+2. Verify `mobile/package-lock.json` is marked modified in `git status`
+3. Stage and commit `package-lock.json` in the same commit as `package.json` (or a follow-up commit before the next build)
+
+This has happened twice. Do not commit a `package.json` change without also committing the updated `package-lock.json`.
+
+---
+
 ## 2026-02-26 — Add shadcn/ui Component Library to Website
 
 ### Phase 1: Setup (Complete)
