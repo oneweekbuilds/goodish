@@ -2,6 +2,94 @@
 
 ---
 
+## Build 16 fix: resolve undefined component imports and production render safety audit (2026-03-15)
+
+**Commit:** `51b523e`
+
+**Context:** Build 16 showed the following error via the ErrorBoundary debug box on every launch:
+> "Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined"
+> Stack trace: `main.jsbundle:20943:29`
+
+### Root cause: `BottomSheet` imported as named export (default export in v5)
+
+`src/components/home/PlatformBottomSheet.tsx` imported `BottomSheet` as a named export `{ BottomSheet }` from `@gorhom/bottom-sheet`. In v5, `BottomSheet` is the **default export** (`export { default }` in `lib/module/index.js`), not a named export. Named import resolves to `undefined` in production Hermes/Metro bundles (dev Metro can paper over this).
+
+`PlatformBottomSheet` always renders `<BottomSheet>` unconditionally — visibility is controlled via `bottomSheetRef.current?.expand()` / `close()`, not a conditional mount. So the crash fired on every single app launch, not just when the user opened the sheet.
+
+Verified root cause by reading:
+- `node_modules/@gorhom/bottom-sheet/lib/module/index.js` → `export { default } from './components/bottomSheet'` (no named `BottomSheet`)
+- `node_modules/@gorhom/bottom-sheet/lib/typescript/index.d.ts` → same — default export only
+
+### Files changed
+
+| File | Reason |
+|------|--------|
+| `src/components/home/PlatformBottomSheet.tsx` | Fixed `BottomSheet` from broken named import `{ BottomSheet }` to correct default import `import BottomSheet from '@gorhom/bottom-sheet'`; also changed `BottomSheetBackdropProps` to type-only import |
+| `app/_layout.tsx` | Added `GestureHandlerRootView` wrapper from `react-native-gesture-handler` around entire provider tree — required by `@gorhom/bottom-sheet` v5 for gesture handling; without it, BottomSheet gestures may crash or fail silently |
+
+### Second-pass safety audit (all clean)
+
+Full audit of all other patterns that could produce runtime undefined components or crashes:
+
+- **48 lucide-react-native icons** — all exist in v0.564.0 ✓
+- **Named imports from local barrel files** — 0 mismatches; all `index.ts` re-exports match actual component exports ✓
+- **Default imports from local files** — 0 files missing a `default` export ✓
+- **Conditional hooks** — script flagged 3 results, all false positives (`return useX()` patterns inside hook implementations, not conditional calls) ✓
+- **Circular imports on startup-critical path** — none found ✓
+- **Other `@gorhom` named imports** (`BottomSheetBackdrop`, `BottomSheetScrollView`) — both are genuine named exports in v5 ✓
+- **`scanner/[platform].tsx`** — already used correct `import BottomSheet, { BottomSheetView }` pattern (good reference) ✓
+
+### Target: Build 17 should produce zero ErrorBoundary triggers on launch
+
+---
+
+## Build 15 fix: expose ErrorBoundary error details + guard withSentry for uninitialized SDK (2026-03-15)
+
+**Context:** Build 15 (nuclear fallback overhaul) resolved the splash hang — splash now reliably dismisses within 5 seconds. However, the app immediately showed the ErrorBoundary screen ("Something went wrong") on every launch. Two root causes identified and fixed.
+
+### Root cause 1: `withSentry` calling `Sentry.wrap` before `Sentry.init` (most likely cause)
+
+In `sentry.ts`, `withSentry` was unconditionally set to `Sentry.wrap` on iOS:
+
+```typescript
+// BEFORE — broken when IS_PLACEHOLDER_DSN=true:
+export const withSentry = Platform.OS === 'web'
+  ? (component: React.ComponentType<any>) => component
+  : Sentry.wrap;
+```
+
+`initSentry()` guards against initializing with a placeholder DSN and returns early. But `Sentry.wrap` (the HOC applied to the root `RootLayout` component in `_layout.tsx`) was still called without Sentry ever having been initialized. Calling `Sentry.wrap` on an uninitialized Sentry SDK can throw a render error during the HOC setup, which propagates up to `ErrorBoundary`.
+
+**Fix:** Added `IS_PLACEHOLDER_DSN` to the passthrough guard:
+
+```typescript
+// AFTER — safe in both mock and production modes:
+export const withSentry = (IS_PLACEHOLDER_DSN || Platform.OS === 'web')
+  ? (component: React.ComponentType<any>) => component
+  : Sentry.wrap;
+```
+
+### Root cause 2: `errorMessage` state never displayed in ErrorBoundary UI (debugging gap)
+
+`getDerivedStateFromError` correctly stored the error message in `this.state.errorMessage`, but the render method showed only static text ("Something went wrong"). `errorMessage` was never rendered, making it impossible to diagnose what was crashing without a Sentry DSN configured.
+
+**Fix (temporary for Build 16 diagnosis):** Added a debug box below the body copy that displays `this.state.errorMessage` and the first 400 characters of `error.stack` in grey monospace text. Clearly marked with `// DEBUG: ... remove before public launch` comments. Also added `errorStack: string` to the `State` interface and populated it in `getDerivedStateFromError`.
+
+### Files changed
+
+| File | Change |
+|------|--------|
+| `mobile/src/lib/sentry.ts` | `withSentry` now skips `Sentry.wrap` when `IS_PLACEHOLDER_DSN || Platform.OS === 'web'` |
+| `mobile/src/components/ErrorBoundary.tsx` | Added `errorStack` to State; display `errorMessage` + `errorStack` (first 400 chars) in debug box; reset `errorStack` on restart/go-home |
+
+**Commit:** `7ec0d59` — fix: expose error details in ErrorBoundary + fix withSentry for uninitialized SDK
+
+### Expected outcome for Build 16
+
+If the `withSentry` fix resolves the crash, the app will load normally and the ErrorBoundary debug box will never be seen. If something else is still crashing, the debug box will show the exact error on screen so the next fix can be targeted precisely.
+
+---
+
 ## Complete startup reliability overhaul — guaranteed splash dismiss (2026-03-14)
 
 **Context:** Splash screen hang persisted across multiple TestFlight builds despite individual patches. Required a complete audit of the entire startup chain to identify and fix every possible blocking point simultaneously.
