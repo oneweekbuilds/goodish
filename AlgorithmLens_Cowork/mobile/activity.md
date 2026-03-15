@@ -2,6 +2,71 @@
 
 ---
 
+## Build 17 fix: correct production API URL and fix broken OAuth flow (2026-03-15)
+
+**Commit:** `eba169f`
+
+**Context:** Build 17 loaded correctly and auth screen rendered. Every sign-in attempt (email, Google, Apple) failed with "Network request failed". Three issues found.
+
+---
+
+### Issue 1: `EXPO_PUBLIC_API_BASE_URL` pointed to the wrong server (post-auth calls broken)
+
+**Problem:** All three eas.json profiles had `EXPO_PUBLIC_API_BASE_URL=https://algorithmlens.com`. That URL is the Vite SPA frontend, not the Python FastAPI backend. The mobile app calls `/api/user/entitlements` (on sign-in) and `/api/scan/desktop` (on broadcast analysis) — routes that do not exist on the SPA. The SPA's catch-all route returns `index.html` for any unknown path. `api.ts` detects this and throws "API POST returned HTML instead of JSON."
+
+**Fix:** Changed `EXPO_PUBLIC_API_BASE_URL` to `https://api.algorithmlens.com` (the Python FastAPI backend) in all three profiles: development, preview, production. Also updated `.env` to match.
+
+**Post-auth API call audit (verified both routes exist in Python backend):**
+- `GET /api/user/entitlements` → `backend/routes/entitlements.py` ✓
+- `POST /api/scan/desktop` → `backend/routes/scans.py` ✓
+- `POST /api/stripe/create-checkout` → `backend/routes/stripe_routes.py` ✓ (used by checkout.ts)
+
+---
+
+### Issue 2: OAuth flow broken for React Native (Google + Apple sign-in non-functional)
+
+**Problem:** `signInWithOAuth()` in `AuthContext.tsx` was called without `skipBrowserRedirect: true`, and `expo-web-browser` was not installed. In Supabase JS v2 PKCE flow, the library:
+1. First makes a network request to `{supabaseUrl}/auth/v1/authorize` to generate the code challenge → **this is the "Network request failed"** if Supabase is unreachable
+2. Then opens the OAuth URL by calling `window.location.replace()` — which does not exist in React Native (throws TypeError)
+
+Without `expo-web-browser`, step 2 cannot work even if step 1 succeeds.
+
+**Fix:**
+- Added `expo-web-browser ^55.0.9` to `package.json`
+- Rewrote `signInWithOAuth` to use `skipBrowserRedirect: true` + `WebBrowser.openAuthSessionAsync()`
+- PKCE code exchange done via `supabase.auth.exchangeCodeForSession(result.url)` on callback
+- Added `WebBrowser.maybeCompleteAuthSession()` at top of `login.tsx` (required to dismiss the in-app browser when the deep link fires)
+- Added `expo-web-browser` plugin to `app.config.ts`
+
+---
+
+### Issue 3: "Network request failed" root cause — Supabase project may be paused
+
+**Analysis:** The Supabase config is correct (JWT `ref` claim matches project URL, key expires 2036). Email auth, Google OAuth, and Apple OAuth all start with a network request to `czrehjybsqzmudtgneqy.supabase.co`. All three failing simultaneously with "Network request failed" is consistent with the Supabase project being paused.
+
+Supabase free tier pauses projects after 7 days of inactivity. This project was created 2026-02-06 (~37 days ago). If no Supabase API requests have been made recently, the project will be paused.
+
+**⚠️ Manual actions required before Build 18 will work:**
+1. Log into [supabase.com](https://supabase.com) → select the `czrehjybsqzmudtgneqy` project → if paused, click "Restore project" and wait ~1 minute
+2. In Supabase dashboard → Auth → URL Configuration → Redirect URLs → add `algorithmlens://auth/callback` to the allowlist (required for OAuth PKCE redirect to succeed)
+
+---
+
+### Files changed
+
+| File | Reason |
+|------|--------|
+| `eas.json` | Fixed `EXPO_PUBLIC_API_BASE_URL` from `https://algorithmlens.com` to `https://api.algorithmlens.com` in all 3 profiles |
+| `.env` | Same fix for local development |
+| `package.json` | Added `expo-web-browser ^55.0.9` |
+| `package-lock.json` | Lockfile updated |
+| `app.config.ts` | Added `expo-web-browser` to plugins; added comment with required manual Supabase steps |
+| `app/(auth)/login.tsx` | Added `WebBrowser` import + `maybeCompleteAuthSession()` call at module level |
+| `src/context/AuthContext.tsx` | Rewrote `signInWithOAuth` to use `skipBrowserRedirect: true` + `openAuthSessionAsync` + `exchangeCodeForSession` |
+| `src/lib/api.ts` | Added comment clarifying `https://api.algorithmlens.com` is the correct URL (not the SPA) |
+
+---
+
 ## Build 16 fix: resolve undefined component imports and production render safety audit (2026-03-15)
 
 **Commit:** `51b523e`
