@@ -401,7 +401,57 @@ export default function BroadcastScreen() {
   if (!broadcast.isAvailable) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: SPACING.xl }}>
+        {/* Back button header */}
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: SPACING.lg,
+            paddingTop: SPACING.md,
+            paddingBottom: SPACING.md,
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => router.back()}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: RADIUS.full,
+              backgroundColor: colors.bgCard,
+              justifyContent: 'center',
+              alignItems: 'center',
+              borderWidth: 1,
+              borderColor: colors.borderDefault,
+            }}
+          >
+            <ArrowLeft size={20} color={colors.textMain} strokeWidth={2} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Content */}
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: SPACING.xl, paddingBottom: SPACING['6xl'] }}>
+          {/* Icon */}
+          <View
+            style={{
+              width: 72,
+              height: 72,
+              borderRadius: RADIUS.full,
+              backgroundColor: colors.bgCard,
+              borderWidth: 1,
+              borderColor: colors.borderDefault,
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginBottom: SPACING.xl,
+              ...shadows.card,
+            }}
+          >
+            <Radio size={32} color={colors.textTertiary} strokeWidth={1.5} />
+          </View>
+
           <Text
             variant="h3"
             color={colors.textMain}
@@ -414,27 +464,30 @@ export default function BroadcastScreen() {
             variant="body"
             color={colors.textSecondary}
             align="center"
-            style={{ marginBottom: SPACING.xl }}
+            style={{ marginBottom: SPACING['2xl'], lineHeight: 22, maxWidth: 300 }}
           >
-            Screen Capture is not available on this device. This feature requires iOS 12+. Use Quick Scan to analyze your feed via the built-in browser instead.
+            Screen Capture requires iOS 12+ with the app installed from the App Store or TestFlight. Use Quick Scan to analyze your feed via the built-in browser instead.
           </Text>
           <TouchableOpacity
             onPress={() => router.back()}
             activeOpacity={0.7}
             accessibilityRole="button"
-            accessibilityLabel="Go back"
+            accessibilityLabel="Use Quick Scan instead"
             style={{
               backgroundColor: colors.primaryBlue,
               borderRadius: RADIUS.md,
               paddingVertical: SPACING.md,
               paddingHorizontal: SPACING.xl,
+              minHeight: 48,
+              justifyContent: 'center',
+              alignItems: 'center',
             }}
           >
             <Text
               variant="buttonMd"
               color={colors.textInverse}
             >
-              Go Back
+              Use Quick Scan
             </Text>
           </TouchableOpacity>
         </View>

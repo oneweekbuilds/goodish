@@ -2,6 +2,22 @@
 
 ---
 
+## Build 19 full audit: Screen Capture availability, YouTube scan URL, History blank screen (2026-03-15)
+
+**Commit:** `fix: Screen Capture availability, Quick Scan capture+save, History empty state, Dashboard refresh`
+
+**Context:** Full video audit of Build 19 on TestFlight revealed four issues. All fixed in one pass.
+
+### Files changed
+
+| File | Reason |
+|------|--------|
+| `src/lib/broadcastSessionManager.ts` | Issue 1: `requireNativeModule('ExpoBroadcast')` throws in production EAS builds even when BroadcastExtension is in the IPA — added `expo-constants` import and fail-open logic so `isBroadcastModuleAvailable()` returns `true` on iOS non-Expo-Go builds regardless of native module load failure; removes "COMING SOON" badge on TestFlight |
+| `src/lib/platformScripts/index.ts` | Issue 2: YouTube URL `'https://m.youtube.com/'` lands on "Try searching" empty page instead of home feed — changed to `'https://m.youtube.com/feed'` so scanner starts on the actual algorithmic feed |
+| `app/(tabs)/history.tsx` | Issue 3: `ContentFadeIn ready={!loading || scans.length > 0}` kept opacity=0 during loading with no cached scans (blank grey screen instead of skeleton cards) — changed to `ready={true}` so skeleton cards are always visible; Issue 4 resolves downstream once scans save successfully |
+
+---
+
 ## Build 17 full audit: hooks crash, broadcast messages, build number, auth errors (2026-03-15)
 
 **Commit:** `fix: hooks violation crash, broadcast detection, build number, auth error messages`

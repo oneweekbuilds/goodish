@@ -1,0 +1,12 @@
+{
+  "name": "expo-broadcast",
+  "version": "1.0.0",
+  "description": "Native broadcast capture module for AlgorithmLens (ReplayKit on iOS, MediaProjection on Android)",
+  "main": "index.js",
+  "license": "MIT",
+  "files": [
+    "ios",
+    "android",
+    "expo-module.config.json"
+  ]
+}

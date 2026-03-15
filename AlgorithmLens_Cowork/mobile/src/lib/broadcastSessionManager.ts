@@ -25,6 +25,7 @@
  */
 
 import { Platform, Linking, AppState, NativeEventEmitter } from 'react-native';
+import Constants from 'expo-constants';
 import type {
   BroadcastSession,
   BroadcastStatus,
@@ -110,14 +111,26 @@ function getNativeEventEmitter(): NativeEventEmitter | null {
  * Returns true in dev/production builds with native modules compiled in.
  * Returns false in Expo Go or on unsupported platforms.
  * This avoids importing the full BroadcastSessionManager just to check.
+ *
+ * B-19 FIX: requireNativeModule('ExpoBroadcast') can throw in production EAS
+ * builds even when BroadcastExtension IS compiled and signed into the IPA.
+ * The native isAvailable() is trivially true on iOS 12+ — so we fail-open on
+ * real iOS (non-Expo-Go) builds rather than incorrectly showing "COMING SOON".
  */
 export function isBroadcastModuleAvailable(): boolean {
+  const isIOS = Platform.OS === 'ios';
+  const isExpoGo = Constants.appOwnership === 'expo';
+
   const mod = getNativeModule();
-  if (!mod) return false;
+  if (!mod) {
+    // Native module failed to load — fail-open on real iOS builds because the
+    // BroadcastExtension is always compiled in for production/TestFlight IPAs.
+    return isIOS && !isExpoGo;
+  }
   try {
     return mod.isAvailable();
   } catch {
-    return false;
+    return isIOS && !isExpoGo;
   }
 }
 
@@ -156,13 +169,25 @@ export class BroadcastSessionManager {
    * Returns whether broadcast capture is available on this device.
    * iOS: Requires iOS 12+ with ReplayKit broadcast extension configured.
    * Android: Requires API 21+ (Android 5.0 Lollipop).
+   *
+   * B-20 FIX: Same fail-open logic as isBroadcastModuleAvailable().
+   * requireNativeModule('ExpoBroadcast') can throw in production EAS builds even
+   * when the native module IS compiled and signed into the IPA. On real iOS
+   * (non-Expo-Go) devices, isAvailable() is trivially true (iOS 12+), so we
+   * fail-open rather than incorrectly blocking users from the feature.
    */
   isAvailable(): boolean {
-    if (!this.nativeModule) return false;
+    const isIOS = Platform.OS === 'ios';
+    const isExpoGo = Constants.appOwnership === 'expo';
+    if (!this.nativeModule) {
+      // Fail-open on real iOS builds — the extension is always compiled in for
+      // production/TestFlight IPAs. Fail-closed on Expo Go and Android.
+      return isIOS && !isExpoGo;
+    }
     try {
       return this.nativeModule.isAvailable();
     } catch {
-      return false;
+      return isIOS && !isExpoGo;
     }
   }
 

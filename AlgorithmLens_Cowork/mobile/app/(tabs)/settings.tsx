@@ -20,7 +20,7 @@ import { router } from 'expo-router';
 import { ChevronDown, ChevronRight, TrendingUp, Check, ExternalLink } from 'lucide-react-native';
 import { RADIUS, SPACING, MIN_TOUCH_TARGET } from '../../src/lib/theme';
 import { GL_TYPOGRAPHY } from '../../src/lib/gluestackTheme';
-import { Divider, Text } from '../../src/components/glue';
+import { Text } from '../../src/components/glue';
 import { UpgradeModal } from '../../src/components/plan/UpgradeModal';
 import { REMINDER_FREQUENCY_OPTIONS, type ReminderFrequency } from '../../src/config/thresholds';
 import {
@@ -50,9 +50,11 @@ const SettingSection = ({
   children: React.ReactNode;
   colors: ReturnType<typeof useTheme>['colors'];
 }) => (
+  // B-20 FIX: Removed paddingBottom + Divider to eliminate excessive whitespace
+  // gap between sections (was: paddingBottom xl + Divider spacing 2xl + marginBottom 3xl
+  // stacking to ~100px). Now uses simple marginBottom xl for clean iOS-style spacing.
   <View style={{
-    marginBottom: SPACING['3xl'],
-    paddingBottom: SPACING.xl,
+    marginBottom: SPACING.xl,
   }}>
     <Text
       variant="overline"
@@ -75,12 +77,6 @@ const SettingSection = ({
     >
       {children}
     </View>
-    {/* Section divider line */}
-    <Divider
-      spacing={SPACING['2xl']}
-      color={colors.borderLight}
-      thickness={1}
-    />
   </View>
 );
 

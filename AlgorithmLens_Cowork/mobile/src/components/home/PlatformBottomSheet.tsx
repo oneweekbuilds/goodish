@@ -10,7 +10,7 @@
  */
 
 import { triggerImpactLight, triggerImpactMedium, triggerSelection } from '../../lib/haptics';
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -103,7 +103,9 @@ function PlatformBottomSheetComponent({
 
   // Bottom sheet ref for imperative control
   const bottomSheetRef = useRef<any>(null);
-  const snapPoints = ['60%', '85%'];
+  // B-20 FIX: Single snap point at 70% — removes ambiguous snap-to-85% behaviour.
+  // The BottomSheetScrollView handles overflow content; users can scroll within the sheet.
+  const snapPoints = useMemo(() => ['70%'], []);
 
   // Update sheet state when visible changes
   useEffect(() => {

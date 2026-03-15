@@ -190,6 +190,10 @@ function FeedScoreCardComponent({ feedScore }: FeedScoreCardProps) {
       style={{
         borderRadius: RADIUS.lg,
         padding: SPACING.lg,
+        // B-20 FIX: Extra bottom padding prevents ALScoreGauge from being clipped
+        // by LinearGradient's borderRadius on iOS — the PieChart can render slightly
+        // outside its declared radius*2 bounds during animation.
+        paddingBottom: SPACING.xl,
         borderWidth: 1,
         borderColor: colors.brandTintBorder,
         ...shadows.hero,
