@@ -24,18 +24,20 @@ interface Props {
 interface State {
   hasError: boolean;
   errorMessage: string;
+  errorStack: string;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, errorMessage: '' };
+    this.state = { hasError: false, errorMessage: '', errorStack: '' };
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
     return {
       hasError: true,
       errorMessage: error.message || 'An unexpected error occurred',
+      errorStack: error.stack || '',
     };
   }
 
@@ -57,11 +59,11 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   handleRestart = (): void => {
-    this.setState({ hasError: false, errorMessage: '' });
+    this.setState({ hasError: false, errorMessage: '', errorStack: '' });
   };
 
   handleGoHome = (): void => {
-    this.setState({ hasError: false, errorMessage: '' });
+    this.setState({ hasError: false, errorMessage: '', errorStack: '' });
     router.replace('/(tabs)/');
   };
 
@@ -89,11 +91,32 @@ export class ErrorBoundary extends Component<Props, State> {
             variant="bodySmall"
             color={COLORS.textSecondary}
             align="center"
-            style={{ marginBottom: SPACING['2xl'], maxWidth: 300 }}
+            style={{ marginBottom: SPACING.lg, maxWidth: 300 }}
           >
             We ran into an unexpected problem. This doesn't happen often — try
             restarting and things should be back to normal.
           </Text>
+          {/* DEBUG: Temporary error details for Build 16 — remove before public launch */}
+          {this.state.errorMessage ? (
+            <View style={styles.debugBox}>
+              <Text
+                variant="small"
+                color={COLORS.textMuted}
+                style={{ fontFamily: 'monospace', marginBottom: SPACING.xs }}
+              >
+                {this.state.errorMessage}
+              </Text>
+              {this.state.errorStack ? (
+                <Text
+                  variant="small"
+                  color={COLORS.textMuted}
+                  style={{ fontFamily: 'monospace', fontSize: 10 }}
+                >
+                  {this.state.errorStack.slice(0, 400)}
+                </Text>
+              ) : null}
+            </View>
+          ) : null}
           <TouchableOpacity
             style={styles.button}
             onPress={this.handleRestart}
@@ -153,5 +176,14 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.md,
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING['2xl'],
+  },
+  // DEBUG: Temporary debug box for Build 16 — remove before public launch
+  debugBox: {
+    backgroundColor: COLORS.bgSecondary,
+    borderRadius: RADIUS.sm,
+    padding: SPACING.md,
+    marginBottom: SPACING['2xl'],
+    maxWidth: 320,
+    width: '100%',
   },
 });
