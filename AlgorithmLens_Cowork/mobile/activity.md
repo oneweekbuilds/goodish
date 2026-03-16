@@ -39,6 +39,33 @@ EAS Build uses `npm ci`, which requires the lock file to be in perfect sync with
 
 ---
 
+## Broadcast entitlement audit + eas.json revert (2026-03-15)
+
+**Commits:** `fix: remove invalid eas.json appExtensions, ensure App Group in BroadcastExtension entitlements via config plugin`
+
+**Context:** Previous commit (`df75173`) attempted to add `appExtensions` to `eas.json` build profiles. EAS CLI rejects this field as invalid ("is not allowed"). Reverted `eas.json` and confirmed the correct mechanism (Expo config plugin + `app.config.ts`) is already in place.
+
+### Full audit findings
+
+| Location | Field | Status |
+|----------|-------|--------|
+| `app.config.ts` → `ios.entitlements` | `com.apple.security.application-groups: ['group.com.algorithmlens.broadcast']` | ✅ Main app entitlement present |
+| `app.config.ts` → `extra.eas.build.experimental.ios.appExtensions` | BroadcastExtension + `group.com.algorithmlens.broadcast` | ✅ Correct EAS mechanism for extension provisioning |
+| `withBroadcastExtension.js` → `withEntitlementsPlist` (line 126) | Sets main app App Group | ✅ Redundant safety net |
+| `withBroadcastExtension.js` → `withDangerousMod` (lines 261–264) | Writes App Group to `ios/BroadcastExtension/BroadcastExtension.entitlements` and nested path | ✅ Extension entitlements correct |
+| `CODE_SIGN_ENTITLEMENTS` build setting (line 575) | `"BroadcastExtension/BroadcastExtension.entitlements"` (relative to `ios/`) | ✅ Points to correct path |
+| `eas.json` | `appExtensions` field | ✅ Removed (was invalid — EAS CLI rejects it) |
+
+The `extra.eas.build.experimental.ios.appExtensions` in `app.config.ts` is the correct EAS Build mechanism for provisioning the extension with App Group capability. No code changes needed beyond reverting `eas.json`.
+
+### Files changed
+
+| File | Reason |
+|------|--------|
+| `eas.json` | Reverted — removed `appExtensions` field that EAS CLI rejected as invalid |
+
+---
+
 ## Build 20 regressions + broadcast research (2026-03-15)
 
 **Commits:** `fix: nativeBuildVersion fallback + Quick Scan YouTube consent redirect`
