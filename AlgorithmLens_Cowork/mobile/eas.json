@@ -11,7 +11,18 @@
       "ios": {
         "simulator": false,
         "buildConfiguration": "Debug",
-        "image": "latest"
+        "image": "latest",
+        "appExtensions": [
+          {
+            "targetName": "BroadcastExtension",
+            "bundleIdentifier": "com.algorithmlens.app.BroadcastExtension",
+            "entitlements": {
+              "com.apple.security.application-groups": [
+                "group.com.algorithmlens.broadcast"
+              ]
+            }
+          }
+        ]
       },
       "env": {
         "APP_ENV": "development",
@@ -25,7 +36,18 @@
       "node": "20.18.0",
       "ios": {
         "buildConfiguration": "Release",
-        "image": "latest"
+        "image": "latest",
+        "appExtensions": [
+          {
+            "targetName": "BroadcastExtension",
+            "bundleIdentifier": "com.algorithmlens.app.BroadcastExtension",
+            "entitlements": {
+              "com.apple.security.application-groups": [
+                "group.com.algorithmlens.broadcast"
+              ]
+            }
+          }
+        ]
       },
       "env": {
         "APP_ENV": "preview",
@@ -40,7 +62,18 @@
       "ios": {
         "buildConfiguration": "Release",
         "autoIncrement": true,
-        "image": "latest"
+        "image": "latest",
+        "appExtensions": [
+          {
+            "targetName": "BroadcastExtension",
+            "bundleIdentifier": "com.algorithmlens.app.BroadcastExtension",
+            "entitlements": {
+              "com.apple.security.application-groups": [
+                "group.com.algorithmlens.broadcast"
+              ]
+            }
+          }
+        ]
       },
       "env": {
         "APP_ENV": "production",

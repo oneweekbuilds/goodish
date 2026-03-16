@@ -1,5 +1,90 @@
 # AlgorithmLens Mobile — Codebase Overhaul Activity Log
 
+**Standing Rule:** Any time you add, remove, or update any package in `mobile/package.json`:
+1. Immediately run `cd mobile && npm install --prefer-offline`
+2. Verify `mobile/package-lock.json` is marked modified
+3. Stage and commit in the **same commit** as `package.json`
+
+EAS Build uses `npm ci`, which requires the lock file to be in perfect sync with `package.json`. A mismatch causes an immediate build failure.
+
+---
+
+## Broadcast entitlement provisioning fix (2026-03-15)
+
+**Commits:** `fix: ensure App Group entitlements on both targets + correct preferredExtension for broadcast`
+
+**Context:** Full audit of all broadcast-related code-signing configuration to diagnose "Couldn't Start Recording" error.
+
+### Root cause identified
+
+`eas.json` was **missing `appExtensions`** in all three build profiles (`development`, `preview`, `production`). Without this, EAS Build's server-side provisioning system doesn't know to create a provisioning profile for `BroadcastExtension` that includes the `group.com.algorithmlens.broadcast` App Group capability. At runtime, `FileManager.default.containerURL(forSecurityApplicationGroupIdentifier:)` returns `nil` → `prepareSession()` rejects with `CONTAINER_ERROR` → "Couldn't Start Recording" alert.
+
+### What was verified as already correct
+
+| Component | Status |
+|-----------|--------|
+| `app.config.ts` — main app `ios.entitlements` | ✅ `group.com.algorithmlens.broadcast` present |
+| `app.config.ts` — `extra.eas.build.experimental.ios.appExtensions` | ✅ BroadcastExtension + App Group present (Expo SDK layer) |
+| `withBroadcastExtension.js` — writes extension entitlements | ✅ `group.com.algorithmlens.broadcast` written correctly |
+| `withBroadcastExtension.js` — `CODE_SIGN_ENTITLEMENTS` path | ✅ `BroadcastExtension/BroadcastExtension.entitlements` (matches targetRootDir) |
+| `withBroadcastExtension.js` — `DEVELOPMENT_TEAM` | ✅ `4GDJ3HXF72` |
+| `BroadcastPickerView.swift` — `preferredExtension` fallback | ✅ `com.algorithmlens.app.BroadcastExtension` |
+| `NativeBroadcastPicker.tsx` — default prop | ✅ `com.algorithmlens.app.BroadcastExtension` |
+
+### Files changed
+
+| File | Reason |
+|------|--------|
+| `eas.json` | Added `appExtensions` to all three build profiles (`development`, `preview`, `production`) — tells EAS Build server to provision a separate profile for BroadcastExtension with `group.com.algorithmlens.broadcast` App Group capability |
+
+---
+
+## Build 20 regressions + broadcast research (2026-03-15)
+
+**Commits:** `fix: nativeBuildVersion fallback + Quick Scan YouTube consent redirect`
+
+**Context:** Two regressions discovered after Build 20. Broadcast feature research completed (no code needed).
+
+### Broadcast research findings (no code changes)
+
+Answered four questions about `RPSystemBroadcastPickerView` in TestFlight:
+1. **No Apple approval needed** — `com.apple.broadcast-services-upload` is NOT a restricted entitlement. Works in TestFlight without App Review.
+2. **No TestFlight limitations** — internal TestFlight builds get the same capabilities as App Store builds.
+3. **Entitlement gap confirmed** — `app.config.ts` main app + BroadcastExtension both only have `com.apple.security.application-groups`. No `com.apple.developer.broadcast-services-upload` entitlement, but this is actually the extension point identifier in the extension's `Info.plist`, not a separate entitlement to add. App Group entitlement IS present.
+4. **No separate Apple registration needed** — extension just needs correct `NSExtensionPointIdentifier` + `preferredExtension` in main app. Both are set correctly.
+5. **Most likely remaining failure mode:** silent failure if BroadcastExtension target has a code-signing mismatch with main app (separate provisioning profiles). Test in Build 21 after B-20 module fix lands.
+
+### Files changed
+
+| File | Reason |
+|------|--------|
+| `app/(tabs)/settings.tsx` | M-25 FIX: `Constants.nativeBuildVersion` returns null in some EAS builds — added `BUILD_NUMBER` constant that falls back to `Constants.expoConfig?.ios?.buildNumber` (i.e. the `buildNumber: '1'` in app.config.ts) so App Version shows "1.0.0 (1)" instead of "1.0.0 (?)" |
+| `src/components/scanner/WebViewScanner.tsx` | M-26 FIX: YouTube Quick Scan showed empty grey screen because `m.youtube.com/feed` redirects to `consent.youtube.com` (GDPR cookie consent) which was blocked by the navigation handler — `consent.youtube.com` is a sibling subdomain of `m.youtube.com`, not a child, so hostname matching failed and the request returned `false` (blocked); added `consent.youtube.com` to `ALLOWED_AUTH_HOSTS` |
+
+---
+
+## Build 20 full audit: broadcast root cause + 5 visual/UX fixes (2026-03-15)
+
+**Commits:** `c24ae0a` `6fd800d` `aaafc14`
+
+**Context:** Full video audit of Build 20 on TestFlight revealed broadcast failure + 5 visual/UX issues. All fixed in one pass.
+
+### Files changed
+
+| File | Reason |
+|------|--------|
+| `modules/broadcast/package.json` | ROOT CAUSE: Expo autolinking requires a `package.json` in every local module directory. Without it, `BroadcastModule.swift` and `BroadcastPickerView.swift` are never compiled into the app — every broadcast call fails silently |
+| `modules/broadcast/expo-module.config.json` | Fixed `source_files: "ios/**/*.swift"` → `"ios/*.swift"` to prevent SampleHandler/FrameProcessor from being compiled into the main app target |
+| `mobile/package.json` | Added `"expo-broadcast": "file:./modules/broadcast"` so npm installs the local module into `node_modules` for autolinking to discover |
+| `mobile/package-lock.json` | Updated via `npm install --prefer-offline` after package.json change (required for EAS `npm ci`) |
+| `src/lib/broadcastSessionManager.ts` | B-19 missed the instance method: `isAvailable()` returned false when `nativeModule=null`. Fixed to fail-open on real iOS non-Expo-Go builds |
+| `src/hooks/useBroadcast.ts` | Added Sentry error capture in `startSession` catch block for future debugging |
+| `app/broadcast/[platform].tsx` | Polished "Screen Capture unavailable" screen: back button, Radio icon, better copy, "Use Quick Scan" CTA |
+| `src/components/dashboard/InsightHero.tsx` | `fadeAnim` initialized to 0 + reset to 0 on title change — iOS renders card shadows before content, making invisible cards appear as blank white rectangles. Fixed: start at 1, remove fade animation |
+| `src/components/home/FeedScoreCard.tsx` | ALScoreGauge PieChart clipped by LinearGradient borderRadius on iOS — added `paddingBottom: SPACING.xl` |
+| `app/(tabs)/settings.tsx` | Removed stacked spacing in SettingSection (marginBottom:3xl + paddingBottom:xl + Divider:2xl ≈ 100px gap → reduced to xl) |
+| `src/components/home/PlatformBottomSheet.tsx` | Changed `['60%', '85%']` snap points to single `['70%']` with useMemo to prevent ambiguous open position |
+
 ---
 
 ## Build 19 full audit: Screen Capture availability, YouTube scan URL, History blank screen (2026-03-15)
