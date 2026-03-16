@@ -39,6 +39,24 @@ EAS Build uses `npm ci`, which requires the lock file to be in perfect sync with
 
 ---
 
+## Broadcast: recursive subview search for iOS 14+ compatibility (2026-03-15)
+
+**Commits:** `fix: recursive subview search in BroadcastPickerView for iOS 14+ compatibility`
+
+**Root cause confirmed:** `BroadcastPickerView.swift` `triggerPicker()` iterated only over `picker.subviews` (direct children). On iOS 14+, Apple changed `RPSystemBroadcastPickerView`'s internal hierarchy — the `UIButton` is nested deeper, not a direct child. The shallow loop found nothing and silently returned — the picker was never presented.
+
+### Fix
+
+Replaced the flat `for subview in picker.subviews` loop with a recursive `findAndTriggerButton(in:)` helper that walks the full view tree depth-first until it finds a `UIButton` and fires `touchUpInside`. `triggerGlobalPicker()` unchanged.
+
+### Files changed
+
+| File | Reason |
+|------|--------|
+| `modules/broadcast/ios/BroadcastPickerView.swift` | Replaced flat subview loop with recursive search for iOS 14+ deep button nesting |
+
+---
+
 ## Broadcast entitlement audit + eas.json revert (2026-03-15)
 
 **Commits:** `fix: remove invalid eas.json appExtensions, ensure App Group in BroadcastExtension entitlements via config plugin`
