@@ -9,6 +9,6 @@ requests
 google-generativeai
 httpx
 python-dotenv
-pyjwt
+pyjwt[crypto]>=2.8.0
 cryptography
 stripe

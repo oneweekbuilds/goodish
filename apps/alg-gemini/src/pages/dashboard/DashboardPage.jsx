@@ -2043,7 +2043,7 @@ const DashboardPage = () => {
   const remainingScans = Math.max(0, 5 - scans.length);
 
   // Get auth state
-  const { authReady } = useAuth();
+  const { authReady, session } = useAuth();
 
   // Handle checkout success: sync entitlements when returning from Stripe
   useEffect(() => {
@@ -2142,6 +2142,19 @@ const DashboardPage = () => {
   // Gate anonymous users from viewing results until they provide email
   // Wait for authReady to avoid flash during initial auth check
   const shouldShowGate = !isDemoMode && authReady && isAnon(planTier) && resultsReady;
+
+  // [AUTH DEBUG] Log gate decision logic
+  useEffect(() => {
+    const timestamp = new Date().toISOString();
+    console.log(`[AUTH DEBUG ${timestamp}] DashboardPage: Gate decision`);
+    console.log(`[AUTH DEBUG] - isDemoMode: ${isDemoMode}`);
+    console.log(`[AUTH DEBUG] - authReady: ${authReady}`);
+    console.log(`[AUTH DEBUG] - session exists: ${!!session}`);
+    console.log(`[AUTH DEBUG] - planTier: ${planTier}`);
+    console.log(`[AUTH DEBUG] - isAnon(planTier): ${isAnon(planTier)}`);
+    console.log(`[AUTH DEBUG] - resultsReady: ${resultsReady}`);
+    console.log(`[AUTH DEBUG] - shouldShowGate: ${shouldShowGate}`);
+  }, [isDemoMode, authReady, session, planTier, resultsReady, shouldShowGate]);
 
   // Analytics: Track gate shown and results viewed (fire once each)
   const gateShownFired = React.useRef(false);

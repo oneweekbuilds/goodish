@@ -1311,23 +1311,32 @@ def create_checkout_session(
     customer_id = get_or_create_stripe_customer(user_id, email)
 
     # Create Checkout Session
+    # Use customer ID if available, otherwise use email (Stripe requires one, not both)
+    session_params = {
+        "mode": "subscription",
+        "payment_method_types": ["card"],
+        "line_items": [{
+            "price": price_id,
+            "quantity": 1,
+        }],
+        "subscription_data": {
+            "trial_period_days": 14,
+        },
+        "success_url": request.successUrl,
+        "cancel_url": request.cancelUrl,
+        "client_reference_id": user_id,  # Critical: ties checkout to user
+    }
+
+    # Add either customer or customer_email (never both)
+    if customer_id:
+        session_params["customer"] = customer_id
+        print(f"[stripe] Creating checkout with customer_id: present=True, using: customer")
+    else:
+        session_params["customer_email"] = email
+        print(f"[stripe] Creating checkout with customer_id: present=False, using: customer_email")
+
     try:
-        session = stripe.checkout.Session.create(
-            customer=customer_id,
-            mode="subscription",
-            payment_method_types=["card"],
-            line_items=[{
-                "price": price_id,
-                "quantity": 1,
-            }],
-            subscription_data={
-                "trial_period_days": 14,
-            },
-            success_url=request.successUrl,
-            cancel_url=request.cancelUrl,
-            client_reference_id=user_id,  # Critical: ties checkout to user
-            customer_email=email,
-        )
+        session = stripe.checkout.Session.create(**session_params)
 
         print(f"[stripe] Created checkout session {session.id} for user {user_id}")
 

@@ -1,46 +1,78 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, AlertCircle } from 'lucide-react';
-import { exchangeCodeForSession } from '../../lib/auth/authSession';
+import { useAuth } from '../../lib/auth/useAuth';
 
 /**
  * AuthCallbackPage - Handles magic link callback
  *
  * Behavior:
  * - Shows loading state while processing session
- * - Supabase automatically exchanges code for session
+ * - Waits for AuthProvider to process session from URL
+ * - Waits for AuthProvider to sync plan tier
  * - Redirects to /dashboard on success
  * - Shows error state on failure
  */
 const AuthCallbackPage = () => {
   const navigate = useNavigate();
+  const { session, authReady } = useAuth();
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const handleCallback = async () => {
-      try {
-        // Get session (Supabase v2 automatically handles the exchange)
-        const { data: { session }, error: sessionError } = await exchangeCodeForSession();
+    // [AUTH DEBUG] Log callback page state on every render
+    const timestamp = new Date().toISOString();
+    console.log(`[AUTH DEBUG ${timestamp}] AuthCallbackPage useEffect triggered`);
+    console.log(`[AUTH DEBUG] - href: ${window.location.href}`);
+    console.log(`[AUTH DEBUG] - pathname: ${window.location.pathname}`);
+    console.log(`[AUTH DEBUG] - search: ${window.location.search}`);
 
-        if (sessionError) {
-          setError(sessionError.message);
-          return;
-        }
-
-        if (session) {
-          // Session established, redirect to dashboard
-          navigate('/dashboard', { replace: true });
-        } else {
-          // No session found
-          setError('No session found. Please try signing in again.');
-        }
-      } catch (err) {
-        setError(err.message || 'An unexpected error occurred');
+    const params = new URLSearchParams(window.location.search);
+    const paramKeys = Array.from(params.keys());
+    const redactedParams = {};
+    paramKeys.forEach(key => {
+      if (key === 'code' || key === 'access_token' || key === 'refresh_token') {
+        redactedParams[key] = 'REDACTED';
+      } else {
+        redactedParams[key] = params.get(key);
       }
-    };
+    });
+    console.log(`[AUTH DEBUG] - params:`, redactedParams);
+    console.log(`[AUTH DEBUG] - authReady: ${authReady}`);
+    console.log(`[AUTH DEBUG] - session exists: ${!!session}`);
 
-    handleCallback();
-  }, [navigate]);
+    // Wait for AuthProvider to finish initial auth check
+    if (!authReady) {
+      console.log(`[AUTH DEBUG] Waiting for authReady...`);
+      return;
+    }
+
+    // Check for error in URL params
+    const errorParam = params.get('error');
+    const errorDescription = params.get('error_description');
+
+    if (errorParam) {
+      console.log(`[AUTH DEBUG] Error in URL params: ${errorParam}`);
+      setError(errorDescription || errorParam);
+      return;
+    }
+
+    if (session) {
+      // Session established, redirect to dashboard
+      console.log(`[AUTH DEBUG] Session exists, redirecting to /dashboard`);
+      navigate('/dashboard', { replace: true });
+      return;
+    }
+
+    // No session yet - wait for Supabase to process the auth code
+    console.log(`[AUTH DEBUG] No session yet, setting 5s timeout...`);
+    // Set a timeout to show error if session doesn't arrive
+    const timeoutId = setTimeout(() => {
+      console.log(`[AUTH DEBUG] Timeout reached, no session arrived`);
+      setError('Authentication timed out. Please try signing in again.');
+    }, 5000);
+
+    return () => clearTimeout(timeoutId);
+  }, [authReady, session, navigate]);
 
   if (error) {
     return (

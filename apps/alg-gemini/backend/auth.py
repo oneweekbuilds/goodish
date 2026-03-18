@@ -8,10 +8,18 @@ import jwt
 from typing import Optional
 from fastapi import HTTPException, Security, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from datetime import datetime
+from datetime import datetime, timedelta
+import requests
+from jwt import PyJWKClient
+from urllib.parse import urlparse
 
 # Security scheme for Bearer token
 security = HTTPBearer()
+security_optional = HTTPBearer(auto_error=False)
+
+# JWKS cache with TTL
+_jwks_cache = {}
+_jwks_cache_ttl = timedelta(minutes=10)
 
 def get_jwt_secret() -> str:
     """
@@ -29,9 +37,45 @@ def get_jwt_secret() -> str:
     return secret
 
 
+def get_jwks_client(issuer: str) -> PyJWKClient:
+    """
+    Get or create a PyJWKClient for the given issuer.
+
+    Uses in-memory cache with TTL to avoid fetching JWKS on every request.
+
+    Args:
+        issuer: The token issuer URL (e.g., https://xyz.supabase.co/auth/v1)
+
+    Returns:
+        PyJWKClient instance for fetching signing keys
+    """
+    cache_key = issuer
+    now = datetime.utcnow()
+
+    # Check cache
+    if cache_key in _jwks_cache:
+        client, cached_at = _jwks_cache[cache_key]
+        if now - cached_at < _jwks_cache_ttl:
+            return client
+
+    # Parse issuer to get JWKS URL
+    # Supabase issuer format: https://<project-ref>.supabase.co/auth/v1
+    parsed = urlparse(issuer)
+    jwks_url = f"{parsed.scheme}://{parsed.netloc}/auth/v1/.well-known/jwks.json"
+
+    # Create new client with caching
+    client = PyJWKClient(jwks_url, cache_keys=True, max_cached_keys=10)
+    _jwks_cache[cache_key] = (client, now)
+
+    return client
+
+
 def verify_supabase_jwt(token: str) -> dict:
     """
-    Verify and decode a Supabase JWT.
+    Verify and decode a Supabase JWT using JWKS.
+
+    Supports ES256 and RS256 algorithms (standard for Supabase).
+    Falls back to HS256 with SUPABASE_JWT_SECRET if needed.
 
     Args:
         token: JWT token string
@@ -42,23 +86,92 @@ def verify_supabase_jwt(token: str) -> dict:
     Raises:
         HTTPException: If token is invalid or expired
     """
-    try:
-        secret = get_jwt_secret()
+    # Variables for debug logging
+    algorithm = None
+    kid = None
+    issuer = None
+    jwks_attempted = False
+    jwks_success = False
 
-        # Decode and verify JWT
-        # Supabase uses HS256 (HMAC with SHA-256)
-        payload = jwt.decode(
-            token,
-            secret,
-            algorithms=["HS256"],
-            options={
-                "verify_exp": True,  # Verify expiration
-                "verify_iat": True,  # Verify issued at
-            }
-        )
+    try:
+        # First, decode header to get algorithm and kid
+        unverified_header = jwt.get_unverified_header(token)
+        algorithm = unverified_header.get("alg")
+        kid = unverified_header.get("kid")
+
+        # Decode payload to get issuer (without verification yet)
+        unverified_payload = jwt.decode(token, options={"verify_signature": False})
+        issuer = unverified_payload.get("iss")
+
+        if not issuer:
+            print(f"[AUTH VERIFY FAIL] Missing iss claim | alg={algorithm} kid={kid}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token: missing 'iss' claim",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        # Verify using JWKS for ES256/RS256 (modern Supabase tokens)
+        if algorithm in ["ES256", "RS256"] and kid:
+            try:
+                jwks_attempted = True
+                jwks_client = get_jwks_client(issuer)
+                jwks_success = True
+                signing_key = jwks_client.get_signing_key_from_jwt(token)
+
+                payload = jwt.decode(
+                    token,
+                    signing_key.key,
+                    algorithms=["ES256", "RS256"],
+                    options={
+                        "verify_exp": True,
+                        "verify_iat": True,
+                    },
+                    # Verify issuer matches
+                    issuer=issuer,
+                    # Accept standard Supabase audiences
+                    audience=["authenticated", "anon"],
+                )
+            except Exception as e:
+                print(f"[AUTH VERIFY FAIL] JWKS verification error | alg={algorithm} kid={kid} iss={issuer} jwks_attempted={jwks_attempted} jwks_success={jwks_success} | {type(e).__name__}: {str(e)}")
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail=f"JWKS verification failed: {str(e)}",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+
+        # Fallback to HS256 with shared secret (legacy/service role tokens)
+        elif algorithm == "HS256":
+            try:
+                secret = get_jwt_secret()
+                payload = jwt.decode(
+                    token,
+                    secret,
+                    algorithms=["HS256"],
+                    options={
+                        "verify_exp": True,
+                        "verify_iat": True,
+                    }
+                )
+            except Exception as e:
+                print(f"[AUTH VERIFY FAIL] HS256 verification error | alg={algorithm} kid={kid} iss={issuer} | {type(e).__name__}: {str(e)}")
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail=f"HS256 verification failed: {str(e)}",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+
+        else:
+            print(f"[AUTH VERIFY FAIL] Unsupported algorithm | alg={algorithm} kid={kid} iss={issuer}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Unsupported algorithm: {algorithm}",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
         # Validate required claims
         if "sub" not in payload:
+            print(f"[AUTH VERIFY FAIL] Missing sub claim | alg={algorithm} kid={kid} iss={issuer}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token: missing 'sub' claim",
@@ -67,16 +180,28 @@ def verify_supabase_jwt(token: str) -> dict:
 
         return payload
 
-    except jwt.ExpiredSignatureError:
+    except jwt.ExpiredSignatureError as e:
+        print(f"[AUTH VERIFY FAIL] Token expired | alg={algorithm} kid={kid} iss={issuer} | {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token has expired",
             headers={"WWW-Authenticate": "Bearer"},
         )
     except jwt.InvalidTokenError as e:
+        print(f"[AUTH VERIFY FAIL] Invalid token | alg={algorithm} kid={kid} iss={issuer} | {type(e).__name__}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Invalid token: {str(e)}",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    except HTTPException:
+        # Re-raise HTTPExceptions as-is (already logged above)
+        raise
+    except Exception as e:
+        print(f"[AUTH VERIFY FAIL] Unexpected error | alg={algorithm} kid={kid} iss={issuer} | {type(e).__name__}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Token verification error: {str(e)}",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -120,7 +245,7 @@ def get_current_user(
 
 
 def get_optional_user(
-    credentials: Optional[HTTPAuthorizationCredentials] = Security(security, auto_error=False)
+    credentials: Optional[HTTPAuthorizationCredentials] = Security(security_optional)
 ) -> Optional[dict]:
     """
     FastAPI dependency to optionally get authenticated user.
