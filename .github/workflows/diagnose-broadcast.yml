@@ -182,6 +182,11 @@ jobs:
           end
 
           # ── Add as dependency of main app target ──
+          # Workaround: expo prebuild emits PBXTargetDependency entries for the Pods
+          # project whose target= is nil until `pod install` runs and resolves them.
+          # xcodeproj's add_dependency walks main_target.dependencies looking for an
+          # existing match by UUID and crashes on the nil. Drop unresolved entries first.
+          main_target.dependencies.reject! { |dep| dep.target.nil? }
           main_target.add_dependency(ext_target)
           puts "#{PREFIX} Added BroadcastExtension as dependency of #{main_target.name}"
 
