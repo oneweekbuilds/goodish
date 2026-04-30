@@ -144,17 +144,41 @@ jobs:
             "FrameProcessor.swift"  => shared_src_dir,
             "SharedContainer.swift" => shared_src_dir,
           }
+
+          # Copy each Swift file flat into ios/BroadcastExtension/ FIRST. We then
+          # add the file reference using ONLY the bare filename so that Xcode
+          # resolves it against the PBXGroup's path ("BroadcastExtension"), giving
+          # us ios/BroadcastExtension/<file>.swift on disk. If we instead passed the
+          # source-relative path (e.g. "modules/broadcast/ios/.../X.swift") to
+          # new_file, Xcode would re-root that under the group path and end up
+          # looking for ios/BroadcastExtension/modules/broadcast/ios/.../X.swift —
+          # the path-doubling bug we're avoiding. The standalone
+          # mobile/scripts/add-broadcast-extension.rb already does this; the
+          # workflow now mirrors it so the diagnostic is a faithful proxy of EAS.
+          swift_file_sources.each do |filename, source_dir|
+            src = "#{source_dir}/#{filename}"
+            dst = "#{ext_dir}/#{filename}"
+            if File.exist?(src)
+              FileUtils.cp(src, dst)
+              puts "#{PREFIX} Copied #{filename} -> #{dst} (from #{source_dir})"
+            else
+              puts "#{PREFIX} WARNING: #{src} not found"
+            end
+          end
+
           ext_group = project.main_group.new_group("BroadcastExtension", ext_dir)
           puts "#{PREFIX} Created PBX group: BroadcastExtension"
 
-          swift_file_sources.each do |filename, source_dir|
-            src = "#{source_dir}/#{filename}"
-            if File.exist?(src)
-              ref = ext_group.new_file(src)
+          swift_file_sources.each_key do |filename|
+            dst = "#{ext_dir}/#{filename}"
+            if File.exist?(dst)
+              # new_file with the bare filename — Xcode resolves it relative
+              # to the group's path so the on-disk path is ios/BroadcastExtension/<filename>.
+              ref = ext_group.new_file(filename)
               ext_target.source_build_phase.add_file_reference(ref)
-              puts "#{PREFIX} Added source file: #{filename} (from #{source_dir})"
+              puts "#{PREFIX} Added source file: #{filename} (resolved via group path)"
             else
-              puts "#{PREFIX} WARNING: #{src} not found — skipping"
+              puts "#{PREFIX} WARNING: #{dst} not found — skipping"
             end
           end
 
