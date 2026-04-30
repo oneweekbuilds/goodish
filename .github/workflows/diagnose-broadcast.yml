@@ -69,10 +69,14 @@ jobs:
           FileUtils.mkdir_p(ext_dir)
           puts "#{PREFIX} Created directory: #{ext_dir}"
 
-          src_dir = "modules/broadcast/ios/BroadcastExtension"
+          # Source files live in two adjacent locations under modules/broadcast/ios/:
+          #   • SampleHandler / Info.plist / entitlements live in the BroadcastExtension/ subfolder
+          #   • FrameProcessor and SharedContainer live one directory up (shared with main module)
+          ext_src_dir    = "modules/broadcast/ios/BroadcastExtension"
+          shared_src_dir = "modules/broadcast/ios"
 
-          infoplist_src = "#{src_dir}/Info.plist"
-          entitlements_src = "#{src_dir}/BroadcastExtension.entitlements"
+          infoplist_src = "#{ext_src_dir}/Info.plist"
+          entitlements_src = "#{ext_src_dir}/BroadcastExtension.entitlements"
 
           if File.exist?(infoplist_src)
             FileUtils.cp(infoplist_src, "#{ext_dir}/Info.plist")
@@ -132,16 +136,23 @@ jobs:
           end
 
           # ── Add Swift source files ──
-          swift_files = ["SampleHandler.swift", "FrameProcessor.swift", "SharedContainer.swift"]
+          # Per-file source map: SampleHandler ships in the BroadcastExtension/
+          # subfolder; FrameProcessor and SharedContainer live one directory up
+          # because they're shared with the main broadcast module.
+          swift_file_sources = {
+            "SampleHandler.swift"   => ext_src_dir,
+            "FrameProcessor.swift"  => shared_src_dir,
+            "SharedContainer.swift" => shared_src_dir,
+          }
           ext_group = project.main_group.new_group("BroadcastExtension", ext_dir)
           puts "#{PREFIX} Created PBX group: BroadcastExtension"
 
-          swift_files.each do |filename|
-            src = "#{src_dir}/#{filename}"
+          swift_file_sources.each do |filename, source_dir|
+            src = "#{source_dir}/#{filename}"
             if File.exist?(src)
               ref = ext_group.new_file(src)
               ext_target.source_build_phase.add_file_reference(ref)
-              puts "#{PREFIX} Added source file: #{filename}"
+              puts "#{PREFIX} Added source file: #{filename} (from #{source_dir})"
             else
               puts "#{PREFIX} WARNING: #{src} not found — skipping"
             end
@@ -291,6 +302,11 @@ jobs:
           echo "========================================="
           echo "Attempting to build BroadcastExtension target..."
           echo "========================================="
+          # `pipefail` propagates xcodebuild's exit code through the `tee | tail`
+          # pipeline so a real compile failure surfaces as a non-zero step exit.
+          # `tee` keeps the full log on disk (uploaded as an artifact below) so
+          # the grep can scan all of it, not just the last 100 lines.
+          set -o pipefail
           xcodebuild build \
             -project AlgorithmLens.xcodeproj \
             -target BroadcastExtension \
@@ -299,8 +315,20 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            2>&1 | tail -100
-        continue-on-error: true
+            2>&1 | tee /tmp/xcodebuild-broadcast.log | tail -100
+          # Defence in depth: even if xcodebuild exits 0, require a literal
+          # "BUILD SUCCEEDED" in the log before we trust the run.
+          if ! grep -q "BUILD SUCCEEDED" /tmp/xcodebuild-broadcast.log; then
+            echo "::error::xcodebuild did not emit BUILD SUCCEEDED — see uploaded log artifact for details"
+            exit 1
+          fi
+
+      - name: Upload xcodebuild log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-broadcast-log
+          path: /tmp/xcodebuild-broadcast.log
 
       - name: Upload pbxproj for inspection
         uses: actions/upload-artifact@v4
