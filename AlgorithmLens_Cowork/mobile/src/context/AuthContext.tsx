@@ -82,8 +82,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const entitlements = useEntitlements(hasSession);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Guard against `supabase.auth.getSession()` rejecting OR hanging during
+    // app launch. Both modes have hit production iOS builds (stale Keychain
+    // session forcing a refresh on a slow network, sandboxed Keychain at cold
+    // launch). With no protection, `setLoading(false)` is never reached and
+    // the splash stays up forever. Race against a 5s timeout AND catch
+    // rejections; whichever path wins, fail open to "no session" so the
+    // splash dismisses and the user can hit /(auth)/login.
+    //
+    // `settled` prevents double-settling if the race timer fires first and
+    // the real getSession resolves later. `cancelled` prevents setState
+    // after unmount.
+    const SESSION_TIMEOUT_MS = 5000;
+    let settled = false;
+    let cancelled = false;
+
+    const handleSession = (session: Session | null) => {
+      if (cancelled || settled) return;
+      settled = true;
       setSession(session);
       if (session?.user) {
         setSentryUser(session.user.id, 'free');
@@ -92,7 +108,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setLoading(false);
       }
-    });
+    };
+
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => handleSession(session))
+      .catch((err) => {
+        if (cancelled || settled) return;
+        settled = true;
+        addBreadcrumb('auth', 'getSession failed — defaulting to logged-out', { error: String(err) });
+        setLoading(false);
+      });
+
+    setTimeout(() => {
+      if (cancelled || settled) return;
+      settled = true;
+      addBreadcrumb('auth', 'getSession timed out after 5s — defaulting to logged-out');
+      setLoading(false);
+    }, SESSION_TIMEOUT_MS);
 
     // Listen for auth state changes
     const {
@@ -111,7 +143,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, []);
 
   /**
