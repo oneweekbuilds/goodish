@@ -1,14 +1,14 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, ActivityIndicator, Platform, LogBox } from 'react-native';
 import { Stack, router, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { AuthProvider, useAuth } from '../src/context/AuthContext';
+import { AuthProvider, useAuth, __authDiag } from '../src/context/AuthContext';
 import { ThemeProvider, useTheme } from '../src/context/ThemeContext';
 import { GluestackUIProvider } from '../src/providers/GluestackUIProvider';
-import { ErrorBoundary } from '../src/components/ErrorBoundary';
+import { ErrorBoundary, __errorBoundaryDiag } from '../src/components/ErrorBoundary';
 import { initSentry, addBreadcrumb, withSentry } from '../src/lib/sentry';
 import { initRevenueCat } from '../src/services/revenueCat';
 import { SPACING, RADIUS, SHADOWS } from '../src/lib/theme';
@@ -134,6 +134,10 @@ function RootLayoutNav({ fontsLoaded }: { fontsLoaded: boolean }) {
 // grep on the Hermes bundle simple. Pointer-events:none so it never
 // blocks real UI taps. Will be removed once we've diagnosed the splash
 // hang and confirmed a clean launch.
+//
+// Build #34: second row reads from __authDiag (AuthContext) and
+// __errorBoundaryDiag (ErrorBoundary). Those are mutable singletons updated
+// out-of-band, so a 500ms ticker forces a re-render to surface fresh values.
 function DebugCheckpointTrail({
   fontsLoaded,
   isLoading,
@@ -145,6 +149,17 @@ function DebugCheckpointTrail({
   userSignedIn: boolean;
   onboarded: boolean;
 }) {
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => (t + 1) % 1_000_000), 500);
+    return () => clearInterval(id);
+  }, []);
+
+  // Read from singletons each render. Counters are clamped to one digit each
+  // (these only need to hint "did it fire / how many times") so the footer
+  // stays one line wide on small phones.
+  const clamp = (n: number) => (n > 9 ? '9+' : String(n));
+
   return (
     <View
       pointerEvents="none"
@@ -156,23 +171,40 @@ function DebugCheckpointTrail({
         paddingHorizontal: 8,
         paddingVertical: 4,
         backgroundColor: 'rgba(0,0,0,0.7)',
-        flexDirection: 'row',
-        flexWrap: 'wrap',
         zIndex: 9999,
       }}
     >
-      <Text style={{ color: '#fff', fontSize: 10, marginRight: 12 }}>
-        fonts: {fontsLoaded ? 'ok' : 'load'}
-      </Text>
-      <Text style={{ color: '#fff', fontSize: 10, marginRight: 12 }}>
-        auth: {isLoading ? 'load' : 'ok'}
-      </Text>
-      <Text style={{ color: '#fff', fontSize: 10, marginRight: 12 }}>
-        user: {userSignedIn ? 'in' : 'out'}
-      </Text>
-      <Text style={{ color: '#fff', fontSize: 10 }}>
-        onb: {onboarded ? 'yes' : 'no'}
-      </Text>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+        <Text style={{ color: '#fff', fontSize: 10, marginRight: 12 }}>
+          fonts: {fontsLoaded ? 'ok' : 'load'}
+        </Text>
+        <Text style={{ color: '#fff', fontSize: 10, marginRight: 12 }}>
+          auth: {isLoading ? 'load' : 'ok'}
+        </Text>
+        <Text style={{ color: '#fff', fontSize: 10, marginRight: 12 }}>
+          user: {userSignedIn ? 'in' : 'out'}
+        </Text>
+        <Text style={{ color: '#fff', fontSize: 10 }}>
+          onb: {onboarded ? 'yes' : 'no'}
+        </Text>
+      </View>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 2 }}>
+        <Text style={{ color: '#fff', fontSize: 10, marginRight: 10 }}>
+          gs: {clamp(__authDiag.gsResolved)}/{clamp(__authDiag.gsRejected)}/{clamp(__authDiag.gsTimedOut)}
+        </Text>
+        <Text style={{ color: '#fff', fontSize: 10, marginRight: 10 }}>
+          fp: {clamp(__authDiag.fpStarted)}/{clamp(__authDiag.fpResolved)}/{clamp(__authDiag.fpTimedOut)}/{clamp(__authDiag.fpFailed)}
+        </Text>
+        <Text style={{ color: '#fff', fontSize: 10, marginRight: 10 }}>
+          asc: {clamp(__authDiag.authChanges)}
+        </Text>
+        <Text style={{ color: '#fff', fontSize: 10, marginRight: 10 }}>
+          hf: {clamp(__authDiag.hardFailsafe)}
+        </Text>
+        <Text style={{ color: '#fff', fontSize: 10 }}>
+          eb: {clamp(__errorBoundaryDiag.errorCount)}
+        </Text>
+      </View>
     </View>
   );
 }

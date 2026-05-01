@@ -25,6 +25,20 @@ interface State {
   errorMessage: string;
 }
 
+// Build #34 diagnostic export. The DebugCheckpointTrail in app/_layout.tsx
+// reads from this object on every tick to surface ErrorBoundary state in the
+// on-screen footer. Mutable singleton; safe because there is exactly one
+// ErrorBoundary instance in the tree.
+export const __errorBoundaryDiag: {
+  errorCount: number;
+  lastMessage: string;
+  lastAt: number;
+} = {
+  errorCount: 0,
+  lastMessage: '',
+  lastAt: 0,
+};
+
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -39,6 +53,10 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    __errorBoundaryDiag.errorCount += 1;
+    __errorBoundaryDiag.lastMessage = (error.message || 'unknown').slice(0, 64);
+    __errorBoundaryDiag.lastAt = Date.now();
+
     captureError(error, 'ErrorBoundary', {
       componentStack: errorInfo.componentStack || null,
     });
