@@ -201,10 +201,26 @@ function DebugCheckpointTrail({
         <Text style={{ color: '#fff', fontSize: 10, marginRight: 10 }}>
           hf: {clamp(__authDiag.hardFailsafe)}
         </Text>
-        <Text style={{ color: '#fff', fontSize: 10 }}>
+        <Text style={{ color: '#fff', fontSize: 10, marginRight: 10 }}>
           eb: {clamp(__errorBoundaryDiag.errorCount)}
         </Text>
+        <Text style={{ color: '#fff', fontSize: 10 }}>
+          rs: {clamp(__errorBoundaryDiag.restartCount)}
+        </Text>
       </View>
+      {/* Build #35 row 3: only render when we actually have an error to show.
+          Wraps to multiple lines; the trail is pointer-events:none so it
+          never blocks UI even at three rows tall. */}
+      {__errorBoundaryDiag.errorCount > 0 ? (
+        <View style={{ marginTop: 2 }}>
+          <Text style={{ color: '#fbb', fontSize: 10 }} numberOfLines={3}>
+            err: {__errorBoundaryDiag.lastMessage || '-'}
+          </Text>
+          <Text style={{ color: '#fbb', fontSize: 10 }} numberOfLines={1}>
+            cmp: {__errorBoundaryDiag.lastComponent || '-'}
+          </Text>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -283,19 +299,28 @@ function RootLayout() {
     }
   }, [fontError]);
 
+  // Build #35: ErrorBoundary moved to the OUTSIDE of every context provider
+  // (still inside GluestackUIProvider only because expo-router types want a
+  // child here). Previously the boundary sat INSIDE AuthProvider, so any
+  // error thrown during AuthProvider's own render — e.g. useEntitlements
+  // failing — propagated to withSentry's outer boundary, which silently
+  // recovered. Result: eb counter never incremented for those cases, and
+  // we couldn't see the error text. With the boundary above the provider
+  // tree, errors in *any* provider land in our fallback and surface in
+  // __errorBoundaryDiag.
   return (
     <GluestackUIProvider>
-      <SafeAreaProvider>
-        <ThemeProvider>
-          <AuthProvider>
-            <ErrorBoundary>
+      <ErrorBoundary>
+        <SafeAreaProvider>
+          <ThemeProvider>
+            <AuthProvider>
               <WebConstrainedWrapper>
                 <RootLayoutNav fontsLoaded={fontsLoaded} />
               </WebConstrainedWrapper>
-            </ErrorBoundary>
-          </AuthProvider>
-        </ThemeProvider>
-      </SafeAreaProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </SafeAreaProvider>
+      </ErrorBoundary>
     </GluestackUIProvider>
   );
 }
