@@ -7,7 +7,7 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "node": "20.18.0",
+      "node": "20.19.4",
       "ios": {
         "simulator": false,
         "buildConfiguration": "Debug",
@@ -19,7 +19,7 @@
     },
     "preview": {
       "distribution": "internal",
-      "node": "20.18.0",
+      "node": "20.19.4",
       "ios": {
         "buildConfiguration": "Release",
         "image": "latest"
@@ -30,7 +30,7 @@
       "channel": "preview"
     },
     "production": {
-      "node": "20.18.0",
+      "node": "20.19.4",
       "ios": {
         "buildConfiguration": "Release",
         "autoIncrement": true,
