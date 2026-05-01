@@ -166,8 +166,13 @@ jobs:
             end
           end
 
-          ext_group = project.main_group.new_group("BroadcastExtension", ext_dir)
-          puts "#{PREFIX} Created PBX group: BroadcastExtension"
+          # Group path is resolved relative to the project's source root
+          # (mobile/ios/), NOT the working directory. ext_dir = "ios/BroadcastExtension"
+          # is correct for FileUtils.cp (run from mobile/) but would double-root
+          # here — Xcode would look for mobile/ios/ios/BroadcastExtension/<file>.swift.
+          # Use the bare folder name to match the standalone add-broadcast-extension.rb.
+          ext_group = project.main_group.new_group("BroadcastExtension", "BroadcastExtension")
+          puts "#{PREFIX} Created PBX group: BroadcastExtension (path: BroadcastExtension)"
 
           swift_file_sources.each_key do |filename|
             dst = "#{ext_dir}/#{filename}"
