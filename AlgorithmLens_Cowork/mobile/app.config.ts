@@ -34,7 +34,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       usesNonExemptEncryption: false,
     },
     infoPlist: {
-      UIBackgroundModes: ['processing', 'fetch'],
       NSUserActivityTypes: ['com.algorithmlens.broadcast'],
       NSCameraUsageDescription:
         'AlgorithmLens uses screen broadcasting to analyze your social media feed. Camera access is required by the system for ReplayKit broadcast, though we never capture from the camera.',
