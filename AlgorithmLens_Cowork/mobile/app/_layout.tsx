@@ -30,7 +30,21 @@ LogBox.ignoreLogs([
 // Keep splash screen visible until auth loading completes
 SplashScreen.preventAutoHideAsync();
 
-function RootLayoutNav() {
+// WATCHDOG: unconditionally dismiss splash after 8s no matter what state
+// the JS runtime is in. If anything in the launch chain hangs — font asset
+// registry never resolving, a provider throwing during render and being
+// silently swallowed by Sentry.wrap, AuthContext's useEffect never firing —
+// this guarantees the user sees SOMETHING. The on-screen checkpoint trail
+// rendered in RootLayoutNav then tells us where init got stuck.
+//
+// Module-scope so it fires regardless of whether RootLayout ever renders.
+setTimeout(() => {
+  SplashScreen.hideAsync().catch(() => {
+    // already hidden by the happy path — ignore
+  });
+}, 8000);
+
+function RootLayoutNav({ fontsLoaded }: { fontsLoaded: boolean }) {
   const { user, isLoading, userProfile } = useAuth();
   const { colors, statusBarStyle } = useTheme();
   const pathname = usePathname();
@@ -65,44 +79,101 @@ function RootLayoutNav() {
     }
   }, [isLoading, user, userProfile]);
 
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgPage }}>
-        <ActivityIndicator size="large" color={colors.primaryBlue} />
-      </View>
-    );
-  }
-
   return (
     <>
-      <StatusBar style={statusBarStyle} backgroundColor={colors.bgPage} />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.bgPage },
-        }}
-      >
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="scanner/[platform]" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="broadcast/[platform]"
-          options={{
-            headerShown: false,
-            presentation: 'fullScreenModal',
-            animation: 'slide_from_bottom',
-          }}
-        />
-        <Stack.Screen
-          name="analysis/[sessionId]"
-          options={{
-            headerShown: false,
-            presentation: 'fullScreenModal',
-            animation: 'slide_from_bottom',
-          }}
-        />
-      </Stack>
+      {isLoading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bgPage }}>
+          <ActivityIndicator size="large" color={colors.primaryBlue} />
+        </View>
+      ) : (
+        <>
+          <StatusBar style={statusBarStyle} backgroundColor={colors.bgPage} />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: colors.bgPage },
+            }}
+          >
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="scanner/[platform]" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="broadcast/[platform]"
+              options={{
+                headerShown: false,
+                presentation: 'fullScreenModal',
+                animation: 'slide_from_bottom',
+              }}
+            />
+            <Stack.Screen
+              name="analysis/[sessionId]"
+              options={{
+                headerShown: false,
+                presentation: 'fullScreenModal',
+                animation: 'slide_from_bottom',
+              }}
+            />
+          </Stack>
+        </>
+      )}
+      {/* Checkpoint trail is rendered AFTER the conditional so it overlays
+          both the loading spinner and the post-auth Stack. We can see exactly
+          where init is stuck even if the rest of the UI is broken. */}
+      <DebugCheckpointTrail
+        fontsLoaded={fontsLoaded}
+        isLoading={isLoading}
+        userSignedIn={!!user}
+        onboarded={!!userProfile?.has_completed_onboarding}
+      />
     </>
+  );
+}
+
+// Diagnostic-only overlay (build #33+). Renders a small fixed-position
+// footer that updates as init checkpoints clear. ASCII-only strings keep
+// grep on the Hermes bundle simple. Pointer-events:none so it never
+// blocks real UI taps. Will be removed once we've diagnosed the splash
+// hang and confirmed a clean launch.
+function DebugCheckpointTrail({
+  fontsLoaded,
+  isLoading,
+  userSignedIn,
+  onboarded,
+}: {
+  fontsLoaded: boolean;
+  isLoading: boolean;
+  userSignedIn: boolean;
+  onboarded: boolean;
+}) {
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        zIndex: 9999,
+      }}
+    >
+      <Text style={{ color: '#fff', fontSize: 10, marginRight: 12 }}>
+        fonts: {fontsLoaded ? 'ok' : 'load'}
+      </Text>
+      <Text style={{ color: '#fff', fontSize: 10, marginRight: 12 }}>
+        auth: {isLoading ? 'load' : 'ok'}
+      </Text>
+      <Text style={{ color: '#fff', fontSize: 10, marginRight: 12 }}>
+        user: {userSignedIn ? 'in' : 'out'}
+      </Text>
+      <Text style={{ color: '#fff', fontSize: 10 }}>
+        onb: {onboarded ? 'yes' : 'no'}
+      </Text>
+    </View>
   );
 }
 
@@ -166,19 +237,19 @@ function RootLayout() {
     'Geist-Bold': require('../assets/fonts/Geist_700Bold.ttf'),
   });
 
-  // Keep splash visible until fonts are loaded
-  // Auth loading is handled separately in RootLayoutNav
+  // FONT GATE DROPPED (build #33 diagnostic): previously this returned null
+  // until fonts loaded. If useFonts() entered a state where fontsLoaded was
+  // false AND fontError was null (which appears to happen on Hermes/new-arch
+  // production builds in some asset-registry edge cases), the entire app
+  // hung at this null return — AuthProvider never mounted, so my earlier
+  // getSession watchdog couldn't help. Now we render the provider tree
+  // immediately and accept system-font fallback for a few hundred ms while
+  // Geist loads in the background.
   useEffect(() => {
     if (fontError) {
-      // If fonts fail to load, hide splash anyway so the app doesn't hang
       console.warn('Font loading error:', fontError);
     }
   }, [fontError]);
-
-  // Don't render anything until fonts are ready
-  if (!fontsLoaded && !fontError) {
-    return null;
-  }
 
   return (
     <GluestackUIProvider>
@@ -187,7 +258,7 @@ function RootLayout() {
           <AuthProvider>
             <ErrorBoundary>
               <WebConstrainedWrapper>
-                <RootLayoutNav />
+                <RootLayoutNav fontsLoaded={fontsLoaded} />
               </WebConstrainedWrapper>
             </ErrorBoundary>
           </AuthProvider>
