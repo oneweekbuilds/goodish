@@ -9,6 +9,7 @@ import { AuthProvider, useAuth, __authDiag } from '../src/context/AuthContext';
 import { ThemeProvider, useTheme } from '../src/context/ThemeContext';
 import { GluestackUIProvider } from '../src/providers/GluestackUIProvider';
 import { ErrorBoundary, __errorBoundaryDiag } from '../src/components/ErrorBoundary';
+import { __broadcastDiag, isBroadcastModuleAvailable } from '../src/lib/broadcastSessionManager';
 import { initSentry, addBreadcrumb, withSentry } from '../src/lib/sentry';
 import { initRevenueCat } from '../src/services/revenueCat';
 import { SPACING, RADIUS, SHADOWS } from '../src/lib/theme';
@@ -151,6 +152,12 @@ function DebugCheckpointTrail({
 }) {
   const [, setTick] = useState(0);
   useEffect(() => {
+    // Build #37: probe the native broadcast module once on mount so the
+    // bcast row reflects bridge state before the user opens the picker.
+    // The function is idempotent — populateBroadcastDiag locks in on first
+    // call, so subsequent invocations from ModeToggle's useMemo are no-ops.
+    isBroadcastModuleAvailable();
+
     const id = setInterval(() => setTick((t) => (t + 1) % 1_000_000), 500);
     return () => clearInterval(id);
   }, []);
@@ -221,6 +228,20 @@ function DebugCheckpointTrail({
           </Text>
         </View>
       ) : null}
+      {/* Build #37 row 4: broadcast bridge diagnostics, always visible.
+          Tells us whether the native ExpoBroadcast module loaded, whether
+          isAvailable() returned true, and whether the App Group container
+          path resolved. Labels are short ASCII for easy grep on the bundle. */}
+      <View style={{ marginTop: 2 }}>
+        <Text style={{ color: '#bdf', fontSize: 10 }} numberOfLines={1}>
+          bcast: mod={__broadcastDiag.moduleLoaded ? 'ok' : 'fail'} ava={__broadcastDiag.isAvailable ? 'ok' : 'no'} grp={__broadcastDiag.sharedContainerPath ? 'ok' : 'nil'}
+        </Text>
+        {__broadcastDiag.lastError ? (
+          <Text style={{ color: '#fbb', fontSize: 10 }} numberOfLines={2}>
+            bcast err: {__broadcastDiag.lastError}
+          </Text>
+        ) : null}
+      </View>
     </View>
   );
 }

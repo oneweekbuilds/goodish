@@ -586,7 +586,7 @@ export default function BroadcastScreen() {
           >
             <Text
               style={{
-                ...TYPOGRAPHY.overline,
+                ...GL_TYPOGRAPHY.overline,
                 color: colors.textMuted,
                 marginBottom: SPACING.md,
               }}

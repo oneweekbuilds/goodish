@@ -9,7 +9,7 @@
  */
 
 import React, { useMemo } from 'react';
-import { View, TouchableOpacity, Platform, Alert } from 'react-native';
+import { View, TouchableOpacity, Platform } from 'react-native';
 import { Radio, Type, Check } from 'lucide-react-native';
 import { triggerSelection } from '../../lib/haptics';
 import { useTheme } from '../../context/ThemeContext';
@@ -34,17 +34,12 @@ function ModeToggleComponent({ selectedMode, onModeChange }: ModeToggleProps) {
 
   const handleModePress = (mode: ScanMode) => {
     if (mode === selectedMode) return;
-    // Show explanation when broadcast is tapped but native modules are unavailable
-    if (mode === 'broadcast' && !broadcastAvailable) {
-      Alert.alert(
-        'Screen Capture Coming Soon',
-        'Screen Capture lets you record your real feed as you scroll through your favorite apps. '
-          + 'This feature is currently in development and will be available in a future update.\n\n'
-          + 'In the meantime, Quick Scan provides full feed analysis via the built-in browser.',
-        [{ text: 'Got it', style: 'default' }],
-      );
-      return;
-    }
+    // Build #37: gate Alert removed. Mode change is unconditional now —
+    // selecting Screen Capture on a build where the native module did not
+    // register will surface as a fail-state in the broadcast diagnostics
+    // (DebugCheckpointTrail row 4) once the user enters the broadcast flow,
+    // which is what we want for diagnosing TestFlight launches. The
+    // "COMING SOON" badge under Screen Capture is preserved as a soft hint.
     triggerSelection();
     onModeChange(mode);
   };
