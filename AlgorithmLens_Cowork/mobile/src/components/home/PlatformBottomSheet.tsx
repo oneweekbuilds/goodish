@@ -28,8 +28,7 @@ import {
   X,
   Info,
 } from 'lucide-react-native';
-import {
-  BottomSheet,
+import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetBackdropProps,
   BottomSheetScrollView,
