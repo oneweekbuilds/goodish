@@ -72,6 +72,26 @@ export interface PipelineCallbacks {
   onError: (error: Error, partialResult?: UnifiedScanResult) => void;
 }
 
+// Build #42: structured outcome from analyzing a single frame. Replaces the
+// previous "always return GeminiExtractedItem[]" pattern which hid every
+// failure mode behind an empty array.
+type FrameOutcome =
+  | { kind: 'items'; items: GeminiExtractedItem[] }
+  | { kind: 'empty'; items: GeminiExtractedItem[] }
+  | { kind: 'apiError'; items: GeminiExtractedItem[]; errorText: string }
+  | { kind: 'noBase64'; items: GeminiExtractedItem[] };
+
+// Aggregate outcomes across all frames in a session. Used to produce the
+// human-readable summary appended to the "no items extracted" error.
+interface AnalysisOutcomes {
+  framesAttempted: number;
+  framesWithItems: number;
+  framesEmpty: number;       // 200 OK with items: []
+  framesApiError: number;    // GeminiApiError of any kind (incl. retries-exhausted 429)
+  framesNoBase64: number;    // getFrameBase64 returned null
+  firstErrorMessage: string; // first apiError text (truncated to 200 chars)
+}
+
 export interface PipelineConfig {
   /** Gemini API key. */
   apiKey: string;
@@ -105,6 +125,9 @@ export class BroadcastAnalysisPipeline {
   private callbacks: PipelineCallbacks;
   private aborted: boolean = false;
   private startTime: number = 0;
+  // Build #42: populated by analyzeFrames so run() can format an informative
+  // failure message when no items were extracted.
+  private lastAnalysisOutcomes: AnalysisOutcomes | null = null;
 
   constructor(
     config: PipelineConfig,
@@ -188,10 +211,14 @@ export class BroadcastAnalysisPipeline {
 
       progress.itemsExtracted = allExtractedItems.length;
 
-      // If no items were extracted from any frame, this is a fatal error
+      // If no items were extracted from any frame, this is a fatal error.
+      // Build #42: enrich the message with per-frame outcome counters so the
+      // user (and we) can see *why* — was it API failure, model returning
+      // empty arrays, or missing frame data?
       if (allExtractedItems.length === 0 && !this.aborted) {
+        const summary = this.formatAnalysisOutcomes(this.lastAnalysisOutcomes);
         throw new PipelineError(
-          "We could not read any posts from the captured frames. This can happen if the feed was not visible during recording, or if the frames were too blurry. Try scrolling more slowly next time.",
+          `No items extracted from the captured frames. ${summary}`,
           "ANALYZING",
         );
       }
@@ -305,6 +332,12 @@ export class BroadcastAnalysisPipeline {
    * Analyzes frames with controlled concurrency.
    * Sends `concurrency` frames at a time to Gemini Flash.
    * Explicitly nulls out processed frame references to help GC release memory after each batch.
+   *
+   * Build #42: tracks per-frame outcomes so the "0 items" failure path can
+   * tell us *why* (API error vs model-returned-empty vs missing base64)
+   * instead of presenting an opaque "we could not read any posts" message.
+   * Outcomes are written into this.lastAnalysisOutcomes so run() can format
+   * them into the user-facing error message.
    */
   private async analyzeFrames(
     frames: BroadcastFrame[],
@@ -314,6 +347,15 @@ export class BroadcastAnalysisPipeline {
   ): Promise<GeminiExtractedItem[]> {
     const allItems: GeminiExtractedItem[] = [];
     const concurrency = this.config.concurrency;
+
+    const outcomes: AnalysisOutcomes = {
+      framesAttempted: 0,
+      framesWithItems: 0,
+      framesEmpty: 0,
+      framesApiError: 0,
+      framesNoBase64: 0,
+      firstErrorMessage: '',
+    };
 
     // Process in batches of `concurrency`
     for (let i = 0; i < frames.length; i += concurrency) {
@@ -334,10 +376,39 @@ export class BroadcastAnalysisPipeline {
       const batchResults = await Promise.allSettled(batchPromises);
 
       for (const result of batchResults) {
-        if (result.status === 'fulfilled' && result.value) {
-          allItems.push(...result.value);
+        outcomes.framesAttempted += 1;
+
+        if (result.status === 'fulfilled') {
+          const outcome = result.value;
+          switch (outcome.kind) {
+            case 'items':
+              outcomes.framesWithItems += 1;
+              allItems.push(...outcome.items);
+              break;
+            case 'empty':
+              outcomes.framesEmpty += 1;
+              break;
+            case 'apiError':
+              outcomes.framesApiError += 1;
+              if (!outcomes.firstErrorMessage && outcome.errorText) {
+                outcomes.firstErrorMessage = outcome.errorText;
+              }
+              break;
+            case 'noBase64':
+              outcomes.framesNoBase64 += 1;
+              break;
+          }
+        } else {
+          // Promise rejected: a non-retryable error was re-thrown by
+          // analyzeSingleFrame (bad API key, malformed request, etc.).
+          // Treat the same as apiError for reporting.
+          outcomes.framesApiError += 1;
+          const reason = result.reason;
+          const msg = reason instanceof Error ? reason.message : String(reason);
+          if (!outcomes.firstErrorMessage) {
+            outcomes.firstErrorMessage = msg.slice(0, 200);
+          }
         }
-        // Rejected promises are logged inside analyzeSingleFrame
       }
 
       // Explicitly null out processed batch to help GC release memory
@@ -350,11 +421,17 @@ export class BroadcastAnalysisPipeline {
       this.reportProgress(progress);
     }
 
+    this.lastAnalysisOutcomes = outcomes;
     return allItems;
   }
 
   /**
-   * Analyzes a single frame, returns extracted items or empty array on failure.
+   * Analyzes a single frame. Returns a structured outcome rather than raw
+   * items so the caller can distinguish between "Gemini saw no items" and
+   * "the API call failed". Build #42: previously this returned `[]` for
+   * every failure mode, which made debugging impossible — the pipeline's
+   * "0 items" error couldn't tell you whether the model returned empty
+   * arrays or whether every API call 429'd.
    */
   private async analyzeSingleFrame(
     frame: BroadcastFrame,
@@ -362,7 +439,7 @@ export class BroadcastAnalysisPipeline {
     frameNumber: number,
     totalFrames: number,
     getFrameBase64: (filename: string) => string | null,
-  ): Promise<GeminiExtractedItem[]> {
+  ): Promise<FrameOutcome> {
     try {
       // Get frame image as base64
       const filename = frame.local_path.split('/').pop() || frame.frame_id;
@@ -372,7 +449,7 @@ export class BroadcastAnalysisPipeline {
         if (__DEV__) {
           console.warn(`Frame ${frameNumber}: no base64 data available, skipping`);
         }
-        return [];
+        return { kind: 'noBase64', items: [] };
       }
 
       const response = await this.gemini.analyzeFrame({
@@ -384,20 +461,68 @@ export class BroadcastAnalysisPipeline {
         capturedAt: frame.captured_at,
       });
 
-      return response.items;
+      if (response.items.length > 0) {
+        return { kind: 'items', items: response.items };
+      }
+      return { kind: 'empty', items: [] };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (__DEV__) {
         console.warn(`Frame ${frameNumber}: analysis failed — ${message}`);
       }
 
-      // Non-fatal: skip this frame but continue the pipeline
+      // Non-retryable errors (bad API key, malformed request) propagate to
+      // the pipeline's onError so the user sees the underlying message.
       if (error instanceof GeminiApiError && !error.retryable) {
-        throw error; // Propagate non-retryable errors (bad API key, etc.)
+        throw error;
       }
 
-      return [];
+      // Retryable errors that exhausted retries (e.g. persistent 429 quota
+      // exceeded) land here. Surface the error text in the outcome so the
+      // outer loop can count it as an API error rather than a silent empty.
+      return {
+        kind: 'apiError',
+        items: [],
+        errorText: message.slice(0, 200),
+      };
     }
+  }
+
+  /**
+   * Build #42: produces a one-line human-readable summary of per-frame
+   * outcomes. Surfaced to the user when zero items were extracted so the
+   * "Analysis Failed" screen tells them whether the API failed, the model
+   * returned empty arrays, or frames were missing — instead of presenting
+   * an opaque message that could mean any of the three.
+   */
+  private formatAnalysisOutcomes(o: AnalysisOutcomes | null): string {
+    if (!o || o.framesAttempted === 0) {
+      return 'No frames were analyzed.';
+    }
+
+    const parts: string[] = [`${o.framesAttempted} frames analyzed`];
+    if (o.framesApiError > 0) {
+      parts.push(`${o.framesApiError} API errors`);
+    }
+    if (o.framesEmpty > 0) {
+      parts.push(`${o.framesEmpty} empty responses`);
+    }
+    if (o.framesNoBase64 > 0) {
+      parts.push(`${o.framesNoBase64} missing frame data`);
+    }
+    if (o.framesWithItems > 0) {
+      // Only meaningful if a later filtering stage stripped them; included
+      // for completeness so the math always reconciles.
+      parts.push(`${o.framesWithItems} returned items (filtered out)`);
+    }
+
+    let summary = parts.join(' / ') + '.';
+    if (o.firstErrorMessage) {
+      summary += ` First error: ${o.firstErrorMessage}`;
+    } else if (o.framesEmpty === o.framesAttempted) {
+      summary += ' The model did not recognize feed items in any frame — try recording while actively scrolling the feed (not the home screen or app launcher).';
+    }
+    return summary;
   }
 
   // ============================================
