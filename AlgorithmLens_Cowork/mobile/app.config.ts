@@ -42,6 +42,20 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       NSSiriUsageDescription:
         'AlgorithmLens uses Siri to let you quickly start feed scans with voice commands or Shortcuts automations.',
       ITSAppUsesNonExemptEncryption: false,
+      // Build #41: declare schemes used by Linking.canOpenURL in
+      // broadcastSessionManager.openPlatformApp. iOS 9+ silently returns
+      // false for any scheme not in this allowlist, which made every
+      // "Back to <Platform>" button report "<Platform> not installed"
+      // even when the app WAS installed. Match the schemes declared in
+      // PLATFORM_BROADCAST_CONFIGS in src/types/broadcast.ts.
+      LSApplicationQueriesSchemes: [
+        'instagram',
+        'twitter',
+        'youtube',
+        'snssdk1233', // TikTok
+        'fb',          // Facebook
+        'reddit',
+      ],
     },
     entitlements: {
       'com.apple.security.application-groups': [

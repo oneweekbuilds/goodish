@@ -43,6 +43,15 @@ class SampleHandler: RPBroadcastSampleHandler {
     private var frameMetadataEntries: [[String: Any]] = []
     private lazy var ciContext = CIContext(options: [.useSoftwareRenderer: false])
 
+    // Build #41 diagnostic counters. Surfaced into session_metadata.json so the
+    // main app can read them via BroadcastModule.getStatus() and reason about
+    // where in the pipeline frames are being lost (rate-limit drops vs dedup
+    // drops vs actual write failures vs no buffers received at all).
+    private var framesRateLimited: Int = 0
+    private var framesDedup: Int = 0
+    private var framesWriteFailed: Int = 0
+    private var lastWriteError: String = ""
+
     // MARK: - Lifecycle
 
     override func broadcastStarted(withSetupInfo setupInfo: [String: NSObject]?) {
@@ -50,6 +59,10 @@ class SampleHandler: RPBroadcastSampleHandler {
         lastCaptureTime = 0
         frameCount = 0
         uniqueFrameCount = 0
+        framesRateLimited = 0
+        framesDedup = 0
+        framesWriteFailed = 0
+        lastWriteError = ""
         isSessionActive = true
         frameMetadataEntries = []
 
@@ -130,6 +143,10 @@ class SampleHandler: RPBroadcastSampleHandler {
             "status": "COMPLETE",
             "frames_captured": frameCount,
             "frames_unique": uniqueFrameCount,
+            "frames_rate_limited": framesRateLimited,
+            "frames_dedup": framesDedup,
+            "frames_write_failed": framesWriteFailed,
+            "last_write_error": lastWriteError,
             "duration_seconds": round(duration * 10) / 10,
             "average_frame_interval_seconds": uniqueFrameCount > 1
                 ? round((duration / Double(uniqueFrameCount)) * 10) / 10
@@ -172,7 +189,10 @@ class SampleHandler: RPBroadcastSampleHandler {
         }
 
         // Frame rate limiting: only process ~1 frame per targetFrameInterval
-        guard (currentTime - lastCaptureTime) >= targetFrameInterval else { return }
+        guard (currentTime - lastCaptureTime) >= targetFrameInterval else {
+            framesRateLimited += 1
+            return
+        }
 
         frameCount += 1
         lastCaptureTime = currentTime
@@ -193,7 +213,10 @@ class SampleHandler: RPBroadcastSampleHandler {
         guard let cgImage = ciContext.createCGImage(ciImage, from: rect) else { return }
 
         // Perceptual deduplication — skip visually similar frames
-        guard frameProcessor.isUniqueFrame(cgImage) else { return }
+        guard frameProcessor.isUniqueFrame(cgImage) else {
+            framesDedup += 1
+            return
+        }
 
         uniqueFrameCount += 1
 
@@ -219,6 +242,12 @@ class SampleHandler: RPBroadcastSampleHandler {
             try jpegData.write(to: fileURL, options: .atomic)
         } catch {
             // Failed to write frame — continue processing. Don't crash the extension.
+            framesWriteFailed += 1
+            lastWriteError = String(error.localizedDescription.prefix(120))
+            // Build #41: still publish updated metadata so the main app can see
+            // the failure counter climb. Otherwise a write-permission issue
+            // would look identical to "no frames received at all".
+            writeSessionMetadata(status: "RECORDING", containerURL: containerURL)
             return
         }
 
@@ -237,6 +266,14 @@ class SampleHandler: RPBroadcastSampleHandler {
         ]
         frameMetadataEntries.append(frameMetadata)
 
+        // Build #41: update session_metadata.json after every successful frame
+        // so the main app's polling Timer (which reads frames_unique from this
+        // file every 1s) actually surfaces a live count. Previously this was
+        // only written at lifecycle events, so the live UI count stuck at 0
+        // throughout recording. The file is small (single dict) and writes are
+        // atomic — overhead is trivial at the 1-frame-per-2.5s rate.
+        writeSessionMetadata(status: "RECORDING", containerURL: containerURL)
+
         // Periodically flush metadata to disk (every 10 frames) for crash resilience
         if uniqueFrameCount % 10 == 0 {
             writeFrameMetadata(containerURL: containerURL)
@@ -252,6 +289,10 @@ class SampleHandler: RPBroadcastSampleHandler {
             "status": status,
             "frames_captured": frameCount,
             "frames_unique": uniqueFrameCount,
+            "frames_rate_limited": framesRateLimited,
+            "frames_dedup": framesDedup,
+            "frames_write_failed": framesWriteFailed,
+            "last_write_error": lastWriteError,
             "duration_seconds": round(duration * 10) / 10
         ]
         if let data = try? JSONSerialization.data(withJSONObject: metadata, options: .prettyPrinted) {
