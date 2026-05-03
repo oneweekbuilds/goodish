@@ -77,11 +77,19 @@ export const __broadcastDiag: {
   isAvailable: boolean;
   sharedContainerPath: string | null;
   lastError: string;
+  // Build #43: surface metadata vs disk file count at collectFrames time.
+  // Helps explain "missing frame data" outcomes from the pipeline — when
+  // metadata claims more frames than .jpg files exist on disk, the trailing
+  // frames have empty local_path and the pipeline can't load their base64.
+  lastMetadataCount: number;
+  lastDiskCount: number;
 } = {
   moduleLoaded: false,
   isAvailable: false,
   sharedContainerPath: null,
   lastError: '',
+  lastMetadataCount: 0,
+  lastDiskCount: 0,
 };
 
 let __broadcastDiagPopulated = false;
@@ -369,6 +377,12 @@ export class BroadcastSessionManager {
 
     const rawMetadata = this.nativeModule.getFrameMetadata();
     const framePaths = this.nativeModule.getFramePaths();
+
+    // Build #43: surface counts so the trail can show metadata/disk drift.
+    // When framePaths is shorter than rawMetadata, the trailing entries get
+    // local_path='' and the pipeline can't load their base64.
+    __broadcastDiag.lastMetadataCount = rawMetadata.length;
+    __broadcastDiag.lastDiskCount = framePaths.length;
 
     const frames: BroadcastFrame[] = rawMetadata.map((entry, index) => ({
       frame_id: String(entry.frame_id || `frame_${index}`),

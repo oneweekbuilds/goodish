@@ -10,6 +10,7 @@ import { ThemeProvider, useTheme } from '../src/context/ThemeContext';
 import { GluestackUIProvider } from '../src/providers/GluestackUIProvider';
 import { ErrorBoundary, __errorBoundaryDiag } from '../src/components/ErrorBoundary';
 import { __broadcastDiag, isBroadcastModuleAvailable } from '../src/lib/broadcastSessionManager';
+import { __pipelineDiag } from '../src/lib/analysis/broadcastAnalysisPipeline';
 import { initSentry, addBreadcrumb, withSentry } from '../src/lib/sentry';
 import { initRevenueCat } from '../src/services/revenueCat';
 import { SPACING, RADIUS, SHADOWS } from '../src/lib/theme';
@@ -18,6 +19,22 @@ import { GL_TYPOGRAPHY } from '../src/lib/gluestackTheme';
 
 // Initialize Sentry before any components render
 initSentry();
+
+// Build #43 screens diagnostic. Tracks visited routes so the on-screen trail
+// can confirm that downstream screens (broadcast, analysis, dashboard, etc.)
+// actually rendered in the order we expect during a successful end-to-end
+// flow. Module-scope so DebugCheckpointTrail can read it on its 500ms tick.
+const __screensDiag: {
+  lastPath: string;
+  brc: number;       // broadcast/* visits
+  ana: number;       // analysis/* visits
+  dash: number;      // (tabs)/dashboard visits
+} = {
+  lastPath: '',
+  brc: 0,
+  ana: 0,
+  dash: 0,
+};
 
 // H-14 FIX: Suppress error banners in production and known benign warnings in dev
 if (!__DEV__) {
@@ -64,6 +81,14 @@ function RootLayoutNav({ fontsLoaded }: { fontsLoaded: boolean }) {
   useEffect(() => {
     if (pathname) {
       addBreadcrumb('navigation', `Screen: ${pathname}`, { route: pathname });
+
+      // Build #43: increment per-screen visit counters for the trail row.
+      // Path matching is loose so the deep paths (e.g., /broadcast/instagram,
+      // /analysis/abc-123) all register against the same family.
+      __screensDiag.lastPath = pathname;
+      if (pathname.startsWith('/broadcast')) __screensDiag.brc += 1;
+      else if (pathname.startsWith('/analysis')) __screensDiag.ana += 1;
+      else if (pathname.includes('dashboard')) __screensDiag.dash += 1;
     }
   }, [pathname]);
 
@@ -234,7 +259,7 @@ function DebugCheckpointTrail({
           path resolved. Labels are short ASCII for easy grep on the bundle. */}
       <View style={{ marginTop: 2 }}>
         <Text style={{ color: '#bdf', fontSize: 10 }} numberOfLines={1}>
-          bcast: mod={__broadcastDiag.moduleLoaded ? 'ok' : 'fail'} ava={__broadcastDiag.isAvailable ? 'ok' : 'no'} grp={__broadcastDiag.sharedContainerPath ? 'ok' : 'nil'}
+          bcast: mod={__broadcastDiag.moduleLoaded ? 'ok' : 'fail'} ava={__broadcastDiag.isAvailable ? 'ok' : 'no'} grp={__broadcastDiag.sharedContainerPath ? 'ok' : 'nil'}{__broadcastDiag.lastMetadataCount > 0 ? ` md/dk=${__broadcastDiag.lastMetadataCount}/${__broadcastDiag.lastDiskCount}` : ''}
         </Text>
         {__broadcastDiag.lastError ? (
           <Text style={{ color: '#fbb', fontSize: 10 }} numberOfLines={2}>
@@ -242,6 +267,24 @@ function DebugCheckpointTrail({
           </Text>
         ) : null}
       </View>
+      {/* Build #43 row 5: pipeline + screens diag. Only visible after the
+          first analysis run (lastRunAt > 0) or after the first navigation
+          to a tracked screen. Lets us confirm a successful end-to-end flow
+          ran without expanding the footer permanently. */}
+      {(__pipelineDiag.lastRunAt > 0 || __screensDiag.lastPath) ? (
+        <View style={{ marginTop: 2 }}>
+          {__pipelineDiag.lastRunAt > 0 ? (
+            <Text style={{ color: '#bfd', fontSize: 10 }} numberOfLines={1}>
+              pipe: stg={__pipelineDiag.lastStage} f={clamp(__pipelineDiag.lastFrameCount)} i={clamp(__pipelineDiag.lastItemsExtracted)}{__pipelineDiag.lastError ? ` err=${__pipelineDiag.lastError.slice(0, 40)}` : ''}
+            </Text>
+          ) : null}
+          {__screensDiag.lastPath ? (
+            <Text style={{ color: '#bfd', fontSize: 10 }} numberOfLines={1}>
+              screens: brc={clamp(__screensDiag.brc)} ana={clamp(__screensDiag.ana)} dash={clamp(__screensDiag.dash)}
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
     </View>
   );
 }

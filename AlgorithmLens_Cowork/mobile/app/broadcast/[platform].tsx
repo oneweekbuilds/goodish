@@ -292,13 +292,27 @@ export default function BroadcastScreen() {
       }
 
       // Collect base64 data for all frames (needed by Gemini vision analysis)
+      // Build #43: when local_path is empty (because framePaths from native is
+      // shorter than rawMetadata, e.g. metadata claims 50 frames but disk has
+      // 29 .jpg files), fall back to `${frame_id}.jpg` instead of just
+      // `frame_id`. The previous fallback was missing the .jpg extension, so
+      // getFrameBase64 looked for "frames/<id>" instead of "frames/<id>.jpg"
+      // and returned null. Build #42 surfaced this as "21 missing frame data".
       const frameBase64Map: Record<string, string> = {};
+      let frameLoadFailures = 0;
       for (const frame of frames) {
-        const filename = frame.local_path.split('/').pop() || frame.frame_id;
+        const filename = frame.local_path.split('/').pop() || `${frame.frame_id}.jpg`;
         const base64 = broadcast.getFrameBase64(filename);
         if (base64) {
           frameBase64Map[filename] = base64;
+        } else {
+          frameLoadFailures++;
         }
+      }
+      if (frameLoadFailures > 0 && __DEV__) {
+        console.warn(
+          `handleViewResults: ${frameLoadFailures}/${frames.length} frames failed to load base64`
+        );
       }
 
       // Store large data in memory store (route params have strict size limits)

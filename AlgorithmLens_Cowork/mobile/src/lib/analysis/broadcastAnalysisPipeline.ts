@@ -92,6 +92,26 @@ interface AnalysisOutcomes {
   firstErrorMessage: string; // first apiError text (truncated to 200 chars)
 }
 
+// Build #43 diagnostic export. Read by DebugCheckpointTrail in app/_layout.tsx
+// to surface the analysis pipeline's last-run state in the on-screen footer.
+// Mutable singleton; populated by run() at each lifecycle event so we can see
+// whether the pipeline started, what it analyzed, and what (if anything) it
+// produced — useful for the first end-to-end successful run where we need to
+// confirm dashboard rendering against the right item count.
+export const __pipelineDiag: {
+  lastRunAt: number;
+  lastFrameCount: number;
+  lastItemsExtracted: number;
+  lastError: string;
+  lastStage: string;
+} = {
+  lastRunAt: 0,
+  lastFrameCount: 0,
+  lastItemsExtracted: 0,
+  lastError: '',
+  lastStage: 'idle',
+};
+
 export interface PipelineConfig {
   /** Gemini API key. */
   apiKey: string;
@@ -165,6 +185,13 @@ export class BroadcastAnalysisPipeline {
     this.startTime = Date.now();
     this.aborted = false;
 
+    // Build #43: surface pipeline lifecycle in __pipelineDiag for the trail.
+    __pipelineDiag.lastRunAt = this.startTime;
+    __pipelineDiag.lastFrameCount = frames.length;
+    __pipelineDiag.lastItemsExtracted = 0;
+    __pipelineDiag.lastError = '';
+    __pipelineDiag.lastStage = 'preparing';
+
     const progress: PipelineProgress = {
       stage: 'PREPARING',
       currentFrame: 0,
@@ -210,6 +237,8 @@ export class BroadcastAnalysisPipeline {
       }
 
       progress.itemsExtracted = allExtractedItems.length;
+      __pipelineDiag.lastItemsExtracted = allExtractedItems.length;
+      __pipelineDiag.lastStage = 'analyzed';
 
       // If no items were extracted from any frame, this is a fatal error.
       // Build #42: enrich the message with per-frame outcome counters so the
@@ -293,6 +322,8 @@ export class BroadcastAnalysisPipeline {
       progress.elapsedMs = Date.now() - this.startTime;
       this.reportProgress(progress);
 
+      __pipelineDiag.lastStage = 'complete';
+
       // If save failed, the result still includes a warning the UI can show
       if (saveWarning && scanResult.debug) {
         scanResult.debug.warnings = [...(scanResult.debug.warnings || []), { code: 'SAVE_FAILED', message: saveWarning }];
@@ -315,6 +346,9 @@ export class BroadcastAnalysisPipeline {
       progress.elapsedMs = Date.now() - this.startTime;
       this.reportProgress(progress);
       this.callbacks.onError(err);
+
+      __pipelineDiag.lastStage = 'failed';
+      __pipelineDiag.lastError = err.message.slice(0, 100);
 
       captureError(err, 'BroadcastAnalysisPipeline:run', {
         platform,
