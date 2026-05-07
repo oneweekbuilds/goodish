@@ -826,10 +826,19 @@ describe('BroadcastAnalysisPipeline', () => {
       const insertedRow = (mockInsert.mock.calls as any[][])[0]![0]! as any;
       expect(insertedRow.user_id).toBe('user-123');
       expect(insertedRow.platform).toBe('instagram');
-      expect(insertedRow.source_type).toBe('MOBILE_BROADCAST');
+
+      // Build #44: source_type and duration_seconds are NOT top-level
+      // columns on the live Supabase 'scans' table. Inserting them caused
+      // PostgREST to reject every broadcast scan with 42703. Both values
+      // now live inside raw_data instead.
+      expect(insertedRow.source_type).toBeUndefined();
+      expect(insertedRow.duration_seconds).toBeUndefined();
 
       // Verify raw_data shape
       const rawData = insertedRow.raw_data;
+      // Build #44: source_type now nested inside raw_data so read sites
+      // can still distinguish broadcast vs WebView scans.
+      expect(rawData.source_type).toBe('MOBILE_BROADCAST');
       expect(rawData.posts).toHaveLength(1);
       expect(rawData.posts[0].creator_handle).toBe('@testcreator');
       expect(rawData.posts[0].is_ad).toBe(false);

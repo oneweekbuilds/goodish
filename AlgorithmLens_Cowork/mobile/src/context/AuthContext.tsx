@@ -15,6 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { useEntitlements } from '../hooks/useEntitlements';
 import { setSentryUser, addBreadcrumb } from '../lib/sentry';
+import { clearLocalUserState } from '../lib/localState';
 import type { Session, User } from '@supabase/supabase-js';
 import type { EntitlementsResponse } from '../types';
 
@@ -386,6 +387,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    // Build #44: clear per-user AsyncStorage state BEFORE Supabase sign-out
+    // so the next user to sign in on this device starts fresh (no inherited
+    // streak, no skipped onboarding, no leftover scan backups). Wrapped in
+    // try/catch internally; never blocks sign-out.
+    await clearLocalUserState();
     await supabase.auth.signOut();
     setSession(null);
     setUserProfile(null);

@@ -81,7 +81,23 @@ export function getUserFriendlyNetworkError(error: unknown): string {
 
   // Supabase specific
   if (message.includes('supabase') || message.includes('postgrest')) {
-    return 'We\'re having trouble saving your data right now. Your results are still available — they just won\'t appear in your history until we can reconnect.';
+    return 'We\'re having trouble saving your data right now. Your results are still available, they just won\'t appear in your history until we can reconnect.';
+  }
+
+  // Build #44: Supabase auth-specific error mappings. The raw messages
+  // from supabase-js are technically accurate but jarring to end users.
+  // Map the common ones to something friendlier; pass through the rest.
+  if (message === 'Invalid login credentials' || message.includes('invalid_grant')) {
+    return 'Email or password didn\'t match. Try again or use Forgot password to reset.';
+  }
+  if (message.includes('User already registered')) {
+    return 'An account with this email already exists. Try signing in instead.';
+  }
+  if (message.includes('Email not confirmed')) {
+    return 'Please check your email for a confirmation link before signing in.';
+  }
+  if (message.includes('Email rate limit exceeded') || message.includes('rate limit')) {
+    return 'Too many attempts in a short time. Please wait a few minutes before trying again.';
   }
 
   // Abort/cancel

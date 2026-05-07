@@ -18,6 +18,7 @@ import {
   ArrowRight,
   Radio,
   Clock,
+  AlertTriangle,
 } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
@@ -120,6 +121,59 @@ export const BroadcastResultsSummary = React.memo(function BroadcastResultsSumma
 
       {/* Key Findings */}
       <View style={{ padding: SPACING.lg }}>
+        {/* Build #44: pipeline warnings (e.g. SAVE_FAILED). Shown above
+            session info so the user notices BEFORE tapping View Dashboard.
+            Common case: scan succeeded but persistScan failed and the row
+            never landed in Supabase — the dashboard would show empty. The
+            warning makes the failure visible so the user can flag it. */}
+        {result.debug?.warnings && result.debug.warnings.length > 0 ? (
+          <View style={{ marginBottom: SPACING.lg }}>
+            {result.debug.warnings.map((w, idx) => (
+              <View
+                key={`${w.code}-${idx}`}
+                style={{
+                  flexDirection: 'row',
+                  gap: SPACING.sm,
+                  alignItems: 'flex-start',
+                  backgroundColor: colors.warningLight,
+                  borderRadius: RADIUS.md,
+                  borderWidth: 1,
+                  borderColor: colors.warningBorder,
+                  padding: SPACING.md,
+                  marginBottom: idx < result.debug!.warnings.length - 1 ? SPACING.sm : 0,
+                }}
+                accessibilityRole="alert"
+                accessibilityLiveRegion="polite"
+              >
+                <AlertTriangle
+                  size={16}
+                  color={colors.warning}
+                  strokeWidth={2}
+                  style={{ marginTop: 2 }}
+                />
+                <View style={{ flex: 1 }}>
+                  <Text
+                    variant="bodySmall"
+                    color={colors.warning}
+                    style={{ fontWeight: '600' }}
+                  >
+                    {w.message}
+                  </Text>
+                  {__DEV__ && w.details ? (
+                    <Text
+                      variant="captionSmall"
+                      color={colors.warning}
+                      style={{ marginTop: SPACING.xs, opacity: 0.85 }}
+                    >
+                      {w.details}
+                    </Text>
+                  ) : null}
+                </View>
+              </View>
+            ))}
+          </View>
+        ) : null}
+
         {/* Session info */}
         <View
           style={{

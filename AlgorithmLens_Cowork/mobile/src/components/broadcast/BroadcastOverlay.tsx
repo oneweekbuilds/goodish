@@ -218,7 +218,7 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
                   color={colors.warning}
                   align="center"
                 >
-                  Keep scrolling — need more data for accurate analysis
+                  Keep scrolling, need more data for accurate analysis
                 </Text>
               )}
             </View>

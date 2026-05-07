@@ -264,7 +264,7 @@ function getStatusMessage(progress: PipelineProgress): string {
     case 'SAVING':
       return 'Saving results...';
     case 'COMPLETE':
-      return `Analysis complete — ${progress.itemsDeduplicated} feed items found`;
+      return `Analysis complete, ${progress.itemsDeduplicated} feed items found`;
     case 'FAILED':
       return progress.errorMessage || 'Something went wrong during analysis. You can try again.';
     default:

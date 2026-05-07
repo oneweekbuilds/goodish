@@ -60,7 +60,7 @@ function ModeToggleComponent({ selectedMode, onModeChange }: ModeToggleProps) {
         activeOpacity={0.7}
         accessibilityRole="radio"
         accessibilityState={{ selected: selectedMode === 'broadcast' }}
-        accessibilityLabel="Screen Capture mode — record your real feed as you scroll"
+        accessibilityLabel="Screen Capture mode, record your real feed as you scroll"
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         style={{
           flex: 1,
@@ -125,7 +125,7 @@ function ModeToggleComponent({ selectedMode, onModeChange }: ModeToggleProps) {
         activeOpacity={0.7}
         accessibilityRole="radio"
         accessibilityState={{ selected: selectedMode === 'precision' }}
-        accessibilityLabel="Quick Scan mode — analyze content via built-in browser"
+        accessibilityLabel="Quick Scan mode, analyze content via built-in browser"
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         style={{
           flex: 1,

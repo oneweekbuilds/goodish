@@ -268,7 +268,7 @@ export default function BroadcastScreen() {
       if (frames.length === 0) {
         Alert.alert(
           'No frames captured',
-          'The recording ended without capturing any frames. This can happen if:\n\n• The recording didn\'t start properly\n• The screen was off during recording\n• The app didn\'t have time to capture\n\nTry again — make sure to scroll your feed for at least 15 seconds after starting.',
+          'The recording ended without capturing any frames. This can happen if:\n\n• The recording didn\'t start properly\n• The screen was off during recording\n• The app didn\'t have time to capture\n\nTry again, make sure to scroll your feed for at least 15 seconds after starting.',
           [
             { text: 'Try Again', onPress: handleRetry },
             { text: 'Go Back', onPress: () => router.back(), style: 'cancel' },
@@ -537,7 +537,7 @@ export default function BroadcastScreen() {
               align="center"
               style={{ fontWeight: '600' }}
             >
-              Launched from Shortcut — tap the button below to start broadcasting
+              Launched from Shortcut, tap the button below to start broadcasting
             </Text>
           </View>
         )}
@@ -650,9 +650,9 @@ export default function BroadcastScreen() {
             color={colors.textTertiary}
             align="center"
           >
-            AlgorithmLens only captures visual frames from your feed.
-            No audio is recorded. Frames are processed on-device and
-            never leave your phone without your explicit action.
+            Your screen will be captured while you scroll your feed.
+            Frames are sent to Google's Gemini AI to identify what
+            you're seeing. Audio is not recorded.
           </Text>
         </View>
       </ScrollView>

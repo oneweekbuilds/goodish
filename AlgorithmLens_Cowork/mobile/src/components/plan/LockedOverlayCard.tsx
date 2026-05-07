@@ -35,7 +35,7 @@ interface LockedOverlayCardProps {
 function LockedOverlayCardComponent({
   locked = false,
   title = 'See how your feed changes over time',
-  body = 'Trend tracking, creator breakdowns, and rare content detection — the full picture behind your feed.',
+  body = 'Trend tracking, creator breakdowns, and rare content detection, the full picture behind your feed.',
   ctaLabel: _ctaLabel,
   onUpgrade,
   children,

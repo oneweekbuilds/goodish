@@ -40,11 +40,11 @@ const GradientWrapper = Platform.OS === 'web'
  * never accuse platforms or imply intent.
  */
 const DAILY_TIPS: string[] = [
-  'Your scans may show how much of your feed comes from accounts you don\'t follow — compare across sessions to see if this changes.',
+  'Your scans may show how much of your feed comes from accounts you don\'t follow, compare across sessions to see if this changes.',
   'Scanning across multiple platforms can reveal how content composition varies between them.',
-  'Your scans can show how much of your feed is labeled as sponsored — compare sessions to see if this varies.',
+  'Your scans can show how much of your feed is labeled as sponsored, compare sessions to see if this varies.',
   'Try scanning at different times of day. Your feed composition may look different in the morning versus the evening.',
-  'Feed composition can shift noticeably between sessions — scanning regularly helps you spot patterns over time.',
+  'Feed composition can shift noticeably between sessions, scanning regularly helps you spot patterns over time.',
   'Scanning regularly helps you build a more complete picture of what appears in your feed over time.',
   'Check your Sources tab to see how concentrated your feed is among a few accounts.',
   'Your Feed Score reflects source diversity, ad density, and content balance in your recent scans.',

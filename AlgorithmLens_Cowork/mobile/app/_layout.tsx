@@ -144,13 +144,18 @@ function RootLayoutNav({ fontsLoaded }: { fontsLoaded: boolean }) {
       )}
       {/* Checkpoint trail is rendered AFTER the conditional so it overlays
           both the loading spinner and the post-auth Stack. We can see exactly
-          where init is stuck even if the rest of the UI is broken. */}
-      <DebugCheckpointTrail
-        fontsLoaded={fontsLoaded}
-        isLoading={isLoading}
-        userSignedIn={!!user}
-        onboarded={!!userProfile?.has_completed_onboarding}
-      />
+          where init is stuck even if the rest of the UI is broken.
+          Build #44: gated behind __DEV__ so it does not appear on TestFlight
+          / production builds. Re-enable for diagnostics by running locally
+          via Expo dev. */}
+      {__DEV__ ? (
+        <DebugCheckpointTrail
+          fontsLoaded={fontsLoaded}
+          isLoading={isLoading}
+          userSignedIn={!!user}
+          onboarded={!!userProfile?.has_completed_onboarding}
+        />
+      ) : null}
     </>
   );
 }

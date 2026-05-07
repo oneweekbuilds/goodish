@@ -62,7 +62,7 @@ const TOUR_STEPS: TourStep[] = [
     icon: BarChart3,
     title: 'Overview',
     description:
-      'Your feed at a glance — see what types of content appeared and in what proportions.',
+      'Your feed at a glance, see what types of content appeared and in what proportions.',
     accent: COLORS.tourOverview,
   },
   {
@@ -86,7 +86,7 @@ const TOUR_STEPS: TourStep[] = [
     icon: Scale,
     title: 'Political Exposure',
     description:
-      'Observe the political composition of content in your feed — described, never judged.',
+      'Observe the political composition of content in your feed, described, never judged.',
     accent: COLORS.tourPolitics,
   },
   {

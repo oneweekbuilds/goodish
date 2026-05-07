@@ -118,7 +118,7 @@ export class ErrorBoundary extends Component<Props, State> {
           </View>
           <RNText style={styles.title}>Something went wrong</RNText>
           <RNText style={styles.subtitle}>
-            We ran into an unexpected problem. This doesn't happen often — try
+            We ran into an unexpected problem. This doesn't happen often, try
             restarting and things should be back to normal.
           </RNText>
           <TouchableOpacity

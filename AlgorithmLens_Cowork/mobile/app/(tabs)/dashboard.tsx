@@ -111,13 +111,13 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
       suggestions.push('Try using chronological feed mode to see more from accounts you follow.');
     }
     if (data.top5Pct > 70) {
-      suggestions.push('Explore new creators — your feed is heavily concentrated.');
+      suggestions.push('Explore new creators, your feed is heavily concentrated.');
     }
     if (data.adPct > 20) {
       suggestions.push('Consider using ad-blocking features on this platform.');
     }
     if (data.adPct === 0) {
-      suggestions.push('Your scan showed no detected ads — scan longer next time for more complete results.');
+      suggestions.push('Your scan showed no detected ads, scan longer next time for more complete results.');
     }
     suggestions.push('Compare results across multiple scans to see patterns.');
   } else {
@@ -127,14 +127,14 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
 
   // ── Content Patterns ──
   const emotionalSummary = data.toneAnalysis
-    ? data.toneAnalysis.negativePct >= 35 ? 'High intensity — notable negative tone'
+    ? data.toneAnalysis.negativePct >= 35 ? 'High intensity, notable negative tone'
     : data.toneAnalysis.positivePct >= 50 ? 'Mostly positive'
     : data.toneAnalysis.neutralPct >= 50 ? 'Mostly neutral'
     : 'Mix of positive and negative'
     : null;
 
   const sourceDiversitySummary = data.topCreators.length >= 5
-    ? `Concentrated — top 5 creators make up ${data.top5Pct}%`
+    ? `Concentrated, top 5 creators make up ${data.top5Pct}%`
     : data.topCreators.length > 0
     ? `${data.uniqueCreatorCount} unique creators detected`
     : null;
@@ -260,9 +260,9 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
         whyCare={data.overviewInsight.whyCare}
         meta={data.overviewInsight.meta}
         accent={colors.primaryBlue}
-        counterfactual="This is what showed up during this window. It may not represent your typical feed — a single scan captures one moment, not a pattern."
+        counterfactual="This is what showed up during this window. It may not represent your typical feed, a single scan captures one moment, not a pattern."
         howWeMeasure={{
-          what: 'A snapshot of your feed composition at the time of scanning — content types, sources, ads, and recommendations.',
+          what: 'A snapshot of your feed composition at the time of scanning, content types, sources, ads, and recommendations.',
           how: 'Posts are captured from the visible feed via scrolling, then categorized by platform-provided signals (creator handles, ad labels, recommendation indicators).',
           limitations: 'Feed composition changes between sessions. A single scan shows one moment in time, not a persistent pattern. Re-scan to see how your feed evolves.',
           learnMoreUrl: 'https://algorithmlens.com/dashboard#overview',
@@ -1316,7 +1316,7 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
             Native advertising, influencer partnerships, and product placements may not have standard ad markers.
           </Text>
           <Text variant="bodySmall" color={colors.textMuted} style={{ lineHeight: 20 }}>
-            Scan longer and scroll through more content — ads may appear at different points in your feed.
+            Scan longer and scroll through more content, ads may appear at different points in your feed.
           </Text>
         </View>
       ) : (
@@ -1343,6 +1343,9 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
           <TouchableOpacity
             onPress={() => setShowAdvertisers(!showAdvertisers)}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={showAdvertisers ? 'Hide top advertised companies' : 'Show top advertised companies'}
+            accessibilityState={{ expanded: showAdvertisers }}
             style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
@@ -1397,6 +1400,9 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
           <TouchableOpacity
             onPress={() => setShowProductTypes(!showProductTypes)}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={showProductTypes ? 'Hide top product types' : 'Show top product types'}
+            accessibilityState={{ expanded: showProductTypes }}
             style={{
               flexDirection: 'row',
               justifyContent: 'space-between',
@@ -1599,7 +1605,7 @@ const SuggestedContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { d
       counterfactual="The balance of followed vs. suggested content can vary by time of day, how recently you scrolled, and what content creators have posted. This snapshot reflects one session."
       howWeMeasure={{
         what: 'How much of your feed comes from accounts you follow versus content recommended by the platform.',
-        how: 'Each post is classified as "following" or "suggested" based on platform indicators — labels like "Suggested for you," "Recommended," or the absence of a follow relationship.',
+        how: 'Each post is classified as "following" or "suggested" based on platform indicators, labels like "Suggested for you," "Recommended," or the absence of a follow relationship.',
         limitations: 'Platform indicators vary and may not always be present. Some platforms mix followed and suggested content without clear labels. Classification is based on observable signals only.',
         learnMoreUrl: 'https://algorithmlens.com/dashboard#suggested',
       }}
@@ -1712,7 +1718,7 @@ const SuggestedContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { d
           {/* Contextual interpretation */}
           <Text variant="bodySmall" color={colors.textMuted} style={{ lineHeight: 19 }}>
             {data.creatorNovelty.noveltyPercent >= 60
-              ? 'Most suggested content appeared to come from creators you don\'t follow — lots of new voices in the mix.'
+              ? 'Most suggested content appeared to come from creators you don\'t follow, lots of new voices in the mix.'
               : data.creatorNovelty.noveltyPercent >= 40
               ? 'A mix of new and familiar creators appeared in suggested content.'
               : 'Most suggested content appeared to come from creators you already follow.'
@@ -2084,7 +2090,7 @@ const PoliticsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
           <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: 'center' }}>
             {isLowPostCount
               ? 'Political exposure was light in this scan. Scan more content to see a full breakdown.'
-              : 'Political keywords and themes weren\'t prominent in this scan. Each scan captures a different moment — try scanning at a different time.'}
+              : 'Political keywords and themes weren\'t prominent in this scan. Each scan captures a different moment, try scanning at a different time.'}
           </Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
@@ -2111,7 +2117,7 @@ const PoliticsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
         howWeMeasure={{
           what: 'The share of your feed that contains political keywords and themes, and the approximate ideological distribution.',
           how: 'Post text is analyzed by Google\'s Gemini AI to detect political content and approximate ideological alignment (left/center/right) based on stance keywords.',
-          limitations: 'AI classification is approximate. Short posts may be misclassified. Ideological alignment is based on keyword signals, not nuanced understanding. This describes what appeared — not your views or the platform\'s intent.',
+          limitations: 'AI classification is approximate. Short posts may be misclassified. Ideological alignment is based on keyword signals, not nuanced understanding. This describes what appeared, not your views or the platform\'s intent.',
           learnMoreUrl: 'https://algorithmlens.com/dashboard#politics',
         }}
       />
@@ -2139,7 +2145,7 @@ const PoliticsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
         }}>
           <Info size={14} color={colors.warning} strokeWidth={2} />
           <Text style={{ ...GL_TYPOGRAPHY.caption, color: colors.warning, flex: 1 }}>
-            Low sample — fewer than 10 political posts. Results may not reflect typical patterns.
+            Low sample, fewer than 10 political posts. Results may not reflect typical patterns.
           </Text>
         </View>
       )}
@@ -2227,6 +2233,9 @@ const PoliticsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
       <TouchableOpacity
         onPress={() => setShowIdeology(!showIdeology)}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={showIdeology ? 'Hide ideological breakdown' : 'Show ideological breakdown'}
+        accessibilityState={{ expanded: showIdeology }}
         style={{
           flexDirection: 'row',
           justifyContent: 'space-between',
@@ -2342,7 +2351,7 @@ const PoliticsMethodologyDisclaimer = ({ colors }: { colors: ReturnType<typeof u
       How We Measure
     </Text>
     <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
-      Political classification uses Google's Gemini AI to identify posts containing political keywords and themes. Ideological alignment (left/center/right) is approximate, based on stance keywords found in post text. This analysis describes what appeared in your feed — it does not infer your personal views or the platform's intent.
+      Political classification uses Google's Gemini AI to identify posts containing political keywords and themes. Ideological alignment (left/center/right) is approximate, based on stance keywords found in post text. This analysis describes what appeared in your feed, it does not infer your personal views or the platform's intent.
     </Text>
   </View>
 );
@@ -2403,9 +2412,9 @@ const ToneContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: 
         accent={colors.primaryBlue}
         counterfactual="Tone classification reflects the language used in posts, not their actual impact on you. Sarcasm, irony, and cultural context can make tone analysis imprecise. Your emotional experience of a feed may differ from what language analysis shows."
         howWeMeasure={{
-          what: 'The emotional character of posts in your feed — categorized as positive, neutral, or negative.',
+          what: 'The emotional character of posts in your feed, categorized as positive, neutral, or negative.',
           how: 'Post text is analyzed by Google\'s Gemini AI to classify emotional tone based on language patterns. Each post receives one valence label.',
-          limitations: 'Sentiment analysis is approximate — tone is subjective, and short posts may be misclassified. Sarcasm and irony are difficult to detect. This describes what appeared — not your emotional state or the platform\'s intent.',
+          limitations: 'Sentiment analysis is approximate, tone is subjective, and short posts may be misclassified. Sarcasm and irony are difficult to detect. This describes what appeared, not your emotional state or the platform\'s intent.',
           learnMoreUrl: 'https://algorithmlens.com/dashboard#tone',
         }}
       />
@@ -2433,7 +2442,7 @@ const ToneContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: 
         }}>
           <Info size={14} color={colors.warning} strokeWidth={2} />
           <Text style={{ ...GL_TYPOGRAPHY.caption, color: colors.warning, flex: 1 }}>
-            Low sample — fewer than 10 posts with tone data. Results may not reflect typical patterns.
+            Low sample, fewer than 10 posts with tone data. Results may not reflect typical patterns.
           </Text>
         </View>
       )}
@@ -2479,7 +2488,7 @@ const ToneContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: 
             ? `Positive or upbeat tone appeared in ${analysis?.positivePct}% of posts. Your scrolling experience leaned toward optimistic content.`
             : (analysis?.neutralPct ?? 0) >= 35
             ? `Neutral or informational tone appeared in ${analysis?.neutralPct}% of posts. Most content appeared factual or balanced rather than emotionally charged.`
-            : `Your feed showed a mix of emotional tones — ${analysis?.positivePct}% positive, ${analysis?.neutralPct}% neutral, and ${analysis?.negativePct}% negative.`
+            : `Your feed showed a mix of emotional tones, ${analysis?.positivePct}% positive, ${analysis?.neutralPct}% neutral, and ${analysis?.negativePct}% negative.`
           }
         </Text>
       </View>
@@ -2745,7 +2754,7 @@ const ToneMethodologyDisclaimer = ({ colors }: { colors: ReturnType<typeof useTh
       How We Measure
     </Text>
     <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
-      Emotional tone classification uses Google's Gemini AI to categorize posts as positive, neutral, or negative based on language patterns. Sentiment analysis is approximate — tone is subjective, and short posts may be misclassified. This analysis describes what appeared in your feed — it does not infer your emotional state or the platform's intent.
+      Emotional tone classification uses Google's Gemini AI to categorize posts as positive, neutral, or negative based on language patterns. Sentiment analysis is approximate, tone is subjective, and short posts may be misclassified. This analysis describes what appeared in your feed, it does not infer your emotional state or the platform's intent.
     </Text>
   </View>
 );
@@ -2984,7 +2993,7 @@ export default function DashboardScreen() {
                 {new Date(activeScan.created_at).toLocaleDateString(undefined, {
                   month: 'short', day: 'numeric', year: 'numeric',
                   hour: 'numeric', minute: '2-digit',
-                })}{' — '}
+                })}{', '}
                 {getPlatformDisplayName(activeScan.platform)}{' '}
                 ({activeScan.post_count} posts)
               </Text>
@@ -3148,7 +3157,7 @@ export default function DashboardScreen() {
             <Text style={{
               ...GL_TYPOGRAPHY.body, color: colors.textMuted, textAlign: 'center', marginBottom: SPACING.xl,
             }}>
-              Complete your first scan to unlock insights about your feed — ads, suggested content, top sources, and more.
+              Complete your first scan to unlock insights about your feed, ads, suggested content, top sources, and more.
             </Text>
             {/* D-1 FIX: Unified scan CTA color — primary blue instead of teal/green */}
             <TouchableOpacity

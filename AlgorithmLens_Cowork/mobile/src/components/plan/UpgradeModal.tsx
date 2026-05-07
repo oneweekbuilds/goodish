@@ -574,7 +574,7 @@ function UpgradeModalComponent({ visible, onClose }: UpgradeModalProps) {
                 align="center"
                 style={{ marginTop: SPACING.sm }}
               >
-                Dev mode — purchase is simulated locally
+                Dev mode, purchase is simulated locally
               </Text>
             )}
 

@@ -507,7 +507,7 @@ function buildAdsInsight(
         : `Commercial content is minimal in your feed (${adPct}%)`,
       meaning: meaningText,
       whyCare: adCount === 0
-        ? 'Some promotional content may not carry visible labels — native ads and influencer partnerships often blend in.'
+        ? 'Some promotional content may not carry visible labels, native ads and influencer partnerships often blend in.'
         : 'This is below the typical range of 15–30%, leaving more space for non-commercial content.',
       meta,
     };
@@ -574,7 +574,7 @@ function buildPoliticsInsight(
     return {
       title: 'Political content analysis requires AI',
       meaning: 'To identify political content in your feed, AlgorithmLens uses Google\'s Gemini AI to analyze post text. This gives you an accurate count of how much political content appears in your feed.',
-      whyCare: 'Enable AI analysis in Settings to unlock this tab. Your data is processed securely — Google does not use it to train models.',
+      whyCare: 'Enable AI analysis in Settings to unlock this tab. Your data is processed securely, Google does not use it to train models.',
       meta: `${totalPosts} posts available for analysis from ${platform}`,
     };
   }
@@ -834,6 +834,7 @@ function extractToneBySourceOrigin(posts: RawPost[], raw: ScanRecord['raw_data']
 
   for (let i = 0; i < analysis.feed_items.length; i++) {
     const item = analysis.feed_items[i];
+    if (!item) continue;
     const valence = (item.emotions?.valence || '').toUpperCase();
     if (valence !== 'POSITIVE' && valence !== 'NEUTRAL' && valence !== 'NEGATIVE') continue;
 
@@ -1009,7 +1010,7 @@ function buildToneInsight(
     return {
       title: 'Emotional tone analysis requires AI',
       meaning: 'To classify the emotional tone of posts (positive, neutral, negative), AlgorithmLens uses Google\'s Gemini AI. This reveals the emotional character of your feed.',
-      whyCare: 'Enable AI analysis in Settings to unlock this tab. Your data is processed securely — Google does not use it to train models.',
+      whyCare: 'Enable AI analysis in Settings to unlock this tab. Your data is processed securely, Google does not use it to train models.',
       meta: `${totalPosts} posts available for analysis from ${platform}`,
     };
   }
@@ -1103,7 +1104,7 @@ function extractUnlabeledPromos(posts: RawPost[], raw: ScanRecord['raw_data']): 
 
   // Check if any item has influenceSignals field — if not, pipeline doesn't support it yet
   const hasInfluenceField = feedItems.some(
-    (item: Record<string, unknown>) => Array.isArray((item as any).influenceSignals)
+    (item) => Array.isArray((item as unknown as Record<string, unknown>).influenceSignals)
   );
   if (!hasInfluenceField) return null;
 
@@ -1160,7 +1161,8 @@ function extractTopAdvertisedProductTypes(posts: RawPost[], raw: ScanRecord['raw
   const themeCounts: Record<string, { count: number; advertisers: Set<string> }> = {};
 
   for (let i = 0; i < posts.length; i++) {
-    if (!posts[i].is_ad) continue;
+    const post = posts[i];
+    if (!post || !post.is_ad) continue;
 
     const analysisItem = feedItems[i] as any;
     if (!analysisItem) continue;
@@ -1175,13 +1177,11 @@ function extractTopAdvertisedProductTypes(posts: RawPost[], raw: ScanRecord['raw
 
     const normalized = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
 
-    if (!themeCounts[normalized]) {
-      themeCounts[normalized] = { count: 0, advertisers: new Set() };
-    }
-    themeCounts[normalized].count++;
+    const bucket = themeCounts[normalized] ?? (themeCounts[normalized] = { count: 0, advertisers: new Set<string>() });
+    bucket.count++;
 
-    const handle = posts[i].creator_handle || posts[i].creator_display_name || '';
-    if (handle) themeCounts[normalized].advertisers.add(handle);
+    const handle = post.creator_handle || post.creator_display_name || '';
+    if (handle) bucket.advertisers.add(handle);
   }
 
   const totalAds = adPosts.length;
@@ -1443,12 +1443,14 @@ function extractTopicsBySourceOrigin(posts: RawPost[], raw: ScanRecord['raw_data
       // Fallback to hashtags
       if (post.hashtags && post.hashtags.length > 0) {
         const tag = post.hashtags[0];
-        if (post.is_suggested === true) {
-          sugTopics[tag] = (sugTopics[tag] || 0) + 1;
-          sugTotal++;
-        } else if (post.is_suggested === false) {
-          folTopics[tag] = (folTopics[tag] || 0) + 1;
-          folTotal++;
+        if (tag) {
+          if (post.is_suggested === true) {
+            sugTopics[tag] = (sugTopics[tag] || 0) + 1;
+            sugTotal++;
+          } else if (post.is_suggested === false) {
+            folTopics[tag] = (folTopics[tag] || 0) + 1;
+            folTotal++;
+          }
         }
       }
       continue;

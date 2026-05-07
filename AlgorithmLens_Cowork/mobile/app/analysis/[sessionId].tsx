@@ -294,25 +294,32 @@ export default function AnalysisScreen() {
               {frames.length} frames from {platform}
             </Text>
           </View>
-          <TouchableOpacity
-            onPress={handleSharePress}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Share results"
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: RADIUS.md,
-              backgroundColor: colors.bgCard,
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderWidth: 1,
-              borderColor: colors.borderSoft,
-              marginLeft: SPACING.md,
-            }}
-          >
-            <Share2 size={18} color={colors.textMain} strokeWidth={2} />
-          </TouchableOpacity>
+          {/* Build #44: Share button hidden because handleSharePress is a
+              no-op. Tapping it previously did nothing, which is confusing
+              for sighted users and worse for VoiceOver. Re-enable when
+              real share via deep link / image export ships.
+              TODO build #45+: implement real share via deep link */}
+          {false && (
+            <TouchableOpacity
+              onPress={handleSharePress}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Share results"
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: RADIUS.md,
+                backgroundColor: colors.bgCard,
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderWidth: 1,
+                borderColor: colors.borderSoft,
+                marginLeft: SPACING.md,
+              }}
+            >
+              <Share2 size={18} color={colors.textMain} strokeWidth={2} />
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Analysis Progress Card — hidden when complete + results available */}
@@ -369,7 +376,7 @@ export default function AnalysisScreen() {
               {[
                 {
                   label: 'Frame Analysis',
-                  description: 'Examining your feed for hidden patterns — each screenshot reveals what the algorithm chose to show you',
+                  description: 'Examining your feed, each screenshot is reviewed for the content that was shown to you',
                   active: analysis.progress.stage === 'ANALYZING',
                   done: ['DEDUPLICATING', 'BUILDING', 'SAVING', 'COMPLETE'].includes(analysis.progress.stage),
                 },
@@ -381,7 +388,7 @@ export default function AnalysisScreen() {
                 },
                 {
                   label: 'Report Building',
-                  description: 'Compiling your personalized feed report — ads, sources, tone, and content patterns all in one place',
+                  description: 'Compiling your personalized feed report, ads, sources, tone, and content patterns all in one place',
                   active: analysis.progress.stage === 'BUILDING' || analysis.progress.stage === 'SAVING',
                   done: analysis.progress.stage === 'COMPLETE',
                 },

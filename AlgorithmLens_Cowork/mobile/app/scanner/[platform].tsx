@@ -50,31 +50,31 @@ function getScanQuality(postCount: number, colors: { accentGreen: string; warnin
     return {
       label: 'Excellent sample',
       color: colors.accentGreen,
-      message: `${postCount} posts captured — detailed insights available`,
+      message: `${postCount} posts captured, detailed insights available`,
     };
   } else if (postCount >= 30) {
     return {
       label: 'Good sample',
       color: colors.accentGreen,
-      message: `${postCount} posts captured — enough for meaningful analysis`,
+      message: `${postCount} posts captured, enough for meaningful analysis`,
     };
   } else if (postCount >= MIN_POSTS_GOOD) {
     return {
       label: 'Fair sample',
       color: colors.warning,
-      message: `${postCount} posts captured — more posts = richer insights`,
+      message: `${postCount} posts captured, more posts = richer insights`,
     };
   } else if (postCount >= MIN_POSTS_OK) {
     return {
       label: 'Low sample',
       color: colors.warning,
-      message: `${postCount} posts — aim for ${MIN_POSTS_GOOD}+ for better accuracy`,
+      message: `${postCount} posts, aim for ${MIN_POSTS_GOOD}+ for better accuracy`,
     };
   } else {
     return {
       label: 'Very low sample',
       color: colors.error,
-      message: `Only ${postCount} posts — need at least ${MIN_POSTS_OK} for basic analysis`,
+      message: `Only ${postCount} posts, need at least ${MIN_POSTS_OK} for basic analysis`,
     };
   }
 }
@@ -194,7 +194,7 @@ export default function ScannerScreen() {
             posts.length,
             'posts on',
             platformStr,
-            '— possible classification error'
+            ', possible classification error'
           );
         }
 
@@ -240,7 +240,10 @@ export default function ScannerScreen() {
 
         // Save to Supabase
         try {
-          await supabase.from('scans').insert({
+          // Race the insert against a timeout so a hung connection doesn't
+          // leave the user staring at the "Saving your scan..." spinner forever.
+          // Mirrors broadcastAnalysisPipeline.persistScan() which uses the same 15s budget.
+          const insertPromise = supabase.from('scans').insert({
             user_id: user.id,
             platform: result.platform.toLowerCase(),
             post_count: posts.length,
@@ -272,6 +275,10 @@ export default function ScannerScreen() {
             },
             created_at: new Date().toISOString(),
           });
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('Supabase insert timed out after 15 seconds')), 15000)
+          );
+          await Promise.race([insertPromise, timeoutPromise]);
           // Record scan date for notification scheduling
           await recordScanDate();
 
@@ -549,7 +556,7 @@ export default function ScannerScreen() {
                 variant="caption"
                 color={colors.textSecondary}
               >
-                Scan complete — pull up for results
+                Scan complete, pull up for results
               </Text>
             </View>
 
@@ -612,7 +619,7 @@ export default function ScannerScreen() {
                     style={{ flex: 1 }}
                   >
                     {savedSuggestedPct === 0 && savedAdPct > 0
-                      ? `0% suggested content detected across ${savedPostCount} posts. This may indicate a classification issue — your dashboard data for this scan may be incomplete.`
+                      ? `0% suggested content detected across ${savedPostCount} posts. This may indicate a classification issue, your dashboard data for this scan may be incomplete.`
                       : `We couldn't detect ads or suggested content. ${platformName} may have updated their layout.`}
                   </Text>
                 </View>

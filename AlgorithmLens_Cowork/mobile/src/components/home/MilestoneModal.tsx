@@ -177,7 +177,7 @@ function MilestoneModalComponent({ milestone, onDismiss }: MilestoneModalProps) 
         <TouchableOpacity
           onPress={handleDismiss}
           activeOpacity={0.7}
-          accessibilityLabel="Keep going — dismiss milestone celebration"
+          accessibilityLabel="Keep going, dismiss milestone celebration"
           accessibilityRole="button"
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           style={{

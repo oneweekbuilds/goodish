@@ -595,11 +595,35 @@ export default function SettingsScreen() {
           {/* M-12 FIX: Delete Account with type-to-confirm gate */}
           <TouchableOpacity
             onPress={() => {
-              setDeleteConfirmText('');
-              setShowDeleteModal(true);
+              // Build #44: account deletion goes via mailto until a real
+              // backend endpoint exists. The previous flow opened a
+              // type-DELETE-to-confirm modal that fired a fake "Coming
+              // Soon" alert, which is non-compliant with App Store
+              // guideline 5.1.1(v). The modal component is left in place
+              // (showDeleteModal state below) but unreached for now —
+              // re-wire when the real deletion endpoint ships.
+              Alert.alert(
+                'Request Account Deletion',
+                'Tapping continue will open your email app with a pre-filled message to request account deletion. We will respond within 7 business days.',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  {
+                    text: 'Continue',
+                    onPress: () => {
+                      const mailto = 'mailto:jwjwin0@gmail.com?subject=Delete%20my%20AlgorithmLens%20account&body=Please%20delete%20my%20account.%0A%0AAccount%20email%3A%20%5Byour%20email%5D%0A';
+                      Linking.openURL(mailto).catch(() => {
+                        Alert.alert(
+                          'Could not open email app',
+                          'Please email jwjwin0@gmail.com from your preferred mail client to request account deletion.'
+                        );
+                      });
+                    },
+                  },
+                ]
+              );
             }}
             accessibilityRole="button"
-            accessibilityLabel="Delete account"
+            accessibilityLabel="Request account deletion"
             style={{
               paddingHorizontal: SPACING.lg,
               paddingVertical: SPACING.md,
@@ -613,7 +637,7 @@ export default function SettingsScreen() {
                 fontWeight: '500',
               }}
             >
-              Delete Account
+              Request Account Deletion
             </Text>
           </TouchableOpacity>
         </SettingSection>
@@ -625,7 +649,7 @@ export default function SettingsScreen() {
             <TouchableOpacity
               onPress={handleSubscriptionPress}
               accessibilityRole="button"
-              accessibilityLabel="Upgrade to Plus — track trends over time"
+              accessibilityLabel="Upgrade to Plus, track trends over time"
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
@@ -776,7 +800,7 @@ export default function SettingsScreen() {
               >
                 Goodish
               </Text>
-              {' '}— building tools that increase human agency.
+              , building tools that increase human agency.
             </Text>
           </View>
         </SettingSection>

@@ -403,7 +403,7 @@ export async function getSmartSuggestions(
       const dayName = getDayName(lastScanDate);
       return {
         type: 'time_check',
-        message: `Your last scan was ${dayName}. Feeds shift over time — want to see what's changed?`,
+        message: `Your last scan was ${dayName}. Feeds shift over time, want to see what's changed?`,
       };
     }
   }

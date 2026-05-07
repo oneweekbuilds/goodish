@@ -102,7 +102,7 @@ function PlatformItem({ platform, isSelected, onPress, colors, shadows }: Platfo
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         accessibilityRole="button"
-        accessibilityLabel={`Scan ${platform.name}${isSelected ? ', selected — tap again to start scan' : ''}`}
+        accessibilityLabel={`Scan ${platform.name}${isSelected ? ', selected, tap again to start scan' : ''}`}
         accessibilityHint={isSelected ? 'Tap again to start scanning this platform' : `Select ${platform.name} for scanning`}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         style={{ alignItems: 'center' }}

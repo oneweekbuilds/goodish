@@ -353,7 +353,7 @@ export default function OnboardingScreen() {
                 color={colors.textMuted}
                 align="center"
               >
-                A clear picture of what appears — sources, ads, tone, and more.
+                A clear picture of what appears, sources, ads, tone, and more.
               </Text>
             </View>
           </View>
@@ -427,7 +427,7 @@ export default function OnboardingScreen() {
                       zIndex: 1,
                     }}
                     accessible
-                    accessibilityLabel={`Step ${item.step}: ${item.label} — ${item.detail}`}
+                    accessibilityLabel={`Step ${item.step}: ${item.label}, ${item.detail}`}
                   >
                     {/* Step number in primary blue circle */}
                     <View
@@ -546,7 +546,7 @@ export default function OnboardingScreen() {
                   borderRadius: RADIUS.md,
                 }}
                 accessible
-                accessibilityLabel="AlgorithmLens analyzes your feed locally using AI. Your data stays on your device."
+                accessibilityLabel="AlgorithmLens captures your screen as you scroll, then sends those frames to Google's Gemini AI for analysis. We don't store your frames after analysis completes. We never see your account credentials or messages."
               >
                 <Shield size={16} color={colors.primary} strokeWidth={2} />
                 <Text
@@ -555,7 +555,7 @@ export default function OnboardingScreen() {
                   align="left"
                   style={{ flex: 1 }}
                 >
-                  AlgorithmLens analyzes your feed locally using AI. Your data stays on your device.
+                  AlgorithmLens captures your screen as you scroll, then sends those frames to Google's Gemini AI for analysis. We don't store your frames after analysis completes. We never see your account credentials or messages.
                 </Text>
               </View>
             </View>
@@ -598,7 +598,7 @@ export default function OnboardingScreen() {
             onPress={handleGetStarted}
             variant="primary"
             size="lg"
-            accessibilityLabel={selectedPlatform ? `Let's go — scan ${selectedPlatform}` : "Get started — explore the app"}
+            accessibilityLabel={selectedPlatform ? `Let's go, scan ${selectedPlatform}` : "Get started, explore the app"}
           />
         ) : (
           <Button

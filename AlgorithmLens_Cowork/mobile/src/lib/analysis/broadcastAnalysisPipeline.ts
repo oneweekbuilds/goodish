@@ -295,6 +295,13 @@ export class BroadcastAnalysisPipeline {
 
       // ── Stage 5: SAVING ──
       let saveWarning: string | null = null;
+      // Build #44: capture the underlying technical error so the UI can
+      // surface it in __DEV__ / TestFlight diagnostic mode. The friendly
+      // string above is what end users see; this `details` payload is what
+      // tells us "why" (e.g. "column 'source_type' of relation 'scans'
+      // does not exist") so we don't have to rely on Sentry, which isn't
+      // configured.
+      let saveWarningDetails: string | null = null;
       if (this.config.enablePersistence) {
         progress.stage = 'SAVING';
         this.reportProgress(progress);
@@ -313,6 +320,7 @@ export class BroadcastAnalysisPipeline {
             { scanId, platform }
           );
           saveWarning = 'Your results are ready, but we couldn\'t save them to your history. They\'ll only be available during this session.';
+          saveWarningDetails = msg.slice(0, 240);
         }
       }
 
@@ -324,9 +332,18 @@ export class BroadcastAnalysisPipeline {
 
       __pipelineDiag.lastStage = 'complete';
 
-      // If save failed, the result still includes a warning the UI can show
+      // If save failed, the result still includes a warning the UI can show.
+      // Build #44: also attach `details` (the underlying error) so the UI
+      // can render it in dev/TestFlight diagnostic mode.
       if (saveWarning && scanResult.debug) {
-        scanResult.debug.warnings = [...(scanResult.debug.warnings || []), { code: 'SAVE_FAILED', message: saveWarning }];
+        scanResult.debug.warnings = [
+          ...(scanResult.debug.warnings || []),
+          {
+            code: 'SAVE_FAILED',
+            message: saveWarning,
+            ...(saveWarningDetails ? { details: saveWarningDetails } : {}),
+          },
+        ];
       }
 
       this.callbacks.onComplete(scanId, scanResult);
@@ -554,7 +571,7 @@ export class BroadcastAnalysisPipeline {
     if (o.firstErrorMessage) {
       summary += ` First error: ${o.firstErrorMessage}`;
     } else if (o.framesEmpty === o.framesAttempted) {
-      summary += ' The model did not recognize feed items in any frame — try recording while actively scrolling the feed (not the home screen or app launcher).';
+      summary += ' The model did not recognize feed items in any frame, try recording while actively scrolling the feed (not the home screen or app launcher).';
     }
     return summary;
   }
@@ -717,6 +734,14 @@ export class BroadcastAnalysisPipeline {
       (i) => i.source_origin === 'suggested',
     ).length;
 
+    // Build #44: scanRow shape MUST match the actual Supabase 'scans' table.
+    // Live schema (verified 2026-05-06): id, user_id, platform, post_count,
+    // ad_count, ad_percentage, suggested_count, suggested_percentage,
+    // raw_data, created_at. Two columns previously inserted at top level
+    // (source_type, duration_seconds) do NOT exist on the table; PostgREST
+    // rejects the row with 42703 undefined_column. Both values are now
+    // captured inside raw_data instead — source_type as a literal field,
+    // duration_seconds derived from raw_data.broadcast_capture at read time.
     const scanRow = {
       id: scanId,
       user_id: userId,
@@ -728,9 +753,10 @@ export class BroadcastAnalysisPipeline {
       suggested_percentage: totalItems > 0
         ? Math.round((suggestedCount / totalItems) * 100)
         : 0,
-      source_type: 'MOBILE_BROADCAST',
-      duration_seconds: result.environment.broadcast_capture?.duration_seconds || 0,
       raw_data: {
+        // Build #44: source_type moved from top-level column into raw_data.
+        // Read sites in useDashboard / history derive scan kind from this.
+        source_type: 'MOBILE_BROADCAST',
         posts: result.feed_items.map((item) => ({
           creator_handle: item.account?.account_handle || '',
           creator_display_name: item.account?.account_display_name || '',

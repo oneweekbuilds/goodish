@@ -191,9 +191,32 @@ export default function HistoryScreen() {
     const suggestedCount = rawPosts.filter((p: Record<string, unknown>) => p.is_suggested).length;
     const suggestedPct = postCount > 0 ? Math.round((suggestedCount / postCount) * 100) : 0;
 
-    // Broadcast mode detection
-    const isBroadcast = item.source_type === 'MOBILE_BROADCAST';
-    const durationSecs = item.duration_seconds || 0;
+    // Broadcast mode detection.
+    // Build #44: source_type and duration_seconds were previously top-level
+    // columns on the 'scans' table, but the live Supabase schema doesn't
+    // have those columns. Both signals are now read from raw_data:
+    //   - source_type: read from raw_data.source_type if present (broadcast
+    //     scans set this in build #44+); for legacy / scanner rows that
+    //     never set it, fall back to inferring 'MOBILE_BROADCAST' from
+    //     raw_data.broadcast_capture being present, otherwise 'MOBILE_APP'.
+    //   - duration_seconds: read from raw_data.duration_seconds (scanner
+    //     wrote it there) or raw_data.broadcast_capture.duration_seconds
+    //     (broadcast wrote it there).
+    // The top-level `item.source_type` / `item.duration_seconds` reads are
+    // kept as a fallback for any historical rows that DID land with those
+    // top-level columns (none in production today, but harmless to check).
+    const rawData = (item.raw_data as Record<string, unknown> | undefined) || {};
+    const broadcastCapture = rawData.broadcast_capture as Record<string, unknown> | undefined;
+    const derivedSourceType =
+      (rawData.source_type as string | undefined)
+      || item.source_type
+      || (broadcastCapture ? 'MOBILE_BROADCAST' : 'MOBILE_APP');
+    const isBroadcast = derivedSourceType === 'MOBILE_BROADCAST';
+    const durationSecs =
+      (rawData.duration_seconds as number | undefined)
+      ?? (broadcastCapture?.duration_seconds as number | undefined)
+      ?? item.duration_seconds
+      ?? 0;
 
     // Use centralized quality threshold
     const qualityLevel = getQualityLevel(postCount);
@@ -296,7 +319,7 @@ export default function HistoryScreen() {
               )}
             </View>
             <Text variant="small" color={colors.textSecondary} style={{ marginTop: SPACING.xxs }}>
-              {getRelativeTime(item.created_at)} — {postCount} posts
+              {getRelativeTime(item.created_at)}, {postCount} posts
               {isBroadcast && durationSecs > 0 ? ` · ${formatDuration(durationSecs)}` : ''}
             </Text>
           </View>
@@ -537,7 +560,7 @@ export default function HistoryScreen() {
               )}
               {compareMode && (
                 <Text variant="label" color={colors.textSecondary}>
-                  {selectedScans.length}/2 selected — tap scans to compare
+                  {selectedScans.length}/2 selected, tap scans to compare
                 </Text>
               )}
             </View>

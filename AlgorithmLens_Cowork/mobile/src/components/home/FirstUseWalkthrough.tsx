@@ -27,7 +27,7 @@ const STEPS = [
   {
     Icon: Eye,
     title: 'See what\'s in your feed',
-    description: 'AlgorithmLens shows you what\'s in your social media feed — sources, ads, tone, and more.',
+    description: 'AlgorithmLens shows you what\'s in your social media feed, sources, ads, tone, and more.',
   },
   {
     Icon: ScanSearch,
@@ -37,7 +37,7 @@ const STEPS = [
   {
     Icon: BarChart3,
     title: 'Get insights',
-    description: 'View your feed composition — ads, suggested content, sources, and tone breakdown.',
+    description: 'View your feed composition, ads, suggested content, sources, and tone breakdown.',
   },
 ];
 

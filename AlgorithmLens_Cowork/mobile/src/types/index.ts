@@ -149,7 +149,12 @@ export interface PrivacyInfo {
 export interface DebugInfo {
   processing_time_seconds: number;
   errors: Array<{ code: string; message: string }>;
-  warnings: Array<{ code: string; message: string }>;
+  /**
+   * Pipeline warnings surfaced to the user via BroadcastResultsSummary.
+   * `details` is the underlying technical error message (e.g. PostgREST error)
+   * — only rendered to the user in __DEV__ / TestFlight diagnostic builds.
+   */
+  warnings: Array<{ code: string; message: string; details?: string }>;
   gemini_consent?: boolean;
   gemini_attempted?: boolean;
   gemini_used?: boolean;

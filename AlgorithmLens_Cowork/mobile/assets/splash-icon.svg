@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!--
+    AlgorithmLens splash icon (build #44).
+    Square, 1024x1024, designed for Expo's splash.image with resizeMode: 'contain'.
+    Background color (#F7F8FC) is set on the splash config in app.config.ts so this
+    image only needs the icon itself; the surrounding canvas comes from Expo.
+
+    Lifted from assets/splash.svg, scaled up so the icon fills ~85% of the canvas.
+  -->
+  <defs>
+    <linearGradient id="iconBgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="splashLensGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#DBEAFE" stop-opacity="0.9"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Transparent background; Expo's splash backgroundColor renders behind. -->
+
+  <!-- Icon group, centered at (512, 512), scaled 3.67x from the original 240px icon -->
+  <g transform="translate(512, 512) scale(3.667)">
+    <!-- Icon background (rounded square) -->
+    <rect x="-120" y="-120" width="240" height="240" rx="52" ry="52" fill="url(#iconBgGrad)"/>
+
+    <!-- Subtle glow -->
+    <circle cx="0" cy="-8" r="82" fill="#3B82F6" opacity="0.3"/>
+
+    <!-- Outer lens ring -->
+    <circle cx="0" cy="-8" r="62" fill="none" stroke="url(#splashLensGrad)" stroke-width="10" opacity="0.9"/>
+
+    <!-- Inner lens body -->
+    <circle cx="0" cy="-8" r="48" fill="url(#splashLensGrad)" opacity="0.15"/>
+
+    <!-- Prism refraction lines -->
+    <rect x="-29" y="-22" width="2" height="28" rx="1" fill="#FFFFFF" opacity="0.7" transform="rotate(-20, 0, -8)"/>
+    <rect x="-1" y="-27" width="2" height="38" rx="1" fill="#FFFFFF" opacity="0.9"/>
+    <rect x="27" y="-22" width="2" height="28" rx="1" fill="#FFFFFF" opacity="0.7" transform="rotate(20, 0, -8)"/>
+
+    <!-- Lens highlight -->
+    <ellipse cx="-17" cy="-25" rx="14" ry="7" fill="#FFFFFF" opacity="0.2" transform="rotate(-30, -17, -25)"/>
+
+    <!-- Data point dots -->
+    <circle cx="-20" cy="2" r="2.4" fill="#FFFFFF" opacity="0.5"/>
+    <circle cx="0" cy="12" r="2.8" fill="#FFFFFF" opacity="0.6"/>
+    <circle cx="20" cy="2" r="2.4" fill="#FFFFFF" opacity="0.5"/>
+  </g>
+</svg>
