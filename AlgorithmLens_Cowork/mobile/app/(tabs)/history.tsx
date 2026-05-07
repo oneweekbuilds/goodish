@@ -17,6 +17,7 @@ import { SPACING, RADIUS, PLATFORMS, MIN_TOUCH_TARGET } from '../../src/lib/them
 import { getQualityLevel } from '../../src/config/thresholds';
 import ComparisonView from '../../src/components/dashboard/ComparisonView';
 import { withAlpha } from '../../src/lib/utils';
+import { formatDuration } from '../../src/lib/formatDuration';
 
 // H-08 FIX: Consistent platform icon labels across all scan history entries.
 // Every platform always uses the same abbreviation — no more mismatched icons.
@@ -72,13 +73,6 @@ export default function HistoryScreen() {
     const diffDay = Math.floor(diffHr / 24);
     if (diffDay < 7) return `${diffDay}d ago`;
     return formatDate(dateStr);
-  };
-
-  const formatDuration = (seconds: number): string => {
-    if (seconds < 60) return `${Math.round(seconds)}s`;
-    const minutes = Math.floor(seconds / 60);
-    const secs = Math.round(seconds % 60);
-    return secs > 0 ? `${minutes}m ${secs}s` : `${minutes}m`;
   };
 
   // Group scans by day for section headers

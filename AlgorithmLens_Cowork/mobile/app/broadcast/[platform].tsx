@@ -219,8 +219,11 @@ export default function BroadcastScreen() {
     const framesMet = broadcast.frameCount >= MIN_FRAMES_REQUIRED;
     const timeMet = broadcast.elapsedSeconds >= MIN_SCAN_DURATION_SECS;
 
+    // When thresholds aren't met, we keep our own confirmation Alert because
+    // iOS's native dialog has no way to communicate "not enough data yet" —
+    // this is the only place the user learns scan quality is at risk before
+    // committing.
     if (!framesMet || !timeMet) {
-      // Thresholds not met — warn user
       triggerNotificationWarning();
       const needs: string[] = [];
       if (!framesMet) needs.push(`${MIN_FRAMES_REQUIRED - broadcast.frameCount} more frames`);
@@ -240,22 +243,14 @@ export default function BroadcastScreen() {
           },
         ]
       );
-    } else {
-      triggerNotificationWarning();
-      Alert.alert(
-        'Stop recording?',
-        `This will end the broadcast session. ${broadcast.frameCount} frames have been captured so far.`,
-        [
-          { text: 'Keep Recording', style: 'cancel' },
-          {
-            text: 'Stop Recording',
-            onPress: async () => {
-              await broadcast.stopSession();
-            },
-          },
-        ]
-      );
+      return;
     }
+
+    // Thresholds met: skip our redundant "Stop recording?" Alert. iOS's
+    // mandatory broadcast-stop confirmation already provides the same
+    // safeguard, and stacking two dialogs felt like friction in TestFlight.
+    triggerNotificationWarning();
+    await broadcast.stopSession();
   }, [broadcast]);
 
   const handleViewResults = useCallback(async () => {

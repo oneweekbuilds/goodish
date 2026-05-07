@@ -23,6 +23,8 @@ import {
 import { useTheme } from '../../context/ThemeContext';
 import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
 import { SPACING, RADIUS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { formatDuration } from '../../lib/formatDuration';
+import { formatHandle } from '../../lib/formatHandle';
 import { Text } from '../glue';
 import type { UnifiedScanResult } from '../../types';
 
@@ -41,6 +43,13 @@ export const BroadcastResultsSummary = React.memo(function BroadcastResultsSumma
   const adPct = result.aggregates.ad_percentage;
   const adCount = result.aggregates.total_ads;
   const politicalPct = result.aggregates.political_content_summary?.political_percentage || 0;
+  const politicalItems = result.aggregates.political_content_summary?.political_items || 0;
+  // B2 build #46-prep: align with the Political tab's lowSample threshold so
+  // this card and the dashboard tab agree. With fewer than 10 political
+  // posts the Political tab already says "Limited political content"; this
+  // card previously showed the bare percentage with no qualifier, which
+  // made the two screens look inconsistent for the same scan.
+  const politicalLowSample = politicalItems > 0 && politicalItems < 10;
   const topTopics = (result.aggregates.topic_distribution || []).slice(0, 3);
   const duration = result.environment.broadcast_capture?.duration_seconds || 0;
   const framesUsed = result.environment.broadcast_capture?.frames_unique || 0;
@@ -229,7 +238,7 @@ export const BroadcastResultsSummary = React.memo(function BroadcastResultsSumma
             <FindingRow
               icon={<Flag size={16} color={colors.iconPolitics} strokeWidth={2} />}
               label="Political content"
-              value={`${politicalPct}%`}
+              value={politicalLowSample ? `${politicalPct}% (low sample)` : `${politicalPct}%`}
               colors={colors}
             />
           )}
@@ -364,13 +373,3 @@ function FindingRow({
   );
 }
 
-// ============================================
-// Helpers
-// ============================================
-
-function formatDuration(seconds: number): string {
-  if (seconds < 60) return `${Math.round(seconds)}s`;
-  const minutes = Math.floor(seconds / 60);
-  const secs = Math.round(seconds % 60);
-  return secs > 0 ? `${minutes}m ${secs}s` : `${minutes}m`;
-}

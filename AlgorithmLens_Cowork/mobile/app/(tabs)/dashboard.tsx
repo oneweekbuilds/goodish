@@ -34,6 +34,7 @@ import { COLORS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../src/lib/theme';
 import { triggerSelection } from '../../src/lib/haptics';
 import { captureError } from '../../src/lib/sentry';
 import { getPlatformDisplayName } from '../../src/lib/utils';
+import { formatHandle } from '../../src/lib/formatHandle';
 import {
   Search,
   Sparkles,
@@ -95,7 +96,15 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
   const DAILY_MINUTES = 45;
   const adMinutes = data.totalPosts >= 10 ? (data.adPct / 100) * DAILY_MINUTES : null;
   const politicalPct = data.politicalAnalysis?.politicalPct ?? 0;
-  const politicalMinutes = data.totalPosts >= 10 ? (politicalPct / 100) * DAILY_MINUTES : null;
+  // B2 build #46-prep: gate on the political analysis' own low-sample flag
+  // (politicalCount >= 10), not just totalPosts >= 10. Otherwise a 65-post
+  // scan with 5 political posts would advertise "0.5 min/day" of political
+  // content while the Political tab is simultaneously saying the sample is
+  // too small to draw conclusions.
+  const politicalMinutes =
+    data.totalPosts >= 10 && data.politicalAnalysis && !data.politicalAnalysis.lowSample
+      ? (politicalPct / 100) * DAILY_MINUTES
+      : null;
 
   const formatMinutes = (mins: number | null): string => {
     if (mins === null) return '—';
@@ -192,7 +201,17 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
       feedSummaryBullets.push(`Suggested content made up ${data.suggestedPct}% of your feed`);
     }
     if (politicalPct > 0) {
-      feedSummaryBullets.push(`Political content was ${politicalPct}% of posts`);
+      // B2 build #46-prep: when the Political tab is showing the
+      // low-sample warning ("fewer than 10 political posts"), the Overview
+      // bullet should reflect that same caveat instead of presenting the
+      // percentage as if it were a stable signal.
+      if (data.politicalAnalysis?.lowSample) {
+        feedSummaryBullets.push(
+          `Political content appeared in ${data.politicalAnalysis.politicalCount} posts (low sample, see Political tab)`
+        );
+      } else {
+        feedSummaryBullets.push(`Political content was ${politicalPct}% of posts`);
+      }
     }
     feedSummaryBullets.push(`This scan included ${data.totalPosts} posts from ${data.platform}`);
   }
@@ -632,7 +651,7 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
                     backgroundColor: colors.bgCardGradientEnd, borderRadius: RADIUS.md,
                   }}>
                     <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textMain, fontWeight: '500' }}>
-                      @{brand.handle}
+                      {formatHandle(brand.handle)}
                     </Text>
                     <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
                       {brand.postCount} post{brand.postCount !== 1 ? 's' : ''} · {brand.adCount} ad{brand.adCount !== 1 ? 's' : ''}
@@ -651,7 +670,7 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
                     backgroundColor: colors.bgCardGradientEnd, borderRadius: RADIUS.md,
                   }}>
                     <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textMain, fontWeight: '500' }}>
-                      @{inf.handle}
+                      {formatHandle(inf.handle)}
                     </Text>
                     <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
                       {inf.postCount} post{inf.postCount !== 1 ? 's' : ''} · {inf.adCount} ad{inf.adCount !== 1 ? 's' : ''}
@@ -793,7 +812,7 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
               {[
                 { step: 1, title: 'Your behavior', desc: 'What you pause on, like, share, and skip sends signals to the platform' },
                 { step: 2, title: 'Patterns accumulate', desc: 'Over time, recurring topics and content types form observable patterns in your feed' },
-                { step: 3, title: 'Content is tailored', desc: 'Your feed composition reflects what has appeared \u2014 we cannot know why specific content was selected' },
+                { step: 3, title: 'Content is tailored', desc: 'Your feed composition reflects what has appeared, we cannot know why specific content was selected' },
                 { step: 4, title: 'Your media diet evolves', desc: 'Each interaction reinforces or shifts the cycle. Small changes can move the needle' },
               ].map((item) => (
                 <View key={item.step} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}>
@@ -986,7 +1005,7 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
               Top Source
             </Text>
             <Text variant="labelBold" color={colors.textMain} style={{ marginTop: SPACING.xxs }} numberOfLines={1}>
-              @{data.topCreators[0]?.name ?? '—'}
+              {data.topCreators[0]?.name ? formatHandle(data.topCreators[0].name) : '—'}
             </Text>
             <Text variant="captionSmall" color={colors.textMuted} style={{ marginTop: SPACING.xxs  }}>
               most frequent
@@ -1027,7 +1046,7 @@ const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { dat
         }}>
           <ALBarChart
             data={data.topCreators.slice(0, isPlus ? 10 : 5).map((creator) => ({
-              label: `@${creator.name}`,
+              label: formatHandle(creator.name),
               value: creator.count,
               percentage: creator.percentage,
             }))}
@@ -1222,7 +1241,14 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
             {data.adPct}% of posts
           </Text>
         </View>
-        {data.topAdvertisers.length > 0 && (
+        {/* B1 build #46-prep: hide the "Top Advertiser" card when fewer than
+            5 ads were detected. With a tiny denominator one misclassified ad
+            can dominate (TestFlight build #45 showed "@Claude — 75% of ads"
+            from 4 detected ads, of which one or more was likely a Gemini
+            false positive). The threshold is intentionally conservative; a
+            future fix would be to track the actual advertised brand instead
+            of the post's creator handle. */}
+        {data.topAdvertisers.length > 0 && data.adCount >= 5 && (
           <View style={{
             flex: 1,
             backgroundColor: colors.bgCard,
@@ -1233,10 +1259,10 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
             ...shadows.card,
           }}>
             <Text variant="overline" color={colors.textSecondary }>
-              Top Advertiser
+              Top Ad Source
             </Text>
             <Text variant="labelBold" color={colors.textMain} style={{ marginTop: SPACING.xxs }} numberOfLines={1}>
-              @{data.topAdvertisers[0]?.name ?? '—'}
+              {data.topAdvertisers[0]?.name ? formatHandle(data.topAdvertisers[0].name) : '—'}
             </Text>
             <Text variant="captionSmall" color={colors.textMuted} style={{ marginTop: SPACING.xxs  }}>
               {data.topAdvertisers[0]?.percent ?? 0}% of ads
@@ -1337,14 +1363,19 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
         </View>
       )}
 
-      {/* ── Top Advertised Companies (collapsible) ── */}
-      {data.topAdvertisers.length > 0 && (
+      {/* ── Top Ad Sources (collapsible) ── */}
+      {/* B1 build #46-prep: was titled "Top advertised companies" but the
+          underlying field is the creator handle of the post containing the
+          ad (see computeDashboardData.ts line 1659), not the brand being
+          advertised. Renamed and gated behind the same ad_count >= 5
+          low-sample threshold as the summary card. */}
+      {data.topAdvertisers.length > 0 && data.adCount >= 5 && (
         <>
           <TouchableOpacity
             onPress={() => setShowAdvertisers(!showAdvertisers)}
             activeOpacity={0.7}
             accessibilityRole="button"
-            accessibilityLabel={showAdvertisers ? 'Hide top advertised companies' : 'Show top advertised companies'}
+            accessibilityLabel={showAdvertisers ? 'Hide top ad sources' : 'Show top ad sources'}
             accessibilityState={{ expanded: showAdvertisers }}
             style={{
               flexDirection: 'row',
@@ -1354,7 +1385,7 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
             }}
           >
             <Text variant="label" color={colors.textMuted }>
-              Top advertised companies
+              Top ad sources
             </Text>
             <ChevronDown
               size={16}
@@ -1379,7 +1410,7 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
               {data.topAdvertisers.map((advertiser, idx) => (
                 <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textMain, fontWeight: '500' }}>
-                    @{advertiser.name}
+                    {formatHandle(advertiser.name)}
                   </Text>
                   <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
                     {advertiser.percent}% of ads ({advertiser.count})
@@ -1520,7 +1551,7 @@ const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: D
                 </Text>
                 {data.unlabeledPromos!.exampleAccounts.map((handle, idx) => (
                   <Text key={idx} style={{ ...GL_TYPOGRAPHY.body, color: colors.textMain }}>
-                    @{handle}
+                    {formatHandle(handle)}
                   </Text>
                 ))}
               </View>
@@ -2185,7 +2216,7 @@ const PoliticsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { da
             gap: SPACING.sm,
           }}>
             <Text style={{ ...GL_TYPOGRAPHY.h2, color: colors.textMain }}>
-              @{analysis.topPoliticalSource.handle}
+              {formatHandle(analysis.topPoliticalSource.handle)}
             </Text>
             <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textMuted }}>
               {analysis.topPoliticalSource.count} of {analysis.politicalCount} political posts ({analysis.topPoliticalSource.pctOfPolitical}%)
@@ -2548,7 +2579,7 @@ const ToneContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: 
               {data.topPositiveSources.map((source, i) => (
                 <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textMain, fontWeight: '500' }}>
-                    @{source.handle}
+                    {formatHandle(source.handle)}
                   </Text>
                   <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
                     {source.count} positive post{source.count !== 1 ? 's' : ''}
@@ -2574,7 +2605,7 @@ const ToneContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: 
               {data.topNegativeSources.map((source, i) => (
                 <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textMain, fontWeight: '500' }}>
-                    @{source.handle}
+                    {formatHandle(source.handle)}
                   </Text>
                   <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
                     {source.count} negative post{source.count !== 1 ? 's' : ''}

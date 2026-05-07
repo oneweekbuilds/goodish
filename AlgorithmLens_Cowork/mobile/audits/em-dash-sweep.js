@@ -168,7 +168,11 @@ const SKIP_LINE_PATTERNS = [
 ];
 
 function applyReplacements(segment, fileLabel, lineNo, changesOnLine, fullLine) {
-  if (!segment.includes('—')) return segment;
+  // Build #46 prep: also catch the `—` escape sequence form. Build #45
+  // missed Home's "Welcome back — ready for a fresh scan?" because the
+  // file stored the dash as a 6-char escape, not the literal em dash, and
+  // the previous version of this sweep only matched `—`.
+  if (!segment.includes('—') && !segment.includes('\\u2014')) return segment;
 
   // Skip if this file is on the skip list (e.g. LLM prompts)
   if (SKIP_FILES.some((p) => p.test(fileLabel))) return segment;
@@ -176,13 +180,20 @@ function applyReplacements(segment, fileLabel, lineNo, changesOnLine, fullLine) 
   // Skip if the FULL LINE matches a skip pattern (e.g. console.warn(...))
   if (fullLine && SKIP_LINE_PATTERNS.some((p) => p.test(fullLine))) return segment;
 
-  // Apply in priority order
+  // Apply in priority order. Handle both the literal em dash and its
+  // `—` JS escape form. The escape-sequence rules treat any number of
+  // surrounding ASCII spaces (` `) the same way as the literal-character
+  // rules treat literal spaces.
   const before = segment;
   const after = segment
     .replace(/ — /g, ', ')
     .replace(/ —/g, ',')
     .replace(/— /g, ', ')
-    .replace(/—/g, ',');
+    .replace(/—/g, ',')
+    .replace(/ \\u2014 /g, ', ')
+    .replace(/ \\u2014/g, ',')
+    .replace(/\\u2014 /g, ', ')
+    .replace(/\\u2014/g, ',');
   if (after !== before) {
     changesOnLine.push({
       file: fileLabel,
@@ -201,7 +212,9 @@ const allSubs = [];
 
 for (const file of files) {
   const src = fs.readFileSync(file, 'utf8');
-  if (!src.includes('—')) continue;
+  // Also fast-skip when neither the literal em dash nor its `—` escape
+  // form appears anywhere in the file.
+  if (!src.includes('—') && !src.includes('\\u2014')) continue;
   const rel = path.relative(ROOT, file);
   const { out, subs } = sweepFile(src, rel);
   if (subs.length === 0) continue;

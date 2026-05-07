@@ -11,6 +11,7 @@
  */
 
 import { getPlatformDisplayName } from './utils';
+import { formatHandle } from './formatHandle';
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -436,14 +437,14 @@ function buildSourcesInsight(
   if (top5Pct >= 75) {
     return {
       title: `5 accounts account for ${top5Pct}% of the content in your feed`,
-      meaning: `@${topName} alone appeared in ${topPct}% of posts. Three-quarters of your feed came from a tiny group.`,
+      meaning: `${formatHandle(topName)} alone appeared in ${topPct}% of posts. Three-quarters of your feed came from a tiny group.`,
       whyCare: 'This is well above typical (40–60%). These creators have significant presence in your feed.',
       meta,
     };
   } else if (top5Pct >= 50) {
     return {
       title: `A few recurring voices fill ${top5Pct}% of your feed`,
-      meaning: `@${topName} appeared most often at ${topPct}% of posts. About half of your content comes from your most-shown accounts.`,
+      meaning: `${formatHandle(topName)} appeared most often at ${topPct}% of posts. About half of your content comes from your most-shown accounts.`,
       whyCare: 'This is at the higher end of typical (40–60%).',
       meta,
     };
@@ -978,7 +979,7 @@ function buildPoliticalSummary(analysis: PoliticalAnalysis | null): string | nul
   let summary = `Based on keyword and AI analysis, your feed appeared to contain ${analysis.politicalPct}% political content`;
 
   if (analysis.topPoliticalSource) {
-    summary += `, mostly from @${analysis.topPoliticalSource.handle}`;
+    summary += `, mostly from ${formatHandle(analysis.topPoliticalSource.handle)}`;
   }
 
   if (analysis.ideology) {

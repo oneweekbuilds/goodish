@@ -628,7 +628,7 @@ function getSubheading(_displayState: string, totalScans: number, dbScanCount: n
   // Deterministic: has the user ever scanned?
   const hasHistory = totalScans > 0 || dbScanCount > 0;
   if (hasHistory) {
-    return 'Welcome back \u2014 ready for a fresh scan?';
+    return 'Welcome back, ready for a fresh scan?';
   }
   return 'See what\u2019s in your social media feed';
 }

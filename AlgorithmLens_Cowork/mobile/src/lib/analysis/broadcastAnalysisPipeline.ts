@@ -132,7 +132,16 @@ const DEFAULT_CONFIG: Required<Omit<PipelineConfig, 'apiKey'>> = {
   enableDeduplication: true,
   enablePersistence: true,
   enableBackendEnrichment: true,
-  concurrency: 3,
+  // C1 build #46-prep: bumped from 3 to 8. TestFlight build #45 took ~6
+  // minutes for a 61-frame analysis (~6s/frame end-to-end). With Gemini 2.5
+  // Flash returning in ~6s and the existing 200ms rate-limit floor, the old
+  // concurrency=3 capped throughput at ~30 frames/min before retries, which
+  // matches the reported runtime. concurrency=8 keeps us well under the
+  // paid-tier RPM ceiling (the rate limiter still serialises into 200ms
+  // slots, ~5 req/s) while letting more frames be in-flight at once.
+  // Expected impact: 60-frame analysis from ~6 min to ~1.5-2 min. Not
+  // measured locally — verify on TestFlight.
+  concurrency: 8,
 };
 
 // ============================================

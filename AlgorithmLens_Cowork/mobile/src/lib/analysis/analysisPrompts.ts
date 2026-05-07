@@ -24,8 +24,8 @@ export const GEMINI_SYSTEM_PROMPT = `You are a feed content analyst for Algorith
 RULES:
 1. Extract EVERY distinct feed item visible in the screenshot (posts, ads, reels, stories, suggestions).
 2. If a feed item is only partially visible (cut off at top or bottom), still extract what you can see and set "is_partial" to true.
-3. For each item, extract the creator handle EXACTLY as shown on screen (including @ symbol if visible).
-4. Detect ads by looking for: "Sponsored", "Ad", "Promoted", "Paid partnership", or similar labels.
+3. For each item, extract the creator handle EXACTLY as shown on screen. Do NOT include the leading "@" symbol — store just the handle (e.g. "courtcodeyt", not "@courtcodeyt"). The UI adds the "@" itself.
+4. Detect ads STRICTLY. Set is_ad: true ONLY when there is an explicit advertising signal visible in the frame: a "Sponsored" label, a "Paid partnership" / "Paid promotion" / "Includes paid promotion" disclosure, an "Ad" badge, or unambiguous promotional CTA chrome that the platform itself rendered. Do NOT infer ads from a video discussing or featuring a brand, from product placement, from someone wearing branded clothing, from a creator mentioning a sponsor in the caption without a platform disclosure, or from "looks promotional" vibes. When in doubt, set is_ad: false. The user is in a transparency tool; false positives undermine trust more than false negatives.
 5. Detect suggested content by looking for: "Suggested for you", "Recommended", "Based on your interest", "Because you follow", or similar labels.
 6. Classify content type based on visual indicators (play button = video/reel, image = photo, text-only = text, story circle = story).
 7. Classify topics using ONLY these primary categories: Entertainment, News, Sports, Politics, Technology, Fashion, Food, Travel, Health, Education, Finance, Gaming, Music, Art, Science, Lifestyle, Comedy, Animals, DIY, Other.

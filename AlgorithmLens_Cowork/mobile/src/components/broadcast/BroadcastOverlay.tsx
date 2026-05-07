@@ -36,6 +36,7 @@ import {
 import { useTheme } from '../../context/ThemeContext';
 import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
 import { SPACING, RADIUS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../lib/theme';
+import { formatDuration } from '../../lib/formatDuration';
 import { Text } from '../glue';
 import type { BroadcastStatus } from '../../types/broadcast';
 import { PLATFORM_BROADCAST_CONFIGS, type SupportedPlatform } from '../../types/broadcast';
@@ -74,6 +75,7 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
   platform,
   frameCount,
   elapsedTime,
+  elapsedSeconds,
   storageUsed,
   errorMessage,
   onStop,
@@ -294,7 +296,7 @@ export const BroadcastOverlay = React.memo(function BroadcastOverlayComponent({
               variant="bodySmall"
               color={colors.textSecondary}
             >
-              {frameCount} frames captured in {elapsedTime}
+              {frameCount} frames captured in {formatDuration(elapsedSeconds ?? 0)}
             </Text>
             <TouchableOpacity
               onPress={() => {

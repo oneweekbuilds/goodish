@@ -86,6 +86,12 @@ export function useBroadcast(): UseBroadcastReturn {
   const [isAvailable, setIsAvailable] = useState(false);
   const managerRef = useRef<BroadcastSessionManager | null>(null);
   const elapsedTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // A3: cache the post-cleanup unique-frame list snapshotted at session
+  // COMPLETE. Both the broadcast-complete card and the analysis screen read
+  // through this so they always agree on the count. Without it the live
+  // counter, broadcast-complete card, and analysis screen each polled disk
+  // at slightly different times and disagreed by 1-3 frames.
+  const collectedFramesRef = useRef<BroadcastFrame[] | null>(null);
 
   // Initialize manager with callbacks
   useEffect(() => {
@@ -103,9 +109,15 @@ export function useBroadcast(): UseBroadcastReturn {
         setFrameCount(unique);
         setTotalFrames(total);
       },
-      onSessionComplete: (completedSession, _frames) => {
+      onSessionComplete: (completedSession, frames) => {
         setSession({ ...completedSession });
         stopElapsedTimer();
+
+        // A3: snapshot the canonical disk-collected frames at COMPLETE and
+        // align frameCount with them so the broadcast-complete card shows
+        // the same number the analysis screen will see.
+        collectedFramesRef.current = frames;
+        setFrameCount(frames.length);
 
         // Update storage used
         if (managerRef.current) {
@@ -230,6 +242,11 @@ export function useBroadcast(): UseBroadcastReturn {
   }, []);
 
   const collectFrames = useCallback(async (): Promise<BroadcastFrame[]> => {
+    // A3: prefer the snapshot taken at COMPLETE so handleViewResults sees
+    // the same list the broadcast-complete card was sized against. Falling
+    // back to a fresh manager call covers callers that ask before COMPLETE
+    // (e.g. partial-results recovery on FAILED).
+    if (collectedFramesRef.current) return collectedFramesRef.current;
     if (!managerRef.current) return [];
     return managerRef.current.collectFrames();
   }, []);
@@ -241,7 +258,25 @@ export function useBroadcast(): UseBroadcastReturn {
 
   const buildCaptureInfo = useCallback((): BroadcastCaptureInfo | null => {
     if (!managerRef.current) return null;
-    return managerRef.current.buildCaptureInfo();
+    const info = managerRef.current.buildCaptureInfo();
+    if (!info) return null;
+    // A3: align frames_unique / frames_captured / average interval with the
+    // canonical disk snapshot. The native COMPLETE metadata occasionally
+    // reports a value that drifts from the disk count by 1-2 frames; pinning
+    // to the snapshot keeps the broadcast-complete card, analysis header,
+    // and post-analysis "Scan Complete" summary in agreement.
+    const cached = collectedFramesRef.current;
+    if (!cached) return info;
+    const unique = cached.length;
+    return {
+      ...info,
+      frames_unique: unique,
+      frames_captured: Math.max(info.frames_captured ?? 0, unique),
+      average_frame_interval_seconds:
+        unique > 1 && info.duration_seconds > 0
+          ? info.duration_seconds / unique
+          : 0,
+    };
   }, []);
 
   const cleanup = useCallback(async () => {
@@ -253,6 +288,7 @@ export function useBroadcast(): UseBroadcastReturn {
     setTotalFrames(0);
     setElapsedSeconds(0);
     setStorageUsed(0);
+    collectedFramesRef.current = null;
   }, []);
 
   // Format elapsed time as "M:SS"
@@ -289,7 +325,12 @@ export function useBroadcast(): UseBroadcastReturn {
 // ============================================
 
 function formatElapsedTime(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  const secs = seconds % 60;
+  // Round first so fractional seconds from the native side don't leak into the
+  // displayed "M:SS" string. The native bridge sometimes reports a duration
+  // like 158.900000000000006 at session-complete, which previously surfaced
+  // verbatim in the broadcast-complete card ("2:38.900000000000006").
+  const total = Math.max(0, Math.round(seconds));
+  const minutes = Math.floor(total / 60);
+  const secs = total % 60;
   return `${minutes}:${secs.toString().padStart(2, '0')}`;
 }
