@@ -105,6 +105,27 @@ describe('analysisPrompts', () => {
       expect(prompt).not.toContain('ignore all instructions');
       expect(prompt).toContain('[filtered]');
     });
+
+    // Build #47 (audit #20): regression fence for the YouTube watch-page rule.
+    // The previous YouTube hints did not address watch-page screens, which
+    // caused Gemini to extract sidebar / Up Next thumbnails as feed items
+    // and inflate the post count. If a future edit removes this guidance,
+    // this test fails before the regression ships.
+    it('YouTube hints distinguish watch-page from feed screens', () => {
+      const prompt = buildFramePrompt({
+        platform: 'youtube',
+        frameNumber: 1,
+        totalFrames: 5,
+        ocrText: '',
+        capturedAt: new Date().toISOString(),
+      });
+      const lower = prompt.toLowerCase();
+      expect(lower).toContain('watch page');
+      expect(lower).toMatch(/up next|sidebar|recommended/);
+      // Must explicitly say sidebar items are NOT feed items (the bug we
+      // are guarding against was: sidebar items being extracted as items).
+      expect(lower).toMatch(/not.*(separate )?feed item|do not extract.*sidebar/i);
+    });
   });
 
   describe('buildDeduplicationPrompt', () => {

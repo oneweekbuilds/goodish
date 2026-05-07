@@ -202,11 +202,34 @@ export const PLATFORM_HINTS: Record<SupportedPlatform, string> = {
 - source_origin: If on "For You" tab, items with recommendation context ("Because you follow...", etc.) are "suggested"; others default to "suggested" unless from clearly followed accounts. If on "Following" tab, all items are "followed".`,
 
   youtube: `YouTube-specific hints:
-- Ads show "Ad" badge on the thumbnail or "Sponsored" label
-- Shorts are vertical format with white text overlays
-- Suggested videos show "Recommended for you" context
-- Channel names appear below video titles
-- Live streams show a red "LIVE" badge`,
+
+YouTube screen detection — handle different screen types separately:
+
+If the screen shows a single video player taking up the upper portion of the screen (the "watch page" / video detail screen, where one video is playing or paused):
+- The MAIN feed item is the watched video itself (the one being played).
+- The Up Next sidebar items, Recommended videos beneath the player, related-video thumbnails, and Chapter list entries are NOT separate feed items. They are platform recommendations the user has not engaged with yet, not posts in the user's feed.
+- Extract ONLY the main watched video as a feed item. Do NOT extract sidebar, recommended, or related thumbnails.
+
+If the screen shows a scrollable grid or list of video tiles (the home feed, Subscriptions tab, channel page, library, search results) or a Shorts feed:
+- Each visible video tile or Short is a feed item — extract them all per the general rules.
+
+If the screen shows the user's own profile or library tab without a list of videos:
+- That is not a feed view; do not extract items.
+
+General hints (regardless of screen type):
+- Ads show "Ad" badge on the thumbnail or "Sponsored" label.
+- Shorts are vertical format with white text overlays.
+- Suggested videos show "Recommended for you" context (only relevant on home feed; on the watch page, see screen-detection rule above).
+- Channel names appear below video titles. Extract as creator_handle WITHOUT a leading "@".
+- Live streams show a red "LIVE" badge.
+
+EXAMPLE — watch page with a single playing video:
+  Input frame: A video by @ResurgeStories titled "The Long Forgotten Tale" is playing. Below it are 5 sidebar Up Next thumbnails from other channels.
+  Correct output: items: [ { creator_handle: "resurgestories", post_text: "The Long Forgotten Tale", content_type: "video", ... } ]   (1 item, NOT 6.)
+
+EXAMPLE — home feed with multiple tiles:
+  Input frame: 3 video tiles visible in a vertical list, from 3 different channels.
+  Correct output: items: [ {...tile 1...}, {...tile 2...}, {...tile 3...} ]   (3 items.)`,
 
   tiktok: `TikTok-specific hints:
 - Ads show "Sponsored" tag overlaid on the video

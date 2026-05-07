@@ -16,6 +16,7 @@
 import { Platform } from 'react-native';
 import { GeminiFlashService, GeminiApiError } from './geminiFlashService';
 import type { GeminiExtractedItem } from './analysisPrompts';
+import { localDedup } from './localDedup';
 import type {
   BroadcastFrame,
   BroadcastCaptureInfo,
@@ -101,13 +102,20 @@ interface AnalysisOutcomes {
 export const __pipelineDiag: {
   lastRunAt: number;
   lastFrameCount: number;
+  /** Total items returned from the per-frame Gemini extraction, before any dedup. */
   lastItemsExtracted: number;
+  /** Items remaining after the deterministic local dedup pass (build #47, audit #20). */
+  lastItemsAfterLocalDedup: number;
+  /** Items remaining after the LLM-based second-pass dedup. Equals feed_items.length. */
+  lastItemsAfterLLMDedup: number;
   lastError: string;
   lastStage: string;
 } = {
   lastRunAt: 0,
   lastFrameCount: 0,
   lastItemsExtracted: 0,
+  lastItemsAfterLocalDedup: 0,
+  lastItemsAfterLLMDedup: 0,
   lastError: '',
   lastStage: 'idle',
 };
@@ -198,6 +206,8 @@ export class BroadcastAnalysisPipeline {
     __pipelineDiag.lastRunAt = this.startTime;
     __pipelineDiag.lastFrameCount = frames.length;
     __pipelineDiag.lastItemsExtracted = 0;
+    __pipelineDiag.lastItemsAfterLocalDedup = 0;
+    __pipelineDiag.lastItemsAfterLLMDedup = 0;
     __pipelineDiag.lastError = '';
     __pipelineDiag.lastStage = 'preparing';
 
@@ -261,33 +271,55 @@ export class BroadcastAnalysisPipeline {
         );
       }
       // ── Stage 3: DEDUPLICATING ──
+      // Build #47 (audit #20): two-pass dedup. First pass is a deterministic
+      // local key-based merge that catches "same video across N frames"
+      // cases the LLM dedup miss because of UI text drift (timestamps,
+      // view counts, time-ago strings). Second pass is the existing LLM
+      // semantic dedup which can still merge things the local pass keeps
+      // separate (e.g. caption rewording, partial vs full title).
       let finalItems: GeminiExtractedItem[];
 
       if (this.config.enableDeduplication && allExtractedItems.length > 0) {
         progress.stage = 'DEDUPLICATING';
         this.reportProgress(progress);
 
+        // Local dedup pass — deterministic, never throws.
+        const localResult = localDedup(allExtractedItems);
+        const locallyDeduped = localResult.items;
+        __pipelineDiag.lastItemsAfterLocalDedup = locallyDeduped.length;
+        if (__DEV__) {
+          console.log(
+            `[pipeline] localDedup: ${localResult.stats.inputCount} → ${localResult.stats.outputCount} ` +
+              `(merged ${localResult.stats.mergedCount}; ` +
+              `keys H+T=${localResult.stats.keyBreakdown.handlePlusText}, ` +
+              `NH+long=${localResult.stats.keyBreakdown.noHandleLongText}, ` +
+              `unique=${localResult.stats.keyBreakdown.uniqueShortText})`,
+          );
+        }
+
         try {
           const dedupResult = await this.gemini.deduplicateItems(
-            allExtractedItems,
+            locallyDeduped,
             platform,
           );
           finalItems = dedupResult.deduplicated_items.length > 0
             ? dedupResult.deduplicated_items
-            : allExtractedItems; // Fallback if dedup returned empty
+            : locallyDeduped; // Fallback if LLM dedup returned empty
           progress.itemsDeduplicated = finalItems.length;
         } catch (error) {
-          // Deduplication failure is non-fatal — use raw items
+          // LLM dedup failure is non-fatal — use locally-deduped items
           if (__DEV__) {
-            console.warn('Deduplication failed, using raw extracted items:', error);
+            console.warn('LLM dedup failed, using locally-deduped items:', error);
           }
-          finalItems = allExtractedItems;
-          progress.itemsDeduplicated = allExtractedItems.length;
+          finalItems = locallyDeduped;
+          progress.itemsDeduplicated = locallyDeduped.length;
         }
       } else {
         finalItems = allExtractedItems;
         progress.itemsDeduplicated = allExtractedItems.length;
+        __pipelineDiag.lastItemsAfterLocalDedup = allExtractedItems.length;
       }
+      __pipelineDiag.lastItemsAfterLLMDedup = finalItems.length;
 
       // ── Stage 4: BUILDING ──
       progress.stage = 'BUILDING';
