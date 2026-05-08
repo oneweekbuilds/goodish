@@ -16,3 +16,9 @@ android
 .idea
 *.md
 !README.md
+
+# Dev-only visual audit captures (194 MB)
+audit-frames/
+
+# Screen recordings (31 MB at present, future ones too)
+*.mp4
