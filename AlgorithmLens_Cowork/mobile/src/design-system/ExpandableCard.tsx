@@ -78,10 +78,11 @@ export function ExpandableCard({
               <Icon name={icon} size={16} color={colors.brandPrimary} />
             </View>
           ) : null}
-          <Text
-            style={[styles.title, !icon && { marginLeft: 0 }]}
-            numberOfLines={1}
-          >
+          {/* Title can wrap to a 2nd line if the row's intrinsic width
+              exceeds the card. Headline shrinks alongside (RN's default
+              flexShrink is 0, so we must opt in) and ellipsizes if needed,
+              keeping its tabular-nums when readable. */}
+          <Text style={[styles.title, !icon && { marginLeft: 0 }]}>
             {title}
           </Text>
           {headline ? (
@@ -89,12 +90,17 @@ export function ExpandableCard({
               {headline}
             </Text>
           ) : null}
-          <Icon
-            name={open ? 'chevron-up' : 'chevron-down'}
-            size={14}
-            color={colors.textTertiary}
-            strokeWidth={2.25}
-          />
+          {/* Chevron in a 24×24 brand-tinted circle for tap affordance.
+              Same affordance whether the card is collapsed or expanded —
+              the chevron flips direction; the circle stays. Subtle, not loud. */}
+          <View style={styles.chevronWrap}>
+            <Icon
+              name={open ? 'chevron-up' : 'chevron-down'}
+              size={14}
+              color={colors.brandPrimary}
+              strokeWidth={2.25}
+            />
+          </View>
         </Pressable>
         {open ? (
           <Animated.View
@@ -127,6 +133,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  chevronWrap: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.brandPrimary12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   title: {
     flex: 1,
     minWidth: 0,
@@ -136,6 +150,7 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   headline: {
+    flexShrink: 1,
     fontSize: type.subheading.fontSize,
     lineHeight: type.subheading.lineHeight,
     fontWeight: type.subheading.fontWeight,

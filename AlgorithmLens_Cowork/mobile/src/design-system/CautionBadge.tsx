@@ -39,6 +39,9 @@ export function CautionBadge({ children }: CautionBadgeProps) {
           lineHeight: type.caption.lineHeight,
           fontWeight: type.caption.fontWeight,
           color: colors.textPrimary,
+          // Tabular figures so the embedded post count ("Based on N posts")
+          // doesn't shift width when N changes scan-to-scan.
+          fontVariant: ['tabular-nums'],
         }}
       >
         {children}

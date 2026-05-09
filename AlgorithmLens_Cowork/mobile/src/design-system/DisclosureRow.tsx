@@ -26,7 +26,8 @@ export function DisclosureRow({ label, onPress, accessibilityLabel }: Disclosure
         flexDirection: 'row',
         alignItems: 'center',
         gap: spacing.s3 - 2, // 10
-        paddingHorizontal: spacing.s4,
+        // spacing.s5 (20) to match ExpandableCard's header horizontal padding.
+        paddingHorizontal: spacing.s5,
         backgroundColor: pressed ? colors.brandPrimary12 : colors.bgPrimary,
         borderWidth: 1,
         borderColor: colors.border,

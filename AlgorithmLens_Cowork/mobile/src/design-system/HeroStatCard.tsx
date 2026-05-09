@@ -37,7 +37,17 @@ export function HeroStatCard({
   caution,
 }: HeroStatCardProps) {
   return (
-    <Card padding={22}>
+    // Asymmetric padding: more on top so the hero number isn't pinned to
+    // the card's top edge. Default Card padding is 20 (layout.cardPadding);
+    // here we keep 20 sides + bottom but bump top by spacing.s2 (8) → 28.
+    <Card
+      padding={0}
+      style={{
+        paddingTop: spacing.s5 + spacing.s2,
+        paddingHorizontal: spacing.s5,
+        paddingBottom: spacing.s5,
+      }}
+    >
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.s1 }}>
         <Text
           allowFontScaling={false}
@@ -68,13 +78,15 @@ export function HeroStatCard({
           </Text>
         ) : null}
       </View>
+      {/* spacing.s3 (12) above the label vs. the previous spacing.s2 (8) —
+          4px more breathing room between the hero number and the label. */}
       <Text
         style={{
           fontSize: type.subheading.fontSize,
           lineHeight: type.subheading.lineHeight,
           fontWeight: type.subheading.fontWeight,
           color: colors.textPrimary,
-          marginTop: spacing.s2,
+          marginTop: spacing.s3,
         }}
       >
         {label}

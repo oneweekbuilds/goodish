@@ -39,6 +39,20 @@ import { colors, layout, spacing, type as typeTokens } from '../../design-tokens
 import { Text } from 'react-native';
 
 // ────────────────────────────────────────────────────────────
+// Sentence case helper — applied to labels coming from the data layer
+// (e.g. contentTypes, topTopics*) where upstream casing is inconsistent.
+// `countContentTypes` in computeDashboardData.ts only title-cases the
+// first character, so a raw "PHOTO" survives as "PHOTO". Per the brand
+// voice rules, all UI strings are sentence case. We can't fix the data
+// layer (out of scope), so normalize at the presentation boundary.
+// ────────────────────────────────────────────────────────────
+
+function toSentenceCase(s: string): string {
+  if (!s) return s;
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+}
+
+// ────────────────────────────────────────────────────────────
 // Hero priority — preserved from the previous OverviewContent.
 // ────────────────────────────────────────────────────────────
 
@@ -48,7 +62,7 @@ interface HeroStat {
   label: string;
   description: string;
   /** Identifier used to suppress the same metric from the supporting list. */
-  key: 'suggested' | 'ads' | 'top5' | 'total';
+  key: 'suggested' | 'ads' | 'top5' | 'topCreator' | 'total';
 }
 
 function pickHeroStat(data: DashboardData): HeroStat | null {
@@ -80,6 +94,30 @@ function pickHeroStat(data: DashboardData): HeroStat | null {
       key: 'top5',
     };
   }
+  // Top-creator-share fallback. When none of the broader patterns trigger,
+  // it's still useful to surface single-creator concentration — that's a
+  // real signal even when the suggested/ads/top-5 thresholds aren't met.
+  //
+  // Phrasing keeps the label short and scannable ("from your top source")
+  // while the longer creator name lives in the description below, where
+  // verbose handles like "@Home Hacks & Easy Snacks" look natural rather
+  // than overflowing the hero's prominent label line.
+  if (data.topCreators.length >= 1 && data.totalPosts > 0) {
+    const top = data.topCreators[0]!;
+    const share = Math.round((top.count / data.totalPosts) * 100);
+    const displayName =
+      top.displayName ?? (top.name.startsWith('@') ? top.name : `@${top.name}`);
+    return {
+      value: String(share),
+      unit: '%',
+      label: 'from your top source',
+      description: `${displayName} dominates this session.`,
+      key: 'topCreator',
+    };
+  }
+  // Defensive floor — should be unreachable when totalPosts > 0 and at
+  // least one creator was identified. Kept so an unusual scan doesn't
+  // produce a null hero.
   if (data.totalPosts > 0) {
     return {
       value: String(data.totalPosts),
@@ -123,14 +161,29 @@ interface ContentPattern {
 function deriveContentPatterns(data: DashboardData): ContentPattern[] {
   const out: ContentPattern[] = [];
 
-  // Top interests — first two content types' labels.
-  const topInterests =
-    data.contentTypes.length > 0
-      ? data.contentTypes
-          .slice(0, 2)
-          .map((c) => c.label)
-          .join(', ')
-      : 'Unavailable';
+  // Top interests — read from the real topic-frequency arrays
+  // (data.topTopicsBySuggested and data.topTopicsByFollowed). These are
+  // subject-matter topics extracted by the Gemini analysis (food, news,
+  // sports, etc.), NOT content formats (Photo / Video). Combine the two
+  // arrays, dedupe by topic, sort by count descending, and take the top 2.
+  // Both arrays must have ≥1 entry — when either is empty, we don't have
+  // enough cross-cutting signal to claim a "Top interests" pattern.
+  const sug = data.topTopicsBySuggested ?? [];
+  const fol = data.topTopicsByFollowed ?? [];
+  let topInterests: string;
+  if (sug.length >= 1 && fol.length >= 1) {
+    const merged = new Map<string, number>();
+    for (const t of [...sug, ...fol]) {
+      merged.set(t.topic, (merged.get(t.topic) ?? 0) + t.count);
+    }
+    const top2 = [...merged.entries()]
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 2)
+      .map(([topic]) => toSentenceCase(topic));
+    topInterests = top2.length > 0 ? top2.join(', ') : 'Not enough data';
+  } else {
+    topInterests = 'Not enough data';
+  }
   out.push({ label: 'Top interests', value: topInterests });
 
   // Emotional signal — pulled from toneAnalysis when present.
@@ -316,7 +369,7 @@ export function OverviewTab({ data, isPlus, onUpgrade }: OverviewTabProps) {
               data.contentTypes.map((t, i) => (
                 <CategoryRow
                   key={t.label}
-                  label={t.label}
+                  label={toSentenceCase(t.label)}
                   value={`${t.percentage}%`}
                   last={i === data.contentTypes.length - 1}
                 />
@@ -507,13 +560,15 @@ export function OverviewTab({ data, isPlus, onUpgrade }: OverviewTabProps) {
       </View>
 
       {/* ── 5. AI-made content ─────────────────────────────────── */}
-      <View style={{ marginTop: spacing.s3 }}>
+      <View style={{ marginTop: spacing.s7 }}>
         <ExpandableCard icon="sparkles" title="AI-made content" headline={aiHeadline(data)}>
           <Text
             style={{
               fontSize: typeTokens.body.fontSize,
               lineHeight: typeTokens.body.lineHeight,
               color: colors.textSecondary,
+              // Tabular for the embedded "X of Y" / "N had no signals" counts.
+              fontVariant: ['tabular-nums'],
             }}
           >
             {data.aiContentAnalysis && data.aiContentAnalysis.totalVisualPosts > 0
@@ -524,7 +579,7 @@ export function OverviewTab({ data, isPlus, onUpgrade }: OverviewTabProps) {
       </View>
 
       {/* ── 6. Trends over time ────────────────────────────────── */}
-      <View style={{ marginTop: spacing.s3 }}>
+      <View style={{ marginTop: spacing.s7 }}>
         <LockedOverlayCard locked={!isPlus} onUpgrade={onUpgrade}>
           <ExpandableCard icon="trending-up" title="Trends over time" headline="Not yet">
             <View style={{ gap: spacing.s3 - 2 }}>
@@ -590,7 +645,7 @@ export function OverviewTab({ data, isPlus, onUpgrade }: OverviewTabProps) {
       </View>
 
       {/* ── 7. Ideas to explore ────────────────────────────────── */}
-      <View style={{ marginTop: spacing.s3 }}>
+      <View style={{ marginTop: spacing.s7 }}>
         <ExpandableCard icon="lightbulb" title="Ideas to explore" headline={`${IDEAS_TO_EXPLORE.length} prompts`}>
           <View style={{ gap: spacing.s3 - 2 }}>
             {IDEAS_TO_EXPLORE.map((s, i) => (
