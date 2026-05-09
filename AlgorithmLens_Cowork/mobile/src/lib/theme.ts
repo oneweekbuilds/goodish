@@ -34,7 +34,7 @@ const NEUTRAL = {
 
 export const LIGHT_COLORS = {
   // ── Core Brand ──
-  primary: '#2563EB',
+  primary: '#1868D8', // Aligned to #1868D8 sampled from AlgorithmLens wordmark
   primaryHover: '#1D4ED8',
   primaryPressed: '#1E40AF',
   secondary: '#10B981',
@@ -127,7 +127,7 @@ export const LIGHT_COLORS = {
   recordingBorder: '#FCA5A5',
 
   // ── Chart Palette ──
-  chartPalette: ['#2563EB', '#10B981', '#7C8DB5', '#B8860B', '#8B7BA8', '#5B7FA6'] as readonly string[],
+  chartPalette: ['#1868D8', '#10B981', '#7C8DB5', '#B8860B', '#8B7BA8', '#5B7FA6'] as readonly string[],
 
   // ── Chart: Tone Tab ── (CT-001: WCAG AA colorblind-accessible palette)
   tonePositive: '#1A8754',   // deep emerald — 5.1:1 vs white ✓
@@ -141,14 +141,14 @@ export const LIGHT_COLORS = {
 
   // ── Chart: Bar Gradient ──
   barDarkest: '#1E40AF',
-  barDark: '#2563EB',
-  barMedium: '#3B82F6',
+  barDark: '#1868D8',
+  barMedium: '#0F4FA8',
   barLight: '#60A5FA',
   barLightest: '#93C5FD',
   stackedBarTrack: '#F1F5F9',
 
   // ── Ideology ── (CT-002: WCAG AA colorblind-accessible palette)
-  ideologyLeft: '#2563EB',    // primary blue — 4.6:1 vs white ✓
+  ideologyLeft: '#1868D8',    // brand-primary, 4.5:1 vs white ✓
   ideologyCenter: '#6B7280',  // gray-600 — 5.0:1 vs white ✓
   ideologyRight: '#B45309',   // amber-700 — 4.7:1 vs white ✓
 
@@ -177,8 +177,8 @@ export const LIGHT_COLORS = {
   tourSuggested: '#E11D48',
 
   // ── Gradients ──
-  gradientPrimaryStart: '#2563EB',
-  gradientPrimaryEnd: '#1D4ED8',
+  gradientPrimaryStart: '#1868D8',
+  gradientPrimaryEnd: '#0F4FA8',
   gradientAccentStart: '#10B981',
   gradientAccentEnd: '#059669',
   gradientCardStart: '#FFFFFF',
@@ -201,7 +201,10 @@ export const LIGHT_COLORS = {
   separator: '#D1D5DB',
 
   // ── Backward Compat Aliases ──
-  primaryBlue: '#2563EB',
+  // primaryBlue aligned to the new design system's brandPrimary (#1868D8),
+  // sampled from the official AlgorithmLens wordmark. The previous value
+  // (#2563EB) was a slightly different blue from a pre-brand iteration.
+  primaryBlue: '#1868D8',
   accentGreen: '#10B981',
 } as const;
 
@@ -215,7 +218,7 @@ export const LIGHT_COLORS = {
 
 export const DARK_COLORS = {
   // ── Core Brand ──
-  primary: '#3B82F6',
+  primary: '#1868D8', // Aligned to #1868D8 sampled from AlgorithmLens wordmark
   primaryHover: '#60A5FA',
   primaryPressed: '#2563EB',
   secondary: '#34D399',
@@ -308,7 +311,7 @@ export const DARK_COLORS = {
   recordingBorder: 'rgba(248, 113, 113, 0.30)',
 
   // ── Chart Palette ──
-  chartPalette: ['#3B82F6', '#34D399', '#94A3B8', '#FBBF24', '#A78BFA', '#7DD3FC'] as readonly string[],
+  chartPalette: ['#1868D8', '#34D399', '#94A3B8', '#FBBF24', '#A78BFA', '#7DD3FC'] as readonly string[],
 
   // ── Chart: Tone Tab ── (WCAG AA colorblind-accessible palette)
   tonePositive: '#4ADE80',    // green-400
@@ -322,14 +325,14 @@ export const DARK_COLORS = {
 
   // ── Chart: Bar Gradient ──
   barDarkest: '#93C5FD',
-  barDark: '#60A5FA',
-  barMedium: '#3B82F6',
+  barDark: '#1868D8',
+  barMedium: '#0F4FA8',
   barLight: '#2563EB',
   barLightest: '#1D4ED8',
   stackedBarTrack: '#334155',
 
   // ── Ideology ── (WCAG AA colorblind-accessible palette)
-  ideologyLeft: '#60A5FA',    // blue-400
+  ideologyLeft: '#1868D8',    // brand-primary (was blue-400)
   ideologyCenter: '#94A3B8',  // keep as-is
   ideologyRight: '#FBBF24',   // amber-400
 
@@ -358,8 +361,8 @@ export const DARK_COLORS = {
   tourSuggested: '#FB7185',
 
   // ── Gradients ──
-  gradientPrimaryStart: '#3B82F6',
-  gradientPrimaryEnd: '#2563EB',
+  gradientPrimaryStart: '#1868D8',
+  gradientPrimaryEnd: '#0F4FA8',
   gradientAccentStart: '#34D399',
   gradientAccentEnd: '#10B981',
   gradientCardStart: '#1E293B',
@@ -382,7 +385,10 @@ export const DARK_COLORS = {
   separator: 'rgba(148, 163, 184, 0.25)',
 
   // ── Backward Compat Aliases ──
-  primaryBlue: '#3B82F6',
+  // Aligned to brandPrimary (#1868D8) for consistency. Dark mode is being
+  // dropped (light-only going forward), but we don't want stale wrong-blue
+  // values lingering in the file.
+  primaryBlue: '#1868D8',
   accentGreen: '#34D399',
 } as const;
 
