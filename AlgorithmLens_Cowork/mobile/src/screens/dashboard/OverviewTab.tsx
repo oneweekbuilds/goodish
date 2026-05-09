@@ -23,6 +23,7 @@
 import React, { useMemo } from 'react';
 import { View } from 'react-native';
 import type { DashboardData } from '../../lib/computeDashboardData';
+import { toSentenceCase } from '../../lib/string-utils';
 import { LockedOverlayCard } from '../../components/plan/LockedOverlayCard';
 import {
   AttributeCard,
@@ -37,20 +38,6 @@ import {
 import { Card } from '../../design-system/Card';
 import { colors, layout, spacing, type as typeTokens } from '../../design-tokens/tokens';
 import { Text } from 'react-native';
-
-// ────────────────────────────────────────────────────────────
-// Sentence case helper — applied to labels coming from the data layer
-// (e.g. contentTypes, topTopics*) where upstream casing is inconsistent.
-// `countContentTypes` in computeDashboardData.ts only title-cases the
-// first character, so a raw "PHOTO" survives as "PHOTO". Per the brand
-// voice rules, all UI strings are sentence case. We can't fix the data
-// layer (out of scope), so normalize at the presentation boundary.
-// ────────────────────────────────────────────────────────────
-
-function toSentenceCase(s: string): string {
-  if (!s) return s;
-  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-}
 
 // ────────────────────────────────────────────────────────────
 // Hero priority — preserved from the previous OverviewContent.
