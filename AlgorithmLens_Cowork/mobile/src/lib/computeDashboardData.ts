@@ -529,7 +529,7 @@ function buildAdsInsight(
 
   if (totalPosts < 10) {
     return {
-      title: 'Not enough data to assess commercial content',
+      title: 'Not enough data to assess ads',
       meaning: 'Need at least 10 posts to analyze advertising patterns.',
       whyCare: null,
       meta,
@@ -539,9 +539,9 @@ function buildAdsInsight(
 
   if (adPct >= 40) {
     return {
-      title: `${adPct}% of your feed is commercial content`,
+      title: `${adPct}% of your feed was ads`,
       meaning: `That's about ${adMinutesIn60} minutes of ads in every hour you scroll. ${adCount} ads appeared among ${totalPosts} posts.`,
-      whyCare: 'This is above the typical range of 15–30%. A large share of what appeared in your feed was commercial.',
+      whyCare: 'This is above the typical range of 15–30%. A large share of what appeared in your feed was advertising.',
       meta,
       howWeMeasure: ADS_HOW_WE_MEASURE,
     };
@@ -557,7 +557,7 @@ function buildAdsInsight(
     return {
       title: `${adPct}% of your feed contained ads`,
       meaning: `${adCount} ad${adCount !== 1 ? 's' : ''} appeared among ${totalPosts} posts. A moderate but not dominant presence.`,
-      whyCare: 'This is within the typical range. A regular but not overwhelming amount of commercial content.',
+      whyCare: 'This is within the typical range. A regular but not overwhelming presence of ads.',
       meta,
       howWeMeasure: ADS_HOW_WE_MEASURE,
     };
@@ -569,11 +569,11 @@ function buildAdsInsight(
     return {
       title: adCount === 0
         ? `No labeled ads appeared in this ${totalPosts}-post scan`
-        : `Commercial content is minimal in your feed (${adPct}%)`,
+        : `Ads were minimal in your feed (${adPct}%)`,
       meaning: meaningText,
       whyCare: adCount === 0
         ? 'Some promotional content may not carry visible labels, native ads and influencer partnerships often blend in.'
-        : 'This is below the typical range of 15–30%, leaving more space for non-commercial content.',
+        : 'This is below the typical range of 15–30%, leaving more space for non-ad content.',
       meta,
       howWeMeasure: ADS_HOW_WE_MEASURE,
     };
@@ -1124,6 +1124,34 @@ function buildPoliticalSummary(analysis: PoliticalAnalysis | null): string | nul
   return summary;
 }
 
+/**
+ * "How we measure" prose for the Tone tab.
+ *
+ * Carry-forward from the legacy ToneContent in dashboard.tsx pre-build #53,
+ * where these three strings were hard-coded as a JSX prop on the legacy
+ * InsightHero component (the `howWeMeasure={{...}}` prop on the
+ * InsightHero in ToneContent, pre-redesign). Lifted to the data layer
+ * so the redesigned ToneTab (src/screens/dashboard/ToneTab.tsx) consumes
+ * it from `data.toneInsight.howWeMeasure` — mirrors the
+ * SOURCES_/POLITICS_/ADS_/SUGGESTED_HOW_WE_MEASURE patterns from builds
+ * #51-52.
+ *
+ * The legacy ToneContent also rendered a standalone
+ * ToneMethodologyDisclaimer subcomponent paragraph that said
+ * substantively the same thing as `limitations`. That subcomponent is
+ * deleted in build #53 and not merged here; the InsightHero version
+ * lifted below is the more comprehensive of the two (it adds the
+ * "Sarcasm and irony are difficult to detect" caveat).
+ */
+const TONE_HOW_WE_MEASURE = {
+  what:
+    'The emotional character of posts in your feed, categorized as positive, neutral, or negative.',
+  how:
+    'Post text is analyzed by Google\'s Gemini AI to classify emotional tone based on language patterns. Each post receives one valence label.',
+  limitations:
+    'Sentiment analysis is approximate, tone is subjective, and short posts may be misclassified. Sarcasm and irony are difficult to detect. This describes what appeared, not your emotional state or the platform\'s intent.',
+} as const;
+
 function buildToneInsight(
   platform: string,
   totalPosts: number,
@@ -1136,6 +1164,7 @@ function buildToneInsight(
       meaning: 'To classify the emotional tone of posts (positive, neutral, negative), AlgorithmLens uses Google\'s Gemini AI. This reveals the emotional character of your feed.',
       whyCare: 'Enable AI analysis in Settings to unlock this tab. Your data is processed securely, Google does not use it to train models.',
       meta: `${totalPosts} posts available for analysis from ${platform}`,
+      howWeMeasure: TONE_HOW_WE_MEASURE,
     };
   }
 
@@ -1146,6 +1175,7 @@ function buildToneInsight(
       meaning: 'Fewer than 10 posts had identifiable emotional tone, which is not enough to draw reliable conclusions about the emotional character of your feed.',
       whyCare: 'Scan more content to build a clearer picture. Emotional tone can vary a lot between sessions.',
       meta: `Based on ${analysis.knownValenceTotal} posts with tone data from ${platform}`,
+      howWeMeasure: TONE_HOW_WE_MEASURE,
     };
   }
 
@@ -1162,6 +1192,7 @@ function buildToneInsight(
       meaning: 'No single emotional tone dominates. You encounter a roughly even spread of upbeat, informational, and conflict-focused content.',
       whyCare: 'A balanced feed means your feed shows a mix of emotional tones without a strong lean in one direction.',
       meta,
+      howWeMeasure: TONE_HOW_WE_MEASURE,
     };
   }
 
@@ -1172,6 +1203,7 @@ function buildToneInsight(
       meaning: `More than 1 in 3 posts appeared framed around conflict, outrage, or negativity. In a 60-minute session, that would be about ${negMinutesIn60} minutes of negative content.`,
       whyCare: 'Typical negative tone is 20–30%. Above that, a feed with a high proportion of negative content may present a skewed picture.',
       meta,
+      howWeMeasure: TONE_HOW_WE_MEASURE,
     };
   }
 
@@ -1181,6 +1213,7 @@ function buildToneInsight(
       meaning: 'More than 1 in 3 posts carried upbeat or happy emotional framing. Your scrolling experience leaned optimistic.',
       whyCare: 'Positive feeds can boost mood but may also create a highlight reel effect.',
       meta,
+      howWeMeasure: TONE_HOW_WE_MEASURE,
     };
   }
 
@@ -1190,6 +1223,7 @@ function buildToneInsight(
       meaning: 'Most posts appeared balanced or factual rather than emotionally charged.',
       whyCare: 'Neutral tone creates space for reflection without a dominant emotional tone.',
       meta,
+      howWeMeasure: TONE_HOW_WE_MEASURE,
     };
   }
 
@@ -1200,6 +1234,7 @@ function buildToneInsight(
       meaning: `Negative or conflict-focused posts slightly outpaced positive (${pos}%) and neutral (${neut}%) content.`,
       whyCare: 'A modest lean toward negative content is present in your feed.',
       meta,
+      howWeMeasure: TONE_HOW_WE_MEASURE,
     };
   } else if (pos === max) {
     return {
@@ -1207,6 +1242,7 @@ function buildToneInsight(
       meaning: `Upbeat content slightly outpaced neutral (${neut}%) and negative (${neg}%) posts.`,
       whyCare: 'A positive lean can improve mood during scrolling, though it may also filter out important but difficult topics.',
       meta,
+      howWeMeasure: TONE_HOW_WE_MEASURE,
     };
   } else {
     return {
@@ -1214,6 +1250,7 @@ function buildToneInsight(
       meaning: `Balanced or informational content outpaced positive (${pos}%) and negative (${neg}%) posts.`,
       whyCare: 'A neutral lean means your feed appeared less emotionally activating.',
       meta,
+      howWeMeasure: TONE_HOW_WE_MEASURE,
     };
   }
 }
