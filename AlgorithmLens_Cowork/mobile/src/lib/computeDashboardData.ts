@@ -497,6 +497,27 @@ function buildSourcesInsight(
   }
 }
 
+/**
+ * "How we measure" prose for the Ads tab.
+ *
+ * Carry-forward from the legacy AdsContent in dashboard.tsx pre-build #52,
+ * where these three strings were hard-coded as a JSX prop on the legacy
+ * InsightHero component (the `howWeMeasure={{...}}` prop on the
+ * InsightHero in AdsContent, pre-redesign). Lifted to the data layer so
+ * the redesigned AdsTab (src/screens/dashboard/AdsTab.tsx) consumes them
+ * from `data.adsInsight.howWeMeasure` instead of duplicating prose in
+ * the screen file — mirrors the SOURCES_HOW_WE_MEASURE and
+ * POLITICS_HOW_WE_MEASURE patterns established in build #51.
+ */
+const ADS_HOW_WE_MEASURE = {
+  what:
+    'The share of your feed that contains labeled ads and likely promotional content.',
+  how:
+    'We identify ads based on platform-provided labels (e.g. "Sponsored", "Ad") and promotional URL patterns. Each post is checked for these signals.',
+  limitations:
+    'Some native advertising or influencer partnerships may not be detected if they lack standard ad labels. Only explicitly labeled content is counted in the headline percentage; the "unlabeled promotions" section surfaces softer signals separately.',
+} as const;
+
 function buildAdsInsight(
   adPct: number,
   adCount: number,
@@ -512,6 +533,7 @@ function buildAdsInsight(
       meaning: 'Need at least 10 posts to analyze advertising patterns.',
       whyCare: null,
       meta,
+      howWeMeasure: ADS_HOW_WE_MEASURE,
     };
   }
 
@@ -521,6 +543,7 @@ function buildAdsInsight(
       meaning: `That's about ${adMinutesIn60} minutes of ads in every hour you scroll. ${adCount} ads appeared among ${totalPosts} posts.`,
       whyCare: 'This is above the typical range of 15–30%. A large share of what appeared in your feed was commercial.',
       meta,
+      howWeMeasure: ADS_HOW_WE_MEASURE,
     };
   } else if (adPct >= 20) {
     return {
@@ -528,6 +551,7 @@ function buildAdsInsight(
       meaning: `${adCount} labeled ads appeared among ${totalPosts} posts. That translates to roughly ${adMinutesIn60} minutes of ad content per hour.`,
       whyCare: 'This falls within the typical range (15–30%).',
       meta,
+      howWeMeasure: ADS_HOW_WE_MEASURE,
     };
   } else if (adPct >= 5) {
     return {
@@ -535,6 +559,7 @@ function buildAdsInsight(
       meaning: `${adCount} ad${adCount !== 1 ? 's' : ''} appeared among ${totalPosts} posts. A moderate but not dominant presence.`,
       whyCare: 'This is within the typical range. A regular but not overwhelming amount of commercial content.',
       meta,
+      howWeMeasure: ADS_HOW_WE_MEASURE,
     };
   } else {
     // MC-007/MC-008 FIX: Handle zero-count gracefully, replace "detected" with friendlier language
@@ -550,9 +575,31 @@ function buildAdsInsight(
         ? 'Some promotional content may not carry visible labels, native ads and influencer partnerships often blend in.'
         : 'This is below the typical range of 15–30%, leaving more space for non-commercial content.',
       meta,
+      howWeMeasure: ADS_HOW_WE_MEASURE,
     };
   }
 }
+
+/**
+ * "How we measure" prose for the Suggested vs. Followed tab.
+ *
+ * Carry-forward from the legacy SuggestedContent in dashboard.tsx
+ * pre-build #52, where these three strings were hard-coded as a JSX
+ * prop on the legacy InsightHero component (the `howWeMeasure={{...}}`
+ * prop on the InsightHero in SuggestedContent, pre-redesign). Lifted
+ * to the data layer so the redesigned SuggestedTab
+ * (src/screens/dashboard/SuggestedTab.tsx) consumes it from
+ * `data.suggestedInsight.howWeMeasure` — mirrors the
+ * SOURCES_/POLITICS_/ADS_HOW_WE_MEASURE patterns from builds #51-52.
+ */
+const SUGGESTED_HOW_WE_MEASURE = {
+  what:
+    'How much of your feed comes from accounts you follow versus content recommended by the platform.',
+  how:
+    'Each post is classified as "following" or "suggested" based on platform indicators, labels like "Suggested for you" or "Recommended", or the absence of a follow relationship.',
+  limitations:
+    'Platform indicators vary and may not always be present. Some platforms mix followed and suggested content without clear labels. Classification is based on observable signals only.',
+} as const;
 
 function buildSuggestedInsight(
   suggestedPct: number,
@@ -570,6 +617,7 @@ function buildSuggestedInsight(
       meaning: 'Need at least 10 posts to analyze suggested vs followed content.',
       whyCare: null,
       meta,
+      howWeMeasure: SUGGESTED_HOW_WE_MEASURE,
     };
   }
 
@@ -579,6 +627,7 @@ function buildSuggestedInsight(
       meaning: `Only ${followedCount} of ${totalPosts} posts were from accounts you follow. The vast majority appeared through the platform's recommendation system.`,
       whyCare: 'When most content is suggested, your feed contains more content from accounts you don\'t follow than from those you do.',
       meta,
+      howWeMeasure: SUGGESTED_HOW_WE_MEASURE,
     };
   } else if (suggestedPct >= 50) {
     return {
@@ -586,6 +635,7 @@ function buildSuggestedInsight(
       meaning: `${suggestedCount} posts came from accounts you don't follow, while ${followedCount} came from accounts you do. The platform's recommendations outweigh your follow list.`,
       whyCare: 'When suggested content exceeds followed content, a larger portion of your feed consisted of recommended content.',
       meta,
+      howWeMeasure: SUGGESTED_HOW_WE_MEASURE,
     };
   } else if (suggestedPct >= 20) {
     return {
@@ -593,6 +643,7 @@ function buildSuggestedInsight(
       meaning: `${followedCount} posts came from accounts you follow, with ${suggestedCount} suggested. Most of your feed comes from accounts you follow.`,
       whyCare: 'A balanced mix means your feed reflects both your own choices and platform recommendations.',
       meta,
+      howWeMeasure: SUGGESTED_HOW_WE_MEASURE,
     };
   } else {
     return {
@@ -600,6 +651,7 @@ function buildSuggestedInsight(
       meaning: `${followedCount} of ${totalPosts} posts came from followed accounts. Very little was suggested by the platform.`,
       whyCare: 'Your follow choices strongly determine what appears in your feed.',
       meta,
+      howWeMeasure: SUGGESTED_HOW_WE_MEASURE,
     };
   }
 }
