@@ -33,6 +33,16 @@ import { DashboardTour } from '../../src/components/dashboard/DashboardTour';
 // other four tabs (Sources/Ads/Politics/Tone) continue to use the
 // legacy theme until they are redesigned.
 import { OverviewTab } from '../../src/screens/dashboard/OverviewTab';
+// Build #51: Sources tab redesigned against the new design system.
+// Other tabs (Ads/Suggested/Tone) continue to use the legacy theme until
+// their own redesigns land.
+import { SourcesTab } from '../../src/screens/dashboard/SourcesTab';
+// Build #51 phase 3: Politics tab redesigned against the new design system.
+// Methodology prose now lives on `data.politicsInsight.howWeMeasure`
+// (see POLITICS_HOW_WE_MEASURE in computeDashboardData.ts), so the
+// legacy inline `PoliticsMethodologyDisclaimer` subcomponent has been
+// removed in this commit.
+import { PoliticsTab } from '../../src/screens/dashboard/PoliticsTab';
 import { Text } from '../../src/components/glue';
 import { SPACING, RADIUS, GL_TYPOGRAPHY } from '../../src/lib/gluestackTheme';
 import { COLORS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../src/lib/theme';
@@ -102,248 +112,16 @@ const OverviewContent = memo(({ data, isPlus, onUpgrade }: { data: DashboardData
   return <OverviewTab data={data} isPlus={isPlus} onUpgrade={onUpgrade} />;
 });
 
-const SourcesContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: DashboardData; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
-  // PD-004 FIX: Collapse concentration section behind expandable header
-  const [showConcentration, setShowConcentration] = useState(false);
-  // Concentration composition data for stacked bar
-  const top5Count = data.topCreators.slice(0, 5).reduce((sum, c) => sum + c.count, 0);
-  const top6to10Count = data.topCreators.slice(5, 10).reduce((sum, c) => sum + c.count, 0);
-  const othersCount = Math.max(0, data.totalPosts - top5Count - top6to10Count);
-  const top5ConcPct = data.top5Pct;
-  const top6to10Pct = data.totalPosts > 0 ? Math.round((top6to10Count / data.totalPosts) * 100) : 0;
-  const othersPct = Math.max(0, 100 - top5ConcPct - top6to10Pct);
-
-  return (
-    <View style={{ gap: SPACING['2xl'] }}>
-      <InsightHero
-        title={data.sourcesInsight.title}
-        meaning={data.sourcesInsight.meaning}
-        whyCare={data.sourcesInsight.whyCare}
-        meta={data.sourcesInsight.meta}
-        accent={colors.primaryBlue}
-        counterfactual="A few sources appearing frequently could reflect your following choices, recent posting activity by those creators, or algorithmic amplification. This analysis describes what appeared, not why."
-        howWeMeasure={{
-          what: 'Which accounts created the content you scrolled past, and how concentrated your feed is among a few sources.',
-          how: 'We extract the creator handle from each post and rank by frequency. Top-5 concentration is the percentage of all posts from your five most-shown accounts.',
-          limitations: 'Some posts may not have identifiable creators (e.g., promoted content without a visible handle). These are excluded from source analysis.',
-          learnMoreUrl: 'https://algorithmlens.com/dashboard#sources',
-        }}
-      />
-
-      {/* ── 3-column summary stat cards ── */}
-      {data.topCreators.length > 0 && (
-        <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
-          <View style={{
-            flex: 1,
-            backgroundColor: colors.bgCard,
-            borderRadius: RADIUS.lg,
-            padding: SPACING.md,
-            borderWidth: 1,
-            borderColor: colors.borderSoft,
-            ...shadows.card,
-          }}>
-            <Text variant="overline" color={colors.textSecondary }>
-              Top 5
-            </Text>
-            <Text style={{ ...GL_TYPOGRAPHY.h2, color: colors.textMain, marginTop: SPACING.xxs }}>
-              {data.top5Pct}%
-            </Text>
-            <Text variant="captionSmall" color={colors.textMuted} style={{ marginTop: SPACING.xxs  }}>
-              of posts from top 5
-            </Text>
-          </View>
-          <View style={{
-            flex: 1,
-            backgroundColor: colors.bgCard,
-            borderRadius: RADIUS.lg,
-            padding: SPACING.md,
-            borderWidth: 1,
-            borderColor: colors.borderSoft,
-            ...shadows.card,
-          }}>
-            <Text variant="overline" color={colors.textSecondary }>
-              Top Source
-            </Text>
-            <Text variant="labelBold" color={colors.textMain} style={{ marginTop: SPACING.xxs }} numberOfLines={1}>
-              {data.topCreators[0]?.name ? formatHandle(data.topCreators[0].name) : '—'}
-            </Text>
-            <Text variant="captionSmall" color={colors.textMuted} style={{ marginTop: SPACING.xxs  }}>
-              most frequent
-            </Text>
-          </View>
-          <View style={{
-            flex: 1,
-            backgroundColor: colors.bgCard,
-            borderRadius: RADIUS.lg,
-            padding: SPACING.md,
-            borderWidth: 1,
-            borderColor: colors.borderSoft,
-            ...shadows.card,
-          }}>
-            <Text variant="overline" color={colors.textSecondary }>
-              Sources
-            </Text>
-            <Text style={{ ...GL_TYPOGRAPHY.h2, color: colors.textMain, marginTop: SPACING.xxs }}>
-              {data.uniqueCreatorCount}
-            </Text>
-            <Text variant="captionSmall" color={colors.textMuted} style={{ marginTop: SPACING.xxs  }}>
-              unique creators
-            </Text>
-          </View>
-        </View>
-      )}
-
-      <SectionHeader title="Top Creators" subtitle="Who appeared most" />
-
-      {data.topCreators.length > 0 ? (
-        <View style={{
-          backgroundColor: colors.bgCard,
-          borderRadius: RADIUS.lg,
-          padding: SPACING.lg,
-          borderWidth: 1,
-          borderColor: colors.borderSoft,
-          ...shadows.card,
-        }}>
-          <ALBarChart
-            data={data.topCreators.slice(0, isPlus ? 10 : 5).map((creator) => ({
-              label: formatHandle(creator.name),
-              value: creator.count,
-              percentage: creator.percentage,
-            }))}
-          />
-          {!isPlus && data.topCreators.length > 5 && (
-            <Text variant="captionSmall" color={colors.textTertiary} style={{ fontStyle: 'italic', marginTop: SPACING.sm, textAlign: 'center' }}>
-              See all 10 with Plus
-            </Text>
-          )}
-        </View>
-      ) : (
-        <EmptySection message="Creator information builds up as you scan. Try scrolling through more content to capture source data." colors={colors} />
-      )}
-
-      {/* PD-004 FIX: Concentration section collapsed by default */}
-      {/* A-004 FIX: minHeight 44 ensures accessible tap target */}
-      {data.topCreators.length >= 5 && (
-        <TouchableOpacity
-          onPress={() => setShowConcentration(!showConcentration)}
-          activeOpacity={0.7}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingVertical: SPACING.md,
-            paddingHorizontal: SPACING.lg,
-            minHeight: MIN_TOUCH_TARGET,
-            borderRadius: RADIUS.lg,
-            backgroundColor: colors.bgCard,
-            borderWidth: 1,
-            borderColor: colors.borderSoft,
-          }}
-          accessibilityRole="button"
-          accessibilityLabel={showConcentration ? 'Hide concentration analysis' : 'How concentrated is your feed?'}
-          accessibilityState={{ expanded: showConcentration }}
-        >
-          <Text variant="label" color={colors.textMuted }>
-            How concentrated is your feed?
-          </Text>
-          <ChevronDown
-            size={16}
-            color={colors.textSecondary}
-            strokeWidth={2}
-            style={{ transform: [{ rotate: showConcentration ? '180deg' : '0deg' }] }}
-          />
-        </TouchableOpacity>
-      )}
-      {showConcentration && data.topCreators.length >= 5 && (
-        <>
-          <SectionHeader title="Source Concentration" />
-          <View style={{
-            backgroundColor: colors.bgCard,
-            borderRadius: RADIUS.lg,
-            padding: SPACING.lg,
-            borderWidth: 1,
-            borderColor: colors.borderSoft,
-            ...shadows.card,
-            alignItems: 'center',
-          }}>
-            <BigNumber
-              value={data.top5Pct}
-              label="of your feed from top 5 accounts"
-              suffix="%"
-            />
-            <Text variant="captionSmall" color={colors.textSecondary} style={{ marginTop: SPACING.xxs  }}>
-              Typical range: 40–60%
-            </Text>
-          </View>
-        </>
-      )}
-
-      {/* ── Concentration Composition Bar (PD-004: also collapsed) ── */}
-      {showConcentration && data.topCreators.length >= 5 && (
-        <>
-          <SectionHeader title="Concentration Breakdown" subtitle="How your feed is distributed" />
-          <View style={{
-            backgroundColor: colors.bgCard,
-            borderRadius: RADIUS.lg,
-            padding: SPACING.lg,
-            borderWidth: 1,
-            borderColor: colors.borderSoft,
-            ...shadows.card,
-          }}>
-            <ALStackedBar
-              segments={[
-                { label: 'Top 5', percentage: top5ConcPct, count: top5Count, color: colors.primaryBlue },
-                ...(top6to10Pct > 0 ? [{ label: 'Top 6–10', percentage: top6to10Pct, count: top6to10Count, color: colors.blue200 }] : []),
-                { label: 'Others', percentage: othersPct, count: othersCount, color: colors.textTertiary },
-              ]}
-            />
-            <Text variant="captionSmall" color={colors.textSecondary} style={{ fontStyle: "italic", marginTop: SPACING.sm  }}>
-              Higher values for top sources indicate a more concentrated feed.
-            </Text>
-          </View>
-        </>
-      )}
-
-      {/* Premium: Creator-specific breakdowns — locked for free users */}
-      <LockedOverlayCard
-        locked={!isPlus}
-        title="Creator breakdowns"
-        body="See which creators drive ad content, political posts, and specific topics in your feed."
-        onUpgrade={onUpgrade}
-      >
-        <View style={{ gap: SPACING.sm }}>
-          <SectionHeader title="Creator Breakdowns" subtitle="Who drives what content" />
-          <View style={{
-            backgroundColor: colors.bgCard, borderRadius: RADIUS.lg, padding: SPACING.lg,
-            borderWidth: 1, borderColor: colors.borderSoft, ...shadows.card, minHeight: 120,
-          }}>
-            <MetricCard headline="Top ad creators" value="—" microLine="Who promotes most" hasData={false} />
-          </View>
-          <View style={{
-            backgroundColor: colors.bgCard, borderRadius: RADIUS.lg, padding: SPACING.lg,
-            borderWidth: 1, borderColor: colors.borderSoft, ...shadows.card, minHeight: 120,
-          }}>
-            <MetricCard headline="Top political creators" value="—" microLine="Who drives political content" hasData={false} />
-          </View>
-        </View>
-      </LockedOverlayCard>
-
-      {/* Plus teasers for free users */}
-      {!isPlus && (
-        <>
-          <EvidenceBundleTeaser text="Plus provides detailed creator analysis and source diversity tracking" onUpgrade={onUpgrade} />
-          <FreeAskTeaser exampleQuestion="Which creators dominate my feed the most?" onUpgrade={onUpgrade} />
-        </>
-      )}
-
-      {/* ── Footer Context ── */}
-      <View style={{ paddingVertical: SPACING.lg, alignItems: 'center' }}>
-        <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textTertiary, textAlign: 'center' }}>
-          Based on {data.totalPosts} posts · {data.platform}{data.scanDate ? ` · Scanned ${new Date(data.scanDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}` : ''}
-        </Text>
-      </View>
-    </View>
-  );
+// ─── SourcesContent ──────────────────────────────────────
+//
+// Build #51: the Sources tab body lives in `src/screens/dashboard/SourcesTab.tsx`,
+// built against the new design system. This thin wrapper preserves the
+// `memo({ data, isPlus, onUpgrade, colors, shadows })` signature so the
+// surrounding DashboardScreen render path stays unchanged. `colors` and
+// `shadows` are accepted but unused — the redesigned tab is fully styled
+// via design tokens, same approach as OverviewContent.
+const SourcesContent = memo(({ data, isPlus, onUpgrade }: { data: DashboardData; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
+  return <SourcesTab data={data} isPlus={isPlus} onUpgrade={onUpgrade} />;
 });
 
 const AdsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: DashboardData; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
@@ -1256,296 +1034,24 @@ const SuggestedContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { d
   );
 });
 
-// Politics tab — renders political analysis from Gemini AI classification.
-// Shows political share, top political source, ideological distribution,
-// and methodology disclaimer matching the main site's PoliticsTab.
-// Gates are mutually exclusive: only ONE state renders at a time.
-const PoliticsContent = memo(({ data, isPlus, onUpgrade, colors, shadows }: { data: DashboardData; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
-  const [showIdeology, setShowIdeology] = useState(false);
-  const analysis = data.politicalAnalysis;
-  const totalAnalyzed = analysis?.totalAnalyzed ?? data.totalPosts;
-  const isLowPostCount = totalAnalyzed < 20;
-
-  // ── No political data → per-section empty state ──
-  if (!data.hasPoliticsData) {
-    return (
-      <View style={{ gap: SPACING['2xl'] }}>
-        <View style={{
-          backgroundColor: '#FAFBFE',
-          borderRadius: 12,
-          borderWidth: 1,
-          borderColor: 'rgba(37, 99, 235, 0.06)',
-          padding: 24,
-          alignItems: 'center',
-        }}>
-          <Text style={{ fontSize: 14, color: colors.textSecondary, textAlign: 'center' }}>
-            {isLowPostCount
-              ? 'Political exposure was light in this scan. Scan more content to see a full breakdown.'
-              : 'Political keywords and themes weren\'t prominent in this scan. Each scan captures a different moment, try scanning at a different time.'}
-          </Text>
-        </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-          <Sparkles size={12} color={colors.textTertiary} strokeWidth={1.5} />
-          <Text style={{ fontSize: 11, color: colors.textTertiary }}>
-            Political classification by Google Gemini AI · Your data is not used to train models
-          </Text>
-        </View>
-        <PoliticsMethodologyDisclaimer colors={colors} />
-      </View>
-    );
-  }
-
-  // ── Gate 3: Has political data — render full analysis ──
-  return (
-    <View style={{ gap: SPACING['2xl'] }}>
-      <InsightHero
-        title={data.politicsInsight.title}
-        meaning={data.politicsInsight.meaning}
-        whyCare={data.politicsInsight.whyCare}
-        meta={data.politicsInsight.meta}
-        accent={colors.primaryBlue}
-        counterfactual="This measures exposure, not belief formation. Political content may be more memorable than other topics, making it feel more present than the numbers show. The presence of political content could reflect current events, your interests, or platform recommendations."
-        howWeMeasure={{
-          what: 'The share of your feed that contains political keywords and themes, and the approximate ideological distribution.',
-          how: 'Post text is analyzed by Google\'s Gemini AI to detect political content and approximate ideological alignment (left/center/right) based on stance keywords.',
-          limitations: 'AI classification is approximate. Short posts may be misclassified. Ideological alignment is based on keyword signals, not nuanced understanding. This describes what appeared, not your views or the platform\'s intent.',
-          learnMoreUrl: 'https://algorithmlens.com/dashboard#politics',
-        }}
-      />
-
-      {/* Gemini AI disclosure */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-        <Sparkles size={12} color={colors.textTertiary} strokeWidth={1.5} />
-        <Text style={{ fontSize: 11, color: colors.textTertiary }}>
-          Political classification by Google Gemini AI · Your data is not used to train models
-        </Text>
-      </View>
-
-      {/* Low sample indicator */}
-      {analysis?.lowSample && (
-        <View style={{
-          backgroundColor: colors.lowSampleBg,
-          borderRadius: RADIUS.md,
-          paddingHorizontal: SPACING.lg,
-          paddingVertical: SPACING.md,
-          borderWidth: 1,
-          borderColor: colors.lowSampleBorder,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: SPACING.xs,
-        }}>
-          <Info size={14} color={colors.warning} strokeWidth={2} />
-          <Text style={{ ...GL_TYPOGRAPHY.caption, color: colors.warning, flex: 1 }}>
-            Low sample, fewer than 10 political posts. Results may not reflect typical patterns.
-          </Text>
-        </View>
-      )}
-
-      {/* Section: Political Share */}
-      <SectionHeader title="Political Share" subtitle="Posts containing political keywords" />
-      <View style={{
-        backgroundColor: colors.bgCard,
-        borderRadius: RADIUS.lg,
-        padding: SPACING.lg,
-        borderWidth: 1,
-        borderColor: colors.borderSoft,
-        ...shadows.card,
-        alignItems: 'center',
-      }}>
-        <BigNumber
-          value={analysis?.politicalPct ?? 0}
-          label="of your feed contained political content"
-          suffix="%"
-        />
-        <Text variant="captionSmall" color={colors.textSecondary} style={{ marginTop: SPACING.xxs  }}>
-          {analysis?.politicalCount ?? 0} of {analysis?.totalAnalyzed ?? 0} posts
-        </Text>
-      </View>
-
-      {/* Section: Top Political Source */}
-      {analysis?.topPoliticalSource && (
-        <>
-          <SectionHeader title="Top Political Source" />
-          <View style={{
-            backgroundColor: colors.bgCard,
-            borderRadius: RADIUS.lg,
-            padding: SPACING.lg,
-            borderWidth: 1,
-            borderColor: colors.borderSoft,
-            ...shadows.card,
-            gap: SPACING.sm,
-          }}>
-            <Text style={{ ...GL_TYPOGRAPHY.h2, color: colors.textMain }}>
-              {formatHandle(analysis.topPoliticalSource.handle)}
-            </Text>
-            <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textMuted }}>
-              {analysis.topPoliticalSource.count} of {analysis.politicalCount} political posts ({analysis.topPoliticalSource.pctOfPolitical}%)
-            </Text>
-            {/* Progress bar */}
-            <View style={{ gap: SPACING.xxs }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontWeight: '600' }}>
-                  Share of political posts
-                </Text>
-                <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary, fontWeight: '600' }}>
-                  {analysis.topPoliticalSource.pctOfPolitical}%
-                </Text>
-              </View>
-              <View style={{ height: 8, backgroundColor: colors.borderSoft, borderRadius: RADIUS.xs, overflow: 'hidden' }}>
-                <View style={{
-                  height: 8,
-                  backgroundColor: colors.primaryBlue,
-                  borderRadius: RADIUS.xs,
-                  width: `${analysis.topPoliticalSource.pctOfPolitical}%`,
-                }} />
-              </View>
-            </View>
-          </View>
-        </>
-      )}
-
-      {/* Political Summary Sentence */}
-      {data.politicalSummary && (
-        <View style={{
-          backgroundColor: colors.bgCard,
-          borderRadius: RADIUS.lg,
-          padding: SPACING.lg,
-          borderWidth: 1,
-          borderColor: colors.borderSoft,
-          ...shadows.card,
-        }}>
-          <Text variant="bodySmall" color={colors.textMuted} style={{ lineHeight: 20, fontStyle: 'italic' }}>
-            {data.politicalSummary}
-          </Text>
-        </View>
-      )}
-
-      {/* Section: Ideological Distribution (collapsible, matches main site) */}
-      <TouchableOpacity
-        onPress={() => setShowIdeology(!showIdeology)}
-        activeOpacity={0.7}
-        accessibilityRole="button"
-        accessibilityLabel={showIdeology ? 'Hide ideological breakdown' : 'Show ideological breakdown'}
-        accessibilityState={{ expanded: showIdeology }}
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          paddingVertical: SPACING.md,
-        }}
-      >
-        <Text variant="label" color={colors.textMuted }>
-          Show ideological breakdown
-        </Text>
-        <ChevronDown
-          size={16}
-          color={colors.textSecondary}
-          strokeWidth={2}
-          style={{
-            transform: [{ rotate: showIdeology ? '180deg' : '0deg' }],
-          }}
-        />
-      </TouchableOpacity>
-
-      {showIdeology && (
-        <>
-          {analysis?.ideology ? (
-            <View style={{
-              backgroundColor: colors.bgCard,
-              borderRadius: RADIUS.lg,
-              padding: SPACING.lg,
-              borderWidth: 1,
-              borderColor: colors.borderSoft,
-              ...shadows.card,
-              gap: SPACING.sm,
-            }}>
-              <ALStackedBar
-                segments={[
-                  { label: 'Left', percentage: analysis.ideology.left, count: analysis.ideology.leftCount, color: colors.ideologyLeft },
-                  { label: 'Center', percentage: analysis.ideology.center, count: analysis.ideology.centerCount, color: colors.ideologyCenter },
-                  { label: 'Right', percentage: analysis.ideology.right, count: analysis.ideology.rightCount, color: colors.ideologyRight },
-                ]}
-              />
-              <Text variant="captionSmall" color={colors.textSecondary} style={{ fontStyle: "italic" }}>
-                Each segment shows what share of political posts showed keywords associated with that direction. This is approximate and may not capture nuance.
-              </Text>
-              <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textMuted }}>
-                Based on {analysis.ideology.knownTotal} political posts with identifiable alignment
-              </Text>
-            </View>
-          ) : (
-            <View style={{
-              backgroundColor: colors.bgCard,
-              borderRadius: RADIUS.lg,
-              padding: SPACING.lg,
-              borderWidth: 1,
-              borderColor: colors.borderSoft,
-              alignItems: 'center',
-            }}>
-              <Text style={{ ...GL_TYPOGRAPHY.body, color: colors.textSecondary, textAlign: 'center', fontStyle: 'italic' }}>
-                Not enough political posts with identifiable alignment to show a reliable distribution.
-              </Text>
-            </View>
-          )}
-        </>
-      )}
-
-      {/* Premium: Political trend over time — locked for free users */}
-      <LockedOverlayCard
-        locked={!isPlus}
-        title="Political exposure trends"
-        body="Track how political content in your feed changes across scans. See if exposure is rising, falling, or steady."
-        onUpgrade={onUpgrade}
-      >
-        <View style={{ gap: SPACING.sm }}>
-          <SectionHeader title="Changes Over Time" subtitle="Political exposure trend" />
-          <View style={{
-            backgroundColor: colors.bgCard, borderRadius: RADIUS.lg, padding: SPACING.lg,
-            borderWidth: 1, borderColor: colors.borderSoft, ...shadows.card, minHeight: 120,
-          }}>
-            <MetricCard headline="Political trend" value="—" microLine="Across recent scans" hasData={false} />
-          </View>
-        </View>
-      </LockedOverlayCard>
-
-      {/* PD-003 FIX: Removed redundant methodology disclaimer — InsightHero's
-          "How we measure" section already provides this via progressive disclosure */}
-
-      {/* Plus teasers for free users */}
-      {!isPlus && (
-        <>
-          <EvidenceBundleTeaser text="Plus breaks down political content patterns across your scans" onUpgrade={onUpgrade} />
-          <FreeAskTeaser exampleQuestion="How much of my feed contains political content compared to other categories?" onUpgrade={onUpgrade} />
-        </>
-      )}
-
-      {/* ── Footer Context ── */}
-      <View style={{ paddingVertical: SPACING.lg, alignItems: 'center' }}>
-        <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textTertiary, textAlign: 'center' }}>
-          Based on {data.totalPosts} posts · {data.platform}{data.scanDate ? ` · Scanned ${new Date(data.scanDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}` : ''}
-        </Text>
-      </View>
-    </View>
-  );
+// ─── PoliticsContent ─────────────────────────────────────
+//
+// Build #51 phase 3: the Politics tab body lives in
+// `src/screens/dashboard/PoliticsTab.tsx`, built against the new design
+// system. This thin wrapper preserves the
+// `memo({ data, isPlus, onUpgrade, colors, shadows })` signature so the
+// surrounding DashboardScreen render path stays unchanged. `colors` and
+// `shadows` are accepted but unused — the redesigned tab is fully styled
+// via design tokens, same approach as OverviewContent and SourcesContent.
+//
+// The legacy `PoliticsMethodologyDisclaimer` subcomponent that lived
+// directly below has been deleted in this commit; its prose now lives on
+// the data layer at `data.politicsInsight.howWeMeasure` (see
+// POLITICS_HOW_WE_MEASURE in computeDashboardData.ts) and is rendered
+// inside the bottom "About this analysis" ExpandableCard.
+const PoliticsContent = memo(({ data, isPlus, onUpgrade }: { data: DashboardData; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
+  return <PoliticsTab data={data} isPlus={isPlus} onUpgrade={onUpgrade} />;
 });
-
-// Methodology disclaimer matching the main site's epistemic restraint pattern
-const PoliticsMethodologyDisclaimer = ({ colors }: { colors: ReturnType<typeof useTheme>['colors'] }) => (
-  <View style={{
-    backgroundColor: colors.bgCardGradientEnd,
-    borderRadius: RADIUS.md,
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: colors.borderSoft,
-  }}>
-    <Text variant="overline" color={colors.textMuted} style={{ marginBottom: SPACING.xxs }}>
-      How We Measure
-    </Text>
-    <Text style={{ ...GL_TYPOGRAPHY.captionSmall, color: colors.textSecondary }}>
-      Political classification uses Google's Gemini AI to identify posts containing political keywords and themes. Ideological alignment (left/center/right) is approximate, based on stance keywords found in post text. This analysis describes what appeared in your feed, it does not infer your personal views or the platform's intent.
-    </Text>
-  </View>
-);
 
 // Tone tab — renders emotional tone analysis from Gemini AI classification.
 // Shows tone composition bar, methodology disclaimer, and quality gating.
