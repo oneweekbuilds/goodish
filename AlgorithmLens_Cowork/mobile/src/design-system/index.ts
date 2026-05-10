@@ -18,3 +18,4 @@ export { AttributeCard, type AttributeCardProps } from './AttributeCard';
 export { InfluencerRow, type InfluencerRowProps } from './InfluencerRow';
 export { DisclosureRow, type DisclosureRowProps } from './DisclosureRow';
 export { FeedbackLoopStep, type FeedbackLoopStepProps } from './FeedbackLoopStep';
+export { StackedBar, type StackedBarProps, type StackedBarSegment } from './StackedBar';
