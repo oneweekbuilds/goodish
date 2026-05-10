@@ -239,6 +239,22 @@ export interface InsightHeroData {
   meaning: string;
   whyCare: string | null;
   meta: string | null;
+  /**
+   * Methodology disclosure prose for the "About this measurement" card.
+   * Optional so existing builders that haven't been migrated continue to
+   * typecheck. Populated by builders whose tabs have been redesigned
+   * against the new design system (Sources from build #51 onward).
+   *
+   * Carry-forward note: prior to build #51 this content lived as a JSX
+   * prop on the legacy InsightHero component in dashboard.tsx. Lifting
+   * it onto the data shape so screens consume it from the data layer
+   * rather than duplicating prose in screen files.
+   */
+  howWeMeasure?: {
+    what: string;
+    how: string;
+    limitations: string;
+  };
 }
 
 export interface CreatorStat {
@@ -414,6 +430,25 @@ function buildOverviewInsight(
   }
 }
 
+/**
+ * "How we measure" prose for the Sources tab.
+ *
+ * Carry-forward from legacy SourcesContent in dashboard.tsx pre-build #51,
+ * where these three strings were hard-coded as a JSX prop on the legacy
+ * InsightHero component. Lifted to the data layer so the redesigned
+ * SourcesTab (src/screens/dashboard/SourcesTab.tsx) consumes them from
+ * `data.sourcesInsight.howWeMeasure` instead of duplicating prose in
+ * the screen file.
+ */
+const SOURCES_HOW_WE_MEASURE = {
+  what:
+    'Which accounts created the content you scrolled past, and how concentrated your feed is among a few sources.',
+  how:
+    'We extract the creator handle from each post and rank by frequency. Top-5 concentration is the percentage of all posts from your five most-shown accounts.',
+  limitations:
+    'Some posts may not have identifiable creators (e.g. promoted content without a visible handle). These are excluded from source analysis.',
+} as const;
+
 function buildSourcesInsight(
   topCreators: CreatorStat[],
   totalPosts: number,
@@ -428,6 +463,7 @@ function buildSourcesInsight(
       meaning: 'Need at least 10 posts with identifiable creators to analyze source distribution.',
       whyCare: null,
       meta,
+      howWeMeasure: SOURCES_HOW_WE_MEASURE,
     };
   }
 
@@ -440,6 +476,7 @@ function buildSourcesInsight(
       meaning: `${formatHandle(topName)} alone appeared in ${topPct}% of posts. Three-quarters of your feed came from a tiny group.`,
       whyCare: 'This is well above typical (40–60%). These creators have significant presence in your feed.',
       meta,
+      howWeMeasure: SOURCES_HOW_WE_MEASURE,
     };
   } else if (top5Pct >= 50) {
     return {
@@ -447,6 +484,7 @@ function buildSourcesInsight(
       meaning: `${formatHandle(topName)} appeared most often at ${topPct}% of posts. About half of your content comes from your most-shown accounts.`,
       whyCare: 'This is at the higher end of typical (40–60%).',
       meta,
+      howWeMeasure: SOURCES_HOW_WE_MEASURE,
     };
   } else {
     return {
@@ -454,6 +492,7 @@ function buildSourcesInsight(
       meaning: 'Less than half of posts come from your top sources. You regularly encounter content from accounts outside your core group.',
       whyCare: 'A healthy balance of familiarity and discovery.',
       meta,
+      howWeMeasure: SOURCES_HOW_WE_MEASURE,
     };
   }
 }
@@ -565,6 +604,33 @@ function buildSuggestedInsight(
   }
 }
 
+/**
+ * "How we measure" prose for the Politics tab.
+ *
+ * Carry-forward from two legacy locations in dashboard.tsx pre-build #51:
+ *   1. The inline `howWeMeasure` JSX prop on InsightHero in PoliticsContent
+ *      (what / how / limitations triplet — this is the substantive content).
+ *   2. The standalone `PoliticsMethodologyDisclaimer` subcomponent (a single
+ *      paragraph reiterating the same methodology in different words).
+ *
+ * The two sources said substantively the same thing; the merged copy here
+ * keeps the tighter what/how/limitations structure from source #1 and
+ * folds in the disclaimer's "describes what appeared, not your views or
+ * the platform's intent" framing into limitations. Lifted to the data
+ * layer so the redesigned PoliticsTab
+ * (src/screens/dashboard/PoliticsTab.tsx) consumes it from
+ * `data.politicsInsight.howWeMeasure` instead of duplicating prose in
+ * the screen file (mirrors the SOURCES_HOW_WE_MEASURE pattern).
+ */
+const POLITICS_HOW_WE_MEASURE = {
+  what:
+    'The share of your feed that contained political keywords and themes, and the approximate ideological distribution of those posts.',
+  how:
+    'Post text is analyzed by Google\'s Gemini AI to detect political content and approximate ideological alignment (left, center, or right) based on stance keywords found in each post.',
+  limitations:
+    'AI classification is approximate. Short posts may be misclassified. Ideological alignment is based on keyword signals, not nuanced understanding. This describes what appeared in your feed. It does not infer your personal views or the platform\'s intent.',
+} as const;
+
 function buildPoliticsInsight(
   platform: string,
   totalPosts: number,
@@ -577,6 +643,7 @@ function buildPoliticsInsight(
       meaning: 'To identify political content in your feed, AlgorithmLens uses Google\'s Gemini AI to analyze post text. This gives you an accurate count of how much political content appears in your feed.',
       whyCare: 'Enable AI analysis in Settings to unlock this tab. Your data is processed securely, Google does not use it to train models.',
       meta: `${totalPosts} posts available for analysis from ${platform}`,
+      howWeMeasure: POLITICS_HOW_WE_MEASURE,
     };
   }
 
@@ -587,6 +654,7 @@ function buildPoliticsInsight(
       meaning: 'Fewer than 10 posts contained political keywords, which is not enough to draw reliable conclusions about the political makeup of your feed.',
       whyCare: 'Scan more content to build a clearer picture. Political signals can vary a lot between sessions.',
       meta: `Based on ${analysis.totalAnalyzed} analyzed posts from ${platform}`,
+      howWeMeasure: POLITICS_HOW_WE_MEASURE,
     };
   }
 
@@ -598,6 +666,7 @@ function buildPoliticsInsight(
       meaning: `${analysis.politicalCount} of ${analysis.totalAnalyzed} posts showed political keywords or themes. A notable share of what appeared in your feed touched on political topics.`,
       whyCare: 'This is above typical (5–15%). Political content had a strong presence in this scan window.',
       meta,
+      howWeMeasure: POLITICS_HOW_WE_MEASURE,
     };
   } else if (analysis.politicalPct >= 10) {
     return {
@@ -605,6 +674,7 @@ function buildPoliticsInsight(
       meaning: `${analysis.politicalCount} of ${analysis.totalAnalyzed} posts showed political keywords or themes. A moderate presence in your feed.`,
       whyCare: 'This falls within the typical range (5–15%).',
       meta,
+      howWeMeasure: POLITICS_HOW_WE_MEASURE,
     };
   } else {
     return {
@@ -612,6 +682,7 @@ function buildPoliticsInsight(
       meaning: `Only ${analysis.politicalCount} of ${analysis.totalAnalyzed} posts contained political keywords. Most of your feed focused on other topics.`,
       whyCare: 'Political content had a light presence in this scan window.',
       meta,
+      howWeMeasure: POLITICS_HOW_WE_MEASURE,
     };
   }
 }
