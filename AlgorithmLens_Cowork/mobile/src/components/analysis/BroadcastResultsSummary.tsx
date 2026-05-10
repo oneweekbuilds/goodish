@@ -24,7 +24,6 @@ import { useTheme } from '../../context/ThemeContext';
 import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
 import { SPACING, RADIUS, ICON_SIZES, MIN_TOUCH_TARGET } from '../../lib/theme';
 import { formatDuration } from '../../lib/formatDuration';
-import { formatHandle } from '../../lib/formatHandle';
 import { Text } from '../glue';
 import type { UnifiedScanResult } from '../../types';
 
