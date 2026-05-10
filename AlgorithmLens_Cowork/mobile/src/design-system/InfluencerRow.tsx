@@ -51,7 +51,7 @@ export function InfluencerRow({ handle, posts, ads, last }: InfluencerRowProps) 
           fontVariant: ['tabular-nums'],
         }}
       >
-        {posts} posts · {ads} ads
+        {posts} {posts === 1 ? 'post' : 'posts'} · {ads} {ads === 1 ? 'ad' : 'ads'}
       </Text>
     </View>
   );

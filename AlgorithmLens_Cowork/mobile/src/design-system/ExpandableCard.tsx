@@ -81,12 +81,20 @@ export function ExpandableCard({
           {/* Title can wrap to a 2nd line if the row's intrinsic width
               exceeds the card. Headline shrinks alongside (RN's default
               flexShrink is 0, so we must opt in) and ellipsizes if needed,
-              keeping its tabular-nums when readable. */}
-          <Text style={[styles.title, !icon && { marginLeft: 0 }]}>
+              keeping its tabular-nums when readable.
+              Title gets numberOfLines={2} explicitly so RN's text engine
+              prefers word-boundary breaks (avoids the "concentrat / ion"
+              character-break we saw in Build #51). ellipsizeMode='tail'
+              is the clean fallback if even two lines can't fit. */}
+          <Text
+            style={[styles.title, !icon && { marginLeft: 0 }]}
+            numberOfLines={2}
+            ellipsizeMode="tail"
+          >
             {title}
           </Text>
           {headline ? (
-            <Text style={styles.headline} numberOfLines={1}>
+            <Text style={styles.headline} numberOfLines={1} ellipsizeMode="tail">
               {headline}
             </Text>
           ) : null}
@@ -142,7 +150,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
+    // flex: 1 = { flexGrow: 1, flexShrink: 1, flexBasis: 0% }. The
+    // explicit flexShrink: 1 reiteration matches the headline below so
+    // shrink-priority intent reads at a glance.
     flex: 1,
+    flexShrink: 1,
     minWidth: 0,
     fontSize: type.subheading.fontSize,
     lineHeight: type.subheading.lineHeight,
@@ -151,6 +163,13 @@ const styles = StyleSheet.create({
   },
   headline: {
     flexShrink: 1,
+    // Cap headline at 40% of the header row so the title is guaranteed
+    // ≥60% of the content width (minus icon and chevron). Without this
+    // cap, long numeric headlines like "12 of 47 political posts" can
+    // squeeze the title narrow enough that a single word like
+    // "concentration" overflows even one line and RN forces a
+    // character-break.
+    maxWidth: '40%',
     fontSize: type.subheading.fontSize,
     lineHeight: type.subheading.lineHeight,
     fontWeight: type.subheading.fontWeight,
