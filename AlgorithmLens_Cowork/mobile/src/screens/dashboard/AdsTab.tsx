@@ -130,7 +130,7 @@ export function AdsTab({ data, isPlus, onUpgrade }: AdsTabProps) {
       <HeroStatCard
         value={String(data.adPct)}
         unit="%"
-        label="of your feed was commercial content"
+        label="of your feed was ads"
         description={insight.meaning}
         caution={heroCaution}
       />

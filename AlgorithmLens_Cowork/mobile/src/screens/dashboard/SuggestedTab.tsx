@@ -398,6 +398,10 @@ export function SuggestedTab({ data }: SuggestedTabProps) {
       ) : null}
 
       {/* ── 7. Content formats ──────────────────────────────── */}
+      {/* Sample-size caveat renders at the top of the body when either
+          side has < 10 posts — the per-format percentages are unstable
+          on small samples and the user should weigh them accordingly.
+          (Build #52 verification flagged this; surfaced now in build #53.) */}
       {data.contentFormatComparison.length > 0 ? (
         <View style={{ marginTop: spacing.s7 }}>
           <ExpandableCard
@@ -405,6 +409,18 @@ export function SuggestedTab({ data }: SuggestedTabProps) {
             title="Content formats"
             headline={`${data.contentFormatComparison.length} ${data.contentFormatComparison.length === 1 ? 'format' : 'formats'}`}
           >
+            {data.suggestedCount < 10 || data.followedCount < 10 ? (
+              <Text
+                style={{
+                  fontSize: typeTokens.caption.fontSize,
+                  lineHeight: typeTokens.caption.lineHeight,
+                  color: colors.textTertiary,
+                  marginBottom: spacing.s3,
+                }}
+              >
+                Based on {data.suggestedCount} suggested and {data.followedCount} followed posts. Patterns from small samples may not generalize.
+              </Text>
+            ) : null}
             {data.contentFormatComparison.map((cf, i) => {
               const deltaSign = cf.delta > 0 ? '+' : '';
               // Pack three numbers into one tabular-nums value string so the
