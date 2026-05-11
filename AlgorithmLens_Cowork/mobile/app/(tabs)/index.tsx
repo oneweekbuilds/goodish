@@ -38,11 +38,6 @@ import {
 import { useDashboard } from '../../src/hooks/useDashboard';
 import { labelForScore, scoreOfScan } from '../../src/lib/scanScore';
 import { ContentFadeIn } from '../../src/components/glue';
-import { PlatformBottomSheet } from '../../src/components/home/PlatformBottomSheet';
-import type {
-  ScanMode,
-  SupportedPlatform,
-} from '../../src/types/broadcast';
 
 type FeedState =
   | { kind: 'loading' }
@@ -60,7 +55,6 @@ type FeedState =
 export default function HomeScreen() {
   const { scans, latestScan, loading, refresh } = useDashboard();
   const [refreshing, setRefreshing] = useState(false);
-  const [sheetVisible, setSheetVisible] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -104,30 +98,13 @@ export default function HomeScreen() {
     }
   }, [refresh]);
 
-  const handleScanStart = useCallback(
-    (platform: SupportedPlatform, mode: ScanMode) => {
-      setSheetVisible(false);
-      if (mode === 'broadcast') {
-        router.push({
-          pathname: '/broadcast/[platform]',
-          params: { platform },
-        });
-      } else {
-        router.push({
-          pathname: '/scanner/[platform]',
-          params: { platform },
-        });
-      }
-    },
-    [],
-  );
-
   const handleDashboardPress = useCallback(() => {
     router.push({ pathname: '/(tabs)/dashboard' });
   }, []);
 
-  const openSheet = useCallback(() => setSheetVisible(true), []);
-  const closeSheet = useCallback(() => setSheetVisible(false), []);
+  const handleOpenScanPicker = useCallback(() => {
+    router.push('/scan');
+  }, []);
 
   const buttonLabel = scanButtonLabel(feedState);
 
@@ -156,7 +133,7 @@ export default function HomeScreen() {
           <GreetingHeader lastScanDate={lastScanDate} />
           <FeedScoreHeroCard state={feedState} />
           {buttonLabel ? (
-            <PrimaryScanButton label={buttonLabel} onPress={openSheet} />
+            <PrimaryScanButton label={buttonLabel} onPress={handleOpenScanPicker} />
           ) : null}
           <ConditionalLastScanRow
             lastScan={latestScan}
@@ -164,15 +141,6 @@ export default function HomeScreen() {
           />
         </ScrollView>
       </ContentFadeIn>
-
-      <PlatformBottomSheet
-        visible={sheetVisible}
-        onClose={closeSheet}
-        onScanStart={handleScanStart}
-        lastPlatform={
-          latestScan?.platform as SupportedPlatform | undefined
-        }
-      />
     </SafeAreaView>
   );
 }

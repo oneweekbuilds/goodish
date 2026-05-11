@@ -147,6 +147,7 @@ function RootLayoutNav({ fontsLoaded }: { fontsLoaded: boolean }) {
               name="compare/result"
               options={{ headerShown: false }}
             />
+            <Stack.Screen name="scan" options={{ headerShown: false }} />
           </Stack>
         </>
       )}

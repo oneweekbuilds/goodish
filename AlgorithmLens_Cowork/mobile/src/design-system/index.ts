@@ -43,3 +43,9 @@ export {
 export { ComparePill, type ComparePillProps } from './ComparePill';
 export { PickerRow, type PickerRowProps } from './PickerRow';
 export { DiffRow, type DiffRowProps } from './DiffRow';
+export { BackButton, type BackButtonProps } from './BackButton';
+export { ScanHeader, type ScanHeaderProps } from './ScanHeader';
+export { CaptureFooter, type CaptureFooterProps } from './CaptureFooter';
+export { CautionPill, type CautionPillProps } from './CautionPill';
+export { StepIndicator, type StepIndicatorProps } from './StepIndicator';
+export { PlatformTile, type PlatformTileProps } from './PlatformTile';
