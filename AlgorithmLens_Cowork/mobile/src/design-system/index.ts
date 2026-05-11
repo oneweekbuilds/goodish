@@ -20,3 +20,10 @@ export { DisclosureRow, type DisclosureRowProps } from './DisclosureRow';
 export { FeedbackLoopStep, type FeedbackLoopStepProps } from './FeedbackLoopStep';
 export { StackedBar, type StackedBarProps, type StackedBarSegment } from './StackedBar';
 export { ComparisonPair, type ComparisonPairProps, type ComparisonPairGroup } from './ComparisonPair';
+export { Sparkline, type SparklineProps } from './Sparkline';
+export { GreetingHeader, type GreetingHeaderProps } from './GreetingHeader';
+export {
+  ConditionalLastScanRow,
+  type ConditionalLastScanRowProps,
+  type LastScanRecord,
+} from './ConditionalLastScanRow';
