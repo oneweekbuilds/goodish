@@ -27,3 +27,8 @@ export {
   type ConditionalLastScanRowProps,
   type LastScanRecord,
 } from './ConditionalLastScanRow';
+export { SettingsRow, type SettingsRowProps } from './SettingsRow';
+export {
+  SettingsSectionHeader,
+  type SettingsSectionHeaderProps,
+} from './SettingsSectionHeader';
