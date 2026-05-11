@@ -2,22 +2,26 @@
  * ConditionalLastScanRow: last-scan disclosure row for Home.
  *
  * Renders only when the most recent scan was 1+ days ago. Layout:
- * platform avatar · two-line label · chevron. At 14+ days the row's
+ * platform avatar, two-line label, chevron. At 14+ days the row's
  * background shifts to the caution token, mirroring GreetingHeader's
  * subtitle treatment for the same threshold.
  *
- *   null / today (0 days) → returns null
- *   1–13 days             → row visible, neutral background
- *   14+ days              → row visible, caution-tinted background
+ *   null / today (0 days) returns null
+ *   1 to 13 days          renders neutral background
+ *   14+ days              renders caution-tinted background
  *
  * The platform avatar uses a neutral `bgSecondary` surface with a
  * two-letter abbreviation in `textPrimary`. Decorative platform colors
  * are not used here, since DESIGN.md forbids decorative color.
+ *
+ * Platform abbreviation and display-name lookups come from the shared
+ * lib/platformLabels module (also used by Compare).
  */
 import React from 'react';
 import { Pressable, View, Text } from 'react-native';
 import { Icon } from './Icon';
 import { colors, type, spacing, radius, tap } from '../design-tokens/tokens';
+import { platformAbbrev, platformName } from '../lib/platformLabels';
 
 /**
  * The minimal shape the row needs. The app's `ScanDetail` / `ScanRecord`
@@ -38,26 +42,6 @@ export interface ConditionalLastScanRowProps {
   now?: Date;
 }
 
-const PLATFORM_LABELS: Record<string, string> = {
-  instagram: 'IG',
-  twitter: 'X',
-  x: 'X',
-  youtube: 'YT',
-  tiktok: 'TT',
-  facebook: 'FB',
-  reddit: 'Re',
-};
-
-const PLATFORM_NAMES: Record<string, string> = {
-  instagram: 'Instagram',
-  twitter: 'X',
-  x: 'X',
-  youtube: 'YouTube',
-  tiktok: 'TikTok',
-  facebook: 'Facebook',
-  reddit: 'Reddit',
-};
-
 export function ConditionalLastScanRow({
   lastScan,
   onPress,
@@ -70,9 +54,8 @@ export function ConditionalLastScanRow({
   if (days === null || days <= 0) return null;
 
   const isCaution = days >= 14;
-  const key = lastScan.platform.toLowerCase();
-  const platformLabel = PLATFORM_LABELS[key] ?? '?';
-  const platformName = PLATFORM_NAMES[key] ?? lastScan.platform;
+  const abbrev = platformAbbrev(lastScan.platform);
+  const displayName = platformName(lastScan.platform);
   const relative = relativePhrase(days, scanDate);
 
   const inner = (
@@ -108,7 +91,7 @@ export function ConditionalLastScanRow({
             color: colors.textPrimary,
           }}
         >
-          {platformLabel}
+          {abbrev}
         </Text>
       </View>
       <View style={{ flex: 1, minWidth: 0 }}>
@@ -121,7 +104,7 @@ export function ConditionalLastScanRow({
           }}
           numberOfLines={1}
         >
-          Last scan: {platformName}
+          Last scan: {displayName}
         </Text>
         <Text
           style={{
@@ -149,7 +132,7 @@ export function ConditionalLastScanRow({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Last scan: ${platformName}, ${relative}`}
+      accessibilityLabel={`Last scan: ${displayName}, ${relative}`}
       onPress={onPress}
       style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
     >

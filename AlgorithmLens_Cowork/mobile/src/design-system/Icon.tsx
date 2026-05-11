@@ -14,8 +14,12 @@
 import React from 'react';
 import {
   AlertTriangle,
+  ArrowDown,
+  ArrowLeftRight,
+  ArrowUp,
   BarChart3,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   ChevronUp,
   Clock,
@@ -36,8 +40,12 @@ import { colors } from '../design-tokens/tokens';
 const ICONS = {
   'alert-triangle': AlertTriangle,
   'triangle-alert': AlertTriangle, // alias used in the prototype
+  'arrow-down': ArrowDown,
+  'arrow-left-right': ArrowLeftRight,
+  'arrow-up': ArrowUp,
   'bar-chart-3': BarChart3,
   'chevron-down': ChevronDown,
+  'chevron-left': ChevronLeft,
   'chevron-right': ChevronRight,
   'chevron-up': ChevronUp,
   'clock': Clock,

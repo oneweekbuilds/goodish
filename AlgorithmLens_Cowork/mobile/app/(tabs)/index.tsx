@@ -35,7 +35,8 @@ import {
   radius,
   layout,
 } from '../../src/design-tokens/tokens';
-import { useDashboard, type ScanDetail } from '../../src/hooks/useDashboard';
+import { useDashboard } from '../../src/hooks/useDashboard';
+import { labelForScore, scoreOfScan } from '../../src/lib/scanScore';
 import { ContentFadeIn } from '../../src/components/glue';
 import { PlatformBottomSheet } from '../../src/components/home/PlatformBottomSheet';
 import type {
@@ -339,26 +340,6 @@ function PrimaryScanButton({
 }
 
 /* Helpers */
-
-function scoreOfScan(scan: ScanDetail): number {
-  const adPenalty = Math.min(
-    20,
-    Math.max(0, (scan.ad_percentage ?? 0) - 5) * 0.8,
-  );
-  const suggestedPenalty = Math.min(
-    15,
-    Math.max(0, (scan.suggested_percentage ?? 0) - 30) * 0.375,
-  );
-  const sampleBonus = Math.min(5, (scan.post_count ?? 0) / 10);
-  const score = 80 - adPenalty - suggestedPenalty + sampleBonus;
-  return Math.round(Math.max(0, Math.min(100, score)));
-}
-
-function labelForScore(score: number): string {
-  if (score >= 70) return 'Balanced';
-  if (score >= 50) return 'Mostly balanced';
-  return 'Worth watching';
-}
 
 function scanButtonLabel(state: FeedState): string | null {
   switch (state.kind) {

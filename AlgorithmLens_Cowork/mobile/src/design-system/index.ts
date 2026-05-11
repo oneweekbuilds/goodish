@@ -1,8 +1,7 @@
 /**
- * AlgorithmLens design system — re-exports.
+ * AlgorithmLens design system: re-exports.
  *
- * This is the surface the Overview screen imports from. Keep this file
- * a flat list of named re-exports so callers can write:
+ * Keep this file a flat list of named re-exports so callers can write:
  *
  *   import { Card, ExpandableCard, HeroStatCard } from '../design-system';
  */
@@ -29,6 +28,18 @@ export {
 } from './ConditionalLastScanRow';
 export { SettingsRow, type SettingsRowProps } from './SettingsRow';
 export {
-  SettingsSectionHeader,
-  type SettingsSectionHeaderProps,
-} from './SettingsSectionHeader';
+  MicroSectionHeader,
+  type MicroSectionHeaderProps,
+} from './MicroSectionHeader';
+/**
+ * SettingsSectionHeader is a deprecated alias for MicroSectionHeader.
+ * The Settings route still imports the old name; remove this alias on
+ * the next Settings touch and migrate that import to MicroSectionHeader.
+ */
+export {
+  MicroSectionHeader as SettingsSectionHeader,
+  type MicroSectionHeaderProps as SettingsSectionHeaderProps,
+} from './MicroSectionHeader';
+export { ComparePill, type ComparePillProps } from './ComparePill';
+export { PickerRow, type PickerRowProps } from './PickerRow';
+export { DiffRow, type DiffRowProps } from './DiffRow';

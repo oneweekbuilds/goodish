@@ -139,6 +139,14 @@ function RootLayoutNav({ fontsLoaded }: { fontsLoaded: boolean }) {
                 animation: 'slide_from_bottom',
               }}
             />
+            <Stack.Screen
+              name="compare/[anchorScanId]"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="compare/result"
+              options={{ headerShown: false }}
+            />
           </Stack>
         </>
       )}
