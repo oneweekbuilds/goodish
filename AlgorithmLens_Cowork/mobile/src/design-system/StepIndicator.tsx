@@ -21,8 +21,14 @@ import { Icon } from './Icon';
 import { colors, spacing, type } from '../design-tokens/tokens';
 
 export interface StepIndicatorProps {
-  /** Step labels rendered beneath each dot. Length determines step count. */
-  labels: string[];
+  /**
+   * Step labels rendered beneath each dot. Length determines step count
+   * when present. If omitted or all-empty, the indicator renders dots
+   * only (no label row), and `stepCount` controls the number of dots.
+   */
+  labels?: string[];
+  /** Number of dots when `labels` is omitted. Ignored if `labels` is set. */
+  stepCount?: number;
   /** Index of the currently active step. -1 = none active (all pending). */
   currentStep: number;
 }
@@ -30,7 +36,14 @@ export interface StepIndicatorProps {
 const DOT_SIZE = 20;
 const LINE_HEIGHT = 2;
 
-export function StepIndicator({ labels, currentStep }: StepIndicatorProps) {
+export function StepIndicator({ labels, stepCount, currentStep }: StepIndicatorProps) {
+  const effectiveCount =
+    labels && labels.length > 0 ? labels.length : stepCount ?? 0;
+  const showLabelRow =
+    labels !== undefined && labels.some((l) => l.length > 0);
+
+  if (effectiveCount === 0) return null;
+
   return (
     <View>
       <View
@@ -40,8 +53,8 @@ export function StepIndicator({ labels, currentStep }: StepIndicatorProps) {
           paddingHorizontal: spacing.s3,
         }}
       >
-        {labels.map((_, i) => {
-          const isLast = i === labels.length - 1;
+        {Array.from({ length: effectiveCount }).map((_, i) => {
+          const isLast = i === effectiveCount - 1;
           const dotState =
             i < currentStep ? 'complete' : i === currentStep ? 'active' : 'pending';
           return (
@@ -62,42 +75,44 @@ export function StepIndicator({ labels, currentStep }: StepIndicatorProps) {
           );
         })}
       </View>
-      <View
-        style={{
-          flexDirection: 'row',
-          marginTop: spacing.s2,
-        }}
-      >
-        {labels.map((label, i) => (
-          <View
-            key={i}
-            style={{
-              flex: i === 0 || i === labels.length - 1 ? 1 : 2,
-              alignItems:
-                i === 0
-                  ? 'flex-start'
-                  : i === labels.length - 1
-                  ? 'flex-end'
-                  : 'center',
-            }}
-          >
-            <Text
-              accessible
-              accessibilityLabel={`${label}, ${
-                i < currentStep ? 'complete' : i === currentStep ? 'in progress' : 'pending'
-              }`}
+      {showLabelRow && labels ? (
+        <View
+          style={{
+            flexDirection: 'row',
+            marginTop: spacing.s2,
+          }}
+        >
+          {labels.map((label, i) => (
+            <View
+              key={i}
               style={{
-                fontSize: type.caption.fontSize,
-                lineHeight: type.caption.lineHeight,
-                fontWeight: type.caption.fontWeight,
-                color: colors.textSecondary,
+                flex: i === 0 || i === labels.length - 1 ? 1 : 2,
+                alignItems:
+                  i === 0
+                    ? 'flex-start'
+                    : i === labels.length - 1
+                    ? 'flex-end'
+                    : 'center',
               }}
             >
-              {label}
-            </Text>
-          </View>
-        ))}
-      </View>
+              <Text
+                accessible
+                accessibilityLabel={`${label}, ${
+                  i < currentStep ? 'complete' : i === currentStep ? 'in progress' : 'pending'
+                }`}
+                style={{
+                  fontSize: type.caption.fontSize,
+                  lineHeight: type.caption.lineHeight,
+                  fontWeight: type.caption.fontWeight,
+                  color: colors.textSecondary,
+                }}
+              >
+                {label}
+              </Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
     </View>
   );
 }

@@ -49,3 +49,8 @@ export { CaptureFooter, type CaptureFooterProps } from './CaptureFooter';
 export { CautionPill, type CautionPillProps } from './CautionPill';
 export { StepIndicator, type StepIndicatorProps } from './StepIndicator';
 export { PlatformTile, type PlatformTileProps } from './PlatformTile';
+export {
+  PrimaryButton,
+  type PrimaryButtonProps,
+  type PrimaryButtonVariant,
+} from './PrimaryButton';

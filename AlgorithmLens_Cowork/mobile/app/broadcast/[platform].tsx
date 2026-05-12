@@ -34,12 +34,12 @@ import {
   CaptureFooter,
   CautionPill,
   Icon,
+  PrimaryButton,
   ScanHeader,
 } from '../../src/design-system';
 import {
   colors,
   layout,
-  radius,
   spacing,
   type,
 } from '../../src/design-tokens/tokens';
@@ -620,43 +620,9 @@ function FallbackScreen({
   );
 }
 
-/* Inline button helpers. Same shape as Home's PrimaryScanButton; future
-   cleanup may extract these to a shared primitive. */
-
-function PrimaryButton({
-  label,
-  onPress,
-}: {
-  label: string;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      style={({ pressed }) => ({
-        backgroundColor: colors.brandPrimary,
-        opacity: pressed ? 0.9 : 1,
-        borderRadius: radius.button,
-        paddingVertical: 14,
-        alignItems: 'center',
-        justifyContent: 'center',
-      })}
-    >
-      <Text
-        style={{
-          fontSize: type.subheading.fontSize,
-          lineHeight: type.subheading.lineHeight,
-          fontWeight: type.subheading.fontWeight,
-          color: colors.textOnBrand,
-        }}
-      >
-        {label}
-      </Text>
-    </Pressable>
-  );
-}
+/* Secondary text button. The primary action button is the imported
+   PrimaryButton primitive; this lighter affordance stays inline since
+   its shape (text-only, no fill) doesn't match the primary variant. */
 
 function SecondaryTextButton({
   label,

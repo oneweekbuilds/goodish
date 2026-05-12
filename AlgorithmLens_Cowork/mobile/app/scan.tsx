@@ -18,11 +18,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { PlatformTile } from '../src/design-system';
+import { PlatformTile, PrimaryButton } from '../src/design-system';
 import {
   colors,
   layout,
-  radius,
   spacing,
   type,
 } from '../src/design-tokens/tokens';
@@ -136,54 +135,3 @@ export default function ScanPickerScreen() {
   );
 }
 
-function PrimaryButton({
-  label,
-  onPress,
-  disabled = false,
-}: {
-  label: string;
-  onPress: () => void;
-  disabled?: boolean;
-}) {
-  if (disabled) {
-    return (
-      <View
-        accessible
-        accessibilityRole="button"
-        accessibilityLabel={label}
-        accessibilityState={{ disabled: true }}
-        style={primaryButtonBase}
-      >
-        <Text style={primaryButtonText}>{label}</Text>
-      </View>
-    );
-  }
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      style={({ pressed }) => [
-        primaryButtonBase,
-        { opacity: pressed ? 0.9 : 1 },
-      ]}
-    >
-      <Text style={primaryButtonText}>{label}</Text>
-    </Pressable>
-  );
-}
-
-const primaryButtonBase = {
-  backgroundColor: colors.brandPrimary,
-  borderRadius: radius.button,
-  paddingVertical: 14,
-  alignItems: 'center' as const,
-  justifyContent: 'center' as const,
-};
-
-const primaryButtonText = {
-  fontSize: type.subheading.fontSize,
-  lineHeight: type.subheading.lineHeight,
-  fontWeight: type.subheading.fontWeight,
-  color: colors.textOnBrand,
-};

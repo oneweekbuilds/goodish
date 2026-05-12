@@ -30,6 +30,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import {
   CaptureFooter,
   Icon,
+  PrimaryButton,
   ScanHeader,
   StepIndicator,
   type IconName,
@@ -414,30 +415,7 @@ function ResultsBody({
         ))}
       </View>
       <View style={{ marginTop: spacing.s7 }}>
-        <Pressable
-          onPress={onViewDashboard}
-          accessibilityRole="button"
-          accessibilityLabel="View full dashboard"
-          style={({ pressed }) => ({
-            backgroundColor: colors.brandPrimary,
-            opacity: pressed ? 0.9 : 1,
-            borderRadius: radius.button,
-            paddingVertical: 14,
-            alignItems: 'center',
-            justifyContent: 'center',
-          })}
-        >
-          <Text
-            style={{
-              fontSize: type.subheading.fontSize,
-              lineHeight: type.subheading.lineHeight,
-              fontWeight: type.subheading.fontWeight,
-              color: colors.textOnBrand,
-            }}
-          >
-            View full dashboard
-          </Text>
-        </Pressable>
+        <PrimaryButton label="View full dashboard" onPress={onViewDashboard} />
       </View>
     </View>
   );
@@ -469,31 +447,9 @@ function AnalyzingError({
       >
         {message}
       </Text>
-      <Pressable
-        onPress={onRetry}
-        accessibilityRole="button"
-        accessibilityLabel="Try again"
-        style={({ pressed }) => ({
-          alignSelf: 'stretch',
-          backgroundColor: colors.brandPrimary,
-          opacity: pressed ? 0.9 : 1,
-          borderRadius: radius.button,
-          paddingVertical: 14,
-          alignItems: 'center',
-          justifyContent: 'center',
-        })}
-      >
-        <Text
-          style={{
-            fontSize: type.subheading.fontSize,
-            lineHeight: type.subheading.lineHeight,
-            fontWeight: type.subheading.fontWeight,
-            color: colors.textOnBrand,
-          }}
-        >
-          Try again
-        </Text>
-      </Pressable>
+      <View style={{ alignSelf: 'stretch' }}>
+        <PrimaryButton label="Try again" onPress={onRetry} />
+      </View>
     </View>
   );
 }
@@ -546,30 +502,9 @@ function FallbackScreen({
         >
           {body}
         </Text>
-        <Pressable
-          onPress={onCta}
-          accessibilityRole="button"
-          accessibilityLabel={ctaLabel}
-          style={({ pressed }) => ({
-            alignSelf: 'stretch',
-            backgroundColor: colors.brandPrimary,
-            opacity: pressed ? 0.9 : 1,
-            borderRadius: radius.button,
-            paddingVertical: 14,
-            alignItems: 'center',
-          })}
-        >
-          <Text
-            style={{
-              fontSize: type.subheading.fontSize,
-              lineHeight: type.subheading.lineHeight,
-              fontWeight: type.subheading.fontWeight,
-              color: colors.textOnBrand,
-            }}
-          >
-            {ctaLabel}
-          </Text>
-        </Pressable>
+        <View style={{ alignSelf: 'stretch' }}>
+          <PrimaryButton label={ctaLabel} onPress={onCta} />
+        </View>
       </View>
       <CaptureFooter text={DISCLOSURE} />
     </SafeAreaView>

@@ -17,7 +17,6 @@ import {
   Text,
   ScrollView,
   RefreshControl,
-  Pressable,
   type TextStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,13 +25,13 @@ import {
   Card,
   ConditionalLastScanRow,
   GreetingHeader,
+  PrimaryButton,
   Sparkline,
 } from '../../src/design-system';
 import {
   colors,
   type,
   spacing,
-  radius,
   layout,
 } from '../../src/design-tokens/tokens';
 import { useDashboard } from '../../src/hooks/useDashboard';
@@ -133,7 +132,7 @@ export default function HomeScreen() {
           <GreetingHeader lastScanDate={lastScanDate} />
           <FeedScoreHeroCard state={feedState} />
           {buttonLabel ? (
-            <PrimaryScanButton label={buttonLabel} onPress={handleOpenScanPicker} />
+            <PrimaryButton label={buttonLabel} onPress={handleOpenScanPicker} />
           ) : null}
           <ConditionalLastScanRow
             lastScan={latestScan}
@@ -267,43 +266,6 @@ function HeroPlaceholderGlyph() {
     >
       {'—'}
     </Text>
-  );
-}
-
-/* Primary scan button */
-
-function PrimaryScanButton({
-  label,
-  onPress,
-}: {
-  label: string;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      style={({ pressed }) => ({
-        backgroundColor: colors.brandPrimary,
-        opacity: pressed ? 0.9 : 1,
-        borderRadius: radius.button,
-        paddingVertical: 14,
-        alignItems: 'center',
-        justifyContent: 'center',
-      })}
-    >
-      <Text
-        style={{
-          fontSize: type.subheading.fontSize,
-          lineHeight: type.subheading.lineHeight,
-          fontWeight: type.subheading.fontWeight,
-          color: colors.textOnBrand,
-        }}
-      >
-        {label}
-      </Text>
-    </Pressable>
   );
 }
 
