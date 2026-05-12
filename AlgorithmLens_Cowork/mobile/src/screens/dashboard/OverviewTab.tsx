@@ -283,9 +283,11 @@ export interface OverviewTabProps {
   data: DashboardData;
   isPlus: boolean;
   onUpgrade: () => void;
+  /** Tap handler for the bottom "About this analysis" row. */
+  onAboutPress?: () => void;
 }
 
-export function OverviewTab({ data, isPlus, onUpgrade }: OverviewTabProps) {
+export function OverviewTab({ data, isPlus, onUpgrade, onAboutPress }: OverviewTabProps) {
   const heroStat = useMemo(() => pickHeroStat(data), [data]);
   const adsMinPerDay = useMemo(() => timeEstimateForPercent(data.adPct), [data.adPct]);
   const politicalPct = data.politicalAnalysis?.politicalPct ?? 0;
@@ -670,7 +672,7 @@ export function OverviewTab({ data, isPlus, onUpgrade }: OverviewTabProps) {
 
       {/* ── 8. About this analysis ─────────────────────────────── */}
       <View style={{ marginTop: spacing.s7 }}>
-        <DisclosureRow label="About this analysis" />
+        <DisclosureRow label="About this analysis" onPress={onAboutPress} />
       </View>
     </View>
   );

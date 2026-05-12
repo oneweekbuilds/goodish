@@ -148,6 +148,10 @@ function RootLayoutNav({ fontsLoaded }: { fontsLoaded: boolean }) {
               options={{ headerShown: false }}
             />
             <Stack.Screen name="scan" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="about/[scanId]"
+              options={{ headerShown: false }}
+            />
           </Stack>
         </>
       )}

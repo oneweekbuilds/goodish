@@ -22,6 +22,7 @@ import { Pressable, View, Text } from 'react-native';
 import { Icon } from './Icon';
 import { colors, type, spacing, radius, tap } from '../design-tokens/tokens';
 import { platformAbbrev, platformName } from '../lib/platformLabels';
+import { daysBetween, relativeDayPhrase } from '../lib/relativeDate';
 
 /**
  * The minimal shape the row needs. The app's `ScanDetail` / `ScanRecord`
@@ -56,7 +57,7 @@ export function ConditionalLastScanRow({
   const isCaution = days >= 14;
   const abbrev = platformAbbrev(lastScan.platform);
   const displayName = platformName(lastScan.platform);
-  const relative = relativePhrase(days, scanDate);
+  const relative = relativeDayPhrase(scanDate, current);
 
   const inner = (
     <View
@@ -141,29 +142,3 @@ export function ConditionalLastScanRow({
   );
 }
 
-/**
- * Calendar-day distance from `earlier` to `later`, in local time.
- * Returns `null` if either Date is invalid (NaN getTime), so callers can
- * route the malformed-input case to their existing no-data path. Defends
- * against a corrupt `created_at` string slipping past the route boundary.
- */
-function daysBetween(earlier: Date, later: Date): number | null {
-  if (isNaN(earlier.getTime()) || isNaN(later.getTime())) return null;
-  const a = new Date(
-    earlier.getFullYear(),
-    earlier.getMonth(),
-    earlier.getDate(),
-  ).getTime();
-  const b = new Date(
-    later.getFullYear(),
-    later.getMonth(),
-    later.getDate(),
-  ).getTime();
-  return Math.round((b - a) / 86400000);
-}
-
-function relativePhrase(days: number, scanDate: Date): string {
-  if (days === 1) return 'Yesterday';
-  if (days < 7) return scanDate.toLocaleDateString(undefined, { weekday: 'long' });
-  return `${days} days ago`;
-}

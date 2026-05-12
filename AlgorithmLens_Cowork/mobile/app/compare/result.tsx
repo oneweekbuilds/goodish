@@ -49,6 +49,7 @@ import {
 } from '../../src/lib/compareDerivation';
 import { labelForScore, scoreOfScan } from '../../src/lib/scanScore';
 import { platformName } from '../../src/lib/platformLabels';
+import { daysBetween, relativeDayPhrase } from '../../src/lib/relativeDate';
 
 interface ComparisonValues {
   sourceDiversity: number;
@@ -415,29 +416,7 @@ function interpretationFor(scoreA: number, scoreB: number): string {
 }
 
 function relativePhraseFor(iso: string): string {
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return '';
-  const days = daysBetween(d, new Date());
-  if (days === null) return '';
-  if (days <= 0) return 'Today';
-  if (days === 1) return 'Yesterday';
-  if (days < 7) return d.toLocaleDateString(undefined, { weekday: 'long' });
-  return `${days} days ago`;
-}
-
-function daysBetween(earlier: Date, later: Date): number | null {
-  if (isNaN(earlier.getTime()) || isNaN(later.getTime())) return null;
-  const a = new Date(
-    earlier.getFullYear(),
-    earlier.getMonth(),
-    earlier.getDate(),
-  ).getTime();
-  const b = new Date(
-    later.getFullYear(),
-    later.getMonth(),
-    later.getDate(),
-  ).getTime();
-  return Math.round((b - a) / 86400000);
+  return relativeDayPhrase(new Date(iso));
 }
 
 /* Inline helpers */

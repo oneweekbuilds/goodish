@@ -125,8 +125,8 @@ const CONTENT_TYPE_LABELS: Record<string, string> = {
 // `colors` and `shadows` are accepted but unused — the Overview tab is
 // fully styled via design tokens. The other tabs (SourcesContent etc.)
 // continue to use the legacy theme.
-const OverviewContent = memo(({ data, isPlus, onUpgrade }: { data: DashboardData; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
-  return <OverviewTab data={data} isPlus={isPlus} onUpgrade={onUpgrade} />;
+const OverviewContent = memo(({ data, isPlus, onUpgrade, onAboutPress }: { data: DashboardData; isPlus: boolean; onUpgrade: () => void; onAboutPress?: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
+  return <OverviewTab data={data} isPlus={isPlus} onUpgrade={onUpgrade} onAboutPress={onAboutPress} />;
 });
 
 // ─── SourcesContent ──────────────────────────────────────
@@ -378,6 +378,13 @@ export default function DashboardScreen() {
   }, [activeTab, fadeAnim]);
 
   const handleUpgrade = () => router.push('/(tabs)/settings');
+  const handleAboutPress = useCallback(() => {
+    if (!activeScan) return;
+    router.push({
+      pathname: '/about/[scanId]',
+      params: { scanId: activeScan.id },
+    });
+  }, [activeScan]);
 
   const renderTabContent = () => {
     if (!dashboardData) return null;
@@ -385,13 +392,13 @@ export default function DashboardScreen() {
     const fallback = <TabErrorFallback tabLabel={tabLabel} colors={colors} />;
     let content: React.ReactNode;
     switch (activeTab) {
-      case 'overview': content = <OverviewContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
+      case 'overview': content = <OverviewContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} onAboutPress={handleAboutPress} colors={colors} shadows={shadows} />; break;
       case 'sources': content = <SourcesContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
       case 'ads': content = <AdsContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
       case 'politics': content = <PoliticsContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
       case 'tone': content = <ToneContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
       case 'suggested_vs_followed': content = <SuggestedContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
-      default: content = <OverviewContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
+      default: content = <OverviewContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} onAboutPress={handleAboutPress} colors={colors} shadows={shadows} />; break;
     }
     return (
       <ErrorBoundary key={activeTab} fallback={fallback}>
