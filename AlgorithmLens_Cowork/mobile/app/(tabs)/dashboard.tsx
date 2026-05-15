@@ -459,7 +459,7 @@ export default function DashboardScreen() {
           {/* D-1 FIX: Unified scan CTA color — primary blue */}
           {hasData && (
             <TouchableOpacity
-              onPress={() => router.push('/(tabs)/scan')}
+              onPress={() => router.push('/scan')}
               activeOpacity={0.7}
               accessibilityRole="button"
               accessibilityLabel="Scan your feed"
@@ -614,7 +614,7 @@ export default function DashboardScreen() {
             </Text>
             {/* D-1 FIX: Unified scan CTA color — primary blue instead of teal/green */}
             <TouchableOpacity
-              onPress={() => router.push('/(tabs)/scan')}
+              onPress={() => router.push('/scan')}
               accessibilityRole="button"
               accessibilityLabel="Start your first scan"
               style={{

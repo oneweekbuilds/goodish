@@ -425,7 +425,7 @@ export default function HistoryScreen() {
         Each scan adds a new snapshot of your feed. Over time you can compare them to spot patterns and changes.
       </Text>
       <TouchableOpacity
-        onPress={() => router.push('/(tabs)/scan')}
+        onPress={() => router.push('/scan')}
         accessibilityRole="button"
         accessibilityLabel="Start a scan"
         style={{

@@ -7,7 +7,6 @@ const files_to_check = [
     "./app/(tabs)/dashboard.tsx",
     "./app/(tabs)/history.tsx",
     "./app/(tabs)/index.tsx",
-    "./app/(tabs)/scan.tsx",
     "./app/(tabs)/settings.tsx",
     "./app/(tabs)/_layout.tsx",
     "./app/analysis/[sessionId].tsx",

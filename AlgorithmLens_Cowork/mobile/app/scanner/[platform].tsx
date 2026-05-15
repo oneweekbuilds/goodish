@@ -774,7 +774,7 @@ export default function ScannerScreen() {
               {/* M-17 FIX: "Scan Another Platform" as proper outline button */}
               <View style={{ gap: SPACING.md, marginTop: SPACING.lg, alignItems: 'center', paddingBottom: SPACING['3xl'] }}>
                 <TouchableOpacity
-                  onPress={() => router.replace('/(tabs)/scan')}
+                  onPress={() => router.replace('/scan')}
                   accessibilityRole="button"
                   accessibilityLabel="Scan Another Platform"
                   style={{
