@@ -92,13 +92,30 @@ function pickHeroStat(data: DashboardData): HeroStat | null {
   if (data.topCreators.length >= 1 && data.totalPosts > 0) {
     const top = data.topCreators[0]!;
     const share = Math.round((top.count / data.totalPosts) * 100);
+    // displayName fallback chain. Logical OR (not nullish coalescing)
+    // catches empty-string displayName; final "Unidentified creator"
+    // handles the case where Gemini emits empty values for both fields.
     const displayName =
-      top.displayName ?? (top.name.startsWith('@') ? top.name : `@${top.name}`);
+      (top.displayName && top.displayName.length > 0)
+        ? top.displayName
+        : (top.name && top.name.length > 0)
+          ? (top.name.startsWith('@') ? top.name : `@${top.name}`)
+          : 'Unidentified creator';
+    // Three-tier description scaled by concentration. Under 15% the top
+    // source is leading a broadly sourced feed and "dominates" misreads
+    // the data; 15-30% is a real lead without dominance; 30%+ earns the
+    // "dominates" framing.
+    const description =
+      share < 15
+        ? 'Your feed is broadly sourced.'
+        : share < 30
+          ? `${displayName} is your most-seen source.`
+          : `${displayName} dominates this session.`;
     return {
       value: String(share),
       unit: '%',
       label: 'from your top source',
-      description: `${displayName} dominates this session.`,
+      description,
       key: 'topCreator',
     };
   }
@@ -506,7 +523,15 @@ export function OverviewTab({ data, isPlus, onUpgrade, onAboutPress }: OverviewT
               // (the human-readable title, e.g. for YouTube channels).
               // Prefer displayName when present so "Fox News" reads better
               // than "@FoxNews"; fall back to the @-handle otherwise.
-              const display = c.displayName ?? (c.name.startsWith('@') ? c.name : `@${c.name}`);
+              // Logical OR (not nullish coalescing) catches empty-string
+              // displayName; final "Unidentified creator" handles the
+              // case where Gemini emits empty values for both fields.
+              const display =
+                (c.displayName && c.displayName.length > 0)
+                  ? c.displayName
+                  : (c.name && c.name.length > 0)
+                    ? (c.name.startsWith('@') ? c.name : `@${c.name}`)
+                    : 'Unidentified creator';
               return (
                 <InfluencerRow
                   key={`${c.name}-${i}`}
