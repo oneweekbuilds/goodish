@@ -14,6 +14,19 @@ import type { DashboardData } from '../computeDashboardData';
 // Sub-line modes from the 2.x design specs.
 export type SublineMode = 'OBSERVED' | 'LIKELY' | 'COACHING' | 'QUESTION';
 
+// Metric keys for cross-scan derivations. Each maps to a per-scan
+// extraction strategy (see derivations/rollingAverage.ts). Ad and
+// suggested percentages come from top-level scan fields; the rest are
+// derived from raw_data (posts, analysis.feed_items, etc.).
+export type MetricKey =
+  | 'ad_pct'
+  | 'political_pct'
+  | 'top_creator_share'
+  | 'tone_negative_pct'
+  | 'tone_positive_pct'
+  | 'tone_neutral_pct'
+  | 'suggested_pct';
+
 export interface Subline {
   mode: SublineMode;
   text: string;
