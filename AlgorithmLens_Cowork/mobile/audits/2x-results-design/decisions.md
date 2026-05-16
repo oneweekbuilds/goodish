@@ -138,7 +138,7 @@ The 2.x voice must hold across the heavier interpretive load. Specifically:
 - Calm in register; no exclamation marks, no all-caps, no gamification language
 - Confident without being preachy
 - Coaching beat permissive ("try," "could," "if you want to"), never imperative ("you should," "do this")
-- No anthropomorphism of the algorithm. Algorithms respond to signals; they don't "decide," "feel confident," "want," or "prefer." The verb "reads" was used in early drafts and is borderline; subsequent revisions prefer "responds to" or similar mechanism-language.
+- No anthropomorphism of the algorithm. Algorithms respond to signals; they don't "decide," "feel confident," "want," "prefer," or "reach" for content. Acceptable mechanism verbs include: responds, weights, narrows in on, amplifies, fills, tends to, expands. Borderline-acceptable when describing outcome state rather than intent: narrows, locks onto. Always avoid: confidence, decision, preference, agency-implying verbs like "reaches" or "chooses." The Dashboard design pass surfaced this rule needs broader articulation than the Results pass originally captured (see mobile/audits/2x-dashboard-design/decisions.md voice flags section).
 
 ## Design tradeoffs considered and rejected
 
