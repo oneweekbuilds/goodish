@@ -35,6 +35,7 @@ import { supabase } from '../supabase';
 import { api } from '../api';
 import { captureError } from '../sentry';
 import { generateUUID } from '../utils';
+import { buildScanRow } from '../scanShape/buildScanRow';
 
 // ============================================
 // Pipeline Types
@@ -769,12 +770,6 @@ export class BroadcastAnalysisPipeline {
     userId: string,
     platform: string,
   ): Promise<void> {
-    const totalAds = result.aggregates.total_ads;
-    const totalItems = result.aggregates.total_feed_items;
-    const suggestedCount = result.feed_items.filter(
-      (i) => i.source_origin === 'suggested',
-    ).length;
-
     // Build #44: scanRow shape MUST match the actual Supabase 'scans' table.
     // Live schema (verified 2026-05-06): id, user_id, platform, post_count,
     // ad_count, ad_percentage, suggested_count, suggested_percentage,
@@ -783,58 +778,12 @@ export class BroadcastAnalysisPipeline {
     // rejects the row with 42703 undefined_column. Both values are now
     // captured inside raw_data instead — source_type as a literal field,
     // duration_seconds derived from raw_data.broadcast_capture at read time.
-    const scanRow = {
-      id: scanId,
-      user_id: userId,
-      platform: platform.toLowerCase(),
-      post_count: totalItems,
-      ad_count: totalAds,
-      ad_percentage: result.aggregates.ad_percentage,
-      suggested_count: suggestedCount,
-      suggested_percentage: totalItems > 0
-        ? Math.round((suggestedCount / totalItems) * 100)
-        : 0,
-      raw_data: {
-        // Build #44: source_type moved from top-level column into raw_data.
-        // Read sites in useDashboard / history derive scan kind from this.
-        source_type: 'MOBILE_BROADCAST',
-        posts: result.feed_items.map((item) => ({
-          creator_handle: item.account?.account_handle || '',
-          creator_display_name: item.account?.account_display_name || '',
-          post_text: item.content_text?.captions || '',
-          is_ad: item.is_ad,
-          is_suggested: item.source_origin === 'suggested',
-          content_type: item.content_type,
-          hashtags: item.content_text?.hashtags || [],
-          position_in_feed: item.position_in_feed,
-          ad_label_text: item.ad_metadata?.ad_detected_reason || null,
-        })),
-        top_creators: this.getTopCreators(result.feed_items),
-        scanned_at: new Date().toISOString(),
-        broadcast_capture: result.environment.broadcast_capture,
-        // Dashboard compatibility: analysis key matches the format
-        // written by requestGeminiAnalysis() in useScan.ts so that
-        // computeDashboardData can read political + tone data.
-        analysis: {
-          ai_analyzed: true,
-          feed_items: result.feed_items.map((item) => ({
-            political: {
-              is_political: item.political?.is_political || false,
-              stance_or_alignment: item.political?.stance_or_alignment_guess || 'NOT_ANALYZED',
-            },
-            emotions: {
-              valence: item.emotions?.valence || 'NEUTRAL',
-            },
-            creator: {
-              handle: item.account?.account_handle || '',
-              name: item.account?.account_display_name || '',
-            },
-          })),
-          political_content_summary: result.aggregates.political_content_summary,
-        },
-      },
-      created_at: new Date().toISOString(),
-    };
+    //
+    // The transform was extracted to lib/scanShape/buildScanRow so the
+    // Results-screen adapter (Phase 4.4.2) can synthesize a virtual
+    // ScanDetail from the same in-memory UnifiedScanResult for the 2.x
+    // interpretation engine — without re-fetching the just-persisted row.
+    const scanRow = buildScanRow(result, { scanId, userId, platform });
 
     const insertPromise = supabase.from('scans').insert(scanRow);
     const timeoutPromise = new Promise<never>((_, reject) =>
@@ -912,17 +861,10 @@ export class BroadcastAnalysisPipeline {
   // Helpers
   // ============================================
 
-  private getTopCreators(feedItems: FeedItem[]): Array<{ name: string; count: number }> {
-    const counts: Record<string, number> = {};
-    feedItems.forEach((item) => {
-      const handle = item.account?.account_handle || 'unknown';
-      counts[handle] = (counts[handle] || 0) + 1;
-    });
-    return Object.entries(counts)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 10)
-      .map(([name, count]) => ({ name, count }));
-  }
+  // getTopCreators moved to lib/scanShape/buildScanRow as part of the
+  // persistScan transform extraction (Phase 4.4.1). The helper is now
+  // an internal function of buildScanRow; it was only called from the
+  // persistScan inline transform.
 
   private reportProgress(progress: PipelineProgress): void {
     progress.elapsedMs = Date.now() - this.startTime;
