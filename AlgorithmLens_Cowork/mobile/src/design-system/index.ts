@@ -62,3 +62,4 @@ export {
   ResultsMetaLine,
   type ResultsMetaLineProps,
 } from './ResultsMetaLine';
+export { SupportingCard, type SupportingCardProps } from './SupportingCard';
