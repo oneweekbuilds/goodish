@@ -58,3 +58,7 @@ export { VerdictEyebrow, type VerdictEyebrowProps } from './VerdictEyebrow';
 export { VerdictText, type VerdictTextProps } from './VerdictText';
 export { ObservedSubline, type ObservedSublineProps } from './ObservedSubline';
 export { LikelySubline, type LikelySublineProps } from './LikelySubline';
+export {
+  ResultsMetaLine,
+  type ResultsMetaLineProps,
+} from './ResultsMetaLine';
