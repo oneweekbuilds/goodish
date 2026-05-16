@@ -28,9 +28,21 @@ export interface ScanDetail {
   suggested_percentage: number;
   raw_data: Record<string, unknown>;
   user_id: string;
-  /** Source type: 'MOBILE_APP' (WebView), 'MOBILE_BROADCAST', etc. */
+  /**
+   * @deprecated Build #44: this column does not exist on the live Supabase
+   * 'scans' table — broadcast scans previously failed to persist because
+   * the insert included this top-level key. Read sites now derive the
+   * source type from `raw_data.source_type` (or infer it from
+   * `raw_data.broadcast_capture` being present). Field kept on the type
+   * for backward compatibility with any historical rows.
+   */
   source_type?: string;
-  /** Duration of broadcast recording in seconds, if applicable. */
+  /**
+   * @deprecated Build #44: not a real column on the 'scans' table. Read
+   * sites should pull duration from `raw_data.duration_seconds` (scanner
+   * scans) or `raw_data.broadcast_capture.duration_seconds` (broadcast
+   * scans). Field kept on the type for backward compatibility.
+   */
   duration_seconds?: number;
 }
 

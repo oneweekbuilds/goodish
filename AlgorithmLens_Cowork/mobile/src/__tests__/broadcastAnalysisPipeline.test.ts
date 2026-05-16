@@ -361,7 +361,12 @@ describe('BroadcastAnalysisPipeline', () => {
 
       expect(callbacks.onError).toHaveBeenCalledTimes(1);
       const error = (callbacks.onError as jest.Mock).mock.calls[0][0];
-      expect(error.message).toContain('could not read any posts');
+      // Build #42 introduced the structured "No items extracted from the captured
+      // frames. <summary>" error; this test was never updated to match. The
+      // summary mentions "missing frame data" for the null-base64 case, so we
+      // assert against the stable prefix that's always present.
+      expect(error.message).toContain('No items extracted from the captured frames');
+      expect(error.message).toContain('missing frame data');
     });
   });
 
@@ -469,15 +474,26 @@ describe('BroadcastAnalysisPipeline', () => {
       expect(callbacks.completedResult!.feed_items).toHaveLength(1);
     });
 
-    test('falls back to raw items when deduplication fails', async () => {
+    test('falls back to locally-deduped items when LLM dedup fails', async () => {
       const callbacks = makeCallbacks();
       const config: PipelineConfig = { ...defaultConfig(), enableDeduplication: true };
       const pipeline = new BroadcastAnalysisPipeline(config, callbacks);
 
-      mockAnalyzeFrame.mockResolvedValue({
-        items: [makeExtractedItem()],
-        extraction_confidence: 0.9,
-      });
+      // Build #47 (audit #20): the pipeline now does a deterministic local
+      // dedup pass BEFORE the LLM dedup. To verify the LLM-failure fallback
+      // path preserves data, we feed two genuinely-distinct items (different
+      // creator + different text) so the local pass keeps both. Without this
+      // distinction, identical items would already have collapsed to 1 in
+      // the local pass and the test couldn't tell whether the fallback ran.
+      mockAnalyzeFrame
+        .mockResolvedValueOnce({
+          items: [makeExtractedItem({ creator_handle: 'alpha', post_text: 'first creator first video about cats' })],
+          extraction_confidence: 0.9,
+        })
+        .mockResolvedValueOnce({
+          items: [makeExtractedItem({ creator_handle: 'bravo', post_text: 'second creator entirely different video about dogs' })],
+          extraction_confidence: 0.9,
+        });
 
       mockDeduplicateItems.mockRejectedValueOnce(new Error('Dedup failed'));
 
@@ -486,20 +502,28 @@ describe('BroadcastAnalysisPipeline', () => {
 
       await pipeline.run(frames, 'instagram', makeCaptureInfo(), getBase64, 'user-123');
 
-      // Should still complete successfully with raw items
+      // Should still complete successfully with locally-deduped items.
       expect(callbacks.onComplete).toHaveBeenCalledTimes(1);
       expect(callbacks.completedResult!.feed_items).toHaveLength(2);
     });
 
-    test('falls back to raw items when dedup returns empty array', async () => {
+    test('falls back to locally-deduped items when LLM dedup returns empty array', async () => {
       const callbacks = makeCallbacks();
       const config: PipelineConfig = { ...defaultConfig(), enableDeduplication: true };
       const pipeline = new BroadcastAnalysisPipeline(config, callbacks);
 
-      mockAnalyzeFrame.mockResolvedValue({
-        items: [makeExtractedItem()],
-        extraction_confidence: 0.9,
-      });
+      // Same as the test above — distinct items so the local pass preserves
+      // both, then we verify the empty-LLM-result fallback returns those
+      // locally-deduped items rather than dropping the data.
+      mockAnalyzeFrame
+        .mockResolvedValueOnce({
+          items: [makeExtractedItem({ creator_handle: 'alpha', post_text: 'first creator unique video title here' })],
+          extraction_confidence: 0.9,
+        })
+        .mockResolvedValueOnce({
+          items: [makeExtractedItem({ creator_handle: 'bravo', post_text: 'second creator different unique video title' })],
+          extraction_confidence: 0.9,
+        });
 
       mockDeduplicateItems.mockResolvedValueOnce({
         deduplicated_items: [],
@@ -513,8 +537,36 @@ describe('BroadcastAnalysisPipeline', () => {
 
       await pipeline.run(frames, 'instagram', makeCaptureInfo(), getBase64, 'user-123');
 
-      // Fallback: use raw items since dedup returned empty
+      // Fallback: use locally-deduped items since LLM dedup returned empty.
       expect(callbacks.completedResult!.feed_items).toHaveLength(2);
+    });
+
+    test('local dedup runs even when LLM dedup is unavailable — duplicates collapse', async () => {
+      // Build #47 (audit #20): explicit assertion that the local dedup pass
+      // catches the failure mode the LLM dedup was missing — same handle,
+      // same text across multiple frames must collapse to one item even if
+      // the LLM dedup throws.
+      const callbacks = makeCallbacks();
+      const config: PipelineConfig = { ...defaultConfig(), enableDeduplication: true };
+      const pipeline = new BroadcastAnalysisPipeline(config, callbacks);
+
+      mockAnalyzeFrame.mockResolvedValue({
+        items: [
+          makeExtractedItem({
+            creator_handle: 'samevideo',
+            post_text: 'The exact same long video title in every frame',
+          }),
+        ],
+        extraction_confidence: 0.9,
+      });
+      mockDeduplicateItems.mockRejectedValueOnce(new Error('LLM dedup unavailable'));
+
+      const frames = Array.from({ length: 5 }, (_, i) => makeFrame(i));
+      const getBase64 = jest.fn(() => 'base64data');
+
+      await pipeline.run(frames, 'youtube', makeCaptureInfo(), getBase64, 'user-123');
+
+      expect(callbacks.completedResult!.feed_items).toHaveLength(1);
     });
   });
 
@@ -826,10 +878,19 @@ describe('BroadcastAnalysisPipeline', () => {
       const insertedRow = (mockInsert.mock.calls as any[][])[0]![0]! as any;
       expect(insertedRow.user_id).toBe('user-123');
       expect(insertedRow.platform).toBe('instagram');
-      expect(insertedRow.source_type).toBe('MOBILE_BROADCAST');
+
+      // Build #44: source_type and duration_seconds are NOT top-level
+      // columns on the live Supabase 'scans' table. Inserting them caused
+      // PostgREST to reject every broadcast scan with 42703. Both values
+      // now live inside raw_data instead.
+      expect(insertedRow.source_type).toBeUndefined();
+      expect(insertedRow.duration_seconds).toBeUndefined();
 
       // Verify raw_data shape
       const rawData = insertedRow.raw_data;
+      // Build #44: source_type now nested inside raw_data so read sites
+      // can still distinguish broadcast vs WebView scans.
+      expect(rawData.source_type).toBe('MOBILE_BROADCAST');
       expect(rawData.posts).toHaveLength(1);
       expect(rawData.posts[0].creator_handle).toBe('@testcreator');
       expect(rawData.posts[0].is_ad).toBe(false);

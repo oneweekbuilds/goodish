@@ -59,3 +59,6 @@ temp/
 # Chrome extension build artifacts
 *.crx
 *.pem
+
+# Design system handoff (working copy, not project code)
+AlgorithmLens_Cowork/design-handoff/

@@ -65,17 +65,71 @@ interface NativeBroadcastModule {
   stopCapture?(): void;
 }
 
+// Build #37 diagnostic export. Read by DebugCheckpointTrail in app/_layout.tsx
+// to render broadcast bridge state in the on-screen footer. Mutable singleton.
+// Populated lazily on first call to getNativeModule(); subsequent calls are
+// idempotent so the displayed values reflect the moment the module was first
+// resolved (which is what we actually care about for diagnosing whether the
+// native bridge wired up at app launch). ASCII-only labels in the trail keep
+// grep on the Hermes bundle simple.
+export const __broadcastDiag: {
+  moduleLoaded: boolean;
+  isAvailable: boolean;
+  sharedContainerPath: string | null;
+  lastError: string;
+  // Build #43: surface metadata vs disk file count at collectFrames time.
+  // Helps explain "missing frame data" outcomes from the pipeline — when
+  // metadata claims more frames than .jpg files exist on disk, the trailing
+  // frames have empty local_path and the pipeline can't load their base64.
+  lastMetadataCount: number;
+  lastDiskCount: number;
+} = {
+  moduleLoaded: false,
+  isAvailable: false,
+  sharedContainerPath: null,
+  lastError: '',
+  lastMetadataCount: 0,
+  lastDiskCount: 0,
+};
+
+let __broadcastDiagPopulated = false;
+
+function populateBroadcastDiag(mod: NativeBroadcastModule | null, loadError?: string): void {
+  if (__broadcastDiagPopulated) return;
+  __broadcastDiagPopulated = true;
+  __broadcastDiag.moduleLoaded = mod !== null;
+  if (loadError) {
+    __broadcastDiag.lastError = loadError.slice(0, 80);
+  }
+  if (!mod) return;
+  try {
+    __broadcastDiag.isAvailable = mod.isAvailable();
+  } catch (e) {
+    __broadcastDiag.lastError = ('isAvailable: ' + String(e)).slice(0, 80);
+  }
+  try {
+    __broadcastDiag.sharedContainerPath = mod.getSharedContainerPath();
+  } catch (e) {
+    __broadcastDiag.lastError = ('getSharedContainerPath: ' + String(e)).slice(0, 80);
+  }
+}
+
 function getNativeModule(): NativeBroadcastModule | null {
   if (Platform.OS !== 'ios' && Platform.OS !== 'android') {
+    populateBroadcastDiag(null, 'unsupported platform: ' + Platform.OS);
     return null;
   }
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { requireNativeModule } = require('expo-modules-core');
-    return requireNativeModule('ExpoBroadcast') as NativeBroadcastModule;
+    const mod = requireNativeModule('ExpoBroadcast') as NativeBroadcastModule;
+    populateBroadcastDiag(mod);
+    return mod;
   } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    populateBroadcastDiag(null, msg);
     captureMessage('[BroadcastSessionManager] Failed to load native module', 'warning', {
-      error: error instanceof Error ? error.message : String(error),
+      error: msg,
     });
     return null;
   }
@@ -323,6 +377,12 @@ export class BroadcastSessionManager {
 
     const rawMetadata = this.nativeModule.getFrameMetadata();
     const framePaths = this.nativeModule.getFramePaths();
+
+    // Build #43: surface counts so the trail can show metadata/disk drift.
+    // When framePaths is shorter than rawMetadata, the trailing entries get
+    // local_path='' and the pipeline can't load their base64.
+    __broadcastDiag.lastMetadataCount = rawMetadata.length;
+    __broadcastDiag.lastDiskCount = framePaths.length;
 
     const frames: BroadcastFrame[] = rawMetadata.map((entry, index) => ({
       frame_id: String(entry.frame_id || `frame_${index}`),

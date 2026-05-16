@@ -16,6 +16,7 @@
 import { Platform } from 'react-native';
 import { GeminiFlashService, GeminiApiError } from './geminiFlashService';
 import type { GeminiExtractedItem } from './analysisPrompts';
+import { localDedup } from './localDedup';
 import type {
   BroadcastFrame,
   BroadcastCaptureInfo,
@@ -72,6 +73,53 @@ export interface PipelineCallbacks {
   onError: (error: Error, partialResult?: UnifiedScanResult) => void;
 }
 
+// Build #42: structured outcome from analyzing a single frame. Replaces the
+// previous "always return GeminiExtractedItem[]" pattern which hid every
+// failure mode behind an empty array.
+type FrameOutcome =
+  | { kind: 'items'; items: GeminiExtractedItem[] }
+  | { kind: 'empty'; items: GeminiExtractedItem[] }
+  | { kind: 'apiError'; items: GeminiExtractedItem[]; errorText: string }
+  | { kind: 'noBase64'; items: GeminiExtractedItem[] };
+
+// Aggregate outcomes across all frames in a session. Used to produce the
+// human-readable summary appended to the "no items extracted" error.
+interface AnalysisOutcomes {
+  framesAttempted: number;
+  framesWithItems: number;
+  framesEmpty: number;       // 200 OK with items: []
+  framesApiError: number;    // GeminiApiError of any kind (incl. retries-exhausted 429)
+  framesNoBase64: number;    // getFrameBase64 returned null
+  firstErrorMessage: string; // first apiError text (truncated to 200 chars)
+}
+
+// Build #43 diagnostic export. Read by DebugCheckpointTrail in app/_layout.tsx
+// to surface the analysis pipeline's last-run state in the on-screen footer.
+// Mutable singleton; populated by run() at each lifecycle event so we can see
+// whether the pipeline started, what it analyzed, and what (if anything) it
+// produced — useful for the first end-to-end successful run where we need to
+// confirm dashboard rendering against the right item count.
+export const __pipelineDiag: {
+  lastRunAt: number;
+  lastFrameCount: number;
+  /** Total items returned from the per-frame Gemini extraction, before any dedup. */
+  lastItemsExtracted: number;
+  /** Items remaining after the deterministic local dedup pass (build #47, audit #20). */
+  lastItemsAfterLocalDedup: number;
+  /** Items remaining after the LLM-based second-pass dedup. Equals feed_items.length. */
+  lastItemsAfterLLMDedup: number;
+  lastError: string;
+  lastStage: string;
+} = {
+  lastRunAt: 0,
+  lastFrameCount: 0,
+  lastItemsExtracted: 0,
+  lastItemsAfterLocalDedup: 0,
+  lastItemsAfterLLMDedup: 0,
+  lastError: '',
+  lastStage: 'idle',
+};
+
 export interface PipelineConfig {
   /** Gemini API key. */
   apiKey: string;
@@ -92,7 +140,16 @@ const DEFAULT_CONFIG: Required<Omit<PipelineConfig, 'apiKey'>> = {
   enableDeduplication: true,
   enablePersistence: true,
   enableBackendEnrichment: true,
-  concurrency: 3,
+  // C1 build #46-prep: bumped from 3 to 8. TestFlight build #45 took ~6
+  // minutes for a 61-frame analysis (~6s/frame end-to-end). With Gemini 2.5
+  // Flash returning in ~6s and the existing 200ms rate-limit floor, the old
+  // concurrency=3 capped throughput at ~30 frames/min before retries, which
+  // matches the reported runtime. concurrency=8 keeps us well under the
+  // paid-tier RPM ceiling (the rate limiter still serialises into 200ms
+  // slots, ~5 req/s) while letting more frames be in-flight at once.
+  // Expected impact: 60-frame analysis from ~6 min to ~1.5-2 min. Not
+  // measured locally — verify on TestFlight.
+  concurrency: 8,
 };
 
 // ============================================
@@ -105,6 +162,9 @@ export class BroadcastAnalysisPipeline {
   private callbacks: PipelineCallbacks;
   private aborted: boolean = false;
   private startTime: number = 0;
+  // Build #42: populated by analyzeFrames so run() can format an informative
+  // failure message when no items were extracted.
+  private lastAnalysisOutcomes: AnalysisOutcomes | null = null;
 
   constructor(
     config: PipelineConfig,
@@ -141,6 +201,15 @@ export class BroadcastAnalysisPipeline {
   ): Promise<void> {
     this.startTime = Date.now();
     this.aborted = false;
+
+    // Build #43: surface pipeline lifecycle in __pipelineDiag for the trail.
+    __pipelineDiag.lastRunAt = this.startTime;
+    __pipelineDiag.lastFrameCount = frames.length;
+    __pipelineDiag.lastItemsExtracted = 0;
+    __pipelineDiag.lastItemsAfterLocalDedup = 0;
+    __pipelineDiag.lastItemsAfterLLMDedup = 0;
+    __pipelineDiag.lastError = '';
+    __pipelineDiag.lastStage = 'preparing';
 
     const progress: PipelineProgress = {
       stage: 'PREPARING',
@@ -187,42 +256,70 @@ export class BroadcastAnalysisPipeline {
       }
 
       progress.itemsExtracted = allExtractedItems.length;
+      __pipelineDiag.lastItemsExtracted = allExtractedItems.length;
+      __pipelineDiag.lastStage = 'analyzed';
 
-      // If no items were extracted from any frame, this is a fatal error
+      // If no items were extracted from any frame, this is a fatal error.
+      // Build #42: enrich the message with per-frame outcome counters so the
+      // user (and we) can see *why* — was it API failure, model returning
+      // empty arrays, or missing frame data?
       if (allExtractedItems.length === 0 && !this.aborted) {
+        const summary = this.formatAnalysisOutcomes(this.lastAnalysisOutcomes);
         throw new PipelineError(
-          "We could not read any posts from the captured frames. This can happen if the feed was not visible during recording, or if the frames were too blurry. Try scrolling more slowly next time.",
+          `No items extracted from the captured frames. ${summary}`,
           "ANALYZING",
         );
       }
       // ── Stage 3: DEDUPLICATING ──
+      // Build #47 (audit #20): two-pass dedup. First pass is a deterministic
+      // local key-based merge that catches "same video across N frames"
+      // cases the LLM dedup miss because of UI text drift (timestamps,
+      // view counts, time-ago strings). Second pass is the existing LLM
+      // semantic dedup which can still merge things the local pass keeps
+      // separate (e.g. caption rewording, partial vs full title).
       let finalItems: GeminiExtractedItem[];
 
       if (this.config.enableDeduplication && allExtractedItems.length > 0) {
         progress.stage = 'DEDUPLICATING';
         this.reportProgress(progress);
 
+        // Local dedup pass — deterministic, never throws.
+        const localResult = localDedup(allExtractedItems);
+        const locallyDeduped = localResult.items;
+        __pipelineDiag.lastItemsAfterLocalDedup = locallyDeduped.length;
+        if (__DEV__) {
+          console.log(
+            `[pipeline] localDedup: ${localResult.stats.inputCount} → ${localResult.stats.outputCount} ` +
+              `(merged ${localResult.stats.mergedCount}; ` +
+              `keys H+T=${localResult.stats.keyBreakdown.handlePlusText}, ` +
+              `NH+long=${localResult.stats.keyBreakdown.noHandleLongText}, ` +
+              `unique=${localResult.stats.keyBreakdown.uniqueShortText})`,
+          );
+        }
+
         try {
           const dedupResult = await this.gemini.deduplicateItems(
-            allExtractedItems,
+            locallyDeduped,
             platform,
           );
           finalItems = dedupResult.deduplicated_items.length > 0
             ? dedupResult.deduplicated_items
-            : allExtractedItems; // Fallback if dedup returned empty
+            : locallyDeduped; // Fallback if LLM dedup returned empty
           progress.itemsDeduplicated = finalItems.length;
         } catch (error) {
-          // Deduplication failure is non-fatal — use raw items
+          // LLM dedup failure is non-fatal — use locally-deduped items
           if (__DEV__) {
-            console.warn('Deduplication failed, using raw extracted items:', error);
+            console.warn('LLM dedup failed, using locally-deduped items:', error);
           }
-          finalItems = allExtractedItems;
-          progress.itemsDeduplicated = allExtractedItems.length;
+          finalItems = locallyDeduped;
+          progress.itemsDeduplicated = locallyDeduped.length;
         }
       } else {
         finalItems = allExtractedItems;
         progress.itemsDeduplicated = allExtractedItems.length;
+        __pipelineDiag.lastItemsAfterLocalDedup = allExtractedItems.length;
       }
+      __pipelineDiag.lastItemsAfterLLMDedup = finalItems.length;
 
       // ── Stage 4: BUILDING ──
       progress.stage = 'BUILDING';
@@ -239,6 +336,13 @@ export class BroadcastAnalysisPipeline {
 
       // ── Stage 5: SAVING ──
       let saveWarning: string | null = null;
+      // Build #44: capture the underlying technical error so the UI can
+      // surface it in __DEV__ / TestFlight diagnostic mode. The friendly
+      // string above is what end users see; this `details` payload is what
+      // tells us "why" (e.g. "column 'source_type' of relation 'scans'
+      // does not exist") so we don't have to rely on Sentry, which isn't
+      // configured.
+      let saveWarningDetails: string | null = null;
       if (this.config.enablePersistence) {
         progress.stage = 'SAVING';
         this.reportProgress(progress);
@@ -257,6 +361,7 @@ export class BroadcastAnalysisPipeline {
             { scanId, platform }
           );
           saveWarning = 'Your results are ready, but we couldn\'t save them to your history. They\'ll only be available during this session.';
+          saveWarningDetails = msg.slice(0, 240);
         }
       }
 
@@ -266,9 +371,20 @@ export class BroadcastAnalysisPipeline {
       progress.elapsedMs = Date.now() - this.startTime;
       this.reportProgress(progress);
 
-      // If save failed, the result still includes a warning the UI can show
+      __pipelineDiag.lastStage = 'complete';
+
+      // If save failed, the result still includes a warning the UI can show.
+      // Build #44: also attach `details` (the underlying error) so the UI
+      // can render it in dev/TestFlight diagnostic mode.
       if (saveWarning && scanResult.debug) {
-        scanResult.debug.warnings = [...(scanResult.debug.warnings || []), { code: 'SAVE_FAILED', message: saveWarning }];
+        scanResult.debug.warnings = [
+          ...(scanResult.debug.warnings || []),
+          {
+            code: 'SAVE_FAILED',
+            message: saveWarning,
+            ...(saveWarningDetails ? { details: saveWarningDetails } : {}),
+          },
+        ];
       }
 
       this.callbacks.onComplete(scanId, scanResult);
@@ -289,6 +405,9 @@ export class BroadcastAnalysisPipeline {
       this.reportProgress(progress);
       this.callbacks.onError(err);
 
+      __pipelineDiag.lastStage = 'failed';
+      __pipelineDiag.lastError = err.message.slice(0, 100);
+
       captureError(err, 'BroadcastAnalysisPipeline:run', {
         platform,
         frameCount: frames.length,
@@ -305,6 +424,12 @@ export class BroadcastAnalysisPipeline {
    * Analyzes frames with controlled concurrency.
    * Sends `concurrency` frames at a time to Gemini Flash.
    * Explicitly nulls out processed frame references to help GC release memory after each batch.
+   *
+   * Build #42: tracks per-frame outcomes so the "0 items" failure path can
+   * tell us *why* (API error vs model-returned-empty vs missing base64)
+   * instead of presenting an opaque "we could not read any posts" message.
+   * Outcomes are written into this.lastAnalysisOutcomes so run() can format
+   * them into the user-facing error message.
    */
   private async analyzeFrames(
     frames: BroadcastFrame[],
@@ -314,6 +439,15 @@ export class BroadcastAnalysisPipeline {
   ): Promise<GeminiExtractedItem[]> {
     const allItems: GeminiExtractedItem[] = [];
     const concurrency = this.config.concurrency;
+
+    const outcomes: AnalysisOutcomes = {
+      framesAttempted: 0,
+      framesWithItems: 0,
+      framesEmpty: 0,
+      framesApiError: 0,
+      framesNoBase64: 0,
+      firstErrorMessage: '',
+    };
 
     // Process in batches of `concurrency`
     for (let i = 0; i < frames.length; i += concurrency) {
@@ -334,10 +468,39 @@ export class BroadcastAnalysisPipeline {
       const batchResults = await Promise.allSettled(batchPromises);
 
       for (const result of batchResults) {
-        if (result.status === 'fulfilled' && result.value) {
-          allItems.push(...result.value);
+        outcomes.framesAttempted += 1;
+
+        if (result.status === 'fulfilled') {
+          const outcome = result.value;
+          switch (outcome.kind) {
+            case 'items':
+              outcomes.framesWithItems += 1;
+              allItems.push(...outcome.items);
+              break;
+            case 'empty':
+              outcomes.framesEmpty += 1;
+              break;
+            case 'apiError':
+              outcomes.framesApiError += 1;
+              if (!outcomes.firstErrorMessage && outcome.errorText) {
+                outcomes.firstErrorMessage = outcome.errorText;
+              }
+              break;
+            case 'noBase64':
+              outcomes.framesNoBase64 += 1;
+              break;
+          }
+        } else {
+          // Promise rejected: a non-retryable error was re-thrown by
+          // analyzeSingleFrame (bad API key, malformed request, etc.).
+          // Treat the same as apiError for reporting.
+          outcomes.framesApiError += 1;
+          const reason = result.reason;
+          const msg = reason instanceof Error ? reason.message : String(reason);
+          if (!outcomes.firstErrorMessage) {
+            outcomes.firstErrorMessage = msg.slice(0, 200);
+          }
         }
-        // Rejected promises are logged inside analyzeSingleFrame
       }
 
       // Explicitly null out processed batch to help GC release memory
@@ -350,11 +513,17 @@ export class BroadcastAnalysisPipeline {
       this.reportProgress(progress);
     }
 
+    this.lastAnalysisOutcomes = outcomes;
     return allItems;
   }
 
   /**
-   * Analyzes a single frame, returns extracted items or empty array on failure.
+   * Analyzes a single frame. Returns a structured outcome rather than raw
+   * items so the caller can distinguish between "Gemini saw no items" and
+   * "the API call failed". Build #42: previously this returned `[]` for
+   * every failure mode, which made debugging impossible — the pipeline's
+   * "0 items" error couldn't tell you whether the model returned empty
+   * arrays or whether every API call 429'd.
    */
   private async analyzeSingleFrame(
     frame: BroadcastFrame,
@@ -362,7 +531,7 @@ export class BroadcastAnalysisPipeline {
     frameNumber: number,
     totalFrames: number,
     getFrameBase64: (filename: string) => string | null,
-  ): Promise<GeminiExtractedItem[]> {
+  ): Promise<FrameOutcome> {
     try {
       // Get frame image as base64
       const filename = frame.local_path.split('/').pop() || frame.frame_id;
@@ -372,7 +541,7 @@ export class BroadcastAnalysisPipeline {
         if (__DEV__) {
           console.warn(`Frame ${frameNumber}: no base64 data available, skipping`);
         }
-        return [];
+        return { kind: 'noBase64', items: [] };
       }
 
       const response = await this.gemini.analyzeFrame({
@@ -384,20 +553,68 @@ export class BroadcastAnalysisPipeline {
         capturedAt: frame.captured_at,
       });
 
-      return response.items;
+      if (response.items.length > 0) {
+        return { kind: 'items', items: response.items };
+      }
+      return { kind: 'empty', items: [] };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (__DEV__) {
         console.warn(`Frame ${frameNumber}: analysis failed — ${message}`);
       }
 
-      // Non-fatal: skip this frame but continue the pipeline
+      // Non-retryable errors (bad API key, malformed request) propagate to
+      // the pipeline's onError so the user sees the underlying message.
       if (error instanceof GeminiApiError && !error.retryable) {
-        throw error; // Propagate non-retryable errors (bad API key, etc.)
+        throw error;
       }
 
-      return [];
+      // Retryable errors that exhausted retries (e.g. persistent 429 quota
+      // exceeded) land here. Surface the error text in the outcome so the
+      // outer loop can count it as an API error rather than a silent empty.
+      return {
+        kind: 'apiError',
+        items: [],
+        errorText: message.slice(0, 200),
+      };
     }
+  }
+
+  /**
+   * Build #42: produces a one-line human-readable summary of per-frame
+   * outcomes. Surfaced to the user when zero items were extracted so the
+   * "Analysis Failed" screen tells them whether the API failed, the model
+   * returned empty arrays, or frames were missing — instead of presenting
+   * an opaque message that could mean any of the three.
+   */
+  private formatAnalysisOutcomes(o: AnalysisOutcomes | null): string {
+    if (!o || o.framesAttempted === 0) {
+      return 'No frames were analyzed.';
+    }
+
+    const parts: string[] = [`${o.framesAttempted} frames analyzed`];
+    if (o.framesApiError > 0) {
+      parts.push(`${o.framesApiError} API errors`);
+    }
+    if (o.framesEmpty > 0) {
+      parts.push(`${o.framesEmpty} empty responses`);
+    }
+    if (o.framesNoBase64 > 0) {
+      parts.push(`${o.framesNoBase64} missing frame data`);
+    }
+    if (o.framesWithItems > 0) {
+      // Only meaningful if a later filtering stage stripped them; included
+      // for completeness so the math always reconciles.
+      parts.push(`${o.framesWithItems} returned items (filtered out)`);
+    }
+
+    let summary = parts.join(' / ') + '.';
+    if (o.firstErrorMessage) {
+      summary += ` First error: ${o.firstErrorMessage}`;
+    } else if (o.framesEmpty === o.framesAttempted) {
+      summary += ' The model did not recognize feed items in any frame, try recording while actively scrolling the feed (not the home screen or app launcher).';
+    }
+    return summary;
   }
 
   // ============================================
@@ -558,6 +775,14 @@ export class BroadcastAnalysisPipeline {
       (i) => i.source_origin === 'suggested',
     ).length;
 
+    // Build #44: scanRow shape MUST match the actual Supabase 'scans' table.
+    // Live schema (verified 2026-05-06): id, user_id, platform, post_count,
+    // ad_count, ad_percentage, suggested_count, suggested_percentage,
+    // raw_data, created_at. Two columns previously inserted at top level
+    // (source_type, duration_seconds) do NOT exist on the table; PostgREST
+    // rejects the row with 42703 undefined_column. Both values are now
+    // captured inside raw_data instead — source_type as a literal field,
+    // duration_seconds derived from raw_data.broadcast_capture at read time.
     const scanRow = {
       id: scanId,
       user_id: userId,
@@ -569,9 +794,10 @@ export class BroadcastAnalysisPipeline {
       suggested_percentage: totalItems > 0
         ? Math.round((suggestedCount / totalItems) * 100)
         : 0,
-      source_type: 'MOBILE_BROADCAST',
-      duration_seconds: result.environment.broadcast_capture?.duration_seconds || 0,
       raw_data: {
+        // Build #44: source_type moved from top-level column into raw_data.
+        // Read sites in useDashboard / history derive scan kind from this.
+        source_type: 'MOBILE_BROADCAST',
         posts: result.feed_items.map((item) => ({
           creator_handle: item.account?.account_handle || '',
           creator_display_name: item.account?.account_display_name || '',

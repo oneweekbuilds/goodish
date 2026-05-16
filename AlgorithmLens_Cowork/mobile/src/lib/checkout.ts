@@ -44,8 +44,8 @@ export type PlanType = 'monthly' | 'annual';
  * the source of truth for actual charges.
  */
 const PLAN_LABELS: Record<PlanType, string> = {
-  monthly: 'Monthly — $10/month',
-  annual: 'Annual — $96/year (save 20%)',
+  monthly: 'Monthly, $10/month',
+  annual: 'Annual, $96/year (save 20%)',
 };
 
 /** Maps mobile plan names to the billingCycle values the backend expects. */

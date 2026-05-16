@@ -86,16 +86,23 @@ class BroadcastPickerExpoView: ExpoView {
     }
 
     /// Programmatically tap the hidden RPSystemBroadcastPickerView button.
-    /// This traverses the picker's subviews to find the UIButton and sends
-    /// a touchUpInside event.
+    /// Performs a recursive search through the view hierarchy because on
+    /// iOS 14+ the UIButton is no longer a direct child of the picker view —
+    /// it is nested deeper and a shallow subviews loop finds nothing.
     func triggerPicker() {
         guard let picker = pickerView else { return }
+        findAndTriggerButton(in: picker)
+    }
 
-        for subview in picker.subviews {
+    /// Recursively walks the view tree rooted at `view` and fires
+    /// touchUpInside on the first UIButton found.
+    private func findAndTriggerButton(in view: UIView) {
+        for subview in view.subviews {
             if let button = subview as? UIButton {
                 button.sendActions(for: .touchUpInside)
                 return
             }
+            findAndTriggerButton(in: subview)
         }
     }
 

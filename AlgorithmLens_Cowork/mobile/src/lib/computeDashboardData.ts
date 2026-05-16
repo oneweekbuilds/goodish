@@ -11,6 +11,7 @@
  */
 
 import { getPlatformDisplayName } from './utils';
+import { formatHandle } from './formatHandle';
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -238,6 +239,22 @@ export interface InsightHeroData {
   meaning: string;
   whyCare: string | null;
   meta: string | null;
+  /**
+   * Methodology disclosure prose for the "About this measurement" card.
+   * Optional so existing builders that haven't been migrated continue to
+   * typecheck. Populated by builders whose tabs have been redesigned
+   * against the new design system (Sources from build #51 onward).
+   *
+   * Carry-forward note: prior to build #51 this content lived as a JSX
+   * prop on the legacy InsightHero component in dashboard.tsx. Lifting
+   * it onto the data shape so screens consume it from the data layer
+   * rather than duplicating prose in screen files.
+   */
+  howWeMeasure?: {
+    what: string;
+    how: string;
+    limitations: string;
+  };
 }
 
 export interface CreatorStat {
@@ -413,6 +430,25 @@ function buildOverviewInsight(
   }
 }
 
+/**
+ * "How we measure" prose for the Sources tab.
+ *
+ * Carry-forward from legacy SourcesContent in dashboard.tsx pre-build #51,
+ * where these three strings were hard-coded as a JSX prop on the legacy
+ * InsightHero component. Lifted to the data layer so the redesigned
+ * SourcesTab (src/screens/dashboard/SourcesTab.tsx) consumes them from
+ * `data.sourcesInsight.howWeMeasure` instead of duplicating prose in
+ * the screen file.
+ */
+const SOURCES_HOW_WE_MEASURE = {
+  what:
+    'Which accounts created the content you scrolled past, and how concentrated your feed is among a few sources.',
+  how:
+    'We extract the creator handle from each post and rank by frequency. Top-5 concentration is the percentage of all posts from your five most-shown accounts.',
+  limitations:
+    'Some posts may not have identifiable creators (e.g. promoted content without a visible handle). These are excluded from source analysis.',
+} as const;
+
 function buildSourcesInsight(
   topCreators: CreatorStat[],
   totalPosts: number,
@@ -427,6 +463,7 @@ function buildSourcesInsight(
       meaning: 'Need at least 10 posts with identifiable creators to analyze source distribution.',
       whyCare: null,
       meta,
+      howWeMeasure: SOURCES_HOW_WE_MEASURE,
     };
   }
 
@@ -436,16 +473,18 @@ function buildSourcesInsight(
   if (top5Pct >= 75) {
     return {
       title: `5 accounts account for ${top5Pct}% of the content in your feed`,
-      meaning: `@${topName} alone appeared in ${topPct}% of posts. Three-quarters of your feed came from a tiny group.`,
+      meaning: `${formatHandle(topName)} alone appeared in ${topPct}% of posts. Three-quarters of your feed came from a tiny group.`,
       whyCare: 'This is well above typical (40–60%). These creators have significant presence in your feed.',
       meta,
+      howWeMeasure: SOURCES_HOW_WE_MEASURE,
     };
   } else if (top5Pct >= 50) {
     return {
       title: `A few recurring voices fill ${top5Pct}% of your feed`,
-      meaning: `@${topName} appeared most often at ${topPct}% of posts. About half of your content comes from your most-shown accounts.`,
+      meaning: `${formatHandle(topName)} appeared most often at ${topPct}% of posts. About half of your content comes from your most-shown accounts.`,
       whyCare: 'This is at the higher end of typical (40–60%).',
       meta,
+      howWeMeasure: SOURCES_HOW_WE_MEASURE,
     };
   } else {
     return {
@@ -453,9 +492,31 @@ function buildSourcesInsight(
       meaning: 'Less than half of posts come from your top sources. You regularly encounter content from accounts outside your core group.',
       whyCare: 'A healthy balance of familiarity and discovery.',
       meta,
+      howWeMeasure: SOURCES_HOW_WE_MEASURE,
     };
   }
 }
+
+/**
+ * "How we measure" prose for the Ads tab.
+ *
+ * Carry-forward from the legacy AdsContent in dashboard.tsx pre-build #52,
+ * where these three strings were hard-coded as a JSX prop on the legacy
+ * InsightHero component (the `howWeMeasure={{...}}` prop on the
+ * InsightHero in AdsContent, pre-redesign). Lifted to the data layer so
+ * the redesigned AdsTab (src/screens/dashboard/AdsTab.tsx) consumes them
+ * from `data.adsInsight.howWeMeasure` instead of duplicating prose in
+ * the screen file — mirrors the SOURCES_HOW_WE_MEASURE and
+ * POLITICS_HOW_WE_MEASURE patterns established in build #51.
+ */
+const ADS_HOW_WE_MEASURE = {
+  what:
+    'The share of your feed that contains labeled ads and likely promotional content.',
+  how:
+    'We identify ads based on platform-provided labels (e.g. "Sponsored", "Ad") and promotional URL patterns. Each post is checked for these signals.',
+  limitations:
+    'Some native advertising or influencer partnerships may not be detected if they lack standard ad labels. Only explicitly labeled content is counted in the headline percentage; the "unlabeled promotions" section surfaces softer signals separately.',
+} as const;
 
 function buildAdsInsight(
   adPct: number,
@@ -468,19 +529,21 @@ function buildAdsInsight(
 
   if (totalPosts < 10) {
     return {
-      title: 'Not enough data to assess commercial content',
+      title: 'Not enough data to assess ads',
       meaning: 'Need at least 10 posts to analyze advertising patterns.',
       whyCare: null,
       meta,
+      howWeMeasure: ADS_HOW_WE_MEASURE,
     };
   }
 
   if (adPct >= 40) {
     return {
-      title: `${adPct}% of your feed is commercial content`,
+      title: `${adPct}% of your feed was ads`,
       meaning: `That's about ${adMinutesIn60} minutes of ads in every hour you scroll. ${adCount} ads appeared among ${totalPosts} posts.`,
-      whyCare: 'This is above the typical range of 15–30%. A large share of what appeared in your feed was commercial.',
+      whyCare: 'This is above the typical range of 15–30%. A large share of what appeared in your feed was advertising.',
       meta,
+      howWeMeasure: ADS_HOW_WE_MEASURE,
     };
   } else if (adPct >= 20) {
     return {
@@ -488,13 +551,15 @@ function buildAdsInsight(
       meaning: `${adCount} labeled ads appeared among ${totalPosts} posts. That translates to roughly ${adMinutesIn60} minutes of ad content per hour.`,
       whyCare: 'This falls within the typical range (15–30%).',
       meta,
+      howWeMeasure: ADS_HOW_WE_MEASURE,
     };
   } else if (adPct >= 5) {
     return {
       title: `${adPct}% of your feed contained ads`,
       meaning: `${adCount} ad${adCount !== 1 ? 's' : ''} appeared among ${totalPosts} posts. A moderate but not dominant presence.`,
-      whyCare: 'This is within the typical range. A regular but not overwhelming amount of commercial content.',
+      whyCare: 'This is within the typical range. A regular but not overwhelming presence of ads.',
       meta,
+      howWeMeasure: ADS_HOW_WE_MEASURE,
     };
   } else {
     // MC-007/MC-008 FIX: Handle zero-count gracefully, replace "detected" with friendlier language
@@ -504,15 +569,37 @@ function buildAdsInsight(
     return {
       title: adCount === 0
         ? `No labeled ads appeared in this ${totalPosts}-post scan`
-        : `Commercial content is minimal in your feed (${adPct}%)`,
+        : `Ads were minimal in your feed (${adPct}%)`,
       meaning: meaningText,
       whyCare: adCount === 0
-        ? 'Some promotional content may not carry visible labels — native ads and influencer partnerships often blend in.'
-        : 'This is below the typical range of 15–30%, leaving more space for non-commercial content.',
+        ? 'Some promotional content may not carry visible labels, native ads and influencer partnerships often blend in.'
+        : 'This is below the typical range of 15–30%, leaving more space for non-ad content.',
       meta,
+      howWeMeasure: ADS_HOW_WE_MEASURE,
     };
   }
 }
+
+/**
+ * "How we measure" prose for the Suggested vs. Followed tab.
+ *
+ * Carry-forward from the legacy SuggestedContent in dashboard.tsx
+ * pre-build #52, where these three strings were hard-coded as a JSX
+ * prop on the legacy InsightHero component (the `howWeMeasure={{...}}`
+ * prop on the InsightHero in SuggestedContent, pre-redesign). Lifted
+ * to the data layer so the redesigned SuggestedTab
+ * (src/screens/dashboard/SuggestedTab.tsx) consumes it from
+ * `data.suggestedInsight.howWeMeasure` — mirrors the
+ * SOURCES_/POLITICS_/ADS_HOW_WE_MEASURE patterns from builds #51-52.
+ */
+const SUGGESTED_HOW_WE_MEASURE = {
+  what:
+    'How much of your feed comes from accounts you follow versus content recommended by the platform.',
+  how:
+    'Each post is classified as "following" or "suggested" based on platform indicators, labels like "Suggested for you" or "Recommended", or the absence of a follow relationship.',
+  limitations:
+    'Platform indicators vary and may not always be present. Some platforms mix followed and suggested content without clear labels. Classification is based on observable signals only.',
+} as const;
 
 function buildSuggestedInsight(
   suggestedPct: number,
@@ -530,6 +617,7 @@ function buildSuggestedInsight(
       meaning: 'Need at least 10 posts to analyze suggested vs followed content.',
       whyCare: null,
       meta,
+      howWeMeasure: SUGGESTED_HOW_WE_MEASURE,
     };
   }
 
@@ -539,6 +627,7 @@ function buildSuggestedInsight(
       meaning: `Only ${followedCount} of ${totalPosts} posts were from accounts you follow. The vast majority appeared through the platform's recommendation system.`,
       whyCare: 'When most content is suggested, your feed contains more content from accounts you don\'t follow than from those you do.',
       meta,
+      howWeMeasure: SUGGESTED_HOW_WE_MEASURE,
     };
   } else if (suggestedPct >= 50) {
     return {
@@ -546,6 +635,7 @@ function buildSuggestedInsight(
       meaning: `${suggestedCount} posts came from accounts you don't follow, while ${followedCount} came from accounts you do. The platform's recommendations outweigh your follow list.`,
       whyCare: 'When suggested content exceeds followed content, a larger portion of your feed consisted of recommended content.',
       meta,
+      howWeMeasure: SUGGESTED_HOW_WE_MEASURE,
     };
   } else if (suggestedPct >= 20) {
     return {
@@ -553,6 +643,7 @@ function buildSuggestedInsight(
       meaning: `${followedCount} posts came from accounts you follow, with ${suggestedCount} suggested. Most of your feed comes from accounts you follow.`,
       whyCare: 'A balanced mix means your feed reflects both your own choices and platform recommendations.',
       meta,
+      howWeMeasure: SUGGESTED_HOW_WE_MEASURE,
     };
   } else {
     return {
@@ -560,9 +651,37 @@ function buildSuggestedInsight(
       meaning: `${followedCount} of ${totalPosts} posts came from followed accounts. Very little was suggested by the platform.`,
       whyCare: 'Your follow choices strongly determine what appears in your feed.',
       meta,
+      howWeMeasure: SUGGESTED_HOW_WE_MEASURE,
     };
   }
 }
+
+/**
+ * "How we measure" prose for the Politics tab.
+ *
+ * Carry-forward from two legacy locations in dashboard.tsx pre-build #51:
+ *   1. The inline `howWeMeasure` JSX prop on InsightHero in PoliticsContent
+ *      (what / how / limitations triplet — this is the substantive content).
+ *   2. The standalone `PoliticsMethodologyDisclaimer` subcomponent (a single
+ *      paragraph reiterating the same methodology in different words).
+ *
+ * The two sources said substantively the same thing; the merged copy here
+ * keeps the tighter what/how/limitations structure from source #1 and
+ * folds in the disclaimer's "describes what appeared, not your views or
+ * the platform's intent" framing into limitations. Lifted to the data
+ * layer so the redesigned PoliticsTab
+ * (src/screens/dashboard/PoliticsTab.tsx) consumes it from
+ * `data.politicsInsight.howWeMeasure` instead of duplicating prose in
+ * the screen file (mirrors the SOURCES_HOW_WE_MEASURE pattern).
+ */
+const POLITICS_HOW_WE_MEASURE = {
+  what:
+    'The share of your feed that contained political keywords and themes, and the approximate ideological distribution of those posts.',
+  how:
+    'Post text is analyzed by Google\'s Gemini AI to detect political content and approximate ideological alignment (left, center, or right) based on stance keywords found in each post.',
+  limitations:
+    'AI classification is approximate. Short posts may be misclassified. Ideological alignment is based on keyword signals, not nuanced understanding. This describes what appeared in your feed. It does not infer your personal views or the platform\'s intent.',
+} as const;
 
 function buildPoliticsInsight(
   platform: string,
@@ -574,8 +693,9 @@ function buildPoliticsInsight(
     return {
       title: 'Political content analysis requires AI',
       meaning: 'To identify political content in your feed, AlgorithmLens uses Google\'s Gemini AI to analyze post text. This gives you an accurate count of how much political content appears in your feed.',
-      whyCare: 'Enable AI analysis in Settings to unlock this tab. Your data is processed securely — Google does not use it to train models.',
+      whyCare: 'Enable AI analysis in Settings to unlock this tab. Your data is processed securely, Google does not use it to train models.',
       meta: `${totalPosts} posts available for analysis from ${platform}`,
+      howWeMeasure: POLITICS_HOW_WE_MEASURE,
     };
   }
 
@@ -586,6 +706,7 @@ function buildPoliticsInsight(
       meaning: 'Fewer than 10 posts contained political keywords, which is not enough to draw reliable conclusions about the political makeup of your feed.',
       whyCare: 'Scan more content to build a clearer picture. Political signals can vary a lot between sessions.',
       meta: `Based on ${analysis.totalAnalyzed} analyzed posts from ${platform}`,
+      howWeMeasure: POLITICS_HOW_WE_MEASURE,
     };
   }
 
@@ -597,6 +718,7 @@ function buildPoliticsInsight(
       meaning: `${analysis.politicalCount} of ${analysis.totalAnalyzed} posts showed political keywords or themes. A notable share of what appeared in your feed touched on political topics.`,
       whyCare: 'This is above typical (5–15%). Political content had a strong presence in this scan window.',
       meta,
+      howWeMeasure: POLITICS_HOW_WE_MEASURE,
     };
   } else if (analysis.politicalPct >= 10) {
     return {
@@ -604,6 +726,7 @@ function buildPoliticsInsight(
       meaning: `${analysis.politicalCount} of ${analysis.totalAnalyzed} posts showed political keywords or themes. A moderate presence in your feed.`,
       whyCare: 'This falls within the typical range (5–15%).',
       meta,
+      howWeMeasure: POLITICS_HOW_WE_MEASURE,
     };
   } else {
     return {
@@ -611,6 +734,7 @@ function buildPoliticsInsight(
       meaning: `Only ${analysis.politicalCount} of ${analysis.totalAnalyzed} posts contained political keywords. Most of your feed focused on other topics.`,
       whyCare: 'Political content had a light presence in this scan window.',
       meta,
+      howWeMeasure: POLITICS_HOW_WE_MEASURE,
     };
   }
 }
@@ -834,6 +958,7 @@ function extractToneBySourceOrigin(posts: RawPost[], raw: ScanRecord['raw_data']
 
   for (let i = 0; i < analysis.feed_items.length; i++) {
     const item = analysis.feed_items[i];
+    if (!item) continue;
     const valence = (item.emotions?.valence || '').toUpperCase();
     if (valence !== 'POSITIVE' && valence !== 'NEUTRAL' && valence !== 'NEGATIVE') continue;
 
@@ -977,7 +1102,7 @@ function buildPoliticalSummary(analysis: PoliticalAnalysis | null): string | nul
   let summary = `Based on keyword and AI analysis, your feed appeared to contain ${analysis.politicalPct}% political content`;
 
   if (analysis.topPoliticalSource) {
-    summary += `, mostly from @${analysis.topPoliticalSource.handle}`;
+    summary += `, mostly from ${formatHandle(analysis.topPoliticalSource.handle)}`;
   }
 
   if (analysis.ideology) {
@@ -999,6 +1124,34 @@ function buildPoliticalSummary(analysis: PoliticalAnalysis | null): string | nul
   return summary;
 }
 
+/**
+ * "How we measure" prose for the Tone tab.
+ *
+ * Carry-forward from the legacy ToneContent in dashboard.tsx pre-build #53,
+ * where these three strings were hard-coded as a JSX prop on the legacy
+ * InsightHero component (the `howWeMeasure={{...}}` prop on the
+ * InsightHero in ToneContent, pre-redesign). Lifted to the data layer
+ * so the redesigned ToneTab (src/screens/dashboard/ToneTab.tsx) consumes
+ * it from `data.toneInsight.howWeMeasure` — mirrors the
+ * SOURCES_/POLITICS_/ADS_/SUGGESTED_HOW_WE_MEASURE patterns from builds
+ * #51-52.
+ *
+ * The legacy ToneContent also rendered a standalone
+ * ToneMethodologyDisclaimer subcomponent paragraph that said
+ * substantively the same thing as `limitations`. That subcomponent is
+ * deleted in build #53 and not merged here; the InsightHero version
+ * lifted below is the more comprehensive of the two (it adds the
+ * "Sarcasm and irony are difficult to detect" caveat).
+ */
+const TONE_HOW_WE_MEASURE = {
+  what:
+    'The emotional character of posts in your feed, categorized as positive, neutral, or negative.',
+  how:
+    'Post text is analyzed by Google\'s Gemini AI to classify emotional tone based on language patterns. Each post receives one valence label.',
+  limitations:
+    'Sentiment analysis is approximate, tone is subjective, and short posts may be misclassified. Sarcasm and irony are difficult to detect. This describes what appeared, not your emotional state or the platform\'s intent.',
+} as const;
+
 function buildToneInsight(
   platform: string,
   totalPosts: number,
@@ -1009,8 +1162,9 @@ function buildToneInsight(
     return {
       title: 'Emotional tone analysis requires AI',
       meaning: 'To classify the emotional tone of posts (positive, neutral, negative), AlgorithmLens uses Google\'s Gemini AI. This reveals the emotional character of your feed.',
-      whyCare: 'Enable AI analysis in Settings to unlock this tab. Your data is processed securely — Google does not use it to train models.',
+      whyCare: 'Enable AI analysis in Settings to unlock this tab. Your data is processed securely, Google does not use it to train models.',
       meta: `${totalPosts} posts available for analysis from ${platform}`,
+      howWeMeasure: TONE_HOW_WE_MEASURE,
     };
   }
 
@@ -1021,6 +1175,7 @@ function buildToneInsight(
       meaning: 'Fewer than 10 posts had identifiable emotional tone, which is not enough to draw reliable conclusions about the emotional character of your feed.',
       whyCare: 'Scan more content to build a clearer picture. Emotional tone can vary a lot between sessions.',
       meta: `Based on ${analysis.knownValenceTotal} posts with tone data from ${platform}`,
+      howWeMeasure: TONE_HOW_WE_MEASURE,
     };
   }
 
@@ -1037,6 +1192,7 @@ function buildToneInsight(
       meaning: 'No single emotional tone dominates. You encounter a roughly even spread of upbeat, informational, and conflict-focused content.',
       whyCare: 'A balanced feed means your feed shows a mix of emotional tones without a strong lean in one direction.',
       meta,
+      howWeMeasure: TONE_HOW_WE_MEASURE,
     };
   }
 
@@ -1047,6 +1203,7 @@ function buildToneInsight(
       meaning: `More than 1 in 3 posts appeared framed around conflict, outrage, or negativity. In a 60-minute session, that would be about ${negMinutesIn60} minutes of negative content.`,
       whyCare: 'Typical negative tone is 20–30%. Above that, a feed with a high proportion of negative content may present a skewed picture.',
       meta,
+      howWeMeasure: TONE_HOW_WE_MEASURE,
     };
   }
 
@@ -1056,6 +1213,7 @@ function buildToneInsight(
       meaning: 'More than 1 in 3 posts carried upbeat or happy emotional framing. Your scrolling experience leaned optimistic.',
       whyCare: 'Positive feeds can boost mood but may also create a highlight reel effect.',
       meta,
+      howWeMeasure: TONE_HOW_WE_MEASURE,
     };
   }
 
@@ -1065,6 +1223,7 @@ function buildToneInsight(
       meaning: 'Most posts appeared balanced or factual rather than emotionally charged.',
       whyCare: 'Neutral tone creates space for reflection without a dominant emotional tone.',
       meta,
+      howWeMeasure: TONE_HOW_WE_MEASURE,
     };
   }
 
@@ -1075,6 +1234,7 @@ function buildToneInsight(
       meaning: `Negative or conflict-focused posts slightly outpaced positive (${pos}%) and neutral (${neut}%) content.`,
       whyCare: 'A modest lean toward negative content is present in your feed.',
       meta,
+      howWeMeasure: TONE_HOW_WE_MEASURE,
     };
   } else if (pos === max) {
     return {
@@ -1082,6 +1242,7 @@ function buildToneInsight(
       meaning: `Upbeat content slightly outpaced neutral (${neut}%) and negative (${neg}%) posts.`,
       whyCare: 'A positive lean can improve mood during scrolling, though it may also filter out important but difficult topics.',
       meta,
+      howWeMeasure: TONE_HOW_WE_MEASURE,
     };
   } else {
     return {
@@ -1089,6 +1250,7 @@ function buildToneInsight(
       meaning: `Balanced or informational content outpaced positive (${pos}%) and negative (${neg}%) posts.`,
       whyCare: 'A neutral lean means your feed appeared less emotionally activating.',
       meta,
+      howWeMeasure: TONE_HOW_WE_MEASURE,
     };
   }
 }
@@ -1103,7 +1265,7 @@ function extractUnlabeledPromos(posts: RawPost[], raw: ScanRecord['raw_data']): 
 
   // Check if any item has influenceSignals field — if not, pipeline doesn't support it yet
   const hasInfluenceField = feedItems.some(
-    (item: Record<string, unknown>) => Array.isArray((item as any).influenceSignals)
+    (item) => Array.isArray((item as unknown as Record<string, unknown>).influenceSignals)
   );
   if (!hasInfluenceField) return null;
 
@@ -1160,7 +1322,8 @@ function extractTopAdvertisedProductTypes(posts: RawPost[], raw: ScanRecord['raw
   const themeCounts: Record<string, { count: number; advertisers: Set<string> }> = {};
 
   for (let i = 0; i < posts.length; i++) {
-    if (!posts[i].is_ad) continue;
+    const post = posts[i];
+    if (!post || !post.is_ad) continue;
 
     const analysisItem = feedItems[i] as any;
     if (!analysisItem) continue;
@@ -1175,13 +1338,11 @@ function extractTopAdvertisedProductTypes(posts: RawPost[], raw: ScanRecord['raw
 
     const normalized = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
 
-    if (!themeCounts[normalized]) {
-      themeCounts[normalized] = { count: 0, advertisers: new Set() };
-    }
-    themeCounts[normalized].count++;
+    const bucket = themeCounts[normalized] ?? (themeCounts[normalized] = { count: 0, advertisers: new Set<string>() });
+    bucket.count++;
 
-    const handle = posts[i].creator_handle || posts[i].creator_display_name || '';
-    if (handle) themeCounts[normalized].advertisers.add(handle);
+    const handle = post.creator_handle || post.creator_display_name || '';
+    if (handle) bucket.advertisers.add(handle);
   }
 
   const totalAds = adPosts.length;
@@ -1443,12 +1604,14 @@ function extractTopicsBySourceOrigin(posts: RawPost[], raw: ScanRecord['raw_data
       // Fallback to hashtags
       if (post.hashtags && post.hashtags.length > 0) {
         const tag = post.hashtags[0];
-        if (post.is_suggested === true) {
-          sugTopics[tag] = (sugTopics[tag] || 0) + 1;
-          sugTotal++;
-        } else if (post.is_suggested === false) {
-          folTopics[tag] = (folTopics[tag] || 0) + 1;
-          folTotal++;
+        if (tag) {
+          if (post.is_suggested === true) {
+            sugTopics[tag] = (sugTopics[tag] || 0) + 1;
+            sugTotal++;
+          } else if (post.is_suggested === false) {
+            folTopics[tag] = (folTopics[tag] || 0) + 1;
+            folTotal++;
+          }
         }
       }
       continue;

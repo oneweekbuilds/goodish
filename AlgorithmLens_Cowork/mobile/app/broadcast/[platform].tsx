@@ -1,111 +1,120 @@
 /**
- * Broadcast Session Screen — Full-screen broadcast capture flow.
+ * Broadcast screen. One route, three card states (Setup / Recording /
+ * Complete) driven by useBroadcast.status. FAILED renders as an inline
+ * error variant inside whichever card was last visible. CANCELLED
+ * returns the user to the Setup card. IDLE is a transitional
+ * non-visible state.
  *
- * This route is navigated to when the user selects a platform and
- * chooses Broadcast mode from the Home screen's PlatformPicker.
+ * The recording inversion: this is the centerpiece of the redesign. No
+ * red border. The hero timer is textPrimary (a clock, not a score).
+ * "Open [platform]" is the primary CTA; "Stop recording" demotes to a
+ * secondary text button. Pulsing red dot lives only in the eyebrow line.
  *
- * Flow:
- * 1. Screen opens → session initializes → shared container prepared
- * 2. BroadcastPickerButton renders → user taps to start recording
- * 3. Status transitions: AWAITING → RECORDING → user scrolls their feed
- * 4. User returns to AlgorithmLens → sees live recording stats
- * 5. User taps "Stop" or broadcast ends → COMPLETE
- * 6. "View Results" navigates to the processing/dashboard flow
+ * iOS Shortcut auto-start (source=shortcut, autostart=1) is preserved so
+ * the existing native shortcut module keeps working without rebuild.
  *
- * The screen adapts its content based on the BroadcastStatus,
- * using the BroadcastOverlay component for each state.
+ * The native picker host (NativeBroadcastPicker, invisible on iOS) stays
+ * mounted; the Setup card's primary CTA calls triggerBroadcastPicker().
  */
-
-import React, { useEffect, useCallback, useRef } from 'react';
-import Constants from 'expo-constants';
-
-// Cleanup delay for broadcast session (ms)
-const BROADCAST_CLEANUP_DELAY_MS = 2000;
+import React, { useCallback, useEffect, useRef } from 'react';
 import {
-  View,
-  ScrollView,
-  TouchableOpacity,
   Alert,
+  Animated,
   BackHandler,
+  Linking,
   Platform,
+  Pressable,
+  Text,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, router } from 'expo-router';
-import { ArrowLeft, Radio, Shield } from 'lucide-react-native';
-import { triggerNotificationWarning, triggerImpactMedium } from '../../src/lib/haptics';
-import { useTheme } from '../../src/context/ThemeContext';
-import { GL_TYPOGRAPHY } from '../../src/lib/gluestackTheme';
-import { SPACING, RADIUS, PLATFORMS, ICON_SIZES } from '../../src/lib/theme';
-import { Text } from '../../src/components/glue';
-import { MIN_FRAMES_REQUIRED, MIN_SCAN_DURATION_SECS } from '../../src/config/thresholds';
+import { router, useLocalSearchParams } from 'expo-router';
+import Constants from 'expo-constants';
+import {
+  CaptureFooter,
+  CautionPill,
+  Icon,
+  PrimaryButton,
+  ScanHeader,
+} from '../../src/design-system';
+import {
+  colors,
+  layout,
+  spacing,
+  type,
+} from '../../src/design-tokens/tokens';
 import { useBroadcast } from '../../src/hooks/useBroadcast';
-import { BroadcastOverlay } from '../../src/components/broadcast/BroadcastOverlay';
-import { BroadcastPickerButton } from '../../src/components/broadcast/BroadcastPickerButton';
 import {
   NativeBroadcastPicker,
   triggerBroadcastPicker,
 } from '../../src/components/broadcast/NativeBroadcastPicker';
+import { storeAnalysisData } from '../../src/lib/analysis/analysisDataStore';
 import { PLATFORM_BROADCAST_CONFIGS } from '../../src/types/broadcast';
 import type { SupportedPlatform } from '../../src/types/broadcast';
-import { storeAnalysisData } from '../../src/lib/analysis/analysisDataStore';
+import { platformName } from '../../src/lib/platformLabels';
+import {
+  triggerImpactMedium,
+  triggerNotificationWarning,
+} from '../../src/lib/haptics';
+
+const DISCLOSURE =
+  "Frames are analyzed by Google's Gemini. No account credentials are shared. Frames are discarded after analysis.";
+const FRAME_THRESHOLD = 30;
+const BROADCAST_CLEANUP_DELAY_MS = 2000;
+
+type CardKey = 'setup' | 'recording' | 'complete';
 
 export default function BroadcastScreen() {
-  const { platform, autostart, source } = useLocalSearchParams<{
-    platform: string;
+  const params = useLocalSearchParams<{
+    platform?: string;
     autostart?: string;
     source?: string;
   }>();
-  const { colors, shadows } = useTheme();
   const broadcast = useBroadcast();
 
-  // Safety guard: If running in Expo Go, redirect back immediately.
-  // ReplayKit requires native modules only available in development builds.
+  // Guard: Expo Go cannot host the broadcast extension.
   useEffect(() => {
     if (Constants.appOwnership === 'expo') {
       Alert.alert(
-        'Development Build Required',
-        'Screen Capture requires the AlgorithmLens development build. Use Quick Scan instead.',
-        [{ text: 'OK', onPress: () => router.replace('/(tabs)/') }]
+        'Development build required',
+        'Screen capture requires the AlgorithmLens development build. Use the built-in browser instead.',
+        [{ text: 'OK', onPress: () => router.replace('/(tabs)/') }],
       );
     }
   }, []);
 
-  // Detect if this screen was launched from an iOS Shortcut
-  const isFromShortcut = source === 'shortcut';
-  const shouldAutoStart = autostart === '1';
-
-  // Validate platform parameter against known platforms
-  const validPlatforms = Object.keys(PLATFORM_BROADCAST_CONFIGS);
+  const validKeys = Object.keys(PLATFORM_BROADCAST_CONFIGS);
   const platformKey = (
-    platform && validPlatforms.includes(platform) ? platform : 'instagram'
+    params.platform && validKeys.includes(params.platform)
+      ? params.platform
+      : 'instagram'
   ) as SupportedPlatform;
-  const platformConfig = PLATFORM_BROADCAST_CONFIGS[platformKey];
-  const platformName = platformConfig.display_name;
-  const platformBrandColor = PLATFORMS[platformKey as keyof typeof PLATFORMS]?.color || colors.primaryBlue;
+  const platformLabel = platformName(platformKey) || platformKey;
+  const isFromShortcut = params.source === 'shortcut';
+  const shouldAutoStart = params.autostart === '1';
 
-  // Initialize session on mount
+  // Session lifecycle on mount.
   useEffect(() => {
     if (broadcast.status === 'IDLE') {
       broadcast.startSession(platformKey);
     }
-
     return () => {
-      // Cleanup on unmount if session is still active
       if (broadcast.isRecording) {
         broadcast.stopSession();
       }
     };
-    // Only run on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── iOS Shortcuts: auto-start broadcast + clear pending shortcut data ──
+  // iOS Shortcut autostart: clear pending, optionally request capture (Android).
   const shortcutConsumed = useRef(false);
   useEffect(() => {
-    if (isFromShortcut && !shortcutConsumed.current && broadcast.status === 'AWAITING_BROADCAST_START') {
+    if (
+      isFromShortcut &&
+      !shortcutConsumed.current &&
+      broadcast.status === 'AWAITING_BROADCAST_START'
+    ) {
       shortcutConsumed.current = true;
-
-      // Clear pending shortcut from UserDefaults so re-opens don't retrigger
       if (Platform.OS === 'ios') {
         try {
           const { requireNativeModule } = require('expo-modules-core');
@@ -115,20 +124,16 @@ export default function BroadcastScreen() {
           // Non-critical
         }
       }
-
-      // On Android, we can programmatically request screen capture.
-      // On iOS, the BroadcastPickerButton is system-controlled (RPSystemBroadcastPickerView)
-      // and cannot be triggered programmatically — user taps the picker button.
       if (shouldAutoStart && Platform.OS === 'android') {
         broadcast.requestScreenCapture().catch(() => {
-          // Permission denied — user will see the manual button
+          // Permission denied; user sees the manual button.
         });
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [broadcast.status]);
 
-  // Record last platform for Quick Scan shortcut
+  // Record last platform for the Quick Scan shortcut.
   useEffect(() => {
     if (Platform.OS === 'ios') {
       try {
@@ -136,172 +141,166 @@ export default function BroadcastScreen() {
         const shortcuts = requireNativeModule('ExpoShortcuts');
         shortcuts.setLastPlatform(platformKey);
       } catch {
-        // Shortcuts module not available
+        // Module unavailable; non-critical
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [platformKey]);
 
-  // Handle Android back button during recording
+  // Pulse animation for the eyebrow's recording dot.
+  const pulseAnim = useRef(new Animated.Value(1)).current;
   useEffect(() => {
-    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (broadcast.isRecording) {
-        handleBackDuringRecording();
-        return true;
-      }
-      return false;
-    });
-
-    return () => subscription.remove();
-  }, [broadcast.isRecording]);
-
-  const handleBackDuringRecording = useCallback(() => {
-    const framesMet = broadcast.frameCount >= MIN_FRAMES_REQUIRED;
-    const timeMet = broadcast.elapsedSeconds >= MIN_SCAN_DURATION_SECS;
-
-    if (!framesMet || !timeMet) {
-      Alert.alert(
-        "Your scan doesn't have enough data yet",
-        `Scans need at least ${MIN_FRAMES_REQUIRED} frames and ${Math.floor(MIN_SCAN_DURATION_SECS / 60)} minute of recording for accurate analysis. Keep recording?`,
-        [
-          { text: 'Keep Recording', style: 'cancel' },
-          {
-            text: 'Discard & Exit',
-            style: 'destructive',
-            onPress: async () => {
-              await broadcast.cancelSession();
-              router.back();
-            },
-          },
-        ]
+    if (broadcast.status === 'RECORDING') {
+      const pulse = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 0.4,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ]),
       );
-    } else {
-      Alert.alert(
-        'Recording in progress',
-        'Would you like to stop the broadcast and go back?',
-        [
-          { text: 'Keep Recording', style: 'cancel' },
-          {
-            text: 'Stop & Go Back',
-            style: 'destructive',
-            onPress: async () => {
-              await broadcast.cancelSession();
-              router.back();
-            },
-          },
-        ]
-      );
+      pulse.start();
+      return () => pulse.stop();
     }
-  }, [broadcast]);
+    pulseAnim.setValue(1);
+    return undefined;
+  }, [broadcast.status, pulseAnim]);
 
+  const cardKey: CardKey = (() => {
+    if (broadcast.status === 'RECORDING') return 'recording';
+    if (
+      broadcast.status === 'PROCESSING' ||
+      broadcast.status === 'COMPLETE'
+    ) {
+      return 'complete';
+    }
+    return 'setup';
+  })();
+  const lastCardRef = useRef<CardKey>(cardKey);
+  useEffect(() => {
+    if (broadcast.status !== 'FAILED') {
+      lastCardRef.current = cardKey;
+    }
+  }, [cardKey, broadcast.status]);
+  const isError = broadcast.status === 'FAILED';
+  const displayCard = isError ? lastCardRef.current : cardKey;
+
+  // Back handler. Setup: no confirm. Recording / Complete: confirm.
+  const confirmAndStop = useCallback(
+    (destructiveLabel: string) => {
+      Alert.alert(
+        'Stop recording?',
+        "Your scan doesn't have enough data yet.",
+        [
+          { text: 'Keep recording', style: 'cancel' },
+          {
+            text: destructiveLabel,
+            style: 'destructive',
+            onPress: async () => {
+              triggerNotificationWarning();
+              await broadcast.cancelSession();
+              router.back();
+            },
+          },
+        ],
+      );
+    },
+    [broadcast],
+  );
   const handleBack = useCallback(() => {
-    if (broadcast.isRecording) {
-      handleBackDuringRecording();
+    if (displayCard === 'recording') {
+      confirmAndStop('Stop and discard');
+    } else if (displayCard === 'complete') {
+      Alert.alert(
+        'Discard captured frames?',
+        'You have captured frames that have not been analyzed yet.',
+        [
+          { text: 'Keep frames', style: 'cancel' },
+          {
+            text: 'Discard',
+            style: 'destructive',
+            onPress: async () => {
+              await broadcast.cleanup();
+              router.back();
+            },
+          },
+        ],
+      );
     } else {
-      if (broadcast.isComplete) {
-        broadcast.cleanup();
-      }
       router.back();
     }
-  }, [broadcast, handleBackDuringRecording]);
+  }, [displayCard, confirmAndStop, broadcast]);
+
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        if (displayCard !== 'setup') {
+          handleBack();
+          return true;
+        }
+        return false;
+      },
+    );
+    return () => subscription.remove();
+  }, [displayCard, handleBack]);
+
+  const handleStartRecording = useCallback(() => {
+    if (Platform.OS === 'ios') {
+      triggerBroadcastPicker();
+    } else if (Platform.OS === 'android') {
+      broadcast.requestScreenCapture().catch(() => {
+        // Permission denied; the manual button stays available.
+      });
+    }
+  }, [broadcast]);
 
   const handleOpenPlatform = useCallback(async () => {
     const success = await broadcast.openPlatformApp(platformKey);
     if (!success) {
       Alert.alert(
-        `${platformName} not installed`,
-        `Make sure ${platformName} is installed on your device, then try again.`
+        `${platformLabel} not installed`,
+        `Install ${platformLabel} on your device, then try again.`,
       );
     }
-  }, [broadcast, platformKey, platformName]);
+  }, [broadcast, platformKey, platformLabel]);
 
   const handleStop = useCallback(async () => {
-    const framesMet = broadcast.frameCount >= MIN_FRAMES_REQUIRED;
-    const timeMet = broadcast.elapsedSeconds >= MIN_SCAN_DURATION_SECS;
-
-    if (!framesMet || !timeMet) {
-      // Thresholds not met — warn user
-      triggerNotificationWarning();
-      const needs: string[] = [];
-      if (!framesMet) needs.push(`${MIN_FRAMES_REQUIRED - broadcast.frameCount} more frames`);
-      if (!timeMet) needs.push(`${MIN_SCAN_DURATION_SECS - broadcast.elapsedSeconds}s more recording time`);
-
-      Alert.alert(
-        "Your scan doesn't have enough data yet",
-        `Need ${needs.join(' and ')} for accurate analysis. Keep recording?`,
-        [
-          { text: 'Keep Recording', style: 'cancel' },
-          {
-            text: 'Stop Anyway',
-            style: 'destructive',
-            onPress: async () => {
-              await broadcast.stopSession();
-            },
-          },
-        ]
-      );
-    } else {
-      triggerNotificationWarning();
-      Alert.alert(
-        'Stop recording?',
-        `This will end the broadcast session. ${broadcast.frameCount} frames have been captured so far.`,
-        [
-          { text: 'Keep Recording', style: 'cancel' },
-          {
-            text: 'Stop Recording',
-            onPress: async () => {
-              await broadcast.stopSession();
-            },
-          },
-        ]
-      );
-    }
+    triggerNotificationWarning();
+    await broadcast.stopSession();
   }, [broadcast]);
 
-  const handleViewResults = useCallback(async () => {
+  const handleRetry = useCallback(async () => {
+    await broadcast.cleanup();
+    broadcast.startSession(platformKey);
+  }, [broadcast, platformKey]);
+
+  const handleAnalyze = useCallback(async () => {
     triggerImpactMedium();
-
     try {
-      // Collect captured frames for the analysis pipeline
       const frames = await broadcast.collectFrames();
-
-      if (frames.length === 0) {
+      const captureInfo = broadcast.buildCaptureInfo();
+      if (frames.length === 0 || !captureInfo) {
         Alert.alert(
           'No frames captured',
-          'The recording ended without capturing any frames. This can happen if:\n\n• The recording didn\'t start properly\n• The screen was off during recording\n• The app didn\'t have time to capture\n\nTry again — make sure to scroll your feed for at least 15 seconds after starting.',
-          [
-            { text: 'Try Again', onPress: handleRetry },
-            { text: 'Go Back', onPress: () => router.back(), style: 'cancel' },
-          ]
+          'The recording ended without usable frames. Try again.',
+          [{ text: 'OK' }],
         );
         return;
       }
-
-      // Build capture info for the analysis pipeline
-      const captureInfo = broadcast.buildCaptureInfo();
-      if (!captureInfo) {
-        Alert.alert(
-          'Something went wrong',
-          'We couldn\'t process the recording data. Please try again.',
-          [
-            { text: 'Try Again', onPress: handleRetry },
-            { text: 'Go Back', onPress: () => router.back(), style: 'cancel' },
-          ]
-        );
-        return;
-      }
-
-      // Collect base64 data for all frames (needed by Gemini vision analysis)
       const frameBase64Map: Record<string, string> = {};
       for (const frame of frames) {
-        const filename = frame.local_path.split('/').pop() || frame.frame_id;
+        const filename =
+          frame.local_path.split('/').pop() || `${frame.frame_id}.jpg`;
         const base64 = broadcast.getFrameBase64(filename);
-        if (base64) {
-          frameBase64Map[filename] = base64;
-        }
+        if (base64) frameBase64Map[filename] = base64;
       }
-
-      // Store large data in memory store (route params have strict size limits)
       const sessionId = broadcast.session?.session_id || Date.now().toString();
       storeAnalysisData({
         sessionId,
@@ -311,337 +310,356 @@ export default function BroadcastScreen() {
         frameBase64Map,
         storedAt: Date.now(),
       });
-
-      // Navigate to analysis screen with just the session ID
       router.replace({
         pathname: '/analysis/[sessionId]',
         params: { sessionId },
       });
-
-      // Cleanup broadcast data after a short delay to allow navigation
       setTimeout(() => {
         broadcast.cleanup();
       }, BROADCAST_CLEANUP_DELAY_MS);
-    } catch (error) {
-      if (__DEV__) {
-        console.error('handleViewResults error:', error);
-      }
+    } catch {
       Alert.alert(
         'Something went wrong',
-        'We couldn\'t process the captured frames. Please try recording again.',
-        [
-          { text: 'Try Again', onPress: handleRetry },
-          { text: 'Go Back', onPress: () => router.back(), style: 'cancel' },
-        ]
+        "We couldn't process the captured frames. Please try recording again.",
+        [{ text: 'OK' }],
       );
     }
   }, [broadcast, platformKey]);
 
-  const handleRetry = useCallback(async () => {
-    await broadcast.cleanup();
-    broadcast.startSession(platformKey);
-  }, [broadcast, platformKey]);
-
-  const handleCancel = useCallback(async () => {
-    await broadcast.cancelSession();
-    await broadcast.cleanup();
-    router.back();
-  }, [broadcast]);
-
-  // C4 FIX: Android screen recording (MediaProjection API) is not yet implemented.
-  // Show a friendly message and redirect users to Precision Mode instead.
+  // Android: screen capture is not implemented on this platform.
   if (Platform.OS === 'android') {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: SPACING.xl }}>
-          <Radio size={40} color={colors.primaryBlue} strokeWidth={1.5} />
-          <Text
-            variant="h3"
-            color={colors.textMain}
-            align="center"
-            style={{ marginTop: SPACING.lg, marginBottom: SPACING.md }}
-          >
-            Coming to Android Soon
-          </Text>
-          <Text
-            variant="body"
-            color={colors.textSecondary}
-            align="center"
-            style={{ marginBottom: SPACING.xl, lineHeight: 22 }}
-          >
-            Screen recording is coming to Android soon. The iOS version is available now.{'\n\n'}In the meantime, you can use Precision Mode for text-based feed analysis.
-          </Text>
-          <TouchableOpacity
-            onPress={() => {
-              router.back();
-            }}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Go back and use Precision Mode"
-            style={{
-              backgroundColor: colors.primaryBlue,
-              borderRadius: RADIUS.md,
-              paddingVertical: SPACING.md,
-              paddingHorizontal: SPACING.xl,
-            }}
-          >
-            <Text
-              variant="buttonMd"
-              color={colors.textInverse}
-            >
-              Use Precision Mode
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+      <FallbackScreen
+        title="Coming to Android soon"
+        body="Screen recording is coming to Android soon. In the meantime, use the built-in browser for text-based feed analysis."
+        ctaLabel="Use the built-in browser"
+        onCta={() => router.back()}
+      />
     );
   }
 
-  // Check broadcast availability
+  // Broadcast extension unavailable.
   if (!broadcast.isAvailable) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: SPACING.xl }}>
-          <Text
-            variant="h3"
-            color={colors.textMain}
-            align="center"
-            style={{ marginBottom: SPACING.md }}
-          >
-            Broadcast not available
-          </Text>
-          <Text
-            variant="body"
-            color={colors.textSecondary}
-            align="center"
-            style={{ marginBottom: SPACING.xl }}
-          >
-            Screen broadcast requires iOS 12+ and the AlgorithmLens development build. Please ensure you're running the app via a development build (not Expo Go). Use Quick Scan to analyze your feed in the meantime.
-          </Text>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-            style={{
-              backgroundColor: colors.primaryBlue,
-              borderRadius: RADIUS.md,
-              paddingVertical: SPACING.md,
-              paddingHorizontal: SPACING.xl,
-            }}
-          >
-            <Text
-              variant="buttonMd"
-              color={colors.textInverse}
-            >
-              Go Back
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+      <FallbackScreen
+        title="Broadcast not available"
+        body="Screen broadcast requires iOS 12 or later and the AlgorithmLens development build. Use the built-in browser to scan in the meantime."
+        ctaLabel="Go back"
+        onCta={() => router.back()}
+      />
     );
   }
 
+  // Subtitle reflects the current card; error variants override with copy.
+  const subtitle = isError
+    ? 'Something went wrong'
+    : displayCard === 'setup'
+    ? 'Set up'
+    : displayCard === 'recording'
+    ? undefined
+    : 'Capture complete';
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          padding: SPACING.lg,
-          paddingBottom: SPACING['4xl'],
-        }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header with back button */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.xl }}>
-          <TouchableOpacity
-            onPress={handleBack}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-            style={{
-              width: ICON_SIZES.xl,
-              height: ICON_SIZES.xl,
-              borderRadius: ICON_SIZES.xl / 2,
-              backgroundColor: colors.bgCard,
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderWidth: 1,
-              borderColor: colors.borderSoft,
-              marginRight: SPACING.md,
-            }}
-          >
-            <ArrowLeft size={18} color={colors.textMain} strokeWidth={2} />
-          </TouchableOpacity>
-          <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs }}>
-              <View
-                style={{
-                  width: ICON_SIZES.md,
-                  height: ICON_SIZES.md,
-                  borderRadius: ICON_SIZES.md / 2,
-                  backgroundColor: `${platformBrandColor}18`,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <Radio size={12} color={platformBrandColor} strokeWidth={2} />
-              </View>
-              <Text
-                variant="scoreSmall"
-                color={colors.textMain}
-                accessibilityRole="header"
-              >
-                Broadcast Mode
-              </Text>
-            </View>
-            <Text
-              variant="caption"
-              color={colors.textMuted}
-              style={{ marginTop: SPACING.xxs }}
-            >
-              Scanning {platformName}
-            </Text>
-          </View>
-        </View>
-
-        {/* Shortcut-triggered hint — iOS only, since broadcast picker requires user tap */}
-        {isFromShortcut && Platform.OS === 'ios' && broadcast.status === 'AWAITING_BROADCAST_START' && (
-          <View
-            style={{
-              backgroundColor: colors.blue50,
-              borderRadius: RADIUS.md,
-              padding: SPACING.md,
-              marginBottom: SPACING.md,
-              borderWidth: 1,
-              borderColor: colors.blue200,
-            }}
-          >
-            <Text
-              variant="caption"
-              color={colors.primaryBlue}
-              align="center"
-              style={{ fontWeight: '600' }}
-            >
-              Launched from Shortcut — tap the button below to start broadcasting
-            </Text>
-          </View>
-        )}
-
-        {/* Native broadcast picker — invisible, hosts RPSystemBroadcastPickerView */}
-        {Platform.OS === 'ios' && <NativeBroadcastPicker />}
-
-        {/* Broadcast picker button — shown before recording starts */}
-        {(broadcast.status === 'INITIALIZING' ||
-          broadcast.status === 'AWAITING_BROADCAST_START') && (
-          <View style={{ marginBottom: SPACING.xl }}>
-            <BroadcastPickerButton
-              disabled={broadcast.status === 'INITIALIZING'}
-              onPress={() => {
-                if (Platform.OS === 'ios') {
-                  // iOS: Trigger the native RPSystemBroadcastPickerView
-                  triggerBroadcastPicker();
-                } else if (Platform.OS === 'android') {
-                  // Android: Request MediaProjection permission
-                  broadcast.requestScreenCapture();
-                }
-              }}
-            />
-          </View>
-        )}
-
-        {/* Broadcast overlay — adapts to current status */}
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
+      <ScanHeader
+        title={platformLabel}
+        subtitle={subtitle}
+        onBack={handleBack}
+      />
+      <View style={{ flex: 1, paddingHorizontal: layout.screenPaddingX }}>
         <View
-          accessibilityLiveRegion="polite"
-          accessibilityLabel={broadcast.isRecording ? `Recording: ${broadcast.frameCount} frames captured, elapsed time ${broadcast.elapsedTime} seconds` : undefined}
+          style={{
+            flex: 1,
+            alignItems: 'stretch',
+            justifyContent: 'center',
+          }}
         >
-          <BroadcastOverlay
-            status={broadcast.status}
-            platform={platformKey}
-            frameCount={broadcast.frameCount}
-            elapsedTime={broadcast.elapsedTime}
-            elapsedSeconds={broadcast.elapsedSeconds}
-            storageUsed={broadcast.storageUsed}
-            errorMessage={broadcast.session?.error_message}
-            canSave={broadcast.frameCount >= MIN_FRAMES_REQUIRED && broadcast.elapsedSeconds >= MIN_SCAN_DURATION_SECS}
-            onStop={handleStop}
-            onCancel={handleCancel}
-            onViewResults={handleViewResults}
-            onOpenPlatform={handleOpenPlatform}
-            onRetry={handleRetry}
-          />
+          {isError ? (
+            <ErrorBody
+              message={
+                broadcast.session?.error_message ||
+                'The broadcast session ended unexpectedly.'
+              }
+              onRetry={handleRetry}
+            />
+          ) : displayCard === 'setup' ? (
+            <SetupBody onStart={handleStartRecording} />
+          ) : displayCard === 'recording' ? (
+            <RecordingBody
+              elapsedTime={broadcast.elapsedTime}
+              frameCount={broadcast.frameCount}
+              pulseAnim={pulseAnim}
+              platformLabel={platformLabel}
+              onOpenPlatform={handleOpenPlatform}
+              onStop={handleStop}
+            />
+          ) : (
+            <CompleteBody
+              frameCount={broadcast.frameCount}
+              onAnalyze={handleAnalyze}
+            />
+          )}
         </View>
-
-        {/* How it works section — shown during awaiting state */}
-        {broadcast.status === 'AWAITING_BROADCAST_START' && (
-          <View
-            style={{
-              marginTop: SPACING['3xl'],
-              backgroundColor: colors.bgCard,
-              borderRadius: RADIUS.lg,
-              padding: SPACING.lg,
-              borderWidth: 1,
-              borderColor: colors.borderSoft,
-            }}
-          >
-            <Text
-              style={{
-                ...TYPOGRAPHY.overline,
-                color: colors.textMuted,
-                marginBottom: SPACING.md,
-              }}
-            >
-              How it works
-            </Text>
-            {[
-              Platform.OS !== 'web' && Platform.OS !== 'windows' && Platform.OS !== 'macos'
-                ? 'Tap "Start Screen Capture" and grant permission'
-                : 'Tap "Start Screen Recording" above',
-              `Open ${platformName} and scroll your feed normally`,
-              'AlgorithmLens captures frames in the background',
-              'Come back here to see your results',
-            ].map((step, index) => (
-              <View
-                key={index}
-                style={{
-                  flexDirection: 'row',
-                  gap: SPACING.sm,
-                  marginBottom: index < 3 ? SPACING.sm : 0,
-                }}
-              >
-                <Text
-                  variant="caption"
-                  color={platformBrandColor}
-                  style={{ fontWeight: '600', width: 20 }}
-                >
-                  {index + 1}.
-                </Text>
-                <Text
-                  variant="caption"
-                  color={colors.textSecondary}
-                  style={{ flex: 1 }}
-                >
-                  {step}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
-
-        {/* Bottom privacy note */}
-        <View style={{ marginTop: SPACING['3xl'], alignItems: 'center', gap: SPACING.sm }}>
-          <Shield size={16} color={colors.textTertiary} strokeWidth={1.5} />
-          <Text
-            variant="captionSmall"
-            color={colors.textTertiary}
-            align="center"
-          >
-            AlgorithmLens only captures visual frames from your feed.
-            No audio is recorded. Frames are processed on-device and
-            never leave your phone without your explicit action.
-          </Text>
-        </View>
-      </ScrollView>
+      </View>
+      {Platform.OS === 'ios' ? <NativeBroadcastPicker /> : null}
+      <CaptureFooter text={DISCLOSURE} />
     </SafeAreaView>
   );
 }
+
+/* Card bodies */
+
+function SetupBody({ onStart }: { onStart: () => void }) {
+  return (
+    <View style={{ gap: spacing.s6 }}>
+      <Text style={bodyCenterStyle}>Capture about a minute of scrolling</Text>
+      <PrimaryButton label="Start recording" onPress={onStart} />
+    </View>
+  );
+}
+
+function RecordingBody({
+  elapsedTime,
+  frameCount,
+  pulseAnim,
+  platformLabel,
+  onOpenPlatform,
+  onStop,
+}: {
+  elapsedTime: string;
+  frameCount: number;
+  pulseAnim: Animated.Value;
+  platformLabel: string;
+  onOpenPlatform: () => void;
+  onStop: () => void;
+}) {
+  const showCaution = frameCount < FRAME_THRESHOLD;
+  return (
+    <View style={{ gap: spacing.s6 }}>
+      <View style={{ alignItems: 'center', gap: spacing.s3 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.s2 }}>
+          <Animated.View
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: colors.destructive,
+              opacity: pulseAnim,
+            }}
+          />
+          <Text
+            style={{
+              fontSize: type.micro.fontSize,
+              lineHeight: type.micro.lineHeight,
+              fontWeight: type.micro.fontWeight,
+              letterSpacing: type.micro.letterSpacing,
+              textTransform: 'uppercase',
+              color: colors.textSecondary,
+            }}
+          >
+            Recording
+          </Text>
+        </View>
+        <Text
+          accessibilityLiveRegion="polite"
+          accessibilityLabel={`Recording, ${elapsedTime} elapsed, ${frameCount} frames`}
+          allowFontScaling={false}
+          style={{
+            fontSize: type.hero.fontSize,
+            lineHeight: type.hero.lineHeight,
+            fontWeight: type.hero.fontWeight,
+            letterSpacing: type.hero.letterSpacing,
+            color: colors.textPrimary,
+            fontVariant: ['tabular-nums'],
+          }}
+        >
+          {elapsedTime}
+        </Text>
+        <Text
+          style={{
+            fontSize: type.body.fontSize,
+            lineHeight: type.body.lineHeight,
+            fontWeight: type.body.fontWeight,
+            color: colors.textSecondary,
+            fontVariant: ['tabular-nums'],
+          }}
+        >
+          {frameCount} {frameCount === 1 ? 'frame' : 'frames'} captured
+        </Text>
+        {showCaution ? (
+          <CautionPill text="Keep scrolling. We need a few more frames" />
+        ) : null}
+      </View>
+      <View style={{ gap: spacing.s3 }}>
+        <PrimaryButton
+          label={`Open ${platformLabel}`}
+          onPress={onOpenPlatform}
+        />
+        <SecondaryTextButton label="Stop recording" onPress={onStop} />
+      </View>
+    </View>
+  );
+}
+
+function CompleteBody({
+  frameCount,
+  onAnalyze,
+}: {
+  frameCount: number;
+  onAnalyze: () => void;
+}) {
+  return (
+    <View style={{ gap: spacing.s6 }}>
+      <View style={{ alignItems: 'center', gap: spacing.s3 }}>
+        <View
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: 28,
+            backgroundColor: colors.brandAccent12,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Icon
+            name="check"
+            size={28}
+            color={colors.brandAccent}
+            strokeWidth={2.5}
+          />
+        </View>
+        <Text style={bodyCenterStyle}>Capture complete</Text>
+        <Text
+          style={{
+            fontSize: type.body.fontSize,
+            lineHeight: type.body.lineHeight,
+            fontWeight: type.body.fontWeight,
+            color: colors.textSecondary,
+            fontVariant: ['tabular-nums'],
+          }}
+        >
+          {frameCount} {frameCount === 1 ? 'frame' : 'frames'} captured
+        </Text>
+      </View>
+      <PrimaryButton label="Analyze frames" onPress={onAnalyze} />
+    </View>
+  );
+}
+
+function ErrorBody({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) {
+  return (
+    <View style={{ gap: spacing.s5, alignItems: 'center' }}>
+      <Icon
+        name="alert-triangle"
+        size={28}
+        color={colors.textSecondary}
+        strokeWidth={2}
+      />
+      <Text style={[bodyCenterStyle, { color: colors.textSecondary }]}>
+        {message}
+      </Text>
+      <View style={{ alignSelf: 'stretch' }}>
+        <PrimaryButton label="Try again" onPress={onRetry} />
+      </View>
+    </View>
+  );
+}
+
+/* Fallback screen for unsupported environments. */
+
+function FallbackScreen({
+  title,
+  body,
+  ctaLabel,
+  onCta,
+}: {
+  title: string;
+  body: string;
+  ctaLabel: string;
+  onCta: () => void;
+}) {
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
+      <ScanHeader title="" onBack={() => router.back()} />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingHorizontal: layout.screenPaddingX,
+          gap: spacing.s5,
+        }}
+      >
+        <Text
+          accessibilityRole="header"
+          style={{
+            fontSize: type.subheading.fontSize,
+            lineHeight: type.subheading.lineHeight,
+            fontWeight: type.subheading.fontWeight,
+            color: colors.textPrimary,
+            textAlign: 'center',
+          }}
+        >
+          {title}
+        </Text>
+        <Text style={[bodyCenterStyle, { color: colors.textSecondary }]}>
+          {body}
+        </Text>
+        <View style={{ alignSelf: 'stretch' }}>
+          <PrimaryButton label={ctaLabel} onPress={onCta} />
+        </View>
+      </View>
+      <CaptureFooter text={DISCLOSURE} />
+    </SafeAreaView>
+  );
+}
+
+/* Secondary text button. The primary action button is the imported
+   PrimaryButton primitive; this lighter affordance stays inline since
+   its shape (text-only, no fill) doesn't match the primary variant. */
+
+function SecondaryTextButton({
+  label,
+  onPress,
+}: {
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={({ pressed }) => ({
+        paddingVertical: spacing.s3,
+        alignItems: 'center',
+        opacity: pressed ? 0.6 : 1,
+      })}
+    >
+      <Text
+        style={{
+          fontSize: type.body.fontSize,
+          lineHeight: type.body.lineHeight,
+          fontWeight: type.bodyStrong.fontWeight,
+          color: colors.textSecondary,
+        }}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+const bodyCenterStyle = {
+  fontSize: type.body.fontSize,
+  lineHeight: type.body.lineHeight,
+  fontWeight: type.body.fontWeight,
+  color: colors.textPrimary,
+  textAlign: 'center' as const,
+};

@@ -17,6 +17,7 @@ import { Eye } from 'lucide-react-native';
 import { SPACING, RADIUS, ICON_SIZES } from '../../src/lib/theme';
 import { GL_TYPOGRAPHY } from '../../src/lib/gluestackTheme';
 import { Button, Text, Divider } from '../../src/components/glue';
+import { getUserFriendlyNetworkError } from '../../src/lib/networkUtils';
 
 // Email validation — checks for user@domain.tld pattern
 const isValidEmail = (email: string): boolean => {
@@ -28,9 +29,22 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [authMethod, setAuthMethod] = useState<'oauth' | 'email'>('oauth');
+  // Build #44: OAuth (Google / Apple) is hidden because the supporting
+  // packages (expo-web-browser, expo-apple-authentication) aren't yet
+  // installed and the auth/callback route doesn't exist. Tapping either
+  // button previously did nothing. Email-only login until those land in a
+  // future build. Initial authMethod set to 'email' so the email branch
+  // renders on first load.
+  // TODO build #45+: re-enable OAuth once expo-web-browser, expo-apple-authentication
+  // packages added and an auth/callback route exists.
+  const [authMethod, setAuthMethod] = useState<'oauth' | 'email'>('email');
   const [emailError, setEmailError] = useState('');
   const [authError, setAuthError] = useState('');
+  // Build #44: success messages (e.g. "Account created!", "Password reset
+  // email sent!") were previously stuffed into authError state and rendered
+  // in red — confusing because red signals failure. Track them separately
+  // so the UI can render them in the success/info color.
+  const [authInfo, setAuthInfo] = useState('');
   const emailInputRef = useRef<TextInput>(null);
   const { signInWithOAuth } = useAuth();
   const { colors, shadows } = useTheme();
@@ -83,6 +97,7 @@ export default function LoginScreen() {
 
     setEmailError('');
     setAuthError('');
+    setAuthInfo('');
 
     try {
       setLoading(true);
@@ -92,10 +107,14 @@ export default function LoginScreen() {
       });
 
       if (error) {
-        setAuthError(error.message);
+        // Build #44: route raw Supabase auth errors through the friendly
+        // network-error mapper. Adds a specific case for "Invalid login
+        // credentials" so the user sees a helpful prompt rather than
+        // technical jargon.
+        setAuthError(getUserFriendlyNetworkError(error));
       }
     } catch (error) {
-      setAuthError(error instanceof Error ? error.message : 'Sign in failed. Try again');
+      setAuthError(getUserFriendlyNetworkError(error));
     } finally {
       setLoading(false);
     }
@@ -122,6 +141,7 @@ export default function LoginScreen() {
 
     setEmailError('');
     setAuthError('');
+    setAuthInfo('');
 
     try {
       setLoading(true);
@@ -131,12 +151,16 @@ export default function LoginScreen() {
       });
 
       if (error) {
-        setAuthError(error.message);
+        // Build #44: friendly error mapping (covers "User already registered")
+        setAuthError(getUserFriendlyNetworkError(error));
       } else {
-        setAuthError('Account created! Signing you in...');
+        // Build #44: success message goes to authInfo (rendered in success
+        // color), not authError (red). Clear any prior error first.
+        setAuthError('');
+        setAuthInfo('Account created! Signing you in...');
       }
     } catch (error) {
-      setAuthError(error instanceof Error ? error.message : 'Sign up failed. Try again');
+      setAuthError(getUserFriendlyNetworkError(error));
     } finally {
       setLoading(false);
     }
@@ -201,7 +225,11 @@ export default function LoginScreen() {
           </Text>
         </View>
 
-        {authMethod === 'oauth' ? (
+        {/* Build #44: OAuth branch is unreachable (hard-gated to false). The
+            full UI is preserved below for re-enable later — see TODO in the
+            useState initializer at the top of this component. The email
+            branch is the only reachable path. */}
+        {false && authMethod === 'oauth' ? (
           <>
             {/* OAuth Buttons */}
             <Button
@@ -372,11 +400,15 @@ export default function LoginScreen() {
                 }
                 try {
                   setAuthError('');
+                  setAuthInfo('');
                   const { error: resetError } = await supabase.auth.resetPasswordForEmail(email);
                   if (resetError) {
-                    setAuthError(resetError.message);
+                    // Build #44: friendly error mapping
+                    setAuthError(getUserFriendlyNetworkError(resetError));
                   } else {
-                    setAuthError('Password reset email sent! Check your inbox.');
+                    // Build #44: success → authInfo, not authError.
+                    setAuthError('');
+                    setAuthInfo('Password reset email sent! Check your inbox.');
                   }
                 } catch {
                   setAuthError('Could not send reset email. Please try again.');
@@ -415,6 +447,24 @@ export default function LoginScreen() {
               </Text>
             ) : null}
 
+            {/* Build #44: Success / info messages render in success color
+                instead of red. authInfo is set by handleEmailSignUp on
+                account-creation success and the forgot-password handler. */}
+            {authInfo ? (
+              <Text
+                variant="small"
+                color={colors.successBright}
+                align="center"
+                style={{
+                  marginBottom: SPACING.md,
+                  marginLeft: SPACING.xs,
+                  fontWeight: '500',
+                }}
+              >
+                {authInfo}
+              </Text>
+            ) : null}
+
             {/* Sign In Button */}
             <Button
               title="Sign In"
@@ -439,29 +489,32 @@ export default function LoginScreen() {
               style={{ marginBottom: SPACING.xl }}
             />
 
-            {/* Back to OAuth Link */}
-            <TouchableOpacity
-              onPress={() => setAuthMethod('oauth')}
-              activeOpacity={0.6}
-              accessibilityLabel="Other sign-in options"
-              accessibilityRole="button"
-              style={{
-                paddingVertical: SPACING.md,
-                alignItems: 'center',
-                minHeight: 48,
-                justifyContent: 'center',
-              }}
-            >
-              <Text
+            {/* Build #44: "Other sign-in options" link hidden because OAuth
+                branch is gated off. Re-enable when OAuth ships. */}
+            {false && (
+              <TouchableOpacity
+                onPress={() => setAuthMethod('oauth')}
+                activeOpacity={0.6}
+                accessibilityLabel="Other sign-in options"
+                accessibilityRole="button"
                 style={{
-                  ...GL_TYPOGRAPHY.bodySmall,
-                  color: colors.primaryBlue,
-                  fontWeight: '600',
+                  paddingVertical: SPACING.md,
+                  alignItems: 'center',
+                  minHeight: 48,
+                  justifyContent: 'center',
                 }}
               >
-                Other sign-in options
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  style={{
+                    ...GL_TYPOGRAPHY.bodySmall,
+                    color: colors.primaryBlue,
+                    fontWeight: '600',
+                  }}
+                >
+                  Other sign-in options
+                </Text>
+              </TouchableOpacity>
+            )}
           </>
         )}
       </ScrollView>

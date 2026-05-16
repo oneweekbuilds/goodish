@@ -290,7 +290,9 @@ describe('computeDashboardData', () => {
         ...Array(5).fill(null).map(() => makePost({ is_ad: false })),
       ];
       const result = computeDashboardData(makeScan(posts));
-      expect(result.adsInsight.title).toContain('commercial content');
+      // Build #53 copy update: high-ad branch title now reads
+      // "X% of your feed was ads" (previously "...commercial content").
+      expect(result.adsInsight.title).toContain('of your feed was ads');
     });
 
     test('adPct 20-39 returns "1 in X" message', () => {

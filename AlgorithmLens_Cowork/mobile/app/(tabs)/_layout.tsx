@@ -186,13 +186,6 @@ export default function TabsLayout() {
           ...(Platform.OS === 'web' ? { tabBarButton: (props: TabBarButtonProps) => <WebCompatibleTabButton {...props} /> } : {}),
         }}
       />
-      {/* Scan tab hidden from bar — accessed via Home platform picker */}
-      <Tabs.Screen
-        name="scan"
-        options={{
-          href: null,
-        }}
-      />
     </Tabs>
   );
 }

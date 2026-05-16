@@ -69,10 +69,14 @@ jobs:
           FileUtils.mkdir_p(ext_dir)
           puts "#{PREFIX} Created directory: #{ext_dir}"
 
-          src_dir = "modules/broadcast/ios/BroadcastExtension"
+          # Source files live in two adjacent locations under modules/broadcast/ios/:
+          #   • SampleHandler / Info.plist / entitlements live in the BroadcastExtension/ subfolder
+          #   • FrameProcessor and SharedContainer live one directory up (shared with main module)
+          ext_src_dir    = "modules/broadcast/ios/BroadcastExtension"
+          shared_src_dir = "modules/broadcast/ios"
 
-          infoplist_src = "#{src_dir}/Info.plist"
-          entitlements_src = "#{src_dir}/BroadcastExtension.entitlements"
+          infoplist_src = "#{ext_src_dir}/Info.plist"
+          entitlements_src = "#{ext_src_dir}/BroadcastExtension.entitlements"
 
           if File.exist?(infoplist_src)
             FileUtils.cp(infoplist_src, "#{ext_dir}/Info.plist")
@@ -132,18 +136,54 @@ jobs:
           end
 
           # ── Add Swift source files ──
-          swift_files = ["SampleHandler.swift", "FrameProcessor.swift", "SharedContainer.swift"]
-          ext_group = project.main_group.new_group("BroadcastExtension", ext_dir)
-          puts "#{PREFIX} Created PBX group: BroadcastExtension"
+          # Per-file source map: SampleHandler ships in the BroadcastExtension/
+          # subfolder; FrameProcessor and SharedContainer live one directory up
+          # because they're shared with the main broadcast module.
+          swift_file_sources = {
+            "SampleHandler.swift"   => ext_src_dir,
+            "FrameProcessor.swift"  => shared_src_dir,
+            "SharedContainer.swift" => shared_src_dir,
+          }
 
-          swift_files.each do |filename|
-            src = "#{src_dir}/#{filename}"
+          # Copy each Swift file flat into ios/BroadcastExtension/ FIRST. We then
+          # add the file reference using ONLY the bare filename so that Xcode
+          # resolves it against the PBXGroup's path ("BroadcastExtension"), giving
+          # us ios/BroadcastExtension/<file>.swift on disk. If we instead passed the
+          # source-relative path (e.g. "modules/broadcast/ios/.../X.swift") to
+          # new_file, Xcode would re-root that under the group path and end up
+          # looking for ios/BroadcastExtension/modules/broadcast/ios/.../X.swift —
+          # the path-doubling bug we're avoiding. The standalone
+          # mobile/scripts/add-broadcast-extension.rb already does this; the
+          # workflow now mirrors it so the diagnostic is a faithful proxy of EAS.
+          swift_file_sources.each do |filename, source_dir|
+            src = "#{source_dir}/#{filename}"
+            dst = "#{ext_dir}/#{filename}"
             if File.exist?(src)
-              ref = ext_group.new_file(src)
-              ext_target.source_build_phase.add_file_reference(ref)
-              puts "#{PREFIX} Added source file: #{filename}"
+              FileUtils.cp(src, dst)
+              puts "#{PREFIX} Copied #{filename} -> #{dst} (from #{source_dir})"
             else
-              puts "#{PREFIX} WARNING: #{src} not found — skipping"
+              puts "#{PREFIX} WARNING: #{src} not found"
+            end
+          end
+
+          # Group path is resolved relative to the project's source root
+          # (mobile/ios/), NOT the working directory. ext_dir = "ios/BroadcastExtension"
+          # is correct for FileUtils.cp (run from mobile/) but would double-root
+          # here — Xcode would look for mobile/ios/ios/BroadcastExtension/<file>.swift.
+          # Use the bare folder name to match the standalone add-broadcast-extension.rb.
+          ext_group = project.main_group.new_group("BroadcastExtension", "BroadcastExtension")
+          puts "#{PREFIX} Created PBX group: BroadcastExtension (path: BroadcastExtension)"
+
+          swift_file_sources.each_key do |filename|
+            dst = "#{ext_dir}/#{filename}"
+            if File.exist?(dst)
+              # new_file with the bare filename — Xcode resolves it relative
+              # to the group's path so the on-disk path is ios/BroadcastExtension/<filename>.
+              ref = ext_group.new_file(filename)
+              ext_target.source_build_phase.add_file_reference(ref)
+              puts "#{PREFIX} Added source file: #{filename} (resolved via group path)"
+            else
+              puts "#{PREFIX} WARNING: #{dst} not found — skipping"
             end
           end
 
@@ -171,6 +211,11 @@ jobs:
           end
 
           # ── Add as dependency of main app target ──
+          # Workaround: expo prebuild emits PBXTargetDependency entries for the Pods
+          # project whose target= is nil until `pod install` runs and resolves them.
+          # xcodeproj's add_dependency walks main_target.dependencies looking for an
+          # existing match by UUID and crashes on the nil. Drop unresolved entries first.
+          main_target.dependencies.reject! { |dep| dep.target.nil? }
           main_target.add_dependency(ext_target)
           puts "#{PREFIX} Added BroadcastExtension as dependency of #{main_target.name}"
 
@@ -291,6 +336,11 @@ jobs:
           echo "========================================="
           echo "Attempting to build BroadcastExtension target..."
           echo "========================================="
+          # `pipefail` propagates xcodebuild's exit code through the `tee | tail`
+          # pipeline so a real compile failure surfaces as a non-zero step exit.
+          # `tee` keeps the full log on disk (uploaded as an artifact below) so
+          # the grep can scan all of it, not just the last 100 lines.
+          set -o pipefail
           xcodebuild build \
             -project AlgorithmLens.xcodeproj \
             -target BroadcastExtension \
@@ -299,8 +349,20 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            2>&1 | tail -100
-        continue-on-error: true
+            2>&1 | tee /tmp/xcodebuild-broadcast.log | tail -100
+          # Defence in depth: even if xcodebuild exits 0, require a literal
+          # "BUILD SUCCEEDED" in the log before we trust the run.
+          if ! grep -q "BUILD SUCCEEDED" /tmp/xcodebuild-broadcast.log; then
+            echo "::error::xcodebuild did not emit BUILD SUCCEEDED — see uploaded log artifact for details"
+            exit 1
+          fi
+
+      - name: Upload xcodebuild log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-broadcast-log
+          path: /tmp/xcodebuild-broadcast.log
 
       - name: Upload pbxproj for inspection
         uses: actions/upload-artifact@v4

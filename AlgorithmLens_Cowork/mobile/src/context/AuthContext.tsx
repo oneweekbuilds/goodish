@@ -15,12 +15,45 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { useEntitlements } from '../hooks/useEntitlements';
 import { setSentryUser, addBreadcrumb } from '../lib/sentry';
+import { clearLocalUserState } from '../lib/localState';
 import type { Session, User } from '@supabase/supabase-js';
 import type { EntitlementsResponse } from '../types';
 
 // H-07 FIX: AsyncStorage key for onboarding completion — belt-and-suspenders backup
 // in case Supabase profile write fails silently.
 const ONBOARDING_COMPLETED_KEY = '@algorithmlens_onboarding_completed';
+
+// Build #34 diagnostic export. Read by DebugCheckpointTrail in app/_layout.tsx
+// to render auth-lifecycle counters in the on-screen footer. Mutable singleton.
+// Counters are monotonically increasing so the trail can show "auth started but
+// never finished" patterns even if the resolution happens after a re-render.
+export const __authDiag: {
+  gsResolved: number;     // supabase.auth.getSession() resolved
+  gsRejected: number;     // supabase.auth.getSession() rejected
+  gsTimedOut: number;     // 5s race won the getSession race
+  fpStarted: number;      // fetchOrCreateProfile invocation started
+  fpResolved: number;     // fetchOrCreateProfile completed cleanly
+  fpTimedOut: number;     // fetchOrCreateProfile race-timeout hit
+  fpFailed: number;       // fetchOrCreateProfile threw
+  authChanges: number;    // onAuthStateChange events
+  hardFailsafe: number;   // 7s hard-failsafe forced loading=false
+  lastError: string;      // last captured error text (truncated to 64 chars)
+} = {
+  gsResolved: 0,
+  gsRejected: 0,
+  gsTimedOut: 0,
+  fpStarted: 0,
+  fpResolved: 0,
+  fpTimedOut: 0,
+  fpFailed: 0,
+  authChanges: 0,
+  hardFailsafe: 0,
+  lastError: '',
+};
+
+const recordAuthError = (where: string, err: unknown) => {
+  __authDiag.lastError = `${where}: ${String(err).slice(0, 48)}`;
+};
 
 interface UserProfile {
   has_completed_onboarding: boolean;
@@ -82,8 +115,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const entitlements = useEntitlements(hasSession);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Guard against `supabase.auth.getSession()` rejecting OR hanging during
+    // app launch. Both modes have hit production iOS builds (stale Keychain
+    // session forcing a refresh on a slow network, sandboxed Keychain at cold
+    // launch). With no protection, `setLoading(false)` is never reached and
+    // the splash stays up forever. Race against a 5s timeout AND catch
+    // rejections; whichever path wins, fail open to "no session" so the
+    // splash dismisses and the user can hit /(auth)/login.
+    //
+    // `settled` prevents double-settling if the race timer fires first and
+    // the real getSession resolves later. `cancelled` prevents setState
+    // after unmount.
+    const SESSION_TIMEOUT_MS = 5000;
+    const HARD_FAILSAFE_MS = 7000;
+    let settled = false;
+    let cancelled = false;
+
+    const handleSession = (session: Session | null) => {
+      if (cancelled || settled) return;
+      settled = true;
       setSession(session);
       if (session?.user) {
         setSentryUser(session.user.id, 'free');
@@ -92,12 +142,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setLoading(false);
       }
-    });
+    };
+
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        __authDiag.gsResolved += 1;
+        handleSession(session);
+      })
+      .catch((err) => {
+        __authDiag.gsRejected += 1;
+        recordAuthError('getSession', err);
+        if (cancelled || settled) return;
+        settled = true;
+        addBreadcrumb('auth', 'getSession failed — defaulting to logged-out', { error: String(err) });
+        setLoading(false);
+      });
+
+    setTimeout(() => {
+      if (cancelled || settled) return;
+      settled = true;
+      __authDiag.gsTimedOut += 1;
+      addBreadcrumb('auth', 'getSession timed out after 5s — defaulting to logged-out');
+      setLoading(false);
+    }, SESSION_TIMEOUT_MS);
+
+    // Build #34 hard-failsafe: belt-and-suspenders. If, despite all the inner
+    // races (getSession 5s timeout, fetchOrCreateProfile 5s timeout), `loading`
+    // is somehow still true at 7s, force it false. This guarantees the splash
+    // dismisses to the login screen even if a future regression introduces a
+    // new hang path. The functional setLoading lets us read the latest value
+    // without putting `loading` in this effect's dep list (which would cause
+    // the effect to re-run and re-bind the auth listener on every change).
+    setTimeout(() => {
+      if (cancelled) return;
+      setLoading((current) => {
+        if (current) {
+          __authDiag.hardFailsafe += 1;
+          addBreadcrumb('auth', 'hard failsafe at 7s forced loading=false');
+          return false;
+        }
+        return current;
+      });
+    }, HARD_FAILSAFE_MS);
 
     // Listen for auth state changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      __authDiag.authChanges += 1;
       setSession(session);
       if (session?.user) {
         setSentryUser(session.user.id, 'free');
@@ -111,15 +203,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, []);
 
   /**
    * Fetch user profile from Supabase, creating one if it doesn't exist.
    * H-07 FIX: Also checks AsyncStorage for onboarding completion flag
    * as a belt-and-suspenders backup in case Supabase write failed.
+   *
+   * Build #34: races the entire body against a 5s timeout. If Supabase hangs
+   * (sandboxed Keychain at cold launch, slow network, RLS deadlock), the
+   * timeout wins, we fall back to defaults + local AsyncStorage flag, and
+   * setLoading(false) still runs. Without this, a hung profile fetch left
+   * `loading` true forever and the splash never dismissed.
    */
   const fetchOrCreateProfile = async (userId: string) => {
+    __authDiag.fpStarted += 1;
+    const PROFILE_TIMEOUT_MS = 5000;
+    let profileSettled = false;
+
     // H-07 FIX: Check AsyncStorage for local onboarding completion flag
     let localOnboardingCompleted = false;
     try {
@@ -129,55 +234,86 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Non-blocking — fallback to Supabase only
     }
 
-    try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('has_completed_onboarding, ai_analysis_consent, is_user_plus')
-        .eq('user_id', userId)
-        .single();
-
-      if (data && !error) {
-        // H-07 FIX: If Supabase says not completed but local says completed,
-        // trust local (the Supabase write may have failed silently)
-        const onboardingCompleted = data.has_completed_onboarding || localOnboardingCompleted;
-        setUserProfile({
-          has_completed_onboarding: onboardingCompleted,
-          ai_analysis_consent: data.ai_analysis_consent ?? true,
-          is_user_plus: data.is_user_plus ?? false,
-        });
-      } else if (error?.code === 'PGRST116') {
-        // No profile row exists — create one
-        // H-07 FIX: If local says onboarding completed, set that in the new profile too
-        const { data: newProfile, error: insertError } = await supabase
+    const work = (async () => {
+      try {
+        const { data, error } = await supabase
           .from('user_profiles')
-          .insert({
-            user_id: userId,
-            has_completed_onboarding: localOnboardingCompleted,
-            ai_analysis_consent: true,
-            is_user_plus: false,
-          })
           .select('has_completed_onboarding, ai_analysis_consent, is_user_plus')
+          .eq('user_id', userId)
           .single();
 
-        if (newProfile && !insertError) {
+        if (profileSettled) return;
+
+        if (data && !error) {
+          // H-07 FIX: If Supabase says not completed but local says completed,
+          // trust local (the Supabase write may have failed silently)
+          const onboardingCompleted = data.has_completed_onboarding || localOnboardingCompleted;
           setUserProfile({
-            has_completed_onboarding: newProfile.has_completed_onboarding || localOnboardingCompleted,
-            ai_analysis_consent: newProfile.ai_analysis_consent,
-            is_user_plus: newProfile.is_user_plus,
+            has_completed_onboarding: onboardingCompleted,
+            ai_analysis_consent: data.ai_analysis_consent ?? true,
+            is_user_plus: data.is_user_plus ?? false,
           });
+        } else if (error?.code === 'PGRST116') {
+          // No profile row exists — create one
+          // H-07 FIX: If local says onboarding completed, set that in the new profile too
+          const { data: newProfile, error: insertError } = await supabase
+            .from('user_profiles')
+            .insert({
+              user_id: userId,
+              has_completed_onboarding: localOnboardingCompleted,
+              ai_analysis_consent: true,
+              is_user_plus: false,
+            })
+            .select('has_completed_onboarding, ai_analysis_consent, is_user_plus')
+            .single();
+
+          if (profileSettled) return;
+
+          if (newProfile && !insertError) {
+            setUserProfile({
+              has_completed_onboarding: newProfile.has_completed_onboarding || localOnboardingCompleted,
+              ai_analysis_consent: newProfile.ai_analysis_consent,
+              is_user_plus: newProfile.is_user_plus,
+            });
+          } else {
+            // Fallback if insert fails (e.g. table doesn't exist yet)
+            setUserProfile({ ...defaultProfile, has_completed_onboarding: localOnboardingCompleted });
+          }
         } else {
-          // Fallback if insert fails (e.g. table doesn't exist yet)
+          // Some other error — use defaults but respect local onboarding flag
           setUserProfile({ ...defaultProfile, has_completed_onboarding: localOnboardingCompleted });
         }
-      } else {
-        // Some other error — use defaults but respect local onboarding flag
+
+        __authDiag.fpResolved += 1;
+      } catch (err) {
+        if (profileSettled) return;
+        __authDiag.fpFailed += 1;
+        recordAuthError('fetchProfile', err);
         setUserProfile({ ...defaultProfile, has_completed_onboarding: localOnboardingCompleted });
+      } finally {
+        if (!profileSettled) {
+          profileSettled = true;
+          setLoading(false);
+        }
       }
-    } catch {
-      setUserProfile({ ...defaultProfile, has_completed_onboarding: localOnboardingCompleted });
-    } finally {
-      setLoading(false);
-    }
+    })();
+
+    const timeout = new Promise<void>((resolve) =>
+      setTimeout(() => {
+        if (profileSettled) {
+          resolve();
+          return;
+        }
+        profileSettled = true;
+        __authDiag.fpTimedOut += 1;
+        addBreadcrumb('auth', 'fetchOrCreateProfile timed out after 5s — defaulting to local flag');
+        setUserProfile({ ...defaultProfile, has_completed_onboarding: localOnboardingCompleted });
+        setLoading(false);
+        resolve();
+      }, PROFILE_TIMEOUT_MS),
+    );
+
+    await Promise.race([work, timeout]);
   };
 
   /**
@@ -251,6 +387,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    // Build #44: clear per-user AsyncStorage state BEFORE Supabase sign-out
+    // so the next user to sign in on this device starts fresh (no inherited
+    // streak, no skipped onboarding, no leftover scan backups). Wrapped in
+    // try/catch internally; never blocks sign-out.
+    await clearLocalUserState();
     await supabase.auth.signOut();
     setSession(null);
     setUserProfile(null);

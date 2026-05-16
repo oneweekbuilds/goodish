@@ -54,7 +54,7 @@ function getMilestoneMessage(postCount: number, elapsedSecs: number, colors: Ret
   }
 
   if (postCount >= 1) {
-    return { label: 'Keep scrolling — building your sample', color: colors.primaryBlue };
+    return { label: 'Keep scrolling, building your sample', color: colors.primaryBlue };
   }
 
   return { label: 'Start scrolling to capture posts', color: colors.primaryBlue };
@@ -68,8 +68,8 @@ function getButtonLabel(postCount: number, elapsedSecs: number): string {
   const timeMet = elapsedSecs >= MIN_SCAN_DURATION_SECS;
 
   if (postsMet && timeMet) {
-    if (postCount >= 30) return 'Save scan — great sample!';
-    return 'Save scan — good to go!';
+    if (postCount >= 30) return 'Save scan, great sample!';
+    return 'Save scan, good to go!';
   }
 
   // Show which requirement(s) are missing
@@ -79,7 +79,7 @@ function getButtonLabel(postCount: number, elapsedSecs: number): string {
     const secsLeft = MIN_SCAN_DURATION_SECS - elapsedSecs;
     needs.push(`${secsLeft}s more`);
   }
-  return `Keep scrolling — ${needs.join(' & ')} needed`;
+  return `Keep scrolling, ${needs.join(' & ')} needed`;
 }
 
 export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
@@ -300,7 +300,7 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
         <TouchableOpacity
           onPress={() => setMinimized(true)}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          accessibilityLabel="Hide panel — scanning continues in the background"
+          accessibilityLabel="Hide panel, scanning continues in the background"
           accessibilityRole="button"
         >
           <Text
@@ -320,7 +320,7 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
           style={{ marginBottom: SPACING.xs }}
           accessibilityLiveRegion="polite"
         >
-          Scroll through your feed — posts are captured automatically as they appear.
+          Scroll through your feed, posts are captured automatically as they appear.
         </Text>
       )}
 
@@ -506,7 +506,7 @@ export const ScanOverlay: React.FC<ScanOverlayProps> = React.memo(({
           accessibilityLabel={
             canSave
               ? `Save scan with ${postCount} posts`
-              : `Cannot save yet — need ${!postsMet ? `${MIN_POSTS_REQUIRED - postCount} more posts` : ''}${!postsMet && !timeMet ? ' and ' : ''}${!timeMet ? `${MIN_SCAN_DURATION_SECS - elapsedSecs} more seconds` : ''}`
+              : `Cannot save yet, need ${!postsMet ? `${MIN_POSTS_REQUIRED - postCount} more posts` : ''}${!postsMet && !timeMet ? ' and ' : ''}${!timeMet ? `${MIN_SCAN_DURATION_SECS - elapsedSecs} more seconds` : ''}`
           }
         />
       </Animated.View>

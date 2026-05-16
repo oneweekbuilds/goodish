@@ -128,7 +128,8 @@ RESPOND ONLY WITH VALID JSON. No markdown, no code fences, no explanation.`;
 // Service
 // ============================================
 
-const GEMINI_MODEL = 'gemini-2.0-flash';
+// Build #43: see geminiFlashService.ts — gemini-2.0-flash deprecated, swap to 2.5-flash.
+const GEMINI_MODEL = 'gemini-2.5-flash';
 const REQUEST_TIMEOUT_MS = 25000; // 25 seconds — must complete before scan save
 
 /**

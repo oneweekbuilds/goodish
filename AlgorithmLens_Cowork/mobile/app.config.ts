@@ -17,7 +17,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'AlgorithmLens',
   slug: 'algorithmlens',
-  version: '1.0.0',
+  version: '1.1.1',
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'automatic',
@@ -34,7 +34,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       usesNonExemptEncryption: false,
     },
     infoPlist: {
-      UIBackgroundModes: ['processing', 'fetch'],
       NSUserActivityTypes: ['com.algorithmlens.broadcast'],
       NSCameraUsageDescription:
         'AlgorithmLens uses screen broadcasting to analyze your social media feed. Camera access is required by the system for ReplayKit broadcast, though we never capture from the camera.',
@@ -43,6 +42,20 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       NSSiriUsageDescription:
         'AlgorithmLens uses Siri to let you quickly start feed scans with voice commands or Shortcuts automations.',
       ITSAppUsesNonExemptEncryption: false,
+      // Build #41: declare schemes used by Linking.canOpenURL in
+      // broadcastSessionManager.openPlatformApp. iOS 9+ silently returns
+      // false for any scheme not in this allowlist, which made every
+      // "Back to <Platform>" button report "<Platform> not installed"
+      // even when the app WAS installed. Match the schemes declared in
+      // PLATFORM_BROADCAST_CONFIGS in src/types/broadcast.ts.
+      LSApplicationQueriesSchemes: [
+        'instagram',
+        'twitter',
+        'youtube',
+        'snssdk1233', // TikTok
+        'fb',          // Facebook
+        'reddit',
+      ],
     },
     entitlements: {
       'com.apple.security.application-groups': [

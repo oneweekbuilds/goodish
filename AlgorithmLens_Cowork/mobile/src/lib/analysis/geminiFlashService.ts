@@ -30,7 +30,12 @@ import { captureMessage } from '../sentry';
 // Configuration
 // ============================================
 
-const GEMINI_MODEL = 'gemini-2.0-flash';
+// Build #43: gemini-2.0-flash was deprecated by Google — generateContent
+// returned 429 with quota limit:0 on the free tier (build #42 surfaced this
+// via the new diagnostic instrumentation). Pre-flight curl on the new key
+// confirmed gemini-2.5-flash returns 200 OK. Other expo-* modules in the
+// project don't pin a Gemini model, so this is the only place to update.
+const GEMINI_MODEL = 'gemini-2.5-flash';
 const MAX_RETRIES = 3;
 const BASE_RETRY_DELAY_MS = 1000;
 const RATE_LIMIT_DELAY_MS = 200; // Minimum delay between API calls

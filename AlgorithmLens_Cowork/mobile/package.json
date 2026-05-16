@@ -1,6 +1,6 @@
 {
   "name": "mobile-app",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
@@ -58,6 +58,11 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.2.0",
     "typescript": "~5.9.2"
+  },
+  "expo": {
+    "autolinking": {
+      "nativeModulesDir": "./modules"
+    }
   },
   "private": true
 }

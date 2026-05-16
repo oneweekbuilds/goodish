@@ -11,6 +11,7 @@ import {
 import { WebView, WebViewNavigation } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScanOverlay } from './ScanOverlay';
+import { buildDedupKey, getErrorMessage, type ScanError } from './scannerHelpers';
 import { getPlatformUrl, getPlatformScript } from '../../lib/platformScripts';
 import { captureError, addBreadcrumb } from '../../lib/sentry';
 import { markPlatformLoggedIn, isLoggedInUrl } from '../../lib/cookieManager';
@@ -18,6 +19,9 @@ import { COLORS, RADIUS, SPACING, SHADOWS } from '../../lib/theme';
 import { GL_TYPOGRAPHY } from '../../lib/gluestackTheme';
 import { getPlatformDisplayName } from '../../lib/utils';
 import { Text } from '../glue';
+
+/** Fallback delay (ms) for transitioning loading → scanning if SCANNER_READY never fires. */
+const READY_FALLBACK_MS = 5000;
 
 export interface FeedItemCapture {
   platform: string;
@@ -44,14 +48,6 @@ export interface ScanResult {
 }
 
 type ScanStatus = 'idle' | 'loading' | 'scanning' | 'done' | 'error';
-
-/** Error info reported back from the injected script or timeout logic. */
-interface ScanError {
-  reason: string;
-  detail: string;
-  errorMessage?: string;
-  articlesFound?: number;
-}
 
 interface WebViewScannerProps {
   platform: string;
@@ -153,6 +149,13 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
   const baseUrl = getPlatformUrl(platform);
   // O(1) dedup using a Set of keys instead of O(n) array scan
   const dedupKeysRef = useRef<Set<string>>(new Set());
+  // Track the loading→scanning fallback timer so retries/unmount can clear it
+  const readyFallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Stable ref for the status-change callback so we don't re-fire effects on parent re-render
+  const onStatusChangeRef = useRef(onScanStatusChange);
+  useEffect(() => {
+    onStatusChangeRef.current = onScanStatusChange;
+  }, [onScanStatusChange]);
 
   useImperativeHandle(ref, () => ({
     goBack: () => {
@@ -161,8 +164,18 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
   }));
 
   useEffect(() => {
-    onScanStatusChange?.(status);
+    onStatusChangeRef.current?.(status);
   }, [status]);
+
+  // Clean up the loading-fallback timer when the component unmounts
+  useEffect(() => {
+    return () => {
+      if (readyFallbackTimerRef.current) {
+        clearTimeout(readyFallbackTimerRef.current);
+        readyFallbackTimerRef.current = null;
+      }
+    };
+  }, []);
 
   const injectionScript = getPlatformScript(platform);
 
@@ -175,7 +188,7 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
         } else if (message.type === 'FEED_ITEM' && message.data) {
           const data = message.data as FeedItemCapture;
           // O(1) dedup check using Set
-          const dedupKey = `${data.creator_handle || ''}::${(data.post_text || '').substring(0, 80)}`;
+          const dedupKey = buildDedupKey(data.creator_handle, data.post_text);
           if (dedupKeysRef.current.has(dedupKey)) return;
           dedupKeysRef.current.add(dedupKey);
 
@@ -262,7 +275,7 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
     [platform]
   );
 
-  const handleDone = () => {
+  const handleDone = useCallback(() => {
     setStatus('done');
     const creatorCounts: Record<string, number> = {};
     capturedItems.forEach((item) => {
@@ -283,10 +296,20 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
     };
 
     onScanComplete(result);
-  };
+  }, [capturedItems, platform, onScanComplete]);
 
   /** Re-inject the scanning script. Clears error state, resets captured items, increments retry count. */
   const handleRetry = useCallback(() => {
+    // Reset dedup Set — without this, posts from the previous attempt block
+    // every recapture and the retry silently produces 0 new items.
+    dedupKeysRef.current.clear();
+
+    // Cancel any pending loading→scanning fallback timer from the previous attempt
+    if (readyFallbackTimerRef.current) {
+      clearTimeout(readyFallbackTimerRef.current);
+      readyFallbackTimerRef.current = null;
+    }
+
     setRetryCount((prev) => prev + 1);
     setScanError(null);
     setCapturedItems([]);
@@ -493,12 +516,17 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
         allowsFullscreenVideo={false}
         accessible={true}
         onLoadEnd={() => {
-          // Give the injected JS 5 seconds to send SCANNER_READY.
+          // Give the injected JS up to READY_FALLBACK_MS to send SCANNER_READY.
           // If it doesn't fire (e.g. script blocked by CSP), fall back to 'scanning'
           // so the user isn't stuck on a loading screen indefinitely.
-          setTimeout(() => {
+          // Track the timer so retries / unmount can cancel it instead of stacking.
+          if (readyFallbackTimerRef.current) {
+            clearTimeout(readyFallbackTimerRef.current);
+          }
+          readyFallbackTimerRef.current = setTimeout(() => {
+            readyFallbackTimerRef.current = null;
             setStatus((prev) => (prev === 'loading' ? 'scanning' : prev));
-          }, 5000);
+          }, READY_FALLBACK_MS);
         }}
         style={{ flex: 1, backgroundColor: COLORS.white } as ViewStyle}
         containerStyle={{ backgroundColor: COLORS.white }}
@@ -508,7 +536,7 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
       {isLoading && (
         <View
           accessibilityLiveRegion="polite"
-          accessibilityLabel={`Loading ${platform}`}
+          accessibilityLabel={`Loading ${getPlatformDisplayName(platform)}`}
           style={{
             position: 'absolute',
             top: 0,
@@ -559,29 +587,3 @@ export const WebViewScanner = React.memo(forwardRef<WebViewScannerHandle, WebVie
   );
 }));
 
-/**
- * Map error reasons from the injected script to user-friendly messages.
- */
-function getErrorMessage(error: ScanError, isMaxRetries: boolean): string {
-  if (isMaxRetries) {
-    return "We couldn't capture posts from this page after multiple attempts. This can happen when a platform changes its layout or blocks automated access.";
-  }
-
-  switch (error.reason) {
-    case 'PAGE_NOT_LOADED':
-      return "The page hasn't fully loaded yet. Make sure you have a stable internet connection, then try again.";
-    case 'BOT_DETECTION':
-      return 'The platform may have detected automated access. Try scrolling the page manually for a few seconds, then tap Try Again.';
-    case 'DOM_STRUCTURE_CHANGED':
-      return "We couldn't read the feed layout. This can happen when a platform updates its design. Try again, or scan a different platform.";
-    case 'CAPTURE_FAILED':
-      return "We found posts on the page but couldn't capture them. Try scrolling the feed a bit first, then tap Try Again.";
-    case 'BLOCKED_BY_PLATFORM':
-      return 'The platform blocked the scan. Try scrolling the page manually, then tap Try Again.';
-    case 'INJECTION_ERROR':
-      return "Something went wrong while scanning. This can happen if the platform's layout has changed.";
-    case 'TIMEOUT_NO_POSTS':
-    default:
-      return "We couldn't capture posts from this page. This can happen if the page hasn't fully loaded or if the platform's layout has changed.";
-  }
-}

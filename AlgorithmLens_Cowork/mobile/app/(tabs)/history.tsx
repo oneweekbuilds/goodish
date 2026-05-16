@@ -8,18 +8,18 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDashboard, ScanDetail } from '../../src/hooks/useDashboard';
 import { router } from 'expo-router';
-import { Zap, Users, Clock, ScanSearch, GitCompareArrows, Check, Radio, Filter, Calendar } from 'lucide-react-native';
+import { Zap, Users, Clock, ScanSearch, Radio } from 'lucide-react-native';
 import { Skeleton, Text } from '../../src/components/glue';
 import { ContentFadeIn } from '../../src/components/glue';
 import { useTheme } from '../../src/context/ThemeContext';
-import { GL_TYPOGRAPHY } from '../../src/lib/gluestackTheme';
 import { SPACING, RADIUS, PLATFORMS, MIN_TOUCH_TARGET } from '../../src/lib/theme';
 import { getQualityLevel } from '../../src/config/thresholds';
-import ComparisonView from '../../src/components/dashboard/ComparisonView';
 import { withAlpha } from '../../src/lib/utils';
+import { formatDuration } from '../../src/lib/formatDuration';
+import { ComparePill } from '../../src/design-system';
 
 // H-08 FIX: Consistent platform icon labels across all scan history entries.
-// Every platform always uses the same abbreviation — no more mismatched icons.
+// Every platform always uses the same abbreviation; no more mismatched icons.
 const PLATFORM_LABELS: Record<string, string> = {
   instagram: 'IG',
   twitter: 'X',
@@ -37,11 +37,6 @@ export default function HistoryScreen() {
   const { colors, shadows } = useTheme();
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
-
-  // ── Comparison mode state ──
-  const [compareMode, setCompareMode] = useState(false);
-  const [selectedScans, setSelectedScans] = useState<string[]>([]);
-  const [showComparison, setShowComparison] = useState(false);
   const [filterPlatform, setFilterPlatform] = useState<string | null>(null);
 
   const onRefresh = useCallback(async () => {
@@ -50,8 +45,8 @@ export default function HistoryScreen() {
     setRefreshing(false);
   }, [refresh]);
 
-  // L-5: Date formatting duplication — formatDate also appears in groupScansByDay
-  // Future refactor: extract date formatting helpers to a utility module
+  // L-5: Date formatting duplication. formatDate also appears in groupScansByDay.
+  // Future refactor: extract date formatting helpers to a utility module.
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);
     return d.toLocaleDateString(undefined, {
@@ -72,13 +67,6 @@ export default function HistoryScreen() {
     const diffDay = Math.floor(diffHr / 24);
     if (diffDay < 7) return `${diffDay}d ago`;
     return formatDate(dateStr);
-  };
-
-  const formatDuration = (seconds: number): string => {
-    if (seconds < 60) return `${Math.round(seconds)}s`;
-    const minutes = Math.floor(seconds / 60);
-    const secs = Math.round(seconds % 60);
-    return secs > 0 ? `${minutes}m ${secs}s` : `${minutes}m`;
   };
 
   // Group scans by day for section headers
@@ -116,31 +104,6 @@ export default function HistoryScreen() {
     return groupOrder.map((title) => ({ title, data: groups[title] ?? [] }));
   }, []);
 
-  const toggleScanSelection = useCallback((scanId: string) => {
-    setSelectedScans(prev => {
-      if (prev.includes(scanId)) {
-        return prev.filter(id => id !== scanId);
-      }
-      if (prev.length >= 2) {
-        // Replace the oldest selection
-        return [prev[1] ?? scanId, scanId];
-      }
-      return [...prev, scanId];
-    });
-  }, []);
-
-  const handleComparePress = useCallback(() => {
-    if (selectedScans.length === 2) {
-      setShowComparison(true);
-    }
-  }, [selectedScans]);
-
-  const exitCompareMode = useCallback(() => {
-    setCompareMode(false);
-    setSelectedScans([]);
-    setShowComparison(false);
-  }, []);
-
   // Apply platform filter
   const filteredScans = useMemo(() => {
     if (!filterPlatform) return scans;
@@ -156,26 +119,17 @@ export default function HistoryScreen() {
     return Array.from(platforms);
   }, [scans]);
 
-  // ── If showing full comparison view ──
-  if (showComparison && selectedScans.length === 2) {
-    const scanA = scans.find(s => s.id === selectedScans[0]);
-    const scanB = scans.find(s => s.id === selectedScans[1]);
-    if (scanA && scanB) {
-      // Order by date: older first
-      const [olderScan, newerScan] = new Date(scanA.created_at) < new Date(scanB.created_at)
-        ? [scanA, scanB]
-        : [scanB, scanA];
-      return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
-          <ComparisonView
-            olderScan={olderScan}
-            newerScan={newerScan}
-            onClose={exitCompareMode}
-          />
-        </SafeAreaView>
-      );
-    }
-  }
+  // Anchor for the Compare pill: most recent scan overall. Disabled when
+  // fewer than 2 scans exist (nothing to compare against).
+  const canCompare = scans.length >= 2;
+  const handleComparePress = useCallback(() => {
+    const anchor = scans[0];
+    if (!anchor) return;
+    router.push({
+      pathname: '/compare/[anchorScanId]',
+      params: { anchorScanId: anchor.id },
+    });
+  }, [scans]);
 
   const renderScanItem = ({ item }: { item: ScanDetail }) => {
     const platformKey = (item.platform || '').toLowerCase();
@@ -191,22 +145,28 @@ export default function HistoryScreen() {
     const suggestedCount = rawPosts.filter((p: Record<string, unknown>) => p.is_suggested).length;
     const suggestedPct = postCount > 0 ? Math.round((suggestedCount / postCount) * 100) : 0;
 
-    // Broadcast mode detection
-    const isBroadcast = item.source_type === 'MOBILE_BROADCAST';
-    const durationSecs = item.duration_seconds || 0;
+    // Broadcast mode detection.
+    // Build #44: source_type and duration_seconds were previously top-level
+    // columns on the 'scans' table, but the live Supabase schema doesn't
+    // have those columns. Both signals are now read from raw_data.
+    const rawData = (item.raw_data as Record<string, unknown> | undefined) || {};
+    const broadcastCapture = rawData.broadcast_capture as Record<string, unknown> | undefined;
+    const derivedSourceType =
+      (rawData.source_type as string | undefined)
+      || item.source_type
+      || (broadcastCapture ? 'MOBILE_BROADCAST' : 'MOBILE_APP');
+    const isBroadcast = derivedSourceType === 'MOBILE_BROADCAST';
+    const durationSecs =
+      (rawData.duration_seconds as number | undefined)
+      ?? (broadcastCapture?.duration_seconds as number | undefined)
+      ?? item.duration_seconds
+      ?? 0;
 
     // Use centralized quality threshold
     const qualityLevel = getQualityLevel(postCount);
 
-    const isSelected = selectedScans.includes(item.id);
-    const selectionIndex = selectedScans.indexOf(item.id);
-
     const handlePress = () => {
-      if (compareMode) {
-        toggleScanSelection(item.id);
-      } else {
-        router.push({ pathname: '/(tabs)', params: { scanId: item.id } });
-      }
+      router.push({ pathname: '/(tabs)', params: { scanId: item.id } });
     };
 
     return (
@@ -222,33 +182,13 @@ export default function HistoryScreen() {
           padding: SPACING.lg,
           marginHorizontal: SPACING.lg,
           marginBottom: SPACING.md,
-          borderWidth: isSelected ? 2 : 1,
-          borderColor: isSelected ? colors.primaryBlue : colors.borderLight,
+          borderWidth: 1,
+          borderColor: colors.borderLight,
           ...shadows.card,
-          ...(isSelected ? shadows.hero : {}),
         }}
       >
-        {/* Top row: platform badge + name + time + selection indicator */}
+        {/* Top row: platform badge + name + time */}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.md }}>
-          {compareMode && (
-            <View
-              style={{
-                width: SPACING['3xl'],
-                height: SPACING['3xl'],
-                borderRadius: RADIUS.lg,
-                backgroundColor: isSelected ? colors.primaryBlue : colors.borderLight,
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginRight: SPACING.md,
-              }}
-            >
-              {isSelected ? (
-                <Text variant="label" style={{ fontWeight: '700', color: colors.white }}>
-                  {selectionIndex + 1}
-                </Text>
-              ) : null}
-            </View>
-          )}
           <View
             style={{
               width: SPACING['4xl'],
@@ -296,7 +236,7 @@ export default function HistoryScreen() {
               )}
             </View>
             <Text variant="small" color={colors.textSecondary} style={{ marginTop: SPACING.xxs }}>
-              {getRelativeTime(item.created_at)} — {postCount} posts
+              {getRelativeTime(item.created_at)}, {postCount} posts
               {isBroadcast && durationSecs > 0 ? ` · ${formatDuration(durationSecs)}` : ''}
             </Text>
           </View>
@@ -346,7 +286,7 @@ export default function HistoryScreen() {
             </Text>
           </View>
 
-          {/* Quality indicator chip — neutral blue styling (non-judgmental, no traffic-light colors) */}
+          {/* Quality indicator chip; neutral blue styling (non-judgmental, no traffic-light colors) */}
           <View
             style={{
               flexDirection: 'row',
@@ -411,11 +351,9 @@ export default function HistoryScreen() {
             </View>
           )}
           {/* L-16 FIX: Indicate dashboard is viewable */}
-          {!compareMode && (
-            <Text variant="captionSmall" color={colors.primaryBlue} style={{ marginLeft: 'auto' }}>
-              View Results →
-            </Text>
-          )}
+          <Text variant="captionSmall" color={colors.primaryBlue} style={{ marginLeft: 'auto' }}>
+            View Results →
+          </Text>
         </View>
       </TouchableOpacity>
     );
@@ -487,7 +425,7 @@ export default function HistoryScreen() {
         Each scan adds a new snapshot of your feed. Over time you can compare them to spot patterns and changes.
       </Text>
       <TouchableOpacity
-        onPress={() => router.push('/(tabs)/scan')}
+        onPress={() => router.push('/scan')}
         accessibilityRole="button"
         accessibilityLabel="Start a scan"
         style={{
@@ -513,7 +451,7 @@ export default function HistoryScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPage }}>
       <ContentFadeIn ready={!loading || scans.length > 0} style={{ flex: 1 }}>
       <View style={{ flex: 1 }}>
-        {/* Header — H-06 FIX: ensure right-side elements have adequate safe-area padding and don't clip */}
+        {/* Header. H-06 FIX: ensure right-side elements have adequate safe-area padding and don't clip. */}
         <View style={{ paddingHorizontal: SPACING.lg, paddingRight: Math.max(SPACING.lg, insets.right + SPACING.sm), paddingVertical: SPACING.xl, overflow: 'visible' }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <View style={{ flex: 1, marginRight: SPACING.sm }}>
@@ -522,99 +460,32 @@ export default function HistoryScreen() {
                 color={colors.textMain}
                 style={{ marginBottom: SPACING.xs }}
               >
-                {compareMode ? 'Select Two Scans' : 'Scan History'}
+                Scan History
               </Text>
               {/* Hi-3 FIX: Added subtitle to orient users */}
-              {!compareMode && scans.length > 0 && (
+              {scans.length > 0 && (
                 <Text variant="label" color={colors.textSecondary}>
                   Review your past feed analyses · {scans.length} scan{scans.length !== 1 ? 's' : ''} total
                 </Text>
               )}
-              {!compareMode && scans.length === 0 && (
+              {scans.length === 0 && (
                 <Text variant="label" color={colors.textSecondary}>
                   Review your past feed analyses
                 </Text>
               )}
-              {compareMode && (
-                <Text variant="label" color={colors.textSecondary}>
-                  {selectedScans.length}/2 selected — tap scans to compare
-                </Text>
-              )}
             </View>
 
-            {/* Compare / Cancel button */}
-            {scans.length >= 2 && (
-              <TouchableOpacity
-                onPress={() => {
-                  if (compareMode) {
-                    exitCompareMode();
-                  } else {
-                    setCompareMode(true);
-                  }
-                }}
-                accessibilityRole="button"
-                accessibilityLabel={compareMode ? 'Cancel comparison' : 'Compare scans'}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: SPACING.xs,
-                  backgroundColor: compareMode ? colors.cancelButtonBg : colors.blue50,
-                  paddingHorizontal: SPACING.md,
-                  paddingVertical: SPACING.sm,
-                  minHeight: MIN_TOUCH_TARGET,
-                  borderRadius: RADIUS.md,
-                }}
-              >
-                <GitCompareArrows
-                  size={16}
-                  color={compareMode ? colors.textSecondary : colors.primaryBlue}
-                  strokeWidth={2}
-                />
-                <Text
-                  variant="label"
-                  color={compareMode ? colors.textSecondary : colors.primaryBlue}
-                >
-                  {compareMode ? 'Cancel' : 'Compare'}
-                </Text>
-              </TouchableOpacity>
-            )}
+            {/* Compare pill: opens the Compare picker with the most recent scan as the anchor. */}
+            <ComparePill
+              label="Compare"
+              onPress={canCompare ? handleComparePress : undefined}
+              disabled={!canCompare}
+            />
           </View>
         </View>
 
-        {/* Compare action bar (when 2 scans selected) */}
-        {compareMode && selectedScans.length === 2 && (
-          <View
-            style={{
-              marginHorizontal: SPACING.lg,
-              marginBottom: SPACING.md,
-            }}
-          >
-            <TouchableOpacity
-              disabled={selectedScans.length < 2}
-              onPress={handleComparePress}
-              accessibilityRole="button"
-              accessibilityLabel="Compare selected scans"
-              style={{
-                backgroundColor: colors.primaryBlue,
-                borderRadius: RADIUS.md,
-                paddingVertical: SPACING.md,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: SPACING.sm,
-                ...shadows.medium,
-              }}
-            >
-              <GitCompareArrows size={18} color={colors.white} strokeWidth={2} />
-              <Text variant="h3" color={colors.white}>
-                Compare Selected Scans
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* Platform filter — H-06 FIX: add right padding to prevent clipping */}
-        {!compareMode && availablePlatforms.length > 1 && (
+        {/* Platform filter. H-06 FIX: add right padding to prevent clipping. */}
+        {availablePlatforms.length > 1 && (
           <View
             style={{
               flexDirection: 'row',
@@ -727,7 +598,7 @@ export default function HistoryScreen() {
             }
             ListEmptyComponent={emptyComponent}
             scrollEventThrottle={16}
-            extraData={[compareMode, selectedScans, filterPlatform]}
+            extraData={[filterPlatform]}
             stickySectionHeadersEnabled={false}
           />
         )}
