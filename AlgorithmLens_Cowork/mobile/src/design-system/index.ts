@@ -54,3 +54,5 @@ export {
   type PrimaryButtonProps,
   type PrimaryButtonVariant,
 } from './PrimaryButton';
+export { VerdictEyebrow, type VerdictEyebrowProps } from './VerdictEyebrow';
+export { VerdictText, type VerdictTextProps } from './VerdictText';
