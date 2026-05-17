@@ -41,3 +41,12 @@ vite.config.js.timestamp-*.mjs
 
 # Backup files
 *.bak
+
+# PII-bearing fixture sources. The redacted fixture committed under
+# mobile/src/lib/interpretation/__tests__/fixtures/ is safe; the raw
+# Supabase export used to generate it is NOT and must never land in
+# the repo. The redact-fixture script is one-shot and deleted after
+# use.
+fixture-source.csv
+redact-fixture.cjs
+redact-fixture.js
