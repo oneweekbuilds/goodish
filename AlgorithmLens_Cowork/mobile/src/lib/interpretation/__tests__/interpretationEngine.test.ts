@@ -487,6 +487,499 @@ describe('interpretScan orchestrator', () => {
     });
   });
 
+  // ============================================
+  // Persistent-creator template (Phase 5.3.1)
+  // ============================================
+  //
+  // Shared helpers for both surfaces. The persistent-creator
+  // template's predicate reads cross-scan recurrence, so fixtures
+  // need raw_data.posts populated with creator handles across
+  // multiple scans.
+
+  /**
+   * Make a ScanDetail whose raw_data.posts attribute every post to
+   * the same creator. Use to construct a window where one creator
+   * recurs across N of M scans.
+   */
+  function makeScanWithCreator(
+    id: string,
+    createdAt: string,
+    handle: string,
+    displayName: string,
+    postCount = 1,
+    overrides: Partial<ScanDetail> = {},
+  ): ScanDetail {
+    return makeScan({
+      id,
+      created_at: createdAt,
+      raw_data: {
+        posts: Array.from({ length: postCount }).map((_, idx) => ({
+          creator_handle: handle,
+          creator_display_name: displayName,
+          is_ad: false,
+          is_suggested: null,
+          content_type: 'video',
+          hashtags: [],
+          position_in_feed: idx + 1,
+          ad_label_text: null,
+        })),
+      },
+      ...overrides,
+    });
+  }
+
+  /**
+   * Make a ScanDetail with both a recurring creator AND a political
+   * percentage embedded in raw_data.analysis. Used for precedence
+   * tests where political_shift and persistent_creator both fire.
+   */
+  function makeScanWithCreatorAndPolitical(
+    id: string,
+    createdAt: string,
+    handle: string,
+    displayName: string,
+    politicalPct: number,
+    overrides: Partial<ScanDetail> = {},
+  ): ScanDetail {
+    return makeScan({
+      id,
+      created_at: createdAt,
+      raw_data: {
+        analysis: {
+          political_content_summary: {
+            political_percentage: politicalPct,
+          },
+        },
+        posts: [
+          {
+            creator_handle: handle,
+            creator_display_name: displayName,
+            is_ad: false,
+            is_suggested: null,
+            content_type: 'video',
+            hashtags: [],
+            position_in_feed: 1,
+            ad_label_text: null,
+          },
+        ],
+      },
+      ...overrides,
+    });
+  }
+
+  /**
+   * Build a 4-scan window with @foo as a recurring creator in
+   * `scanCount` of them. Older scans (beyond scanCount) don't include
+   * @foo. Returns the array sorted newest-first (active scan at
+   * index 0) so the engine's desc-sort lands it as windowScanCount=4
+   * after filtering.
+   */
+  function buildFourScanWindowWithRecurringFoo(
+    scanCount: number,
+  ): ScanDetail[] {
+    const dates = [
+      '2026-05-13T12:00:00Z',
+      '2026-05-12T12:00:00Z',
+      '2026-05-11T12:00:00Z',
+      '2026-05-10T12:00:00Z',
+    ];
+    return dates.map((createdAt, idx) => {
+      if (idx < scanCount) {
+        return makeScanWithCreator(
+          `s${idx}`,
+          createdAt,
+          '@foo',
+          'Foo',
+          1,
+        );
+      }
+      // Use a different unique creator so the scan isn't empty but
+      // doesn't contribute to @foo's recurrence count.
+      return makeScanWithCreator(
+        `s${idx}`,
+        createdAt,
+        `@other-${idx}`,
+        `Other ${idx}`,
+        1,
+      );
+    });
+  }
+
+  describe('persistent-creator template — Results surface', () => {
+    test('fires at minimum threshold (3 of 4)', () => {
+      const scans = buildFourScanWindowWithRecurringFoo(3);
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData(),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'results');
+      expect(result.verdict).toContain('steady presence');
+      expect(result.verdict).toContain('YouTube');
+    });
+
+    test('fires at design-canonical depth (5 of 6) with verbatim "5 of last 6 scans" copy', () => {
+      const dates = [
+        '2026-05-15T12:00:00Z',
+        '2026-05-14T12:00:00Z',
+        '2026-05-13T12:00:00Z',
+        '2026-05-12T12:00:00Z',
+        '2026-05-11T12:00:00Z',
+        '2026-05-10T12:00:00Z',
+      ];
+      const scans = dates.map((createdAt, idx) =>
+        idx < 5
+          ? makeScanWithCreator(`s${idx}`, createdAt, '@foo', 'Foo')
+          : makeScanWithCreator(`s${idx}`, createdAt, '@other', 'Other'),
+      );
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData(),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'results');
+      const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+      // Design-canonical copy: "in 5 of your last 6 scans"
+      expect(observed?.text).toContain('5 of your last 6 scans');
+    });
+
+    test('does not fire below scanCount threshold (2 of 4 → calm-case)', () => {
+      const scans = buildFourScanWindowWithRecurringFoo(2);
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData(),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'results');
+      // Calm-case fallback verdict — not persistent-creator.
+      expect(result.verdict).not.toContain('steady presence');
+      expect(result.verdict).toContain('nothing unusual flagged');
+    });
+
+    test('does not fire on shallow window (3 of 3 → calm-case)', () => {
+      // 3 scans, all with @foo. scanCount=3 meets the count threshold
+      // but windowScanCount=3 fails the >= 4 threshold.
+      const scans = [
+        makeScanWithCreator('s0', '2026-05-12T12:00:00Z', '@foo', 'Foo'),
+        makeScanWithCreator('s1', '2026-05-11T12:00:00Z', '@foo', 'Foo'),
+        makeScanWithCreator('s2', '2026-05-10T12:00:00Z', '@foo', 'Foo'),
+      ];
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData(),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'results');
+      expect(result.verdict).not.toContain('steady presence');
+    });
+
+    test('wins over concentrated_feed when both could match', () => {
+      // Persistent creator + high single-scan top-creator share.
+      const scans = buildFourScanWindowWithRecurringFoo(3);
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData({
+          totalPosts: 50,
+          topCreators: [
+            { name: 'alice', count: 20 },
+          ] as unknown as DashboardData['topCreators'],
+        }),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'results');
+      // Persistent-creator (priority 60) beats concentrated-feed (50).
+      expect(result.verdict).toContain('steady presence');
+      expect(result.verdict).not.toContain('A few voices are shaping');
+    });
+
+    test('OBSERVED interpolates displayName, scanCount, windowScanCount, totalPosts', () => {
+      // Use 2 posts per scan to test totalPosts correctly sums.
+      const scans = [
+        makeScanWithCreator('s0', '2026-05-13T12:00:00Z', '@mkbhd', 'MKBHD', 2),
+        makeScanWithCreator('s1', '2026-05-12T12:00:00Z', '@mkbhd', 'MKBHD', 2),
+        makeScanWithCreator('s2', '2026-05-11T12:00:00Z', '@mkbhd', 'MKBHD', 2),
+        makeScanWithCreator('s3', '2026-05-10T12:00:00Z', '@other', 'Other'),
+      ];
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData(),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'results');
+      const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+      expect(observed?.text).toContain('MKBHD');
+      expect(observed?.text).toContain('3 of your last 4 scans');
+      expect(observed?.text).toContain('6 posts');
+    });
+
+    test('supporting rows include Top voice as the first row', () => {
+      const scans = buildFourScanWindowWithRecurringFoo(3);
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData(),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'results');
+      // Top voice prepended (Phase 5.2.5) when recurrence justifies.
+      expect(result.supportingRows[0]).toMatchObject({
+        variant: 'fact',
+        label: 'Top voice',
+      });
+    });
+
+    test('findingDot is true', () => {
+      const scans = buildFourScanWindowWithRecurringFoo(3);
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData(),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'results');
+      expect(result.findingDot).toBe(true);
+    });
+  });
+
+  describe('persistent-creator template — Overview surface', () => {
+    test('fires at minimum threshold (3 of 4)', () => {
+      const scans = buildFourScanWindowWithRecurringFoo(3);
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData(),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.overview');
+      // Overview-specific verdict copy.
+      expect(result.verdict).toContain('keeps showing up');
+      expect(result.verdict).toContain('YouTube history');
+    });
+
+    test('fires at design-canonical depth (5 of 6) with verbatim copy', () => {
+      const dates = [
+        '2026-05-15T12:00:00Z',
+        '2026-05-14T12:00:00Z',
+        '2026-05-13T12:00:00Z',
+        '2026-05-12T12:00:00Z',
+        '2026-05-11T12:00:00Z',
+        '2026-05-10T12:00:00Z',
+      ];
+      const scans = dates.map((createdAt, idx) =>
+        idx < 5
+          ? makeScanWithCreator(`s${idx}`, createdAt, '@foo', 'Foo')
+          : makeScanWithCreator(`s${idx}`, createdAt, '@other', 'Other'),
+      );
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData(),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.overview');
+      const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+      // Overview frame: "been in N of your recent M scans"
+      expect(observed?.text).toContain('5 of your recent 6 scans');
+    });
+
+    test('does not fire below scanCount threshold (2 of 4 → calm-case)', () => {
+      const scans = buildFourScanWindowWithRecurringFoo(2);
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData(),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.overview');
+      expect(result.verdict).not.toContain('keeps showing up');
+    });
+
+    test('does not fire on shallow window (3 of 3 → calm-case)', () => {
+      const scans = [
+        makeScanWithCreator('s0', '2026-05-12T12:00:00Z', '@foo', 'Foo'),
+        makeScanWithCreator('s1', '2026-05-11T12:00:00Z', '@foo', 'Foo'),
+        makeScanWithCreator('s2', '2026-05-10T12:00:00Z', '@foo', 'Foo'),
+      ];
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData(),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.overview');
+      expect(result.verdict).not.toContain('keeps showing up');
+    });
+
+    test('political_shift (priority 70) wins over persistent_creator (60) when both could match', () => {
+      // 4 scans with @foo in 3 of them, AND political content
+      // climbing: active scan at 11%, priors averaging ~3.5%.
+      const scans = [
+        makeScanWithCreatorAndPolitical(
+          'active',
+          '2026-05-13T12:00:00Z',
+          '@foo',
+          'Foo',
+          11,
+        ),
+        makeScanWithCreatorAndPolitical(
+          'p1',
+          '2026-05-12T12:00:00Z',
+          '@foo',
+          'Foo',
+          3,
+        ),
+        makeScanWithCreatorAndPolitical(
+          'p2',
+          '2026-05-11T12:00:00Z',
+          '@foo',
+          'Foo',
+          4,
+        ),
+        makeScanWithCreatorAndPolitical(
+          'p3',
+          '2026-05-10T12:00:00Z',
+          '@other',
+          'Other',
+          4,
+        ),
+      ];
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData({
+          politicalAnalysis: {
+            politicalPct: 11,
+            politicalCount: 5,
+          } as unknown as DashboardData['politicalAnalysis'],
+        }),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.overview');
+      expect(result.verdict).toContain('climbing');
+      expect(result.verdict).not.toContain('keeps showing up');
+    });
+
+    test('persistent_creator (60) wins over concentrated_feed (50) when both could match', () => {
+      const scans = buildFourScanWindowWithRecurringFoo(3);
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData({
+          totalPosts: 50,
+          topCreators: [
+            { name: 'alice', count: 20 },
+          ] as unknown as DashboardData['topCreators'],
+        }),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.overview');
+      expect(result.verdict).toContain('keeps showing up');
+      expect(result.verdict).not.toContain('doing most of the talking');
+    });
+
+    test('persistent_creator wins over heavy_ad_load on priority-60 tie', () => {
+      // Both predicates true: persistent creator + ad spike.
+      // Priority 60 ties; persistent-creator is registered first
+      // in DASHBOARD_OVERVIEW_TEMPLATES so it wins.
+      const scans = [
+        makeScanWithCreator(
+          'active',
+          '2026-05-13T12:00:00Z',
+          '@foo',
+          'Foo',
+          1,
+          { ad_percentage: 20 },
+        ),
+        makeScanWithCreator(
+          'p1',
+          '2026-05-12T12:00:00Z',
+          '@foo',
+          'Foo',
+          1,
+          { ad_percentage: 8 },
+        ),
+        makeScanWithCreator(
+          'p2',
+          '2026-05-11T12:00:00Z',
+          '@foo',
+          'Foo',
+          1,
+          { ad_percentage: 8 },
+        ),
+        makeScanWithCreator(
+          'p3',
+          '2026-05-10T12:00:00Z',
+          '@other',
+          'Other',
+          1,
+          { ad_percentage: 8 },
+        ),
+      ];
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData({ adPct: 20 }),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.overview');
+      expect(result.verdict).toContain('keeps showing up');
+      expect(result.verdict).not.toContain('ad-heavy');
+    });
+
+    test('OBSERVED interpolates displayName, scanCount, windowScanCount, totalPosts', () => {
+      const scans = [
+        makeScanWithCreator('s0', '2026-05-13T12:00:00Z', '@mkbhd', 'MKBHD', 2),
+        makeScanWithCreator('s1', '2026-05-12T12:00:00Z', '@mkbhd', 'MKBHD', 2),
+        makeScanWithCreator('s2', '2026-05-11T12:00:00Z', '@mkbhd', 'MKBHD', 2),
+        makeScanWithCreator('s3', '2026-05-10T12:00:00Z', '@other', 'Other'),
+      ];
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData(),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.overview');
+      const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+      expect(observed?.text).toContain('MKBHD');
+      expect(observed?.text).toContain('3 of your recent 4 scans');
+      expect(observed?.text).toContain('6 posts');
+    });
+
+    test('supporting rows include Top voice as the first row', () => {
+      const scans = buildFourScanWindowWithRecurringFoo(3);
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData(),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.overview');
+      expect(result.supportingRows[0]).toMatchObject({
+        variant: 'fact',
+        label: 'Top voice',
+      });
+    });
+
+    test('findingDot is true', () => {
+      const scans = buildFourScanWindowWithRecurringFoo(3);
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData(),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.overview');
+      expect(result.findingDot).toBe(true);
+    });
+  });
+
   describe('platform interpolation', () => {
     test('template verdict capitalizes youtube as YouTube', () => {
       const ctx = makeContext({
