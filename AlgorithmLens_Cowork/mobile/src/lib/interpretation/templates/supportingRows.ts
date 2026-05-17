@@ -17,8 +17,13 @@
  */
 
 import type { ScanDetail } from '../../../hooks/useDashboard';
+import { computeCreatorRecurrence } from '../derivations/creatorRecurrence';
 import { computeRollingAverage } from '../derivations/rollingAverage';
-import type { FactRow, InterpretationContext } from '../interpretation-types';
+import type {
+  FactRow,
+  InterpretationContext,
+  SupportingRow,
+} from '../interpretation-types';
 import { getComparativeAnchor } from '../utils/comparativeAnchor';
 
 /**
@@ -110,4 +115,107 @@ export function buildToneRow(
     label = 'Mostly neutral';
   }
   return { variant: 'fact', label: 'Tone', value: label };
+}
+
+// ============================================
+// Top voice row (Phase 5.2.5)
+// ============================================
+//
+// Surfaces the most-recurring creator across the user's scan history
+// as the first row of the supporting card. Per the 2.x Dashboard
+// design spec's "visual evidence rule" — the supporting card leads
+// with its strongest evidence — recurrence outranks the standard
+// 4-row composition when one creator has appeared in two or more
+// scans within the window.
+//
+// Returns null when:
+//   - no scan history (windowScanCount === 0)
+//   - no identifiable creators in the window
+//   - no creator has scanCount >= 2 (no recurrence to surface)
+//
+// Anchor copy scales with window depth, per Phase 5.2.4 thresholds:
+//   - "in both your scans"           — scanCount === windowScanCount === 2
+//   - "in all N of your scans"       — scanCount === windowScanCount, N >= 3
+//   - "in M of your last 3 scans"    — windowScanCount === 3, scanCount < 3
+//   - "in M of last N scans"         — windowScanCount >= 4 (design canonical)
+//
+// The "your last 3" / "last N" split at windowScanCount=4 is editorial:
+// the 3-scan case feels too thin without the personal frame; at 4+ the
+// design spec's canonical "in 5 of last 6 scans" wording reads more
+// naturally without the possessive.
+
+/**
+ * Produce the recurrence anchor copy for a Top voice FactRow.
+ * Exported separately so unit tests can exercise it independently of
+ * the row builder.
+ */
+export function recurrenceAnchor(
+  scanCount: number,
+  windowScanCount: number,
+): string {
+  if (scanCount === windowScanCount) {
+    if (windowScanCount === 2) return 'in both your scans';
+    return `in all ${windowScanCount} of your scans`;
+  }
+  if (windowScanCount === 3) {
+    return `in ${scanCount} of your last 3 scans`;
+  }
+  return `in ${scanCount} of last ${windowScanCount} scans`;
+}
+
+/**
+ * Build the Top voice FactRow when recurrence data justifies it.
+ * Returns null when no creator has appeared in at least two scans
+ * within the window — the supporting card stays at its standard
+ * four rows in that case.
+ *
+ * `value` carries the display name; `anchor` carries the recurrence
+ * phrase. This matches FactRow's per-field styling (value renders in
+ * body-strong weight, anchor in caption-gray after a middot) — both
+ * appear together as "Display Name · in N of M scans" in the
+ * rendered card.
+ */
+export function buildTopVoiceRow(
+  scans: ScanDetail[],
+  platform: string,
+): FactRow | null {
+  const recurrence = computeCreatorRecurrence(scans, platform);
+  const top = recurrence.records[0];
+  if (!top || top.scanCount < 2) return null;
+  return {
+    variant: 'fact',
+    label: 'Top voice',
+    value: top.displayName,
+    anchor: recurrenceAnchor(top.scanCount, recurrence.windowScanCount),
+  };
+}
+
+// ============================================
+// Composed supporting card (Phase 5.2.5)
+// ============================================
+
+/**
+ * The standard supporting card: Top voice (when recurrence justifies)
+ * + Ads + Patterns + Political + Tone. Shared between Results and
+ * Dashboard Overview surfaces because the card composition is identical
+ * even though the verdict and sublines above it vary per-surface.
+ *
+ * If `buildTopVoiceRow` returns null (no recurrence), the card stays
+ * at its standard four rows. Otherwise the Top voice row is prepended
+ * (per the design spec's "TopVoiceRow leads" visual evidence rule).
+ */
+export function buildStandardSupportingRows(
+  activeScan: ScanDetail,
+  scans: ScanDetail[],
+  dashboardData: InterpretationContext['dashboardData'],
+  platform: string,
+): SupportingRow[] {
+  const topVoice = buildTopVoiceRow(scans, platform);
+  const rows: SupportingRow[] = [
+    buildAdsRow(activeScan, scans, dashboardData, platform),
+    buildPatternsRow(dashboardData),
+    buildPoliticalRow(activeScan, scans, dashboardData, platform),
+    buildToneRow(dashboardData),
+  ];
+  return topVoice ? [topVoice, ...rows] : rows;
 }

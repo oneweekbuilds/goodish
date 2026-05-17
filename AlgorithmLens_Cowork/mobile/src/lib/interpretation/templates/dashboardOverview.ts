@@ -42,22 +42,15 @@
  * worked example), mobile/audits/2x-interpretation-engine-scoping/decisions.md
  */
 
-import type { ScanDetail } from '../../../hooks/useDashboard';
 import { computeRollingAverage } from '../derivations/rollingAverage';
 import type {
   InterpretationContext,
   InterpretationResult,
   Subline,
-  SupportingRow,
 } from '../interpretation-types';
 import { capitalizePlatform } from '../utils/platformDisplay';
 import type { ResultsTemplate } from './results';
-import {
-  buildAdsRow,
-  buildPatternsRow,
-  buildPoliticalRow,
-  buildToneRow,
-} from './supportingRows';
+import { buildStandardSupportingRows } from './supportingRows';
 
 // ============================================
 // Thresholds
@@ -421,23 +414,10 @@ function pluralizeContentType(label: string): string {
   return lower.endsWith('s') ? lower : `${lower}s`;
 }
 
-// ============================================
-// Standard supporting rows
-// ============================================
-
-function buildStandardSupportingRows(
-  activeScan: ScanDetail,
-  scans: ScanDetail[],
-  dashboardData: InterpretationContext['dashboardData'],
-  platform: string,
-): SupportingRow[] {
-  return [
-    buildAdsRow(activeScan, scans, dashboardData, platform),
-    buildPatternsRow(dashboardData),
-    buildPoliticalRow(activeScan, scans, dashboardData, platform),
-    buildToneRow(dashboardData),
-  ];
-}
+// buildStandardSupportingRows moved to ./supportingRows in Phase
+// 5.2.5 so the Top voice recurrence row can be prepended uniformly
+// across both surfaces. All four Overview templates here, plus both
+// Results templates, share the same composition.
 
 // ============================================
 // Template registry

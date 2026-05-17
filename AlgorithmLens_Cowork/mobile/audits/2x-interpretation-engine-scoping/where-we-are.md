@@ -159,7 +159,7 @@ These items are explicitly out of scope for the current branch and remain as fut
 - COACHING sub-line mode (the "SOMETHING TO TRY" beat)
 - A QUESTION FOR YOU sub-line mode
 - The other 5 Dashboard tabs (Who Shapes Your Feed, Ads, Politics, Tone, Suggested vs Followed) — currently throw `"surface not yet implemented"` if `interpretScan` is called with them
-- Creator recurrence detection (medium-lift derivation)
+- **Persistent-creator standalone template** — fires when `topRecurrer.scanCount >= 3` AND `windowScanCount >= 4`. Would slot between political-shift (priority 70) and concentrated-feed (priority 50) at priority 60. Surface-appropriate verdict copy per Phase 5.2.4 proposal. Tests need to cover precedence (recurrence wins over concentration, loses to political-shift). Filed as Phase 5.3 candidate.
 - Advertiser persistence detection
 - Quiet-followed-creator detection
 - Cross-metric correlation

@@ -81,9 +81,15 @@ function assertResultShape(
 }
 
 function makeRealScanContext(): InterpretationContext {
+  // Mirror production wiring: useDashboard returns ALL scans for the
+  // user (active + history). Rolling-average extractors in the row
+  // builders pass excludeScanId to skip the active scan when
+  // comparing against history. Recurrence (buildTopVoiceRow) does
+  // NOT exclude the active scan — "in 5 of last 6 scans" includes
+  // today, per the design spec.
   return {
     activeScan: REAL_ACTIVE_SCAN,
-    scans: [REAL_PRIOR_SCAN],
+    scans: [REAL_ACTIVE_SCAN, REAL_PRIOR_SCAN],
     dashboardData: computeDashboardData(REAL_ACTIVE_SCAN),
     platform: 'youtube',
   };

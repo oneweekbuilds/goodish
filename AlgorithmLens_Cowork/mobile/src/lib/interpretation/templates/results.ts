@@ -32,12 +32,7 @@ import type {
   SupportingRow,
 } from '../interpretation-types';
 import { capitalizePlatform } from '../utils/platformDisplay';
-import {
-  buildAdsRow,
-  buildPatternsRow,
-  buildPoliticalRow,
-  buildToneRow,
-} from './supportingRows';
+import { buildStandardSupportingRows } from './supportingRows';
 
 // Concentration threshold: when the top creator's share of feed
 // reaches this percent or higher, the Concentrated Feed verdict fires.
@@ -95,12 +90,12 @@ const concentratedFeedTemplate: ResultsTemplate = {
       },
     ];
 
-    const supportingRows: SupportingRow[] = [
-      buildAdsRow(activeScan, scans, dashboardData, platform),
-      buildPatternsRow(dashboardData),
-      buildPoliticalRow(activeScan, scans, dashboardData, platform),
-      buildToneRow(dashboardData),
-    ];
+    const supportingRows: SupportingRow[] = buildStandardSupportingRows(
+      activeScan,
+      scans,
+      dashboardData,
+      platform,
+    );
 
     return {
       verdict,
@@ -180,12 +175,12 @@ const calmCaseTemplate: ResultsTemplate = {
       platformLabel,
     );
 
-    const supportingRows: SupportingRow[] = [
-      buildAdsRow(activeScan, scans, dashboardData, platform),
-      buildPatternsRow(dashboardData),
-      buildPoliticalRow(activeScan, scans, dashboardData, platform),
-      buildToneRow(dashboardData),
-    ];
+    const supportingRows: SupportingRow[] = buildStandardSupportingRows(
+      activeScan,
+      scans,
+      dashboardData,
+      platform,
+    );
 
     return {
       verdict,
