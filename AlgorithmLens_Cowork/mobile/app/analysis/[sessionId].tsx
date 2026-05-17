@@ -38,8 +38,6 @@ import {
   CaptureFooter,
   FactRow,
   Icon,
-  LikelySubline,
-  ObservedSubline,
   PrimaryButton,
   ResultsMetaLine,
   ScanHeader,
@@ -64,11 +62,11 @@ import { triggerImpactMedium } from '../../src/lib/haptics';
 import { computeDashboardData } from '../../src/lib/computeDashboardData';
 import { interpretScan } from '../../src/lib/interpretation/interpretationEngine';
 import { unifiedResultToScanDetail } from '../../src/lib/interpretation/adapters/unifiedResultToScanDetail';
-import type {
-  InterpretationContext,
-  Subline,
-  SublineMode,
-} from '../../src/lib/interpretation/interpretation-types';
+import type { InterpretationContext } from '../../src/lib/interpretation/interpretation-types';
+import {
+  SublineRow,
+  sublineGapTop,
+} from '../../src/components/interpretation/SublineRow';
 import type { UnifiedScanResult } from '../../src/types';
 
 const DISCLOSURE =
@@ -488,6 +486,7 @@ function ResultsBody({
               key={idx}
               subline={subline}
               marginTop={marginTop}
+              surface="Results"
             />
           );
         })}
@@ -515,58 +514,9 @@ function ResultsBody({
   );
 }
 
-/**
- * SublineRow dispatches on the engine's SublineMode to the matching
- * design-system primitive. COACHING and QUESTION fall through to a
- * console.warn — those primitives ship in Phase 5+.
- */
-function SublineRow({
-  subline,
-  marginTop,
-}: {
-  subline: Subline;
-  marginTop: number;
-}) {
-  if (subline.mode === 'OBSERVED') {
-    return (
-      <View style={{ marginTop }}>
-        <ObservedSubline>{subline.text}</ObservedSubline>
-      </View>
-    );
-  }
-  if (subline.mode === 'LIKELY') {
-    return (
-      <View style={{ marginTop }}>
-        <LikelySubline>{subline.text}</LikelySubline>
-      </View>
-    );
-  }
-  // eslint-disable-next-line no-console
-  console.warn(
-    `[2x] subline mode not yet implemented on Results: ${subline.mode}`,
-  );
-  return null;
-}
-
-/**
- * Adaptive vertical rhythm between sublines, per the 2.x Results
- * design spec (mobile/audits/2x-results-design/decisions.md):
- *
- *   12px — same mode → same mode
- *   22px — crossing modes (e.g. OBSERVED → LIKELY)
- *   24px — before a QUESTION (the most distinct mode)
- *
- * The first subline has no top margin.
- */
-function sublineGapTop(
-  prevMode: SublineMode | undefined,
-  currentMode: SublineMode,
-): number {
-  if (!prevMode) return 0;
-  if (currentMode === 'QUESTION') return 24;
-  if (prevMode === currentMode) return 12;
-  return 22;
-}
+// SublineRow + sublineGapTop moved to
+// src/components/interpretation/SublineRow when the Dashboard
+// Overview tab became the second consumer in Phase 5.1.4.
 
 function AnalyzingError({
   message,

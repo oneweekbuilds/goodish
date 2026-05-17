@@ -14,7 +14,7 @@ import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { ErrorBoundary } from '../../src/components/ErrorBoundary';
 import { ContentFadeIn, Skeleton } from '../../src/components/glue';
-import { useDashboard } from '../../src/hooks/useDashboard';
+import { useDashboard, type ScanDetail } from '../../src/hooks/useDashboard';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
 import { computeDashboardData, DashboardData, PoliticalAnalysis, ToneAnalysis, AdvertiserStat, ToneSourceStat, ToneBySourceOrigin, CreatorNovelty, AiContentAnalysis, UnlabeledPromos, AdvertisedProductType, ToneBySelling, ToneByPolitical, BrandsAndInfluencers, ByPlatformBreakdown, CommercialComparison, TopicFrequency, ContentFormatComparison } from '../../src/lib/computeDashboardData';
@@ -125,8 +125,8 @@ const CONTENT_TYPE_LABELS: Record<string, string> = {
 // `colors` and `shadows` are accepted but unused — the Overview tab is
 // fully styled via design tokens. The other tabs (SourcesContent etc.)
 // continue to use the legacy theme.
-const OverviewContent = memo(({ data, isPlus, onUpgrade, onAboutPress }: { data: DashboardData; isPlus: boolean; onUpgrade: () => void; onAboutPress?: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
-  return <OverviewTab data={data} isPlus={isPlus} onUpgrade={onUpgrade} onAboutPress={onAboutPress} />;
+const OverviewContent = memo(({ data, scans, activeScan, isPlus, onUpgrade, onAboutPress }: { data: DashboardData; scans: ScanDetail[]; activeScan: ScanDetail | null; isPlus: boolean; onUpgrade: () => void; onAboutPress?: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
+  return <OverviewTab data={data} scans={scans} activeScan={activeScan} isPlus={isPlus} onUpgrade={onUpgrade} onAboutPress={onAboutPress} />;
 });
 
 // ─── SourcesContent ──────────────────────────────────────
@@ -392,13 +392,13 @@ export default function DashboardScreen() {
     const fallback = <TabErrorFallback tabLabel={tabLabel} colors={colors} />;
     let content: React.ReactNode;
     switch (activeTab) {
-      case 'overview': content = <OverviewContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} onAboutPress={handleAboutPress} colors={colors} shadows={shadows} />; break;
+      case 'overview': content = <OverviewContent data={dashboardData} scans={scans} activeScan={activeScan ?? null} isPlus={isPlus} onUpgrade={handleUpgrade} onAboutPress={handleAboutPress} colors={colors} shadows={shadows} />; break;
       case 'sources': content = <SourcesContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
       case 'ads': content = <AdsContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
       case 'politics': content = <PoliticsContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
       case 'tone': content = <ToneContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
       case 'suggested_vs_followed': content = <SuggestedContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
-      default: content = <OverviewContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} onAboutPress={handleAboutPress} colors={colors} shadows={shadows} />; break;
+      default: content = <OverviewContent data={dashboardData} scans={scans} activeScan={activeScan ?? null} isPlus={isPlus} onUpgrade={handleUpgrade} onAboutPress={handleAboutPress} colors={colors} shadows={shadows} />; break;
     }
     return (
       <ErrorBoundary key={activeTab} fallback={fallback}>

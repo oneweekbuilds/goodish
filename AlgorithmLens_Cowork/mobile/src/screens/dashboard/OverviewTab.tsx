@@ -1,12 +1,16 @@
 /**
  * OverviewTab — redesigned Dashboard Overview tab.
  *
- * Wires the existing data hooks (useDashboard / computeDashboardData) to
- * the new design system primitives in `src/design-system/`. This file is
- * the presentation layer ONLY — no Supabase, no Sentry, no analysis logic.
+ * Phase 5.1.4 wired the interpretation engine into the hero zone.
+ * The 1.1.x HeroStatCard + pickHeroStat cascade is gone; the engine's
+ * `dashboard.overview` surface produces the verdict, sublines, and
+ * supporting card. Everything below the hero (Explore your data, Top
+ * influencers, Feedback loop, etc.) is preserved as deeper drill-down
+ * content the engine doesn't yet produce.
  *
- * Section order (matches `design-handoff/ui_kits/ios_app/app.jsx`):
- *   1. Hero stat
+ * Section order:
+ *   1. Verdict zone (engine-driven): VerdictEyebrow + VerdictText
+ *      + OBSERVED/LIKELY sublines + optional SupportingCard
  *   2. "Explore your data": Content types · Time estimate · Content patterns
  *   3. Top influencers
  *   4. How the feedback loop works (collapsed by default)
@@ -15,13 +19,23 @@
  *   7. Ideas to explore (collapsed)
  *   8. About this analysis (DisclosureRow)
  *
- * Hero priority logic and supporting-metric derivation are preserved
- * from the previous OverviewContent (suggested>60 → ads>15 → top5>70 →
- * total posts) — the design renders only the suggested-pct hero, but
- * the project's existing rule is to pick the most informative one.
+ * Chrome treatment per the 2.x Dashboard design spec §1: the screen-
+ * level chrome (DashboardScreen) carries the platform title and scan
+ * caption. This tab does NOT render ResultsMetaLine — the per-tab
+ * meta line folds up to screen level. VerdictEyebrow is still here as
+ * the simplified "VERDICT" label.
+ *
+ * Loading / error behavior:
+ *   - When the scans fetch is in flight, `scans` is []. The engine
+ *     runs with no history → rolling-average anchors omitted → engine
+ *     falls through to calm-case. Anchors fill in once scans arrive.
+ *   - When the scans fetch fails, useDashboard already sets scans to []
+ *     and captures the error to Sentry. We treat it identically to the
+ *     loading state — no user-facing error surface on this tab.
  */
 import React, { useMemo } from 'react';
 import { View } from 'react-native';
+import type { ScanDetail } from '../../hooks/useDashboard';
 import type { DashboardData } from '../../lib/computeDashboardData';
 import { toSentenceCase } from '../../lib/string-utils';
 import { LockedOverlayCard } from '../../components/plan/LockedOverlayCard';
@@ -30,109 +44,27 @@ import {
   CategoryRow,
   DisclosureRow,
   ExpandableCard,
+  FactRow,
   FeedbackLoopStep,
-  HeroStatCard,
   InfluencerRow,
   SectionHeader,
+  SupportingCard,
+  VerdictEyebrow,
+  VerdictText,
 } from '../../design-system';
 import { Card } from '../../design-system/Card';
 import { colors, layout, spacing, type as typeTokens } from '../../design-tokens/tokens';
 import { Text } from 'react-native';
+import {
+  SublineRow,
+  sublineGapTop,
+} from '../../components/interpretation/SublineRow';
+import { interpretScan } from '../../lib/interpretation/interpretationEngine';
+import type { InterpretationContext } from '../../lib/interpretation/interpretation-types';
 
-// ────────────────────────────────────────────────────────────
-// Hero priority — preserved from the previous OverviewContent.
-// ────────────────────────────────────────────────────────────
-
-interface HeroStat {
-  value: string;
-  unit: string;
-  label: string;
-  description: string;
-  /** Identifier used to suppress the same metric from the supporting list. */
-  key: 'suggested' | 'ads' | 'top5' | 'topCreator' | 'total';
-}
-
-function pickHeroStat(data: DashboardData): HeroStat | null {
-  if (data.suggestedPct > 60) {
-    return {
-      value: String(data.suggestedPct),
-      unit: '%',
-      label: "came from accounts you don't follow",
-      description: `Suggested-to-followed ratio across ${data.totalPosts} posts in this session.`,
-      key: 'suggested',
-    };
-  }
-  if (data.adPct > 15) {
-    const adWord = data.adCount === 1 ? 'ad' : 'ads';
-    return {
-      value: String(data.adPct),
-      unit: '%',
-      label: 'of your feed was sponsored content',
-      description: `${data.adCount} ${adWord} in ${data.totalPosts} posts scanned.`,
-      key: 'ads',
-    };
-  }
-  if (data.top5Pct > 70 && data.topCreators.length >= 5) {
-    return {
-      value: String(data.top5Pct),
-      unit: '%',
-      label: 'of your feed came from just 5 accounts',
-      description: 'A small number of sources dominate what you see.',
-      key: 'top5',
-    };
-  }
-  // Top-creator-share fallback. When none of the broader patterns trigger,
-  // it's still useful to surface single-creator concentration — that's a
-  // real signal even when the suggested/ads/top-5 thresholds aren't met.
-  //
-  // Phrasing keeps the label short and scannable ("from your top source")
-  // while the longer creator name lives in the description below, where
-  // verbose handles like "@Home Hacks & Easy Snacks" look natural rather
-  // than overflowing the hero's prominent label line.
-  if (data.topCreators.length >= 1 && data.totalPosts > 0) {
-    const top = data.topCreators[0]!;
-    const share = Math.round((top.count / data.totalPosts) * 100);
-    // displayName fallback chain. Logical OR (not nullish coalescing)
-    // catches empty-string displayName; final "Unidentified creator"
-    // handles the case where Gemini emits empty values for both fields.
-    const displayName =
-      (top.displayName && top.displayName.length > 0)
-        ? top.displayName
-        : (top.name && top.name.length > 0)
-          ? (top.name.startsWith('@') ? top.name : `@${top.name}`)
-          : 'Unidentified creator';
-    // Three-tier description scaled by concentration. Under 15% the top
-    // source is leading a broadly sourced feed and "dominates" misreads
-    // the data; 15-30% is a real lead without dominance; 30%+ earns the
-    // "dominates" framing.
-    const description =
-      share < 15
-        ? 'Your feed is broadly sourced.'
-        : share < 30
-          ? `${displayName} is your most-seen source.`
-          : `${displayName} dominates this session.`;
-    return {
-      value: String(share),
-      unit: '%',
-      label: 'from your top source',
-      description,
-      key: 'topCreator',
-    };
-  }
-  // Defensive floor — should be unreachable when totalPosts > 0 and at
-  // least one creator was identified. Kept so an unusual scan doesn't
-  // produce a null hero.
-  if (data.totalPosts > 0) {
-    return {
-      value: String(data.totalPosts),
-      unit: '',
-      label: 'posts scanned',
-      description: 'A snapshot of your feed composition from this session.',
-      key: 'total',
-    };
-  }
-  return null;
-}
+// pickHeroStat + HeroStat removed in Phase 5.1.4 — the interpretation
+// engine's `dashboard.overview` surface produces the verdict, sublines,
+// and supporting card that previously came from the cascade.
 
 // ────────────────────────────────────────────────────────────
 // Time estimate.
@@ -298,14 +230,29 @@ const IDEAS_TO_EXPLORE: readonly string[] = [
 
 export interface OverviewTabProps {
   data: DashboardData;
+  /** All prior scans for this user. Used by the interpretation engine
+   *  for cross-scan rolling-average derivations (e.g. political shift,
+   *  ad-density spikes vs typical). Starts as [] during the
+   *  useDashboard fetch; engine handles empty array gracefully. */
+  scans: ScanDetail[];
+  /** The scan currently driving `data`. Null only when no scan history
+   *  exists at all (first launch); in that case we render an empty
+   *  state instead of the engine output. */
+  activeScan: ScanDetail | null;
   isPlus: boolean;
   onUpgrade: () => void;
   /** Tap handler for the bottom "About this analysis" row. */
   onAboutPress?: () => void;
 }
 
-export function OverviewTab({ data, isPlus, onUpgrade, onAboutPress }: OverviewTabProps) {
-  const heroStat = useMemo(() => pickHeroStat(data), [data]);
+export function OverviewTab({
+  data,
+  scans,
+  activeScan,
+  isPlus,
+  onUpgrade,
+  onAboutPress,
+}: OverviewTabProps) {
   const adsMinPerDay = useMemo(() => timeEstimateForPercent(data.adPct), [data.adPct]);
   const politicalPct = data.politicalAnalysis?.politicalPct ?? 0;
   const politicalMinPerDay = useMemo(
@@ -315,8 +262,47 @@ export function OverviewTab({ data, isPlus, onUpgrade, onAboutPress }: OverviewT
   const patterns = useMemo(() => deriveContentPatterns(data), [data]);
   const topInfluencers = data.topCreators.slice(0, 5);
 
-  // Caution copy on hero when sample is small.
-  const heroCaution = data.totalPosts < 12 ? `Based on ${data.totalPosts} posts. Interpret with care.` : undefined;
+  // ── Engine wiring (Phase 5.1.4) ──────────────────────────────
+  //
+  // Run the interpretation engine on the `dashboard.overview` surface
+  // when an active scan exists. The four useMemo hooks chain so the
+  // engine only re-runs when one of its inputs actually changes.
+  // priorScans may be [] while useDashboard is loading; the engine
+  // handles that gracefully — rolling averages return null and the
+  // calm-case template fires.
+
+  const platform = activeScan?.platform ?? 'unknown';
+
+  const context = useMemo<InterpretationContext | null>(() => {
+    if (!activeScan) return null;
+    return { activeScan, scans, dashboardData: data, platform };
+  }, [activeScan, scans, data, platform]);
+
+  const interpretation = useMemo(
+    () => (context ? interpretScan(context, 'dashboard.overview') : null),
+    [context],
+  );
+
+  // Filter supporting rows to 'fact' variant only. Other variants
+  // (CreatorRow, TrajectoryRow, BarRow, CaveatNote, MethodologyRow)
+  // ship in Phase 5+ — skipped with a console.warn for visibility.
+  // The filter runs inside useMemo so warns fire at most once per
+  // unique interpretation result.
+  const factRows = useMemo(() => {
+    const out: Array<{ label: string; value: string; anchor?: string }> = [];
+    if (!interpretation) return out;
+    for (const row of interpretation.supportingRows) {
+      if (row.variant === 'fact') {
+        out.push({ label: row.label, value: row.value, anchor: row.anchor });
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[2x] supporting row variant not yet implemented on Dashboard Overview: ${row.variant}`,
+        );
+      }
+    }
+    return out;
+  }, [interpretation]);
 
   return (
     <View
@@ -326,15 +312,43 @@ export function OverviewTab({ data, isPlus, onUpgrade, onAboutPress }: OverviewT
         paddingBottom: spacing.s7,
       }}
     >
-      {/* ── 1. Hero stat ───────────────────────────────────────── */}
-      {heroStat ? (
-        <HeroStatCard
-          value={heroStat.value}
-          unit={heroStat.unit}
-          label={heroStat.label}
-          description={heroStat.description}
-          caution={heroCaution}
-        />
+      {/* ── 1. Verdict zone (engine-driven) ─────────────────────── */}
+      {interpretation ? (
+        <View>
+          <VerdictEyebrow />
+          <View style={{ marginTop: spacing.s4 }}>
+            <VerdictText>{interpretation.verdict}</VerdictText>
+          </View>
+          <View style={{ marginTop: spacing.s6 }}>
+            {interpretation.sublines.map((subline, idx) => {
+              const prevMode =
+                idx > 0 ? interpretation.sublines[idx - 1]?.mode : undefined;
+              const marginTop = sublineGapTop(prevMode, subline.mode);
+              return (
+                <SublineRow
+                  key={idx}
+                  subline={subline}
+                  marginTop={marginTop}
+                  surface="Dashboard Overview"
+                />
+              );
+            })}
+          </View>
+          {factRows.length > 0 ? (
+            <View style={{ marginTop: spacing.s6 }}>
+              <SupportingCard>
+                {factRows.map((row, i) => (
+                  <FactRow
+                    key={i}
+                    label={row.label}
+                    value={row.value}
+                    anchor={row.anchor}
+                  />
+                ))}
+              </SupportingCard>
+            </View>
+          ) : null}
+        </View>
       ) : (
         <Card>
           <Text
