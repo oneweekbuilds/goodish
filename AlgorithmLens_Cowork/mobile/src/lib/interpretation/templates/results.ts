@@ -25,6 +25,7 @@
  * Reference: mobile/audits/2x-results-design/decisions.md
  */
 
+import { computeCreatorRecurrence } from '../derivations/creatorRecurrence';
 import type {
   InterpretationContext,
   InterpretationResult,
@@ -37,6 +38,14 @@ import { buildStandardSupportingRows } from './supportingRows';
 // Concentration threshold: when the top creator's share of feed
 // reaches this percent or higher, the Concentrated Feed verdict fires.
 const CONCENTRATION_THRESHOLD_PCT = 25;
+
+// Persistent-creator thresholds, per Phase 5.2.4 discovery.
+// scanCount: creator must appear in at least this many scans within
+// the window. windowScanCount: minimum depth before recurrence
+// counts as "persistent" — thin-history users (< 4 scans) fall
+// through to calm-case.
+const PERSISTENT_CREATOR_MIN_SCAN_COUNT = 3;
+const PERSISTENT_CREATOR_MIN_WINDOW = 4;
 
 export interface ResultsTemplate {
   id: string;
@@ -114,6 +123,84 @@ const concentratedFeedTemplate: ResultsTemplate = {
 // the Dashboard Overview templates can share them. The four builders
 // produce the same FactRow output regardless of surface; what varies
 // per-surface is the verdict and sublines copy, not the row content.
+
+// ============================================
+// Template: Persistent Creator (Phase 5.3.1)
+// ============================================
+//
+// Fires when one creator dominates recurrence across the user's
+// scan history — the "@MarquesBrownlee · in 5 of last 6 scans"
+// pattern from the Dashboard design spec's Tab 1 worked example, at
+// verdict level rather than just supporting-row evidence.
+//
+// Thresholds (Phase 5.2.4):
+//   - topRecurrer.scanCount >= 3
+//   - windowScanCount >= 4
+//
+// Below these, the supporting card's Top voice row (Phase 5.2.5)
+// still surfaces the recurrence as evidence beneath whatever
+// calm-case verdict fires. Above these, this template makes
+// recurrence the headline.
+//
+// Priority 60: between concentrated-feed (50) and where the calm
+// case sits (10). On Results, this means a persistent creator beats
+// single-scan concentration — cross-scan signals outrank single-scan
+// signals.
+
+const persistentCreatorTemplate: ResultsTemplate = {
+  id: 'results.persistent_creator',
+  priority: 60,
+  when: (ctx) => {
+    const recurrence = computeCreatorRecurrence(ctx.scans, ctx.platform);
+    const top = recurrence.records[0];
+    if (!top) return false;
+    if (top.scanCount < PERSISTENT_CREATOR_MIN_SCAN_COUNT) return false;
+    if (recurrence.windowScanCount < PERSISTENT_CREATOR_MIN_WINDOW) {
+      return false;
+    }
+    return true;
+  },
+  render: (ctx) => {
+    const { activeScan, scans, dashboardData, platform } = ctx;
+    const platformLabel = capitalizePlatform(platform);
+    const recurrence = computeCreatorRecurrence(scans, platform);
+    const top = recurrence.records[0]!;
+    const { displayName, scanCount, totalPosts } = top;
+    const windowScanCount = recurrence.windowScanCount;
+
+    const verdict = `One creator has been a steady presence in your ${platformLabel} feed.`;
+
+    const sublines: Subline[] = [
+      {
+        mode: 'OBSERVED',
+        text: `${displayName} has appeared in ${scanCount} of your last ${windowScanCount} scans, with ${totalPosts} posts across them.`,
+      },
+      {
+        mode: 'LIKELY',
+        text:
+          'When a single creator consistently produces watch-time, recent activity gets weighted as a strong signal for what to surface next. Repeat exposure reinforces this across sessions.',
+      },
+    ];
+
+    const supportingRows: SupportingRow[] = buildStandardSupportingRows(
+      activeScan,
+      scans,
+      dashboardData,
+      platform,
+    );
+
+    return {
+      verdict,
+      sublines,
+      supportingRows,
+      findingDot: true,
+      meta: {
+        surface: 'results',
+        scanId: activeScan.scan_id ?? activeScan.id,
+      },
+    };
+  },
+};
 
 // ============================================
 // Template: Calm Case (catch-all, Phase 4.5.2.2)
@@ -296,6 +383,7 @@ function pluralizeContentType(label: string): string {
 // ============================================
 
 export const RESULTS_TEMPLATES: ResultsTemplate[] = [
+  persistentCreatorTemplate,
   concentratedFeedTemplate,
   calmCaseTemplate,
 ];

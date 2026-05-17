@@ -42,6 +42,7 @@
  * worked example), mobile/audits/2x-interpretation-engine-scoping/decisions.md
  */
 
+import { computeCreatorRecurrence } from '../derivations/creatorRecurrence';
 import { computeRollingAverage } from '../derivations/rollingAverage';
 import type {
   InterpretationContext,
@@ -74,6 +75,10 @@ const HEAVY_ADS_RATIO = 1.5;
 
 /** Top-creator share threshold for the concentrated-feed verdict. */
 const CONCENTRATION_THRESHOLD_PCT = 25;
+
+/** Persistent-creator thresholds, mirrors Results template (Phase 5.2.4). */
+const PERSISTENT_CREATOR_MIN_SCAN_COUNT = 3;
+const PERSISTENT_CREATOR_MIN_WINDOW = 4;
 
 /** Suggested-ratio threshold for the calm-case high-suggested variant. */
 const CALM_HIGH_SUGGESTED_THRESHOLD_PCT = 80;
@@ -185,6 +190,78 @@ const heavyAdLoadTemplate: ResultsTemplate = {
       {
         mode: 'LIKELY',
         text: 'Ad density swings with platform inventory and what targeting reads from recent activity. Spikes usually flatten as the mix rotates back to its typical range.',
+      },
+    ];
+
+    return {
+      verdict,
+      sublines,
+      supportingRows: buildStandardSupportingRows(
+        activeScan,
+        scans,
+        dashboardData,
+        platform,
+      ),
+      findingDot: true,
+      meta: {
+        surface: 'dashboard.overview',
+        scanId: activeScan.scan_id ?? activeScan.id,
+      },
+    };
+  },
+};
+
+// ============================================
+// Template: Persistent Creator (priority 60, Phase 5.3.1)
+// ============================================
+//
+// Fires when one creator dominates recurrence across the user's
+// scan history. Cross-scan signal — outranks single-scan
+// concentrated_feed and heavy_ad_load.
+//
+// Priority 60 ties with heavyAdLoadTemplate. The registration order
+// in DASHBOARD_OVERVIEW_TEMPLATES below places this template FIRST
+// among priority-60 templates, so on tie (both predicates true) the
+// persistent-creator finding wins. Cross-scan patterns are more
+// meaningful for a Dashboard surface (which is by definition about
+// the user's history) than single-scan ad spikes.
+//
+// Verdict frame is Overview-specific ("keeps showing up across your
+// history") vs Results' ("steady presence in your feed"). Same data,
+// daily-state framing instead of session-summary framing.
+
+const persistentCreatorTemplate: ResultsTemplate = {
+  id: 'dashboard.overview.persistent_creator',
+  priority: 60,
+  when: (ctx) => {
+    const recurrence = computeCreatorRecurrence(ctx.scans, ctx.platform);
+    const top = recurrence.records[0];
+    if (!top) return false;
+    if (top.scanCount < PERSISTENT_CREATOR_MIN_SCAN_COUNT) return false;
+    if (recurrence.windowScanCount < PERSISTENT_CREATOR_MIN_WINDOW) {
+      return false;
+    }
+    return true;
+  },
+  render: (ctx) => {
+    const { activeScan, scans, dashboardData, platform } = ctx;
+    const platformLabel = capitalizePlatform(platform);
+    const recurrence = computeCreatorRecurrence(scans, platform);
+    const top = recurrence.records[0]!;
+    const { displayName, scanCount, totalPosts } = top;
+    const windowScanCount = recurrence.windowScanCount;
+
+    const verdict = `One voice keeps showing up across your ${platformLabel} history.`;
+
+    const sublines: Subline[] = [
+      {
+        mode: 'OBSERVED',
+        text: `${displayName} has been in ${scanCount} of your recent ${windowScanCount} scans, with ${totalPosts} posts total.`,
+      },
+      {
+        mode: 'LIKELY',
+        text:
+          'When a single creator consistently produces watch-time, recent activity gets weighted as a strong signal for what to surface next. Repeat exposure reinforces this across sessions.',
       },
     ];
 
@@ -423,8 +500,16 @@ function pluralizeContentType(label: string): string {
 // Template registry
 // ============================================
 
+// Registration order matters when two templates share a priority.
+// JavaScript's Array.prototype.sort is stable (ES2019+), so within
+// the same priority bucket the earlier-registered template wins the
+// orchestrator's iteration. persistentCreatorTemplate and
+// heavyAdLoadTemplate are both priority 60; persistent-creator is
+// registered first so a recurring-creator finding takes precedence
+// over an ad-density spike when both could fire on the same scan.
 export const DASHBOARD_OVERVIEW_TEMPLATES: ResultsTemplate[] = [
   politicalShiftTemplate,
+  persistentCreatorTemplate,
   heavyAdLoadTemplate,
   concentratedFeedTemplate,
   calmCaseTemplate,
