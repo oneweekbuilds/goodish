@@ -1,10 +1,25 @@
 # 2.x Results Screen — Device Test Runbook
 
+## Platform requirement: Mac with iOS toolchain
+
+This runbook requires a macOS machine with:
+- Xcode 15+
+- A physical iOS device (iPhone or iPad)
+- Apple Developer account with code signing configured
+
+The mobile build is iOS-only. The broadcast extension uses ReplayKit, which is iOS-exclusive. There is no Windows or web alternative for running the dev build with the broadcast extension functional.
+
+If you're reading this on a non-Mac machine and don't have Mac access, this runbook is not actionable for you. The 2.x engine work is complete and tested at the engine layer (see `mobile/src/lib/interpretation/__tests__/realScanSmoke.test.ts`), but the visual and integration verification described below cannot be performed without the iOS toolchain.
+
+---
+
 This runbook walks Justin through running the 2.x interpretation engine on a real iPhone with a real YouTube scan, then capturing what the Results screen actually produces.
 
 **Status before you start:** the engine, adapter, Results-screen wiring, design-system primitives, and calm-case template are all on `claude/2x-engine-mvp-results` (HEAD `9b95df41`). The smoke test (Phase 4.5.1a) exercises the engine path end-to-end against a redacted real fixture and passes — what we're missing is the visual confirmation that the rendered screen matches the engine output.
 
 ## Prerequisites
+
+> **Gate:** see the "Platform requirement" section above. If you don't have Mac + iOS device + Apple Developer signing, stop here — the steps below assume all three.
 
 - macOS with Xcode 15 or later
 - Physical iPhone running iOS 12+ (broadcast extensions don't work in the Simulator)
