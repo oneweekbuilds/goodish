@@ -26,7 +26,7 @@ The runbook at `mobile/audits/2x-results-design/device-test-runbook.md` walks th
 
 ---
 
-**Snapshot date:** 2026-05-16. The 2.x interpretation engine MVP is functionally complete on `claude/2x-engine-mvp-results` (HEAD `195bee27`, 20 commits ahead of `origin/main`). The engine runs end-to-end against real Supabase scan data — verified by a smoke test that loads two redacted production YouTube scans and produces meaningful interpretation output. What's NOT done is the visual confirmation on a physical iPhone (the device test), which is blocked on Mac access. The work sits cleanly on origin and is ready for whoever has Mac + iOS tooling to pick up the runbook.
+**Snapshot date:** 2026-05-17. The 2.x interpretation engine MVP is on `claude/2x-engine-mvp-results` (HEAD `74416ffd`, 32 commits ahead of `origin/main`). Two surfaces are now wired to the engine — the Results screen (Phase 4) and the Dashboard Overview tab (Phase 5.1) — plus three engine layers added in Phase 5.2-5.3 (creator recurrence derivation, Top voice supporting row, persistent-creator standalone template). The engine runs end-to-end against real Supabase scan data; smoke tests cover the calm-case path (2-scan real fixtures) and the persistent-creator path (4-scan synthesized window from the real fixtures). What's NOT done is the visual confirmation on a physical iPhone (the device test), which is blocked on Mac access. The work sits cleanly on origin and is ready for whoever has Mac + iOS tooling to pick up the runbook.
 
 ## What's been built and shipped to origin/main
 
@@ -39,7 +39,7 @@ Nothing engine-code-wise is on `main` yet. The full implementation sits on the f
 
 ## What's been built and lives on a feature branch
 
-Branch: **`claude/2x-engine-mvp-results`** at HEAD **`195bee27`**, 20 commits ahead of `origin/main`. Pushed and durable on origin.
+Branch: **`claude/2x-engine-mvp-results`** at HEAD **`74416ffd`**, 32 commits ahead of `origin/main`. Pushed and durable on origin.
 
 In delivery order, the commits group into logical chunks:
 
@@ -79,57 +79,88 @@ In delivery order, the commits group into logical chunks:
 - `a01ab36f` — *docs(2x): add device test runbook for Results screen.*
 - `195bee27` — *docs(2x): flag Mac requirement at top of device test runbook.*
 
+**Dashboard Overview surface (Phase 5.1)**
+- `87f9a15d` — *feat(2x): add Dashboard Overview interpretation templates.* Four templates (political_shift priority 70, heavy_ad_load priority 60, concentrated_feed priority 50, calm_case priority 10) with Overview-specific verdict copy. Extracted shared `buildAdsRow / buildPatternsRow / buildPoliticalRow / buildToneRow` into `templates/supportingRows.ts`.
+- `07eea6da` — *feat(2x): extend orchestrator to support dashboard.overview surface.* `selectTemplate(templates, context)` shared helper; `interpretScan` dispatches via switch with explicit per-surface arms.
+- `8dcc5222` — *feat(2x): wire interpretation engine into Dashboard Overview tab.* Modified `OverviewTab.tsx` to compute interpretation internally via four `useMemo` hooks; replaced `HeroStatCard` + `pickHeroStat` cascade with engine-driven verdict zone + supporting card; extracted `SublineRow` and `sublineGapTop` to `mobile/src/components/interpretation/` so both Results and Overview consume the shared helpers.
+- `32927181` — *test(2x): extend real-scan smoke test to cover dashboard.overview surface.* Verified Overview-specific copy ("today came from suggestions") on real fixtures.
+
+**Creator recurrence + Top voice row (Phase 5.2)**
+- `40928dcf` — *feat(2x): add creator recurrence cross-scan derivation.* `computeCreatorRecurrence(scans, platform, options)` returns per-creator records sorted by scanCount desc with totalPosts tiebreaker. Case-insensitive handle grouping (deliberate divergence from `rollingAverage.extractTopCreatorShare`), null-handle exclusion (deliberate divergence from `computeDashboardData.countByCreator`). 19 unit tests.
+- `d696a703` — *test(2x): extend smoke test to cover creator recurrence on real fixtures.* Surfaced 49 distinct creators on real YouTube data, 5 recurring across both scans. Empirically reframed Issue #10: creator attribution isn't absent on YouTube, just dilute enough that single-scan concentration rarely fires.
+- `a9604b66` — *feat(2x): add Top voice recurrence row to calm-case supporting cards.* Shared `buildStandardSupportingRows` prepends Top voice FactRow when `topRecurrer.scanCount >= 2`. `recurrenceAnchor(scanCount, windowScanCount)` scales copy: "in both your scans" → "in all N of your scans" → "in M of your last 3 scans" → "in M of last N scans" (design-canonical). Applied to all six templates that compose the standard 4-row card.
+
+**Persistent-creator standalone template (Phase 5.3)**
+- `99a71a3d` — *feat(2x): add persistent-creator template for Results and Overview surfaces.* Priority 60 on both surfaces; fires at `topRecurrer.scanCount >= 3 AND windowScanCount >= 4`. Surface-differentiated verdict copy: Results says *"One creator has been a steady presence in your YouTube feed,"* Overview says *"One voice keeps showing up across your YouTube history."* On Overview, registered before `heavyAdLoadTemplate` so persistent-creator wins the priority-60 tie when both predicates match (cross-scan signal beats single-scan ad spike).
+- `29e495ee` — *test(2x): cover persistent-creator template firing, precedence, and copy.* 18 tests across both surfaces — threshold firing, threshold non-firing (window depth), precedence (loses to political_shift, wins over concentrated_feed and heavy_ad_load), OBSERVED interpolation, Top voice supporting row presence, findingDot true.
+- `74416ffd` — *test(2x): add depth-padded smoke test for persistent-creator template.* Synthesizes a 4-scan window by deep-cloning `REAL_PRIOR_SCAN` with mutated id and created_at (1-week and 2-week setbacks). Verifies template fires on real-shape data with honest copy: *"Creator 13 has appeared in 4 of your last 4 scans, with 14 posts across them"* (Results) / *"Creator 13 has been in 4 of your recent 4 scans, with 14 posts total"* (Overview).
+
 ### Test coverage
 
-Six interpretation test suites, 89 passing tests total:
+Eight interpretation test suites, 153 passing tests total:
 
 | Suite | Tests | Covers |
 |---|---|---|
-| `interpretationEngine.test.ts` | 18 | Orchestrator dispatch, concentrated-feed template, calm-case template (all 3 variants + precedence + Unknown-label skip), surface gating, platform interpolation, meta resolution |
+| `interpretationEngine.test.ts` | 47 | Orchestrator dispatch + selectTemplate, concentrated-feed, calm-case (3 variants + precedence + Unknown-skip), surface gating (Results + Overview pass, others throw), dashboard.overview templates (political_shift, heavy_ad_load, concentrated, calm-case), persistent-creator on Results (8) + Overview (10) with priority-60 tie test, platform interpolation, meta resolution |
 | `rollingAverage.test.ts` | 26 | All 7 metric extractors, platform filtering, current-scan exclusion, window sizing, malformed-data tolerance, > 50% failure threshold |
+| `creatorRecurrence.test.ts` | 19 | Empty/all-null inputs, aggregation + sort, platform filter, excludeScanId, window size default + custom, sparse history, null-handle exclusion, case-insensitive grouping, display-name resolution, firstSeenIndex, failure tolerance |
 | `unifiedResultToScanDetail.test.ts` | 12 | Adapter top-level field population, `raw_data` shape parity with `buildScanRow`, timestamp pinning, Supabase-shape parity (scan_id undefined, no deprecated top-level columns) |
+| `supportingRows.test.ts` | 12 | `recurrenceAnchor` copy variants (in-both / in-all-N / in-M-of-last-3 / in-M-of-last-N), `buildTopVoiceRow` threshold behavior + top-recurrer selection + displayName fallback |
 | `comparativeAnchor.test.ts` | 21 | Bucketing thresholds, null/zero rolling-average handling, label overrides |
 | `platformDisplay.test.ts` | 11 | Capitalization mapping including X/Twitter brand convention |
-| `realScanSmoke.test.ts` | 1 | End-to-end shape correctness against redacted real production scans |
+| `realScanSmoke.test.ts` | 5 | End-to-end shape correctness against redacted real production scans (Results, dashboard.overview, computeCreatorRecurrence, plus depth-padded persistent-creator on both surfaces) |
 
 Pre-existing failing tests unrelated to this work: 5 (in `computeDashboardData.test.ts` and `streakManager.test.ts`). Baseline unchanged.
 
-Full mobile suite: 21 of 23 suites passing, 492 of 497 tests passing.
+Full mobile suite: 23 of 25 suites passing, 556 of 561 tests passing.
 
 TypeScript baseline: 19 errors, all pre-existing, none in any 2x-engine file.
 
 ## What works today
 
-The engine functions end-to-end against real Supabase scan data. The smoke test at `mobile/src/lib/interpretation/__tests__/realScanSmoke.test.ts` runs `interpretScan` against two real production YouTube scans (redacted in the fixture) and produces meaningful interpretation output. The output as of the most recent run is captured below verbatim:
+The engine functions end-to-end against real Supabase scan data. The smoke tests at `mobile/src/lib/interpretation/__tests__/realScanSmoke.test.ts` run `interpretScan` against two real production YouTube scans (redacted in the fixture) and produce meaningful interpretation output.
+
+**Calm-case path (2-scan real fixtures, Results surface)** — most likely path on typical YouTube data given the creator attribution gap tracked in issue #10:
 
 ```json
 {
   "verdict": "Almost everything in your YouTube feed came from suggestions.",
   "sublines": [
-    {
-      "mode": "OBSERVED",
-      "text": "100% of what you saw was suggested, with 0% from accounts you follow."
-    },
-    {
-      "mode": "LIKELY",
-      "text": "Suggestion weights fill the feed when activity from followed accounts is sparse."
-    }
+    { "mode": "OBSERVED", "text": "100% of what you saw was suggested, with 0% from accounts you follow." },
+    { "mode": "LIKELY",   "text": "Suggestion weights fill the feed when activity from followed accounts is sparse." }
   ],
   "supportingRows": [
+    { "variant": "fact", "label": "Top voice", "value": "Creator 13", "anchor": "in both your scans" },
     { "variant": "fact", "label": "Ads",       "value": "3% of feed" },
     { "variant": "fact", "label": "Patterns",  "value": "Top: Video" },
     { "variant": "fact", "label": "Political", "value": "No analysis" },
     { "variant": "fact", "label": "Tone",      "value": "No analysis" }
   ],
-  "findingDot": false,
-  "meta": {
-    "surface": "results",
-    "scanId": "8230a0b2-4bed-4270-a3d4-87028d484098"
-  }
+  "findingDot": false
 }
 ```
 
-This output is what the Results screen would render. The smoke test exercises the calm-case template's high-suggested variant — the most likely path on typical YouTube data given the creator attribution gap tracked in issue #10. The "No analysis" rows for Political and Tone are honest output (the fixture's scans don't have Gemini backend enrichment) rather than a wiring bug; filed as a copy iteration candidate.
+**Persistent-creator path (4-scan synthesized window, Results surface)** — depth-padded smoke test verifies the template fires honestly on real-shape data when history depth supports it:
+
+```json
+{
+  "verdict": "One creator has been a steady presence in your YouTube feed.",
+  "sublines": [
+    { "mode": "OBSERVED", "text": "Creator 13 has appeared in 4 of your last 4 scans, with 14 posts across them." },
+    { "mode": "LIKELY",   "text": "When a single creator consistently produces watch-time, recent activity gets weighted as a strong signal for what to surface next. Repeat exposure reinforces this across sessions." }
+  ],
+  "supportingRows": [
+    { "variant": "fact", "label": "Top voice", "value": "Creator 13", "anchor": "in all 4 of your scans" },
+    { "variant": "fact", "label": "Ads",       "value": "3% of feed", "anchor": "typical" },
+    { "variant": "fact", "label": "Patterns",  "value": "Top: Video" },
+    { "variant": "fact", "label": "Political", "value": "No analysis" },
+    { "variant": "fact", "label": "Tone",      "value": "No analysis" }
+  ],
+  "findingDot": true
+}
+```
+
+The "No analysis" rows for Political and Tone are honest output (the fixture's scans don't have Gemini backend enrichment) rather than a wiring bug; filed as a copy iteration candidate. The Dashboard Overview surface produces structurally identical output with surface-specific verdict and OBSERVED copy ("keeps showing up" / "been in your recent N scans").
 
 ## What's blocked
 
@@ -158,8 +189,7 @@ These items are explicitly out of scope for the current branch and remain as fut
 
 - COACHING sub-line mode (the "SOMETHING TO TRY" beat)
 - A QUESTION FOR YOU sub-line mode
-- The other 5 Dashboard tabs (Who Shapes Your Feed, Ads, Politics, Tone, Suggested vs Followed) — currently throw `"surface not yet implemented"` if `interpretScan` is called with them
-- **Persistent-creator standalone template** — fires when `topRecurrer.scanCount >= 3` AND `windowScanCount >= 4`. Would slot between political-shift (priority 70) and concentrated-feed (priority 50) at priority 60. Surface-appropriate verdict copy per Phase 5.2.4 proposal. Tests need to cover precedence (recurrence wins over concentration, loses to political-shift). Filed as Phase 5.3 candidate.
+- The 5 remaining Dashboard tabs (Who Shapes Your Feed, Ads, Politics, Tone, Suggested vs Followed) — Overview shipped in Phase 5.1; the others currently throw `"surface not yet implemented"` if `interpretScan` is called with them
 - Advertiser persistence detection
 - Quiet-followed-creator detection
 - Cross-metric correlation
@@ -184,13 +214,15 @@ The scoping document at `mobile/audits/2x-interpretation-engine-scoping/decision
 
 ## Test counts at this commit
 
-- Orchestrator + templates: **18 tests** (`interpretationEngine.test.ts`)
+- Orchestrator + templates: **47 tests** (`interpretationEngine.test.ts`)
 - Rolling average derivation: **26 tests** (`rollingAverage.test.ts`)
+- Creator recurrence derivation: **19 tests** (`creatorRecurrence.test.ts`)
 - Adapter: **12 tests** (`unifiedResultToScanDetail.test.ts`)
+- Supporting-row helpers: **12 tests** (`supportingRows.test.ts`)
 - Utilities: **32 tests** (`comparativeAnchor.test.ts` 21 + `platformDisplay.test.ts` 11)
-- Smoke test against real Supabase data: **1 test** (`realScanSmoke.test.ts`)
-- **Total interpretation tests: 89**
-- Total tests in the full mobile suite: **497**
+- Smoke tests against real Supabase data: **5 tests** (`realScanSmoke.test.ts`)
+- **Total interpretation tests: 153**
+- Total tests in the full mobile suite: **561**
 - Pre-existing failing tests (unrelated, predate this work): **5** (in `computeDashboardData.test.ts` and `streakManager.test.ts`)
 
 <!-- TODO-MAC-TEST: Future Claude Code sessions, surface the Mac device test requirement on session resume. See top of this file. -->
