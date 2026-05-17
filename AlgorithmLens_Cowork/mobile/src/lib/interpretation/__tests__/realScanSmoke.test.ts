@@ -22,6 +22,7 @@
  * Reference: Phase 4.5.1a in the 2.x engine MVP plan.
  */
 
+import type { ScanDetail } from '../../../hooks/useDashboard';
 import { computeDashboardData } from '../../computeDashboardData';
 import { computeCreatorRecurrence } from '../derivations/creatorRecurrence';
 import { interpretScan, type EngineSurface } from '../interpretationEngine';
@@ -133,6 +134,109 @@ describe('interpretationEngine — real-scan smoke', () => {
     );
 
     assertResultShape(result, 'dashboard.overview');
+  });
+});
+
+// ============================================
+// Persistent-creator smoke (Phase 5.3.3)
+// ============================================
+//
+// The smoke fixture has windowScanCount === 2, which is below the
+// persistent-creator template's threshold (scanCount >= 3 AND
+// windowScanCount >= 4). To validate the template on real-shape
+// data we synthesize 2 additional prior scans by deep-cloning
+// REAL_PRIOR_SCAN, mutating ids and timestamps backwards.
+//
+// This is test-local synthesis, not real data — the originals are
+// already redacted, and the clones inherit that redaction. We don't
+// promote these to fixtures/realScans.ts because they're test
+// scaffolding, not observed scans.
+//
+// Creator distribution is preserved by deep cloning: whatever
+// @creator-N appeared in REAL_PRIOR_SCAN appears in both clones too.
+// Per Phase 5.2.3, @creator-13 is the top recurrer (scanCount=2 on
+// the original 2-fixture window); with two more cloned-prior scans
+// added, @creator-13's scanCount climbs to 4-of-4, well above the
+// threshold.
+
+function deepClone<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
+/**
+ * Build a 4-scan depth-padded window for persistent-creator smoke
+ * testing. Returns scans newest-first:
+ *   [REAL_ACTIVE_SCAN, REAL_PRIOR_SCAN, clone-1week-back, clone-2weeks-back]
+ *
+ * The clones preserve REAL_PRIOR_SCAN's posts (and thus its creator
+ * distribution) verbatim; only the id and created_at are mutated so
+ * the engine's desc-sort by date orders them after the original prior.
+ */
+function buildDepthPaddedScans(): [ScanDetail, ScanDetail[]] {
+  const clone1 = deepClone(REAL_PRIOR_SCAN);
+  clone1.id = 'synth-prior-1week';
+  clone1.created_at = '2026-02-19T15:03:29.709+00:00';
+
+  const clone2 = deepClone(REAL_PRIOR_SCAN);
+  clone2.id = 'synth-prior-2weeks';
+  clone2.created_at = '2026-02-12T15:03:29.709+00:00';
+
+  const scans = [REAL_ACTIVE_SCAN, REAL_PRIOR_SCAN, clone1, clone2];
+  return [REAL_ACTIVE_SCAN, scans];
+}
+
+describe('persistent-creator template — real-scan smoke (depth-padded)', () => {
+  test('Results: persistent-creator template fires on a 4-scan synthesized window', () => {
+    const [activeScan, scans] = buildDepthPaddedScans();
+    const context: InterpretationContext = {
+      activeScan,
+      scans,
+      dashboardData: computeDashboardData(activeScan),
+      platform: 'youtube',
+    };
+
+    const result = interpretScan(context, 'results');
+
+    // eslint-disable-next-line no-console
+    console.log(
+      '[realScanSmoke persistent-creator results] InterpretationResult:\n' +
+        JSON.stringify(result, null, 2),
+    );
+
+    assertResultShape(result, 'results');
+    expect(result.verdict).toContain('steady presence');
+    expect(result.findingDot).toBe(true);
+    // Supporting card leads with Top voice (Phase 5.2.5 prepend).
+    expect(result.supportingRows[0]).toMatchObject({
+      variant: 'fact',
+      label: 'Top voice',
+    });
+  });
+
+  test('Overview: persistent-creator template fires on the same window with surface-specific copy', () => {
+    const [activeScan, scans] = buildDepthPaddedScans();
+    const context: InterpretationContext = {
+      activeScan,
+      scans,
+      dashboardData: computeDashboardData(activeScan),
+      platform: 'youtube',
+    };
+
+    const result = interpretScan(context, 'dashboard.overview');
+
+    // eslint-disable-next-line no-console
+    console.log(
+      '[realScanSmoke persistent-creator dashboard.overview] InterpretationResult:\n' +
+        JSON.stringify(result, null, 2),
+    );
+
+    assertResultShape(result, 'dashboard.overview');
+    expect(result.verdict).toContain('keeps showing up');
+    expect(result.findingDot).toBe(true);
+    expect(result.supportingRows[0]).toMatchObject({
+      variant: 'fact',
+      label: 'Top voice',
+    });
   });
 });
 
