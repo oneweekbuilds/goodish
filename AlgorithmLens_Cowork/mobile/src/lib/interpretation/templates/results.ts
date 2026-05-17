@@ -212,7 +212,186 @@ function buildToneRow(
 }
 
 // ============================================
+// Template: Calm Case (catch-all, Phase 4.5.2.2)
+// ============================================
+//
+// Fires when no higher-priority template matches. Replaces the
+// placeholder fallback that used to live inline in the orchestrator.
+//
+// The calm case isn't "nothing to say" — it's "nothing dramatic to
+// say." The design spec voice guidance: "the verdict can be specific
+// without being eventful." So this template branches on what's most
+// notable about the scan in the absence of a strong concentration:
+//
+//   Variant 1 — high suggested ratio (suggestedPct >= 80):
+//     "Almost everything in your YouTube feed came from suggestions."
+//     A feed dominated by suggestions, even without creator
+//     concentration, is itself a real characteristic worth surfacing.
+//
+//   Variant 2 — single content type dominates (>= 50%):
+//     "Your YouTube feed was mostly shorts this session."
+//     Useful on YouTube specifically where the format mix tells you
+//     something about what's being weighted.
+//
+//   Variant 3 — genuine fallback:
+//     "37 posts captured on your YouTube feed, nothing unusual flagged."
+//     Specific by giving the post count rather than the generic
+//     "your feed is in its usual shape" boilerplate that shipped in
+//     the Phase 3.2 placeholder.
+//
+// All three variants emit two sublines (OBSERVED + LIKELY) and the
+// standard four-row supporting card (Ads, Patterns, Political, Tone).
+// Mechanism language in LIKELY copy per the locked voice rule:
+// "weights", "fills", "reflects" — never "the algorithm wants" or
+// other anthropomorphism.
+//
+// findingDot stays false: calm case isn't a finding worth dotting
+// the Dashboard tab strip for.
+
+type CalmVariant = 'high-suggested' | 'content-type-dominant' | 'fallback';
+
+const CALM_HIGH_SUGGESTED_THRESHOLD_PCT = 80;
+const CALM_CONTENT_TYPE_DOMINANCE_PCT = 50;
+
+const calmCaseTemplate: ResultsTemplate = {
+  id: 'results.calm_case',
+  // Below concentratedFeedTemplate (50) so concentration always wins
+  // when both could match. Above any hypothetical future "diagnostic"
+  // template that we'd want to short-circuit calm output.
+  priority: 10,
+  when: () => true,
+  render: (ctx) => {
+    const { activeScan, scans, dashboardData, platform } = ctx;
+    const platformLabel = capitalizePlatform(platform);
+    const variant = determineCalmVariant(dashboardData);
+
+    const { verdict, sublines } = buildCalmVerdictAndSublines(
+      variant,
+      dashboardData,
+      platformLabel,
+    );
+
+    const supportingRows: SupportingRow[] = [
+      buildAdsRow(activeScan, scans, dashboardData, platform),
+      buildPatternsRow(dashboardData),
+      buildPoliticalRow(activeScan, scans, dashboardData, platform),
+      buildToneRow(dashboardData),
+    ];
+
+    return {
+      verdict,
+      sublines,
+      supportingRows,
+      findingDot: false,
+      meta: {
+        surface: 'results',
+        scanId: activeScan.scan_id ?? activeScan.id,
+      },
+    };
+  },
+};
+
+function determineCalmVariant(
+  dashboardData: InterpretationContext['dashboardData'],
+): CalmVariant {
+  if (dashboardData.suggestedPct >= CALM_HIGH_SUGGESTED_THRESHOLD_PCT) {
+    return 'high-suggested';
+  }
+  const topType = dashboardData.contentTypes[0];
+  if (
+    topType &&
+    topType.label !== 'Unknown' &&
+    topType.percentage >= CALM_CONTENT_TYPE_DOMINANCE_PCT
+  ) {
+    return 'content-type-dominant';
+  }
+  return 'fallback';
+}
+
+function buildCalmVerdictAndSublines(
+  variant: CalmVariant,
+  dashboardData: InterpretationContext['dashboardData'],
+  platformLabel: string,
+): { verdict: string; sublines: Subline[] } {
+  if (variant === 'high-suggested') {
+    const suggestedPct = Math.round(dashboardData.suggestedPct);
+    const followedPct = Math.round(dashboardData.followedPct);
+    return {
+      verdict: `Almost everything in your ${platformLabel} feed came from suggestions.`,
+      sublines: [
+        {
+          mode: 'OBSERVED',
+          text: `${suggestedPct}% of what you saw was suggested, with ${followedPct}% from accounts you follow.`,
+        },
+        {
+          mode: 'LIKELY',
+          text:
+            'Suggestion weights fill the feed when activity from followed accounts is sparse.',
+        },
+      ],
+    };
+  }
+
+  if (variant === 'content-type-dominant') {
+    const top = dashboardData.contentTypes[0]!;
+    const typePlural = pluralizeContentType(top.label);
+    const pct = Math.round(top.percentage);
+    return {
+      verdict: `Your ${platformLabel} feed was mostly ${typePlural} this session.`,
+      sublines: [
+        {
+          mode: 'OBSERVED',
+          text: `${pct}% of posts were ${typePlural}, the dominant format in this scan.`,
+        },
+        {
+          mode: 'LIKELY',
+          text:
+            'Recent watch time on this format keeps it weighted higher in what gets surfaced next.',
+        },
+      ],
+    };
+  }
+
+  // Fallback variant.
+  const totalPosts = dashboardData.totalPosts;
+  const adPct = Math.round(dashboardData.adPct);
+  // Edge case: totalPosts === 0 produces "0 posts captured ..." which
+  // is technically correct but reads oddly. Acceptable because a
+  // zero-post scan implies upstream pipeline issues that take
+  // precedence over verdict polish.
+  return {
+    verdict: `${totalPosts} posts captured on your ${platformLabel} feed, nothing unusual flagged.`,
+    sublines: [
+      {
+        mode: 'OBSERVED',
+        text: `${totalPosts} posts captured, with ads at ${adPct}%.`,
+      },
+      {
+        mode: 'LIKELY',
+        text:
+          'Without a strong concentration in any direction, the feed reflects your usual engagement history.',
+      },
+    ],
+  };
+}
+
+/**
+ * Lowercase + naive English pluralization for content-type labels.
+ * countContentTypes capitalizes the first letter ("Video", "Short",
+ * "Photo"); we want "videos", "shorts", "photos" in verdict copy.
+ * Bare append-'s' rule is sufficient for the known set; if labels
+ * ever include irregular plurals this will need a lookup table.
+ */
+function pluralizeContentType(label: string): string {
+  const lower = label.toLowerCase();
+  return lower.endsWith('s') ? lower : `${lower}s`;
+}
+
+// ============================================
 // Template registry
 // ============================================
 
-export const RESULTS_TEMPLATES: ResultsTemplate[] = [concentratedFeedTemplate];
+export const RESULTS_TEMPLATES: ResultsTemplate[] = [
+  concentratedFeedTemplate,
+  calmCaseTemplate,
+];

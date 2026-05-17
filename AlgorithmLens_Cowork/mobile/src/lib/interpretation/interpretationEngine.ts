@@ -9,14 +9,18 @@
  * The orchestrator iterates the surface's template registry in
  * descending priority order. The first template whose `when` predicate
  * returns true gets its `render` function called and its result
- * returned. If no template matches, a default calm-case result is
- * produced inline (this will graduate to its own template in a later
- * phase, once there are enough specific templates for the calm case
- * to read as the explicit "nothing notable" branch rather than as
- * orchestrator fallback).
+ * returned.
+ *
+ * Phase 4.5.2.2 introduced the calm-case template (`results.calm_case`,
+ * priority 10) with a `when: () => true` predicate, so for the 'results'
+ * surface at least one template ALWAYS matches. The orchestrator's
+ * "no template fired" branch is now a thrown invariant — if it ever
+ * fires that's a bug in template registration, not a runtime case
+ * to handle.
  *
  * Surface coverage:
- *   - 'results' — functional in Phase 3.2 (one template: concentrated feed).
+ *   - 'results' — functional (two templates: concentrated feed,
+ *     calm case catch-all).
  *   - All other surfaces — throw "not yet implemented". Failing loudly
  *     is preferable to silently producing wrong output for surfaces
  *     that haven't had their templates authored yet.
@@ -27,10 +31,8 @@
 import type {
   InterpretationContext,
   InterpretationResult,
-  Subline,
 } from './interpretation-types';
 import { RESULTS_TEMPLATES } from './templates';
-import { capitalizePlatform } from './utils/platformDisplay';
 
 export type EngineSurface =
   | 'results'
@@ -61,38 +63,10 @@ export function interpretScan(
     }
   }
 
-  return buildCalmCaseResult(context);
-}
-
-/**
- * Default result when no template matches.
- *
- * Phase 3.2 ships this inline. A future phase will replace it with a
- * proper calm-case template that has its own priority slot. The
- * placeholder OBSERVED text ("Nothing notable changed in this scan.")
- * is intentionally generic; it'll get authored once we have enough
- * specific templates to write a calm-case voice that doesn't repeat
- * verbatim across scans (see Risk 7 in the scoping doc).
- */
-function buildCalmCaseResult(
-  context: InterpretationContext,
-): InterpretationResult {
-  const { activeScan, platform } = context;
-  const platformLabel = capitalizePlatform(platform);
-  const sublines: Subline[] = [
-    {
-      mode: 'OBSERVED',
-      text: 'Nothing notable changed in this scan.',
-    },
-  ];
-  return {
-    verdict: `Your ${platformLabel} feed is in its usual shape.`,
-    sublines,
-    supportingRows: [],
-    findingDot: false,
-    meta: {
-      surface: 'results',
-      scanId: activeScan.scan_id ?? activeScan.id,
-    },
-  };
+  // Invariant: the calm-case template's `when: () => true` should
+  // always match. Reaching here means the registry was modified to
+  // drop calm-case or a template's `when` threw. Either way: bug.
+  throw new Error(
+    'interpretScan: no template matched for surface=results. The calm-case template should match any context — this indicates a bug in template registration.',
+  );
 }

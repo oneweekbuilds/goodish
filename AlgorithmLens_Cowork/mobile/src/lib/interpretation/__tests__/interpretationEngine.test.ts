@@ -118,50 +118,134 @@ describe('interpretScan orchestrator', () => {
     });
   });
 
-  describe('calm-case fallback', () => {
-    test('returns calm-case verdict when top creator < 25%', () => {
-      // 5 of 50 = 10%, below threshold.
+  describe('calm-case template', () => {
+    // Phase 4.5.2.2 replaced the inline orchestrator fallback with a
+    // real template that emits two sublines + the four-row supporting
+    // card. These tests verify the three variant branches and the
+    // shape contract.
+
+    test('fallback variant fires when no other condition matches', () => {
+      // suggestedPct < 80, no content-type dominance, concentrated
+      // feed's top-creator predicate fails (5/50 = 10%). Landing in
+      // the calm-case template's fallback variant.
       const ctx = makeContext({
         dashboardData: makeDashboardData({
           totalPosts: 50,
+          adPct: 11,
+          suggestedPct: 60,
+          followedPct: 40,
           topCreators: [
             { name: 'alice', count: 5 },
           ] as unknown as DashboardData['topCreators'],
+          contentTypes: [],
         }),
       });
       const result = interpretScan(ctx, 'results');
-      expect(result.verdict).toContain('usual shape');
+      expect(result.verdict).toContain('50 posts captured');
+      expect(result.verdict).toContain('nothing unusual flagged');
       expect(result.findingDot).toBe(false);
-      expect(result.supportingRows).toEqual([]);
-      expect(result.sublines).toHaveLength(1);
-      expect(result.sublines[0]?.mode).toBe('OBSERVED');
+      // Two sublines (OBSERVED + LIKELY) and the four-row supporting card.
+      expect(result.sublines).toHaveLength(2);
+      expect(result.sublines.map((s) => s.mode)).toEqual([
+        'OBSERVED',
+        'LIKELY',
+      ]);
+      expect(result.supportingRows).toHaveLength(4);
+      expect(result.supportingRows.map((r) => r.variant)).toEqual([
+        'fact',
+        'fact',
+        'fact',
+        'fact',
+      ]);
     });
 
-    test('returns calm-case when topCreators array is empty', () => {
+    test('high-suggested variant fires when suggestedPct >= 80', () => {
+      const ctx = makeContext({
+        dashboardData: makeDashboardData({
+          totalPosts: 37,
+          adPct: 3,
+          suggestedPct: 100,
+          followedPct: 0,
+          topCreators: [],
+          contentTypes: [
+            { label: 'Short', count: 30, percentage: 81 },
+          ] as DashboardData['contentTypes'],
+        }),
+      });
+      const result = interpretScan(ctx, 'results');
+      // High-suggested takes precedence over content-type-dominant
+      // when both could fire.
+      expect(result.verdict).toContain('came from suggestions');
+      const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+      expect(observed?.text).toContain('100%');
+      expect(observed?.text).toContain('suggested');
+      const likely = result.sublines.find((s) => s.mode === 'LIKELY');
+      // No anthropomorphism — mechanism language only.
+      expect(likely?.text).toContain('weights');
+    });
+
+    test('content-type-dominant variant fires when one type >= 50%', () => {
+      const ctx = makeContext({
+        dashboardData: makeDashboardData({
+          totalPosts: 40,
+          adPct: 8,
+          suggestedPct: 50, // below high-suggested threshold
+          followedPct: 50,
+          topCreators: [],
+          contentTypes: [
+            { label: 'Photo', count: 28, percentage: 70 },
+            { label: 'Video', count: 12, percentage: 30 },
+          ] as DashboardData['contentTypes'],
+        }),
+      });
+      const result = interpretScan(ctx, 'results');
+      expect(result.verdict).toContain('mostly photos');
+      expect(result.verdict).toContain('this session');
+      const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+      expect(observed?.text).toContain('70%');
+      expect(observed?.text).toContain('photos');
+    });
+
+    test('content-type-dominant skips Unknown label', () => {
+      // "Unknown" is a real bucket from countContentTypes when posts
+      // lack content_type. Promoting it to the verdict would read as
+      // "Mostly unknowns this session" — unhelpful. Should fall
+      // through to the fallback variant.
       const ctx = makeContext({
         dashboardData: makeDashboardData({
           totalPosts: 50,
+          adPct: 10,
+          suggestedPct: 60,
+          followedPct: 40,
           topCreators: [],
+          contentTypes: [
+            { label: 'Unknown', count: 40, percentage: 80 },
+          ] as DashboardData['contentTypes'],
         }),
       });
       const result = interpretScan(ctx, 'results');
-      expect(result.verdict).toContain('usual shape');
-      expect(result.findingDot).toBe(false);
+      // Verdict should be the fallback, not a "mostly unknowns" string.
+      expect(result.verdict).toContain('nothing unusual flagged');
+      expect(result.verdict).not.toContain('unknown');
     });
 
-    test('returns calm-case when totalPosts is zero', () => {
+    test('concentrated-feed template still wins when both could match', () => {
+      // High suggestedPct AND high top-creator share. Concentrated
+      // feed has higher priority (50 > 10), so its template wins.
       const ctx = makeContext({
         dashboardData: makeDashboardData({
-          totalPosts: 0,
+          totalPosts: 50,
+          adPct: 10,
+          suggestedPct: 100,
+          followedPct: 0,
           topCreators: [
-            { name: 'alice', count: 10 },
+            { name: 'alice', count: 20 },
           ] as unknown as DashboardData['topCreators'],
         }),
       });
       const result = interpretScan(ctx, 'results');
-      // Top-creator-share predicate guards against totalPosts<=0,
-      // so the template doesn't fire and we land in calm-case.
-      expect(result.verdict).toContain('usual shape');
+      expect(result.verdict).toContain('A few voices are shaping');
+      expect(result.verdict).not.toContain('came from suggestions');
     });
   });
 
@@ -242,12 +326,17 @@ describe('interpretScan orchestrator', () => {
       expect(result.verdict).not.toContain('Twitter');
     });
 
-    test('calm-case verdict also interpolates platform name', () => {
+    test('calm-case template interpolates platform name', () => {
+      // Forces the high-suggested variant so we get a verdict with
+      // "your <Platform> feed" interpolation rather than the
+      // fallback-variant wording that leads with the post count.
       const ctx = makeContext({
         platform: 'tiktok',
         activeScan: makeScan({ platform: 'tiktok' }),
         dashboardData: makeDashboardData({
           totalPosts: 50,
+          suggestedPct: 95,
+          followedPct: 5,
           topCreators: [
             { name: 'alice', count: 5 },
           ] as unknown as DashboardData['topCreators'],
@@ -256,7 +345,7 @@ describe('interpretScan orchestrator', () => {
       });
       const result = interpretScan(ctx, 'results');
       expect(result.verdict).toBe(
-        'Your TikTok feed is in its usual shape.',
+        'Almost everything in your TikTok feed came from suggestions.',
       );
     });
   });
