@@ -1,5 +1,31 @@
 # 2.x interpretation engine: implementation status
 
+## ⚠ Reminder for future sessions: Mac device test required before TestFlight
+
+**Status as of resume**: The 2.x Results screen engine MVP is complete on branch `claude/2x-engine-mvp-results` (22+ commits ahead of main). It cannot ship to TestFlight until a device test validates the rendering on a real iPhone.
+
+**Why this matters**:
+- The smoke test (`mobile/src/lib/interpretation/__tests__/realScanSmoke.test.ts`) proves the engine produces correct output on real Supabase data
+- But the React Native primitives (VerdictText, ObservedSubline, LikelySubline, ResultsMetaLine, SupportingCard, FactRow) have never been rendered on a real iOS device
+- Visual issues (typography, spacing, marker rendering, layout overflow, ScrollView behavior) only surface on-device
+- The broadcast extension that captures scan frames is iOS-only and cannot be tested on web or Android
+
+**What's required**:
+- macOS machine with Xcode 15+
+- Physical iPhone (broadcast extension does not work in iOS Simulator)
+- Apple Developer account with code signing configured
+- `EXPO_PUBLIC_GEMINI_API_KEY` added to `mobile/.env` on the Mac
+- ~2 hours of focused time
+
+**How to execute**:
+The runbook at `mobile/audits/2x-results-design/device-test-runbook.md` walks through every step. The findings template at the end of that runbook is the format for capturing results.
+
+**When to remind**: Future Claude Code sessions should mention this requirement in their opening response when the user resumes 2.x work, especially before any work that would deepen the branch (more templates, more derivations, more screens). The further the branch drifts from main without device validation, the higher the risk that a layout issue or rendering bug compounds across multiple surfaces before it gets caught.
+
+**Path forward**: Currently the user is continuing 2.x development without Mac access (Dashboard tabs, additional templates, more design surfaces). When Mac access becomes available, the device test should be the first action before any further work.
+
+---
+
 **Snapshot date:** 2026-05-16. The 2.x interpretation engine MVP is functionally complete on `claude/2x-engine-mvp-results` (HEAD `195bee27`, 20 commits ahead of `origin/main`). The engine runs end-to-end against real Supabase scan data — verified by a smoke test that loads two redacted production YouTube scans and produces meaningful interpretation output. What's NOT done is the visual confirmation on a physical iPhone (the device test), which is blocked on Mac access. The work sits cleanly on origin and is ready for whoever has Mac + iOS tooling to pick up the runbook.
 
 ## What's been built and shipped to origin/main
@@ -166,3 +192,5 @@ The scoping document at `mobile/audits/2x-interpretation-engine-scoping/decision
 - **Total interpretation tests: 89**
 - Total tests in the full mobile suite: **497**
 - Pre-existing failing tests (unrelated, predate this work): **5** (in `computeDashboardData.test.ts` and `streakManager.test.ts`)
+
+<!-- TODO-MAC-TEST: Future Claude Code sessions, surface the Mac device test requirement on session resume. See top of this file. -->
