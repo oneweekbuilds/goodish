@@ -24,6 +24,7 @@
 
 import type { ScanDetail } from '../../../hooks/useDashboard';
 import { computeDashboardData } from '../../computeDashboardData';
+import { computeAdvertiserRecurrence } from '../derivations/advertiserRecurrence';
 import { computeCreatorRecurrence } from '../derivations/creatorRecurrence';
 import { interpretScan, type EngineSurface } from '../interpretationEngine';
 import type {
@@ -291,5 +292,70 @@ describe('computeCreatorRecurrence — real-scan smoke', () => {
       expect(r.firstSeenIndex).toBeGreaterThanOrEqual(0);
       expect(r.firstSeenIndex).toBeLessThan(result.windowScanCount);
     }
+  });
+});
+
+// ============================================
+// Advertiser-recurrence smoke (Phase 5.4.3)
+// ============================================
+//
+// Two cases: real 2-scan fixture, and depth-padded 4-scan window
+// (reusing buildDepthPaddedScans from Phase 5.3.3 — the synth-prior
+// clones include the prior's ad posts verbatim, so they naturally
+// produce recurring advertisers).
+
+describe('computeAdvertiserRecurrence — real-scan smoke', () => {
+  test('derivation produces sensible output on the 2-scan real fixture', () => {
+    const result = computeAdvertiserRecurrence(
+      [REAL_ACTIVE_SCAN, REAL_PRIOR_SCAN],
+      'youtube',
+    );
+
+    // eslint-disable-next-line no-console
+    console.log(
+      '[realScanSmoke advertiserRecurrence 2-scan] AdvertiserRecurrenceResult:\n' +
+        JSON.stringify(result, null, 2),
+    );
+
+    expect(Array.isArray(result.records)).toBe(true);
+    expect(result.windowScanCount).toBe(2);
+
+    // Sort order: scanCount desc, then totalPosts desc.
+    for (let i = 1; i < result.records.length; i++) {
+      const prev = result.records[i - 1]!;
+      const curr = result.records[i]!;
+      if (prev.scanCount === curr.scanCount) {
+        expect(curr.totalPosts).toBeLessThanOrEqual(prev.totalPosts);
+      } else {
+        expect(curr.scanCount).toBeLessThan(prev.scanCount);
+      }
+    }
+
+    // Per-record shape sanity.
+    for (const r of result.records) {
+      expect(typeof r.handle).toBe('string');
+      expect(r.handle.length).toBeGreaterThan(0);
+      expect(typeof r.displayName).toBe('string');
+      expect(r.scanCount).toBeGreaterThanOrEqual(1);
+      expect(r.scanCount).toBeLessThanOrEqual(result.windowScanCount);
+      expect(r.totalPosts).toBeGreaterThanOrEqual(r.scanCount);
+    }
+  });
+
+  test('derivation produces meaningful recurrence on the depth-padded 4-scan window', () => {
+    const [, scans] = buildDepthPaddedScans();
+    const result = computeAdvertiserRecurrence(scans, 'youtube');
+
+    // eslint-disable-next-line no-console
+    console.log(
+      '[realScanSmoke advertiserRecurrence 4-scan padded] AdvertiserRecurrenceResult:\n' +
+        JSON.stringify(result, null, 2),
+    );
+
+    expect(result.windowScanCount).toBe(4);
+    // The synth-prior clones include the prior's ad posts verbatim,
+    // so at least one advertiser should recur across the window.
+    expect(result.records.length).toBeGreaterThan(0);
+    expect(result.records[0]!.scanCount).toBeGreaterThanOrEqual(2);
   });
 });
