@@ -23,6 +23,7 @@
  */
 
 import { computeDashboardData } from '../../computeDashboardData';
+import { computeCreatorRecurrence } from '../derivations/creatorRecurrence';
 import { interpretScan, type EngineSurface } from '../interpretationEngine';
 import type {
   InterpretationContext,
@@ -126,5 +127,59 @@ describe('interpretationEngine — real-scan smoke', () => {
     );
 
     assertResultShape(result, 'dashboard.overview');
+  });
+});
+
+describe('computeCreatorRecurrence — real-scan smoke', () => {
+  test('derivation produces a sensible result for two real YouTube scans', () => {
+    // Pass both fixtures as the scan history. No excludeScanId — we
+    // want recurrence COUNTING the active scan, since the design
+    // spec's worked examples ("in 5 of last 6 scans") count today.
+    const result = computeCreatorRecurrence(
+      [REAL_ACTIVE_SCAN, REAL_PRIOR_SCAN],
+      'youtube',
+    );
+
+    // Load-bearing observation: log the full derivation output on
+    // the real fixture. The YouTube shorts null-handle gap (Issue
+    // #10) will dominate — most posts in both scans have null
+    // creator_handle. We expect to see only the ad-source creators
+    // (which DO have handles) in the records, and whether any of
+    // them appear in both scans.
+    // eslint-disable-next-line no-console
+    console.log(
+      '[realScanSmoke creatorRecurrence] CreatorRecurrenceResult:\n' +
+        JSON.stringify(result, null, 2),
+    );
+
+    // Shape assertions — deliberately loose.
+    expect(Array.isArray(result.records)).toBe(true);
+    // Both fixtures are YouTube, neither excluded → window of 2.
+    expect(result.windowScanCount).toBe(2);
+
+    // Records are sorted by scanCount desc, then totalPosts desc.
+    // Verify monotonic non-increasing on the composite key.
+    for (let i = 1; i < result.records.length; i++) {
+      const prev = result.records[i - 1]!;
+      const curr = result.records[i]!;
+      if (prev.scanCount === curr.scanCount) {
+        expect(curr.totalPosts).toBeLessThanOrEqual(prev.totalPosts);
+      } else {
+        expect(curr.scanCount).toBeLessThan(prev.scanCount);
+      }
+    }
+
+    // Per-record shape sanity. Don't assert specific creators (Issue
+    // #10 makes the population thin and unstable).
+    for (const r of result.records) {
+      expect(typeof r.handle).toBe('string');
+      expect(r.handle.length).toBeGreaterThan(0);
+      expect(typeof r.displayName).toBe('string');
+      expect(r.scanCount).toBeGreaterThanOrEqual(1);
+      expect(r.scanCount).toBeLessThanOrEqual(result.windowScanCount);
+      expect(r.totalPosts).toBeGreaterThanOrEqual(r.scanCount);
+      expect(r.firstSeenIndex).toBeGreaterThanOrEqual(0);
+      expect(r.firstSeenIndex).toBeLessThan(result.windowScanCount);
+    }
   });
 });
