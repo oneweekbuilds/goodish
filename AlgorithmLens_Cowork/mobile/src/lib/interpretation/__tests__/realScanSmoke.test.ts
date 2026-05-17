@@ -23,9 +23,10 @@
  */
 
 import { computeDashboardData } from '../../computeDashboardData';
-import { interpretScan } from '../interpretationEngine';
+import { interpretScan, type EngineSurface } from '../interpretationEngine';
 import type {
   InterpretationContext,
+  InterpretationResult,
   SublineMode,
   SupportingRowVariant,
 } from '../interpretation-types';
@@ -47,16 +48,49 @@ const VALID_ROW_VARIANTS: ReadonlyArray<SupportingRowVariant> = [
   'methodology',
 ];
 
-describe('interpretationEngine — real-scan smoke', () => {
-  test('engine produces a sensible result for a real YouTube scan', () => {
-    const dashboardData = computeDashboardData(REAL_ACTIVE_SCAN);
+/**
+ * Loose shape assertions: enough to catch wiring crashes and type
+ * regressions, deliberately not asserting specific verdict strings
+ * (those would be brittle against template iteration).
+ */
+function assertResultShape(
+  result: InterpretationResult,
+  surface: EngineSurface,
+): void {
+  expect(typeof result.verdict).toBe('string');
+  expect(result.verdict.length).toBeGreaterThan(0);
 
-    const context: InterpretationContext = {
-      activeScan: REAL_ACTIVE_SCAN,
-      scans: [REAL_PRIOR_SCAN],
-      dashboardData,
-      platform: 'youtube',
-    };
+  expect(Array.isArray(result.sublines)).toBe(true);
+  for (const sub of result.sublines) {
+    expect(VALID_SUBLINE_MODES).toContain(sub.mode);
+    expect(typeof sub.text).toBe('string');
+    expect(sub.text.length).toBeGreaterThan(0);
+  }
+
+  expect(Array.isArray(result.supportingRows)).toBe(true);
+  for (const row of result.supportingRows) {
+    expect(VALID_ROW_VARIANTS).toContain(row.variant);
+  }
+
+  expect(result.meta).not.toBeNull();
+  expect(result.meta!.surface).toBe(surface);
+  expect(result.meta!.scanId).toBe(
+    REAL_ACTIVE_SCAN.scan_id ?? REAL_ACTIVE_SCAN.id,
+  );
+}
+
+function makeRealScanContext(): InterpretationContext {
+  return {
+    activeScan: REAL_ACTIVE_SCAN,
+    scans: [REAL_PRIOR_SCAN],
+    dashboardData: computeDashboardData(REAL_ACTIVE_SCAN),
+    platform: 'youtube',
+  };
+}
+
+describe('interpretationEngine — real-scan smoke', () => {
+  test('engine produces a sensible result for a real YouTube scan on the results surface', () => {
+    const context = makeRealScanContext();
 
     // The engine should not throw on real data. If it does, the
     // failure surfaces immediately and we stop to diagnose.
@@ -66,31 +100,31 @@ describe('interpretationEngine — real-scan smoke', () => {
     // produced. This is the load-bearing observation of Phase 4.5.1a.
     // eslint-disable-next-line no-console
     console.log(
-      '[realScanSmoke] InterpretationResult:\n' +
+      '[realScanSmoke results] InterpretationResult:\n' +
         JSON.stringify(result, null, 2),
     );
 
-    // Shape assertions — deliberately loose, just enough to confirm
-    // the engine produced a well-formed result.
-    expect(typeof result.verdict).toBe('string');
-    expect(result.verdict.length).toBeGreaterThan(0);
+    assertResultShape(result, 'results');
+  });
 
-    expect(Array.isArray(result.sublines)).toBe(true);
-    for (const sub of result.sublines) {
-      expect(VALID_SUBLINE_MODES).toContain(sub.mode);
-      expect(typeof sub.text).toBe('string');
-      expect(sub.text.length).toBeGreaterThan(0);
-    }
+  test('engine produces a sensible result for a real YouTube scan on the dashboard.overview surface', () => {
+    const context = makeRealScanContext();
 
-    expect(Array.isArray(result.supportingRows)).toBe(true);
-    for (const row of result.supportingRows) {
-      expect(VALID_ROW_VARIANTS).toContain(row.variant);
-    }
+    const result = interpretScan(context, 'dashboard.overview');
 
-    expect(result.meta).not.toBeNull();
-    expect(result.meta!.surface).toBe('results');
-    expect(result.meta!.scanId).toBe(
-      REAL_ACTIVE_SCAN.scan_id ?? REAL_ACTIVE_SCAN.id,
+    // Log the dashboard.overview output verbatim — load-bearing
+    // observation of Phase 5.1.5. The smoke fixture is 100% suggested
+    // and 0% political, so the political_shift template won't fire
+    // (no historical comparison reaches the 1.5× threshold against
+    // zero), heavy_ad_load won't fire (3% ads), and concentrated_feed
+    // won't fire (YouTube shorts have null creator_handle — known
+    // issue #10). We expect the calm-case high-suggested variant.
+    // eslint-disable-next-line no-console
+    console.log(
+      '[realScanSmoke dashboard.overview] InterpretationResult:\n' +
+        JSON.stringify(result, null, 2),
     );
+
+    assertResultShape(result, 'dashboard.overview');
   });
 });
