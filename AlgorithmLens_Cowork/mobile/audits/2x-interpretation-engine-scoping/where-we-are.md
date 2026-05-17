@@ -26,7 +26,7 @@ The runbook at `mobile/audits/2x-results-design/device-test-runbook.md` walks th
 
 ---
 
-**Snapshot date:** 2026-05-17. The 2.x interpretation engine MVP is on `claude/2x-engine-mvp-results` (HEAD `74416ffd`, 32 commits ahead of `origin/main`). Two surfaces are now wired to the engine — the Results screen (Phase 4) and the Dashboard Overview tab (Phase 5.1) — plus three engine layers added in Phase 5.2-5.3 (creator recurrence derivation, Top voice supporting row, persistent-creator standalone template). The engine runs end-to-end against real Supabase scan data; smoke tests cover the calm-case path (2-scan real fixtures) and the persistent-creator path (4-scan synthesized window from the real fixtures). What's NOT done is the visual confirmation on a physical iPhone (the device test), which is blocked on Mac access. The work sits cleanly on origin and is ready for whoever has Mac + iOS tooling to pick up the runbook.
+**Snapshot date:** 2026-05-17. The 2.x interpretation engine MVP is on `claude/2x-engine-mvp-results` (HEAD will land at the Phase 5.4.4 commit after this update, ~36 commits ahead of `origin/main`). Two surfaces are now wired to the engine — the Results screen (Phase 4) and the Dashboard Overview tab (Phase 5.1) — plus four engine layers added in Phase 5.2-5.4: creator-recurrence derivation, Top voice supporting row, persistent-creator standalone template, and advertiser-recurrence + Recurring advertiser supporting row. The shared `aggregateAcrossScans` core (extracted in Phase 5.4.2) backs both recurrence wrappers and is positioned for future per-category recurrence variants. The engine runs end-to-end against real Supabase scan data; smoke tests cover the calm-case path (2-scan real fixtures), the persistent-creator path (4-scan synthesized window), and advertiser recurrence on both. What's NOT done is the visual confirmation on a physical iPhone (the device test), which is blocked on Mac access. The work sits cleanly on origin and is ready for whoever has Mac + iOS tooling to pick up the runbook.
 
 ## What's been built and shipped to origin/main
 
@@ -39,7 +39,7 @@ Nothing engine-code-wise is on `main` yet. The full implementation sits on the f
 
 ## What's been built and lives on a feature branch
 
-Branch: **`claude/2x-engine-mvp-results`** at HEAD **`74416ffd`**, 32 commits ahead of `origin/main`. Pushed and durable on origin.
+Branch: **`claude/2x-engine-mvp-results`** at HEAD **`c953c38f`** (Phase 5.4.4 commit will land on top with this status update), ~36 commits ahead of `origin/main` after the Phase 5.4.4 commit + push. Pushed and durable on origin.
 
 In delivery order, the commits group into logical chunks:
 
@@ -95,24 +95,30 @@ In delivery order, the commits group into logical chunks:
 - `29e495ee` — *test(2x): cover persistent-creator template firing, precedence, and copy.* 18 tests across both surfaces — threshold firing, threshold non-firing (window depth), precedence (loses to political_shift, wins over concentrated_feed and heavy_ad_load), OBSERVED interpolation, Top voice supporting row presence, findingDot true.
 - `74416ffd` — *test(2x): add depth-padded smoke test for persistent-creator template.* Synthesizes a 4-scan window by deep-cloning `REAL_PRIOR_SCAN` with mutated id and created_at (1-week and 2-week setbacks). Verifies template fires on real-shape data with honest copy: *"Creator 13 has appeared in 4 of your last 4 scans, with 14 posts across them"* (Results) / *"Creator 13 has been in 4 of your recent 4 scans, with 14 posts total"* (Overview).
 
+**Advertiser-recurrence derivation + Recurring advertiser row (Phase 5.4)**
+- `615f5330` — *refactor(2x): extract shared recurrence aggregation helper, add advertiser recurrence.* Shared `aggregateAcrossScans` core (`recurrenceCore.ts`) houses the algorithm — case-insensitive grouping, null-handle exclusion, display-name resolution, malformed-scan tolerance — as the single source of truth. `creatorRecurrence.ts` refactored to a thin wrapper (no-op predicate) preserving the existing 19-test contract. New `advertiserRecurrence.ts` wrapper passes an `is_ad === true` predicate; 15 unit tests cover the ad-only filter behavior and shared aggregation through the wrapper.
+- `c953c38f` — *test(2x): extend smoke test to cover advertiser recurrence.* Two smoke tests: real 2-scan fixture surfaces @creator-1 as a 2-of-2 recurring advertiser (the redacted Google ad shows persistence across the 24-hour fixture window — empirical correction of the Phase 5.4.1 discovery hypothesis); depth-padded 4-scan window surfaces @creator-1 at 4-of-4 and @creator-47 at 3-of-4.
+- `<pending Phase 5.4.4 commit>` — *feat(2x): add Recurring advertiser supporting row.* `buildRecurringAdvertiserRow` mirrors `buildTopVoiceRow` (Phase 5.2.5) with the same `scanCount >= 2` threshold. `buildStandardSupportingRows` now prepends both rows in visual-hierarchy order: Top voice → Recurring advertiser → standard 4 rows. The two recurrence signals are independent (creator vs ad-source) and both fire when both recurrences exist. Standalone advertiser-persistence template at verdict level deferred to future Phase 6+ work (paired with `dashboard.ads` surface wiring).
+
 ### Test coverage
 
-Eight interpretation test suites, 153 passing tests total:
+Nine interpretation test suites, 177 passing tests total:
 
 | Suite | Tests | Covers |
 |---|---|---|
 | `interpretationEngine.test.ts` | 47 | Orchestrator dispatch + selectTemplate, concentrated-feed, calm-case (3 variants + precedence + Unknown-skip), surface gating (Results + Overview pass, others throw), dashboard.overview templates (political_shift, heavy_ad_load, concentrated, calm-case), persistent-creator on Results (8) + Overview (10) with priority-60 tie test, platform interpolation, meta resolution |
 | `rollingAverage.test.ts` | 26 | All 7 metric extractors, platform filtering, current-scan exclusion, window sizing, malformed-data tolerance, > 50% failure threshold |
-| `creatorRecurrence.test.ts` | 19 | Empty/all-null inputs, aggregation + sort, platform filter, excludeScanId, window size default + custom, sparse history, null-handle exclusion, case-insensitive grouping, display-name resolution, firstSeenIndex, failure tolerance |
+| `creatorRecurrence.test.ts` | 19 | Empty/all-null inputs, aggregation + sort, platform filter, excludeScanId, window size default + custom, sparse history, null-handle exclusion, case-insensitive grouping, display-name resolution, firstSeenIndex, failure tolerance (unchanged from Phase 5.2 — refactored as thin wrapper in Phase 5.4) |
+| `advertiserRecurrence.test.ts` | 15 | Empty/no-ads inputs, single + multi-advertiser aggregation, ad-only filter behavior (non-ad excluded, mixed scans counted only-ads, null-handle ad still excluded), platform + excludeScanId, window size, sparse history, case-insensitive grouping, display-name fallback, failure tolerance |
 | `unifiedResultToScanDetail.test.ts` | 12 | Adapter top-level field population, `raw_data` shape parity with `buildScanRow`, timestamp pinning, Supabase-shape parity (scan_id undefined, no deprecated top-level columns) |
-| `supportingRows.test.ts` | 12 | `recurrenceAnchor` copy variants (in-both / in-all-N / in-M-of-last-3 / in-M-of-last-N), `buildTopVoiceRow` threshold behavior + top-recurrer selection + displayName fallback |
+| `supportingRows.test.ts` | 19 | `recurrenceAnchor` copy variants (in-both / in-all-N / in-M-of-last-3 / in-M-of-last-N), `buildTopVoiceRow` (8 tests: threshold, top-recurrer selection, displayName fallback), `buildRecurringAdvertiserRow` (7 tests: threshold, ad-only filter, signal independence from Top voice) |
 | `comparativeAnchor.test.ts` | 21 | Bucketing thresholds, null/zero rolling-average handling, label overrides |
 | `platformDisplay.test.ts` | 11 | Capitalization mapping including X/Twitter brand convention |
-| `realScanSmoke.test.ts` | 5 | End-to-end shape correctness against redacted real production scans (Results, dashboard.overview, computeCreatorRecurrence, plus depth-padded persistent-creator on both surfaces) |
+| `realScanSmoke.test.ts` | 7 | End-to-end shape correctness against redacted real production scans (Results, dashboard.overview, computeCreatorRecurrence, computeAdvertiserRecurrence 2-scan + 4-scan padded, depth-padded persistent-creator on both surfaces) |
 
 Pre-existing failing tests unrelated to this work: 5 (in `computeDashboardData.test.ts` and `streakManager.test.ts`). Baseline unchanged.
 
-Full mobile suite: 23 of 25 suites passing, 556 of 561 tests passing.
+Full mobile suite: 24 of 26 suites passing, 580 of 585 tests passing.
 
 TypeScript baseline: 19 errors, all pre-existing, none in any 2x-engine file.
 
@@ -150,11 +156,12 @@ The engine functions end-to-end against real Supabase scan data. The smoke tests
     { "mode": "LIKELY",   "text": "When a single creator consistently produces watch-time, recent activity gets weighted as a strong signal for what to surface next. Repeat exposure reinforces this across sessions." }
   ],
   "supportingRows": [
-    { "variant": "fact", "label": "Top voice", "value": "Creator 13", "anchor": "in all 4 of your scans" },
-    { "variant": "fact", "label": "Ads",       "value": "3% of feed", "anchor": "typical" },
-    { "variant": "fact", "label": "Patterns",  "value": "Top: Video" },
-    { "variant": "fact", "label": "Political", "value": "No analysis" },
-    { "variant": "fact", "label": "Tone",      "value": "No analysis" }
+    { "variant": "fact", "label": "Top voice",            "value": "Creator 13", "anchor": "in all 4 of your scans" },
+    { "variant": "fact", "label": "Recurring advertiser", "value": "Creator 1",  "anchor": "in all 4 of your scans" },
+    { "variant": "fact", "label": "Ads",                  "value": "3% of feed", "anchor": "typical" },
+    { "variant": "fact", "label": "Patterns",             "value": "Top: Video" },
+    { "variant": "fact", "label": "Political",            "value": "No analysis" },
+    { "variant": "fact", "label": "Tone",                 "value": "No analysis" }
   ],
   "findingDot": true
 }
@@ -190,7 +197,7 @@ These items are explicitly out of scope for the current branch and remain as fut
 - COACHING sub-line mode (the "SOMETHING TO TRY" beat)
 - A QUESTION FOR YOU sub-line mode
 - The 5 remaining Dashboard tabs (Who Shapes Your Feed, Ads, Politics, Tone, Suggested vs Followed) — Overview shipped in Phase 5.1; the others currently throw `"surface not yet implemented"` if `interpretScan` is called with them
-- Advertiser persistence detection
+- **Advertiser-persistence standalone template at verdict level** — Phase 5.4 chose to ship advertiser recurrence as a supporting-row signal only (the Recurring advertiser row on Results + Overview). A standalone advertiser-persistence verdict template — paralleling Phase 5.3's persistent-creator — is design-spec authored for the `dashboard.ads` surface ("One advertiser is sitting on your feed more than the others") but NOT for Results/Overview. Build alongside dashboard.ads surface wiring in a future phase rather than speculatively author Results/Overview verdict copy without design backing.
 - Quiet-followed-creator detection
 - Cross-metric correlation
 - Trajectory sparklines
@@ -217,12 +224,13 @@ The scoping document at `mobile/audits/2x-interpretation-engine-scoping/decision
 - Orchestrator + templates: **47 tests** (`interpretationEngine.test.ts`)
 - Rolling average derivation: **26 tests** (`rollingAverage.test.ts`)
 - Creator recurrence derivation: **19 tests** (`creatorRecurrence.test.ts`)
+- Advertiser recurrence derivation: **15 tests** (`advertiserRecurrence.test.ts`)
 - Adapter: **12 tests** (`unifiedResultToScanDetail.test.ts`)
-- Supporting-row helpers: **12 tests** (`supportingRows.test.ts`)
+- Supporting-row helpers: **19 tests** (`supportingRows.test.ts`)
 - Utilities: **32 tests** (`comparativeAnchor.test.ts` 21 + `platformDisplay.test.ts` 11)
-- Smoke tests against real Supabase data: **5 tests** (`realScanSmoke.test.ts`)
-- **Total interpretation tests: 153**
-- Total tests in the full mobile suite: **561**
+- Smoke tests against real Supabase data: **7 tests** (`realScanSmoke.test.ts`)
+- **Total interpretation tests: 177**
+- Total tests in the full mobile suite: **585**
 - Pre-existing failing tests (unrelated, predate this work): **5** (in `computeDashboardData.test.ts` and `streakManager.test.ts`)
 
 <!-- TODO-MAC-TEST: Future Claude Code sessions, surface the Mac device test requirement on session resume. See top of this file. -->

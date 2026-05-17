@@ -17,6 +17,7 @@
  */
 
 import type { ScanDetail } from '../../../hooks/useDashboard';
+import { computeAdvertiserRecurrence } from '../derivations/advertiserRecurrence';
 import { computeCreatorRecurrence } from '../derivations/creatorRecurrence';
 import { computeRollingAverage } from '../derivations/rollingAverage';
 import type {
@@ -190,19 +191,53 @@ export function buildTopVoiceRow(
   };
 }
 
+/**
+ * Build the Recurring advertiser FactRow when ad-source recurrence
+ * data justifies it (Phase 5.4.4). Returns null when no advertiser
+ * has appeared in at least two scans within the window — the
+ * supporting card omits this row in that case.
+ *
+ * Mirrors `buildTopVoiceRow`'s shape and threshold. The two rows
+ * surface independent signals (organic creator dominance vs.
+ * advertiser persistence) and can both fire on the same card.
+ * Visual hierarchy: Top voice leads, Recurring advertiser follows.
+ *
+ * Reference: mobile/audits/2x-dashboard-design/decisions.md Tab 3
+ */
+export function buildRecurringAdvertiserRow(
+  scans: ScanDetail[],
+  platform: string,
+): FactRow | null {
+  const recurrence = computeAdvertiserRecurrence(scans, platform);
+  const top = recurrence.records[0];
+  if (!top || top.scanCount < 2) return null;
+  return {
+    variant: 'fact',
+    label: 'Recurring advertiser',
+    value: top.displayName,
+    anchor: recurrenceAnchor(top.scanCount, recurrence.windowScanCount),
+  };
+}
+
 // ============================================
 // Composed supporting card (Phase 5.2.5)
 // ============================================
 
 /**
- * The standard supporting card: Top voice (when recurrence justifies)
- * + Ads + Patterns + Political + Tone. Shared between Results and
- * Dashboard Overview surfaces because the card composition is identical
- * even though the verdict and sublines above it vary per-surface.
+ * The standard supporting card: Top voice + Recurring advertiser
+ * (when their respective recurrences justify) + Ads + Patterns +
+ * Political + Tone. Shared between Results and Dashboard Overview
+ * surfaces because the card composition is identical even though
+ * the verdict and sublines above it vary per-surface.
  *
- * If `buildTopVoiceRow` returns null (no recurrence), the card stays
- * at its standard four rows. Otherwise the Top voice row is prepended
- * (per the design spec's "TopVoiceRow leads" visual evidence rule).
+ * Prepend order when both fire: Top voice → Recurring advertiser.
+ * Visual hierarchy follows entity specificity (organic creator
+ * dominance first, advertiser persistence second), then aggregate
+ * metrics (Ads density, format, political, tone). Both recurrence
+ * rows can fire independently — they surface distinct signals (Top
+ * voice = organic feed concentration; Recurring advertiser = ad-
+ * source persistence). The card scales to 6 rows when both fire,
+ * which is within design-spec norms (Tab 2 has 7 rows, Tab 5 has 6).
  */
 export function buildStandardSupportingRows(
   activeScan: ScanDetail,
@@ -211,11 +246,15 @@ export function buildStandardSupportingRows(
   platform: string,
 ): SupportingRow[] {
   const topVoice = buildTopVoiceRow(scans, platform);
-  const rows: SupportingRow[] = [
+  const recurringAdvertiser = buildRecurringAdvertiserRow(scans, platform);
+  const prepends: SupportingRow[] = [];
+  if (topVoice) prepends.push(topVoice);
+  if (recurringAdvertiser) prepends.push(recurringAdvertiser);
+  const standardRows: SupportingRow[] = [
     buildAdsRow(activeScan, scans, dashboardData, platform),
     buildPatternsRow(dashboardData),
     buildPoliticalRow(activeScan, scans, dashboardData, platform),
     buildToneRow(dashboardData),
   ];
-  return topVoice ? [topVoice, ...rows] : rows;
+  return [...prepends, ...standardRows];
 }

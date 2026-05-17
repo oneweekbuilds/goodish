@@ -8,6 +8,7 @@
 
 import type { ScanDetail } from '../../../../hooks/useDashboard';
 import {
+  buildRecurringAdvertiserRow,
   buildTopVoiceRow,
   recurrenceAnchor,
 } from '../supportingRows';
@@ -19,18 +20,19 @@ import {
 interface PostSpec {
   handle: string | null;
   displayName?: string | null;
+  isAd?: boolean;
 }
 
-function post(handle: string | null, displayName: string | null = null): unknown {
+function post(spec: PostSpec): unknown {
   return {
-    creator_handle: handle,
-    creator_display_name: displayName,
-    is_ad: false,
-    is_suggested: null,
+    creator_handle: spec.handle,
+    creator_display_name: spec.displayName ?? null,
+    is_ad: spec.isAd ?? false,
+    is_suggested: spec.isAd ? true : null,
     content_type: 'video',
     hashtags: [],
     position_in_feed: 1,
-    ad_label_text: null,
+    ad_label_text: spec.isAd ? 'Ad' : null,
   };
 }
 
@@ -44,12 +46,12 @@ function makeScan(
     created_at: createdAt,
     platform: 'youtube',
     post_count: posts.length,
-    ad_count: 0,
+    ad_count: posts.filter((p) => p.isAd === true).length,
     ad_percentage: 0,
     suggested_count: 0,
     suggested_percentage: 0,
     raw_data: {
-      posts: posts.map((p) => post(p.handle, p.displayName ?? null)),
+      posts: posts.map((p) => post(p)),
     },
     user_id: 'user-test',
   };
@@ -180,5 +182,108 @@ describe('buildTopVoiceRow', () => {
     ];
     const row = buildTopVoiceRow(scans, 'youtube');
     expect(row?.value).toBe('@foo');
+  });
+});
+
+// ============================================
+// buildRecurringAdvertiserRow (Phase 5.4.4)
+// ============================================
+
+describe('buildRecurringAdvertiserRow', () => {
+  test('returns null on empty scans', () => {
+    expect(buildRecurringAdvertiserRow([], 'youtube')).toBeNull();
+  });
+
+  test('returns null when no advertiser has scanCount >= 2', () => {
+    // Each ad-source appears in exactly one scan.
+    const scans = [
+      makeScan('s0', '2026-05-10T12:00:00Z', [
+        { handle: '@advertiser-1', isAd: true },
+      ]),
+      makeScan('s1', '2026-05-09T12:00:00Z', [
+        { handle: '@advertiser-2', isAd: true },
+      ]),
+    ];
+    expect(buildRecurringAdvertiserRow(scans, 'youtube')).toBeNull();
+  });
+
+  test('returns null when no ad posts exist (only non-ad creators)', () => {
+    const scans = [
+      makeScan('s0', '2026-05-10T12:00:00Z', [
+        { handle: '@foo' },
+        { handle: '@foo' },
+      ]),
+      makeScan('s1', '2026-05-09T12:00:00Z', [{ handle: '@foo' }]),
+    ];
+    expect(buildRecurringAdvertiserRow(scans, 'youtube')).toBeNull();
+  });
+
+  test('returns FactRow with "in both your scans" at 2-of-2 advertiser recurrence', () => {
+    const scans = [
+      makeScan('s0', '2026-05-10T12:00:00Z', [
+        { handle: '@google-ads', displayName: 'Google', isAd: true },
+      ]),
+      makeScan('s1', '2026-05-09T12:00:00Z', [
+        { handle: '@google-ads', displayName: 'Google', isAd: true },
+      ]),
+    ];
+    expect(buildRecurringAdvertiserRow(scans, 'youtube')).toEqual({
+      variant: 'fact',
+      label: 'Recurring advertiser',
+      value: 'Google',
+      anchor: 'in both your scans',
+    });
+  });
+
+  test('non-ad recurrence does NOT trigger the row (only ad posts count)', () => {
+    // @foo appears as a non-ad creator in both scans — but never as
+    // an advertiser. The Recurring advertiser row must NOT fire on
+    // this signal; that's Top voice territory.
+    const scans = [
+      makeScan('s0', '2026-05-10T12:00:00Z', [
+        { handle: '@foo', isAd: false },
+      ]),
+      makeScan('s1', '2026-05-09T12:00:00Z', [
+        { handle: '@foo', isAd: false },
+      ]),
+    ];
+    expect(buildRecurringAdvertiserRow(scans, 'youtube')).toBeNull();
+  });
+
+  test('picks top recurring advertiser by scanCount, then totalPosts tiebreaker', () => {
+    // Two ad sources tied at scanCount = 2; @brand-b has more totalPosts.
+    const scans = [
+      makeScan('s0', '2026-05-10T12:00:00Z', [
+        { handle: '@brand-a', displayName: 'Brand A', isAd: true },
+        { handle: '@brand-b', displayName: 'Brand B', isAd: true },
+        { handle: '@brand-b', displayName: 'Brand B', isAd: true },
+      ]),
+      makeScan('s1', '2026-05-09T12:00:00Z', [
+        { handle: '@brand-a', displayName: 'Brand A', isAd: true },
+        { handle: '@brand-b', displayName: 'Brand B', isAd: true },
+        { handle: '@brand-b', displayName: 'Brand B', isAd: true },
+      ]),
+    ];
+    expect(buildRecurringAdvertiserRow(scans, 'youtube')?.value).toBe('Brand B');
+  });
+
+  test('Top voice and Recurring advertiser fire independently when both creators and advertisers recur', () => {
+    // @creator recurs as a regular post; @advertiser recurs as an ad.
+    // Both rows should fire independently — distinct signals on the
+    // same supporting card.
+    const scans = [
+      makeScan('s0', '2026-05-10T12:00:00Z', [
+        { handle: '@creator', displayName: 'Creator', isAd: false },
+        { handle: '@advertiser', displayName: 'Advertiser', isAd: true },
+      ]),
+      makeScan('s1', '2026-05-09T12:00:00Z', [
+        { handle: '@creator', displayName: 'Creator', isAd: false },
+        { handle: '@advertiser', displayName: 'Advertiser', isAd: true },
+      ]),
+    ];
+    const topVoice = buildTopVoiceRow(scans, 'youtube');
+    const recurringAdvertiser = buildRecurringAdvertiserRow(scans, 'youtube');
+    expect(topVoice?.value).toBe('Creator');
+    expect(recurringAdvertiser?.value).toBe('Advertiser');
   });
 });
