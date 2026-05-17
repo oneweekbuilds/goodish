@@ -250,11 +250,14 @@ describe('interpretScan orchestrator', () => {
   });
 
   describe('surface gating', () => {
-    test('throws on dashboard.overview surface (not yet implemented)', () => {
+    test('does not throw on results surface', () => {
       const ctx = makeContext();
-      expect(() => interpretScan(ctx, 'dashboard.overview')).toThrow(
-        /dashboard\.overview not yet implemented/,
-      );
+      expect(() => interpretScan(ctx, 'results')).not.toThrow();
+    });
+
+    test('does not throw on dashboard.overview surface (Phase 5.1.3)', () => {
+      const ctx = makeContext();
+      expect(() => interpretScan(ctx, 'dashboard.overview')).not.toThrow();
     });
 
     test('throws on dashboard.sources surface', () => {
@@ -271,9 +274,216 @@ describe('interpretScan orchestrator', () => {
       );
     });
 
-    test('does not throw on results surface', () => {
+    test('throws on dashboard.politics surface', () => {
       const ctx = makeContext();
-      expect(() => interpretScan(ctx, 'results')).not.toThrow();
+      expect(() => interpretScan(ctx, 'dashboard.politics')).toThrow(
+        /dashboard\.politics not yet implemented/,
+      );
+    });
+
+    test('throws on dashboard.tone surface', () => {
+      const ctx = makeContext();
+      expect(() => interpretScan(ctx, 'dashboard.tone')).toThrow(
+        /dashboard\.tone not yet implemented/,
+      );
+    });
+
+    test('throws on dashboard.suggested surface', () => {
+      const ctx = makeContext();
+      expect(() => interpretScan(ctx, 'dashboard.suggested')).toThrow(
+        /dashboard\.suggested not yet implemented/,
+      );
+    });
+  });
+
+  // ============================================
+  // Dashboard Overview surface (Phase 5.1.3)
+  // ============================================
+
+  describe('dashboard.overview surface', () => {
+    /**
+     * Build a ScanDetail with a political_percentage embedded in
+     * raw_data.analysis.political_content_summary, so
+     * computeRollingAverage can read it for prior-scan averaging.
+     */
+    function makeScanWithPoliticalPct(
+      politicalPct: number,
+      overrides: Partial<ScanDetail> = {},
+    ): ScanDetail {
+      return makeScan({
+        raw_data: {
+          analysis: {
+            political_content_summary: {
+              political_percentage: politicalPct,
+            },
+          },
+        },
+        ...overrides,
+      });
+    }
+
+    test('political_shift template fires when political content climbs vs rolling average', () => {
+      // Prior scans average 3.5% political; current is 11% — well above
+      // both the 7% absolute floor and 1.5× the rolling average (5.25%).
+      const activeScan = makeScan({ id: 'active' });
+      const priorScans = [
+        makeScanWithPoliticalPct(3, { id: 'prior-1' }),
+        makeScanWithPoliticalPct(4, { id: 'prior-2' }),
+        makeScanWithPoliticalPct(4, { id: 'prior-3' }),
+      ];
+      const ctx: InterpretationContext = {
+        activeScan,
+        scans: [activeScan, ...priorScans],
+        dashboardData: makeDashboardData({
+          politicalAnalysis: {
+            politicalPct: 11,
+            politicalCount: 5,
+          } as unknown as DashboardData['politicalAnalysis'],
+        }),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.overview');
+      expect(result.verdict).toContain('climbing');
+      expect(result.verdict).toContain('YouTube');
+      expect(result.findingDot).toBe(true);
+      expect(result.sublines.map((s) => s.mode)).toEqual([
+        'OBSERVED',
+        'LIKELY',
+      ]);
+      const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+      expect(observed?.text).toContain('11%');
+    });
+
+    test('heavy_ad_load template fires when ad density unusually high vs history', () => {
+      // Prior scans average 8% ads; current is 20% — above the 15%
+      // absolute floor and above 1.5× the rolling avg (12%).
+      const activeScan = makeScan({ id: 'active', ad_percentage: 20 });
+      const priorScans = [
+        makeScan({ id: 'prior-1', ad_percentage: 8 }),
+        makeScan({ id: 'prior-2', ad_percentage: 8 }),
+        makeScan({ id: 'prior-3', ad_percentage: 8 }),
+      ];
+      const ctx: InterpretationContext = {
+        activeScan,
+        scans: [activeScan, ...priorScans],
+        dashboardData: makeDashboardData({ adPct: 20 }),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.overview');
+      expect(result.verdict).toContain('ad-heavy');
+      expect(result.findingDot).toBe(true);
+      const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+      expect(observed?.text).toContain('20%');
+    });
+
+    test('concentrated_feed fires on Overview with surface-specific copy (not Results copy)', () => {
+      // 14 of 50 = 28%, above the 25% threshold.
+      const ctx = makeContext({
+        dashboardData: makeDashboardData({
+          totalPosts: 50,
+          topCreators: [
+            { name: 'alice', count: 14 },
+            { name: 'bob', count: 5 },
+          ] as unknown as DashboardData['topCreators'],
+        }),
+      });
+      const result = interpretScan(ctx, 'dashboard.overview');
+      // Overview-specific wording.
+      expect(result.verdict).toContain('doing most of the talking');
+      // The Results verdict for the same predicate uses different wording.
+      expect(result.verdict).not.toContain('shaping');
+      expect(result.findingDot).toBe(true);
+    });
+
+    test('political_shift wins over heavy_ad_load when both could match (priority order)', () => {
+      // Both predicates true: ad spike AND political climb.
+      const activeScan = makeScan({ id: 'active', ad_percentage: 20 });
+      const priorScans = [
+        makeScanWithPoliticalPct(3, { id: 'prior-1', ad_percentage: 8 }),
+        makeScanWithPoliticalPct(4, { id: 'prior-2', ad_percentage: 8 }),
+        makeScanWithPoliticalPct(4, { id: 'prior-3', ad_percentage: 8 }),
+      ];
+      const ctx: InterpretationContext = {
+        activeScan,
+        scans: [activeScan, ...priorScans],
+        dashboardData: makeDashboardData({
+          adPct: 20,
+          politicalAnalysis: {
+            politicalPct: 11,
+            politicalCount: 5,
+          } as unknown as DashboardData['politicalAnalysis'],
+        }),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.overview');
+      // Political shift (priority 70) beats heavy ads (priority 60).
+      expect(result.verdict).toContain('climbing');
+      expect(result.verdict).not.toContain('ad-heavy');
+    });
+
+    test('calm-case fallback variant fires when no dramatic template matches', () => {
+      const ctx = makeContext({
+        dashboardData: makeDashboardData({
+          totalPosts: 40,
+          adPct: 8,
+          suggestedPct: 50,
+          followedPct: 50,
+          topCreators: [],
+          contentTypes: [],
+          politicalAnalysis: null,
+        }),
+      });
+      const result = interpretScan(ctx, 'dashboard.overview');
+      // Overview fallback verdict, distinct from Results' "nothing unusual flagged".
+      expect(result.verdict).toContain('40 posts captured today');
+      expect(result.verdict).toContain('usual mix');
+      expect(result.findingDot).toBe(false);
+      // Four-row supporting card still emitted.
+      expect(result.supportingRows).toHaveLength(4);
+    });
+
+    test('calm-case high-suggested variant fires when suggestedPct >= 80', () => {
+      const ctx = makeContext({
+        dashboardData: makeDashboardData({
+          totalPosts: 37,
+          adPct: 3,
+          suggestedPct: 100,
+          followedPct: 0,
+          topCreators: [],
+          contentTypes: [],
+        }),
+      });
+      const result = interpretScan(ctx, 'dashboard.overview');
+      // Overview's high-suggested copy says "today", "not accounts you follow".
+      // Distinct from Results' "Almost everything in your YouTube feed came from suggestions."
+      expect(result.verdict).toContain('came from suggestions');
+      expect(result.verdict).toContain('not accounts you follow');
+      expect(result.findingDot).toBe(false);
+    });
+
+    test('calm-case content-type-dominant variant fires when one type >= 50%', () => {
+      const ctx = makeContext({
+        dashboardData: makeDashboardData({
+          totalPosts: 40,
+          adPct: 8,
+          suggestedPct: 50, // below high-suggested threshold
+          followedPct: 50,
+          topCreators: [],
+          contentTypes: [
+            { label: 'Short', count: 28, percentage: 70 },
+            { label: 'Video', count: 12, percentage: 30 },
+          ] as DashboardData['contentTypes'],
+        }),
+      });
+      const result = interpretScan(ctx, 'dashboard.overview');
+      expect(result.verdict).toContain('dominated by shorts');
+      expect(result.verdict).toContain('today');
+    });
+
+    test('meta.surface is "dashboard.overview"', () => {
+      const ctx = makeContext();
+      const result = interpretScan(ctx, 'dashboard.overview');
+      expect(result.meta?.surface).toBe('dashboard.overview');
     });
   });
 
