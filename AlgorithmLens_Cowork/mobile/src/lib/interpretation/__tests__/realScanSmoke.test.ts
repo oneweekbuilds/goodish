@@ -136,6 +136,26 @@ describe('interpretationEngine — real-scan smoke', () => {
 
     assertResultShape(result, 'dashboard.overview');
   });
+
+  test('engine produces a sensible result for a real YouTube scan on the dashboard.sources surface', () => {
+    const context = makeRealScanContext();
+
+    const result = interpretScan(context, 'dashboard.sources');
+
+    // Phase 6.1.5 observation: the 2-scan real fixture has
+    // windowScanCount === 2, below the persistent_creator threshold
+    // (windowScanCount >= 4). The fixture also has 100% suggested,
+    // so the calm-case high-suggested variant should fire with
+    // Sources-specific copy ("sources in your feed were almost all
+    // suggestions").
+    // eslint-disable-next-line no-console
+    console.log(
+      '[realScanSmoke dashboard.sources] InterpretationResult:\n' +
+        JSON.stringify(result, null, 2),
+    );
+
+    assertResultShape(result, 'dashboard.sources');
+  });
 });
 
 // ============================================
@@ -233,6 +253,34 @@ describe('persistent-creator template — real-scan smoke (depth-padded)', () =>
 
     assertResultShape(result, 'dashboard.overview');
     expect(result.verdict).toContain('keeps showing up');
+    expect(result.findingDot).toBe(true);
+    expect(result.supportingRows[0]).toMatchObject({
+      variant: 'fact',
+      label: 'Top voice',
+    });
+  });
+
+  test('Sources: persistent-creator template fires with design-canonical "quietly become your most-seen voice" copy', () => {
+    const [activeScan, scans] = buildDepthPaddedScans();
+    const context: InterpretationContext = {
+      activeScan,
+      scans,
+      dashboardData: computeDashboardData(activeScan),
+      platform: 'youtube',
+    };
+
+    const result = interpretScan(context, 'dashboard.sources');
+
+    // eslint-disable-next-line no-console
+    console.log(
+      '[realScanSmoke persistent-creator dashboard.sources] InterpretationResult:\n' +
+        JSON.stringify(result, null, 2),
+    );
+
+    assertResultShape(result, 'dashboard.sources');
+    // Sources verdict is design-canonical — distinct from Results
+    // ("steady presence") and Overview ("keeps showing up").
+    expect(result.verdict).toContain('quietly become your most-seen voice');
     expect(result.findingDot).toBe(true);
     expect(result.supportingRows[0]).toMatchObject({
       variant: 'fact',
