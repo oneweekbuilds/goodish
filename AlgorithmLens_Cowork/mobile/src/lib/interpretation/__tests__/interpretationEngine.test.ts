@@ -260,11 +260,9 @@ describe('interpretScan orchestrator', () => {
       expect(() => interpretScan(ctx, 'dashboard.overview')).not.toThrow();
     });
 
-    test('throws on dashboard.sources surface', () => {
+    test('does not throw on dashboard.sources surface (Phase 6.1.3)', () => {
       const ctx = makeContext();
-      expect(() => interpretScan(ctx, 'dashboard.sources')).toThrow(
-        /dashboard\.sources not yet implemented/,
-      );
+      expect(() => interpretScan(ctx, 'dashboard.sources')).not.toThrow();
     });
 
     test('throws on dashboard.ads surface', () => {
@@ -977,6 +975,140 @@ describe('interpretScan orchestrator', () => {
       };
       const result = interpretScan(ctx, 'dashboard.overview');
       expect(result.findingDot).toBe(true);
+    });
+  });
+
+  // ============================================
+  // Dashboard Sources surface (Phase 6.1.3)
+  // ============================================
+
+  describe('dashboard.sources surface', () => {
+    test('persistent_creator template fires at threshold with Sources-specific copy', () => {
+      // 4-scan window with @foo as recurring creator in 3 of them.
+      // Reuses the buildFourScanWindowWithRecurringFoo helper from
+      // the persistent-creator describe blocks above.
+      const scans = buildFourScanWindowWithRecurringFoo(3);
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData(),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.sources');
+      // Sources verdict is distinct from Results ("steady presence")
+      // and Overview ("keeps showing up") — uses the design-canonical
+      // "quietly become your most-seen voice" framing.
+      expect(result.verdict).toContain('quietly become your most-seen voice');
+      expect(result.verdict).toContain('YouTube');
+      expect(result.verdict).not.toContain('steady presence');
+      expect(result.verdict).not.toContain('keeps showing up');
+      expect(result.findingDot).toBe(true);
+    });
+
+    test('concentrated_feed fires on Sources with source-cardinality framing', () => {
+      // 14 of 50 = 28%, above 25% threshold.
+      const ctx = makeContext({
+        dashboardData: makeDashboardData({
+          totalPosts: 50,
+          topCreators: [
+            { name: 'alice', count: 14 },
+            { name: 'bob', count: 5 },
+            { name: 'carol', count: 3 },
+          ] as unknown as DashboardData['topCreators'],
+          uniqueCreatorCount: 18,
+        }),
+      });
+      const result = interpretScan(ctx, 'dashboard.sources');
+      expect(result.verdict).toContain('built from a narrow set of sources');
+      // Sources OBSERVED includes the unique-creator count detail —
+      // Results/Overview concentrated verdicts don't.
+      const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+      expect(observed?.text).toContain('18 unique creators');
+      expect(result.findingDot).toBe(true);
+    });
+
+    test('persistent_creator wins over concentrated_feed when both could match', () => {
+      // 4-scan window with @foo recurring (triggers persistent-creator)
+      // AND high single-scan top-creator share (would trigger concentrated).
+      const scans = buildFourScanWindowWithRecurringFoo(3);
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData({
+          totalPosts: 50,
+          topCreators: [
+            { name: 'alice', count: 20 },
+          ] as unknown as DashboardData['topCreators'],
+        }),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.sources');
+      // Persistent-creator (60) beats concentrated-feed (50).
+      expect(result.verdict).toContain('quietly become your most-seen voice');
+      expect(result.verdict).not.toContain('narrow set of sources');
+    });
+
+    test('calm-case fallback fires when no dramatic template matches', () => {
+      const ctx = makeContext({
+        dashboardData: makeDashboardData({
+          totalPosts: 30,
+          adPct: 5,
+          suggestedPct: 50, // below high-suggested threshold
+          followedPct: 50,
+          topCreators: [
+            { name: 'alice', count: 5 },
+          ] as unknown as DashboardData['topCreators'],
+          uniqueCreatorCount: 4, // below source-spread min (8)
+        }),
+      });
+      const result = interpretScan(ctx, 'dashboard.sources');
+      // Fallback variant: "[N] unique creators contributed..."
+      expect(result.verdict).toContain('4 unique creators contributed');
+      expect(result.findingDot).toBe(false);
+    });
+
+    test('calm-case high-suggested variant fires at suggestedPct >= 80', () => {
+      const ctx = makeContext({
+        dashboardData: makeDashboardData({
+          totalPosts: 37,
+          suggestedPct: 100,
+          followedPct: 0,
+          topCreators: [],
+          uniqueCreatorCount: 12,
+        }),
+      });
+      const result = interpretScan(ctx, 'dashboard.sources');
+      // Sources-specific framing: "sources in your feed were almost all suggestions"
+      expect(result.verdict).toContain(
+        'sources in your YouTube feed were almost all suggestions',
+      );
+      expect(result.findingDot).toBe(false);
+    });
+
+    test('calm-case source-spread variant fires when top share < 15% and unique creators >= 8', () => {
+      // Sources-unique calm-case variant: broad mix detection.
+      const ctx = makeContext({
+        dashboardData: makeDashboardData({
+          totalPosts: 50,
+          suggestedPct: 50,
+          followedPct: 50,
+          topCreators: [
+            { name: 'alice', count: 5 }, // 5/50 = 10%, below 15% threshold
+          ] as unknown as DashboardData['topCreators'],
+          uniqueCreatorCount: 23,
+        }),
+      });
+      const result = interpretScan(ctx, 'dashboard.sources');
+      expect(result.verdict).toContain('spread broadly today');
+      expect(result.verdict).toContain('no single creator dominated');
+      const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+      expect(observed?.text).toContain('23 unique creators');
+    });
+
+    test('meta.surface is "dashboard.sources"', () => {
+      const ctx = makeContext();
+      const result = interpretScan(ctx, 'dashboard.sources');
+      expect(result.meta?.surface).toBe('dashboard.sources');
     });
   });
 

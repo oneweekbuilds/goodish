@@ -18,10 +18,11 @@
  * we want a loud bug rather than a silent empty render.
  *
  * Surface coverage:
- *   - 'results'           — functional (Results screen, Phase 3.1+).
+ *   - 'results'            — functional (Results screen, Phase 3.1+).
  *   - 'dashboard.overview' — functional (Dashboard Overview tab, Phase 5.1.3).
- *   - 'dashboard.sources' | 'dashboard.ads' | 'dashboard.politics'
- *     | 'dashboard.tone'  | 'dashboard.suggested'
+ *   - 'dashboard.sources'  — functional (Dashboard Sources tab, Phase 6.1.3).
+ *   - 'dashboard.ads' | 'dashboard.politics' | 'dashboard.tone'
+ *     | 'dashboard.suggested'
  *     — throw "not yet implemented" with the specific surface name.
  *     Failing loudly is preferable to silently producing wrong output
  *     for surfaces that haven't had their templates authored yet.
@@ -36,6 +37,7 @@ import type {
 } from './interpretation-types';
 import {
   DASHBOARD_OVERVIEW_TEMPLATES,
+  DASHBOARD_SOURCES_TEMPLATES,
   RESULTS_TEMPLATES,
   type ResultsTemplate,
 } from './templates';
@@ -59,6 +61,7 @@ export function interpretScan(
     case 'dashboard.overview':
       return selectTemplate(DASHBOARD_OVERVIEW_TEMPLATES, context);
     case 'dashboard.sources':
+      return selectTemplate(DASHBOARD_SOURCES_TEMPLATES, context);
     case 'dashboard.ads':
     case 'dashboard.politics':
     case 'dashboard.tone':
