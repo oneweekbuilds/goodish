@@ -1,30 +1,41 @@
 /**
- * SourcesTab — redesigned "Who Shapes Your Feed" tab.
+ * SourcesTab — "Who Shapes Your Feed" tab (Phase 6.1.4: engine-wired).
  *
- * Wires existing data hooks (useDashboard / computeDashboardData) to the
- * design system primitives in `src/design-system/`. Mirrors the structure
- * established by OverviewTab.tsx in builds #48-50.
+ * Phase 6.1.4 wired the interpretation engine into the hero zone. The
+ * 1.1.x HeroStatCard + pickHeroStat cascade is gone; the engine's
+ * `dashboard.sources` surface produces the verdict, sublines, and
+ * supporting card. Everything below the hero (Top creators list,
+ * Source concentration StackedBar, About this measurement, Plus
+ * creator-breakdowns, About row) is preserved as deeper drill-down
+ * content the engine doesn't yet produce.
  *
  * Section order:
- *   1. Hero stat (top-5 concentration, top-creator share, or unique-source fallback)
- *   2. Top creators (InfluencerRow stack, displayName ?? @name fallback)
+ *   1. Verdict zone (engine-driven): VerdictEyebrow + VerdictText
+ *      + OBSERVED/LIKELY sublines + optional SupportingCard
+ *   2. Top creators (InfluencerRow stack — full ranked list,
+ *      complements the engine's single Top voice supporting row)
  *   3. Source concentration (ExpandableCard with StackedBar)
- *   4. About this measurement (ExpandableCard, How We Measure prose)
+ *   4. About this measurement (ExpandableCard with How We Measure prose)
  *   5. Plus: creator breakdowns (LockedOverlayCard wrapping ExpandableCard)
  *   6. About this analysis (DisclosureRow)
  *
- * Data integrity (lessons from build #50):
- *   - Apply `displayName ?? @name` fallback to every CreatorStat render
- *   - Apply `toSentenceCase` to any data-layer-derived display strings
+ * Chrome treatment per the 2.x Dashboard design spec §1: the screen-
+ * level chrome (DashboardScreen) carries the platform title and scan
+ * caption. This tab does NOT render ResultsMetaLine.
  *
- * Out of scope (preserved as-is):
- *   - useDashboard / computeDashboardData / data layer
- *   - LockedOverlayCard (legacy, kept until cross-tab cleanup)
- *   - sourcesInsight builder (kept; we consume title/meaning/whyCare/meta
- *     through the new primitives)
+ * Loading / error behavior (matches Phase 5.1.4 OverviewTab):
+ *   - `scans` is [] while useDashboard's fetch is in flight. Engine
+ *     runs with no history → rolling-average anchors omitted →
+ *     persistent-creator predicate fails (windowScanCount < 4) →
+ *     falls through to calm-case. Anchors and Top voice fill in
+ *     when scans arrive.
+ *   - useDashboard sets scans to [] on fetch failure and captures
+ *     to Sentry. Identical handling to the loading state — no
+ *     user-facing error surface on this tab.
  */
 import React, { useMemo } from 'react';
 import { View, Text } from 'react-native';
+import type { ScanDetail } from '../../hooks/useDashboard';
 import type { DashboardData } from '../../lib/computeDashboardData';
 import { LockedOverlayCard } from '../../components/plan/LockedOverlayCard';
 import {
@@ -32,91 +43,26 @@ import {
   CategoryRow,
   DisclosureRow,
   ExpandableCard,
-  HeroStatCard,
+  FactRow,
   InfluencerRow,
   SectionHeader,
   StackedBar,
+  SupportingCard,
+  VerdictEyebrow,
+  VerdictText,
 } from '../../design-system';
 import { colors, layout, spacing, type as typeTokens } from '../../design-tokens/tokens';
-// `toSentenceCase` from `lib/string-utils` is deliberately NOT imported here:
-// Sources doesn't render any data-layer-derived enum strings (no contentTypes,
-// no topics, no Gemini-classified labels). All strings on this tab are either
-// human-shaped from `sourcesInsight` (already sentence-cased upstream) or
-// hard-coded copy. If Sources ever grows a Gemini-classified field, import
-// it then.
+import {
+  SublineRow,
+  sublineGapTop,
+} from '../../components/interpretation/SublineRow';
+import { interpretScan } from '../../lib/interpretation/interpretationEngine';
+import type { InterpretationContext } from '../../lib/interpretation/interpretation-types';
 
-// ────────────────────────────────────────────────────────────
-// Hero priority
-// ────────────────────────────────────────────────────────────
-//
-// Three-tier priority chain per the build #51 spec:
-//   1. top5Pct >= 70 AND topCreators.length >= 5 → top-5 concentration
-//   2. topCreators.length >= 1 → top-creator share, with displayName label
-//   3. Else → uniqueCreatorCount fallback
-//
-// Caution badge layered onto whichever tier wins when totalPosts < 12.
-
-interface HeroStat {
-  value: string;
-  unit: string;
-  label: string;
-  description?: string;
-  /** Identifier — currently informational; reserved for any future
-   *  supporting-metric-suppression logic. */
-  key: 'top5' | 'topCreator' | 'uniqueSources';
-}
-
-function pickHeroStat(data: DashboardData): HeroStat {
-  if (data.top5Pct >= 70 && data.topCreators.length >= 5) {
-    return {
-      value: String(data.top5Pct),
-      unit: '%',
-      label: 'of your feed comes from your top 5 sources',
-      description: 'A small number of accounts dominate this session.',
-      key: 'top5',
-    };
-  }
-  if (data.topCreators.length >= 1 && data.totalPosts > 0) {
-    const top = data.topCreators[0]!;
-    const share = Math.round((top.count / data.totalPosts) * 100);
-    // displayName fallback chain (the canonical pattern from
-    // OverviewTab.tsx). For YouTube channels this prefers "Fox News"
-    // over "@FoxNews"/"UC..."-style raw handles. Logical OR (not
-    // nullish coalescing) so an empty-string displayName falls through;
-    // final "Unidentified creator" floor catches the case where Gemini
-    // emits empty values for both displayName and name.
-    const display =
-      (top.displayName && top.displayName.length > 0)
-        ? top.displayName
-        : (top.name && top.name.length > 0)
-          ? (top.name.startsWith('@') ? top.name : `@${top.name}`)
-          : 'Unidentified creator';
-    // Three-tier description scaled by concentration. Under 15% the top
-    // source is leading a broadly sourced feed and "dominates" misreads
-    // the data; 15-30% is a real lead without dominance; 30%+ earns the
-    // "dominates" framing.
-    const description =
-      share < 15
-        ? 'Your feed is broadly sourced.'
-        : share < 30
-          ? `${display} is your most-seen source.`
-          : `${display} dominates this session.`;
-    return {
-      value: String(share),
-      unit: '%',
-      label: 'from your top source',
-      description,
-      key: 'topCreator',
-    };
-  }
-  return {
-    value: String(data.uniqueCreatorCount),
-    unit: '',
-    label: data.uniqueCreatorCount === 1 ? 'unique source' : 'unique sources',
-    description: 'Your feed pulled from this many distinct accounts.',
-    key: 'uniqueSources',
-  };
-}
+// pickHeroStat + HeroStat removed in Phase 6.1.4 — the interpretation
+// engine's `dashboard.sources` surface (templates/dashboardSources.ts)
+// produces the verdict, sublines, and supporting card that previously
+// came from the cascade.
 
 // ────────────────────────────────────────────────────────────
 // Component
@@ -131,14 +77,28 @@ function pickHeroStat(data: DashboardData): HeroStat {
 
 export interface SourcesTabProps {
   data: DashboardData;
+  /** All prior scans for this user. Used by the interpretation engine
+   *  for cross-scan recurrence and rolling-average derivations.
+   *  Starts as [] during the useDashboard fetch; engine handles empty
+   *  array gracefully (persistent-creator predicate fails on
+   *  windowScanCount < 4, falls through to calm-case). */
+  scans: ScanDetail[];
+  /** The scan currently driving `data`. Null only when no scan
+   *  history exists at all (first launch); in that case we render an
+   *  empty state instead of the engine output. */
+  activeScan: ScanDetail | null;
   isPlus: boolean;
   onUpgrade: () => void;
 }
 
-export function SourcesTab({ data, isPlus, onUpgrade }: SourcesTabProps) {
-  const hero = useMemo(() => pickHeroStat(data), [data]);
-
-  // Concentration breakdown derivations — preserved from legacy SourcesContent.
+export function SourcesTab({
+  data,
+  scans,
+  activeScan,
+  isPlus,
+  onUpgrade,
+}: SourcesTabProps) {
+  // Concentration breakdown derivations — preserved from 1.1.x.
   const top5Count = useMemo(
     () => data.topCreators.slice(0, 5).reduce((sum, c) => sum + c.count, 0),
     [data.topCreators]
@@ -147,16 +107,49 @@ export function SourcesTab({ data, isPlus, onUpgrade }: SourcesTabProps) {
     () => data.topCreators.slice(5, 10).reduce((sum, c) => sum + c.count, 0),
     [data.topCreators]
   );
-  const othersCount = Math.max(0, data.totalPosts - top5Count - top6to10Count);
   const top5ConcPct = data.top5Pct;
   const top6to10Pct =
     data.totalPosts > 0 ? Math.round((top6to10Count / data.totalPosts) * 100) : 0;
   const othersPct = Math.max(0, 100 - top5ConcPct - top6to10Pct);
 
-  const heroCaution =
-    data.totalPosts < 12 ? `Based on ${data.totalPosts} posts. Interpret with care.` : undefined;
-
   const visibleCreators = data.topCreators.slice(0, isPlus ? 10 : 5);
+
+  // ── Engine wiring (Phase 6.1.4) ──────────────────────────────
+  //
+  // Same useMemo chain pattern as Phase 5.1.4 OverviewTab. Engine
+  // runs synchronously when activeScan exists; computation happens
+  // in the tab (not prop-injected from parent) so each tab's surface
+  // wiring stays independent.
+  const platform = activeScan?.platform ?? 'unknown';
+
+  const context = useMemo<InterpretationContext | null>(() => {
+    if (!activeScan) return null;
+    return { activeScan, scans, dashboardData: data, platform };
+  }, [activeScan, scans, data, platform]);
+
+  const interpretation = useMemo(
+    () => (context ? interpretScan(context, 'dashboard.sources') : null),
+    [context],
+  );
+
+  // Filter supporting rows to 'fact' variant. Other variants
+  // (CreatorRow, TrajectoryRow, BarRow, CaveatNote, MethodologyRow)
+  // ship in Phase 7+ — skipped with console.warn for visibility.
+  const factRows = useMemo(() => {
+    const out: Array<{ label: string; value: string; anchor?: string }> = [];
+    if (!interpretation) return out;
+    for (const row of interpretation.supportingRows) {
+      if (row.variant === 'fact') {
+        out.push({ label: row.label, value: row.value, anchor: row.anchor });
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[2x] supporting row variant not yet implemented on Dashboard Sources: ${row.variant}`,
+        );
+      }
+    }
+    return out;
+  }, [interpretation]);
 
   return (
     <View
@@ -166,14 +159,57 @@ export function SourcesTab({ data, isPlus, onUpgrade }: SourcesTabProps) {
         paddingBottom: spacing.s7,
       }}
     >
-      {/* ── 1. Hero ────────────────────────────────────────────── */}
-      <HeroStatCard
-        value={hero.value}
-        unit={hero.unit}
-        label={hero.label}
-        description={hero.description}
-        caution={heroCaution}
-      />
+      {/* ── 1. Verdict zone (engine-driven) ─────────────────────── */}
+      {interpretation ? (
+        <View>
+          <VerdictEyebrow />
+          <View style={{ marginTop: spacing.s4 }}>
+            <VerdictText>{interpretation.verdict}</VerdictText>
+          </View>
+          <View style={{ marginTop: spacing.s6 }}>
+            {interpretation.sublines.map((subline, idx) => {
+              const prevMode =
+                idx > 0 ? interpretation.sublines[idx - 1]?.mode : undefined;
+              const marginTop = sublineGapTop(prevMode, subline.mode);
+              return (
+                <SublineRow
+                  key={idx}
+                  subline={subline}
+                  marginTop={marginTop}
+                  surface="Dashboard Sources"
+                />
+              );
+            })}
+          </View>
+          {factRows.length > 0 ? (
+            <View style={{ marginTop: spacing.s6 }}>
+              <SupportingCard>
+                {factRows.map((row, i) => (
+                  <FactRow
+                    key={i}
+                    label={row.label}
+                    value={row.value}
+                    anchor={row.anchor}
+                  />
+                ))}
+              </SupportingCard>
+            </View>
+          ) : null}
+        </View>
+      ) : (
+        <Card>
+          <Text
+            style={{
+              fontSize: typeTokens.body.fontSize,
+              lineHeight: typeTokens.body.lineHeight,
+              fontWeight: typeTokens.body.fontWeight,
+              color: colors.textSecondary,
+            }}
+          >
+            No scan data yet. Run a scan to see who shapes your feed.
+          </Text>
+        </Card>
+      )}
 
       {/* ── 2. Top creators ────────────────────────────────────── */}
       {visibleCreators.length > 0 ? (

@@ -137,8 +137,8 @@ const OverviewContent = memo(({ data, scans, activeScan, isPlus, onUpgrade, onAb
 // surrounding DashboardScreen render path stays unchanged. `colors` and
 // `shadows` are accepted but unused — the redesigned tab is fully styled
 // via design tokens, same approach as OverviewContent.
-const SourcesContent = memo(({ data, isPlus, onUpgrade }: { data: DashboardData; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
-  return <SourcesTab data={data} isPlus={isPlus} onUpgrade={onUpgrade} />;
+const SourcesContent = memo(({ data, scans, activeScan, isPlus, onUpgrade }: { data: DashboardData; scans: ScanDetail[]; activeScan: ScanDetail | null; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
+  return <SourcesTab data={data} scans={scans} activeScan={activeScan} isPlus={isPlus} onUpgrade={onUpgrade} />;
 });
 
 // ─── AdsContent ──────────────────────────────────────────
@@ -393,7 +393,7 @@ export default function DashboardScreen() {
     let content: React.ReactNode;
     switch (activeTab) {
       case 'overview': content = <OverviewContent data={dashboardData} scans={scans} activeScan={activeScan ?? null} isPlus={isPlus} onUpgrade={handleUpgrade} onAboutPress={handleAboutPress} colors={colors} shadows={shadows} />; break;
-      case 'sources': content = <SourcesContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
+      case 'sources': content = <SourcesContent data={dashboardData} scans={scans} activeScan={activeScan ?? null} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
       case 'ads': content = <AdsContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
       case 'politics': content = <PoliticsContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
       case 'tone': content = <ToneContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;

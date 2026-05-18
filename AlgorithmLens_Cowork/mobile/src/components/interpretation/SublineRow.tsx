@@ -37,8 +37,16 @@ import type {
 } from '../../lib/interpretation/interpretation-types';
 
 /** Surface name passed to the COACHING/QUESTION warn so unimplemented
- *  modes are easy to trace to the right engine surface. */
-export type SublineRowSurface = 'Results' | 'Dashboard Overview';
+ *  modes are easy to trace to the right engine surface. Phase 6 adds
+ *  the remaining Dashboard tabs as they wire up. */
+export type SublineRowSurface =
+  | 'Results'
+  | 'Dashboard Overview'
+  | 'Dashboard Sources'
+  | 'Dashboard Ads'
+  | 'Dashboard Politics'
+  | 'Dashboard Tone'
+  | 'Dashboard Suggested';
 
 export interface SublineRowProps {
   subline: Subline;
