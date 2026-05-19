@@ -201,8 +201,8 @@ const PoliticsContent = memo(({ data, isPlus, onUpgrade }: { data: DashboardData
 // on the data layer at `data.toneInsight.howWeMeasure` (see
 // TONE_HOW_WE_MEASURE in computeDashboardData.ts) and is rendered
 // inside the bottom "About this measurement" ExpandableCard.
-const ToneContent = memo(({ data, isPlus, onUpgrade }: { data: DashboardData; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
-  return <ToneTab data={data} isPlus={isPlus} onUpgrade={onUpgrade} />;
+const ToneContent = memo(({ data, scans, activeScan, isPlus, onUpgrade }: { data: DashboardData; scans: ScanDetail[]; activeScan: ScanDetail | null; isPlus: boolean; onUpgrade: () => void; colors: ReturnType<typeof useTheme>['colors']; shadows: ReturnType<typeof useTheme>['shadows'] }) => {
+  return <ToneTab data={data} scans={scans} activeScan={activeScan} isPlus={isPlus} onUpgrade={onUpgrade} />;
 });
 
 // ─── Shared Sub-Components ───────────────────────────────
@@ -396,7 +396,7 @@ export default function DashboardScreen() {
       case 'sources': content = <SourcesContent data={dashboardData} scans={scans} activeScan={activeScan ?? null} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
       case 'ads': content = <AdsContent data={dashboardData} scans={scans} activeScan={activeScan ?? null} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
       case 'politics': content = <PoliticsContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
-      case 'tone': content = <ToneContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
+      case 'tone': content = <ToneContent data={dashboardData} scans={scans} activeScan={activeScan ?? null} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
       case 'suggested_vs_followed': content = <SuggestedContent data={dashboardData} isPlus={isPlus} onUpgrade={handleUpgrade} colors={colors} shadows={shadows} />; break;
       default: content = <OverviewContent data={dashboardData} scans={scans} activeScan={activeScan ?? null} isPlus={isPlus} onUpgrade={handleUpgrade} onAboutPress={handleAboutPress} colors={colors} shadows={shadows} />; break;
     }

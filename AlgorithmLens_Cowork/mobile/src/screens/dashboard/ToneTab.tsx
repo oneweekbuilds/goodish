@@ -84,7 +84,7 @@
  *   - The legacy footer "Master numbers line" — covered by the
  *     toneInsight.meta string consumed via the hero description
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text } from 'react-native';
 import type {
   DashboardData,
@@ -97,11 +97,21 @@ import {
   ComparisonPair,
   DisclosureRow,
   ExpandableCard,
-  HeroStatCard,
+  FactRow,
   Icon,
   StackedBar,
+  SupportingCard,
+  VerdictEyebrow,
+  VerdictText,
 } from '../../design-system';
 import { colors, layout, spacing, type as typeTokens } from '../../design-tokens/tokens';
+import type { ScanDetail } from '../../hooks/useDashboard';
+import {
+  SublineRow,
+  sublineGapTop,
+} from '../../components/interpretation/SublineRow';
+import { interpretScan } from '../../lib/interpretation/interpretationEngine';
+import type { InterpretationContext } from '../../lib/interpretation/interpretation-types';
 
 // ────────────────────────────────────────────────────────────
 // Component
@@ -109,6 +119,15 @@ import { colors, layout, spacing, type as typeTokens } from '../../design-tokens
 
 export interface ToneTabProps {
   data: DashboardData;
+  /** All prior scans for this user. Used by the interpretation engine
+   *  for negative-tone-shift rolling-average detection. Starts as []
+   *  during the useDashboard fetch; engine handles empty array
+   *  gracefully (shift predicate requires non-null rollingAvg). */
+  scans: ScanDetail[];
+  /** The scan currently driving `data`. Null only when no scan
+   *  history exists at all (first launch); in that case we render
+   *  an empty state instead of the engine output. */
+  activeScan: ScanDetail | null;
   isPlus: boolean;
   onUpgrade: () => void;
 }
@@ -162,16 +181,119 @@ function deriveToneBySourceDelta(tbso: ToneBySourceOrigin): string | null {
   return `${side} posts contained ${points} ${pointWord} more ${biggest.tone} content.`;
 }
 
-export function ToneTab({ data, isPlus, onUpgrade }: ToneTabProps) {
+export function ToneTab({
+  data,
+  scans,
+  activeScan,
+  isPlus,
+  onUpgrade,
+}: ToneTabProps) {
   const insight = data.toneInsight;
   const howWeMeasure = insight.howWeMeasure;
   const analysis = data.toneAnalysis;
 
+  // ── Engine wiring (Phase 6.3.4) ──────────────────────────────
+  //
+  // Engine runs in BOTH paths (main and !hasToneData empty branch).
+  // On the empty branch, the engine's calm-case
+  // enrichment-not-available variant fires and produces honest
+  // "tone analysis isn't available" copy at the top of the tab.
+  // The existing toneInsight-driven explainer Card stays beneath
+  // — the engine handles the headline; the existing prose adds
+  // tab-specific context (AI opt-in messaging, etc.) the engine
+  // can't carry.
+  const platform = activeScan?.platform ?? 'unknown';
+
+  const context = useMemo<InterpretationContext | null>(() => {
+    if (!activeScan) return null;
+    return { activeScan, scans, dashboardData: data, platform };
+  }, [activeScan, scans, data, platform]);
+
+  const interpretation = useMemo(
+    () => (context ? interpretScan(context, 'dashboard.tone') : null),
+    [context],
+  );
+
+  // Filter supporting rows to 'fact' variant. Other variants
+  // (CreatorRow, TrajectoryRow, BarRow, CaveatNote, MethodologyRow)
+  // ship in Phase 7+ — skipped with console.warn for visibility.
+  const factRows = useMemo(() => {
+    const out: Array<{ label: string; value: string; anchor?: string }> = [];
+    if (!interpretation) return out;
+    for (const row of interpretation.supportingRows) {
+      if (row.variant === 'fact') {
+        out.push({ label: row.label, value: row.value, anchor: row.anchor });
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[2x] supporting row variant not yet implemented on Dashboard Tone: ${row.variant}`,
+        );
+      }
+    }
+    return out;
+  }, [interpretation]);
+
+  // Shared verdict-zone fragment rendered at the top of BOTH the
+  // empty and main paths. When activeScan is null (no scan history
+  // at all), interpretation is null and a tab-specific empty-state
+  // Card renders instead.
+  const verdictZone = interpretation ? (
+    <View>
+      <VerdictEyebrow />
+      <View style={{ marginTop: spacing.s4 }}>
+        <VerdictText>{interpretation.verdict}</VerdictText>
+      </View>
+      <View style={{ marginTop: spacing.s6 }}>
+        {interpretation.sublines.map((subline, idx) => {
+          const prevMode =
+            idx > 0 ? interpretation.sublines[idx - 1]?.mode : undefined;
+          const marginTop = sublineGapTop(prevMode, subline.mode);
+          return (
+            <SublineRow
+              key={idx}
+              subline={subline}
+              marginTop={marginTop}
+              surface="Dashboard Tone"
+            />
+          );
+        })}
+      </View>
+      {factRows.length > 0 ? (
+        <View style={{ marginTop: spacing.s6 }}>
+          <SupportingCard>
+            {factRows.map((row, i) => (
+              <FactRow
+                key={i}
+                label={row.label}
+                value={row.value}
+                anchor={row.anchor}
+              />
+            ))}
+          </SupportingCard>
+        </View>
+      ) : null}
+    </View>
+  ) : (
+    <Card>
+      <Text
+        style={{
+          fontSize: typeTokens.body.fontSize,
+          lineHeight: typeTokens.body.lineHeight,
+          fontWeight: typeTokens.body.fontWeight,
+          color: colors.textSecondary,
+        }}
+      >
+        Run a scan to see the emotional tone of your feed.
+      </Text>
+    </Card>
+  );
+
   // ── Empty state ──────────────────────────────────────────
   // Triggered when toneAnalysis is null (no AI) OR when AI ran but
-  // knownValenceTotal === 0 (no tone signals detected). Either way,
-  // buildToneInsight has already shaped toneInsight title/meaning/
-  // whyCare for the appropriate branch.
+  // knownValenceTotal === 0 (no tone signals detected). buildToneInsight
+  // has shaped toneInsight title/meaning/whyCare for the appropriate
+  // branch — kept beneath the engine verdict zone for tab-specific
+  // context (AI opt-in, etc.) the engine can't carry.
   if (!data.hasToneData) {
     return (
       <View
@@ -181,28 +303,20 @@ export function ToneTab({ data, isPlus, onUpgrade }: ToneTabProps) {
           paddingBottom: spacing.s7,
         }}
       >
-        <Card>
-          <Text
-            style={{
-              fontSize: typeTokens.subheading.fontSize,
-              lineHeight: typeTokens.subheading.lineHeight,
-              fontWeight: typeTokens.subheading.fontWeight,
-              color: colors.textPrimary,
-            }}
-          >
-            {insight.title}
-          </Text>
-          <Text
-            style={{
-              fontSize: typeTokens.body.fontSize,
-              lineHeight: typeTokens.body.lineHeight,
-              color: colors.textSecondary,
-              marginTop: spacing.s3,
-            }}
-          >
-            {insight.meaning}
-          </Text>
-          {insight.whyCare ? (
+        {verdictZone}
+
+        <View style={{ marginTop: spacing.s7 }}>
+          <Card>
+            <Text
+              style={{
+                fontSize: typeTokens.subheading.fontSize,
+                lineHeight: typeTokens.subheading.lineHeight,
+                fontWeight: typeTokens.subheading.fontWeight,
+                color: colors.textPrimary,
+              }}
+            >
+              {insight.title}
+            </Text>
             <Text
               style={{
                 fontSize: typeTokens.body.fontSize,
@@ -211,10 +325,22 @@ export function ToneTab({ data, isPlus, onUpgrade }: ToneTabProps) {
                 marginTop: spacing.s3,
               }}
             >
-              {insight.whyCare}
+              {insight.meaning}
             </Text>
-          ) : null}
-        </Card>
+            {insight.whyCare ? (
+              <Text
+                style={{
+                  fontSize: typeTokens.body.fontSize,
+                  lineHeight: typeTokens.body.lineHeight,
+                  color: colors.textSecondary,
+                  marginTop: spacing.s3,
+                }}
+              >
+                {insight.whyCare}
+              </Text>
+            ) : null}
+          </Card>
+        </View>
 
         <AIDisclosure />
 
@@ -243,34 +369,13 @@ export function ToneTab({ data, isPlus, onUpgrade }: ToneTabProps) {
   const knownValenceTotal = analysis?.knownValenceTotal ?? 0;
   const lowSample = analysis?.lowSample ?? false;
 
-  // Hero bucket logic — show the dominant-tone label when one bucket
-  // hits 50%+, otherwise "Mixed tone".
-  let heroValue: number;
-  let heroLabel: string;
-  let heroDescription: string;
-
-  if (positivePct >= 50) {
-    heroValue = positivePct;
-    heroLabel = 'Mostly positive';
-    heroDescription = 'Most posts felt positive or supportive.';
-  } else if (negativePct >= 50) {
-    heroValue = negativePct;
-    heroLabel = 'Mostly negative';
-    heroDescription = 'Most posts felt critical or negative.';
-  } else if (neutralPct >= 50) {
-    heroValue = neutralPct;
-    heroLabel = 'Mostly neutral';
-    heroDescription = 'Most posts appeared balanced or factual.';
-  } else {
-    // Mixed: surface the dominant tone's number but label as mixed.
-    heroValue = Math.max(positivePct, neutralPct, negativePct);
-    heroLabel = 'Mixed tone';
-    heroDescription = `${positivePct}% positive, ${neutralPct}% neutral, ${negativePct}% negative.`;
-  }
-
-  const heroCaution = lowSample
-    ? `Based on ${knownValenceTotal} posts with identifiable tone. Interpret with care.`
-    : undefined;
+  // 1.1.x hero bucket cascade + lowSample caution removed in Phase
+  // 6.3.4 — the engine's dashboard.tone surface (dominant_tone
+  // template's three sub-variants + negative_tone_shift template +
+  // calm-case variants) produces the verdict zone above. Caution
+  // copy for low-sample scans defers to the future CaveatNote
+  // supporting-row variant (same discipline as Phases 5.1.4 / 6.1.4
+  // / 6.2.4).
 
   // Headline for the tone-distribution card: show the dominant pct so
   // the collapsed-card surface communicates state without expanding.
@@ -295,14 +400,8 @@ export function ToneTab({ data, isPlus, onUpgrade }: ToneTabProps) {
         paddingBottom: spacing.s7,
       }}
     >
-      {/* ── 1. Hero ──────────────────────────────────────────── */}
-      <HeroStatCard
-        value={String(heroValue)}
-        unit="%"
-        label={heroLabel}
-        description={heroDescription}
-        caution={heroCaution}
-      />
+      {/* ── 1. Verdict zone (engine-driven) ─────────────────── */}
+      {verdictZone}
 
       {/* ── 2. AI disclosure ─────────────────────────────────── */}
       <AIDisclosure />
