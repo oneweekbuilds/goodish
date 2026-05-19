@@ -219,6 +219,29 @@ describe('interpretationEngine — real-scan smoke', () => {
 
     assertResultShape(result, 'dashboard.politics');
   });
+
+  test('engine produces a sensible result for a real YouTube scan on the dashboard.suggested surface', () => {
+    const context = makeRealScanContext();
+
+    const result = interpretScan(context, 'dashboard.suggested');
+
+    // Phase 6.5.5 observation: the real fixtures have 96% null
+    // is_suggested values (83 of 86 posts; the remaining 3 are
+    // is_suggested=true, zero are is_suggested=false). That puts
+    // extractCreatorNovelty's approximate flag at true
+    // (unknownCount/totalPosts > 0.3). The dashboard.suggested
+    // enrichment-gap guard short-circuits the dramatic templates;
+    // calm-case approximate-follow-detection variant fires with
+    // honest framing ("Follow detection isn't fully reliable for
+    // this YouTube scan").
+    // eslint-disable-next-line no-console
+    console.log(
+      '[realScanSmoke dashboard.suggested] InterpretationResult:\n' +
+        JSON.stringify(result, null, 2),
+    );
+
+    assertResultShape(result, 'dashboard.suggested');
+  });
 });
 
 // ============================================
@@ -332,6 +355,60 @@ function withSyntheticPoliticalEnrichment(
     emotions: { valence: 'NEUTRAL' },
   }));
   raw.analysis = analysis;
+  return clone;
+}
+
+/**
+ * Inject synthetic suggested/followed posts into a deep-cloned
+ * ScanDetail. Replaces `raw_data.posts` with the given list and
+ * optionally locks `scan.suggested_percentage` for rolling-average
+ * extraction.
+ *
+ * Each item is `{ creator_handle, creator_display_name, is_ad: false,
+ * is_suggested, ...defaults }`. Other raw_data fields (analysis,
+ * top_creators, etc.) are preserved from the base.
+ *
+ * Used by Phase 6.5.5 to test followed_creator_absence and
+ * calm-case variants against real-shape data. The real fixtures
+ * have 96% null is_suggested values which forces creatorNovelty.
+ * approximate=true; this helper produces all-known is_suggested
+ * values so the dramatic templates can fire.
+ *
+ * The `suggested_percentage` override is read by the engine's
+ * rolling-average extractor at scan.suggested_percentage (top-level
+ * column, not derived from posts). Computed-from-posts metrics on
+ * dashboardData.suggestedPct still come from the post array.
+ */
+function withSyntheticFollowedSuggestedPosts(
+  base: ScanDetail,
+  items: Array<{
+    handle: string;
+    name?: string;
+    isSuggested: boolean | null;
+  }>,
+  options: {
+    id?: string;
+    created_at?: string;
+    suggested_percentage?: number;
+  } = {},
+): ScanDetail {
+  const clone = deepClone(base);
+  if (options.id) clone.id = options.id;
+  if (options.created_at) clone.created_at = options.created_at;
+  if (options.suggested_percentage !== undefined) {
+    clone.suggested_percentage = options.suggested_percentage;
+  }
+  const raw = clone.raw_data as Record<string, unknown>;
+  raw.posts = items.map((it, idx) => ({
+    creator_handle: it.handle,
+    creator_display_name: it.name ?? null,
+    is_ad: false,
+    is_suggested: it.isSuggested,
+    content_type: 'video',
+    hashtags: [],
+    position_in_feed: idx + 1,
+    ad_label_text: null,
+  }));
   return clone;
 }
 
@@ -781,6 +858,167 @@ describe('persistent-creator template — real-scan smoke (depth-padded)', () =>
     // Surface-differentiation: must NOT use Overview's "climbing" frame.
     expect(result.verdict).not.toContain('Politics has been climbing');
     expect(result.findingDot).toBe(true);
+  });
+
+  // ── Phase 6.5.5: Suggested vs Followed on depth-padded window ─
+  //
+  // The 2-scan baseline (above, in the main describe block) exercises
+  // the calm-case approximate-follow-detection variant — the real
+  // fixtures have 96% null is_suggested. These tests synthesize
+  // post-level is_suggested values on top of the depth-padded window
+  // to exercise the all-suggested-leaning and followed-absence paths.
+
+  test('Suggested: calm-case suggested-leaning fires on an all-suggested 4-scan window', () => {
+    // Synthesis: every scan has 100% is_suggested=true posts from a
+    // mix of suggested creators. creatorNovelty exists (suggested
+    // creators > 0) and is non-approximate (no null is_suggested).
+    // followed_creator_absence has no records (no is_suggested=false
+    // posts), suggested_dominance has no elevation (rolling avg also
+    // 100), so calm-case suggested-leaning fires (suggestedPct=100 >=
+    // 60).
+    const allSuggestedItems = Array.from({ length: 5 }, (_, i) => ({
+      handle: `@news-${i}`,
+      name: `News Source ${i}`,
+      isSuggested: true,
+    }));
+
+    const activeWithMix = withSyntheticFollowedSuggestedPosts(
+      REAL_ACTIVE_SCAN,
+      allSuggestedItems,
+      { suggested_percentage: 100 },
+    );
+    const priors = [
+      withSyntheticFollowedSuggestedPosts(REAL_PRIOR_SCAN, allSuggestedItems, {
+        suggested_percentage: 100,
+      }),
+      withSyntheticFollowedSuggestedPosts(REAL_PRIOR_SCAN, allSuggestedItems, {
+        id: 'synth-sug-prior-1week',
+        created_at: '2026-02-19T15:03:29.709+00:00',
+        suggested_percentage: 100,
+      }),
+      withSyntheticFollowedSuggestedPosts(REAL_PRIOR_SCAN, allSuggestedItems, {
+        id: 'synth-sug-prior-2weeks',
+        created_at: '2026-02-12T15:03:29.709+00:00',
+        suggested_percentage: 100,
+      }),
+    ];
+
+    const context: InterpretationContext = {
+      activeScan: activeWithMix,
+      scans: [activeWithMix, ...priors],
+      dashboardData: computeDashboardData(activeWithMix),
+      platform: 'youtube',
+    };
+
+    const result = interpretScan(context, 'dashboard.suggested');
+
+    // eslint-disable-next-line no-console
+    console.log(
+      '[realScanSmoke calm-case suggested-leaning dashboard.suggested] InterpretationResult:\n' +
+        JSON.stringify(result, null, 2),
+    );
+
+    assertResultShape(result, 'dashboard.suggested');
+    expect(result.verdict).toContain('Suggestions made up most');
+    expect(result.findingDot).toBe(false);
+  });
+
+  test('Suggested: followed_creator_absence template fires with design-canonical "gone quiet" verdict', () => {
+    // Synthesis design:
+    //   - Active scan: 5 suggested + 3 followed posts from @other1
+    //     (suggestedPct ≈ 62, mirrors design-canonical 62%).
+    //     creatorNovelty: 5 suggested creators, 1 followed creator,
+    //     approximate=false. Active does NOT include @MKBHD.
+    //   - REAL_PRIOR_SCAN (8 days before active): 3 @MKBHD followed
+    //     posts + 5 suggested = 8 posts total.
+    //   - Two older clones: 3 @MKBHD followed + 5 suggested each.
+    //   - All priors carry suggested_percentage=60 so rolling avg
+    //     reads 60 (design-canonical).
+    //
+    // Expected: @MKBHD has scanCount=3, totalPosts=9, top followed
+    // creator, lastSeenAt ≈ 8 days before active → daysSinceLastSeen=8.
+    // followed_creator_absence template predicate matches; verdict
+    // ships design-canonical verbatim.
+    const activeItems = [
+      ...Array.from({ length: 5 }, (_, i) => ({
+        handle: `@news-${i}`,
+        name: `News Source ${i}`,
+        isSuggested: true,
+      })),
+      ...Array.from({ length: 3 }, () => ({
+        handle: '@other1',
+        name: 'Other Creator',
+        isSuggested: false,
+      })),
+    ];
+
+    const priorItems = [
+      ...Array.from({ length: 3 }, () => ({
+        handle: '@mkbhd',
+        name: 'MKBHD',
+        isSuggested: false,
+      })),
+      ...Array.from({ length: 5 }, (_, i) => ({
+        handle: `@news-${i}`,
+        name: `News Source ${i}`,
+        isSuggested: true,
+      })),
+    ];
+
+    // Active scan: REAL_ACTIVE_SCAN's created_at (2026-02-27).
+    // Prior dates set 8/12/14 days before active to produce
+    // daysSinceLastSeen=8 for @MKBHD's most recent appearance.
+    // The active scan's id and created_at are preserved (no
+    // override) so assertResultShape's meta.scanId check passes
+    // against the real fixture's id.
+    const activeWithMix = withSyntheticFollowedSuggestedPosts(
+      REAL_ACTIVE_SCAN,
+      activeItems,
+      { suggested_percentage: 62 },
+    );
+    const priors = [
+      withSyntheticFollowedSuggestedPosts(REAL_PRIOR_SCAN, priorItems, {
+        id: 'synth-sug-prior-8d',
+        created_at: '2026-02-19T12:52:44.187+00:00',
+        suggested_percentage: 60,
+      }),
+      withSyntheticFollowedSuggestedPosts(REAL_PRIOR_SCAN, priorItems, {
+        id: 'synth-sug-prior-12d',
+        created_at: '2026-02-15T12:52:44.187+00:00',
+        suggested_percentage: 60,
+      }),
+      withSyntheticFollowedSuggestedPosts(REAL_PRIOR_SCAN, priorItems, {
+        id: 'synth-sug-prior-14d',
+        created_at: '2026-02-13T12:52:44.187+00:00',
+        suggested_percentage: 60,
+      }),
+    ];
+
+    const context: InterpretationContext = {
+      activeScan: activeWithMix,
+      scans: [activeWithMix, ...priors],
+      dashboardData: computeDashboardData(activeWithMix),
+      platform: 'youtube',
+    };
+
+    const result = interpretScan(context, 'dashboard.suggested');
+
+    // eslint-disable-next-line no-console
+    console.log(
+      '[realScanSmoke followed_creator_absence dashboard.suggested] InterpretationResult:\n' +
+        JSON.stringify(result, null, 2),
+    );
+
+    assertResultShape(result, 'dashboard.suggested');
+    // Design-canonical verbatim verdict.
+    expect(result.verdict).toBe(
+      'Your followed creators have gone quiet, so suggestions are filling the gap.',
+    );
+    expect(result.findingDot).toBe(true);
+    const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+    expect(observed?.text).toContain('MKBHD');
+    expect(observed?.text).toContain('top followed creator');
+    expect(observed?.text).toMatch(/hasn't posted in \d+ days/);
   });
 });
 
