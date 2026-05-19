@@ -7,3 +7,4 @@ export { DASHBOARD_OVERVIEW_TEMPLATES } from './dashboardOverview';
 export { DASHBOARD_SOURCES_TEMPLATES } from './dashboardSources';
 export { DASHBOARD_ADS_TEMPLATES } from './dashboardAds';
 export { DASHBOARD_TONE_TEMPLATES } from './dashboardTone';
+export { DASHBOARD_POLITICS_TEMPLATES } from './dashboardPolitics';
