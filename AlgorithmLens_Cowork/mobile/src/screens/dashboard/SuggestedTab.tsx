@@ -4,8 +4,33 @@
  * Wires the suggested/followed split, creator novelty, by-platform
  * breakdown, commercial comparison, top topics, and content format
  * signals on DashboardData to the design system primitives in
- * `src/design-system/`. Mirrors the structure of SourcesTab.tsx,
- * PoliticsTab.tsx, and AdsTab.tsx.
+ * `src/design-system/` AND to the 2.x interpretation engine for the
+ * headline verdict zone. Mirrors the structure of SourcesTab.tsx,
+ * PoliticsTab.tsx, AdsTab.tsx, and ToneTab.tsx as wired in Phases
+ * 6.1–6.4.
+ *
+ * Engine wiring (Phase 6.5.4):
+ *   - useMemo chain: activeScan → context → interpretation
+ *   - dashboard.suggested surface: 3 templates (followed_creator_absence
+ *     at priority 70, suggested_dominance at 50, calm-case at 10 with
+ *     4 variants including approximate-follow-detection).
+ *   - SupportingCard filters supportingRows to 'fact' variant only;
+ *     other variants warn via console.warn (Phase 7+ primitives).
+ *   - When activeScan === null (no scan history at all), interpretation
+ *     is null and a Tab 6-specific empty-state Card renders at the
+ *     verdict-zone slot.
+ *
+ * What was removed in Phase 6.5.4:
+ *   - HeroStatCard block (replaced by VerdictEyebrow + VerdictText +
+ *     SublineRow at the verdict zone).
+ *   - heroCaution small-sample badge → deferred to future CaveatNote
+ *     supporting-row variant (same discipline as Phases 5.1.4 / 6.1.4
+ *     / 6.2.4 / 6.3.4 / 6.4.4).
+ *
+ * The CautionBadge inside "Are these new voices?" Section (3) is
+ * UNCHANGED — that badge documents follow-detection limits specific
+ * to creatorNovelty's data quality, NOT scan sample size. Different
+ * concern; different primitive; preserved.
  *
  * Section order:
  *   1. Hero (HeroStatCard on whichever of suggested/followed dominates,
@@ -58,22 +83,33 @@
  *   - The legacy EvidenceBundleTeaser + FreeAskTeaser components are
  *     dropped consistent with Sources/Politics/Ads decisions.
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text } from 'react-native';
 import type { DashboardData } from '../../lib/computeDashboardData';
+import type { ScanDetail } from '../../hooks/useDashboard';
 import {
   AttributeCard,
+  Card,
   CategoryRow,
   CautionBadge,
   ComparisonPair,
   DisclosureRow,
   ExpandableCard,
+  FactRow,
   FeedbackLoopStep,
-  HeroStatCard,
   StackedBar,
+  SupportingCard,
+  VerdictEyebrow,
+  VerdictText,
 } from '../../design-system';
 import { colors, layout, spacing, type as typeTokens } from '../../design-tokens/tokens';
 import { toSentenceCase } from '../../lib/string-utils';
+import {
+  SublineRow,
+  sublineGapTop,
+} from '../../components/interpretation/SublineRow';
+import { interpretScan } from '../../lib/interpretation/interpretationEngine';
+import type { InterpretationContext } from '../../lib/interpretation/interpretation-types';
 
 // ────────────────────────────────────────────────────────────
 // Content format friendly labels
@@ -108,11 +144,21 @@ function formatContentType(raw: string): string {
 
 export interface SuggestedTabProps {
   data: DashboardData;
+  /** All prior scans for this user. Used by the interpretation engine
+   *  for followed-creator-absence detection and suggested-pct rolling-
+   *  average computation. Starts as [] during the useDashboard fetch;
+   *  engine handles empty array gracefully (absence and dominance
+   *  predicates fall through to calm-case). */
+  scans: ScanDetail[];
+  /** The scan currently driving `data`. Null only when no scan
+   *  history exists at all (first launch); in that case we render
+   *  a Tab 6-specific empty state instead of the engine output. */
+  activeScan: ScanDetail | null;
   isPlus: boolean;
   onUpgrade: () => void;
 }
 
-export function SuggestedTab({ data }: SuggestedTabProps) {
+export function SuggestedTab({ data, scans, activeScan }: SuggestedTabProps) {
   // Note: `isPlus` and `onUpgrade` are accepted on the wrapper for API
   // consistency with the other redesigned tabs but unused here — this
   // tab has no Plus-locked section.
@@ -120,18 +166,105 @@ export function SuggestedTab({ data }: SuggestedTabProps) {
   const insight = data.suggestedInsight;
   const howWeMeasure = insight.howWeMeasure;
 
-  // Hero: surface whichever side dominates, so the headline number is
-  // always the largest single percentage on the screen.
-  const dominantIsSuggested = data.suggestedPct >= data.followedPct;
-  const heroValue = dominantIsSuggested ? data.suggestedPct : data.followedPct;
-  const heroLabel = dominantIsSuggested
-    ? "of your feed came from accounts you don't follow"
-    : 'of your feed came from accounts you follow';
+  // ── Engine wiring (Phase 6.5.4) ──────────────────────────────
+  //
+  // The engine runs in the main render path. When activeScan is null
+  // (no scan history at all), interpretation is null and a tab-
+  // specific empty-state Card renders at the verdict-zone slot.
+  // Unlike Tone/Politics tabs, there's no separate !hasFollowedData
+  // empty branch — Tab 6 always has both percentages to render, even
+  // if the underlying data is sparse. The engine's calm-case variants
+  // (approximate-follow-detection / followed-dominant / suggested-
+  // leaning / fallback) handle the honest framing across data states.
+  const platform = activeScan?.platform ?? 'unknown';
 
-  const heroCaution =
-    data.totalPosts < 12
-      ? `Based on ${data.totalPosts} posts. Interpret with care.`
-      : undefined;
+  const context = useMemo<InterpretationContext | null>(() => {
+    if (!activeScan) return null;
+    return { activeScan, scans, dashboardData: data, platform };
+  }, [activeScan, scans, data, platform]);
+
+  const interpretation = useMemo(
+    () => (context ? interpretScan(context, 'dashboard.suggested') : null),
+    [context],
+  );
+
+  // Filter supporting rows to 'fact' variant. Other variants
+  // (CreatorRow, TrajectoryRow, BarRow, CaveatNote, MethodologyRow)
+  // ship in Phase 7+ — skipped with console.warn for visibility.
+  const factRows = useMemo(() => {
+    const out: Array<{ label: string; value: string; anchor?: string }> = [];
+    if (!interpretation) return out;
+    for (const row of interpretation.supportingRows) {
+      if (row.variant === 'fact') {
+        out.push({ label: row.label, value: row.value, anchor: row.anchor });
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[2x] supporting row variant not yet implemented on Dashboard Suggested: ${row.variant}`,
+        );
+      }
+    }
+    return out;
+  }, [interpretation]);
+
+  // 1.1.x HeroStatCard + heroCaution removed in Phase 6.5.4 — the
+  // engine's dashboard.suggested surface (followed_creator_absence
+  // template + suggested_dominance template + calm-case variants)
+  // produces the verdict zone. The CautionBadge inside Section 3
+  // ("Are these new voices?") is PRESERVED — that badge documents
+  // creator-novelty follow-detection limits, not scan-sample-size
+  // caution. Different concern.
+
+  const verdictZone = interpretation ? (
+    <View>
+      <VerdictEyebrow />
+      <View style={{ marginTop: spacing.s4 }}>
+        <VerdictText>{interpretation.verdict}</VerdictText>
+      </View>
+      <View style={{ marginTop: spacing.s6 }}>
+        {interpretation.sublines.map((subline, idx) => {
+          const prevMode =
+            idx > 0 ? interpretation.sublines[idx - 1]?.mode : undefined;
+          const marginTop = sublineGapTop(prevMode, subline.mode);
+          return (
+            <SublineRow
+              key={idx}
+              subline={subline}
+              marginTop={marginTop}
+              surface="Dashboard Suggested"
+            />
+          );
+        })}
+      </View>
+      {factRows.length > 0 ? (
+        <View style={{ marginTop: spacing.s6 }}>
+          <SupportingCard>
+            {factRows.map((row, i) => (
+              <FactRow
+                key={i}
+                label={row.label}
+                value={row.value}
+                anchor={row.anchor}
+              />
+            ))}
+          </SupportingCard>
+        </View>
+      ) : null}
+    </View>
+  ) : (
+    <Card>
+      <Text
+        style={{
+          fontSize: typeTokens.body.fontSize,
+          lineHeight: typeTokens.body.lineHeight,
+          fontWeight: typeTokens.body.fontWeight,
+          color: colors.textSecondary,
+        }}
+      >
+        Run a scan to see your suggested-versus-followed split.
+      </Text>
+    </Card>
+  );
 
   return (
     <View
@@ -141,14 +274,8 @@ export function SuggestedTab({ data }: SuggestedTabProps) {
         paddingBottom: spacing.s7,
       }}
     >
-      {/* ── 1. Hero ──────────────────────────────────────────── */}
-      <HeroStatCard
-        value={String(heroValue)}
-        unit="%"
-        label={heroLabel}
-        description={insight.meaning}
-        caution={heroCaution}
-      />
+      {/* ── 1. Verdict zone (engine-driven) ─────────────────── */}
+      {verdictZone}
 
       {/* ── 2. Content origin ───────────────────────────────── */}
       <View style={{ marginTop: spacing.s7 }}>
