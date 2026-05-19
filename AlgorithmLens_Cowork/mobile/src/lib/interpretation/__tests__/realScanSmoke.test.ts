@@ -156,6 +156,24 @@ describe('interpretationEngine — real-scan smoke', () => {
 
     assertResultShape(result, 'dashboard.sources');
   });
+
+  test('engine produces a sensible result for a real YouTube scan on the dashboard.ads surface', () => {
+    const context = makeRealScanContext();
+
+    const result = interpretScan(context, 'dashboard.ads');
+
+    // Phase 6.2.5 observation: 2-scan fixture has windowScanCount=2,
+    // below advertiser_persistence threshold (>= 4). The fixture has
+    // 3% adPct — below heavy-ad-load's 15% absolute floor. So the
+    // calm-case low-ad-density variant should fire (adPct < 5).
+    // eslint-disable-next-line no-console
+    console.log(
+      '[realScanSmoke dashboard.ads] InterpretationResult:\n' +
+        JSON.stringify(result, null, 2),
+    );
+
+    assertResultShape(result, 'dashboard.ads');
+  });
 });
 
 // ============================================
@@ -286,6 +304,33 @@ describe('persistent-creator template — real-scan smoke (depth-padded)', () =>
       variant: 'fact',
       label: 'Top voice',
     });
+  });
+
+  test('Ads: advertiser-persistence template fires with design-canonical "sitting on your feed" copy', () => {
+    const [activeScan, scans] = buildDepthPaddedScans();
+    const context: InterpretationContext = {
+      activeScan,
+      scans,
+      dashboardData: computeDashboardData(activeScan),
+      platform: 'youtube',
+    };
+
+    const result = interpretScan(context, 'dashboard.ads');
+
+    // eslint-disable-next-line no-console
+    console.log(
+      '[realScanSmoke advertiser-persistence dashboard.ads] InterpretationResult:\n' +
+        JSON.stringify(result, null, 2),
+    );
+
+    assertResultShape(result, 'dashboard.ads');
+    // The redacted Google ad (@creator-1) recurs across all 4 scans
+    // in the depth-padded window — scanCount=4 well above the
+    // persistence threshold (>= 3). Design-canonical verbatim verdict.
+    expect(result.verdict).toBe(
+      'One advertiser is sitting on your feed more than the others.',
+    );
+    expect(result.findingDot).toBe(true);
   });
 });
 
