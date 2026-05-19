@@ -174,6 +174,27 @@ describe('interpretationEngine — real-scan smoke', () => {
 
     assertResultShape(result, 'dashboard.ads');
   });
+
+  test('engine produces a sensible result for a real YouTube scan on the dashboard.tone surface', () => {
+    const context = makeRealScanContext();
+
+    const result = interpretScan(context, 'dashboard.tone');
+
+    // Phase 6.3.5 observation: the real fixture lacks Gemini tone
+    // enrichment (toneAnalysis === null in computeDashboardData
+    // output). The dashboard.tone calm-case enrichment-not-available
+    // variant should fire with honest framing ("Tone analysis isn't
+    // available for this scan"). This is the design-intended
+    // behavior for missing-data state — the dramatic templates must
+    // NOT misfire when toneAnalysis is null.
+    // eslint-disable-next-line no-console
+    console.log(
+      '[realScanSmoke dashboard.tone] InterpretationResult:\n' +
+        JSON.stringify(result, null, 2),
+    );
+
+    assertResultShape(result, 'dashboard.tone');
+  });
 });
 
 // ============================================
@@ -200,6 +221,41 @@ describe('interpretationEngine — real-scan smoke', () => {
 
 function deepClone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
+}
+
+/**
+ * Inject synthetic Gemini tone enrichment into a deep-cloned
+ * ScanDetail. Replaces `raw_data.analysis.feed_items` with a
+ * sequence of items whose `emotions.valence` matches the supplied
+ * valences array. Other raw_data fields (posts, top_creators, etc.)
+ * are preserved from the base. Used for Phase 6.3.5 to test
+ * negative-tone-shift on real-shape data — the real fixtures lack
+ * tone enrichment, so we synthesize plausible distributions.
+ */
+function withSyntheticToneEnrichment(
+  base: ScanDetail,
+  valences: Array<'POSITIVE' | 'NEUTRAL' | 'NEGATIVE'>,
+  overrides: { id?: string; created_at?: string } = {},
+): ScanDetail {
+  const clone = deepClone(base);
+  if (overrides.id) clone.id = overrides.id;
+  if (overrides.created_at) clone.created_at = overrides.created_at;
+  const raw = clone.raw_data as Record<string, unknown>;
+  const analysis =
+    (raw.analysis as Record<string, unknown> | undefined) ?? {};
+  // ai_analyzed: true is the gate computeDashboardData.extractToneAnalysis
+  // checks before reading feed_items. Without this flag, toneAnalysis
+  // returns null even when feed_items has valences. The rolling-average
+  // tone_negative_pct extractor doesn't check this gate, so priors work
+  // either way — but the active scan's dashboardData.toneAnalysis
+  // requires it.
+  analysis.ai_analyzed = true;
+  analysis.feed_items = valences.map((v) => ({
+    political: { is_political: false },
+    emotions: { valence: v },
+  }));
+  raw.analysis = analysis;
+  return clone;
 }
 
 /**
@@ -330,6 +386,77 @@ describe('persistent-creator template — real-scan smoke (depth-padded)', () =>
     expect(result.verdict).toBe(
       'One advertiser is sitting on your feed more than the others.',
     );
+    expect(result.findingDot).toBe(true);
+  });
+
+  test('Tone: negative-tone-shift template fires when synthetic tone enrichment shows climbing negative', () => {
+    // Synthesis approach: deep-clone REAL_ACTIVE_SCAN + REAL_PRIOR_SCAN
+    // and inject Gemini-style tone enrichment into each. Active scan
+    // gets 50% negative (5 NEGATIVE + 3 POSITIVE + 2 NEUTRAL out of 10
+    // items); prior scans each get 20% negative (2 NEGATIVE + 4
+    // POSITIVE + 4 NEUTRAL). Rolling-average extractor reads the
+    // valences from raw_data.analysis.feed_items; ratio is 50/20 =
+    // 2.5, above the 1.5× threshold AND above the 30% absolute floor.
+    //
+    // Documented as synthesis (not real fixture data) — Gemini tone
+    // classification was incomplete on the captured production scans
+    // (Phase 5.4.3 observation). The synthesis preserves the
+    // surrounding raw_data shape (posts, top_creators, advertisers)
+    // so other engine paths still see real-shape data; only the
+    // valence sequence is synthetic.
+    const activeWithTone = withSyntheticToneEnrichment(REAL_ACTIVE_SCAN, [
+      'NEGATIVE',
+      'NEGATIVE',
+      'NEGATIVE',
+      'NEGATIVE',
+      'NEGATIVE',
+      'POSITIVE',
+      'POSITIVE',
+      'POSITIVE',
+      'NEUTRAL',
+      'NEUTRAL',
+    ]);
+    const lowNegativeValences: Array<'POSITIVE' | 'NEUTRAL' | 'NEGATIVE'> = [
+      'NEGATIVE',
+      'NEGATIVE',
+      'POSITIVE',
+      'POSITIVE',
+      'POSITIVE',
+      'POSITIVE',
+      'NEUTRAL',
+      'NEUTRAL',
+      'NEUTRAL',
+      'NEUTRAL',
+    ];
+    const priors = [
+      withSyntheticToneEnrichment(REAL_PRIOR_SCAN, lowNegativeValences),
+      withSyntheticToneEnrichment(REAL_PRIOR_SCAN, lowNegativeValences, {
+        id: 'synth-tone-prior-1week',
+        created_at: '2026-02-19T15:03:29.709+00:00',
+      }),
+      withSyntheticToneEnrichment(REAL_PRIOR_SCAN, lowNegativeValences, {
+        id: 'synth-tone-prior-2weeks',
+        created_at: '2026-02-12T15:03:29.709+00:00',
+      }),
+    ];
+
+    const context: InterpretationContext = {
+      activeScan: activeWithTone,
+      scans: [activeWithTone, ...priors],
+      dashboardData: computeDashboardData(activeWithTone),
+      platform: 'youtube',
+    };
+
+    const result = interpretScan(context, 'dashboard.tone');
+
+    // eslint-disable-next-line no-console
+    console.log(
+      '[realScanSmoke negative-tone-shift dashboard.tone] InterpretationResult:\n' +
+        JSON.stringify(result, null, 2),
+    );
+
+    assertResultShape(result, 'dashboard.tone');
+    expect(result.verdict).toContain('Negative tone has been climbing');
     expect(result.findingDot).toBe(true);
   });
 });
