@@ -12,6 +12,12 @@
  * fails on more than half the scans in the window (the average would
  * be too noisy to support an interpretation).
  *
+ * Phase 6.4.0b extracted the scan-filtering + per-scan-extraction
+ * stages into a shared internal helper `extractMetricAcrossWindow`
+ * so `computeMetricTrajectory` can reuse them. The architectural
+ * shape parallels Phase 5.4.2's recurrenceCore extraction. The public
+ * `computeRollingAverage` signature is preserved unchanged.
+ *
  * Reference: mobile/audits/2x-interpretation-engine-scoping/decisions.md
  */
 
@@ -26,20 +32,60 @@ export interface RollingAverageOptions {
   excludeScanId?: string;
 }
 
-export function computeRollingAverage(
+// ============================================
+// Shared windowing helper (Phase 6.4.0b)
+// ============================================
+
+/**
+ * One per-scan extraction record produced by the shared helper.
+ * `value` is null when the metric extractor failed for this scan
+ * (e.g., missing raw_data.analysis for political_pct). The caller
+ * decides how to handle nulls — `computeRollingAverage` treats them
+ * as failures for the > 50%-missing threshold; `computeMetricTrajectory`
+ * filters them out before returning.
+ */
+interface ScanExtractionEntry {
+  scan: ScanDetail;
+  value: number | null;
+}
+
+interface MetricExtractionWindow {
+  /** Scans that passed Stage 1 (platform + excludeScanId + window
+   *  slice). Sorted desc by `created_at` — newest first. */
+  filteredScans: ScanDetail[];
+  /** One entry per filtered scan, in the same order. `value` is the
+   *  result of the metric extractor for that scan (null on failure). */
+  entries: ScanExtractionEntry[];
+}
+
+/**
+ * Internal helper: scan-level filter + per-scan extraction.
+ *
+ * Not exported from the public derivations barrel. Consumed by
+ * `computeRollingAverage` (which applies failure tolerance + mean) and
+ * `computeMetricTrajectory` (which applies failure tolerance + filters
+ * nulls + reverses to chronological).
+ *
+ * Single source of truth for: case-insensitive platform filter,
+ * excludeScanId removal, desc-by-date sort with invalid-date fallback,
+ * windowSize slice, per-scan extractor invocation with try/catch
+ * defensive handling.
+ */
+function extractMetricAcrossWindow(
   scans: ScanDetail[],
   platform: string,
   metric: MetricKey,
-  options: RollingAverageOptions = {},
-): number | null {
+  options: RollingAverageOptions,
+): MetricExtractionWindow {
   const { windowSize = DEFAULT_WINDOW_SIZE, excludeScanId } = options;
 
-  if (!Array.isArray(scans) || scans.length === 0) return null;
+  if (!Array.isArray(scans) || scans.length === 0) {
+    return { filteredScans: [], entries: [] };
+  }
 
-  // Filter by platform (case-insensitive), exclude active scan,
-  // sort by created_at desc (most recent first), take top windowSize.
+  // Stage 1: filter, sort desc-by-date, window slice.
   const platformLower = platform.toLowerCase();
-  const filtered = scans
+  const filteredScans = scans
     .filter((s) => {
       if (!s || typeof s !== 'object') return false;
       if (excludeScanId && s.id === excludeScanId) return false;
@@ -60,29 +106,122 @@ export function computeRollingAverage(
     })
     .slice(0, windowSize);
 
-  if (filtered.length < MIN_VALID_SCANS) return null;
+  // Stage 2: per-scan extraction.
+  const entries: ScanExtractionEntry[] = filteredScans.map((scan) => ({
+    scan,
+    value: extractMetric(scan, metric),
+  }));
 
-  // Extract metric values. Track failures so we can bail when most
-  // of the window has missing data.
+  return { filteredScans, entries };
+}
+
+// ============================================
+// Public: rolling average
+// ============================================
+
+export function computeRollingAverage(
+  scans: ScanDetail[],
+  platform: string,
+  metric: MetricKey,
+  options: RollingAverageOptions = {},
+): number | null {
+  const { filteredScans, entries } = extractMetricAcrossWindow(
+    scans,
+    platform,
+    metric,
+    options,
+  );
+
+  if (filteredScans.length < MIN_VALID_SCANS) return null;
+
   const values: number[] = [];
-  let failures = 0;
-  for (const scan of filtered) {
-    const value = extractMetric(scan, metric);
-    if (value === null) {
-      failures += 1;
-    } else {
-      values.push(value);
-    }
+  for (const entry of entries) {
+    if (entry.value !== null) values.push(entry.value);
   }
+  const failures = entries.length - values.length;
 
   // More than half missing means the remaining average would be too
   // noisy to trust. Also bail if fewer than MIN_VALID_SCANS succeeded.
-  if (failures > filtered.length / 2) return null;
+  if (failures > entries.length / 2) return null;
   if (values.length < MIN_VALID_SCANS) return null;
 
   const sum = values.reduce((acc, v) => acc + v, 0);
   const mean = sum / values.length;
   return Math.round(mean * 10) / 10;
+}
+
+// ============================================
+// Public: metric trajectory (Phase 6.4.0b)
+// ============================================
+
+/**
+ * One entry in a metric trajectory series. Includes scan
+ * provenance (id + created_at) for future sparkline rendering
+ * (React key + X-axis labels) alongside the metric value.
+ */
+export interface TrajectoryEntry {
+  /** Scan id (matches ScanDetail.id) — for React list keys. */
+  scanId: string;
+  /** ISO timestamp from ScanDetail.created_at — for X-axis labels. */
+  createdAt: string;
+  /** The metric value for this scan. Always a real number; entries
+   *  where extraction failed are filtered out before return. */
+  value: number;
+}
+
+/**
+ * Per-platform, per-metric trajectory series over the most-recent
+ * N scans, in chronological order (oldest first). Returns null
+ * under the same conditions as `computeRollingAverage` —
+ * insufficient history (< 2 valid scans) or > 50% extraction
+ * failures within the window.
+ *
+ * Templates that want the design-canonical "4%, then 7%, now 11%"
+ * trajectory copy interpolate `series[0]`, intermediate entries,
+ * and `series[series.length - 1]`. Future TrajectoryRow sparkline
+ * primitive (Phase 7+) consumes the full array with scanId for
+ * React keys and createdAt for X-axis labels.
+ *
+ * Sharing the windowing + extraction logic with
+ * `computeRollingAverage` (via the internal
+ * `extractMetricAcrossWindow` helper) means the two functions agree
+ * on platform filter, excludeScanId, window slice, sort order, and
+ * malformed-scan tolerance by construction.
+ */
+export function computeMetricTrajectory(
+  scans: ScanDetail[],
+  platform: string,
+  metric: MetricKey,
+  options: RollingAverageOptions = {},
+): TrajectoryEntry[] | null {
+  const { filteredScans, entries } = extractMetricAcrossWindow(
+    scans,
+    platform,
+    metric,
+    options,
+  );
+
+  if (filteredScans.length < MIN_VALID_SCANS) return null;
+
+  const nonNull = entries.filter(
+    (e): e is { scan: ScanDetail; value: number } => e.value !== null,
+  );
+  const failures = entries.length - nonNull.length;
+
+  if (failures > entries.length / 2) return null;
+  if (nonNull.length < MIN_VALID_SCANS) return null;
+
+  // Helper returns desc-by-date; reverse to chronological (oldest
+  // first) so template interpolation reads naturally as "4%, then
+  // 7%, now 11%".
+  return nonNull
+    .slice()
+    .reverse()
+    .map((e) => ({
+      scanId: e.scan.id,
+      createdAt: e.scan.created_at,
+      value: e.value,
+    }));
 }
 
 // ============================================

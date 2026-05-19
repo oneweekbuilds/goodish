@@ -9,4 +9,9 @@
  * doc at mobile/audits/2x-interpretation-engine-scoping/decisions.md.
  */
 
-export { computeRollingAverage } from './rollingAverage';
+export {
+  computeRollingAverage,
+  computeMetricTrajectory,
+  type RollingAverageOptions,
+  type TrajectoryEntry,
+} from './rollingAverage';
