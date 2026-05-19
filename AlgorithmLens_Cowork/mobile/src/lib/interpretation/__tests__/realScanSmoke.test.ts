@@ -195,6 +195,30 @@ describe('interpretationEngine — real-scan smoke', () => {
 
     assertResultShape(result, 'dashboard.tone');
   });
+
+  test('engine produces a sensible result for a real YouTube scan on the dashboard.politics surface', () => {
+    const context = makeRealScanContext();
+
+    const result = interpretScan(context, 'dashboard.politics');
+
+    // Phase 6.4.5 observation: same shape as the tone smoke — the
+    // real fixtures lack Gemini political enrichment
+    // (raw_data.analysis.ai_analyzed is undefined, so
+    // extractPoliticalAnalysis returns null and politicalAnalysis is
+    // null on dashboardData). The dashboard.politics calm-case
+    // enrichment-not-available variant should fire with honest
+    // framing ("Political classification isn't available for this
+    // YouTube scan"). This is the design-intended behavior for
+    // missing-data state — the dramatic templates must NOT misfire
+    // when politicalAnalysis is null.
+    // eslint-disable-next-line no-console
+    console.log(
+      '[realScanSmoke dashboard.politics] InterpretationResult:\n' +
+        JSON.stringify(result, null, 2),
+    );
+
+    assertResultShape(result, 'dashboard.politics');
+  });
 });
 
 // ============================================
@@ -253,6 +277,59 @@ function withSyntheticToneEnrichment(
   analysis.feed_items = valences.map((v) => ({
     political: { is_political: false },
     emotions: { valence: v },
+  }));
+  raw.analysis = analysis;
+  return clone;
+}
+
+/**
+ * Inject synthetic Gemini political enrichment into a deep-cloned
+ * ScanDetail. Replaces `raw_data.analysis.feed_items` with a sequence
+ * of political-creator items and optionally locks the rolling-average
+ * / trajectory extractor's per-scan value via
+ * `political_content_summary.political_percentage`.
+ *
+ * Each item is `{ creator: { handle, name }, political: { is_political },
+ * emotions: { valence: NEUTRAL } }`. The valence default is benign —
+ * tone-related tests use their own helper, and tone-positive/negative
+ * data here would just add noise.
+ *
+ * ai_analyzed: true is set so computeDashboardData.extractPoliticalAnalysis
+ * runs (the gate at L748 requires `analysis.ai_analyzed`). Without
+ * this flag, dashboardData.politicalAnalysis stays null and the engine
+ * falls through to calm-case enrichment-not-available regardless of
+ * what feed_items contains. Same enrichment-gate pattern as the
+ * tone helper above.
+ *
+ * Used by Phase 6.4.5 to test political_creator_dominance,
+ * political_trajectory, and calm-case no-political-content variants
+ * against real-shape data.
+ */
+function withSyntheticPoliticalEnrichment(
+  base: ScanDetail,
+  items: Array<{ handle: string; name: string; isPolitical: boolean }>,
+  options: {
+    politicalPct?: number;
+    id?: string;
+    created_at?: string;
+  } = {},
+): ScanDetail {
+  const clone = deepClone(base);
+  if (options.id) clone.id = options.id;
+  if (options.created_at) clone.created_at = options.created_at;
+  const raw = clone.raw_data as Record<string, unknown>;
+  const analysis =
+    (raw.analysis as Record<string, unknown> | undefined) ?? {};
+  analysis.ai_analyzed = true;
+  if (options.politicalPct !== undefined) {
+    analysis.political_content_summary = {
+      political_percentage: options.politicalPct,
+    };
+  }
+  analysis.feed_items = items.map((it) => ({
+    creator: { handle: it.handle, name: it.name },
+    political: { is_political: it.isPolitical },
+    emotions: { valence: 'NEUTRAL' },
   }));
   raw.analysis = analysis;
   return clone;
@@ -457,6 +534,252 @@ describe('persistent-creator template — real-scan smoke (depth-padded)', () =>
 
     assertResultShape(result, 'dashboard.tone');
     expect(result.verdict).toContain('Negative tone has been climbing');
+    expect(result.findingDot).toBe(true);
+  });
+
+  // ── Phase 6.4.5: Politics on depth-padded window ─────────────
+  //
+  // The 2-scan baseline (above, in the main describe block) exercises
+  // the calm-case enrichment-not-available variant — the real
+  // fixtures lack ai_analyzed. These tests synthesize Gemini political
+  // enrichment on top of the depth-padded window to exercise the
+  // dominance, no-political-content, and trajectory paths.
+
+  test('Politics: calm-case no-political-content fires when AI ran but no political feed_items match', () => {
+    // Synthesis: ai_analyzed: true on every scan, feed_items present
+    // but ALL items have political.is_political === false. This is the
+    // "AI scanned, nothing classified as political" path —
+    // computeDashboardData returns politicalAnalysis with
+    // politicalCount === 0, and the engine emits the
+    // no-political-content calm variant.
+    const benignItems = Array.from({ length: 8 }, (_, i) => ({
+      handle: `@nonpolitical-${i}`,
+      name: `Non-political ${i}`,
+      isPolitical: false,
+    }));
+    const activeWithPolitics = withSyntheticPoliticalEnrichment(
+      REAL_ACTIVE_SCAN,
+      benignItems,
+    );
+    const priors = [
+      withSyntheticPoliticalEnrichment(REAL_PRIOR_SCAN, benignItems),
+      withSyntheticPoliticalEnrichment(REAL_PRIOR_SCAN, benignItems, {
+        id: 'synth-politics-prior-1week',
+        created_at: '2026-02-19T15:03:29.709+00:00',
+      }),
+      withSyntheticPoliticalEnrichment(REAL_PRIOR_SCAN, benignItems, {
+        id: 'synth-politics-prior-2weeks',
+        created_at: '2026-02-12T15:03:29.709+00:00',
+      }),
+    ];
+
+    const context: InterpretationContext = {
+      activeScan: activeWithPolitics,
+      scans: [activeWithPolitics, ...priors],
+      dashboardData: computeDashboardData(activeWithPolitics),
+      platform: 'youtube',
+    };
+
+    const result = interpretScan(context, 'dashboard.politics');
+
+    // eslint-disable-next-line no-console
+    console.log(
+      '[realScanSmoke calm-case no-political-content dashboard.politics] InterpretationResult:\n' +
+        JSON.stringify(result, null, 2),
+    );
+
+    assertResultShape(result, 'dashboard.politics');
+    expect(result.verdict).toContain('didn’t include political content');
+    expect(result.findingDot).toBe(false);
+  });
+
+  test('Politics: political_creator_dominance template fires with design-canonical "isn\'t varied" verdict', () => {
+    // Synthesis design:
+    //   - Active scan: 8 political posts from @PoliticalNewsChannel + 3
+    //     political posts from 3 distinct other creators + 9 non-political
+    //     = 20 feed_items, 11 political, topPoliticalSource.pctOfPolitical
+    //     = round(8/11 * 100) = 73 (design-canonical 73%).
+    //   - REAL_PRIOR_SCAN: also contains @PoliticalNewsChannel political
+    //     posts (so political-creator-recurrence scanCount = 2 → recency
+    //     phrase "your last two scans", design-canonical).
+    //   - Two older clones: no @PoliticalNewsChannel political content
+    //     → recurrence stays at 2, well below the ceiling of 3.
+    //
+    // This combination puts every threshold above its floor:
+    //   politicalCount = 11 >= 5 (>= 10 floor for topPoliticalSource)
+    //   topPoliticalSource.pctOfPolitical = 73 >= 50
+    //   recurrence.scanCount = 2 <= 3
+    const activePoliticalItems = [
+      // 8 @PoliticalNewsChannel political posts
+      ...Array.from({ length: 8 }, () => ({
+        handle: '@PoliticalNewsChannel',
+        name: 'Political News Channel',
+        isPolitical: true,
+      })),
+      // 3 other political creators (1 post each)
+      {
+        handle: '@OtherPol1',
+        name: 'Other Political 1',
+        isPolitical: true,
+      },
+      {
+        handle: '@OtherPol2',
+        name: 'Other Political 2',
+        isPolitical: true,
+      },
+      {
+        handle: '@OtherPol3',
+        name: 'Other Political 3',
+        isPolitical: true,
+      },
+      // 9 non-political fillers
+      ...Array.from({ length: 9 }, (_, i) => ({
+        handle: `@nonpolitical-${i}`,
+        name: `Non-political ${i}`,
+        isPolitical: false,
+      })),
+    ];
+
+    const priorPoliticalItems = [
+      // Prior scan also has @PoliticalNewsChannel so scanCount climbs to 2
+      ...Array.from({ length: 5 }, () => ({
+        handle: '@PoliticalNewsChannel',
+        name: 'Political News Channel',
+        isPolitical: true,
+      })),
+      ...Array.from({ length: 15 }, (_, i) => ({
+        handle: `@nonpolitical-prior-${i}`,
+        name: `Non-political Prior ${i}`,
+        isPolitical: false,
+      })),
+    ];
+
+    const olderItems = Array.from({ length: 20 }, (_, i) => ({
+      handle: `@nonpolitical-older-${i}`,
+      name: `Non-political Older ${i}`,
+      isPolitical: false,
+    }));
+
+    const activeWithPolitics = withSyntheticPoliticalEnrichment(
+      REAL_ACTIVE_SCAN,
+      activePoliticalItems,
+    );
+    const priors = [
+      withSyntheticPoliticalEnrichment(REAL_PRIOR_SCAN, priorPoliticalItems),
+      withSyntheticPoliticalEnrichment(REAL_PRIOR_SCAN, olderItems, {
+        id: 'synth-politics-prior-1week',
+        created_at: '2026-02-19T15:03:29.709+00:00',
+      }),
+      withSyntheticPoliticalEnrichment(REAL_PRIOR_SCAN, olderItems, {
+        id: 'synth-politics-prior-2weeks',
+        created_at: '2026-02-12T15:03:29.709+00:00',
+      }),
+    ];
+
+    const context: InterpretationContext = {
+      activeScan: activeWithPolitics,
+      scans: [activeWithPolitics, ...priors],
+      dashboardData: computeDashboardData(activeWithPolitics),
+      platform: 'youtube',
+    };
+
+    const result = interpretScan(context, 'dashboard.politics');
+
+    // eslint-disable-next-line no-console
+    console.log(
+      '[realScanSmoke political_creator_dominance dashboard.politics] InterpretationResult:\n' +
+        JSON.stringify(result, null, 2),
+    );
+
+    assertResultShape(result, 'dashboard.politics');
+    // Design-canonical verbatim verdict.
+    expect(result.verdict).toBe(
+      'Your political exposure isn’t varied — it’s coming from one place.',
+    );
+    expect(result.findingDot).toBe(true);
+    const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+    expect(observed?.text).toContain('your last two scans');
+  });
+
+  test('Politics: political_trajectory template fires when political_pct climbs across the window', () => {
+    // Synthesis design:
+    //   - Trajectory chronological order (oldest → newest): 4%, 7%, 11%.
+    //     Active scan is the freshest at 11%; clones precede it.
+    //   - REAL_PRIOR_SCAN gets pct 7% (middle of trajectory).
+    //   - 1-week clone gets pct 4% (oldest in trajectory).
+    //   - The 2-week clone falls outside the rolling-average's
+    //     MIN_VALID_SCANS=3 floor calculation if we left it out, but
+    //     trajectory uses windowSize=6 (default) so 4 entries works
+    //     fine. We give the 2-week clone a benign 0% so it can
+    //     still contribute without skewing the trajectory shape.
+    //
+    // Dominance must NOT fire — spread political content across many
+    // distinct creators so topPoliticalSource.pctOfPolitical stays
+    // below 50%. With 11 unique political creators contributing 1
+    // post each on the active scan, top source = 9%.
+    const activePoliticalItems = [
+      // 11 unique political creators (1 post each) → no dominance.
+      ...Array.from({ length: 11 }, (_, i) => ({
+        handle: `@PolCreator-${i}`,
+        name: `Political Creator ${i}`,
+        isPolitical: true,
+      })),
+      // 9 non-political fillers → totalAnalyzed = 20, politicalPct = 55
+      // by feed-items math. We override via political_content_summary
+      // so the rolling-average / trajectory extractor reads 11%.
+      ...Array.from({ length: 9 }, (_, i) => ({
+        handle: `@nonpolitical-${i}`,
+        name: `Non-political ${i}`,
+        isPolitical: false,
+      })),
+    ];
+
+    const benignSpread = Array.from({ length: 20 }, (_, i) => ({
+      handle: `@spread-${i}`,
+      name: `Spread ${i}`,
+      isPolitical: false,
+    }));
+
+    const activeWithPolitics = withSyntheticPoliticalEnrichment(
+      REAL_ACTIVE_SCAN,
+      activePoliticalItems,
+      { politicalPct: 11 },
+    );
+    const priors = [
+      withSyntheticPoliticalEnrichment(REAL_PRIOR_SCAN, benignSpread, {
+        politicalPct: 7,
+      }),
+      withSyntheticPoliticalEnrichment(REAL_PRIOR_SCAN, benignSpread, {
+        id: 'synth-politics-traj-1week',
+        created_at: '2026-02-19T15:03:29.709+00:00',
+        politicalPct: 4,
+      }),
+      withSyntheticPoliticalEnrichment(REAL_PRIOR_SCAN, benignSpread, {
+        id: 'synth-politics-traj-2weeks',
+        created_at: '2026-02-12T15:03:29.709+00:00',
+        politicalPct: 4,
+      }),
+    ];
+
+    const context: InterpretationContext = {
+      activeScan: activeWithPolitics,
+      scans: [activeWithPolitics, ...priors],
+      dashboardData: computeDashboardData(activeWithPolitics),
+      platform: 'youtube',
+    };
+
+    const result = interpretScan(context, 'dashboard.politics');
+
+    // eslint-disable-next-line no-console
+    console.log(
+      '[realScanSmoke political_trajectory dashboard.politics] InterpretationResult:\n' +
+        JSON.stringify(result, null, 2),
+    );
+
+    assertResultShape(result, 'dashboard.politics');
+    expect(result.verdict).toContain('growing share');
+    // Surface-differentiation: must NOT use Overview's "climbing" frame.
+    expect(result.verdict).not.toContain('Politics has been climbing');
     expect(result.findingDot).toBe(true);
   });
 });
