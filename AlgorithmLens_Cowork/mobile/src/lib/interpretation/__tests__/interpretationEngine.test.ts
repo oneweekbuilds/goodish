@@ -275,11 +275,9 @@ describe('interpretScan orchestrator', () => {
       expect(() => interpretScan(ctx, 'dashboard.tone')).not.toThrow();
     });
 
-    test('throws on dashboard.politics surface', () => {
+    test('does not throw on dashboard.politics surface (Phase 6.4.3)', () => {
       const ctx = makeContext();
-      expect(() => interpretScan(ctx, 'dashboard.politics')).toThrow(
-        /dashboard\.politics not yet implemented/,
-      );
+      expect(() => interpretScan(ctx, 'dashboard.politics')).not.toThrow();
     });
 
     test('throws on dashboard.suggested surface', () => {
@@ -1591,6 +1589,535 @@ describe('interpretScan orchestrator', () => {
       const ctx = makeContext();
       const result = interpretScan(ctx, 'dashboard.tone');
       expect(result.meta?.surface).toBe('dashboard.tone');
+    });
+  });
+
+  // ============================================
+  // Dashboard Politics surface (Phase 6.4.3)
+  // ============================================
+
+  describe('dashboard.politics surface', () => {
+    /**
+     * Build a ScanDetail with raw_data.analysis.feed_items populated
+     * from a list of political-creator items. The political-creator
+     * recurrence wrapper reads from analysis.feed_items (not
+     * raw_data.posts), so this is the right injection point for
+     * dominance tests that need scanCount control. Pass `politicalPct`
+     * to lock the rolling-average / trajectory extractor's per-scan
+     * value via political_content_summary.
+     */
+    function makeScanWithPoliticalFeedItems(
+      id: string,
+      createdAt: string,
+      items: Array<{ handle: string; name: string; isPolitical: boolean }>,
+      options: { politicalPct?: number } = {},
+      overrides: Partial<ScanDetail> = {},
+    ): ScanDetail {
+      return makeScan({
+        id,
+        created_at: createdAt,
+        raw_data: {
+          analysis: {
+            ai_analyzed: true,
+            ...(options.politicalPct !== undefined && {
+              political_content_summary: {
+                political_percentage: options.politicalPct,
+              },
+            }),
+            feed_items: items.map((it) => ({
+              creator: { handle: it.handle, name: it.name },
+              political: { is_political: it.isPolitical },
+            })),
+          },
+        },
+        ...overrides,
+      });
+    }
+
+    /**
+     * Default dashboardData fixture for dominance tests. Sets
+     * topPoliticalSource at 73% (design-canonical share) with a
+     * politicalCount/totalAnalyzed pair that clears the >=5 floor
+     * AND the data-layer's hidden >=10 constraint on
+     * topPoliticalSource emission.
+     */
+    function makeDominanceDashboardData(
+      handle: string,
+      pctOfPolitical: number = 73,
+      politicalCount: number = 11,
+    ): DashboardData {
+      return makeDashboardData({
+        politicalAnalysis: {
+          politicalPct: 11,
+          politicalCount,
+          totalAnalyzed: 100,
+          ideology: null,
+          topPoliticalSource: {
+            handle,
+            count: Math.round((pctOfPolitical / 100) * politicalCount),
+            pctOfPolitical,
+          },
+          lowSample: false,
+        } as unknown as DashboardData['politicalAnalysis'],
+      });
+    }
+
+    describe('political_creator_dominance template', () => {
+      test('fires at threshold with design-canonical verdict', () => {
+        // Active scan plus one prior scan both contain a political post
+        // from @newschan → political-creator-recurrence scanCount = 2.
+        const activeScan = makeScanWithPoliticalFeedItems(
+          'active',
+          '2026-05-13T12:00:00Z',
+          [{ handle: '@newschan', name: 'News Channel', isPolitical: true }],
+        );
+        const priorScans = [
+          makeScanWithPoliticalFeedItems('p1', '2026-05-12T12:00:00Z', [
+            { handle: '@newschan', name: 'News Channel', isPolitical: true },
+          ]),
+          makeScanWithPoliticalFeedItems('p2', '2026-05-11T12:00:00Z', [
+            { handle: '@other', name: 'Other', isPolitical: true },
+          ]),
+        ];
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan, ...priorScans],
+          dashboardData: makeDominanceDashboardData('@newschan'),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.politics');
+        expect(result.verdict).toContain("isn’t varied");
+        expect(result.verdict).toContain('coming from one place');
+        expect(result.findingDot).toBe(true);
+        const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+        expect(observed?.text).toContain('11%');
+        expect(observed?.text).toContain('73%');
+        expect(observed?.text).toContain('News Channel');
+        expect(observed?.text).toContain('your last two scans');
+        const likely = result.sublines.find((s) => s.mode === 'LIKELY');
+        expect(likely?.text).toContain('narrowed in on');
+      });
+
+      test('does NOT fire when politicalCount === 4 (below 5-post floor)', () => {
+        const activeScan = makeScanWithPoliticalFeedItems(
+          'active',
+          '2026-05-13T12:00:00Z',
+          [{ handle: '@newschan', name: 'News Channel', isPolitical: true }],
+        );
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan],
+          dashboardData: makeDominanceDashboardData('@newschan', 73, 4),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.politics');
+        expect(result.verdict).not.toContain("isn’t varied");
+      });
+
+      test('does NOT fire when topPoliticalSource.pctOfPolitical === 49 (just below 50%)', () => {
+        const activeScan = makeScanWithPoliticalFeedItems(
+          'active',
+          '2026-05-13T12:00:00Z',
+          [{ handle: '@newschan', name: 'News Channel', isPolitical: true }],
+        );
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan],
+          dashboardData: makeDominanceDashboardData('@newschan', 49, 11),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.politics');
+        expect(result.verdict).not.toContain("isn’t varied");
+      });
+
+      test('does NOT fire when matching recurrence scanCount === 4 (just above ceiling)', () => {
+        // @newschan appears in 4 of 4 scans → scanCount = 4, above the
+        // recency ceiling of 3. Dominance must fall through.
+        const dates = [
+          '2026-05-13T12:00:00Z',
+          '2026-05-12T12:00:00Z',
+          '2026-05-11T12:00:00Z',
+          '2026-05-10T12:00:00Z',
+        ];
+        const scans = dates.map((createdAt, idx) =>
+          makeScanWithPoliticalFeedItems(`s${idx}`, createdAt, [
+            { handle: '@newschan', name: 'News Channel', isPolitical: true },
+          ]),
+        );
+        const ctx: InterpretationContext = {
+          activeScan: scans[0]!,
+          scans,
+          dashboardData: makeDominanceDashboardData('@newschan'),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.politics');
+        expect(result.verdict).not.toContain("isn’t varied");
+      });
+
+      test('OBSERVED recency phrase: scanCount=1 → "this scan only"', () => {
+        const activeScan = makeScanWithPoliticalFeedItems(
+          'active',
+          '2026-05-13T12:00:00Z',
+          [{ handle: '@newschan', name: 'News Channel', isPolitical: true }],
+        );
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan],
+          dashboardData: makeDominanceDashboardData('@newschan'),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.politics');
+        const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+        expect(observed?.text).toContain('this scan only');
+      });
+
+      test('OBSERVED recency phrase: scanCount=2 → "your last two scans"', () => {
+        const activeScan = makeScanWithPoliticalFeedItems(
+          'active',
+          '2026-05-13T12:00:00Z',
+          [{ handle: '@newschan', name: 'News Channel', isPolitical: true }],
+        );
+        const priorScans = [
+          makeScanWithPoliticalFeedItems('p1', '2026-05-12T12:00:00Z', [
+            { handle: '@newschan', name: 'News Channel', isPolitical: true },
+          ]),
+        ];
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan, ...priorScans],
+          dashboardData: makeDominanceDashboardData('@newschan'),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.politics');
+        const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+        expect(observed?.text).toContain('your last two scans');
+      });
+
+      test('OBSERVED recency phrase: scanCount=3 → "your last three scans"', () => {
+        const activeScan = makeScanWithPoliticalFeedItems(
+          'active',
+          '2026-05-13T12:00:00Z',
+          [{ handle: '@newschan', name: 'News Channel', isPolitical: true }],
+        );
+        const priorScans = [
+          makeScanWithPoliticalFeedItems('p1', '2026-05-12T12:00:00Z', [
+            { handle: '@newschan', name: 'News Channel', isPolitical: true },
+          ]),
+          makeScanWithPoliticalFeedItems('p2', '2026-05-11T12:00:00Z', [
+            { handle: '@newschan', name: 'News Channel', isPolitical: true },
+          ]),
+        ];
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan, ...priorScans],
+          dashboardData: makeDominanceDashboardData('@newschan'),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.politics');
+        const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+        expect(observed?.text).toContain('your last three scans');
+      });
+    });
+
+    describe('political_trajectory template', () => {
+      test('fires on monotonic upward 4→7→11 with politicalPct >= 8', () => {
+        // No dominant single source → dominance template falls through.
+        // Topical-creator distribution is spread so dominance can't fire.
+        const activeScan = makeScanWithPoliticalFeedItems(
+          'active',
+          '2026-05-13T12:00:00Z',
+          [],
+          { politicalPct: 11 },
+        );
+        const priorScans = [
+          makeScanWithPoliticalFeedItems(
+            'p1',
+            '2026-05-12T12:00:00Z',
+            [],
+            { politicalPct: 7 },
+          ),
+          makeScanWithPoliticalFeedItems(
+            'p2',
+            '2026-05-11T12:00:00Z',
+            [],
+            { politicalPct: 4 },
+          ),
+        ];
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan, ...priorScans],
+          dashboardData: makeDashboardData({
+            politicalAnalysis: {
+              politicalPct: 11,
+              politicalCount: 11,
+              totalAnalyzed: 100,
+              ideology: null,
+              topPoliticalSource: null,
+              lowSample: false,
+            } as unknown as DashboardData['politicalAnalysis'],
+          }),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.politics');
+        expect(result.verdict).toContain('growing share');
+        expect(result.verdict).toContain('YouTube');
+        const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+        expect(observed?.text).toContain('4%');
+        expect(observed?.text).toContain('7%');
+        expect(observed?.text).toContain('11%');
+        expect(result.findingDot).toBe(true);
+      });
+
+      test('does NOT fire when first-to-last delta < 3 (5→6→7, delta=2)', () => {
+        const activeScan = makeScanWithPoliticalFeedItems(
+          'active',
+          '2026-05-13T12:00:00Z',
+          [],
+          { politicalPct: 7 },
+        );
+        const priorScans = [
+          makeScanWithPoliticalFeedItems(
+            'p1',
+            '2026-05-12T12:00:00Z',
+            [],
+            { politicalPct: 6 },
+          ),
+          makeScanWithPoliticalFeedItems(
+            'p2',
+            '2026-05-11T12:00:00Z',
+            [],
+            { politicalPct: 5 },
+          ),
+        ];
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan, ...priorScans],
+          dashboardData: makeDashboardData({
+            politicalAnalysis: {
+              politicalPct: 7,
+              politicalCount: 7,
+              totalAnalyzed: 100,
+              ideology: null,
+              topPoliticalSource: null,
+              lowSample: false,
+            } as unknown as DashboardData['politicalAnalysis'],
+          }),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.politics');
+        expect(result.verdict).not.toContain('growing share');
+      });
+
+      test('does NOT fire when trajectory non-monotonic (4→11→7)', () => {
+        // Chronological: 4, 11, 7. Monotonic check fails on the 11→7 drop.
+        const activeScan = makeScanWithPoliticalFeedItems(
+          'active',
+          '2026-05-13T12:00:00Z',
+          [],
+          { politicalPct: 7 },
+        );
+        const priorScans = [
+          makeScanWithPoliticalFeedItems(
+            'p1',
+            '2026-05-12T12:00:00Z',
+            [],
+            { politicalPct: 11 },
+          ),
+          makeScanWithPoliticalFeedItems(
+            'p2',
+            '2026-05-11T12:00:00Z',
+            [],
+            { politicalPct: 4 },
+          ),
+        ];
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan, ...priorScans],
+          dashboardData: makeDashboardData({
+            politicalAnalysis: {
+              politicalPct: 7,
+              politicalCount: 7,
+              totalAnalyzed: 100,
+              ideology: null,
+              topPoliticalSource: null,
+              lowSample: false,
+            } as unknown as DashboardData['politicalAnalysis'],
+          }),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.politics');
+        expect(result.verdict).not.toContain('growing share');
+      });
+
+      test('verdict is verbally distinct from Overview political_shift', () => {
+        // Same trajectory data fires the Tab 4 trajectory template
+        // with "growing share" framing — must NOT use Overview's
+        // "climbing" framing.
+        const activeScan = makeScanWithPoliticalFeedItems(
+          'active',
+          '2026-05-13T12:00:00Z',
+          [],
+          { politicalPct: 11 },
+        );
+        const priorScans = [
+          makeScanWithPoliticalFeedItems(
+            'p1',
+            '2026-05-12T12:00:00Z',
+            [],
+            { politicalPct: 7 },
+          ),
+          makeScanWithPoliticalFeedItems(
+            'p2',
+            '2026-05-11T12:00:00Z',
+            [],
+            { politicalPct: 4 },
+          ),
+        ];
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan, ...priorScans],
+          dashboardData: makeDashboardData({
+            politicalAnalysis: {
+              politicalPct: 11,
+              politicalCount: 11,
+              totalAnalyzed: 100,
+              ideology: null,
+              topPoliticalSource: null,
+              lowSample: false,
+            } as unknown as DashboardData['politicalAnalysis'],
+          }),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.politics');
+        expect(result.verdict).toContain('growing share');
+        // Negative assertion: surface-differentiation discipline.
+        expect(result.verdict).not.toContain('Politics has been climbing');
+      });
+    });
+
+    describe('priority and dispatch', () => {
+      test('political_creator_dominance wins over political_trajectory (70 > 60)', () => {
+        // Both predicates true: trajectory 4→7→11 AND dominant single
+        // source @newschan with scanCount=2.
+        const activeScan = makeScanWithPoliticalFeedItems(
+          'active',
+          '2026-05-13T12:00:00Z',
+          [{ handle: '@newschan', name: 'News Channel', isPolitical: true }],
+          { politicalPct: 11 },
+        );
+        const priorScans = [
+          makeScanWithPoliticalFeedItems(
+            'p1',
+            '2026-05-12T12:00:00Z',
+            [{ handle: '@newschan', name: 'News Channel', isPolitical: true }],
+            { politicalPct: 7 },
+          ),
+          makeScanWithPoliticalFeedItems(
+            'p2',
+            '2026-05-11T12:00:00Z',
+            [{ handle: '@other', name: 'Other', isPolitical: true }],
+            { politicalPct: 4 },
+          ),
+        ];
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan, ...priorScans],
+          dashboardData: makeDominanceDashboardData('@newschan'),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.politics');
+        // Dominance (70) beats trajectory (60).
+        expect(result.verdict).toContain("isn’t varied");
+        expect(result.verdict).not.toContain('growing share');
+      });
+    });
+
+    describe('calm-case template', () => {
+      test('enrichment-not-available fires when politicalAnalysis === null, with negative assertions on dramatic copy', () => {
+        const ctx = makeContext({
+          dashboardData: makeDashboardData({
+            politicalAnalysis: null,
+          }),
+        });
+        const result = interpretScan(ctx, 'dashboard.politics');
+        expect(result.verdict).toContain("isn’t available");
+        // Enrichment-gap guard: dominance/trajectory MUST NOT misfire.
+        expect(result.verdict).not.toContain("isn’t varied");
+        expect(result.verdict).not.toContain('growing share');
+        expect(result.findingDot).toBe(false);
+      });
+
+      test('no-political-content fires when politicalCount === 0', () => {
+        const ctx = makeContext({
+          dashboardData: makeDashboardData({
+            politicalAnalysis: {
+              politicalPct: 0,
+              politicalCount: 0,
+              totalAnalyzed: 50,
+              ideology: null,
+              topPoliticalSource: null,
+              lowSample: false,
+            } as unknown as DashboardData['politicalAnalysis'],
+          }),
+        });
+        const result = interpretScan(ctx, 'dashboard.politics');
+        expect(result.verdict).toContain("didn’t include political content");
+        const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+        expect(observed?.text).toContain('50 posts analyzed');
+        expect(result.findingDot).toBe(false);
+      });
+
+      test('low-political-share fires when 0 < politicalPct < 5', () => {
+        const ctx = makeContext({
+          dashboardData: makeDashboardData({
+            politicalAnalysis: {
+              politicalPct: 3,
+              politicalCount: 3,
+              totalAnalyzed: 100,
+              ideology: null,
+              topPoliticalSource: null,
+              lowSample: false,
+            } as unknown as DashboardData['politicalAnalysis'],
+          }),
+        });
+        const result = interpretScan(ctx, 'dashboard.politics');
+        expect(result.verdict).toContain('quiet sliver');
+        const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+        expect(observed?.text).toContain('3%');
+        expect(result.findingDot).toBe(false);
+      });
+
+      test('fallback fires when politicalPct >= 5 but not dominant, not growing', () => {
+        // No history (single scan) → trajectory predicate fails on
+        // length < 3. politicalPct = 7 puts us in the 5-8 zone with
+        // no dominance and no trajectory → fallback.
+        const activeScan = makeScan({ id: 'active' });
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan],
+          dashboardData: makeDashboardData({
+            politicalAnalysis: {
+              politicalPct: 7,
+              politicalCount: 7,
+              totalAnalyzed: 100,
+              ideology: null,
+              topPoliticalSource: null,
+              lowSample: false,
+            } as unknown as DashboardData['politicalAnalysis'],
+          }),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.politics');
+        expect(result.verdict).toContain('held steady');
+        expect(result.verdict).toContain('7%');
+        expect(result.findingDot).toBe(false);
+      });
+    });
+
+    test('meta.surface is "dashboard.politics"', () => {
+      const ctx = makeContext();
+      const result = interpretScan(ctx, 'dashboard.politics');
+      expect(result.meta?.surface).toBe('dashboard.politics');
     });
   });
 

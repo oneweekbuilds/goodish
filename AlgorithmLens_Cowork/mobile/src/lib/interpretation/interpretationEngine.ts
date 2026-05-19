@@ -23,8 +23,9 @@
  *   - 'dashboard.sources'  — functional (Dashboard Sources tab, Phase 6.1.3).
  *   - 'dashboard.ads'      — functional (Dashboard Ads tab, Phase 6.2.3).
  *   - 'dashboard.tone'     — functional (Dashboard Tone tab, Phase 6.3.3).
- *   - 'dashboard.politics' | 'dashboard.suggested'
- *     — throw "not yet implemented" with the specific surface name.
+ *   - 'dashboard.politics' — functional (Dashboard Politics tab, Phase 6.4.3).
+ *   - 'dashboard.suggested'
+ *     — throws "not yet implemented" with the specific surface name.
  *     Failing loudly is preferable to silently producing wrong output
  *     for surfaces that haven't had their templates authored yet.
  *
@@ -39,6 +40,7 @@ import type {
 import {
   DASHBOARD_ADS_TEMPLATES,
   DASHBOARD_OVERVIEW_TEMPLATES,
+  DASHBOARD_POLITICS_TEMPLATES,
   DASHBOARD_SOURCES_TEMPLATES,
   DASHBOARD_TONE_TEMPLATES,
   RESULTS_TEMPLATES,
@@ -70,6 +72,7 @@ export function interpretScan(
     case 'dashboard.tone':
       return selectTemplate(DASHBOARD_TONE_TEMPLATES, context);
     case 'dashboard.politics':
+      return selectTemplate(DASHBOARD_POLITICS_TEMPLATES, context);
     case 'dashboard.suggested':
       throw new Error(`surface ${surface} not yet implemented`);
   }
