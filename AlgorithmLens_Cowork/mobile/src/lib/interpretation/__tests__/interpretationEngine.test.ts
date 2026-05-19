@@ -280,11 +280,9 @@ describe('interpretScan orchestrator', () => {
       expect(() => interpretScan(ctx, 'dashboard.politics')).not.toThrow();
     });
 
-    test('throws on dashboard.suggested surface', () => {
+    test('does not throw on dashboard.suggested surface (Phase 6.5.3)', () => {
       const ctx = makeContext();
-      expect(() => interpretScan(ctx, 'dashboard.suggested')).toThrow(
-        /dashboard\.suggested not yet implemented/,
-      );
+      expect(() => interpretScan(ctx, 'dashboard.suggested')).not.toThrow();
     });
   });
 
@@ -2118,6 +2116,611 @@ describe('interpretScan orchestrator', () => {
       const ctx = makeContext();
       const result = interpretScan(ctx, 'dashboard.politics');
       expect(result.meta?.surface).toBe('dashboard.politics');
+    });
+  });
+
+  // ============================================
+  // Dashboard Suggested vs Followed surface (Phase 6.5.3)
+  // ============================================
+
+  describe('dashboard.suggested surface', () => {
+    /**
+     * Build a ScanDetail whose raw_data.posts carries the given
+     * suggested/followed creator items. Each entry produces one post
+     * with the specified is_suggested flag. Mirrors the post-shape
+     * fixtures used by the recurrence wrappers — feeds directly
+     * through computeFollowedCreatorRecurrence which reads
+     * is_suggested === false from raw_data.posts.
+     */
+    function makeScanWithSuggestedFollowedMix(
+      id: string,
+      createdAt: string,
+      items: Array<{
+        handle: string;
+        displayName?: string;
+        isSuggested: boolean | null;
+      }>,
+      overrides: Partial<ScanDetail> = {},
+    ): ScanDetail {
+      return makeScan({
+        id,
+        created_at: createdAt,
+        raw_data: {
+          posts: items.map((it, idx) => ({
+            creator_handle: it.handle,
+            creator_display_name: it.displayName ?? null,
+            is_ad: false,
+            is_suggested: it.isSuggested,
+            content_type: 'video',
+            hashtags: [],
+            position_in_feed: idx + 1,
+            ad_label_text: null,
+          })),
+        },
+        ...overrides,
+      });
+    }
+
+    /** Default dashboardData fixture for non-approximate scans. */
+    function makeStandardDashboardData(
+      overrides: Partial<DashboardData> = {},
+    ): DashboardData {
+      return makeDashboardData({
+        suggestedPct: 50,
+        followedPct: 50,
+        creatorNovelty: {
+          hasData: true,
+          noveltyPercent: 50,
+          suggestedCreatorCount: 5,
+          followedCreatorCount: 5,
+          overlapCount: 0,
+          approximate: false,
+        } as unknown as DashboardData['creatorNovelty'],
+        topTopicsBySuggested: [],
+        ...overrides,
+      });
+    }
+
+    describe('followed_creator_absence template', () => {
+      test('fires at threshold with design-canonical verdict verbatim', () => {
+        // 4-scan window. @mkbhd appears in s2, s3, s4 (3 of 4 scans,
+        // most recent in s2 which is 8 days before active). Active
+        // scan has only suggested content.
+        const activeScan = makeScanWithSuggestedFollowedMix(
+          'active',
+          '2026-05-13T12:00:00Z',
+          [
+            { handle: '@news', displayName: 'News', isSuggested: true },
+            { handle: '@news', displayName: 'News', isSuggested: true },
+          ],
+        );
+        const priorScans = [
+          makeScanWithSuggestedFollowedMix(
+            'p1',
+            '2026-05-05T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+          ),
+          makeScanWithSuggestedFollowedMix(
+            'p2',
+            '2026-05-03T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+          ),
+          makeScanWithSuggestedFollowedMix(
+            'p3',
+            '2026-05-01T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+          ),
+        ];
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan, ...priorScans],
+          dashboardData: makeStandardDashboardData({
+            suggestedPct: 62,
+            followedPct: 38,
+          }),
+          platform: 'youtube',
+        };
+
+        const result = interpretScan(ctx, 'dashboard.suggested');
+        // Design-canonical verdict verbatim.
+        expect(result.verdict).toBe(
+          'Your followed creators have gone quiet, so suggestions are filling the gap.',
+        );
+        expect(result.findingDot).toBe(true);
+        const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+        expect(observed?.text).toContain('MKBHD');
+        expect(observed?.text).toContain('8 days');
+        expect(observed?.text).toContain('top followed creator');
+        // LIKELY verbatim design copy.
+        const likely = result.sublines.find((s) => s.mode === 'LIKELY');
+        expect(likely?.text).toContain('When followed creators slow down');
+        expect(likely?.text).toContain('recommendation pool fills more');
+      });
+
+      test('OBSERVED state A: full design-canonical with rolling avg + topic suffix', () => {
+        // Setup includes rolling average data (multiple prior scans with
+        // suggested_percentage values to derive the average) and a
+        // topTopicsBySuggested entry above the 25% floor.
+        const activeScan = makeScanWithSuggestedFollowedMix(
+          'active',
+          '2026-05-13T12:00:00Z',
+          [{ handle: '@news', isSuggested: true }],
+          { suggested_percentage: 62 },
+        );
+        const priorScans = [
+          makeScanWithSuggestedFollowedMix(
+            'p1',
+            '2026-05-05T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+            { suggested_percentage: 60 },
+          ),
+          makeScanWithSuggestedFollowedMix(
+            'p2',
+            '2026-05-03T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+            { suggested_percentage: 60 },
+          ),
+          makeScanWithSuggestedFollowedMix(
+            'p3',
+            '2026-05-01T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+            { suggested_percentage: 60 },
+          ),
+        ];
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan, ...priorScans],
+          dashboardData: makeStandardDashboardData({
+            suggestedPct: 62,
+            followedPct: 38,
+            topTopicsBySuggested: [
+              { topic: 'NEWS', count: 10, percentage: 45 },
+            ] as unknown as DashboardData['topTopicsBySuggested'],
+          }),
+          platform: 'youtube',
+        };
+
+        const result = interpretScan(ctx, 'dashboard.suggested');
+        const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+        expect(observed?.text).toContain('62% of your feed was suggested');
+        expect(observed?.text).toContain('close to your 60% average');
+        expect(observed?.text).toContain('Most of the gap is being filled by News content');
+      });
+
+      test('OBSERVED state B: rolling avg present, no topic suffix when topic < 25%', () => {
+        const activeScan = makeScanWithSuggestedFollowedMix(
+          'active',
+          '2026-05-13T12:00:00Z',
+          [{ handle: '@news', isSuggested: true }],
+          { suggested_percentage: 62 },
+        );
+        const priorScans = [
+          makeScanWithSuggestedFollowedMix(
+            'p1',
+            '2026-05-05T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+            { suggested_percentage: 60 },
+          ),
+          makeScanWithSuggestedFollowedMix(
+            'p2',
+            '2026-05-03T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+            { suggested_percentage: 60 },
+          ),
+          makeScanWithSuggestedFollowedMix(
+            'p3',
+            '2026-05-01T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+            { suggested_percentage: 60 },
+          ),
+        ];
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan, ...priorScans],
+          dashboardData: makeStandardDashboardData({
+            suggestedPct: 62,
+            followedPct: 38,
+            topTopicsBySuggested: [
+              // 18% — below the 25% floor; suffix should NOT render.
+              { topic: 'NEWS', count: 4, percentage: 18 },
+            ] as unknown as DashboardData['topTopicsBySuggested'],
+          }),
+          platform: 'youtube',
+        };
+
+        const result = interpretScan(ctx, 'dashboard.suggested');
+        const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+        expect(observed?.text).toContain('close to your 60% average');
+        expect(observed?.text).not.toContain('Most of the gap is being filled');
+      });
+
+      test('OBSERVED state C: thin history → no comparative clause', () => {
+        // Only 4 scans total but suggested_percentage values omitted on
+        // priors → rolling avg returns null. Absence still detectable.
+        const activeScan = makeScanWithSuggestedFollowedMix(
+          'active',
+          '2026-05-13T12:00:00Z',
+          [{ handle: '@news', isSuggested: true }],
+        );
+        // Use undefined suggested_percentage to force rolling avg null
+        // by giving fewer than MIN_VALID_SCANS valid values.
+        const priorScans = [
+          makeScanWithSuggestedFollowedMix(
+            'p1',
+            '2026-05-05T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+            { suggested_percentage: NaN },
+          ),
+          makeScanWithSuggestedFollowedMix(
+            'p2',
+            '2026-05-03T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+            { suggested_percentage: NaN },
+          ),
+          makeScanWithSuggestedFollowedMix(
+            'p3',
+            '2026-05-01T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+            { suggested_percentage: NaN },
+          ),
+        ];
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan, ...priorScans],
+          dashboardData: makeStandardDashboardData({
+            suggestedPct: 62,
+            followedPct: 38,
+          }),
+          platform: 'youtube',
+        };
+
+        const result = interpretScan(ctx, 'dashboard.suggested');
+        const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+        expect(observed?.text).toContain('62% of your feed was suggested content this scan');
+        // Comparative clause must NOT appear when rolling avg is null.
+        expect(observed?.text).not.toContain('close to your');
+        expect(observed?.text).not.toContain('% average');
+      });
+
+      test('days rendering: "1 day" singular vs "N days" plural', () => {
+        // Build a scenario where @mkbhd was last seen exactly 1 day before active.
+        const activeScan = makeScanWithSuggestedFollowedMix(
+          'active',
+          '2026-05-13T12:00:00Z',
+          [{ handle: '@news', isSuggested: true }],
+        );
+        const priorScans = [
+          makeScanWithSuggestedFollowedMix(
+            'p1',
+            '2026-05-12T12:00:00Z', // 1 day before active
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+          ),
+          makeScanWithSuggestedFollowedMix(
+            'p2',
+            '2026-05-11T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+          ),
+          makeScanWithSuggestedFollowedMix(
+            'p3',
+            '2026-05-10T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+          ),
+        ];
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan, ...priorScans],
+          dashboardData: makeStandardDashboardData(),
+          platform: 'youtube',
+        };
+        // 1 day is below the 7-day threshold → template doesn't fire.
+        // Verify the predicate correctly excludes this case.
+        const result = interpretScan(ctx, 'dashboard.suggested');
+        expect(result.verdict).not.toContain('gone quiet');
+      });
+
+      test('enrichment-gap guard: does NOT fire when creatorNovelty === null', () => {
+        const activeScan = makeScanWithSuggestedFollowedMix(
+          'active',
+          '2026-05-13T12:00:00Z',
+          [{ handle: '@news', isSuggested: true }],
+        );
+        const priorScans = [
+          makeScanWithSuggestedFollowedMix(
+            'p1',
+            '2026-05-05T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+          ),
+          makeScanWithSuggestedFollowedMix(
+            'p2',
+            '2026-05-03T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+          ),
+          makeScanWithSuggestedFollowedMix(
+            'p3',
+            '2026-05-01T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+          ),
+        ];
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan, ...priorScans],
+          dashboardData: makeDashboardData({
+            creatorNovelty: null,
+          }),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.suggested');
+        // Should fall through to approximate-follow-detection calm variant.
+        expect(result.verdict).toContain("isn’t fully reliable");
+        expect(result.verdict).not.toContain('gone quiet');
+      });
+
+      test('enrichment-gap guard: does NOT fire when approximate === true', () => {
+        const activeScan = makeScanWithSuggestedFollowedMix(
+          'active',
+          '2026-05-13T12:00:00Z',
+          [{ handle: '@news', isSuggested: true }],
+        );
+        const priorScans = [
+          makeScanWithSuggestedFollowedMix(
+            'p1',
+            '2026-05-05T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+          ),
+          makeScanWithSuggestedFollowedMix(
+            'p2',
+            '2026-05-03T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+          ),
+          makeScanWithSuggestedFollowedMix(
+            'p3',
+            '2026-05-01T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+          ),
+        ];
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan, ...priorScans],
+          dashboardData: makeStandardDashboardData({
+            creatorNovelty: {
+              hasData: true,
+              noveltyPercent: 50,
+              suggestedCreatorCount: 5,
+              followedCreatorCount: 5,
+              overlapCount: 0,
+              approximate: true,
+            } as unknown as DashboardData['creatorNovelty'],
+          }),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.suggested');
+        expect(result.verdict).toContain("isn’t fully reliable");
+        expect(result.verdict).not.toContain('gone quiet');
+      });
+    });
+
+    describe('suggested_dominance template', () => {
+      test('fires at >= 80% AND >= 1.3× rolling average', () => {
+        // Active 85%, prior avg 50% → ratio 1.7 > 1.3.
+        const activeScan = makeScan({
+          id: 'active',
+          suggested_percentage: 85,
+        });
+        const priorScans = [
+          makeScan({ id: 'p1', suggested_percentage: 50 }),
+          makeScan({ id: 'p2', suggested_percentage: 50 }),
+          makeScan({ id: 'p3', suggested_percentage: 50 }),
+        ];
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan, ...priorScans],
+          dashboardData: makeStandardDashboardData({
+            suggestedPct: 85,
+            followedPct: 15,
+          }),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.suggested');
+        expect(result.verdict).toBe(
+          'Suggestions filled more of your YouTube feed than usual.',
+        );
+        expect(result.findingDot).toBe(true);
+        const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+        expect(observed?.text).toContain('85%');
+        expect(observed?.text).toContain('50% average');
+      });
+
+      test('does NOT fire at >= 80% but below 1.3× rolling avg', () => {
+        // Active 85%, prior avg 80% → ratio 1.06, below 1.3.
+        const activeScan = makeScan({
+          id: 'active',
+          suggested_percentage: 85,
+        });
+        const priorScans = [
+          makeScan({ id: 'p1', suggested_percentage: 80 }),
+          makeScan({ id: 'p2', suggested_percentage: 80 }),
+          makeScan({ id: 'p3', suggested_percentage: 80 }),
+        ];
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan, ...priorScans],
+          dashboardData: makeStandardDashboardData({
+            suggestedPct: 85,
+            followedPct: 15,
+          }),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.suggested');
+        // Falls through to calm-case suggested-leaning (85% > 60%).
+        expect(result.verdict).not.toContain('filled more of your');
+        expect(result.verdict).toContain('Suggestions made up most');
+      });
+
+      test('verdict is verbally distinct from other surfaces high-suggested variants', () => {
+        const activeScan = makeScan({
+          id: 'active',
+          suggested_percentage: 90,
+        });
+        const priorScans = [
+          makeScan({ id: 'p1', suggested_percentage: 50 }),
+          makeScan({ id: 'p2', suggested_percentage: 50 }),
+          makeScan({ id: 'p3', suggested_percentage: 50 }),
+        ];
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan, ...priorScans],
+          dashboardData: makeStandardDashboardData({
+            suggestedPct: 90,
+            followedPct: 10,
+          }),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.suggested');
+        expect(result.verdict).toContain('filled more of your');
+        // Negative assertions against the three other surfaces.
+        expect(result.verdict).not.toContain('Almost everything');
+        expect(result.verdict).not.toContain('almost all suggestions');
+        expect(result.verdict).not.toContain('The sources in your feed');
+      });
+    });
+
+    describe('priority and dispatch', () => {
+      test('followed_creator_absence wins over suggested_dominance (70 > 50)', () => {
+        // Both predicates true: 85% suggested, 1.7× rolling avg AND @mkbhd absent 8 days.
+        const activeScan = makeScanWithSuggestedFollowedMix(
+          'active',
+          '2026-05-13T12:00:00Z',
+          [{ handle: '@news', isSuggested: true }],
+          { suggested_percentage: 85 },
+        );
+        const priorScans = [
+          makeScanWithSuggestedFollowedMix(
+            'p1',
+            '2026-05-05T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+            { suggested_percentage: 50 },
+          ),
+          makeScanWithSuggestedFollowedMix(
+            'p2',
+            '2026-05-03T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+            { suggested_percentage: 50 },
+          ),
+          makeScanWithSuggestedFollowedMix(
+            'p3',
+            '2026-05-01T12:00:00Z',
+            [{ handle: '@mkbhd', displayName: 'MKBHD', isSuggested: false }],
+            { suggested_percentage: 50 },
+          ),
+        ];
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan, ...priorScans],
+          dashboardData: makeStandardDashboardData({
+            suggestedPct: 85,
+            followedPct: 15,
+          }),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.suggested');
+        // Absence (70) beats dominance (50).
+        expect(result.verdict).toContain('gone quiet');
+        expect(result.verdict).not.toContain('filled more of your');
+      });
+    });
+
+    describe('calm-case template', () => {
+      test('followed-dominant fires when followedPct >= 70', () => {
+        const ctx = makeContext({
+          dashboardData: makeStandardDashboardData({
+            suggestedPct: 25,
+            followedPct: 75,
+          }),
+        });
+        const result = interpretScan(ctx, 'dashboard.suggested');
+        expect(result.verdict).toContain('Most of your YouTube feed came from accounts you follow');
+        expect(result.findingDot).toBe(false);
+        const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+        expect(observed?.text).toContain('75%');
+        expect(observed?.text).toContain('25%');
+      });
+
+      test('suggested-leaning fires at >= 60% without elevation', () => {
+        // 65% suggested with rolling avg 60% — ratio 1.08, below 1.3
+        // dominance threshold. Falls to suggested-leaning.
+        const activeScan = makeScan({
+          id: 'active',
+          suggested_percentage: 65,
+        });
+        const priorScans = [
+          makeScan({ id: 'p1', suggested_percentage: 60 }),
+          makeScan({ id: 'p2', suggested_percentage: 60 }),
+          makeScan({ id: 'p3', suggested_percentage: 60 }),
+        ];
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan, ...priorScans],
+          dashboardData: makeStandardDashboardData({
+            suggestedPct: 65,
+            followedPct: 35,
+          }),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.suggested');
+        expect(result.verdict).toContain('Suggestions made up most');
+      });
+
+      test('fallback uses "your usual split" anchor when ratio is typical', () => {
+        // 45% suggested, rolling avg 45% → ratio 1.0, typical bucket.
+        const activeScan = makeScan({
+          id: 'active',
+          suggested_percentage: 45,
+        });
+        const priorScans = [
+          makeScan({ id: 'p1', suggested_percentage: 45 }),
+          makeScan({ id: 'p2', suggested_percentage: 45 }),
+          makeScan({ id: 'p3', suggested_percentage: 45 }),
+        ];
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan, ...priorScans],
+          dashboardData: makeStandardDashboardData({
+            suggestedPct: 45,
+            followedPct: 55,
+          }),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.suggested');
+        expect(result.verdict).toContain('your usual split');
+      });
+
+      test('fallback drops anchor when no rolling avg exists', () => {
+        const activeScan = makeScan({
+          id: 'active',
+          suggested_percentage: 45,
+        });
+        const ctx: InterpretationContext = {
+          activeScan,
+          scans: [activeScan], // window of 1 — no history
+          dashboardData: makeStandardDashboardData({
+            suggestedPct: 45,
+            followedPct: 55,
+          }),
+          platform: 'youtube',
+        };
+        const result = interpretScan(ctx, 'dashboard.suggested');
+        expect(result.verdict).toBe(
+          'Your YouTube feed mixed followed and suggested content today.',
+        );
+        expect(result.verdict).not.toContain('typical');
+        expect(result.verdict).not.toContain('usual');
+      });
+    });
+
+    test('meta.surface is "dashboard.suggested"', () => {
+      const ctx = makeContext();
+      const result = interpretScan(ctx, 'dashboard.suggested');
+      expect(result.meta?.surface).toBe('dashboard.suggested');
     });
   });
 
