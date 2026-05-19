@@ -59,8 +59,9 @@
  *     ExpandableCards, mirroring SourcesTab's collapse of the
  *     equivalent 3-up strip.
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text } from 'react-native';
+import type { ScanDetail } from '../../hooks/useDashboard';
 import type { DashboardData } from '../../lib/computeDashboardData';
 import { LockedOverlayCard } from '../../components/plan/LockedOverlayCard';
 import {
@@ -69,11 +70,20 @@ import {
   ComparisonPair,
   DisclosureRow,
   ExpandableCard,
-  HeroStatCard,
+  FactRow,
   StackedBar,
+  SupportingCard,
+  VerdictEyebrow,
+  VerdictText,
 } from '../../design-system';
 import { colors, layout, spacing, type as typeTokens } from '../../design-tokens/tokens';
 import { toSentenceCase } from '../../lib/string-utils';
+import {
+  SublineRow,
+  sublineGapTop,
+} from '../../components/interpretation/SublineRow';
+import { interpretScan } from '../../lib/interpretation/interpretationEngine';
+import type { InterpretationContext } from '../../lib/interpretation/interpretation-types';
 
 // ────────────────────────────────────────────────────────────
 // Component
@@ -81,6 +91,16 @@ import { toSentenceCase } from '../../lib/string-utils';
 
 export interface AdsTabProps {
   data: DashboardData;
+  /** All prior scans for this user. Used by the interpretation engine
+   *  for advertiser-recurrence and rolling-average derivations.
+   *  Starts as [] during the useDashboard fetch; engine handles empty
+   *  array gracefully (advertiser-persistence predicate fails on
+   *  windowScanCount < 4, falls through to calm-case). */
+  scans: ScanDetail[];
+  /** The scan currently driving `data`. Null only when no scan
+   *  history exists at all (first launch); in that case we render
+   *  an empty state instead of the engine output. */
+  activeScan: ScanDetail | null;
   isPlus: boolean;
   onUpgrade: () => void;
 }
@@ -94,19 +114,21 @@ function formatAdHandle(handle: string): string {
   return handle.startsWith('@') ? handle : `@${handle}`;
 }
 
-export function AdsTab({ data, isPlus, onUpgrade }: AdsTabProps) {
+export function AdsTab({
+  data,
+  scans,
+  activeScan,
+  isPlus,
+  onUpgrade,
+}: AdsTabProps) {
   const insight = data.adsInsight;
   const howWeMeasure = insight.howWeMeasure;
 
-  // ── Sample-size caution ───────────────────────────────────
-  // Two distinct low-confidence cases. We surface the more
-  // conservative (totalPosts) first because it gates everything.
-  const heroCaution =
-    data.totalPosts < 12
-      ? `Based on ${data.totalPosts} posts. Interpret with care.`
-      : data.adCount < 5
-        ? `Based on ${data.adCount} labeled ${data.adCount === 1 ? 'ad' : 'ads'}. Interpret with care.`
-        : undefined;
+  // heroCaution removed in Phase 6.2.4 — the two-tier sample-size
+  // caution copy (totalPosts < 12 OR adCount < 5) gets surfaced
+  // through a future CaveatNote supporting-row variant when that
+  // primitive ships. Same discipline as Phase 5.1.4 OverviewTab and
+  // Phase 6.1.4 SourcesTab.
 
   // ── Ad composition derivations ────────────────────────────
   const hasUnlabeledPromos =
@@ -118,6 +140,42 @@ export function AdsTab({ data, isPlus, onUpgrade }: AdsTabProps) {
   const organicPct = Math.max(0, 100 - data.adPct);
   const organicCount = Math.max(0, data.totalPosts - data.adCount);
 
+  // ── Engine wiring (Phase 6.2.4) ──────────────────────────────
+  //
+  // Same useMemo chain pattern as Phase 5.1.4 / 6.1.4. Engine
+  // computes internally per the established discipline (each tab
+  // owns its surface; DashboardScreen only threads scans + activeScan).
+  const platform = activeScan?.platform ?? 'unknown';
+
+  const context = useMemo<InterpretationContext | null>(() => {
+    if (!activeScan) return null;
+    return { activeScan, scans, dashboardData: data, platform };
+  }, [activeScan, scans, data, platform]);
+
+  const interpretation = useMemo(
+    () => (context ? interpretScan(context, 'dashboard.ads') : null),
+    [context],
+  );
+
+  // Filter supporting rows to 'fact' variant. Other variants
+  // (CreatorRow, TrajectoryRow, BarRow, CaveatNote, MethodologyRow)
+  // ship in Phase 7+ — skipped with console.warn for visibility.
+  const factRows = useMemo(() => {
+    const out: Array<{ label: string; value: string; anchor?: string }> = [];
+    if (!interpretation) return out;
+    for (const row of interpretation.supportingRows) {
+      if (row.variant === 'fact') {
+        out.push({ label: row.label, value: row.value, anchor: row.anchor });
+      } else {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[2x] supporting row variant not yet implemented on Dashboard Ads: ${row.variant}`,
+        );
+      }
+    }
+    return out;
+  }, [interpretation]);
+
   return (
     <View
       style={{
@@ -126,14 +184,57 @@ export function AdsTab({ data, isPlus, onUpgrade }: AdsTabProps) {
         paddingBottom: spacing.s7,
       }}
     >
-      {/* ── 1. Hero ──────────────────────────────────────────── */}
-      <HeroStatCard
-        value={String(data.adPct)}
-        unit="%"
-        label="of your feed was ads"
-        description={insight.meaning}
-        caution={heroCaution}
-      />
+      {/* ── 1. Verdict zone (engine-driven) ──────────────────── */}
+      {interpretation ? (
+        <View>
+          <VerdictEyebrow />
+          <View style={{ marginTop: spacing.s4 }}>
+            <VerdictText>{interpretation.verdict}</VerdictText>
+          </View>
+          <View style={{ marginTop: spacing.s6 }}>
+            {interpretation.sublines.map((subline, idx) => {
+              const prevMode =
+                idx > 0 ? interpretation.sublines[idx - 1]?.mode : undefined;
+              const marginTop = sublineGapTop(prevMode, subline.mode);
+              return (
+                <SublineRow
+                  key={idx}
+                  subline={subline}
+                  marginTop={marginTop}
+                  surface="Dashboard Ads"
+                />
+              );
+            })}
+          </View>
+          {factRows.length > 0 ? (
+            <View style={{ marginTop: spacing.s6 }}>
+              <SupportingCard>
+                {factRows.map((row, i) => (
+                  <FactRow
+                    key={i}
+                    label={row.label}
+                    value={row.value}
+                    anchor={row.anchor}
+                  />
+                ))}
+              </SupportingCard>
+            </View>
+          ) : null}
+        </View>
+      ) : (
+        <Card>
+          <Text
+            style={{
+              fontSize: typeTokens.body.fontSize,
+              lineHeight: typeTokens.body.lineHeight,
+              fontWeight: typeTokens.body.fontWeight,
+              color: colors.textSecondary,
+            }}
+          >
+            No scan data yet. Run a scan to see your ad mix.
+          </Text>
+        </Card>
+      )}
 
       {/* ── 2. Empty-state explainer (adCount === 0) ─────────── */}
       {data.adCount === 0 ? (
