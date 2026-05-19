@@ -90,6 +90,40 @@ export interface RecurrenceRecord {
    *  this entity first appears, i.e., the HIGHEST scan index they're
    *  seen at. */
   firstSeenIndex: number;
+  /**
+   * Index into the desc-sorted window of the entity's MOST RECENT
+   * appearance — the LOWEST scan index in the aggregate's set. Added
+   * Phase 6.5.0 to enable absence detection.
+   *
+   * Read carefully: this is a position counter, NOT a time delta.
+   *   - lastSeenIndex = 0 → entity is present in the most recent scan
+   *     in the desc-sorted window. (When the active scan is included
+   *     in the input array, that's the active scan.)
+   *   - lastSeenIndex = 3 → entity is absent from the 3 most recent
+   *     scans in the desc-sorted window; their most recent appearance
+   *     is the 4th-newest scan (index 3, zero-indexed).
+   *
+   * It is NOT "days since last seen" (use computeCreatorAbsence's
+   * daysSinceLastSeen for that — derived from lastSeenAt, not from
+   * this index). It is NOT "chronological-forward index" (the window
+   * is sorted newest-first). It is NOT "scans ago in absolute time"
+   * (the window is sparse; consecutive indices are NOT consecutive
+   * days).
+   *
+   * The pair (firstSeenIndex, lastSeenIndex) brackets the entity's
+   * presence in the window: lastSeenIndex <= firstSeenIndex always,
+   * with equality when the entity appears in exactly one scan.
+   */
+  lastSeenIndex: number;
+  /** id of the scan at lastSeenIndex. The same id the input
+   *  ScanDetail carried — not the scan_id alias. Use this to look up
+   *  the source scan from the original input array when needed. */
+  lastSeenScanId: string;
+  /** created_at of the scan at lastSeenIndex, propagated verbatim
+   *  from the source ScanDetail. ISO 8601 string in the production
+   *  data shape. Date.parse-able; computeCreatorAbsence consumes this
+   *  for the daysSinceLastSeen computation. */
+  lastSeenAt: string;
 }
 
 export interface RecurrenceResult {
@@ -251,16 +285,31 @@ export function aggregateAcrossScans(
 
   const records: RecurrenceRecord[] = [];
   for (const agg of aggregates.values()) {
-    let firstSeenIndex = 0;
+    // Single pass over scanIndices: max for firstSeenIndex (oldest in
+    // desc-sorted window), min for lastSeenIndex (most recent).
+    // Initialize from any element of the set so we don't rely on a
+    // sentinel value that could collide with a real index.
+    const iter = agg.scanIndices.values();
+    const first = iter.next();
+    // The set is built by .add() inside the loop, so it always has at
+    // least one element by the time we get here. Defensive default
+    // satisfies TypeScript's narrowing.
+    let firstSeenIndex = first.done ? 0 : first.value;
+    let lastSeenIndex = firstSeenIndex;
     for (const idx of agg.scanIndices) {
       if (idx > firstSeenIndex) firstSeenIndex = idx;
+      if (idx < lastSeenIndex) lastSeenIndex = idx;
     }
+    const lastSeenScan = filtered[lastSeenIndex]!;
     records.push({
       handle: agg.handle,
       displayName: agg.displayName,
       scanCount: agg.scanIndices.size,
       totalPosts: agg.totalPosts,
       firstSeenIndex,
+      lastSeenIndex,
+      lastSeenScanId: lastSeenScan.id,
+      lastSeenAt: lastSeenScan.created_at,
     });
   }
 

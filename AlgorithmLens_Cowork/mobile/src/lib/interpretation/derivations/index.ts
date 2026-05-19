@@ -15,3 +15,14 @@ export {
   type RollingAverageOptions,
   type TrajectoryEntry,
 } from './rollingAverage';
+
+export {
+  computeFollowedCreatorRecurrence,
+  computeCreatorAbsence,
+  type FollowedCreatorRecurrenceRecord,
+  type FollowedCreatorRecurrenceResult,
+  type FollowedCreatorRecurrenceOptions,
+  type AbsenceRecord,
+  type CreatorAbsenceResult,
+  type CreatorAbsenceOptions,
+} from './creatorAbsence';
