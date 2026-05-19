@@ -265,11 +265,9 @@ describe('interpretScan orchestrator', () => {
       expect(() => interpretScan(ctx, 'dashboard.sources')).not.toThrow();
     });
 
-    test('throws on dashboard.ads surface', () => {
+    test('does not throw on dashboard.ads surface (Phase 6.2.3)', () => {
       const ctx = makeContext();
-      expect(() => interpretScan(ctx, 'dashboard.ads')).toThrow(
-        /dashboard\.ads not yet implemented/,
-      );
+      expect(() => interpretScan(ctx, 'dashboard.ads')).not.toThrow();
     });
 
     test('throws on dashboard.politics surface', () => {
@@ -598,6 +596,72 @@ describe('interpretScan orchestrator', () => {
         createdAt,
         `@other-${idx}`,
         `Other ${idx}`,
+        1,
+      );
+    });
+  }
+
+  /**
+   * Sibling of makeScanWithCreator that produces ad posts. Same
+   * shape but `is_ad: true` so advertiser-recurrence can aggregate.
+   */
+  function makeScanWithAdvertiser(
+    id: string,
+    createdAt: string,
+    handle: string,
+    displayName: string,
+    postCount = 1,
+    overrides: Partial<ScanDetail> = {},
+  ): ScanDetail {
+    return makeScan({
+      id,
+      created_at: createdAt,
+      raw_data: {
+        posts: Array.from({ length: postCount }).map((_, idx) => ({
+          creator_handle: handle,
+          creator_display_name: displayName,
+          is_ad: true,
+          is_suggested: true,
+          content_type: 'video',
+          hashtags: [],
+          position_in_feed: idx + 1,
+          ad_label_text: 'Ad',
+        })),
+      },
+      ...overrides,
+    });
+  }
+
+  /**
+   * Build a 4-scan window with @ad-1 as a recurring advertiser in
+   * `scanCount` of them. Older scans (beyond scanCount) include a
+   * different unique advertiser so they don't contribute to @ad-1's
+   * recurrence count.
+   */
+  function buildFourScanWindowWithRecurringAdvertiser(
+    scanCount: number,
+  ): ScanDetail[] {
+    const dates = [
+      '2026-05-13T12:00:00Z',
+      '2026-05-12T12:00:00Z',
+      '2026-05-11T12:00:00Z',
+      '2026-05-10T12:00:00Z',
+    ];
+    return dates.map((createdAt, idx) => {
+      if (idx < scanCount) {
+        return makeScanWithAdvertiser(
+          `s${idx}`,
+          createdAt,
+          '@ad-1',
+          'Ad One',
+          1,
+        );
+      }
+      return makeScanWithAdvertiser(
+        `s${idx}`,
+        createdAt,
+        `@ad-other-${idx}`,
+        `Other Ad ${idx}`,
         1,
       );
     });
@@ -1109,6 +1173,178 @@ describe('interpretScan orchestrator', () => {
       const ctx = makeContext();
       const result = interpretScan(ctx, 'dashboard.sources');
       expect(result.meta?.surface).toBe('dashboard.sources');
+    });
+  });
+
+  // ============================================
+  // Dashboard Ads surface (Phase 6.2.3)
+  // ============================================
+
+  describe('dashboard.ads surface', () => {
+    test('advertiser_persistence fires at threshold with design-canonical verdict', () => {
+      const scans = buildFourScanWindowWithRecurringAdvertiser(3);
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData(),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.ads');
+      // Design-canonical verbatim verdict copy.
+      expect(result.verdict).toBe(
+        'One advertiser is sitting on your feed more than the others.',
+      );
+      expect(result.findingDot).toBe(true);
+      // OBSERVED includes the share-of-identified-ads metric.
+      const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+      expect(observed?.text).toContain('Ad One');
+      expect(observed?.text).toContain('3 of your last 4 scans');
+      expect(observed?.text).toContain('% of all identified ads');
+    });
+
+    test('heavy_ad_load fires with Ads-surface verbal distinction (not Overview copy)', () => {
+      // adPct=20, rollingAvg ~8 → ratio 2.5, well above 1.5× threshold.
+      const activeScan = makeScan({ id: 'active', ad_percentage: 20 });
+      const priorScans = [
+        makeScan({ id: 'p1', ad_percentage: 8 }),
+        makeScan({ id: 'p2', ad_percentage: 8 }),
+        makeScan({ id: 'p3', ad_percentage: 8 }),
+      ];
+      const ctx: InterpretationContext = {
+        activeScan,
+        scans: [activeScan, ...priorScans],
+        dashboardData: makeDashboardData({ adPct: 20 }),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.ads');
+      // Ads-surface framing: ad-density experience, NOT day-state anomaly.
+      expect(result.verdict).toContain('Ad density is running high');
+      expect(result.verdict).toContain('YouTube');
+      // Verbally distinct from Overview's "Unusually ad-heavy YouTube today."
+      expect(result.verdict).not.toContain('Unusually ad-heavy');
+      expect(result.findingDot).toBe(true);
+    });
+
+    test('advertiser_persistence wins over heavy_ad_load when both could match (60 > 50)', () => {
+      // Recurring advertiser AND high ad density.
+      const scans = [
+        makeScanWithAdvertiser('active', '2026-05-13T12:00:00Z', '@ad-1', 'Ad One', 1, {
+          ad_percentage: 20,
+        }),
+        makeScanWithAdvertiser('p1', '2026-05-12T12:00:00Z', '@ad-1', 'Ad One', 1, {
+          ad_percentage: 8,
+        }),
+        makeScanWithAdvertiser('p2', '2026-05-11T12:00:00Z', '@ad-1', 'Ad One', 1, {
+          ad_percentage: 8,
+        }),
+        makeScanWithAdvertiser('p3', '2026-05-10T12:00:00Z', '@ad-other', 'Other', 1, {
+          ad_percentage: 8,
+        }),
+      ];
+      const ctx: InterpretationContext = {
+        activeScan: scans[0]!,
+        scans,
+        dashboardData: makeDashboardData({ adPct: 20 }),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.ads');
+      // Advertiser-persistence (60) beats heavy-ad-load (50).
+      expect(result.verdict).toBe(
+        'One advertiser is sitting on your feed more than the others.',
+      );
+      expect(result.verdict).not.toContain('Ad density is running high');
+    });
+
+    test('calm-case no-ads variant fires when adCount === 0', () => {
+      const ctx = makeContext({
+        dashboardData: makeDashboardData({
+          totalPosts: 30,
+          adCount: 0,
+          adPct: 0,
+        }),
+      });
+      const result = interpretScan(ctx, 'dashboard.ads');
+      expect(result.verdict).toContain('No labeled ads');
+      expect(result.findingDot).toBe(false);
+    });
+
+    test('calm-case low-ad-density variant fires when adPct < 5', () => {
+      const ctx = makeContext({
+        dashboardData: makeDashboardData({
+          totalPosts: 33,
+          adCount: 1,
+          adPct: 3,
+        }),
+      });
+      const result = interpretScan(ctx, 'dashboard.ads');
+      expect(result.verdict).toContain('minor presence');
+      expect(result.verdict).toContain('YouTube');
+    });
+
+    test('calm-case fallback uses "your usual range" when anchor is typical', () => {
+      // adPct=10, rollingAvg=11 → ratio 0.9, anchor "typical"
+      const activeScan = makeScan({ id: 'active', ad_percentage: 10 });
+      const priorScans = [
+        makeScan({ id: 'p1', ad_percentage: 11 }),
+        makeScan({ id: 'p2', ad_percentage: 11 }),
+        makeScan({ id: 'p3', ad_percentage: 11 }),
+      ];
+      const ctx: InterpretationContext = {
+        activeScan,
+        scans: [activeScan, ...priorScans],
+        dashboardData: makeDashboardData({ adPct: 10, adCount: 5, totalPosts: 50 }),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.ads');
+      // Design-canonical fallback wording.
+      expect(result.verdict).toContain('Ads sat at 10%');
+      expect(result.verdict).toContain('your usual range');
+    });
+
+    test('calm-case fallback uses "higher than typical" when anchor reflects elevated share (below heavy threshold)', () => {
+      // adPct=13, rollingAvg=8 → ratio 1.625. Above 1.3 (so "higher
+      // than typical") but below 15% absolute, so heavy-ad-load
+      // doesn't fire (requires adPct >= 15).
+      const activeScan = makeScan({ id: 'active', ad_percentage: 13 });
+      const priorScans = [
+        makeScan({ id: 'p1', ad_percentage: 8 }),
+        makeScan({ id: 'p2', ad_percentage: 8 }),
+        makeScan({ id: 'p3', ad_percentage: 8 }),
+      ];
+      const ctx: InterpretationContext = {
+        activeScan,
+        scans: [activeScan, ...priorScans],
+        dashboardData: makeDashboardData({ adPct: 13, adCount: 7, totalPosts: 50 }),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.ads');
+      expect(result.verdict).toContain('Ads sat at 13%');
+      expect(result.verdict).toContain('higher than typical');
+      expect(result.verdict).not.toContain('your usual range');
+    });
+
+    test('calm-case fallback drops the comparative claim when no rolling average exists', () => {
+      // Only one scan in history → rollingAverage returns null.
+      const activeScan = makeScan({ id: 'active', ad_percentage: 10 });
+      const ctx: InterpretationContext = {
+        activeScan,
+        scans: [activeScan], // window of 1 — no history
+        dashboardData: makeDashboardData({ adPct: 10, adCount: 5, totalPosts: 50 }),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.ads');
+      // Verdict should NOT make a comparative claim when no history.
+      expect(result.verdict).toBe(
+        'Ads sat at 10% of your feed today.',
+      );
+      expect(result.verdict).not.toContain('your usual range');
+      expect(result.verdict).not.toContain('typical');
+    });
+
+    test('meta.surface is "dashboard.ads"', () => {
+      const ctx = makeContext();
+      const result = interpretScan(ctx, 'dashboard.ads');
+      expect(result.meta?.surface).toBe('dashboard.ads');
     });
   });
 
