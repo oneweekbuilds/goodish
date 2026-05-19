@@ -106,24 +106,64 @@ export interface RecurrenceOptions {
 }
 
 /**
+ * Internal options extending RecurrenceOptions with the
+ * `postsExtractor` parameter. Kept separate from the public
+ * RecurrenceOptions so wrapper-facing types (CreatorRecurrenceOptions,
+ * AdvertiserRecurrenceOptions, PoliticalCreatorRecurrenceOptions)
+ * don't leak this implementation detail.
+ *
+ * Default extractor reads `raw_data.posts` (the structure
+ * creator-recurrence and advertiser-recurrence walk). Wrappers that
+ * need to aggregate from a different path inside raw_data — e.g.,
+ * political-creator-recurrence walks `raw_data.analysis.feed_items`
+ * because political classification lives there, not on
+ * `raw_data.posts[]` — supply their own extractor and remap each
+ * item to the core's expected `{ creator_handle, creator_display_name,
+ * ... }` shape.
+ */
+export interface AggregateAcrossScansOptions extends RecurrenceOptions {
+  /** Extract the post-shaped items the core will aggregate. The
+   *  returned array's elements must carry `creator_handle` and
+   *  `creator_display_name` for identity resolution. The default
+   *  reads `raw.posts` (creator and advertiser wrappers); other
+   *  wrappers may pull from `raw.analysis.feed_items` and remap. */
+  postsExtractor?: (raw: Record<string, unknown>) => unknown[];
+}
+
+function defaultPostsExtractor(raw: Record<string, unknown>): unknown[] {
+  const p = raw.posts;
+  return Array.isArray(p) ? p : [];
+}
+
+/**
  * The shared aggregation algorithm. Intended for internal use by
  * recurrence wrapper functions (computeCreatorRecurrence,
- * computeAdvertiserRecurrence, ...) — not part of the public engine
- * API. Exported because TypeScript doesn't enforce module-private
- * exports; treat as private by convention.
+ * computeAdvertiserRecurrence, computePoliticalCreatorRecurrence, ...)
+ * — not part of the public engine API. Exported because TypeScript
+ * doesn't enforce module-private exports; treat as private by
+ * convention.
  *
  * @param postPredicate runs AFTER the structural validity check
  *   `(post && typeof post === 'object')` but BEFORE handle extraction.
  *   Returning `false` excludes the post from aggregation without
  *   affecting windowScanCount.
+ * @param options.postsExtractor overrides where in raw_data the
+ *   core reads posts from. Defaults to `raw.posts`. Wrappers that
+ *   aggregate from `raw.analysis.feed_items` (political-creator)
+ *   pass a custom extractor that remaps each item to the core's
+ *   expected shape.
  */
 export function aggregateAcrossScans(
   scans: ScanDetail[],
   platform: string,
   postPredicate: (post: Record<string, unknown>) => boolean,
-  options: RecurrenceOptions = {},
+  options: AggregateAcrossScansOptions = {},
 ): RecurrenceResult {
-  const { windowSize = DEFAULT_WINDOW_SIZE, excludeScanId } = options;
+  const {
+    windowSize = DEFAULT_WINDOW_SIZE,
+    excludeScanId,
+    postsExtractor = defaultPostsExtractor,
+  } = options;
 
   if (!Array.isArray(scans) || scans.length === 0) {
     return { records: [], windowScanCount: 0 };
@@ -163,11 +203,11 @@ export function aggregateAcrossScans(
 
   for (let scanIdx = 0; scanIdx < filtered.length; scanIdx++) {
     const scan = filtered[scanIdx]!;
-    let posts: unknown;
+    let posts: unknown[];
     try {
       const raw = scan.raw_data;
       if (!raw || typeof raw !== 'object') continue;
-      posts = (raw as Record<string, unknown>).posts;
+      posts = postsExtractor(raw as Record<string, unknown>);
     } catch {
       continue;
     }
