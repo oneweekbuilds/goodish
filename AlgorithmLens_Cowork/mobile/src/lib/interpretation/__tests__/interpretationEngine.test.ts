@@ -270,17 +270,15 @@ describe('interpretScan orchestrator', () => {
       expect(() => interpretScan(ctx, 'dashboard.ads')).not.toThrow();
     });
 
+    test('does not throw on dashboard.tone surface (Phase 6.3.3)', () => {
+      const ctx = makeContext();
+      expect(() => interpretScan(ctx, 'dashboard.tone')).not.toThrow();
+    });
+
     test('throws on dashboard.politics surface', () => {
       const ctx = makeContext();
       expect(() => interpretScan(ctx, 'dashboard.politics')).toThrow(
         /dashboard\.politics not yet implemented/,
-      );
-    });
-
-    test('throws on dashboard.tone surface', () => {
-      const ctx = makeContext();
-      expect(() => interpretScan(ctx, 'dashboard.tone')).toThrow(
-        /dashboard\.tone not yet implemented/,
       );
     });
 
@@ -627,6 +625,34 @@ describe('interpretScan orchestrator', () => {
           position_in_feed: idx + 1,
           ad_label_text: 'Ad',
         })),
+      },
+      ...overrides,
+    });
+  }
+
+  /**
+   * Make a ScanDetail with raw_data.analysis.feed_items populated
+   * with the given valence sequence. Each entry produces one feed
+   * item with the specified emotions.valence. The rolling-average
+   * tone_negative_pct extractor reads from this structure, so this
+   * helper produces history for negative-tone-shift tests.
+   */
+  function makeScanWithToneValences(
+    id: string,
+    createdAt: string,
+    valences: Array<'POSITIVE' | 'NEUTRAL' | 'NEGATIVE'>,
+    overrides: Partial<ScanDetail> = {},
+  ): ScanDetail {
+    return makeScan({
+      id,
+      created_at: createdAt,
+      raw_data: {
+        analysis: {
+          feed_items: valences.map((valence) => ({
+            political: { is_political: false },
+            emotions: { valence },
+          })),
+        },
       },
       ...overrides,
     });
@@ -1345,6 +1371,226 @@ describe('interpretScan orchestrator', () => {
       const ctx = makeContext();
       const result = interpretScan(ctx, 'dashboard.ads');
       expect(result.meta?.surface).toBe('dashboard.ads');
+    });
+  });
+
+  // ============================================
+  // Dashboard Tone surface (Phase 6.3.3)
+  // ============================================
+
+  describe('dashboard.tone surface', () => {
+    test('negative_tone_shift fires at threshold with Tone-specific verdict (not Overview copy)', () => {
+      // Active scan: 45% negative; prior scans: ~20% negative avg.
+      // Ratio 2.25, well above 1.5×.
+      const activeScan = makeScan({ id: 'active' });
+      const priorScans = [
+        makeScanWithToneValences(
+          'p1',
+          '2026-05-09T12:00:00Z',
+          ['NEGATIVE', 'NEGATIVE', 'POSITIVE', 'POSITIVE', 'NEUTRAL', 'NEUTRAL', 'NEUTRAL', 'NEUTRAL', 'NEUTRAL', 'NEUTRAL'],
+        ),
+        makeScanWithToneValences(
+          'p2',
+          '2026-05-08T12:00:00Z',
+          ['NEGATIVE', 'NEGATIVE', 'POSITIVE', 'POSITIVE', 'NEUTRAL', 'NEUTRAL', 'NEUTRAL', 'NEUTRAL', 'NEUTRAL', 'NEUTRAL'],
+        ),
+      ];
+      const ctx: InterpretationContext = {
+        activeScan,
+        scans: [activeScan, ...priorScans],
+        dashboardData: makeDashboardData({
+          toneAnalysis: {
+            positivePct: 20,
+            neutralPct: 35,
+            negativePct: 45,
+            knownValenceTotal: 20,
+          } as unknown as DashboardData['toneAnalysis'],
+        }),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.tone');
+      expect(result.verdict).toContain('Negative tone has been climbing');
+      expect(result.verdict).toContain('YouTube');
+      // Surface differentiation: parallel structure to Overview's
+      // political_shift, but distinct signal subject.
+      expect(result.verdict).not.toContain('Politics has been climbing');
+      expect(result.findingDot).toBe(true);
+    });
+
+    test('dominant_tone positive sub-variant fires when positivePct >= 50%', () => {
+      const ctx = makeContext({
+        dashboardData: makeDashboardData({
+          toneAnalysis: {
+            positivePct: 60,
+            neutralPct: 25,
+            negativePct: 15,
+            knownValenceTotal: 20,
+          } as unknown as DashboardData['toneAnalysis'],
+        }),
+      });
+      const result = interpretScan(ctx, 'dashboard.tone');
+      expect(result.verdict).toContain('leaned positive today');
+      expect(result.findingDot).toBe(true);
+      const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+      expect(observed?.text).toContain('60%');
+      expect(observed?.text).toContain('positive');
+    });
+
+    test('dominant_tone negative sub-variant fires when negativePct >= 50% (and shift threshold not met)', () => {
+      // Active 55% negative, but no rolling-average history → shift
+      // can't fire (rollingAvg null). Falls through to dominant_tone.
+      const ctx = makeContext({
+        dashboardData: makeDashboardData({
+          toneAnalysis: {
+            positivePct: 25,
+            neutralPct: 20,
+            negativePct: 55,
+            knownValenceTotal: 20,
+          } as unknown as DashboardData['toneAnalysis'],
+        }),
+      });
+      const result = interpretScan(ctx, 'dashboard.tone');
+      expect(result.verdict).toContain('leaned negative today');
+      const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+      expect(observed?.text).toContain('critical or negative');
+    });
+
+    test('dominant_tone neutral sub-variant fires when neutralPct >= 50%', () => {
+      const ctx = makeContext({
+        dashboardData: makeDashboardData({
+          toneAnalysis: {
+            positivePct: 20,
+            neutralPct: 60,
+            negativePct: 20,
+            knownValenceTotal: 20,
+          } as unknown as DashboardData['toneAnalysis'],
+        }),
+      });
+      const result = interpretScan(ctx, 'dashboard.tone');
+      expect(result.verdict).toContain('leaned neutral today');
+      const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+      expect(observed?.text).toContain('factual or balanced');
+    });
+
+    test('calm-case enrichment-not-available fires when toneAnalysis is null', () => {
+      const ctx = makeContext({
+        dashboardData: makeDashboardData({
+          toneAnalysis: null,
+        }),
+      });
+      const result = interpretScan(ctx, 'dashboard.tone');
+      expect(result.verdict).toContain("isn’t available");
+      // Negative assertion: dominant_tone MUST NOT misfire on
+      // missing-data state (the enrichment-gap guard must hold).
+      expect(result.verdict).not.toContain('leaned');
+      expect(result.findingDot).toBe(false);
+    });
+
+    test('calm-case enrichment-not-available also fires when knownValenceTotal === 0', () => {
+      const ctx = makeContext({
+        dashboardData: makeDashboardData({
+          toneAnalysis: {
+            positivePct: 0,
+            neutralPct: 0,
+            negativePct: 0,
+            knownValenceTotal: 0,
+          } as unknown as DashboardData['toneAnalysis'],
+        }),
+      });
+      const result = interpretScan(ctx, 'dashboard.tone');
+      expect(result.verdict).toContain("isn’t available");
+      expect(result.verdict).not.toContain('leaned');
+    });
+
+    test('calm-case balanced-tone fires when no bucket reaches 40%', () => {
+      const ctx = makeContext({
+        dashboardData: makeDashboardData({
+          toneAnalysis: {
+            positivePct: 35,
+            neutralPct: 35,
+            negativePct: 30,
+            knownValenceTotal: 20,
+          } as unknown as DashboardData['toneAnalysis'],
+        }),
+      });
+      const result = interpretScan(ctx, 'dashboard.tone');
+      expect(result.verdict).toContain('balanced emotional mix');
+      const observed = result.sublines.find((s) => s.mode === 'OBSERVED');
+      expect(observed?.text).toContain('no single tone dominated');
+    });
+
+    test('calm-case fallback uses "your usual range" when anchor is typical', () => {
+      // Active negative 42%; priors ~40% negative → ratio ~1.05 (typical).
+      // Below dominance (50%), above balanced max (40%) → fallback.
+      const activeScan = makeScan({ id: 'active' });
+      const priorScans = [
+        makeScanWithToneValences(
+          'p1',
+          '2026-05-09T12:00:00Z',
+          ['NEGATIVE', 'NEGATIVE', 'NEGATIVE', 'NEGATIVE', 'POSITIVE', 'POSITIVE', 'POSITIVE', 'NEUTRAL', 'NEUTRAL', 'NEUTRAL'],
+        ),
+        makeScanWithToneValences(
+          'p2',
+          '2026-05-08T12:00:00Z',
+          ['NEGATIVE', 'NEGATIVE', 'NEGATIVE', 'NEGATIVE', 'POSITIVE', 'POSITIVE', 'POSITIVE', 'NEUTRAL', 'NEUTRAL', 'NEUTRAL'],
+        ),
+      ];
+      const ctx: InterpretationContext = {
+        activeScan,
+        scans: [activeScan, ...priorScans],
+        dashboardData: makeDashboardData({
+          toneAnalysis: {
+            positivePct: 28,
+            neutralPct: 30,
+            negativePct: 42,
+            knownValenceTotal: 20,
+          } as unknown as DashboardData['toneAnalysis'],
+        }),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.tone');
+      expect(result.verdict).toContain('Tone sat at 42% negative today');
+      expect(result.verdict).toContain('your usual range');
+    });
+
+    test('negative_tone_shift wins over dominant_tone when both could match (priority 70 > 50)', () => {
+      // Active 55% negative AND ratio above 1.5× rolling average.
+      const activeScan = makeScan({ id: 'active' });
+      const priorScans = [
+        makeScanWithToneValences(
+          'p1',
+          '2026-05-09T12:00:00Z',
+          ['NEGATIVE', 'NEGATIVE', 'POSITIVE', 'POSITIVE', 'NEUTRAL', 'NEUTRAL', 'NEUTRAL', 'NEUTRAL', 'NEUTRAL', 'NEUTRAL'],
+        ),
+        makeScanWithToneValences(
+          'p2',
+          '2026-05-08T12:00:00Z',
+          ['NEGATIVE', 'NEGATIVE', 'POSITIVE', 'POSITIVE', 'NEUTRAL', 'NEUTRAL', 'NEUTRAL', 'NEUTRAL', 'NEUTRAL', 'NEUTRAL'],
+        ),
+      ];
+      const ctx: InterpretationContext = {
+        activeScan,
+        scans: [activeScan, ...priorScans],
+        dashboardData: makeDashboardData({
+          toneAnalysis: {
+            positivePct: 25,
+            neutralPct: 20,
+            negativePct: 55,
+            knownValenceTotal: 20,
+          } as unknown as DashboardData['toneAnalysis'],
+        }),
+        platform: 'youtube',
+      };
+      const result = interpretScan(ctx, 'dashboard.tone');
+      // Shift (70) beats dominant (50).
+      expect(result.verdict).toContain('Negative tone has been climbing');
+      expect(result.verdict).not.toContain('leaned negative');
+    });
+
+    test('meta.surface is "dashboard.tone"', () => {
+      const ctx = makeContext();
+      const result = interpretScan(ctx, 'dashboard.tone');
+      expect(result.meta?.surface).toBe('dashboard.tone');
     });
   });
 
