@@ -8,6 +8,7 @@
 import React, { Component, type ErrorInfo, type ReactNode } from 'react';
 import { View, Text as RNText, TouchableOpacity, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { AlertCircle } from 'lucide-react-native';
 import { captureError } from '../lib/sentry';
 import { SPACING, RADIUS, COLORS, ICON_SIZES } from '../lib/theme';
@@ -27,6 +28,7 @@ interface Props {
 interface State {
   hasError: boolean;
   errorMessage: string;
+  errorStack: string;
 }
 
 // Build #34 diagnostic export, expanded in #35.
@@ -64,13 +66,14 @@ function parseTopComponent(componentStack: string): string {
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, errorMessage: '' };
+    this.state = { hasError: false, errorMessage: '', errorStack: '' };
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
     return {
       hasError: true,
       errorMessage: error.message || 'An unexpected error occurred',
+      errorStack: error.stack || '',
     };
   }
 
@@ -91,16 +94,21 @@ export class ErrorBoundary extends Component<Props, State> {
     if (componentStack) {
       console.error('[ErrorBoundary] componentStack:', componentStack);
     }
+    // CRITICAL: If a render error is caught before SplashScreen.hideAsync() has been
+    // called, the splash will hang forever — the ErrorBoundary renders its own UI
+    // (not RootLayoutNav) so the normal hideAsync path in RootLayoutNav never runs.
+    // Calling hideAsync here guarantees the splash is dismissed even on crash.
+    SplashScreen.hideAsync().catch(() => {});
   }
 
   handleRestart = (): void => {
     __errorBoundaryDiag.restartCount += 1;
-    this.setState({ hasError: false, errorMessage: '' });
+    this.setState({ hasError: false, errorMessage: '', errorStack: '' });
   };
 
   handleGoHome = (): void => {
     __errorBoundaryDiag.restartCount += 1;
-    this.setState({ hasError: false, errorMessage: '' });
+    this.setState({ hasError: false, errorMessage: '', errorStack: '' });
     router.replace('/(tabs)/');
   };
 
@@ -118,9 +126,26 @@ export class ErrorBoundary extends Component<Props, State> {
           </View>
           <RNText style={styles.title}>Something went wrong</RNText>
           <RNText style={styles.subtitle}>
-            We ran into an unexpected problem. This doesn't happen often, try
+            We ran into an unexpected problem. This doesn't happen often — try
             restarting and things should be back to normal.
           </RNText>
+          {/* DEBUG: Temporary user-visible error details (from master commit
+              7ec0d59e). Rewritten from `<Text variant=...>` to `<RNText>` so
+              the fallback can render even when ErrorBoundary sits above the
+              ThemeProvider (HEAD Build #35 positioning). Remove before public
+              launch. */}
+          {this.state.errorMessage ? (
+            <View style={styles.debugBox}>
+              <RNText style={styles.debugMessage}>
+                {this.state.errorMessage}
+              </RNText>
+              {this.state.errorStack ? (
+                <RNText style={styles.debugStack}>
+                  {this.state.errorStack.slice(0, 400)}
+                </RNText>
+              ) : null}
+            </View>
+          ) : null}
           <TouchableOpacity
             style={styles.button}
             onPress={this.handleRestart}
@@ -231,5 +256,30 @@ const styles = StyleSheet.create({
     color: COLORS.textMain,
     fontSize: 11,
     fontWeight: '500',
+  },
+  // DEBUG: Temporary debug box for the user-visible error-detail block
+  // (master commit 7ec0d59e). Remove before public launch.
+  debugBox: {
+    backgroundColor: COLORS.bgSecondary,
+    borderRadius: RADIUS.sm,
+    padding: SPACING.md,
+    marginBottom: SPACING['2xl'],
+    maxWidth: 320,
+    width: '100%',
+  },
+  // RNText styles for the user-visible error-detail block.
+  // Mirror the variant/color choices from master's `<Text variant="small">`
+  // but use literal numbers/colors so ErrorBoundary can sit above the
+  // ThemeProvider in the tree.
+  debugMessage: {
+    color: COLORS.textMuted,
+    fontFamily: 'monospace',
+    fontSize: 11,
+    marginBottom: SPACING.xs,
+  },
+  debugStack: {
+    color: COLORS.textMuted,
+    fontFamily: 'monospace',
+    fontSize: 10,
   },
 });

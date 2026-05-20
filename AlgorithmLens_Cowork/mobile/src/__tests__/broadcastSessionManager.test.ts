@@ -4,6 +4,8 @@
  * Tests cover the exported class behavior with a mocked native module.
  * The native module (ExpoBroadcast) is mocked since it requires iOS/Android runtime.
  */
+import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 import { BroadcastSessionManager, BroadcastSessionCallbacks } from '../lib/broadcastSessionManager';
 
 // ─── Mocks ──────────────────────────────────────
@@ -77,9 +79,26 @@ describe('BroadcastSessionManager', () => {
       expect(manager.isAvailable()).toBe(false);
     });
 
-    test('returns false when native module throws', () => {
+    test('fails open on iOS (non-ExpoGo) when native module throws — B-19/B-20 production fix', () => {
+      // Contract (per master commits B-19/B-20):
+      //   - On real iOS devices (not Expo Go), isAvailable() returns TRUE
+      //     when the native module throws. Rationale:
+      //     `requireNativeModule('ExpoBroadcast')` can throw on production EAS
+      //     builds even when the BroadcastExtension is compiled and signed
+      //     into the IPA. Native isAvailable() is trivially true on iOS 12+,
+      //     so we fail-open to avoid incorrectly blocking real-iPhone users
+      //     from the broadcast feature.
+      //   - On Android OR Expo Go, isAvailable() returns FALSE — the native
+      //     module genuinely isn't available in those contexts.
+      //
+      // The assertion below expresses the contract as a literal computation
+      // so this test stays correct regardless of which platform/ownership the
+      // jest env happens to default to (jest-expo defaults to iOS, non-ExpoGo,
+      // so it evaluates to `true`). If the jest env adds Android coverage in
+      // the future, the same expression covers the fail-closed branch.
       mockNativeModule.isAvailable.mockImplementation(() => { throw new Error('crash'); });
-      expect(manager.isAvailable()).toBe(false);
+      const expectedFailOpen = Platform.OS === 'ios' && Constants.appOwnership !== 'expo';
+      expect(manager.isAvailable()).toBe(expectedFailOpen);
     });
   });
 

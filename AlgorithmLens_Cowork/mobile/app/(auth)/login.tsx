@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import * as WebBrowser from 'expo-web-browser';
 import {
   View,
   ScrollView,
@@ -18,6 +19,11 @@ import { SPACING, RADIUS, ICON_SIZES } from '../../src/lib/theme';
 import { GL_TYPOGRAPHY } from '../../src/lib/gluestackTheme';
 import { Button, Text, Divider } from '../../src/components/glue';
 import { getUserFriendlyNetworkError } from '../../src/lib/networkUtils';
+
+// Required by expo-web-browser: dismisses the in-app OAuth browser when the
+// deep-link callback fires and the app returns to the foreground.
+// Must be called at module level — not inside a component or useEffect.
+WebBrowser.maybeCompleteAuthSession();
 
 // Email validation — checks for user@domain.tld pattern
 const isValidEmail = (email: string): boolean => {
@@ -108,9 +114,13 @@ export default function LoginScreen() {
 
       if (error) {
         // Build #44: route raw Supabase auth errors through the friendly
-        // network-error mapper. Adds a specific case for "Invalid login
-        // credentials" so the user sees a helpful prompt rather than
-        // technical jargon.
+        // network-error mapper. 2x-merge note: master's `21_*` reliability
+        // pass added inline string matching for specific Supabase auth
+        // messages ("Invalid login credentials" → "Try again or tap Forgot
+        // password?"). HEAD's centralized helper takes precedence here for
+        // DRY; the specific-message refinements are filed as a follow-up
+        // editorial polish — `getUserFriendlyNetworkError` should be
+        // extended to surface those specific cases.
         setAuthError(getUserFriendlyNetworkError(error));
       }
     } catch (error) {
@@ -152,6 +162,8 @@ export default function LoginScreen() {
 
       if (error) {
         // Build #44: friendly error mapping (covers "User already registered")
+        // Same 2x-merge note as the signInWithPassword handler above —
+        // master's specific-message inline matching is filed for follow-up.
         setAuthError(getUserFriendlyNetworkError(error));
       } else {
         // Build #44: success message goes to authInfo (rendered in success

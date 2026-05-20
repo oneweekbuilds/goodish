@@ -5,6 +5,21 @@ Claude Code updates this file during autonomous loops.
 
 ---
 
+## STANDING RULES (enforced every session)
+
+### npm install after every package.json change — NO EXCEPTIONS
+**EAS Build uses `npm ci`, which requires `package-lock.json` to be in perfect sync with `package.json`.
+A mismatch causes an immediate build failure with no other error context.**
+
+**Rule:** Any time you add, remove, or update any package in `mobile/package.json`:
+1. Immediately run `cd mobile && npm install --prefer-offline`
+2. Verify `mobile/package-lock.json` is marked modified in `git status`
+3. Stage and commit `package-lock.json` in the same commit as `package.json` (or a follow-up commit before the next build)
+
+This has happened twice. Do not commit a `package.json` change without also committing the updated `package-lock.json`.
+
+---
+
 ## 2026-02-26 — Add shadcn/ui Component Library to Website
 
 ### Phase 1: Setup (Complete)
@@ -475,3 +490,148 @@ No functional issues were identified. The broadcast feature is fully implemented
 - **Unstaged (mobile):** ~35 modified files across app screens, components, config, and packages
 - **Untracked (mobile):** `.easignore`, `scripts/`, `src/components/charts/`, `ToneComparisonCard.tsx`, `EvidenceBundleTeaser.tsx`, `FreeAskTeaser.tsx`, `revenueCat.ts`
 - **Note:** Main repo is **8 commits ahead of origin/master** — needs a `git push`.
+
+---
+
+## 2026-03-03 — Git Stage, Commit & Push
+
+### Actions taken
+1. **`git add -A`** — Succeeded. All changes staged (many LF→CRLF warnings on Windows, harmless).
+2. **`git commit`** — FAILED. Stale `HEAD.lock` file blocked the commit. Staged changes remain uncommitted.
+3. **`git push origin master`** — Succeeded. Pushed 8 prior commits (`6de5e3f..b533423`, 446 objects, 1.29 MiB) to `https://github.com/oneweekbuilds/goodish.git`.
+
+### Status — RESOLVED
+- User deleted `HEAD.lock`, committed, and pushed successfully.
+- **Commit:** `f62d449` — "mobile: broadcast extension fixes + all pending changes"
+- **Push:** `b533423..f62d449` master → master (207 objects, 140.75 KiB)
+- **origin/master** is now fully up to date with all local changes.
+
+---
+
+## 2026-03-03 — Add BroadcastExtension Diagnostic Workflow
+
+### Actions taken
+1. **Copied** `diagnose-broadcast.yml` to `.github/workflows/diagnose-broadcast.yml`
+2. **Committed** as `4c56d8c` — "ci: add BroadcastExtension diagnostic workflow"
+3. **Push** — FAILED. No GitHub credentials available in this environment. User needs to push manually with `git push origin master` from their local terminal.
+
+---
+
+## 2026-03-03 — Move Workflows to Repo Root
+
+### Actions taken
+1. **Moved** `AlgorithmLens_Cowork/.github/workflows/ci.yml` → `.github/workflows/ci.yml`
+2. **Moved** `AlgorithmLens_Cowork/.github/workflows/diagnose-broadcast.yml` → `.github/workflows/diagnose-broadcast.yml`
+3. **Deleted** `AlgorithmLens_Cowork/.github/workflows/` directory (dependabot.yml remains in `AlgorithmLens_Cowork/.github/`)
+4. **Committed** as `3f8fcdc` — "ci: move workflow to repo root"
+
+---
+
+## 2026-03-03 — Fix Workflow Working Directory Path
+
+### Actions taken
+1. **Updated** `.github/workflows/diagnose-broadcast.yml` — changed `working-directory: mobile` → `working-directory: AlgorithmLens_Cowork/mobile` (mobile is inside AlgorithmLens_Cowork relative to repo root)
+2. **Committed** as `4a15373` — "ci: fix working directory path"
+
+---
+
+## 2026-03-03 — Add xcodeproj Gem Step to Diagnostic Workflow
+
+### Actions taken
+1. **Added** new step "Add BroadcastExtension via xcodeproj gem" between "Run prebuild" and "Diagnose BroadcastExtension in pbxproj" in `.github/workflows/diagnose-broadcast.yml`
+2. The step installs the `xcodeproj` Ruby gem (CocoaPods' own Xcode project manipulation library) and runs an inline Ruby script that:
+   - Opens the post-prebuild `.pbxproj`
+   - Creates a new `BroadcastExtension` app extension target
+   - Adds 3 Swift source files (SampleHandler, FrameProcessor, SharedContainer) from `modules/broadcast/ios/BroadcastExtension/`
+   - Links ReplayKit, Vision, UIKit, Foundation frameworks
+   - Sets build settings (SWIFT_VERSION=5.0, bundle ID, Info.plist path, entitlements path)
+   - Copies Info.plist and entitlements into `ios/BroadcastExtension/`
+   - Adds the extension as a dependency of the main app target with an "Embed App Extensions" copy phase
+   - Saves the project
+3. All existing diagnostic steps retained for verification
+4. **Committed** as `717e448` — "ci: add xcodeproj gem to create BroadcastExtension target"
+
+---
+
+## 2026-03-04 — Use xcodeproj Gem in EAS Build via Config Plugin
+
+### Actions taken
+1. **Created** `mobile/scripts/add-broadcast-extension.rb` — standalone Ruby script using the `xcodeproj` gem to create the BroadcastExtension target. Paths adapted for running from `mobile/` directory (e.g., `modules/broadcast/ios/BroadcastExtension/` for source files, `ios/AlgorithmLens.xcodeproj` for project).
+2. **Updated** `mobile/plugins/withBroadcastExtension.js` — added a Step 4 inside the `withDangerousMod` callback (after the raw text patch) that:
+   - Checks if `scripts/add-broadcast-extension.rb` exists
+   - Runs `gem install xcodeproj --no-document && ruby scripts/add-broadcast-extension.rb` via `execSync` with `stdio: 'inherit'`
+   - Gracefully falls back to the existing JS patches if the gem script fails
+3. **Syntax checked** with `node -c` — passes
+4. **Committed** as `c668d89` — "feat: use xcodeproj gem in EAS Build via config plugin"
+
+### How it works
+During `expo prebuild` on EAS Build (macOS worker with Ruby pre-installed):
+1. The JS config plugin runs first (withXcodeProject → withDangerousMod)
+2. The xcode npm library creates its (often broken) target
+3. The raw text patcher attempts string-level fixes
+4. **NEW:** The xcodeproj gem script runs last as the authoritative pass — it removes whatever the JS plugin created and rebuilds the target cleanly with proper source files, frameworks, build settings, dependency, and embed phase
+
+---
+
+## 2026-03-04 — Fix Source File Paths for xcodeproj Gem
+
+### Actions taken
+1. **Rewrote** `mobile/scripts/add-broadcast-extension.rb` to fix file referencing:
+   - Copies all 5 files (3 Swift + Info.plist + entitlements) from `modules/broadcast/ios/BroadcastExtension/` INTO `ios/BroadcastExtension/` flat
+   - Creates the PBX group with path `"BroadcastExtension"` (relative to ios/ project root)
+   - Adds Swift files by filename only (e.g., `SampleHandler.swift`) so Xcode resolves them via the group path to `ios/BroadcastExtension/SampleHandler.swift`
+   - Previously was referencing `modules/broadcast/ios/BroadcastExtension/SampleHandler.swift` which Xcode couldn't resolve
+   - Also adds Info.plist and entitlements as non-compiled file references
+   - Removes any pre-existing BroadcastExtension group before recreating (idempotent)
+2. **Syntax checked** plugin with `node -c` — passes
+3. **Committed** as `a6af382` — "fix: correct source file paths for xcodeproj gem"
+
+---
+
+## 2026-03-04 — Improve Build Test for Debugging Swift Compilation
+
+### Actions taken
+1. **Added** new step "Verify Swift files in ios/BroadcastExtension" that prints the first 20 lines of each Swift file to confirm they were copied correctly
+2. **Updated** "Try building BroadcastExtension target only" step:
+   - Changed from `-workspace`/`-scheme` to `-project`/`-target` (no workspace needed)
+   - Added `CODE_SIGNING_REQUIRED=NO` and `CODE_SIGN_IDENTITY=""` alongside existing `CODE_SIGNING_ALLOWED=NO`
+   - Increased tail output from 50 to 100 lines for more build log visibility
+3. **Committed** as `ee441eb` — "ci: improve build test for debugging Swift compilation"
+
+---
+
+## 2026-03-04 — Correct Source Paths in Ruby Script
+
+### Actions taken
+1. **Rewrote** `mobile/scripts/add-broadcast-extension.rb`:
+   - Confirmed `src_dir` is `"modules/broadcast/ios/BroadcastExtension"` (no `..` prefix, correct for running from `mobile/`)
+   - Wrapped entire script in `begin/rescue` block — prints error with backtrace on failure, exits 0 on success, exits 1 on error
+   - Added diagnostic logging: prints working directory, source directory existence, source directory contents, and final `ios/BroadcastExtension/` contents
+   - Used `File.join()` for all path construction
+   - Added `rescue` around `display_name` calls in summary to prevent late crashes
+2. **Fixed** `.github/workflows/diagnose-broadcast.yml` inline Ruby: changed `src_dir = "../modules/broadcast/ios/BroadcastExtension"` → `"modules/broadcast/ios/BroadcastExtension"` (working-directory is already `AlgorithmLens_Cowork/mobile`)
+3. **Syntax checked** plugin with `node -c` — passes
+4. **Committed** as `239a46a` — "fix: correct source paths in Ruby script"
+
+---
+
+## 2026-03-15 — Build 20 Audit: Broadcast Root Cause + Visual Fixes
+
+### Root causes diagnosed
+- **Broadcast not working**: `modules/broadcast/` had no `package.json`, so Expo autolinking never found or compiled `BroadcastModule.swift` / `BroadcastPickerView.swift` into the main app target. `requireNativeModule('ExpoBroadcast')` threw at runtime → `nativeModule=null` → `isAvailable()=false` → both the "unavailable" screen AND the "Couldn't Start Recording" alert.
+- **Dashboard blank white boxes**: `InsightHero.tsx` initialized `fadeAnim=0`. On iOS, the card shadow renders while content opacity is 0, creating a blank-card flash. Affected both Overview and Who Shapes Your Feed tabs.
+- **Home screen card clipping**: `FeedScoreCard` used `padding: SPACING.lg` everywhere, but `LinearGradient` with `borderRadius` clips children on iOS when there isn't enough bottom padding for the `ALScoreGauge` PieChart ring.
+- **Settings whitespace gap**: `SettingSection` had `marginBottom: 3xl` + `paddingBottom: xl` + `Divider spacing: 2xl` stacking to ~100px between sections.
+- **Bottom sheet snap**: `snapPoints = ['60%', '85%']` allowed the sheet to ambiguously open to 85% based on content measurement.
+
+### Files changed
+1. `mobile/modules/broadcast/package.json` — **CREATED**: Makes module discoverable by Expo autolinking (without this, native module is never compiled into the main app target)
+2. `mobile/modules/broadcast/expo-module.config.json` — Fixed `source_files` from `"ios/**/*.swift"` to `"ios/*.swift"` (prevent BroadcastExtension subdir being compiled into main app)
+3. `mobile/package.json` — Added `"expo-broadcast": "file:./modules/broadcast"` dependency so npm/yarn installs it into node_modules for autolinking
+4. `mobile/src/lib/broadcastSessionManager.ts` — Fixed `isAvailable()` instance method to fail-open on real iOS (non-Expo-Go) builds, matching the standalone `isBroadcastModuleAvailable()` B-19 fix
+5. `mobile/src/hooks/useBroadcast.ts` — Added `captureMessage` Sentry logging in `startSession` catch block so production errors are diagnosable
+6. `mobile/app/broadcast/[platform].tsx` — Polished "Screen Capture unavailable" screen: added back-button header, Radio icon, better copy, "Use Quick Scan" CTA
+7. `mobile/src/components/dashboard/InsightHero.tsx` — Removed `fadeAnim.setValue(0)` reset; initialize at 1 to prevent blank card flash on iOS (outer dashboard container handles tab transition)
+8. `mobile/src/components/home/FeedScoreCard.tsx` — Added `paddingBottom: SPACING.xl` to prevent ALScoreGauge from being clipped by LinearGradient borderRadius on iOS
+9. `mobile/app/(tabs)/settings.tsx` — Reduced SettingSection spacing from 100px to `marginBottom: xl` only; removed Divider; removed unused Divider import
+10. `mobile/src/components/home/PlatformBottomSheet.tsx` — Changed `snapPoints` to single `['70%']` with `useMemo`; added `useMemo` import

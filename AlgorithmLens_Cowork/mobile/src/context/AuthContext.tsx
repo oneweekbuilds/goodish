@@ -12,6 +12,8 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
 import { supabase } from '../lib/supabase';
 import { useEntitlements } from '../hooks/useEntitlements';
 import { setSentryUser, addBreadcrumb } from '../lib/sentry';
@@ -122,6 +124,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // the splash stays up forever. Race against a 5s timeout AND catch
     // rejections; whichever path wins, fail open to "no session" so the
     // splash dismisses and the user can hit /(auth)/login.
+    //
+    // 2x-merge note: master's `d575411c fix: add 10s auth timeout` shipped a
+    // simpler 10s timer for the same hang. HEAD's pre-existing 5s+7s
+    // belt-and-suspenders is the superset — same goal, tighter timeouts,
+    // plus __authDiag instrumentation for surface diagnostics. Keeping
+    // HEAD's version after the merge.
     //
     // `settled` prevents double-settling if the race timer fires first and
     // the real getSession resolves later. `cancelled` prevents setState
@@ -397,14 +405,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUserProfile(null);
   };
 
+  /**
+   * Sign in with an OAuth provider (Google or Apple) using expo-web-browser.
+   *
+   * Flow:
+   * 1. Call signInWithOAuth({ skipBrowserRedirect: true }) — gets the OAuth URL from
+   *    Supabase without auto-opening a browser (required for React Native).
+   * 2. Open the URL in SFSafariViewController (iOS) via WebBrowser.openAuthSessionAsync.
+   *    This intercepts the app-scheme redirect before it leaves the in-app browser,
+   *    so Expo Router never sees the callback URL as a navigation event.
+   * 3. Exchange the returned PKCE code for a Supabase session.
+   *
+   * Note: add "algorithmLens://auth/callback" to your Supabase project's
+   * Auth → URL Configuration → Redirect URLs allowlist. Without this, Supabase
+   * will reject the redirectTo with "redirect_uri_mismatch".
+   */
   const signInWithOAuth = async (provider: 'google' | 'apple') => {
-    const { error } = await supabase.auth.signInWithOAuth({
+    // Use Linking.createURL so the scheme and host exactly match app.config.ts scheme.
+    // This produces "algorithmlens://auth/callback" on device.
+    const redirectTo = Linking.createURL('/auth/callback');
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: 'algorithmLens://auth/callback',
+        // skipBrowserRedirect: true is mandatory for React Native.
+        // Without it, Supabase JS tries window.location.replace() which
+        // does not exist in React Native and throws a TypeError.
+        skipBrowserRedirect: true,
+        redirectTo,
       },
     });
+
     if (error) throw error;
+    if (!data.url) throw new Error('OAuth sign-in failed: no authorization URL returned from Supabase.');
+
+    addBreadcrumb('auth', `Opening OAuth browser for ${provider}`, { redirectTo });
+
+    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+
+    if (result.type === 'success') {
+      // Exchange the PKCE authorization code for a Supabase session.
+      // onAuthStateChange will fire automatically once the session is set.
+      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(result.url);
+      if (exchangeError) throw exchangeError;
+    } else if (result.type === 'cancel') {
+      // User cancelled — not an error, just a no-op.
+      addBreadcrumb('auth', `OAuth cancelled by user (${provider})`);
+    }
+    // type === 'dismiss' also means no action — both are non-error exits.
   };
 
   const contextValue = useMemo(() => ({

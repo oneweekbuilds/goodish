@@ -1,5 +1,474 @@
 # AlgorithmLens Mobile — Codebase Overhaul Activity Log
 
+**Standing Rule:** Any time you add, remove, or update any package in `mobile/package.json`:
+1. Immediately run `cd mobile && npm install --prefer-offline`
+2. Verify `mobile/package-lock.json` is marked modified
+3. Stage and commit in the **same commit** as `package.json`
+
+EAS Build uses `npm ci`, which requires the lock file to be in perfect sync with `package.json`. A mismatch causes an immediate build failure.
+
+---
+
+## Broadcast entitlement provisioning fix (2026-03-15)
+
+**Commits:** `fix: ensure App Group entitlements on both targets + correct preferredExtension for broadcast`
+
+**Context:** Full audit of all broadcast-related code-signing configuration to diagnose "Couldn't Start Recording" error.
+
+### Root cause identified
+
+`eas.json` was **missing `appExtensions`** in all three build profiles (`development`, `preview`, `production`). Without this, EAS Build's server-side provisioning system doesn't know to create a provisioning profile for `BroadcastExtension` that includes the `group.com.algorithmlens.broadcast` App Group capability. At runtime, `FileManager.default.containerURL(forSecurityApplicationGroupIdentifier:)` returns `nil` → `prepareSession()` rejects with `CONTAINER_ERROR` → "Couldn't Start Recording" alert.
+
+### What was verified as already correct
+
+| Component | Status |
+|-----------|--------|
+| `app.config.ts` — main app `ios.entitlements` | ✅ `group.com.algorithmlens.broadcast` present |
+| `app.config.ts` — `extra.eas.build.experimental.ios.appExtensions` | ✅ BroadcastExtension + App Group present (Expo SDK layer) |
+| `withBroadcastExtension.js` — writes extension entitlements | ✅ `group.com.algorithmlens.broadcast` written correctly |
+| `withBroadcastExtension.js` — `CODE_SIGN_ENTITLEMENTS` path | ✅ `BroadcastExtension/BroadcastExtension.entitlements` (matches targetRootDir) |
+| `withBroadcastExtension.js` — `DEVELOPMENT_TEAM` | ✅ `4GDJ3HXF72` |
+| `BroadcastPickerView.swift` — `preferredExtension` fallback | ✅ `com.algorithmlens.app.BroadcastExtension` |
+| `NativeBroadcastPicker.tsx` — default prop | ✅ `com.algorithmlens.app.BroadcastExtension` |
+
+### Files changed
+
+| File | Reason |
+|------|--------|
+| `eas.json` | Added `appExtensions` to all three build profiles (`development`, `preview`, `production`) — tells EAS Build server to provision a separate profile for BroadcastExtension with `group.com.algorithmlens.broadcast` App Group capability |
+
+---
+
+## Broadcast: recursive subview search for iOS 14+ compatibility (2026-03-15)
+
+**Commits:** `fix: recursive subview search in BroadcastPickerView for iOS 14+ compatibility`
+
+**Root cause confirmed:** `BroadcastPickerView.swift` `triggerPicker()` iterated only over `picker.subviews` (direct children). On iOS 14+, Apple changed `RPSystemBroadcastPickerView`'s internal hierarchy — the `UIButton` is nested deeper, not a direct child. The shallow loop found nothing and silently returned — the picker was never presented.
+
+### Fix
+
+Replaced the flat `for subview in picker.subviews` loop with a recursive `findAndTriggerButton(in:)` helper that walks the full view tree depth-first until it finds a `UIButton` and fires `touchUpInside`. `triggerGlobalPicker()` unchanged.
+
+### Files changed
+
+| File | Reason |
+|------|--------|
+| `modules/broadcast/ios/BroadcastPickerView.swift` | Replaced flat subview loop with recursive search for iOS 14+ deep button nesting |
+
+---
+
+## Broadcast entitlement audit + eas.json revert (2026-03-15)
+
+**Commits:** `fix: remove invalid eas.json appExtensions, ensure App Group in BroadcastExtension entitlements via config plugin`
+
+**Context:** Previous commit (`df75173`) attempted to add `appExtensions` to `eas.json` build profiles. EAS CLI rejects this field as invalid ("is not allowed"). Reverted `eas.json` and confirmed the correct mechanism (Expo config plugin + `app.config.ts`) is already in place.
+
+### Full audit findings
+
+| Location | Field | Status |
+|----------|-------|--------|
+| `app.config.ts` → `ios.entitlements` | `com.apple.security.application-groups: ['group.com.algorithmlens.broadcast']` | ✅ Main app entitlement present |
+| `app.config.ts` → `extra.eas.build.experimental.ios.appExtensions` | BroadcastExtension + `group.com.algorithmlens.broadcast` | ✅ Correct EAS mechanism for extension provisioning |
+| `withBroadcastExtension.js` → `withEntitlementsPlist` (line 126) | Sets main app App Group | ✅ Redundant safety net |
+| `withBroadcastExtension.js` → `withDangerousMod` (lines 261–264) | Writes App Group to `ios/BroadcastExtension/BroadcastExtension.entitlements` and nested path | ✅ Extension entitlements correct |
+| `CODE_SIGN_ENTITLEMENTS` build setting (line 575) | `"BroadcastExtension/BroadcastExtension.entitlements"` (relative to `ios/`) | ✅ Points to correct path |
+| `eas.json` | `appExtensions` field | ✅ Removed (was invalid — EAS CLI rejects it) |
+
+The `extra.eas.build.experimental.ios.appExtensions` in `app.config.ts` is the correct EAS Build mechanism for provisioning the extension with App Group capability. No code changes needed beyond reverting `eas.json`.
+
+### Files changed
+
+| File | Reason |
+|------|--------|
+| `eas.json` | Reverted — removed `appExtensions` field that EAS CLI rejected as invalid |
+
+---
+
+## Build 20 regressions + broadcast research (2026-03-15)
+
+**Commits:** `fix: nativeBuildVersion fallback + Quick Scan YouTube consent redirect`
+
+**Context:** Two regressions discovered after Build 20. Broadcast feature research completed (no code needed).
+
+### Broadcast research findings (no code changes)
+
+Answered four questions about `RPSystemBroadcastPickerView` in TestFlight:
+1. **No Apple approval needed** — `com.apple.broadcast-services-upload` is NOT a restricted entitlement. Works in TestFlight without App Review.
+2. **No TestFlight limitations** — internal TestFlight builds get the same capabilities as App Store builds.
+3. **Entitlement gap confirmed** — `app.config.ts` main app + BroadcastExtension both only have `com.apple.security.application-groups`. No `com.apple.developer.broadcast-services-upload` entitlement, but this is actually the extension point identifier in the extension's `Info.plist`, not a separate entitlement to add. App Group entitlement IS present.
+4. **No separate Apple registration needed** — extension just needs correct `NSExtensionPointIdentifier` + `preferredExtension` in main app. Both are set correctly.
+5. **Most likely remaining failure mode:** silent failure if BroadcastExtension target has a code-signing mismatch with main app (separate provisioning profiles). Test in Build 21 after B-20 module fix lands.
+
+### Files changed
+
+| File | Reason |
+|------|--------|
+| `app/(tabs)/settings.tsx` | M-25 FIX: `Constants.nativeBuildVersion` returns null in some EAS builds — added `BUILD_NUMBER` constant that falls back to `Constants.expoConfig?.ios?.buildNumber` (i.e. the `buildNumber: '1'` in app.config.ts) so App Version shows "1.0.0 (1)" instead of "1.0.0 (?)" |
+| `src/components/scanner/WebViewScanner.tsx` | M-26 FIX: YouTube Quick Scan showed empty grey screen because `m.youtube.com/feed` redirects to `consent.youtube.com` (GDPR cookie consent) which was blocked by the navigation handler — `consent.youtube.com` is a sibling subdomain of `m.youtube.com`, not a child, so hostname matching failed and the request returned `false` (blocked); added `consent.youtube.com` to `ALLOWED_AUTH_HOSTS` |
+
+---
+
+## Build 20 full audit: broadcast root cause + 5 visual/UX fixes (2026-03-15)
+
+**Commits:** `c24ae0a` `6fd800d` `aaafc14`
+
+**Context:** Full video audit of Build 20 on TestFlight revealed broadcast failure + 5 visual/UX issues. All fixed in one pass.
+
+### Files changed
+
+| File | Reason |
+|------|--------|
+| `modules/broadcast/package.json` | ROOT CAUSE: Expo autolinking requires a `package.json` in every local module directory. Without it, `BroadcastModule.swift` and `BroadcastPickerView.swift` are never compiled into the app — every broadcast call fails silently |
+| `modules/broadcast/expo-module.config.json` | Fixed `source_files: "ios/**/*.swift"` → `"ios/*.swift"` to prevent SampleHandler/FrameProcessor from being compiled into the main app target |
+| `mobile/package.json` | Added `"expo-broadcast": "file:./modules/broadcast"` so npm installs the local module into `node_modules` for autolinking to discover |
+| `mobile/package-lock.json` | Updated via `npm install --prefer-offline` after package.json change (required for EAS `npm ci`) |
+| `src/lib/broadcastSessionManager.ts` | B-19 missed the instance method: `isAvailable()` returned false when `nativeModule=null`. Fixed to fail-open on real iOS non-Expo-Go builds |
+| `src/hooks/useBroadcast.ts` | Added Sentry error capture in `startSession` catch block for future debugging |
+| `app/broadcast/[platform].tsx` | Polished "Screen Capture unavailable" screen: back button, Radio icon, better copy, "Use Quick Scan" CTA |
+| `src/components/dashboard/InsightHero.tsx` | `fadeAnim` initialized to 0 + reset to 0 on title change — iOS renders card shadows before content, making invisible cards appear as blank white rectangles. Fixed: start at 1, remove fade animation |
+| `src/components/home/FeedScoreCard.tsx` | ALScoreGauge PieChart clipped by LinearGradient borderRadius on iOS — added `paddingBottom: SPACING.xl` |
+| `app/(tabs)/settings.tsx` | Removed stacked spacing in SettingSection (marginBottom:3xl + paddingBottom:xl + Divider:2xl ≈ 100px gap → reduced to xl) |
+| `src/components/home/PlatformBottomSheet.tsx` | Changed `['60%', '85%']` snap points to single `['70%']` with useMemo to prevent ambiguous open position |
+
+---
+
+## Build 19 full audit: Screen Capture availability, YouTube scan URL, History blank screen (2026-03-15)
+
+**Commit:** `fix: Screen Capture availability, Quick Scan capture+save, History empty state, Dashboard refresh`
+
+**Context:** Full video audit of Build 19 on TestFlight revealed four issues. All fixed in one pass.
+
+### Files changed
+
+| File | Reason |
+|------|--------|
+| `src/lib/broadcastSessionManager.ts` | Issue 1: `requireNativeModule('ExpoBroadcast')` throws in production EAS builds even when BroadcastExtension is in the IPA — added `expo-constants` import and fail-open logic so `isBroadcastModuleAvailable()` returns `true` on iOS non-Expo-Go builds regardless of native module load failure; removes "COMING SOON" badge on TestFlight |
+| `src/lib/platformScripts/index.ts` | Issue 2: YouTube URL `'https://m.youtube.com/'` lands on "Try searching" empty page instead of home feed — changed to `'https://m.youtube.com/feed'` so scanner starts on the actual algorithmic feed |
+| `app/(tabs)/history.tsx` | Issue 3: `ContentFadeIn ready={!loading || scans.length > 0}` kept opacity=0 during loading with no cached scans (blank grey screen instead of skeleton cards) — changed to `ready={true}` so skeleton cards are always visible; Issue 4 resolves downstream once scans save successfully |
+
+---
+
+## Build 17 full audit: hooks crash, broadcast messages, build number, auth errors (2026-03-15)
+
+**Commit:** `fix: hooks violation crash, broadcast detection, build number, auth error messages`
+
+**Context:** Full video audit of Build 17 on TestFlight revealed four issues. All fixed in one pass.
+
+### Files changed
+
+| File | Reason |
+|------|--------|
+| `src/components/home/PlatformBottomSheet.tsx` | Issue 1: Added `index={-1}` to start BottomSheet in closed state; changed `expand()` to `snapToIndex(0)` to open to first snap point — prevents hooks violation crash in @gorhom/bottom-sheet v5 |
+| `app/broadcast/[platform].tsx` | Issue 2: Fixed "Development Build Required" alert to say "Not Available in Expo Go" (Expo Go only, not production); removed "development build" language from the `isAvailable` fallback screen |
+| `src/hooks/useBroadcast.ts` | Issue 2: Removed "development build" language from the `startSession` null-manager guard alert |
+| `app/(tabs)/settings.tsx` | Issue 3: Replaced hardcoded `(1)` build number with `Constants.nativeBuildVersion` |
+| `app/(auth)/login.tsx` | Issue 4: Mapped raw Supabase error messages to user-friendly text in both `handleEmailSignIn` and `handleEmailSignUp` — "Invalid login credentials" → clear retry prompt; "User already registered" → prompts user to sign in instead |
+
+---
+
+## Build 17 fix: correct production API URL and fix broken OAuth flow (2026-03-15)
+
+**Commit:** `eba169f`
+
+**Context:** Build 17 loaded correctly and auth screen rendered. Every sign-in attempt (email, Google, Apple) failed with "Network request failed". Three issues found.
+
+---
+
+### Issue 1: `EXPO_PUBLIC_API_BASE_URL` pointed to the wrong server (post-auth calls broken)
+
+**Problem:** All three eas.json profiles had `EXPO_PUBLIC_API_BASE_URL=https://algorithmlens.com`. That URL is the Vite SPA frontend, not the Python FastAPI backend. The mobile app calls `/api/user/entitlements` (on sign-in) and `/api/scan/desktop` (on broadcast analysis) — routes that do not exist on the SPA. The SPA's catch-all route returns `index.html` for any unknown path. `api.ts` detects this and throws "API POST returned HTML instead of JSON."
+
+**Fix:** Changed `EXPO_PUBLIC_API_BASE_URL` to `https://api.algorithmlens.com` (the Python FastAPI backend) in all three profiles: development, preview, production. Also updated `.env` to match.
+
+**Post-auth API call audit (verified both routes exist in Python backend):**
+- `GET /api/user/entitlements` → `backend/routes/entitlements.py` ✓
+- `POST /api/scan/desktop` → `backend/routes/scans.py` ✓
+- `POST /api/stripe/create-checkout` → `backend/routes/stripe_routes.py` ✓ (used by checkout.ts)
+
+---
+
+### Issue 2: OAuth flow broken for React Native (Google + Apple sign-in non-functional)
+
+**Problem:** `signInWithOAuth()` in `AuthContext.tsx` was called without `skipBrowserRedirect: true`, and `expo-web-browser` was not installed. In Supabase JS v2 PKCE flow, the library:
+1. First makes a network request to `{supabaseUrl}/auth/v1/authorize` to generate the code challenge → **this is the "Network request failed"** if Supabase is unreachable
+2. Then opens the OAuth URL by calling `window.location.replace()` — which does not exist in React Native (throws TypeError)
+
+Without `expo-web-browser`, step 2 cannot work even if step 1 succeeds.
+
+**Fix:**
+- Added `expo-web-browser ^55.0.9` to `package.json`
+- Rewrote `signInWithOAuth` to use `skipBrowserRedirect: true` + `WebBrowser.openAuthSessionAsync()`
+- PKCE code exchange done via `supabase.auth.exchangeCodeForSession(result.url)` on callback
+- Added `WebBrowser.maybeCompleteAuthSession()` at top of `login.tsx` (required to dismiss the in-app browser when the deep link fires)
+- Added `expo-web-browser` plugin to `app.config.ts`
+
+---
+
+### Issue 3: "Network request failed" root cause — Supabase project may be paused
+
+**Analysis:** The Supabase config is correct (JWT `ref` claim matches project URL, key expires 2036). Email auth, Google OAuth, and Apple OAuth all start with a network request to `czrehjybsqzmudtgneqy.supabase.co`. All three failing simultaneously with "Network request failed" is consistent with the Supabase project being paused.
+
+Supabase free tier pauses projects after 7 days of inactivity. This project was created 2026-02-06 (~37 days ago). If no Supabase API requests have been made recently, the project will be paused.
+
+**⚠️ Manual actions required before Build 18 will work:**
+1. Log into [supabase.com](https://supabase.com) → select the `czrehjybsqzmudtgneqy` project → if paused, click "Restore project" and wait ~1 minute
+2. In Supabase dashboard → Auth → URL Configuration → Redirect URLs → add `algorithmlens://auth/callback` to the allowlist (required for OAuth PKCE redirect to succeed)
+
+---
+
+### Files changed
+
+| File | Reason |
+|------|--------|
+| `eas.json` | Fixed `EXPO_PUBLIC_API_BASE_URL` from `https://algorithmlens.com` to `https://api.algorithmlens.com` in all 3 profiles |
+| `.env` | Same fix for local development |
+| `package.json` | Added `expo-web-browser ^55.0.9` |
+| `package-lock.json` | Lockfile updated |
+| `app.config.ts` | Added `expo-web-browser` to plugins; added comment with required manual Supabase steps |
+| `app/(auth)/login.tsx` | Added `WebBrowser` import + `maybeCompleteAuthSession()` call at module level |
+| `src/context/AuthContext.tsx` | Rewrote `signInWithOAuth` to use `skipBrowserRedirect: true` + `openAuthSessionAsync` + `exchangeCodeForSession` |
+| `src/lib/api.ts` | Added comment clarifying `https://api.algorithmlens.com` is the correct URL (not the SPA) |
+
+---
+
+## Build 16 fix: resolve undefined component imports and production render safety audit (2026-03-15)
+
+**Commit:** `51b523e`
+
+**Context:** Build 16 showed the following error via the ErrorBoundary debug box on every launch:
+> "Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined"
+> Stack trace: `main.jsbundle:20943:29`
+
+### Root cause: `BottomSheet` imported as named export (default export in v5)
+
+`src/components/home/PlatformBottomSheet.tsx` imported `BottomSheet` as a named export `{ BottomSheet }` from `@gorhom/bottom-sheet`. In v5, `BottomSheet` is the **default export** (`export { default }` in `lib/module/index.js`), not a named export. Named import resolves to `undefined` in production Hermes/Metro bundles (dev Metro can paper over this).
+
+`PlatformBottomSheet` always renders `<BottomSheet>` unconditionally — visibility is controlled via `bottomSheetRef.current?.expand()` / `close()`, not a conditional mount. So the crash fired on every single app launch, not just when the user opened the sheet.
+
+Verified root cause by reading:
+- `node_modules/@gorhom/bottom-sheet/lib/module/index.js` → `export { default } from './components/bottomSheet'` (no named `BottomSheet`)
+- `node_modules/@gorhom/bottom-sheet/lib/typescript/index.d.ts` → same — default export only
+
+### Files changed
+
+| File | Reason |
+|------|--------|
+| `src/components/home/PlatformBottomSheet.tsx` | Fixed `BottomSheet` from broken named import `{ BottomSheet }` to correct default import `import BottomSheet from '@gorhom/bottom-sheet'`; also changed `BottomSheetBackdropProps` to type-only import |
+| `app/_layout.tsx` | Added `GestureHandlerRootView` wrapper from `react-native-gesture-handler` around entire provider tree — required by `@gorhom/bottom-sheet` v5 for gesture handling; without it, BottomSheet gestures may crash or fail silently |
+
+### Second-pass safety audit (all clean)
+
+Full audit of all other patterns that could produce runtime undefined components or crashes:
+
+- **48 lucide-react-native icons** — all exist in v0.564.0 ✓
+- **Named imports from local barrel files** — 0 mismatches; all `index.ts` re-exports match actual component exports ✓
+- **Default imports from local files** — 0 files missing a `default` export ✓
+- **Conditional hooks** — script flagged 3 results, all false positives (`return useX()` patterns inside hook implementations, not conditional calls) ✓
+- **Circular imports on startup-critical path** — none found ✓
+- **Other `@gorhom` named imports** (`BottomSheetBackdrop`, `BottomSheetScrollView`) — both are genuine named exports in v5 ✓
+- **`scanner/[platform].tsx`** — already used correct `import BottomSheet, { BottomSheetView }` pattern (good reference) ✓
+
+### Target: Build 17 should produce zero ErrorBoundary triggers on launch
+
+---
+
+## Build 15 fix: expose ErrorBoundary error details + guard withSentry for uninitialized SDK (2026-03-15)
+
+**Context:** Build 15 (nuclear fallback overhaul) resolved the splash hang — splash now reliably dismisses within 5 seconds. However, the app immediately showed the ErrorBoundary screen ("Something went wrong") on every launch. Two root causes identified and fixed.
+
+### Root cause 1: `withSentry` calling `Sentry.wrap` before `Sentry.init` (most likely cause)
+
+In `sentry.ts`, `withSentry` was unconditionally set to `Sentry.wrap` on iOS:
+
+```typescript
+// BEFORE — broken when IS_PLACEHOLDER_DSN=true:
+export const withSentry = Platform.OS === 'web'
+  ? (component: React.ComponentType<any>) => component
+  : Sentry.wrap;
+```
+
+`initSentry()` guards against initializing with a placeholder DSN and returns early. But `Sentry.wrap` (the HOC applied to the root `RootLayout` component in `_layout.tsx`) was still called without Sentry ever having been initialized. Calling `Sentry.wrap` on an uninitialized Sentry SDK can throw a render error during the HOC setup, which propagates up to `ErrorBoundary`.
+
+**Fix:** Added `IS_PLACEHOLDER_DSN` to the passthrough guard:
+
+```typescript
+// AFTER — safe in both mock and production modes:
+export const withSentry = (IS_PLACEHOLDER_DSN || Platform.OS === 'web')
+  ? (component: React.ComponentType<any>) => component
+  : Sentry.wrap;
+```
+
+### Root cause 2: `errorMessage` state never displayed in ErrorBoundary UI (debugging gap)
+
+`getDerivedStateFromError` correctly stored the error message in `this.state.errorMessage`, but the render method showed only static text ("Something went wrong"). `errorMessage` was never rendered, making it impossible to diagnose what was crashing without a Sentry DSN configured.
+
+**Fix (temporary for Build 16 diagnosis):** Added a debug box below the body copy that displays `this.state.errorMessage` and the first 400 characters of `error.stack` in grey monospace text. Clearly marked with `// DEBUG: ... remove before public launch` comments. Also added `errorStack: string` to the `State` interface and populated it in `getDerivedStateFromError`.
+
+### Files changed
+
+| File | Change |
+|------|--------|
+| `mobile/src/lib/sentry.ts` | `withSentry` now skips `Sentry.wrap` when `IS_PLACEHOLDER_DSN || Platform.OS === 'web'` |
+| `mobile/src/components/ErrorBoundary.tsx` | Added `errorStack` to State; display `errorMessage` + `errorStack` (first 400 chars) in debug box; reset `errorStack` on restart/go-home |
+
+**Commit:** `7ec0d59` — fix: expose error details in ErrorBoundary + fix withSentry for uninitialized SDK
+
+### Expected outcome for Build 16
+
+If the `withSentry` fix resolves the crash, the app will load normally and the ErrorBoundary debug box will never be seen. If something else is still crashing, the debug box will show the exact error on screen so the next fix can be targeted precisely.
+
+---
+
+## Complete startup reliability overhaul — guaranteed splash dismiss (2026-03-14)
+
+**Context:** Splash screen hang persisted across multiple TestFlight builds despite individual patches. Required a complete audit of the entire startup chain to identify and fix every possible blocking point simultaneously.
+
+### Full startup chain audit
+
+The complete startup sequence was traced in exact order. Every conditional return, every async call, and every path to `SplashScreen.hideAsync()` was mapped. Seven distinct failure modes were identified across four files.
+
+### Blocking points identified and fixed
+
+**CATASTROPHIC (prevents React from loading at all):**
+
+1. **`supabase.ts` module-level `throw`** — If `EXPO_PUBLIC_SUPABASE_URL` or `EXPO_PUBLIC_SUPABASE_ANON_KEY` is missing or misconfigured, the `throw` propagates up the entire import chain (`supabase.ts` → `AuthContext.tsx` → `_layout.tsx`), crashing the JS bundle before React mounts. `SplashScreen.preventAutoHideAsync()` is never called, and the splash hangs forever with no recovery path.
+   - **Fix**: Replaced `throw new Error(...)` with `console.error(...)`. Changed `process.env.X` to `process.env.X ?? ''` so `createClient` receives empty strings (fails gracefully at auth-call time, not at import time).
+
+2. **`api.ts` module-level `throw` in production** — Same catastrophic failure if `EXPO_PUBLIC_API_BASE_URL` is wrong or missing. The throw propagates up through `useEntitlements.ts` → `AuthContext.tsx` → `_layout.tsx`.
+   - **Fix**: Replaced `throw new Error(...)` with `console.error(...)`.
+
+**BLOCKING (React loads but splash never dismisses):**
+
+3. **`useFonts()` guard with no timeout** — `if (!fontsLoaded && !fontError) return null` blocks the entire provider tree until fonts load. Font loading reads from the app bundle and should complete in <100ms, but if the Expo asset system hangs, nothing below `RootLayout` ever renders and `SplashScreen.hideAsync()` is never called.
+   - **Fix**: Added `fontTimeout` state with a `setTimeout(3000)`. Changed guard to `if (!fontsLoaded && !fontError && !fontTimeout) return null`. After 3 seconds, the tree renders with system fonts as fallback.
+
+4. **`fetchOrCreateProfile()` Supabase query with no timeout** — When a returning user opens the app, `AuthContext` restores the session and calls `fetchOrCreateProfile()`. This makes a PostgREST network query with no timeout. iOS's native fetch timeout is ~60 seconds, so `setLoading(false)` could be delayed by up to 60 seconds. Already patched with a 10s safety timer (previous commit), but the timer alone doesn't cover the module-crash scenario above.
+
+5. **`ErrorBoundary.componentDidCatch()` never calls `SplashScreen.hideAsync()`** — If any component in the provider tree throws during render, `ErrorBoundary` catches it and renders its error UI. `RootLayoutNav` (the normal `hideAsync` caller) never mounts. The splash hangs forever behind the error screen.
+   - **Fix**: Added `SplashScreen.hideAsync().catch(() => {})` in `componentDidCatch`.
+
+6. **No nuclear fallback** — No code path guaranteed to call `hideAsync()` after a fixed time, regardless of any other state. If all other mechanisms fail simultaneously, the splash hangs forever.
+   - **Fix**: Added `useEffect` in `RootLayout` with `setTimeout(hideAsync, 5000)`. This fires no matter what — font hang, auth hang, provider crash, anything. After 5 seconds, the splash dismisses unconditionally, revealing either the ActivityIndicator (if auth is still loading) or the navigated screen.
+
+**UX REGRESSION (post-splash navigation):**
+
+7. **Navigation guard sends returning user to onboarding prematurely** — When the 10s safety timer forces `isLoading=false` before `fetchOrCreateProfile()` resolves, `userProfile` is `null`. The old guard `!userProfile?.has_completed_onboarding` evaluates to `true` when `userProfile` is `null`, routing a returning user to the onboarding screen instead of tabs.
+   - **Fix**: Changed to `userProfile !== null && !userProfile.has_completed_onboarding`. When `userProfile` is null (profile still loading), the user is sent to tabs — a correct default for any logged-in user. When the profile loads and the effect re-runs, correct navigation is applied.
+
+### Files changed
+
+| File | Change |
+|------|--------|
+| `mobile/src/lib/supabase.ts` | Module-level `throw` → `console.error`; `process.env.X` → `process.env.X ?? ''` |
+| `mobile/src/lib/api.ts` | Module-level `throw` in production → `console.error` |
+| `mobile/app/_layout.tsx` | Nuclear fallback (5s), font timeout (3s), navigation guard fix, `.catch()` on all `hideAsync` calls, `preventAutoHideAsync()` gets `.catch()` |
+| `mobile/src/components/ErrorBoundary.tsx` | `SplashScreen.hideAsync()` added to `componentDidCatch` |
+| `mobile/src/context/AuthContext.tsx` | 10s safety timer (previous commit, included here for reference) |
+
+### Post-splash screen audit
+
+The first screens that load after splash dismissal were also checked for blank-screen or crash risks:
+
+- **Login screen** (`(auth)/login.tsx`): Fully synchronous render, no blocking async on mount. ✓
+- **Onboarding screen** (`(auth)/onboarding.tsx`): React Native Reanimated animations, no blocking async. ✓
+- **Tabs/Home screen** (`(tabs)/index.tsx`): Calls `useDashboard()`, `useStreak()`, `useHabitFeatures()` — all have their own loading states and show empty states while fetching. No blank screen risk. ✓
+- **Tab layout** (`(tabs)/_layout.tsx`): Synchronous render, `useSafeAreaInsets()` + `useTheme()`. ✓
+
+### Timeline of guaranteed splash dismissal (Build 13)
+
+| Trigger | Timing | Condition |
+|---------|--------|-----------|
+| Auth resolves naturally (no session) | ~50–200ms | `getSession()` returns null |
+| Auth resolves naturally (returning user, network fast) | ~200–2000ms | `fetchOrCreateProfile()` completes |
+| Font timeout | 3000ms | Only if `useFonts()` hangs (extremely rare) |
+| Nuclear fallback in `_layout.tsx` | 5000ms | Unconditional — fires always |
+| Auth safety timer | 10000ms | Only if `fetchOrCreateProfile()` is still pending at 10s |
+
+In the worst case, the splash dismisses at exactly 5 seconds (nuclear fallback). There is no longer any scenario where the splash can hang indefinitely.
+
+---
+
+## TestFlight Build 12 splash hang: Supabase PostgREST timeout safety net (2026-03-14)
+
+**Context:** Build 12 still hung on splash despite the Build 11 env var fix. The env vars are now present, so `supabase.ts` and `api.ts` no longer throw at module load. Root cause shifted to a different code path.
+
+**Root cause identified:**
+When a user is already logged in (session stored in SecureStore), `AuthContext` calls `fetchOrCreateProfile(userId)` which makes a PostgREST network call to Supabase (`supabase.from('user_profiles').select(...)`). PostgREST has no built-in timeout. If this call hangs — due to a slow cold-start at Supabase, a network blip, or iOS not yet establishing connectivity — `setLoading(false)` is never called, `isLoading` stays `true` in `RootLayoutNav`, and `SplashScreen.hideAsync()` is never invoked. iOS's native fetch timeout is up to 60 seconds, so users see the splash hang that long before getting the login screen.
+
+**Fixes applied:**
+
+1. **`src/context/AuthContext.tsx`** — Added a 10-second safety net timer at the top of the auth `useEffect`. If `loading` hasn't resolved naturally (via getSession/fetchOrCreateProfile/onAuthStateChange), the timer forces `setLoading(false)` after 10 seconds. The timer is cleaned up in the `useEffect` return function (alongside `subscription.unsubscribe()`) so it never fires after unmount.
+
+2. **`app/_layout.tsx`** — Fixed the `fontError` handler: the comment already said "hide splash anyway so the app doesn't hang" but the actual `SplashScreen.hideAsync()` call was missing. Added `SplashScreen.hideAsync().catch(() => {})`. (This wasn't the cause of Build 12 hang, but it's a correctness fix for the edge case where fonts fail before `RootLayoutNav` mounts.)
+
+**Why not a timeout on the Supabase call itself?**
+The `try/catch/finally` in `fetchOrCreateProfile` already handles errors correctly — `setLoading(false)` is in `finally`. The issue is only when the network call hangs indefinitely before failing. A 10-second global safety net is simpler and more robust than wrapping every Supabase call in `Promise.race()`.
+
+**Files changed:**
+- `mobile/src/context/AuthContext.tsx`
+- `mobile/app/_layout.tsx`
+
+---
+
+## EAS Secrets: EXPO_PUBLIC_GEMINI_API_KEY created; EXPO_PUBLIC_SENTRY_DSN pending (2026-03-14)
+
+**Context:** Following the splash-screen hang fix, two sensitive env vars (`EXPO_PUBLIC_GEMINI_API_KEY` and `EXPO_PUBLIC_SENTRY_DSN`) could not go into `eas.json` and needed to be stored as EAS Secrets instead.
+
+**Search results:**
+- `EXPO_PUBLIC_GEMINI_API_KEY` — found as `GOOGLE_API_KEY` in `.env.local` (web app). Same Google Cloud API key used for Gemini 2.0 Flash. Value confirmed.
+- `EXPO_PUBLIC_SENTRY_DSN` — not found anywhere in the codebase. No Sentry project has been created for AlgorithmLens. The `sentry.ts` module handles a missing DSN gracefully (detects placeholder, skips SDK init, logs a warning in dev — no crash).
+
+**What was done:**
+- Created EAS Secret `EXPO_PUBLIC_GEMINI_API_KEY` on project `e49ded34-bf98-45eb-a09c-0bc4721a65bf` via the Expo GraphQL API (authenticated as jwjwin0). Secret ID: `2603dd19-44af-44c2-a91f-290834c2d441`. Confirmed visible in project secrets.
+
+**Still needed — manual step:**
+- `EXPO_PUBLIC_SENTRY_DSN`: Create a React Native project on sentry.io, copy the DSN from Settings → Client Keys (DSN), then run:
+  `eas secret:create --scope project --name EXPO_PUBLIC_SENTRY_DSN --value <DSN> --type string`
+  from `mobile/`. This is non-blocking — the app launches and runs without it, errors just won't be forwarded to Sentry.
+
+**EAS Secret status summary for project `algorithmlens`:**
+- `EXPO_PUBLIC_SUPABASE_URL` — in `eas.json` ✅
+- `EXPO_PUBLIC_SUPABASE_ANON_KEY` — in `eas.json` ✅
+- `EXPO_PUBLIC_API_BASE_URL` — in `eas.json` ✅
+- `EXPO_PUBLIC_GEMINI_API_KEY` — EAS Secret ✅
+- `EXPO_PUBLIC_SENTRY_DSN` — ⚠️ not yet configured (non-blocking)
+
+---
+
+## TestFlight splash-screen hang fix: missing EXPO_PUBLIC_* env vars in EAS build (2026-03-14)
+
+**Symptom:** Build 11 installed successfully on TestFlight but hung indefinitely on the splash screen (concentric circles logo visible, app never loaded).
+
+**Root cause — two hard throws during module initialization:**
+
+1. `src/lib/supabase.ts` line 13: `throw new Error('Missing Supabase configuration...')` — fires when `EXPO_PUBLIC_SUPABASE_URL` or `EXPO_PUBLIC_SUPABASE_ANON_KEY` are undefined. This crashes the React Native JS runtime before any component renders, keeping the native splash permanently visible.
+
+2. `src/lib/api.ts` line 14: `throw new Error('[api] FATAL: API_BASE_URL points to localhost...')` — fires when `EXPO_PUBLIC_API_BASE_URL` is undefined (falls back to `127.0.0.1:8000`, which triggers the production localhost guard). Same outcome.
+
+**Why the env vars were missing:** The `.env` file is in `.gitignore`, so the EAS cloud build machine never sees it. The `eas.json` production profile only had `APP_ENV: "production"` — the three required `EXPO_PUBLIC_*` vars were never passed to the builder.
+
+**What was fixed:**
+- Added `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, and `EXPO_PUBLIC_API_BASE_URL` to all three EAS build profiles (development, preview, production) in `eas.json`. The Supabase anon key is a client-side key designed to be public; it is safe to commit. Its security model relies entirely on RLS policies.
+- Added a `.catch()` to `supabase.auth.getSession()` in `AuthContext.tsx` as a defensive belt: even if Supabase initialization fails for any future reason, `loading` will always resolve to `false` and the user will reach the login screen rather than seeing an eternal splash hang.
+
+**Still needed (manual step):** `EXPO_PUBLIC_GEMINI_API_KEY` and `EXPO_PUBLIC_SENTRY_DSN` should be set as EAS Secrets (not committed to git) via `eas secret:push` or the Expo dashboard. Gemini is only needed for scan analysis (won't block startup if missing), and Sentry is handled gracefully with a placeholder DSN check.
+
+**Files changed:** `mobile/eas.json`, `mobile/src/context/AuthContext.tsx`
+
+---
+
+## App Store rejection fix: remove unused `processing` from UIBackgroundModes (2026-03-14)
+
+**Rejection:** ITMS-90771 — Build 10 rejected by App Store Connect because `UIBackgroundModes` included `processing` but `BGTaskSchedulerPermittedIdentifiers` was absent from Info.plist. Apple requires that any app declaring the `processing` background mode must list at least one BGTaskScheduler task identifier.
+
+**Root cause:** `processing` was listed in `UIBackgroundModes` in `app.config.ts` (line 37) without a corresponding `BGTaskSchedulerPermittedIdentifiers` key. A full search of the codebase confirmed that `BGTaskScheduler`, `expo-background-fetch`, `expo-task-manager`, and `BackgroundFetch` are not used anywhere — the entry was spurious.
+
+**Fix:** Removed `processing` from the `UIBackgroundModes` array in `app.config.ts`. The remaining `fetch` entry is retained as-is. No `BGTaskSchedulerPermittedIdentifiers` key is needed.
+
+**File changed:** `mobile/app.config.ts` — `UIBackgroundModes: ['processing', 'fetch']` → `['fetch']`
+
+**Next step:** Submit Build 11 to App Store Connect.
+
 ---
 
 ## NEW: patchPbxprojRawText — raw text safety net for pbxproj (2026-03-03)

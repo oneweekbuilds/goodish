@@ -28,6 +28,7 @@ import {
   BroadcastSessionManager,
   type BroadcastSessionCallbacks,
 } from '../lib/broadcastSessionManager';
+import { captureMessage } from '../lib/sentry';
 import type {
   BroadcastSession,
   BroadcastStatus,
@@ -184,7 +185,7 @@ export function useBroadcast(): UseBroadcastReturn {
 
   const startSession = useCallback(async (platform: SupportedPlatform) => {
     if (!managerRef.current) {
-      Alert.alert('Not Available', 'Screen broadcast is not available on this device. Please ensure you are running the AlgorithmLens development build on iOS 12+.');
+      Alert.alert('Not Available', 'Screen Capture is not available on this device. Use Quick Scan to analyze your feed instead.');
       return;
     }
 
@@ -197,10 +198,15 @@ export function useBroadcast(): UseBroadcastReturn {
       setStorageUsed(0);
       startElapsedTimer();
     } catch (error) {
-      const rawMsg = error instanceof Error ? error.message : '';
+      const rawMsg = error instanceof Error ? error.message : String(error);
       if (__DEV__) {
         console.warn('Broadcast session start error:', rawMsg);
       }
+      // B-20 FIX: Log actual error to Sentry so we can diagnose root cause in production
+      captureMessage('[useBroadcast] startSession failed', 'error', {
+        platform,
+        error: rawMsg,
+      });
       Alert.alert(
         'Couldn\'t Start Recording',
         'We ran into a problem setting up the recording. Please try again. If this keeps happening, restart the app.'

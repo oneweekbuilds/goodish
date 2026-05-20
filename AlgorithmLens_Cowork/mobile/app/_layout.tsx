@@ -1,10 +1,11 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, Platform, LogBox } from 'react-native';
 import { Stack, router, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider, useAuth, __authDiag } from '../src/context/AuthContext';
 import { ThemeProvider, useTheme } from '../src/context/ThemeContext';
 import { GluestackUIProvider } from '../src/providers/GluestackUIProvider';
@@ -45,8 +46,12 @@ LogBox.ignoreLogs([
   'SyntaxError',
 ]);
 
-// Keep splash screen visible until auth loading completes
-SplashScreen.preventAutoHideAsync();
+// Keep splash screen visible until auth loading completes.
+// NOTE: Returns a Promise — not awaited here intentionally (standard Expo pattern
+// for module-level calls). The native side processes this synchronously.
+SplashScreen.preventAutoHideAsync().catch(() => {
+  // Ignore — means the splash was already hidden (e.g. hot reload in dev).
+});
 
 // WATCHDOG: unconditionally dismiss splash after 8s no matter what state
 // the JS runtime is in. If anything in the launch chain hangs — font asset
@@ -94,10 +99,17 @@ function RootLayoutNav({ fontsLoaded }: { fontsLoaded: boolean }) {
 
   useEffect(() => {
     if (!isLoading) {
-      SplashScreen.hideAsync();
+      // Always call hideAsync with catch — it's safe to call multiple times.
+      SplashScreen.hideAsync().catch(() => {});
+
       if (!user) {
         router.replace('/(auth)/login');
-      } else if (!userProfile?.has_completed_onboarding) {
+      } else if (userProfile !== null && !userProfile.has_completed_onboarding) {
+        // NAVIGATION GUARD FIX: Only route to onboarding if the profile is actually
+        // loaded AND onboarding is confirmed incomplete. When the 10s safety timer fires
+        // before fetchOrCreateProfile resolves, userProfile is null — in that case we
+        // send the user to tabs (a logged-in user who hasn't completed onboarding will
+        // be gated there), and when the profile loads the effect re-runs correctly.
         router.replace('/(auth)/onboarding');
       } else {
         router.replace('/(tabs)');
@@ -367,43 +379,71 @@ function RootLayout() {
     'Geist-Bold': require('../assets/fonts/Geist_700Bold.ttf'),
   });
 
-  // FONT GATE DROPPED (build #33 diagnostic): previously this returned null
-  // until fonts loaded. If useFonts() entered a state where fontsLoaded was
-  // false AND fontError was null (which appears to happen on Hermes/new-arch
-  // production builds in some asset-registry edge cases), the entire app
-  // hung at this null return — AuthProvider never mounted, so my earlier
-  // getSession watchdog couldn't help. Now we render the provider tree
-  // immediately and accept system-font fallback for a few hundred ms while
-  // Geist loads in the background.
+  // FONT TIMEOUT: After 3 seconds, proceed regardless of font load state.
+  // useFonts loads from the app bundle (not network) and should complete in <100ms,
+  // but if the asset system hangs, this prevents the return-null gate from blocking
+  // the entire provider tree indefinitely.
+  const [fontTimeout, setFontTimeout] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setFontTimeout(true), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Font error handler: call hideAsync so the splash doesn't hang if fonts fail
+  // before RootLayoutNav ever mounts (RootLayoutNav is the normal hideAsync caller).
   useEffect(() => {
     if (fontError) {
-      console.warn('Font loading error:', fontError);
+      console.warn('[_layout] Font loading error — proceeding without custom fonts:', fontError);
+      SplashScreen.hideAsync().catch(() => {});
     }
   }, [fontError]);
 
-  // Build #35: ErrorBoundary moved to the OUTSIDE of every context provider
-  // (still inside GluestackUIProvider only because expo-router types want a
-  // child here). Previously the boundary sat INSIDE AuthProvider, so any
-  // error thrown during AuthProvider's own render — e.g. useEntitlements
-  // failing — propagated to withSentry's outer boundary, which silently
-  // recovered. Result: eb counter never incremented for those cases, and
-  // we couldn't see the error text. With the boundary above the provider
-  // tree, errors in *any* provider land in our fallback and surface in
-  // __errorBoundaryDiag.
+  // NUCLEAR FALLBACK: No matter what else fails — font hang, auth hang, render
+  // crash in a provider, anything — the splash is guaranteed to hide within 5 seconds.
+  // This is the last line of defense. After 5 seconds the user will see either
+  // the ActivityIndicator (if auth is still loading) or the navigated screen.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (__DEV__) {
+        console.warn('[_layout] Nuclear fallback fired — forcing SplashScreen.hideAsync() at 5s');
+      }
+      SplashScreen.hideAsync().catch(() => {});
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Block render only until fonts complete, a font error occurs, OR the 3s timeout fires.
+  // Without the fontTimeout guard this could block forever if useFonts hangs.
+  if (!fontsLoaded && !fontError && !fontTimeout) {
+    return null;
+  }
+
+  // Build #35 + master-merge: ErrorBoundary stays OUTSIDE every context provider
+  // (Build #35 fix from 2.x branch). Previously the boundary sat INSIDE
+  // AuthProvider, so any error thrown during AuthProvider's own render — e.g.
+  // useEntitlements failing — propagated to withSentry's outer boundary,
+  // which silently recovered; the eb counter never incremented and we
+  // couldn't see the error text. With the boundary above the provider tree,
+  // errors in *any* provider land in our fallback and surface in
+  // __errorBoundaryDiag. GestureHandlerRootView wraps the entire tree for
+  // react-native-gesture-handler / @gorhom/bottom-sheet v5 support (master's
+  // contribution from the 1.1.x stability work).
   return (
-    <GluestackUIProvider>
-      <ErrorBoundary>
-        <SafeAreaProvider>
-          <ThemeProvider>
-            <AuthProvider>
-              <WebConstrainedWrapper>
-                <RootLayoutNav fontsLoaded={fontsLoaded} />
-              </WebConstrainedWrapper>
-            </AuthProvider>
-          </ThemeProvider>
-        </SafeAreaProvider>
-      </ErrorBoundary>
-    </GluestackUIProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <GluestackUIProvider>
+        <ErrorBoundary>
+          <SafeAreaProvider>
+            <ThemeProvider>
+              <AuthProvider>
+                <WebConstrainedWrapper>
+                  <RootLayoutNav fontsLoaded={fontsLoaded} />
+                </WebConstrainedWrapper>
+              </AuthProvider>
+            </ThemeProvider>
+          </SafeAreaProvider>
+        </ErrorBoundary>
+      </GluestackUIProvider>
+    </GestureHandlerRootView>
   );
 }
 
