@@ -1,34 +1,47 @@
 # 2.x interpretation engine: implementation status
 
-## ⚠ Reminder for future sessions: Mac device test required before TestFlight
+## ⚠ Reminder for future sessions: TestFlight build + iPhone validation required before ship
 
-**Status as of resume**: The 2.x interpretation engine MVP is structurally complete on branch `claude/2x-engine-mvp-results` (59 commits ahead of `origin/main` after this update). All six Dashboard tabs AND the Results screen are wired to the engine. None of this rendering has been validated on a real iOS device.
+**Status as of resume**: The 2.x interpretation engine MVP is structurally complete on branch `claude/2x-engine-mvp-results` (60 commits ahead of `origin/main` after this update). All six Dashboard tabs AND the Results screen are wired to the engine. None of this rendering has been validated on a real iOS device.
+
+**Correction to earlier framing in this doc**: prior versions called the gating constraint "Mac access" or "Mac device test." That was wrong — EAS Build runs the iOS build on Expo's macOS cloud infrastructure and can be triggered from Windows, Linux, or any platform with a terminal. PC-only is not a TestFlight blocker. The actual gate is **producing a TestFlight build via EAS, installing it on iPhone, and walking the surfaces in the device-test runbook**. The user has been running this flow throughout the 1.1.x work; it's established, not novel.
 
 **Why this matters — and why it matters more now than at any prior checkpoint**:
 - The smoke tests prove the engine produces correct **shape and copy** on real Supabase data
 - But the React Native primitives (VerdictText, VerdictEyebrow, SublineRow, ResultsMetaLine, SupportingCard, FactRow) have never been rendered on a real iPhone
 - **Phase 6 added FIVE new rendering surfaces** to the un-validated branch on top of Results: Sources, Ads, Tone, Politics, Suggested-vs-Followed. That's compounding rendering risk — if a typography or spacing bug exists, it now lives on six surfaces, not one
 - Visual issues (typography, spacing, marker rendering, layout overflow, ScrollView behavior, the SupportingCard's "FROM THIS SCAN" eyebrow rhythm at varying row counts) only surface on-device
-- This is the **most rendering-risk-accumulated state the branch has been in**. A Mac device test should happen before any further surface work — additional templates, additional supporting-row variants, additional screens would multiply the surface area still further before catching a single rendering issue
+- This is the **most rendering-risk-accumulated state the branch has been in**. iPhone validation should happen before any further surface work — additional templates, additional supporting-row variants, additional screens would multiply the surface area still further before catching a single rendering issue
 - The broadcast extension that captures scan frames is iOS-only and cannot be tested on web or Android
 
-**What's required**:
-- macOS machine with Xcode 15+
-- Physical iPhone (broadcast extension does not work in iOS Simulator)
-- Apple Developer account with code signing configured
-- `EXPO_PUBLIC_GEMINI_API_KEY` added to `mobile/.env` on the Mac
-- ~2 hours of focused time
+**Build flow (from any platform, including Windows)**:
+
+```bash
+cd <worktree>/mobile
+git checkout claude/2x-engine-mvp-results
+git pull
+eas build --platform ios --profile preview     # EAS builds in the cloud on macOS
+eas submit --platform ios --latest             # uploads to ASC, becomes TestFlight build
+```
+
+EAS Starter plan + ASC API Key `4V45J7LQRP` + App ID `6759925778` are already configured in `eas.json` / Apple credentials. After submission processes (~10-30 min ASC pipeline), the TestFlight app on the user's iPhone receives the new build automatically. Tap to install, then walk the device-test runbook.
+
+**What's required (besides the time to run the build)**:
+- `EXPO_PUBLIC_GEMINI_API_KEY` set as an EAS secret (if not already configured for the preview profile) — verify via `eas secret:list`
+- iPhone with the AlgorithmLens TestFlight build installed
+- The user signed in to the dev account `27e1531d-86f0-4590-8be1-06c3bec53405` (has scan history that exercises rolling-average + recurrence paths)
+- ~30 min for the build + submit + install cycle, plus ~1 hour walking the six-surface checklist on device
 
 **How to execute**:
-The runbook at `mobile/audits/2x-results-design/device-test-runbook.md` walks through every step. The findings template at the end of that runbook is the format for capturing results. Phase 6 expanded the surfaces in scope; the runbook's per-surface checklist should be exercised against all six Dashboard tabs plus Results.
+The runbook at `mobile/audits/2x-results-design/device-test-runbook.md` walks through what to observe on each surface and what to capture in the findings template. Phase 6 expanded the surfaces in scope; the per-surface checklist needs to be exercised against all six Dashboard tabs plus Results. The runbook's findings template is the format for reporting back.
 
 **When to remind**: Future Claude Code sessions should mention this requirement in their opening response when the user resumes 2.x work, especially before any work that would deepen the branch (Phase 7+ template work, supporting-row primitive expansion, History/Compare screens). With six un-validated surfaces, the cost of finding a rendering bug late is now substantially higher than it was after Phase 5.
 
-**Path forward**: Mac access remains the gating step. The engine MVP is structurally complete; the runbook is ready; the surfaces are wired. Pickup is one tooling step away from validation.
+**Path forward**: TestFlight build + iPhone walkthrough remains the gating step. The engine MVP is structurally complete; the runbook is ready; the surfaces are wired; the build flow is one EAS command. Pickup is one build cycle away from validation.
 
 ---
 
-**Snapshot date:** 2026-05-19. The 2.x interpretation engine MVP is structurally complete on `claude/2x-engine-mvp-results`. Post-Phase-6 HEAD will land at the `docs(2x)` commit emitted by this update, **59 + 1 = 60 commits ahead of `origin/main`**. All six Dashboard surfaces (Overview, Sources, Ads, Tone, Politics, Suggested-vs-Followed) plus the Results screen are wired to the engine. The orchestrator's switch no longer contains any throwing case — every `EngineSurface` value has a template registry. Seven cross-scan derivations cooperate: `computeRollingAverage` + `computeMetricTrajectory` (Phase 6.4.0b extension) for metric time-series; the shared `aggregateAcrossScans` core (extracted Phase 5.4.2, extended with `postsExtractor` in 6.4.0a and `lastSeen` fields in 6.5.0) powers four creator-recurrence wrappers — `computeCreatorRecurrence`, `computeAdvertiserRecurrence`, `computePoliticalCreatorRecurrence`, `computeFollowedCreatorRecurrence` — plus the absence overlay `computeCreatorAbsence`. The engine runs end-to-end against real Supabase scan data; smoke tests cover all seven surfaces against real fixtures AND against synthesized depth-padded windows that exercise the dramatic templates. What's NOT done is the visual confirmation on a physical iPhone (the device test), which is blocked on Mac access.
+**Snapshot date:** 2026-05-19. The 2.x interpretation engine MVP is structurally complete on `claude/2x-engine-mvp-results`. Post-Phase-6 HEAD will land at the `docs(2x)` commit emitted by this update, **~61 commits ahead of `origin/main`** (60 after Phase 6.6 plus this framing-correction commit). All six Dashboard surfaces (Overview, Sources, Ads, Tone, Politics, Suggested-vs-Followed) plus the Results screen are wired to the engine. The orchestrator's switch no longer contains any throwing case — every `EngineSurface` value has a template registry. Seven cross-scan derivations cooperate: `computeRollingAverage` + `computeMetricTrajectory` (Phase 6.4.0b extension) for metric time-series; the shared `aggregateAcrossScans` core (extracted Phase 5.4.2, extended with `postsExtractor` in 6.4.0a and `lastSeen` fields in 6.5.0) powers four creator-recurrence wrappers — `computeCreatorRecurrence`, `computeAdvertiserRecurrence`, `computePoliticalCreatorRecurrence`, `computeFollowedCreatorRecurrence` — plus the absence overlay `computeCreatorAbsence`. The engine runs end-to-end against real Supabase scan data; smoke tests cover all seven surfaces against real fixtures AND against synthesized depth-padded windows that exercise the dramatic templates. What's NOT done is the visual confirmation on a physical iPhone — gated on producing a TestFlight build via EAS (runnable from any platform) and walking the device-test runbook.
 
 ## Status — all six Dashboard tabs
 
@@ -154,26 +167,31 @@ The engine functions end-to-end against real Supabase scan data. All six Dashboa
 
 The 63%/60%/8-days math closes within one percentage point of the design-canonical worked example's 62%/60%/8-days. The LIKELY ships design-cleared voice-rule-checked copy verbatim from `decisions.md:248`.
 
-## What's blocked
+## What's gating ship
 
-The device test (rendering all six wired surfaces on a physical iPhone) is blocked on Mac access. The user does not have Mac access. The runbook at `mobile/audits/2x-results-design/device-test-runbook.md` documents what to do when Mac access is available.
+iPhone validation of the six wired surfaces' rendering is the gate. The build flow is not the bottleneck — EAS Build runs on Expo's macOS cloud and is triggerable from any platform. The actual work is:
 
-The 2.x ship to TestFlight is blocked on the device test passing.
+1. Produce a TestFlight build of the current HEAD via `eas build --platform ios --profile preview` + `eas submit --platform ios --latest`
+2. Install on iPhone (TestFlight handles distribution automatically once ASC processes the submission)
+3. Walk the device-test runbook against all six Dashboard tabs + Results, capturing findings per the runbook's template
 
-## What's the next step when Mac access is available
+The 2.x ship to TestFlight is blocked on this validation passing — not on hardware availability. The user has been running this exact EAS→TestFlight→iPhone flow throughout the 1.1.x work; the tooling and credentials are already configured (ASC API Key `4V45J7LQRP`, App ID `6759925778`, EAS Starter plan).
 
-In this order:
+## What's the next step
 
-1. Sync the worktree to the latest `origin/claude/2x-engine-mvp-results` branch
-2. Add `EXPO_PUBLIC_GEMINI_API_KEY` to `mobile/.env` (gitignored, set per machine)
-3. Run `npx expo prebuild --platform ios --clean` to generate the iOS workspace
-4. Open `ios/AlgorithmLens.xcworkspace` in Xcode 15+
-5. Configure signing for both `AlgorithmLens` and `BroadcastExtension` targets (App Group entitlement `group.com.algorithmlens.broadcast`)
-6. Follow the device test runbook — extend the per-surface checklist beyond Results to cover the five Phase 6 surfaces (Sources, Ads, Tone, Politics, Suggested-vs-Followed)
+In this order, runnable from any platform:
+
+1. Sync the worktree to the latest `origin/claude/2x-engine-mvp-results` branch (`git pull`)
+2. Confirm `EXPO_PUBLIC_GEMINI_API_KEY` is present as an EAS secret for the `preview` profile (`eas secret:list`); add if missing
+3. Run `eas build --platform ios --profile preview` to produce the IPA on Expo's macOS infrastructure
+4. Run `eas submit --platform ios --latest` to upload to App Store Connect (becomes a TestFlight build after ASC processes — typically 10-30 min)
+5. On iPhone, open TestFlight, install the new AlgorithmLens build, sign in as dev account `27e1531d-86f0-4590-8be1-06c3bec53405`
+6. Walk the device-test runbook at `mobile/audits/2x-results-design/device-test-runbook.md`, extending the per-surface checklist beyond Results to cover the five Phase 6 surfaces (Sources, Ads, Tone, Politics, Suggested-vs-Followed)
+7. Capture findings using the runbook's findings template
 
 After the device test:
-- If output renders cleanly: open a PR for the feature branch, merge to `main`, build for TestFlight
-- If issues surface: iterate on the engine, templates, or rendering per findings; re-test
+- If output renders cleanly: open a PR for the feature branch, merge to `main`, ship the TestFlight build to a wider audience (or promote to App Store)
+- If issues surface: iterate on the engine, templates, or rendering per findings; re-build, re-submit, re-test
 
 ## What's NOT implemented (Phase 7+ candidates)
 
@@ -242,4 +260,4 @@ The scoping document at `mobile/audits/2x-interpretation-engine-scoping/decision
 - **Issue #8:** Hide Unknown content type when share small
 - **Issue #10:** YouTube shorts not attributed to creators in scan extraction pipeline — Phase 4.5.1a smoke finding that drove early calm-case template work; empirically reframed in Phase 5.2.3 as "dilute creator attribution" rather than "absent"
 
-<!-- TODO-MAC-TEST: Future Claude Code sessions, surface the Mac device test requirement on session resume. See top of this file. -->
+<!-- TODO-TESTFLIGHT-VALIDATION: Future Claude Code sessions, surface the TestFlight build + iPhone walkthrough requirement on session resume. See top of this file. Build runs from any platform via `eas build --platform ios`; the gate is iPhone validation of the six wired surfaces, not Mac access. -->

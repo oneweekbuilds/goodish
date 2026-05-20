@@ -1,15 +1,14 @@
 # 2.x Results Screen — Device Test Runbook
 
-## Platform requirement: Mac with iOS toolchain
+## Platform requirement: TestFlight build on a physical iPhone
 
-This runbook requires a macOS machine with:
-- Xcode 15+
-- A physical iOS device (iPhone or iPad)
-- Apple Developer account with code signing configured
+This runbook requires:
+- A TestFlight build of `claude/2x-engine-mvp-results` on a physical iPhone (iOS 12+)
+- Signed in as the dev account `27e1531d-86f0-4590-8be1-06c3bec53405` (has scan history that exercises rolling-average + recurrence paths)
 
-The mobile build is iOS-only. The broadcast extension uses ReplayKit, which is iOS-exclusive. There is no Windows or web alternative for running the dev build with the broadcast extension functional.
+The mobile build is iOS-only. The broadcast extension uses ReplayKit, which is iOS-exclusive. There is no Windows, web, or Android alternative for running the build with the broadcast extension functional.
 
-If you're reading this on a non-Mac machine and don't have Mac access, this runbook is not actionable for you. The 2.x engine work is complete and tested at the engine layer (see `mobile/src/lib/interpretation/__tests__/realScanSmoke.test.ts`), but the visual and integration verification described below cannot be performed without the iOS toolchain.
+**Earlier-framing correction**: prior versions of this runbook described the constraint as "needs a Mac with Xcode." That was wrong — EAS Build runs on Expo's macOS cloud infrastructure and can be triggered from Windows, Linux, or any platform with a terminal. The build flow below uses EAS rather than local Xcode. PC-only is not a blocker; the gate is producing the TestFlight binary (one EAS command + one EAS submit) and walking the on-iPhone observation checklist.
 
 ---
 
@@ -19,72 +18,59 @@ This runbook walks Justin through running the 2.x interpretation engine on a rea
 
 ## Prerequisites
 
-> **Gate:** see the "Platform requirement" section above. If you don't have Mac + iOS device + Apple Developer signing, stop here — the steps below assume all three.
-
-- macOS with Xcode 15 or later
+- Branch `claude/2x-engine-mvp-results` checked out (or just confirmed via `git status` if you're working from origin directly)
+- EAS CLI installed and authenticated (`npm install -g eas-cli`, then `eas login`) — runnable from Windows, Linux, or macOS
+- ASC API Key `4V45J7LQRP` and App ID `6759925778` configured in `eas.json` / Apple credentials (already set up; verify with `eas credentials`)
 - Physical iPhone running iOS 12+ (broadcast extensions don't work in the Simulator)
-- Apple Developer signing configured in Xcode (free tier works)
-- Logged in on the device with the dev account `27e1531d-86f0-4590-8be1-06c3bec53405` — this account has scan history that exercises the rolling-average code path
-- Worktree at `C:\Users\jwjwi\Desktop\AlgorithmLens_ParentFolder\.claude\worktrees\2x-engine-mvp-results\AlgorithmLens_Cowork` synced to the latest commit (`git pull` on `claude/2x-engine-mvp-results` if you're on a different machine than where the work was done)
+- AlgorithmLens TestFlight app installed on the iPhone, signed in to dev account `27e1531d-86f0-4590-8be1-06c3bec53405`
 
 ## Required env keys (blocker)
 
-`mobile/.env` must contain all of these. Phase 4.5.3 verified the file exists with `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, and `EXPO_PUBLIC_API_BASE_URL` present, but **`EXPO_PUBLIC_GEMINI_API_KEY` was absent**. Without it the analysis pipeline fails at `useAnalysis.start()` and the Results screen never renders the engine output — you'll see the FallbackScreen "Setup required" path instead.
+The build needs `EXPO_PUBLIC_GEMINI_API_KEY` set as an **EAS secret** (not a local `.env` value — local builds were the old flow). Check with `eas secret:list`. If absent, add it:
 
-Add this line to `mobile/.env` before launching:
-
-```
-EXPO_PUBLIC_GEMINI_API_KEY=<your-key>
+```bash
+eas secret:create --scope project --name EXPO_PUBLIC_GEMINI_API_KEY --value <your-key>
 ```
 
-`EXPO_PUBLIC_SENTRY_DSN` is also absent but optional — Sentry calls become no-ops without it; the pipeline still runs.
+Without this, the analysis pipeline fails at `useAnalysis.start()` and the Results screen never renders the engine output — you'll see the FallbackScreen "Setup required" path on iPhone instead.
+
+`EXPO_PUBLIC_SENTRY_DSN` is also expected but optional — Sentry calls become no-ops without it; the pipeline still runs.
 
 ## Launch steps
 
-Run these from a terminal at the **Mac side** of the worktree (the build needs to happen on macOS even though development was on Windows).
+Run these from any terminal (Windows, Linux, macOS — EAS builds in the cloud).
 
-1. **Sync the branch and install deps:**
+1. **Sync the branch:**
 
    ```bash
    cd <worktree>/mobile
    git pull origin claude/2x-engine-mvp-results
-   npm install
    ```
 
-2. **Regenerate the native iOS project** (the `ios/` directory is not committed and isn't present on the Windows side — Phase 4.5.3 confirmed it needs regeneration):
+2. **Trigger the iOS build on EAS infrastructure:**
 
    ```bash
-   npx expo prebuild --platform ios --clean
+   eas build --platform ios --profile preview
    ```
 
-   This runs the Expo config plugins including `withBroadcastExtension` to create the broadcast extension target.
+   EAS runs the build on its macOS cloud (Expo's hosted infrastructure). Build typically takes ~15-30 minutes; you can leave it running and check status with `eas build:list` or via the link EAS prints.
 
-3. **Configure signing in Xcode:**
+3. **Submit the build to App Store Connect:**
 
    ```bash
-   open ios/AlgorithmLens.xcworkspace
+   eas submit --platform ios --latest
    ```
 
-   For **both** targets (`AlgorithmLens` and `BroadcastExtension`):
-   - Select the target → Signing & Capabilities
-   - Pick your development team
-   - Confirm App Group `group.com.algorithmlens.broadcast` is checked
+   This uploads the IPA to ASC. After ASC processing (typically 10-30 min more), the build becomes available in TestFlight.
 
-4. **Start Metro:**
+4. **Install on iPhone:**
 
-   ```bash
-   npx expo start --dev-client
-   ```
+   - Open the TestFlight app on the iPhone
+   - Wait for the new AlgorithmLens build to appear (or pull-to-refresh)
+   - Tap **Install** (or **Update**)
+   - Open the app and sign in to dev account `27e1531d-86f0-4590-8be1-06c3bec53405` if not already
 
-   Leave this running.
-
-5. **Build and run on device** (separate terminal):
-
-   ```bash
-   npx expo run:ios --device
-   ```
-
-   This builds, installs, and launches the dev client on the connected iPhone.
+   No Metro / dev-client setup needed for a TestFlight build — the binary is self-contained.
 
 ## Perform the scan
 
@@ -136,7 +122,7 @@ Capture each subline's mode and body text verbatim. The gap between sublines sho
 - 22px when crossing modes (OBSERVED → LIKELY or vice versa)
 - 24px before a QUESTION (not in Phase 4 — won't appear)
 
-If you see a `[2x] subline mode not yet implemented` warning in the Metro console, capture the mode name — that means the engine emitted COACHING or QUESTION, which Phase 4 doesn't render yet.
+If the screen ever shows an unexpected fallback or empty state, that's a finding to capture. (TestFlight builds don't expose the Metro console, so the `[2x]` developer warnings won't be visible — see the "Metro console" subsection below for what to do instead.)
 
 ### Supporting card
 
@@ -151,14 +137,16 @@ If the card is **not rendered at all**, that means `supportingRows` was empty af
 - **PrimaryButton** "View full dashboard" at the bottom
 - **CaptureFooter** disclosure: "Frames are analyzed by Google's Gemini. No account credentials are shared. Frames are discarded after analysis."
 
-### Metro console
+### Metro console — not available on TestFlight builds
 
-Watch the Metro bundler terminal during the Results screen render. Specifically look for:
+The original runbook (when this flow used `npx expo run:ios --device`) asked you to watch the Metro bundler terminal for `[2x] ...` developer warnings and runtime errors. **TestFlight builds don't expose Metro** — those warnings still fire inside the app but go to the device's system log, not a visible terminal.
 
-- `[2x] supporting row variant not yet implemented on Results: <variant>` — engine emitted a non-fact row
-- `[2x] subline mode not yet implemented on Results: <mode>` — engine emitted COACHING or QUESTION
-- Any red ERROR lines
-- Any `RangeError: Invalid time value` (would indicate the date-parsing edge case from the defensive review)
+If on-screen behavior suggests a developer warning fired (unexpected fallback, missing supporting card, crash), one of these recovers the log:
+- **Sentry dashboard** (if `EXPO_PUBLIC_SENTRY_DSN` is configured as an EAS secret) — uncaught errors and explicit captures land there
+- **Xcode → Window → Devices and Simulators → View Device Logs** (requires Mac access, optional)
+- **Console.app** on a Mac with the iPhone tethered (requires Mac access, optional)
+
+For the device test, focus on what's observable on-screen — visual issues, missing elements, copy that reads off. The runtime `[2x]` warnings are an instrumentation aid rather than a primary check; if a supporting row variant isn't shipped yet, the missing row is itself the visible signal.
 
 ## Findings template
 
@@ -168,7 +156,7 @@ Fill this out and paste it back. Copy-paste the section below and replace bracke
 === Phase 4.5.3 device test findings ===
 
 Device:        [iPhone model + iOS version]
-Worktree HEAD: [output of `git rev-parse HEAD` from the Mac side]
+Worktree HEAD: [output of `git rev-parse HEAD` on the branch that produced the EAS build]
 Test account:  [confirm `27e1531d-86f0-4590-8be1-06c3bec53405`]
 Scan summary:  [N posts, M:SS duration, what you scrolled]
 
