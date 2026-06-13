@@ -29,3 +29,24 @@ jobs:
       - run: npm run test:smoke
     env:
       BASE_URL: http://localhost:5173
+  mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: AlgorithmLens_Cowork/mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: AlgorithmLens_Cowork/mobile/package-lock.json
+      - run: npm ci
+      # Hard gate: mobile unit tests must pass.
+      - run: npm test
+      # Report-only for now. The in-progress Expo SDK 54 upgrade still carries
+      # known type errors we are not fixing this phase, so tsc is non-blocking.
+      # Promote to a hard gate (remove continue-on-error) in a later phase once
+      # the upgrade compiles.
+      - run: npx tsc --noEmit
+        continue-on-error: true
