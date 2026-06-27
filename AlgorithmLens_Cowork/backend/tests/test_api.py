@@ -370,6 +370,40 @@ class TestDataDeletionEndpoint:
         assert response.status_code == 429
 
 
+class TestAccountDeletionEndpoint:
+    """Test the DELETE /api/user/account endpoint (full account deletion)."""
+
+    def test_delete_user_account_requires_auth(self, client: TestClient):
+        """Account deletion must require authentication."""
+        response = client.delete("/api/user/account")
+        assert response.status_code in (401, 403)
+
+    def test_delete_user_account(self, client: TestClient, valid_token: str, sample_scan_result: dict):
+        """A user can delete their own account; their scans are removed.
+
+        In the SQLite test database there is no Supabase auth schema, so the
+        user_profiles and auth.users deletes are skipped, but scans and
+        subscriptions are still removed and the endpoint reports success.
+        """
+        database.save_scan(sample_scan_result)
+        database.upsert_subscription(user_id="test-user-123", status="active")
+
+        scans = database.get_scans_by_user("test-user-123")
+        assert len(scans) > 0
+
+        headers = {"Authorization": f"Bearer {valid_token}"}
+        response = client.delete("/api/user/account", headers=headers)
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["status"] == "deleted"
+        assert "details" in data
+        assert data["details"]["scans_deleted"] >= 1
+
+        scans = database.get_scans_by_user("test-user-123")
+        assert len(scans) == 0
+
+
 class TestErrorHandling:
     """Test error handling and edge cases."""
 

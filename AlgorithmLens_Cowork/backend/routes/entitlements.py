@@ -8,12 +8,46 @@ import stripe
 from fastapi import APIRouter, Depends, HTTPException, Request
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from database import is_user_plus, get_subscription_by_user_id, delete_user_data
+from database import (
+    is_user_plus,
+    get_subscription_by_user_id,
+    delete_user_data,
+    delete_user_account,
+    AuthUserDeletionError,
+)
 from auth import get_current_user
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["entitlements"])
 limiter = Limiter(key_func=get_remote_address)
+
+
+def _cancel_active_stripe_subscription(user_id: str) -> bool:
+    """Cancel the user's active Stripe subscription, if any, to stop future
+    charges before their records are removed.
+
+    Returns True if a cancellation was issued (or the subscription was already
+    canceled in Stripe), False if there was nothing to cancel or Stripe errored.
+    Never raises: a Stripe failure is logged but must not block data deletion,
+    since the local record is removed and webhooks reconcile the rest.
+    """
+    subscription = get_subscription_by_user_id(user_id)
+    if not (subscription and subscription.get("stripe_subscription_id")):
+        return False
+
+    sub_id = subscription["stripe_subscription_id"]
+    try:
+        # Stripe API key initialized centrally in config.init_stripe()
+        stripe.Subscription.cancel(sub_id)
+        logger.info(f"Canceled Stripe subscription {sub_id} for user {user_id}")
+        return True
+    except stripe.error.InvalidRequestError as e:
+        # Subscription may already be canceled in Stripe — not an error.
+        logger.info(f"Stripe subscription {sub_id} already canceled or invalid: {e}")
+        return True
+    except stripe.error.StripeError as e:
+        logger.error(f"Failed to cancel Stripe subscription {sub_id} for user {user_id}: {e}")
+        return False
 
 
 @router.get("/user/entitlements")
@@ -99,28 +133,65 @@ def delete_all_user_data(
 
     # C1 fix: Cancel active Stripe subscription before deleting local data.
     # Without this, the user continues to be billed after data erasure.
-    stripe_canceled = False
-    subscription = get_subscription_by_user_id(user_id)
-    if subscription and subscription.get("stripe_subscription_id"):
-        sub_id = subscription["stripe_subscription_id"]
-        try:
-            # Stripe API key initialized centrally in config.init_stripe()
-            stripe.Subscription.cancel(sub_id)
-            stripe_canceled = True
-            logger.info(f"Canceled Stripe subscription {sub_id} for user {user_id} during data deletion")
-        except stripe.error.InvalidRequestError as e:
-            # Subscription may already be canceled in Stripe — not an error
-            logger.info(f"Stripe subscription {sub_id} already canceled or invalid: {e}")
-            stripe_canceled = True
-        except stripe.error.StripeError as e:
-            # Log but don't block data deletion — the local record will be removed
-            # and webhooks will eventually reflect the cancellation if it was processed
-            logger.error(f"Failed to cancel Stripe subscription {sub_id} for user {user_id}: {e}")
+    stripe_canceled = _cancel_active_stripe_subscription(user_id)
 
     result = delete_user_data(user_id)
     result["stripe_subscription_canceled"] = stripe_canceled
 
     logger.info(f"User {user_id} requested data deletion: {result}")
+
+    return {
+        "status": "deleted",
+        "details": result
+    }
+
+
+@router.delete("/user/account")
+@limiter.limit("3/hour")
+def delete_user_account_endpoint(
+    request: Request,
+    current_user: dict = Depends(get_current_user)
+) -> dict:
+    """
+    Permanently delete the authenticated user's entire account.
+
+    Removes the user's scans, subscriptions, and profile, then deletes the
+    Supabase auth user so the account can no longer sign in (Apple Guideline
+    5.1.1(v)). Cancels any active Stripe subscription first. All database
+    deletes run in a single transaction and roll back together on failure, so
+    an account is never partially deleted.
+
+    The account deleted is ALWAYS the caller's own: the user_id comes only from
+    the verified JWT (current_user), never from request input.
+
+    Requires: Authorization header with valid Supabase JWT.
+    Rate limited to 3 requests per hour to prevent abuse.
+    """
+    user_id = current_user["user_id"]
+
+    # Cancel billing first so a rolled-back deletion never leaves an active
+    # charge against a still-present account.
+    stripe_canceled = _cancel_active_stripe_subscription(user_id)
+
+    try:
+        result = delete_user_account(user_id)
+    except AuthUserDeletionError as e:
+        # The DB role could not delete the auth user. The transaction rolled
+        # back, so no data was removed. Surface a clear server error.
+        logger.error(f"Account deletion failed at auth-user step for {user_id}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Account deletion failed and no data was removed. Please try again later.",
+        )
+    except Exception as e:
+        logger.error(f"Account deletion failed for {user_id}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Account deletion failed and no data was removed. Please try again later.",
+        )
+
+    result["stripe_subscription_canceled"] = stripe_canceled
+    logger.info(f"User {user_id} deleted their account: {result}")
 
     return {
         "status": "deleted",
