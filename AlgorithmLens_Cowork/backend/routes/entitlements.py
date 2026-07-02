@@ -51,14 +51,21 @@ def _deletion_rate_limit_key(request: Request) -> str:
     return f"ip:{get_remote_address(request)}"
 
 
+class StripeCancellationError(RuntimeError):
+    """Raised when an active Stripe subscription could not be canceled."""
+
+
 def _cancel_active_stripe_subscription(user_id: str) -> bool:
     """Cancel the user's active Stripe subscription, if any, to stop future
     charges before their records are removed.
 
     Returns True if a cancellation was issued (or the subscription was already
-    canceled in Stripe), False if there was nothing to cancel or Stripe errored.
-    Never raises: a Stripe failure is logged but must not block data deletion,
-    since the local record is removed and webhooks reconcile the rest.
+    canceled in Stripe), False if there was nothing to cancel.
+
+    Raises StripeCancellationError when a live subscription exists but the
+    cancel call failed. Callers must abort the deletion in that case:
+    deleting the local subscriptions row while Stripe keeps charging would
+    silently orphan a live subscription with no record of it on our side.
     """
     subscription = get_subscription_by_user_id(user_id)
     if not (subscription and subscription.get("stripe_subscription_id")):
@@ -76,7 +83,7 @@ def _cancel_active_stripe_subscription(user_id: str) -> bool:
         return True
     except stripe.error.StripeError as e:
         logger.error(f"Failed to cancel Stripe subscription {sub_id} for user {user_id}: {e}")
-        return False
+        raise StripeCancellationError(str(e)) from e
 
 
 @router.get("/user/entitlements")
@@ -163,7 +170,16 @@ def delete_all_user_data(
 
     # C1 fix: Cancel active Stripe subscription before deleting local data.
     # Without this, the user continues to be billed after data erasure.
-    stripe_canceled = _cancel_active_stripe_subscription(user_id)
+    # If the cancel fails, abort: deleting the subscriptions row while Stripe
+    # keeps charging would orphan a live subscription.
+    try:
+        stripe_canceled = _cancel_active_stripe_subscription(user_id)
+    except StripeCancellationError as e:
+        logger.error(f"Aborting data deletion for {user_id}: Stripe cancel failed: {e}")
+        raise HTTPException(
+            status_code=502,
+            detail="We could not cancel your active subscription, so no data was deleted. Please try again later.",
+        )
 
     try:
         result = delete_user_data(user_id)
@@ -210,8 +226,17 @@ def delete_user_account_endpoint(
     user_id = current_user["user_id"]
 
     # Cancel billing first so a rolled-back deletion never leaves an active
-    # charge against a still-present account.
-    stripe_canceled = _cancel_active_stripe_subscription(user_id)
+    # charge against a still-present account. If the cancel fails, abort:
+    # deleting the account while Stripe keeps charging would orphan a live
+    # subscription with no account to reconcile it against.
+    try:
+        stripe_canceled = _cancel_active_stripe_subscription(user_id)
+    except StripeCancellationError as e:
+        logger.error(f"Aborting account deletion for {user_id}: Stripe cancel failed: {e}")
+        raise HTTPException(
+            status_code=502,
+            detail="We could not cancel your active subscription, so your account was not deleted. Please try again later.",
+        )
 
     try:
         result = delete_user_account(user_id)
