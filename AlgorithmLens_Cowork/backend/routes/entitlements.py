@@ -15,11 +15,40 @@ from database import (
     delete_user_account,
     AuthUserDeletionError,
 )
-from auth import get_current_user
+from auth import get_current_user, verify_supabase_jwt
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["entitlements"])
 limiter = Limiter(key_func=get_remote_address)
+
+
+def _deletion_rate_limit_key(request: Request) -> str:
+    """Rate-limit key for the deletion endpoints.
+
+    H6 fix: keying on the raw remote IP breaks behind any TLS proxy / load
+    balancer, where every user shares the proxy's IP and therefore one 3/hour
+    bucket. Key on the authenticated JWT user id instead; the token is fully
+    verified (issuer-pinned) before it is trusted for keying. Only when no
+    valid token is present do we fall back to the client IP, honoring the
+    proxy-set X-Forwarded-For header (first entry, as written by the proxy)
+    over the raw socket address. Unauthenticated calls to these endpoints are
+    rejected with 401 by the auth dependency anyway.
+    """
+    auth_header = request.headers.get("authorization", "")
+    if auth_header.lower().startswith("bearer "):
+        token = auth_header[7:].strip()
+        try:
+            payload = verify_supabase_jwt(token)
+            return f"user:{payload['sub']}"
+        except Exception:
+            pass  # invalid token: fall through to IP keying; auth returns 401
+
+    forwarded_for = request.headers.get("x-forwarded-for", "")
+    if forwarded_for:
+        client_ip = forwarded_for.split(",")[0].strip()
+        if client_ip:
+            return f"ip:{client_ip}"
+    return f"ip:{get_remote_address(request)}"
 
 
 def _cancel_active_stripe_subscription(user_id: str) -> bool:
@@ -114,7 +143,7 @@ def get_user_entitlements(current_user: dict = Depends(get_current_user)) -> dic
 
 
 @router.delete("/user/data")
-@limiter.limit("3/hour")
+@limiter.limit("3/hour", key_func=_deletion_rate_limit_key)
 def delete_all_user_data(
     request: Request,
     current_user: dict = Depends(get_current_user)
@@ -124,10 +153,11 @@ def delete_all_user_data(
 
     Removes all scans and subscription records for the authenticated user.
     Also cancels any active Stripe subscription to stop future charges.
-    This action is irreversible.
+    This action is irreversible. All deletes run in one transaction and roll
+    back together on failure, so data is never partially erased.
 
     Requires: Authorization header with valid Supabase JWT
-    Rate limited to 3 requests per hour to prevent abuse.
+    Rate limited to 3 requests per hour per user to prevent abuse.
     """
     user_id = current_user["user_id"]
 
@@ -147,7 +177,7 @@ def delete_all_user_data(
 
 
 @router.delete("/user/account")
-@limiter.limit("3/hour")
+@limiter.limit("3/hour", key_func=_deletion_rate_limit_key)
 def delete_user_account_endpoint(
     request: Request,
     current_user: dict = Depends(get_current_user)
@@ -165,7 +195,7 @@ def delete_user_account_endpoint(
     the verified JWT (current_user), never from request input.
 
     Requires: Authorization header with valid Supabase JWT.
-    Rate limited to 3 requests per hour to prevent abuse.
+    Rate limited to 3 requests per hour per user to prevent abuse.
     """
     user_id = current_user["user_id"]
 
