@@ -1207,6 +1207,10 @@ def delete_user_data(user_id: str) -> dict:
     """
     Delete ALL data for a specific user. Used for account deletion / data erasure requests.
     Returns counts of deleted records.
+
+    Both deletes share one transaction: if either fails, everything rolls back
+    so the user's data is never half-deleted (same semantics as
+    delete_user_account). Raises on failure, after rollback.
     """
     conn = get_connection()
     cursor = conn.cursor()
@@ -1234,6 +1238,11 @@ def delete_user_data(user_id: str) -> dict:
             "subscriptions_deleted": subs_deleted
         }
 
+    except Exception:
+        # Roll back every delete so a partial erasure is never committed.
+        conn.rollback()
+        logger.error(f"Data deletion failed for {user_id}; transaction rolled back")
+        raise
     finally:
         return_connection(conn)
 

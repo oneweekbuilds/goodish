@@ -165,7 +165,17 @@ def delete_all_user_data(
     # Without this, the user continues to be billed after data erasure.
     stripe_canceled = _cancel_active_stripe_subscription(user_id)
 
-    result = delete_user_data(user_id)
+    try:
+        result = delete_user_data(user_id)
+    except Exception as e:
+        # M12 fix: the transaction rolled back, so no data was removed.
+        # Surface an honest server error instead of a raw 500.
+        logger.error(f"Data deletion failed for {user_id}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Data deletion failed and no data was removed. Please try again later.",
+        )
+
     result["stripe_subscription_canceled"] = stripe_canceled
 
     logger.info(f"User {user_id} requested data deletion: {result}")
