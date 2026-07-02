@@ -44,9 +44,6 @@ jobs:
       - run: npm ci
       # Hard gate: mobile unit tests must pass.
       - run: npm test
-      # Report-only for now. The in-progress Expo SDK 54 upgrade still carries
-      # known type errors we are not fixing this phase, so tsc is non-blocking.
-      # Promote to a hard gate (remove continue-on-error) in a later phase once
-      # the upgrade compiles.
+      # Hard gate: the SDK 54 upgrade compiles clean as of Batch 6 (zero tsc
+      # errors), so type checking is blocking, same as the tests above.
       - run: npx tsc --noEmit
-        continue-on-error: true
