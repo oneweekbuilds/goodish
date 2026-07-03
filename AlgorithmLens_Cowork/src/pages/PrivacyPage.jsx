@@ -1,18 +1,21 @@
 /**
  * PrivacyPage - Privacy policy for AlgorithmLens
  *
- * Covers:
- * - What data is collected and how it's used
- * - AI processing and consent
- * - Third-party services and integrations
- * - User rights and data deletion
- * - Chrome extension and mobile app specifics
- * - Contact information
+ * Mirrors the mobile app's legal policy (mobile/legal/PRIVACY_POLICY.md).
+ * If that document changes, this page must change with it.
  *
- * Last updated: February 2026
+ * Covers:
+ * - What data is collected (account, screen recording, scan results, local, diagnostic)
+ * - How screen recordings are processed and when they are deleted
+ * - Third-party services (Gemini, Supabase, Sentry, OAuth providers, Vercel)
+ * - Data retention, security, and user rights
+ * - What AlgorithmLens does not do
+ *
+ * Last updated: July 2026
  */
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Shield } from 'lucide-react';
 import SEO from '../components/SEO';
 import BackLink from '../components/ui/BackLink';
@@ -21,8 +24,8 @@ export default function PrivacyPage() {
   return (
     <>
       <SEO
-        title="Privacy Policy"
-        description="Learn how AlgorithmLens collects, uses, and protects your data."
+        title="Privacy policy"
+        description="What data AlgorithmLens collects, how screen recordings are processed and deleted, and your rights over your data."
         path="/privacy"
       />
       <div className="min-h-[100dvh] bg-bg-page pt-20 md:pt-24 pb-16 px-4 sm:px-6">
@@ -37,10 +40,10 @@ export default function PrivacyPage() {
             </div>
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold text-text-main tracking-tight-heading mb-2">
-                Privacy Policy
+                Privacy policy
               </h1>
               <p className="text-text-muted">
-                Last updated: February 2026
+                Last updated: July 2026
               </p>
             </div>
           </div>
@@ -50,500 +53,544 @@ export default function PrivacyPage() {
 
             {/* Introduction */}
             <section>
-              <p className="text-text-muted leading-relaxed">
-                AlgorithmLens ("we," "us," "our," or the "Company") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our application, including the Chrome extension, mobile app (iOS/Android), and web dashboard at algorithmlens.com (collectively, the "Service").
+              <p className="text-text-muted leading-relaxed mb-4">
+                AlgorithmLens ("we," "us," or "our") is a free mobile app, currently in an iOS beta, that analyzes the composition of your social media feed from captures you make of your own screen. This Privacy Policy covers the AlgorithmLens mobile application (the "App") and this website, algorithmlens.com. It matches the policy shown inside the App; if you find a difference between the two, tell us and we will correct it.
+              </p>
+              <p className="text-text-muted leading-relaxed mb-4">
+                Because the App captures and analyzes what is on your screen, we want you to fully understand how your data is handled. The short version: screen images are processed and then deleted, only text-based analysis results are kept, and there is nothing to buy, so we collect no payment information of any kind.
               </p>
               <p className="text-text-muted leading-relaxed">
-                Please read this Privacy Policy carefully. If you do not agree with our policies and practices, please do not use our Service. By accessing and using AlgorithmLens, you acknowledge that you have read, understood, and agree to be bound by all the provisions of this Privacy Policy.
+                For the complete data flow, the extraction schema, and the verbatim analysis prompts the App uses, see the <Link to="/methodology" className="text-primary-blue hover:underline">methodology page</Link>.
               </p>
             </section>
 
             {/* Data Collection */}
             <section>
-              <h2 className="text-2xl font-bold text-text-main mb-4">1. What Data We Collect</h2>
+              <h2 className="text-2xl font-bold text-text-main mb-4">1. Information we collect</h2>
 
               <div className="space-y-6">
                 {/* Account Information */}
                 <div>
-                  <h3 className="text-lg font-semibold text-text-main mb-2">Account Information</h3>
+                  <h3 className="text-lg font-semibold text-text-main mb-2">Account information</h3>
                   <p className="text-text-muted leading-relaxed mb-3">
                     When you create an account, we collect:
                   </p>
                   <ul className="space-y-2 text-text-muted">
                     <li className="flex gap-3">
                       <span className="flex-shrink-0 mt-1">•</span>
-                      <span><strong>Email address</strong> — used for authentication via magic links (no passwords stored)</span>
+                      <span><strong>Email address:</strong> provided via Google sign-in, Apple sign-in, or direct email registration</span>
                     </li>
                     <li className="flex gap-3">
                       <span className="flex-shrink-0 mt-1">•</span>
-                      <span><strong>Account creation date</strong> — timestamp of when you joined</span>
+                      <span><strong>User ID:</strong> a unique identifier generated by our authentication system (Supabase)</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="flex-shrink-0 mt-1">•</span>
+                      <span><strong>Authentication provider:</strong> whether you signed in with Google, Apple, or email and password</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="flex-shrink-0 mt-1">•</span>
+                      <span><strong>AI analysis consent:</strong> whether you have opted in to AI-powered feed analysis (changeable at any time in Settings)</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="flex-shrink-0 mt-1">•</span>
+                      <span><strong>Onboarding status:</strong> whether you have completed the App's initial setup flow</span>
                     </li>
                   </ul>
+                  <p className="text-text-muted leading-relaxed mt-3">
+                    We do not collect your name, phone number, or physical address. AlgorithmLens is free, with no paid tier and no in-app purchases, so we do not collect or process any billing or payment information.
+                  </p>
                 </div>
 
-                {/* Feed Scan Data */}
+                {/* Screen Recording Data */}
                 <div>
-                  <h3 className="text-lg font-semibold text-text-main mb-2">Feed Scan Data</h3>
+                  <h3 className="text-lg font-semibold text-text-main mb-2">Screen recording data</h3>
                   <p className="text-text-muted leading-relaxed mb-3">
-                    When you scan your social media feeds (TikTok, Instagram, YouTube, X, Facebook, LinkedIn, Reddit), we collect:
+                    The App captures frames from your device screen during a scan session. Here is exactly how this works:
                   </p>
                   <ul className="space-y-2 text-text-muted">
                     <li className="flex gap-3">
                       <span className="flex-shrink-0 mt-1">•</span>
-                      <span><strong>Feed snapshots</strong> — the DOM content visible on your screen at the time of the scan</span>
+                      <span><strong>What is captured:</strong> JPEG screenshots of your device screen, taken approximately once every 2.5 seconds while a scan is active</span>
                     </li>
                     <li className="flex gap-3">
                       <span className="flex-shrink-0 mt-1">•</span>
-                      <span><strong>Content metadata</strong> — post captions, timestamps, engagement metrics, creator information</span>
+                      <span><strong>How it is captured:</strong> on iOS via Apple's ReplayKit broadcast extension (on Android, the MediaProjection API). Both require your explicit permission through a system-level prompt before any capturing begins</span>
                     </li>
                     <li className="flex gap-3">
                       <span className="flex-shrink-0 mt-1">•</span>
-                      <span><strong>Video/screenshot data</strong> — temporary captures for analysis (deleted after processing)</span>
+                      <span><strong>On-device processing:</strong> frames are deduplicated with perceptual hashing, visible text is extracted with on-device OCR, and frames are compressed before analysis</span>
                     </li>
                     <li className="flex gap-3">
                       <span className="flex-shrink-0 mt-1">•</span>
-                      <span><strong>Scan metadata</strong> — platform scanned, scan duration, timestamp, number of items analyzed</span>
+                      <span><strong>Limits:</strong> up to 200 frames per session, with a 10-minute maximum session duration</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="flex-shrink-0 mt-1">•</span>
+                      <span><strong>Temporary storage:</strong> frames are held in the App's own storage on your device and nowhere else</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="flex-shrink-0 mt-1">•</span>
+                      <span><strong>Deletion:</strong> frames are deleted from your device immediately after they have been processed and sent for analysis. If the App crashes or is force-quit during a scan, leftover frames are cleaned up the next time you start a scan session</span>
                     </li>
                   </ul>
+                  <div className="bg-blue-50 rounded-xl p-5 mt-4 border border-primary-blue/20">
+                    <p className="text-sm text-text-main">
+                      <strong>Important:</strong> screen recordings may incidentally capture sensitive content visible on your screen, such as notifications, messages, or other apps in the background. These images are processed temporarily and deleted immediately after analysis. They are never stored permanently and are not reviewed by any person, but they are sent to Google's Gemini API for automated analysis (see section 3). We strongly recommend closing sensitive apps before starting a scan.
+                    </p>
+                  </div>
                 </div>
 
-                {/* Payment Information */}
+                {/* Scan Results */}
                 <div>
-                  <h3 className="text-lg font-semibold text-text-main mb-2">Payment Information</h3>
+                  <h3 className="text-lg font-semibold text-text-main mb-2">Scan results</h3>
                   <p className="text-text-muted leading-relaxed mb-3">
-                    For users on the Plus tier ($10/month or $96/year), we process payments through Stripe:
+                    After your screen frames are analyzed, we store the text-based results of that analysis:
                   </p>
                   <ul className="space-y-2 text-text-muted">
                     <li className="flex gap-3">
                       <span className="flex-shrink-0 mt-1">•</span>
-                      <span><strong>Billing information</strong> — name, email, billing address</span>
+                      <span><strong>Extracted feed items:</strong> information about individual posts identified in your feed, including creator or account names, post text snippets (up to 2,000 characters per post), content categories (such as political, ad or sponsored, entertainment), wellbeing flags, hashtags, and position in feed</span>
                     </li>
                     <li className="flex gap-3">
                       <span className="flex-shrink-0 mt-1">•</span>
-                      <span><strong>Payment method</strong> — credit card information (never stored by us; handled entirely by Stripe)</span>
+                      <span><strong>Scan metadata:</strong> which platform was scanned, when the scan occurred, the scan source type, and the number of items found</span>
                     </li>
                     <li className="flex gap-3">
                       <span className="flex-shrink-0 mt-1">•</span>
-                      <span><strong>Subscription status</strong> — plan tier, trial status, renewal dates, payment history</span>
+                      <span><strong>Aggregated statistics:</strong> category breakdowns, ad percentages, and other summary data derived from your scans</span>
                     </li>
                   </ul>
                 </div>
 
-                {/* Device & Usage Data */}
+                {/* Local Data */}
                 <div>
-                  <h3 className="text-lg font-semibold text-text-main mb-2">Device & Usage Data</h3>
+                  <h3 className="text-lg font-semibold text-text-main mb-2">Data stored only on your device</h3>
                   <p className="text-text-muted leading-relaxed mb-3">
-                    We collect limited usage data to improve the Service:
+                    The App stores the following locally and does not send it to our servers:
                   </p>
                   <ul className="space-y-2 text-text-muted">
                     <li className="flex gap-3">
                       <span className="flex-shrink-0 mt-1">•</span>
-                      <span><strong>Device type</strong> — browser, operating system, app version</span>
+                      <span><strong>Streak data:</strong> your scanning streak, total scans, and last scan date</span>
                     </li>
                     <li className="flex gap-3">
                       <span className="flex-shrink-0 mt-1">•</span>
-                      <span><strong>Usage statistics</strong> — features used, scan frequency, time spent in app</span>
+                      <span><strong>Platform login states:</strong> which social platforms you have logged into within the App's built-in browser, cached for up to 30 days. This records only that you logged in, never your credentials</span>
                     </li>
                     <li className="flex gap-3">
                       <span className="flex-shrink-0 mt-1">•</span>
-                      <span><strong>Error logs</strong> — crash reports sent to Sentry (PII stripped)</span>
+                      <span><strong>Notification preferences:</strong> whether you have enabled scan reminders and how often</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="flex-shrink-0 mt-1">•</span>
+                      <span><strong>Theme and permission preferences:</strong> light or dark mode, and whether we have already asked you for notification permission</span>
                     </li>
                   </ul>
                 </div>
+
+                {/* Error & Diagnostic Data */}
+                <div>
+                  <h3 className="text-lg font-semibold text-text-main mb-2">Error and diagnostic data</h3>
+                  <p className="text-text-muted leading-relaxed mb-3">
+                    We use Sentry for error tracking. When the App encounters an error, Sentry may collect:
+                  </p>
+                  <ul className="space-y-2 text-text-muted">
+                    <li className="flex gap-3">
+                      <span className="flex-shrink-0 mt-1">•</span>
+                      <span><strong>Error details:</strong> stack traces, error messages, and the sequence of actions leading to the error</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="flex-shrink-0 mt-1">•</span>
+                      <span><strong>User ID:</strong> to help us identify patterns in errors. Your email address, username, and name are explicitly stripped from all Sentry reports before they are sent</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="flex-shrink-0 mt-1">•</span>
+                      <span><strong>Device information:</strong> device model, operating system version, and app version</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="flex-shrink-0 mt-1">•</span>
+                      <span><strong>Performance data:</strong> sampled at a 10% rate, including page load times and API response durations</span>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Website */}
+                <div>
+                  <h3 className="text-lg font-semibold text-text-main mb-2">This website</h3>
+                  <p className="text-text-muted leading-relaxed">
+                    You can browse algorithmlens.com without an account. The website stores basic usage events locally in your browser and does not send them to third-party analytics services. We do not use Google Analytics, Facebook Pixel, or other third-party tracking pixels on this site.
+                  </p>
+                </div>
               </div>
-            </section>
-
-            {/* AI Processing */}
-            <section>
-              <h2 className="text-2xl font-bold text-text-main mb-4">2. AI Processing & Consent</h2>
-              <p className="text-text-muted leading-relaxed mb-4">
-                AlgorithmLens uses Google Gemini Flash API to analyze feed content for political bias and emotional tone. This analysis is <strong>optional and requires explicit user consent</strong>.
-              </p>
-
-              <div className="bg-blue-50 rounded-xl p-5 space-y-3 mb-4 border border-primary-blue/20">
-                <p className="text-sm font-semibold text-text-main">What AI Analysis Does</p>
-                <ul className="text-sm text-text-muted space-y-2">
-                  <li>• Classifies content by political perspective (left, center, right)</li>
-                  <li>• Analyzes emotional tone (positive, neutral, negative)</li>
-                  <li>• Powers the Politics and Tone tabs on your dashboard</li>
-                </ul>
-              </div>
-
-              <div className="bg-gray-50 rounded-xl p-5 space-y-3 border border-border-light">
-                <p className="text-sm font-semibold text-text-main">What AI Analysis Does NOT Do</p>
-                <ul className="text-sm text-text-muted space-y-2">
-                  <li>• Your scan data is never used to train Google's models</li>
-                  <li>• We do not sell your data to train third-party AI systems</li>
-                  <li>• Analysis results are observational classifications, not definitive claims about reality</li>
-                  <li>• You can disable AI analysis anytime in Settings (basic metrics still work)</li>
-                </ul>
-              </div>
-
-              <p className="text-text-muted leading-relaxed mt-4 text-sm">
-                When AI analysis is enabled, feed content is sent to Google's servers for processing. We recommend reviewing Google's privacy policies for their data handling practices. Disabling AI analysis in Settings prevents any data from being sent to external AI providers.
-              </p>
             </section>
 
             {/* Data Use */}
             <section>
-              <h2 className="text-2xl font-bold text-text-main mb-4">3. How We Use Your Data</h2>
+              <h2 className="text-2xl font-bold text-text-main mb-4">2. How we use your information</h2>
 
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-text-main mb-2">Scan Analysis</h3>
-                  <p className="text-text-muted leading-relaxed">
-                    We process your feed snapshots to generate analytics: ad detection, political classification, tone analysis, and platform insights visible on your dashboard.
-                  </p>
-                </div>
+              <ul className="space-y-3 text-text-muted">
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 mt-1">•</span>
+                  <span><strong>To provide the App's core functionality:</strong> capturing your screen, analyzing your feed via AI, and presenting the results to you</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 mt-1">•</span>
+                  <span><strong>To maintain your account:</strong> authenticating you and syncing your scan history across sessions</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 mt-1">•</span>
+                  <span><strong>To improve the App:</strong> diagnosing errors, understanding crash patterns, and monitoring performance via Sentry</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 mt-1">•</span>
+                  <span><strong>To send you scan reminders:</strong> local push notifications, only if you opt in</span>
+                </li>
+              </ul>
 
-                <div>
-                  <h3 className="font-semibold text-text-main mb-2">Authentication & Account Management</h3>
-                  <p className="text-text-muted leading-relaxed">
-                    Your email is used to sign you in via secure magic links and manage your account.
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-text-main mb-2">Payment Processing</h3>
-                  <p className="text-text-muted leading-relaxed">
-                    Billing information is used to process subscriptions via Stripe and manage your subscription status.
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-text-main mb-2">Service Improvement</h3>
-                  <p className="text-text-muted leading-relaxed">
-                    Usage data and error logs help us fix bugs, improve performance, and develop new features.
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-text-main mb-2">Communication</h3>
-                  <p className="text-text-muted leading-relaxed">
-                    We may send you transactional emails (account verification, subscription confirmations, billing updates). We do not send marketing emails without consent.
-                  </p>
-                </div>
-              </div>
+              <p className="text-text-muted leading-relaxed mt-4">
+                We do not use your data for advertising, ad targeting, or selling to third parties. We do not build advertising profiles based on your feed analysis.
+              </p>
             </section>
 
-            {/* Data Retention */}
+            {/* Screen Recording Processing */}
             <section>
-              <h2 className="text-2xl font-bold text-text-main mb-4">4. Data Retention & Deletion</h2>
+              <h2 className="text-2xl font-bold text-text-main mb-4">3. How screen recordings are processed</h2>
 
-              <div className="space-y-4 text-text-muted leading-relaxed">
-                <p>
-                  <strong>Scan Data:</strong> Your feed snapshots and analysis results are retained in your account for review. You can manually delete scans from your History page anytime.
-                </p>
+              <p className="text-text-muted leading-relaxed mb-4">
+                This is the most sensitive part of what AlgorithmLens does, so we want to be very clear:
+              </p>
 
-                <p>
-                  <strong>Video/Screenshot Files:</strong> Temporary video and screenshot captures are automatically deleted from our servers within 24 hours after processing, regardless of whether you keep the scan data.
-                </p>
+              <ol className="space-y-3 text-text-muted list-decimal pl-5">
+                <li className="leading-relaxed">
+                  <strong>Capture.</strong> When you start a scan, your device captures screenshots of your screen using the operating system's built-in screen recording APIs. You must grant explicit permission through a system dialog before this happens.
+                </li>
+                <li className="leading-relaxed">
+                  <strong>On-device processing.</strong> Frames are compressed, deduplicated, and OCR text is extracted, all on your device.
+                </li>
+                <li className="leading-relaxed">
+                  <strong>Sent to Google Gemini for AI analysis.</strong> The compressed frame images and extracted OCR text are sent to Google's Gemini 2.0 Flash API over an encrypted HTTPS connection. Gemini analyzes the visual content to identify and categorize individual posts in your feed. This happens only if you have explicitly consented to AI analysis.
+                </li>
+                <li className="leading-relaxed">
+                  <strong>Results returned.</strong> Gemini returns structured text data describing the feed items it identified: post text, creator names, content categories, and so on. No images are returned.
+                </li>
+                <li className="leading-relaxed">
+                  <strong>Frames deleted.</strong> After analysis is complete, the frame image files are deleted from your device and the in-memory image data is released. Only the structured analysis results (text data, not images) are stored.
+                </li>
+                <li className="leading-relaxed">
+                  <strong>Results saved.</strong> The structured analysis results are saved by the App directly to our database (hosted on Supabase) and linked to your account so you can view your scan history. No separate backend enrichment processing currently occurs; all analysis happens in the step above via Google's Gemini API. If we add server-side enrichment in the future, we will update this section before it is enabled.
+                </li>
+              </ol>
 
-                <p>
-                  <strong>Account Deletion:</strong> You can delete your account anytime in Settings. Account deletion is immediate and permanent. All associated scan data is deleted within 30 days.
-                </p>
-
-                <p>
-                  <strong>Error Logs:</strong> Sentry error logs are retained for 30 days, then automatically deleted.
-                </p>
-
-                <p>
-                  <strong>Subscription Data:</strong> After account deletion, Stripe retains billing information per their standard retention policy for regulatory and tax compliance.
+              <div className="bg-gray-50 rounded-xl p-5 mt-4 border border-border-light">
+                <p className="text-sm text-text-main mb-2 font-semibold">What Google receives</p>
+                <p className="text-sm text-text-muted leading-relaxed">
+                  Google's Gemini API receives the JPEG images of your screen frames and the OCR text extracted from them. We send this data solely for the purpose of AI analysis. Our Gemini API access is configured on a paid billing account, and under Google's paid-tier API terms, data submitted through it is not used to train Google's AI models. The frames are deleted after analysis and are never shared beyond this analysis step. See <a href="https://ai.google.dev/gemini-api/terms" className="text-primary-blue hover:underline">Google's Gemini API terms</a> for details.
                 </p>
               </div>
             </section>
 
             {/* Third-Party Services */}
             <section>
-              <h2 className="text-2xl font-bold text-text-main mb-4">5. Third-Party Services</h2>
+              <h2 className="text-2xl font-bold text-text-main mb-4">4. Third-party services</h2>
 
               <div className="space-y-4">
                 <div>
-                  <h3 className="font-semibold text-text-main mb-2">Supabase (Authentication & Database)</h3>
+                  <h3 className="font-semibold text-text-main mb-2">Google Gemini API (AI analysis)</h3>
                   <p className="text-text-muted leading-relaxed mb-2">
-                    Your email, account data, and scan data are stored on Supabase (hosted on AWS in US-East region).
+                    Receives compressed screenshots of your screen and OCR-extracted text, solely to analyze feed content and categorize posts.
                   </p>
                   <p className="text-sm text-text-muted italic">
-                    <a href="https://supabase.com/privacy" className="text-primary-blue hover:underline">Supabase Privacy Policy</a>
+                    <a href="https://ai.google.dev/gemini-api/terms" className="text-primary-blue hover:underline">Google Gemini API terms</a> · <a href="https://policies.google.com/privacy" className="text-primary-blue hover:underline">Google privacy policy</a>
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-text-main mb-2">Stripe (Payment Processing)</h3>
+                  <h3 className="font-semibold text-text-main mb-2">Supabase (authentication and database)</h3>
                   <p className="text-text-muted leading-relaxed mb-2">
-                    Billing information and payment methods are processed by Stripe. AlgorithmLens does not store credit card data.
+                    Stores your account information (email, user ID, auth provider) and scan results in a PostgreSQL database with row-level security, meaning each user can only access their own data.
                   </p>
                   <p className="text-sm text-text-muted italic">
-                    <a href="https://stripe.com/privacy" className="text-primary-blue hover:underline">Stripe Privacy Policy</a>
+                    <a href="https://supabase.com/privacy" className="text-primary-blue hover:underline">Supabase privacy policy</a>
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-text-main mb-2">Google Gemini Flash (AI Analysis)</h3>
+                  <h3 className="font-semibold text-text-main mb-2">Sentry (error monitoring)</h3>
                   <p className="text-text-muted leading-relaxed mb-2">
-                    When you enable AI analysis, feed content is sent to Google's API for content classification. This is optional and can be disabled anytime.
+                    Receives error reports including stack traces, your user ID, device model, OS version, and app version. Your email and name are explicitly removed before reports are sent.
                   </p>
                   <p className="text-sm text-text-muted italic">
-                    <a href="https://policies.google.com/privacy" className="text-primary-blue hover:underline">Google Privacy Policy</a>
+                    <a href="https://sentry.io/privacy/" className="text-primary-blue hover:underline">Sentry privacy policy</a>
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-text-main mb-2">Sentry (Error Tracking)</h3>
+                  <h3 className="font-semibold text-text-main mb-2">Apple and Google (sign-in)</h3>
                   <p className="text-text-muted leading-relaxed mb-2">
-                    Crash logs and error reports are sent to Sentry with PII stripped. This helps us identify and fix bugs.
+                    When you sign in with Google or Apple, the provider handles the authentication flow and shares your email address with us (for Apple sign-in, a relay email if you choose to hide your real one).
                   </p>
                   <p className="text-sm text-text-muted italic">
-                    <a href="https://sentry.io/privacy/" className="text-primary-blue hover:underline">Sentry Privacy Policy</a>
+                    <a href="https://www.apple.com/privacy/" className="text-primary-blue hover:underline">Apple privacy policy</a> · <a href="https://policies.google.com/privacy" className="text-primary-blue hover:underline">Google privacy policy</a>
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-text-main mb-2">Vercel (Hosting)</h3>
+                  <h3 className="font-semibold text-text-main mb-2">Vercel (website hosting)</h3>
                   <p className="text-text-muted leading-relaxed mb-2">
-                    The AlgorithmLens web dashboard is hosted on Vercel.
+                    This website is hosted on Vercel.
                   </p>
                   <p className="text-sm text-text-muted italic">
-                    <a href="https://vercel.com/privacy" className="text-primary-blue hover:underline">Vercel Privacy Policy</a>
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            {/* Chrome Extension */}
-            <section>
-              <h2 className="text-2xl font-bold text-text-main mb-4">6. Chrome Extension Permissions</h2>
-
-              <p className="text-text-muted leading-relaxed mb-4">
-                The AlgorithmLens Chrome extension requests certain permissions to function. Here's what each one does:
-              </p>
-
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-text-main mb-2">activeTab & scripting</h3>
-                  <p className="text-text-muted leading-relaxed">
-                    Allows the extension to access the DOM of the social media page you're currently viewing to capture feed content for scanning.
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-text-main mb-2">storage</h3>
-                  <p className="text-text-muted leading-relaxed">
-                    Stores your preferences (default scan duration, platform preferences) locally on your device.
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-text-main mb-2">identity & identity.email</h3>
-                  <p className="text-text-muted leading-relaxed">
-                    Used for authenticating your account when logging in via the extension.
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-text-main mb-2">host permissions</h3>
-                  <p className="text-text-muted leading-relaxed">
-                    Allows the extension to run on tiktok.com, instagram.com, youtube.com, x.com, facebook.com, linkedin.com, and reddit.com — the platforms AlgorithmLens supports.
+                    <a href="https://vercel.com/privacy" className="text-primary-blue hover:underline">Vercel privacy policy</a>
                   </p>
                 </div>
               </div>
 
               <p className="text-text-muted leading-relaxed mt-4">
-                The extension does not track your browsing on other websites or sell your browsing data.
+                We do not use a payment processor. There is nothing to pay for.
               </p>
             </section>
 
-            {/* Mobile App */}
+            {/* Data Retention */}
             <section>
-              <h2 className="text-2xl font-bold text-text-main mb-4">7. Mobile App Data Access</h2>
+              <h2 className="text-2xl font-bold text-text-main mb-4">5. Data retention</h2>
 
-              <p className="text-text-muted leading-relaxed mb-4">
-                The iOS and Android mobile apps use WebView to access social media feeds within the app:
-              </p>
-
-              <ul className="space-y-3 text-text-muted">
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 mt-1">•</span>
-                  <span><strong>Camera/Photo Library:</strong> Only requested if you choose to upload a screenshot for analysis.</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 mt-1">•</span>
-                  <span><strong>Network Access:</strong> Needed to load social media feeds and communicate with our servers.</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 mt-1">•</span>
-                  <span><strong>Local Storage:</strong> Preferences and scan history cached on your device.</span>
-                </li>
-              </ul>
-            </section>
-
-            {/* Cookies & Local Storage */}
-            <section>
-              <h2 className="text-2xl font-bold text-text-main mb-4">8. Cookies & Local Storage</h2>
-
-              <p className="text-text-muted leading-relaxed mb-4">
-                AlgorithmLens uses minimal client-side storage:
-              </p>
-
-              <ul className="space-y-3 text-text-muted">
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 mt-1">•</span>
-                  <span><strong>Authentication tokens:</strong> Stored locally to keep you logged in between sessions.</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 mt-1">•</span>
-                  <span><strong>Preferences:</strong> Your scan settings and AI analysis consent are stored locally.</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 mt-1">•</span>
-                  <span><strong>No third-party tracking cookies:</strong> We do not use Google Analytics, Facebook Pixel, or other tracking pixels.</span>
-                </li>
-              </ul>
-            </section>
-
-            {/* User Rights */}
-            <section>
-              <h2 className="text-2xl font-bold text-text-main mb-4">9. Your Privacy Rights</h2>
-
-              <p className="text-text-muted leading-relaxed mb-4">
-                Depending on your jurisdiction, you may have the following rights:
-              </p>
-
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-text-main mb-2">Right to Access</h3>
-                  <p className="text-text-muted leading-relaxed">
-                    You can access all your scan data from your dashboard. You can also request a complete data export in your Settings (JSON or CSV format).
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-text-main mb-2">Right to Delete</h3>
-                  <p className="text-text-muted leading-relaxed">
-                    You can delete individual scans, or delete your entire account and associated data anytime in Settings.
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-text-main mb-2">Right to Opt-Out</h3>
-                  <p className="text-text-muted leading-relaxed">
-                    You can disable AI analysis anytime, preventing any feed data from being sent to Google Gemini.
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-text-main mb-2">Right to Rectification</h3>
-                  <p className="text-text-muted leading-relaxed">
-                    You can update your email address and account information anytime.
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-text-main mb-2">GDPR & CCPA Rights</h3>
-                  <p className="text-text-muted leading-relaxed">
-                    If you are a resident of the EU, UK, or California, you have additional rights under GDPR, GDPR UK, and CCPA. Contact us through the AlgorithmLens website to exercise these rights.
-                  </p>
-                </div>
+              <div className="overflow-x-auto rounded-xl border border-border-light">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 text-left">
+                      <th className="p-3 font-semibold text-text-main">Data type</th>
+                      <th className="p-3 font-semibold text-text-main">Retention period</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-t border-border-light align-top">
+                      <td className="p-3 text-text-main">Screen recording frames (images)</td>
+                      <td className="p-3 text-text-muted">Deleted from your device immediately after analysis completes. If the App crashes, cleaned up on next session start.</td>
+                    </tr>
+                    <tr className="border-t border-border-light align-top">
+                      <td className="p-3 text-text-main">In-memory frame data</td>
+                      <td className="p-3 text-text-muted">Released within 5 minutes of analysis completion or when you leave the results screen.</td>
+                    </tr>
+                    <tr className="border-t border-border-light align-top">
+                      <td className="p-3 text-text-main">Scan results (text data)</td>
+                      <td className="p-3 text-text-muted">Stored on our servers for as long as your account exists, or until you request deletion.</td>
+                    </tr>
+                    <tr className="border-t border-border-light align-top">
+                      <td className="p-3 text-text-main">Account information</td>
+                      <td className="p-3 text-text-muted">Retained while your account is active. Deleted upon account deletion request.</td>
+                    </tr>
+                    <tr className="border-t border-border-light align-top">
+                      <td className="p-3 text-text-main">Streak and preference data</td>
+                      <td className="p-3 text-text-muted">Stored locally on your device. Deleted when you uninstall the App or clear app data.</td>
+                    </tr>
+                    <tr className="border-t border-border-light align-top">
+                      <td className="p-3 text-text-main">Platform login state cache</td>
+                      <td className="p-3 text-text-muted">Automatically expires after 30 days. Stored locally on your device only.</td>
+                    </tr>
+                    <tr className="border-t border-border-light align-top">
+                      <td className="p-3 text-text-main">Error and diagnostic data</td>
+                      <td className="p-3 text-text-muted">Retained by Sentry for up to 90 days per their default retention policy.</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-            </section>
-
-            {/* Data Sharing */}
-            <section>
-              <h2 className="text-2xl font-bold text-text-main mb-4">10. Data Sharing & Sale</h2>
-
-              <p className="text-text-muted leading-relaxed mb-4">
-                <strong>We do not sell your data to third parties.</strong>
-              </p>
-
-              <p className="text-text-muted leading-relaxed mb-4">
-                Your scan data is shared with the following third parties only as necessary to operate the Service:
-              </p>
-
-              <ul className="space-y-3 text-text-muted">
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 mt-1">•</span>
-                  <span><strong>Supabase:</strong> Stores your account and scan data (data processor)</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 mt-1">•</span>
-                  <span><strong>Stripe:</strong> Processes payments for Plus tier (data processor)</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 mt-1">•</span>
-                  <span><strong>Google Gemini:</strong> Analyzes feed content only if you enable AI analysis (data processor)</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="flex-shrink-0 mt-1">•</span>
-                  <span><strong>Sentry:</strong> Receives error logs with PII stripped for debugging (data processor)</span>
-                </li>
-              </ul>
-
-              <p className="text-text-muted leading-relaxed mt-4">
-                We require all data processors to maintain strict confidentiality and use data only for the purposes specified.
-              </p>
-            </section>
-
-            {/* Children's Privacy */}
-            <section>
-              <h2 className="text-2xl font-bold text-text-main mb-4">11. Children's Privacy</h2>
-
-              <p className="text-text-muted leading-relaxed">
-                AlgorithmLens is not intended for children under 13 years old. We do not knowingly collect personal information from children under 13. If we become aware that we have collected personal information from a child under 13, we will delete such information and terminate the child's account. If you believe we have collected information from a child under 13, please contact us immediately through the AlgorithmLens website.
-              </p>
             </section>
 
             {/* Security */}
             <section>
-              <h2 className="text-2xl font-bold text-text-main mb-4">12. Security</h2>
+              <h2 className="text-2xl font-bold text-text-main mb-4">6. Data security</h2>
+
+              <ul className="space-y-3 text-text-muted">
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 mt-1">•</span>
+                  <span><strong>Encryption in transit:</strong> all data transmitted between the App, our servers, and third-party services is encrypted using HTTPS/TLS</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 mt-1">•</span>
+                  <span><strong>Secure credential storage:</strong> authentication tokens are stored using your device's secure storage (iOS Keychain)</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 mt-1">•</span>
+                  <span><strong>Row-level security:</strong> our database uses row-level security policies, so authenticated users can only access their own data</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 mt-1">•</span>
+                  <span><strong>Minimal data collection:</strong> we collect only what the App needs to function. Screen frames are processed and deleted; we do not retain the images</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 mt-1">•</span>
+                  <span><strong>PII scrubbing:</strong> error reports sent to Sentry have your email and name stripped before transmission</span>
+                </li>
+              </ul>
+
+              <p className="text-text-muted leading-relaxed mt-4">
+                No system is completely secure, and we cannot guarantee absolute security of your data.
+              </p>
+            </section>
+
+            {/* User Rights */}
+            <section>
+              <h2 className="text-2xl font-bold text-text-main mb-4">7. Your rights and choices</h2>
+
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-text-main mb-2">Access and export your data</h3>
+                  <p className="text-text-muted leading-relaxed">
+                    You can view all your scan history and results within the App. To request a full export of your data in a machine-readable format, contact us at privacy@algorithmlens.com.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-text-main mb-2">Delete your data</h3>
+                  <p className="text-text-muted leading-relaxed">
+                    You can request deletion of your account and all associated data through the account deletion option in the App's settings (when available) or by contacting privacy@algorithmlens.com. We will delete your account, scan results, and profile data from our database within 30 days. Data already sent to third-party services is subject to those services' own retention policies, locally stored data is deleted when you uninstall the App, and we may retain certain data where required by law.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-text-main mb-2">Disable AI analysis</h3>
+                  <p className="text-text-muted leading-relaxed">
+                    You can disable AI-powered analysis at any time in the App's Settings by toggling off the AI analysis consent. When disabled, your screen frames will not be sent to Google Gemini for analysis. You can re-enable it at any time.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-text-main mb-2">Stop screen recording</h3>
+                  <p className="text-text-muted leading-relaxed">
+                    You can stop screen recording at any time by ending the broadcast session from your device's Control Center, and you can revoke the screen recording permission entirely in your device's system settings.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-text-main mb-2">Error tracking</h3>
+                  <p className="text-text-muted leading-relaxed">
+                    When crash reporting is configured for a given build, Sentry error tracking runs to help us maintain app stability. Reports are pseudonymous: they include your user ID so we can identify error patterns, with your email, username, and name stripped before they are sent. To opt out entirely, contact privacy@algorithmlens.com.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-text-main mb-2">Manage notifications</h3>
+                  <p className="text-text-muted leading-relaxed">
+                    You can enable or disable scan reminder notifications within the App's settings or through your device's notification settings at any time.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-text-main mb-2">Rights for European users (GDPR)</h3>
+                  <p className="text-text-muted leading-relaxed">
+                    If you are in the European Economic Area, you have the right to access your personal data, rectify inaccurate data, request erasure, restrict processing, data portability, and object to processing. Contact privacy@algorithmlens.com to exercise any of these rights; we will respond within 30 days. Our legal bases for processing are consent (for screen recording and AI analysis), contract performance (for providing the service you signed up for), and legitimate interest (for error monitoring and service improvement).
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-text-main mb-2">Rights for California users (CCPA)</h3>
+                  <p className="text-text-muted leading-relaxed">
+                    If you are a California resident, you have the right to know what personal information we collect, request deletion of your personal information, and not be discriminated against for exercising your rights. We do not sell your personal information to third parties.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* Children's Privacy */}
+            <section>
+              <h2 className="text-2xl font-bold text-text-main mb-4">8. Children's privacy</h2>
+
+              <p className="text-text-muted leading-relaxed">
+                AlgorithmLens is not intended for use by children under the age of 13 (or under 16 in the European Economic Area). We do not knowingly collect personal information from children. If you are a parent or guardian and believe your child has provided us with personal information, please contact us at privacy@algorithmlens.com. If we become aware that we have collected personal information from a child without parental consent, we will take steps to delete that information promptly.
+              </p>
+            </section>
+
+            {/* International Transfers */}
+            <section>
+              <h2 className="text-2xl font-bold text-text-main mb-4">9. International data transfers</h2>
 
               <p className="text-text-muted leading-relaxed mb-4">
-                We implement industry-standard security measures to protect your data:
+                Your data may be processed in countries other than your own. Supabase hosts data on cloud infrastructure which may be located in the United States or other regions, the Google Gemini API processes data on Google's servers which may be located globally, and Sentry processes error data on servers that may be located in the United States.
+              </p>
+
+              <p className="text-text-muted leading-relaxed">
+                Where data is transferred outside of the European Economic Area, we rely on Standard Contractual Clauses and/or the service provider's compliance frameworks to ensure adequate protection of your data.
+              </p>
+            </section>
+
+            {/* WebView & Cookies */}
+            <section>
+              <h2 className="text-2xl font-bold text-text-main mb-4">10. In-app browser and cookies</h2>
+
+              <p className="text-text-muted leading-relaxed">
+                The App includes a built-in browser that you can use to log into social media platforms for scanning. This browser allows third-party cookies so that you can remain logged into your social media accounts during a scan session. These cookies are managed by the social media platforms themselves and are subject to their respective privacy policies. The App does not read, store, or transmit your social media login credentials; the built-in browser handles authentication directly with the platform.
+              </p>
+            </section>
+
+            {/* What We Do Not Do */}
+            <section>
+              <h2 className="text-2xl font-bold text-text-main mb-4">11. What we do not do</h2>
+
+              <p className="text-text-muted leading-relaxed mb-4">
+                To be explicit:
               </p>
 
               <ul className="space-y-3 text-text-muted">
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 mt-1">•</span>
-                  <span><strong>HTTPS encryption:</strong> All communication between your device and our servers is encrypted in transit</span>
+                  <span>We do not sell your personal data to anyone</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 mt-1">•</span>
-                  <span><strong>Database encryption:</strong> Data at rest is encrypted on Supabase servers</span>
+                  <span>We do not use your data for targeted advertising</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 mt-1">•</span>
-                  <span><strong>No passwords:</strong> Magic link authentication eliminates password-related security risks</span>
+                  <span>We do not share your scan results with other users</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="flex-shrink-0 mt-1">•</span>
-                  <span><strong>Access controls:</strong> Only you can access your data; administrators do not have automatic access</span>
+                  <span>We do not store your screen recording images after analysis; only text-based results are kept</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 mt-1">•</span>
+                  <span>We do not record audio; the App declares no microphone usage and captures video frames only</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 mt-1">•</span>
+                  <span>We do not access your camera; the App declares no camera usage</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 mt-1">•</span>
+                  <span>We do not track you across other apps or websites</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 mt-1">•</span>
+                  <span>We do not build advertising or behavioral profiles from your data</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="flex-shrink-0 mt-1">•</span>
+                  <span>We do not charge for the App or collect payment information; there is no paid tier</span>
                 </li>
               </ul>
-
-              <p className="text-text-muted leading-relaxed mt-4">
-                While we strive to use reasonable security measures, no system is completely secure. We cannot guarantee absolute security of your data.
-              </p>
             </section>
 
             {/* Changes to Policy */}
             <section>
-              <h2 className="text-2xl font-bold text-text-main mb-4">13. Changes to This Privacy Policy</h2>
+              <h2 className="text-2xl font-bold text-text-main mb-4">12. Changes to this privacy policy</h2>
 
               <p className="text-text-muted leading-relaxed">
-                We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the updated policy here and updating the "Last updated" date. Your continued use of AlgorithmLens after such changes constitutes your acceptance of the updated Privacy Policy. We encourage you to review this Privacy Policy periodically to stay informed about how we protect your data.
+                We may update this Privacy Policy from time to time. When we make changes, we will update the "Last updated" date at the top of this page. For significant changes, such as new categories of data collection or new third-party services, we will notify you through an in-app notification or via email. Your continued use of AlgorithmLens after changes become effective constitutes your acceptance of the revised Privacy Policy.
               </p>
             </section>
 
             {/* Contact */}
             <section>
-              <h2 className="text-2xl font-bold text-text-main mb-4">14. Contact Us</h2>
+              <h2 className="text-2xl font-bold text-text-main mb-4">13. Contact us</h2>
 
               <p className="text-text-muted leading-relaxed mb-4">
-                If you have any questions about this Privacy Policy or our privacy practices, please contact us:
+                If you have questions about this Privacy Policy, want to exercise your data rights, or have a privacy concern, contact us:
               </p>
 
               <div className="bg-gray-50 rounded-xl p-5 border border-border-light">
                 <p className="text-text-muted text-sm">
-                  For privacy, legal, or general support inquiries, please contact us through the AlgorithmLens website.
+                  <strong>Email:</strong> privacy@algorithmlens.com
                 </p>
               </div>
 
