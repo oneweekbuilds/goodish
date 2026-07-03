@@ -7,6 +7,7 @@ Main application entry point. Routes are organized in separate modules:
 - routes/evidence_bundles.py: Evidence bundle endpoints for all tabs
 - routes/stripe_routes.py: Stripe payment and subscription
 - routes/entitlements.py: User entitlements
+- routes/analyze.py: Gemini proxy for the mobile app (code-complete, pending hosting)
 
 API Versioning Plan:
     Current: All routes at /api/ prefix
@@ -35,7 +36,7 @@ from auth import get_jwt_secret
 from config import is_dev_environment
 
 # Import route modules
-from routes import health, scans, evidence_bundles, stripe_routes, entitlements, trends
+from routes import health, scans, evidence_bundles, stripe_routes, entitlements, trends, analyze
 
 # Configure logging
 logging.basicConfig(
@@ -192,6 +193,7 @@ app.include_router(evidence_bundles.router)
 app.include_router(stripe_routes.router)
 app.include_router(entitlements.router)
 app.include_router(trends.router)
+app.include_router(analyze.router)
 
 
 if __name__ == "__main__":

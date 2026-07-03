@@ -1,8 +1,14 @@
 {
   "name": "expo-broadcast",
-  "platforms": ["apple", "android"],
-  "apple": {
-    "modules": ["BroadcastModule", "BroadcastPickerViewModule"]
+  "platforms": ["ios", "android"],
+  "ios": {
+    "modules": ["BroadcastModule", "BroadcastPickerViewModule"],
+    "appDelegateSubscribers": [],
+    "podspec": {
+      "name": "ExpoBroadcast",
+      "source_files": "ios/*.swift",
+      "frameworks": ["ReplayKit", "Vision"]
+    }
   },
   "android": {
     "modules": ["BroadcastModule"],

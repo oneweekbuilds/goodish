@@ -1207,6 +1207,10 @@ def delete_user_data(user_id: str) -> dict:
     """
     Delete ALL data for a specific user. Used for account deletion / data erasure requests.
     Returns counts of deleted records.
+
+    Both deletes share one transaction: if either fails, everything rolls back
+    so the user's data is never half-deleted (same semantics as
+    delete_user_account). Raises on failure, after rollback.
     """
     conn = get_connection()
     cursor = conn.cursor()
@@ -1234,6 +1238,106 @@ def delete_user_data(user_id: str) -> dict:
             "subscriptions_deleted": subs_deleted
         }
 
+    except Exception:
+        # Roll back every delete so a partial erasure is never committed.
+        conn.rollback()
+        logger.error(f"Data deletion failed for {user_id}; transaction rolled back")
+        raise
+    finally:
+        return_connection(conn)
+
+
+class AuthUserDeletionError(RuntimeError):
+    """Raised when the connected Postgres role cannot delete the Supabase auth user.
+
+    Signals that direct SQL deletion of auth.users (Option A) is not available
+    for this role and the service-role admin API (Option B) is required.
+    """
+
+
+def delete_user_account(user_id: str) -> dict:
+    """
+    Permanently delete a user's ENTIRE account in a single transaction.
+
+    Deletes, in order, all scoped to the given user_id:
+      1. scans
+      2. subscriptions
+      3. user_profiles         (PostgreSQL only)
+      4. the Supabase auth user, auth.users (PostgreSQL only)
+
+    This implements Apple Guideline 5.1.1(v): the auth user itself is removed,
+    not just their data, so the account can no longer be used to sign in.
+
+    The user_id MUST be the caller's own id from the verified JWT. Never pass a
+    value taken from request input.
+
+    Explicit child deletes run even though scans and user_profiles cascade from
+    auth.users, so the outcome is correct regardless of cascade rules and no
+    orphan rows are possible. subscriptions has no foreign key to auth.users and
+    is only removed by this explicit delete.
+
+    All deletes share one transaction. If any step fails, the whole transaction
+    is rolled back so an account is never half-deleted.
+
+    In SQLite local/dev mode there is no Supabase auth schema, so steps 3 and 4
+    are skipped.
+
+    Returns counts of what was removed. Raises on failure (after rollback).
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    placeholder = "%s" if _USE_POSTGRESQL else "?"
+
+    try:
+        cursor.execute(f"DELETE FROM scans WHERE user_id = {placeholder}", (user_id,))
+        scans_deleted = cursor.rowcount
+
+        cursor.execute(f"DELETE FROM subscriptions WHERE user_id = {placeholder}", (user_id,))
+        subscriptions_deleted = cursor.rowcount
+
+        user_profiles_deleted = 0
+        auth_user_deleted = False
+
+        if _USE_POSTGRESQL:
+            cursor.execute("DELETE FROM user_profiles WHERE user_id = %s", (user_id,))
+            user_profiles_deleted = cursor.rowcount
+
+            # Delete the Supabase auth user. Requires the connected role to have
+            # DELETE on auth.users (verified: the postgres role does). If this
+            # ever fails with a permission error, fail loudly and roll back the
+            # whole transaction rather than committing a data wipe that leaves a
+            # usable login behind. A distinct error tells us to switch to the
+            # service-role admin API (Option B).
+            try:
+                cursor.execute("DELETE FROM auth.users WHERE id = %s", (user_id,))
+                auth_user_deleted = cursor.rowcount > 0
+            except Exception as auth_err:
+                logger.error(
+                    "AUTH USER DELETION FAILED for %s: %s. The DB role may lack "
+                    "DELETE on auth.users; switch to the service-role admin API "
+                    "(Option B). Rolling back the entire account deletion.",
+                    user_id, auth_err,
+                )
+                raise AuthUserDeletionError(str(auth_err)) from auth_err
+
+        conn.commit()
+        logger.info(
+            "Deleted account for %s: %s scans, %s subscriptions, %s profiles, auth_user_deleted=%s",
+            user_id, scans_deleted, subscriptions_deleted, user_profiles_deleted, auth_user_deleted,
+        )
+
+        return {
+            "scans_deleted": scans_deleted,
+            "subscriptions_deleted": subscriptions_deleted,
+            "user_profiles_deleted": user_profiles_deleted,
+            "auth_user_deleted": auth_user_deleted,
+        }
+
+    except Exception:
+        # Any failure rolls back every delete so the account is never partially
+        # removed.
+        conn.rollback()
+        raise
     finally:
         return_connection(conn)
 

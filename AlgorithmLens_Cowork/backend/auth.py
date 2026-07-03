@@ -23,6 +23,31 @@ security_optional = HTTPBearer(auto_error=False)
 _jwks_cache = {}
 _jwks_cache_ttl = timedelta(minutes=10)
 
+# C1 FIX: the only Supabase project this backend trusts. The expected issuer
+# and the JWKS fetch URL are both derived from this configuration, NEVER from
+# the presented token. Deriving them from the token's own 'iss' claim would let
+# an attacker mint a token against their own issuer/JWKS, set 'sub' to any
+# victim UUID, and authenticate as that user.
+DEFAULT_SUPABASE_URL = "https://czrehjybsqzmudtgneqy.supabase.co"
+
+
+def get_expected_issuer() -> str:
+    """
+    Return the pinned JWT issuer for the configured Supabase project.
+
+    Resolution order:
+      1. SUPABASE_ISSUER — full issuer URL (e.g. https://<ref>.supabase.co/auth/v1)
+      2. SUPABASE_URL — project base URL; '/auth/v1' is appended
+      3. DEFAULT_SUPABASE_URL — the production project, so the issuer is pinned
+         even if the environment variable is missing
+    """
+    explicit = os.getenv("SUPABASE_ISSUER")
+    if explicit:
+        return explicit.rstrip("/")
+    base = (os.getenv("SUPABASE_URL") or DEFAULT_SUPABASE_URL).rstrip("/")
+    return f"{base}/auth/v1"
+
+
 def get_jwt_secret() -> str:
     """
     Get JWT secret from environment.
@@ -39,18 +64,19 @@ def get_jwt_secret() -> str:
     return secret
 
 
-def get_jwks_client(issuer: str) -> PyJWKClient:
+def get_jwks_client() -> PyJWKClient:
     """
-    Get or create a PyJWKClient for the given issuer.
+    Get or create a PyJWKClient for the CONFIGURED Supabase project.
+
+    C1 FIX: the JWKS URL is derived only from the pinned issuer
+    (get_expected_issuer), never from token contents.
 
     Uses in-memory cache with TTL to avoid fetching JWKS on every request.
-
-    Args:
-        issuer: The token issuer URL (e.g., https://xyz.supabase.co/auth/v1)
 
     Returns:
         PyJWKClient instance for fetching signing keys
     """
+    issuer = get_expected_issuer()
     cache_key = issuer
     now = datetime.now(timezone.utc)
 
@@ -60,7 +86,6 @@ def get_jwks_client(issuer: str) -> PyJWKClient:
         if now - cached_at < _jwks_cache_ttl:
             return client
 
-    # Parse issuer to get JWKS URL
     # Supabase issuer format: https://<project-ref>.supabase.co/auth/v1
     parsed = urlparse(issuer)
     jwks_url = f"{parsed.scheme}://{parsed.netloc}/auth/v1/.well-known/jwks.json"
@@ -113,11 +138,27 @@ def verify_supabase_jwt(token: str) -> dict:
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
+        # C1 FIX: reject any token whose issuer is not exactly the configured
+        # Supabase project BEFORE any key fetch or verification. The expected
+        # issuer comes from configuration, never from the token.
+        expected_issuer = get_expected_issuer()
+        if issuer != expected_issuer:
+            logger.warning(
+                f"[AUTH VERIFY FAIL] Untrusted issuer | alg={algorithm} kid={kid} "
+                f"iss={issuer} expected={expected_issuer}"
+            )
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token: untrusted issuer",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
         # Verify using JWKS for ES256/RS256 (modern Supabase tokens)
         if algorithm in ["ES256", "RS256"] and kid:
             try:
                 jwks_attempted = True
-                jwks_client = get_jwks_client(issuer)
+                # JWKS URL is pinned to the configured project (C1 fix)
+                jwks_client = get_jwks_client()
                 jwks_success = True
                 signing_key = jwks_client.get_signing_key_from_jwt(token)
 
@@ -129,8 +170,8 @@ def verify_supabase_jwt(token: str) -> dict:
                         "verify_exp": True,
                         "verify_iat": True,
                     },
-                    # Verify issuer matches
-                    issuer=issuer,
+                    # Verify issuer matches the pinned issuer (C1 fix)
+                    issuer=expected_issuer,
                     # Accept standard Supabase audiences
                     audience=["authenticated", "anon"],
                 )
@@ -142,7 +183,9 @@ def verify_supabase_jwt(token: str) -> dict:
                     headers={"WWW-Authenticate": "Bearer"},
                 )
 
-        # Fallback to HS256 with shared secret (legacy/service role tokens)
+        # Fallback to HS256 with shared secret (legacy/service role tokens).
+        # The pinned-issuer check above already rejected foreign issuers; pass
+        # the pinned issuer here too so PyJWT re-verifies it (C1 fix).
         elif algorithm == "HS256":
             try:
                 secret = get_jwt_secret()
@@ -150,6 +193,7 @@ def verify_supabase_jwt(token: str) -> dict:
                     token,
                     secret,
                     algorithms=["HS256"],
+                    issuer=expected_issuer,
                     options={
                         "verify_exp": True,
                         "verify_iat": True,

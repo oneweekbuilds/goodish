@@ -41,6 +41,7 @@ const EntitlementsDebugPage = React.lazy(() => import('./pages/dev/EntitlementsD
 const AuthCallbackPage = React.lazy(() => import('./pages/auth/AuthCallbackPage'));
 const PrivacyPage = React.lazy(() => import('./pages/PrivacyPage'));
 const TermsPage = React.lazy(() => import('./pages/TermsPage'));
+const MethodologyPage = React.lazy(() => import('./pages/MethodologyPage'));
 
 // Loading fallback component
 function LoadingFallback() {
@@ -238,6 +239,9 @@ function App() {
                       <Route path="/privacy" element={<PrivacyPage />} />
                       <Route path="/terms" element={<TermsPage />} />
 
+                      {/* TRANSPARENCY */}
+                      <Route path="/methodology" element={<MethodologyPage />} />
+
                       {/* #4: 404 catch-all route */}
                       <Route path="*" element={<NotFoundPage />} />
                     </Routes>
@@ -269,6 +273,7 @@ function App() {
                         <li><Link to="/start" className="text-sm text-text-muted hover:text-primary-blue transition-colors">Start a Scan</Link></li>
                         <li><Link to="/dashboard" className="text-sm text-text-muted hover:text-primary-blue transition-colors">Dashboard</Link></li>
                         <li><Link to="/plus" className="text-sm text-text-muted hover:text-primary-blue transition-colors">Plus</Link></li>
+                        <li><Link to="/methodology" className="text-sm text-text-muted hover:text-primary-blue transition-colors">Methodology</Link></li>
                       </ul>
                     </div>
                     <div>

@@ -13,6 +13,10 @@ from fastapi.testclient import TestClient
 # Configure test environment
 os.environ["ENVIRONMENT"] = "test"
 os.environ["SUPABASE_JWT_SECRET"] = "test-secret-key-for-tests-only"
+# C1 fix: auth pins the accepted issuer to the configured Supabase project.
+# Tests use this fake project; token fixtures must use the matching issuer
+# https://example.supabase.co/auth/v1 or they are rejected with 401.
+os.environ["SUPABASE_URL"] = "https://example.supabase.co"
 os.environ["STRIPE_SECRET_KEY"] = "sk_test_fake"
 os.environ["STRIPE_WEBHOOK_SECRET"] = "whsec_test_fake"
 os.environ["STRIPE_PRICE_MONTHLY"] = "price_test_monthly"

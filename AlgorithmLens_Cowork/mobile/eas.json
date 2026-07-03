@@ -7,7 +7,7 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "node": "20.19.4",
+      "node": "20.18.0",
       "ios": {
         "simulator": false,
         "buildConfiguration": "Debug",
@@ -16,12 +16,13 @@
       "env": {
         "APP_ENV": "development",
         "EXPO_PUBLIC_SUPABASE_URL": "https://czrehjybsqzmudtgneqy.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6cmVoanlic3F6bXVkdGduZXF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzODM5OTIsImV4cCI6MjA4NTk1OTk5Mn0.3kM6wCcpTPPJdcFHCF1aUrPI0teRdsQtE3Dtug6wqVs"
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6cmVoanlic3F6bXVkdGduZXF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzODM5OTIsImV4cCI6MjA4NTk1OTk5Mn0.3kM6wCcpTPPJdcFHCF1aUrPI0teRdsQtE3Dtug6wqVs",
+        "EXPO_PUBLIC_API_BASE_URL": "https://api.algorithmlens.com"
       }
     },
     "preview": {
       "distribution": "internal",
-      "node": "20.19.4",
+      "node": "20.18.0",
       "ios": {
         "buildConfiguration": "Release",
         "image": "latest"
@@ -29,12 +30,13 @@
       "env": {
         "APP_ENV": "preview",
         "EXPO_PUBLIC_SUPABASE_URL": "https://czrehjybsqzmudtgneqy.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6cmVoanlic3F6bXVkdGduZXF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzODM5OTIsImV4cCI6MjA4NTk1OTk5Mn0.3kM6wCcpTPPJdcFHCF1aUrPI0teRdsQtE3Dtug6wqVs"
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6cmVoanlic3F6bXVkdGduZXF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzODM5OTIsImV4cCI6MjA4NTk1OTk5Mn0.3kM6wCcpTPPJdcFHCF1aUrPI0teRdsQtE3Dtug6wqVs",
+        "EXPO_PUBLIC_API_BASE_URL": "https://api.algorithmlens.com"
       },
       "channel": "preview"
     },
     "production": {
-      "node": "20.19.4",
+      "node": "20.18.0",
       "ios": {
         "buildConfiguration": "Release",
         "autoIncrement": true,
@@ -44,7 +46,7 @@
         "APP_ENV": "production",
         "EXPO_PUBLIC_SUPABASE_URL": "https://czrehjybsqzmudtgneqy.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6cmVoanlic3F6bXVkdGduZXF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzODM5OTIsImV4cCI6MjA4NTk1OTk5Mn0.3kM6wCcpTPPJdcFHCF1aUrPI0teRdsQtE3Dtug6wqVs",
-        "EXPO_PUBLIC_API_BASE_URL": "https://algorithmlens.com"
+        "EXPO_PUBLIC_API_BASE_URL": "https://api.algorithmlens.com"
       },
       "channel": "production"
     }
@@ -52,8 +54,7 @@
   "submit": {
     "production": {
       "ios": {
-        "appleId": "jwjwin0@gmail.com",
-        "ascAppId": "6759925778"
+        "appleId": "jwjwin0@gmail.com"
       }
     }
   }

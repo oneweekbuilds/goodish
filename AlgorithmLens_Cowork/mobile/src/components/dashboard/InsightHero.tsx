@@ -63,8 +63,11 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
   howWeMeasure = null,
 }) => {
   const { colors, shadows } = useTheme();
-  // L3: Use useRef to persist animated value across re-renders
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  // B-20 FIX: Start at 1 (visible) — InsightHero always renders with data already
+  // loaded (gated by hasData in the dashboard). Starting at 0 caused a blank white
+  // card flash on iOS because the card shadow was visible while content was transparent.
+  // The outer dashboard tab container already handles the fade transition on tab switch.
+  const fadeAnim = useRef(new Animated.Value(1)).current;
   const chevronRotateAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const [expanded, setExpanded] = useState(false);
@@ -80,18 +83,13 @@ const InsightHeroComponent: React.FC<InsightHeroProps> = ({
   }, [scaleAnim]);
 
   useEffect(() => {
-    fadeAnim.setValue(0);
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-
-    // Reset expanded state when title changes (tab switch)
+    // Reset expanded state when title changes (tab switch).
+    // Do NOT reset fadeAnim — the outer dashboard tab container handles the
+    // fade transition on tab switch, so resetting to 0 here causes a double-blank flash.
     setExpanded(false);
     setShowCounterfactual(false);
     setShowHowWeMeasure(false);
-  }, [title]); // Re-animate when title changes (tab switch)
+  }, [title]); // Re-run when title changes (tab switch)
 
   useEffect(() => {
     Animated.timing(chevronRotateAnim, {

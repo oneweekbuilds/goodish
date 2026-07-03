@@ -17,7 +17,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'AlgorithmLens',
   slug: 'algorithmlens',
-  version: '1.1.1',
+  version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'automatic',
@@ -34,6 +34,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       usesNonExemptEncryption: false,
     },
     infoPlist: {
+      UIBackgroundModes: ['fetch'],
       NSUserActivityTypes: ['com.algorithmlens.broadcast'],
       NSCameraUsageDescription:
         'AlgorithmLens uses screen broadcasting to analyze your social media feed. Camera access is required by the system for ReplayKit broadcast, though we never capture from the camera.',
@@ -42,20 +43,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       NSSiriUsageDescription:
         'AlgorithmLens uses Siri to let you quickly start feed scans with voice commands or Shortcuts automations.',
       ITSAppUsesNonExemptEncryption: false,
-      // Build #41: declare schemes used by Linking.canOpenURL in
-      // broadcastSessionManager.openPlatformApp. iOS 9+ silently returns
-      // false for any scheme not in this allowlist, which made every
-      // "Back to <Platform>" button report "<Platform> not installed"
-      // even when the app WAS installed. Match the schemes declared in
-      // PLATFORM_BROADCAST_CONFIGS in src/types/broadcast.ts.
-      LSApplicationQueriesSchemes: [
-        'instagram',
-        'twitter',
-        'youtube',
-        'snssdk1233', // TikTok
-        'fb',          // Facebook
-        'reddit',
-      ],
     },
     entitlements: {
       'com.apple.security.application-groups': [
@@ -90,11 +77,23 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
     },
   },
+  // URL scheme registered for deep linking and OAuth callbacks.
+  // Linking.createURL('/auth/callback') produces: algorithmlens://auth/callback
+  //
+  // ⚠️  REQUIRED MANUAL STEP: Add the following URL to your Supabase project's
+  //     Auth → URL Configuration → Redirect URLs allowlist:
+  //       algorithmlens://auth/callback
+  //     Without this, OAuth sign-in will fail with "redirect_uri_mismatch".
+  //
   scheme: 'algorithmlens',
   plugins: [
     'expo-router',
     'expo-secure-store',
     'expo-dev-client',
+    // expo-web-browser is required for OAuth sign-in on iOS (opens SFSafariViewController).
+    // The plugin registers the app's URL scheme so the in-app browser can redirect back
+    // to the app after OAuth completes.
+    'expo-web-browser',
     './plugins/withBroadcastExtension',
   ],
   extra: {

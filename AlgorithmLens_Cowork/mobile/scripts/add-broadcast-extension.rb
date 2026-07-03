@@ -24,14 +24,7 @@ begin
   # ── Paths (all relative to mobile/) ──
   proj_path = "ios/AlgorithmLens.xcodeproj"
   ext_dir   = "ios/BroadcastExtension"
-
-  # Source files live in two adjacent locations under modules/broadcast/ios/:
-  #   • SampleHandler / Info.plist / entitlements live in the BroadcastExtension/
-  #     subfolder (extension-specific assets).
-  #   • FrameProcessor and SharedContainer live in the parent ios/ folder
-  #     because they're shared between the main module and the extension.
-  ext_src_dir    = "modules/broadcast/ios/BroadcastExtension"
-  shared_src_dir = "modules/broadcast/ios"
+  src_dir   = "modules/broadcast/ios/BroadcastExtension"
 
   puts "#{PREFIX} Working directory: #{Dir.pwd}"
   puts "#{PREFIX} Opening project: #{proj_path}"
@@ -73,32 +66,25 @@ begin
   puts "#{PREFIX} Created directory: #{ext_dir}"
 
   # ── Copy ALL files from modules source into ios/BroadcastExtension/ (flat) ──
-  swift_files = ["SampleHandler.swift", "FrameProcessor.swift", "SharedContainer.swift"]
+  puts "#{PREFIX} Source directory: #{src_dir}"
+  puts "#{PREFIX} Source directory exists: #{File.directory?(src_dir)}"
 
-  # Per-file source map. SampleHandler / Info.plist / entitlements live in the
-  # BroadcastExtension/ subfolder; FrameProcessor and SharedContainer live one
-  # directory up because they're shared with the main broadcast module. A single
-  # src_dir constant misses the two shared files and the script silently builds
-  # a target that fails to compile.
-  file_sources = {
-    "SampleHandler.swift"             => ext_src_dir,
-    "FrameProcessor.swift"            => shared_src_dir,
-    "SharedContainer.swift"           => shared_src_dir,
-    "Info.plist"                      => ext_src_dir,
-    "BroadcastExtension.entitlements" => ext_src_dir,
-  }
-
-  puts "#{PREFIX} Extension source dir: #{ext_src_dir} (exists=#{File.directory?(ext_src_dir)})"
-  puts "#{PREFIX} Shared source dir:    #{shared_src_dir} (exists=#{File.directory?(shared_src_dir)})"
-  if File.directory?(ext_src_dir)
-    puts "#{PREFIX}   #{ext_src_dir}/: #{Dir.entries(ext_src_dir).reject { |e| e.start_with?('.') }.join(', ')}"
-  end
-  if File.directory?(shared_src_dir)
-    puts "#{PREFIX}   #{shared_src_dir}/: #{Dir.entries(shared_src_dir).reject { |e| e.start_with?('.') }.join(', ')}"
+  if !File.directory?(src_dir)
+    abort "#{PREFIX} ERROR: Source directory not found: #{src_dir}"
   end
 
-  file_sources.each do |filename, source_dir|
-    src = File.join(source_dir, filename)
+  src_contents = Dir.entries(src_dir).reject { |e| e.start_with?('.') }
+  puts "#{PREFIX} Source directory contents: #{src_contents.join(', ')}"
+
+  # Dynamically discover all .swift files — no hardcoded list
+  swift_files = src_contents.select { |f| f.end_with?('.swift') }.sort
+  puts "#{PREFIX} Swift source files discovered: #{swift_files.join(', ')}"
+
+  non_swift_files = ["Info.plist", "BroadcastExtension.entitlements"]
+  all_files_to_copy = swift_files + non_swift_files
+
+  all_files_to_copy.each do |filename|
+    src = File.join(src_dir, filename)
     dst = File.join(ext_dir, filename)
     if File.exist?(src)
       FileUtils.cp(src, dst)
@@ -212,11 +198,6 @@ begin
   end
 
   # ── Add as dependency of main app target ──
-  # Workaround: expo prebuild emits PBXTargetDependency entries for the Pods
-  # project whose target= is nil until `pod install` runs and resolves them.
-  # xcodeproj's add_dependency walks main_target.dependencies looking for an
-  # existing match by UUID and crashes on the nil. Drop unresolved entries first.
-  main_target.dependencies.reject! { |dep| dep.target.nil? }
   main_target.add_dependency(ext_target)
   puts "#{PREFIX} Added BroadcastExtension as dependency of #{main_target.name}"
 

@@ -161,8 +161,12 @@ export function addBreadcrumb(
 /**
  * Wrap a React Native component with Sentry error boundary.
  * Use for the root app component.
+ *
+ * Guards:
+ * - Skip on web: Sentry.wrap injects native-only styles that crash CSSStyleDeclaration
+ * - Skip when IS_PLACEHOLDER_DSN: Sentry.wrap on an uninitialized SDK can throw a render error,
+ *   causing the ErrorBoundary to immediately show on every app launch.
  */
-// Skip Sentry.wrap on web — it injects native-only styles that crash CSSStyleDeclaration
-export const withSentry = Platform.OS === 'web'
+export const withSentry = (IS_PLACEHOLDER_DSN || Platform.OS === 'web')
   ? (component: React.ComponentType<any>) => component
   : Sentry.wrap;

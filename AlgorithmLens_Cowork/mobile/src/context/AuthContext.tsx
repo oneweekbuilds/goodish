@@ -12,48 +12,17 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
 import { supabase } from '../lib/supabase';
 import { useEntitlements } from '../hooks/useEntitlements';
 import { setSentryUser, addBreadcrumb } from '../lib/sentry';
-import { clearLocalUserState } from '../lib/localState';
 import type { Session, User } from '@supabase/supabase-js';
 import type { EntitlementsResponse } from '../types';
 
 // H-07 FIX: AsyncStorage key for onboarding completion — belt-and-suspenders backup
 // in case Supabase profile write fails silently.
 const ONBOARDING_COMPLETED_KEY = '@algorithmlens_onboarding_completed';
-
-// Build #34 diagnostic export. Read by DebugCheckpointTrail in app/_layout.tsx
-// to render auth-lifecycle counters in the on-screen footer. Mutable singleton.
-// Counters are monotonically increasing so the trail can show "auth started but
-// never finished" patterns even if the resolution happens after a re-render.
-export const __authDiag: {
-  gsResolved: number;     // supabase.auth.getSession() resolved
-  gsRejected: number;     // supabase.auth.getSession() rejected
-  gsTimedOut: number;     // 5s race won the getSession race
-  fpStarted: number;      // fetchOrCreateProfile invocation started
-  fpResolved: number;     // fetchOrCreateProfile completed cleanly
-  fpTimedOut: number;     // fetchOrCreateProfile race-timeout hit
-  fpFailed: number;       // fetchOrCreateProfile threw
-  authChanges: number;    // onAuthStateChange events
-  hardFailsafe: number;   // 7s hard-failsafe forced loading=false
-  lastError: string;      // last captured error text (truncated to 64 chars)
-} = {
-  gsResolved: 0,
-  gsRejected: 0,
-  gsTimedOut: 0,
-  fpStarted: 0,
-  fpResolved: 0,
-  fpTimedOut: 0,
-  fpFailed: 0,
-  authChanges: 0,
-  hardFailsafe: 0,
-  lastError: '',
-};
-
-const recordAuthError = (where: string, err: unknown) => {
-  __authDiag.lastError = `${where}: ${String(err).slice(0, 48)}`;
-};
 
 interface UserProfile {
   has_completed_onboarding: boolean;
@@ -115,81 +84,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const entitlements = useEntitlements(hasSession);
 
   useEffect(() => {
-    // Guard against `supabase.auth.getSession()` rejecting OR hanging during
-    // app launch. Both modes have hit production iOS builds (stale Keychain
-    // session forcing a refresh on a slow network, sandboxed Keychain at cold
-    // launch). With no protection, `setLoading(false)` is never reached and
-    // the splash stays up forever. Race against a 5s timeout AND catch
-    // rejections; whichever path wins, fail open to "no session" so the
-    // splash dismisses and the user can hit /(auth)/login.
-    //
-    // `settled` prevents double-settling if the race timer fires first and
-    // the real getSession resolves later. `cancelled` prevents setState
-    // after unmount.
-    const SESSION_TIMEOUT_MS = 5000;
-    const HARD_FAILSAFE_MS = 7000;
-    let settled = false;
-    let cancelled = false;
-
-    const handleSession = (session: Session | null) => {
-      if (cancelled || settled) return;
-      settled = true;
-      setSession(session);
-      if (session?.user) {
-        setSentryUser(session.user.id, 'free');
-        addBreadcrumb('auth', 'Session restored on init');
-        fetchOrCreateProfile(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    };
-
-    supabase.auth.getSession()
-      .then(({ data: { session } }) => {
-        __authDiag.gsResolved += 1;
-        handleSession(session);
-      })
-      .catch((err) => {
-        __authDiag.gsRejected += 1;
-        recordAuthError('getSession', err);
-        if (cancelled || settled) return;
-        settled = true;
-        addBreadcrumb('auth', 'getSession failed — defaulting to logged-out', { error: String(err) });
-        setLoading(false);
-      });
-
-    setTimeout(() => {
-      if (cancelled || settled) return;
-      settled = true;
-      __authDiag.gsTimedOut += 1;
-      addBreadcrumb('auth', 'getSession timed out after 5s — defaulting to logged-out');
-      setLoading(false);
-    }, SESSION_TIMEOUT_MS);
-
-    // Build #34 hard-failsafe: belt-and-suspenders. If, despite all the inner
-    // races (getSession 5s timeout, fetchOrCreateProfile 5s timeout), `loading`
-    // is somehow still true at 7s, force it false. This guarantees the splash
-    // dismisses to the login screen even if a future regression introduces a
-    // new hang path. The functional setLoading lets us read the latest value
-    // without putting `loading` in this effect's dep list (which would cause
-    // the effect to re-run and re-bind the auth listener on every change).
-    setTimeout(() => {
-      if (cancelled) return;
-      setLoading((current) => {
-        if (current) {
-          __authDiag.hardFailsafe += 1;
-          addBreadcrumb('auth', 'hard failsafe at 7s forced loading=false');
+    // SPLASH HANG SAFETY NET: If auth + profile loading hasn't resolved in 10 seconds,
+    // force loading to false. This prevents an eternal splash hang caused by a slow
+    // Supabase network call in fetchOrCreateProfile (PostgREST has no built-in timeout;
+    // iOS fetch can hang for up to 60s before timing out natively).
+    const safetyTimer = setTimeout(() => {
+      setLoading((prev) => {
+        if (prev) {
+          if (__DEV__) {
+            console.warn('[AuthContext] 10s safety timeout — forcing loading false to prevent splash hang');
+          }
           return false;
         }
-        return current;
+        return prev;
       });
-    }, HARD_FAILSAFE_MS);
+    }, 10000);
+
+    // Get initial session
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        setSession(session);
+        if (session?.user) {
+          setSentryUser(session.user.id, 'free');
+          addBreadcrumb('auth', 'Session restored on init');
+          fetchOrCreateProfile(session.user.id);
+        } else {
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        // Supabase getSession should not normally reject, but if it does
+        // (e.g. misconfigured client, network error at init) we must still
+        // resolve loading so the splash screen is hidden and the user reaches
+        // the login screen rather than seeing an eternal splash hang.
+        if (__DEV__) {
+          console.error('[AuthContext] getSession() failed:', err);
+        }
+        setLoading(false);
+      });
 
     // Listen for auth state changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      __authDiag.authChanges += 1;
       setSession(session);
       if (session?.user) {
         setSentryUser(session.user.id, 'free');
@@ -204,7 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => {
-      cancelled = true;
+      clearTimeout(safetyTimer);
       subscription.unsubscribe();
     };
   }, []);
@@ -213,18 +150,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    * Fetch user profile from Supabase, creating one if it doesn't exist.
    * H-07 FIX: Also checks AsyncStorage for onboarding completion flag
    * as a belt-and-suspenders backup in case Supabase write failed.
-   *
-   * Build #34: races the entire body against a 5s timeout. If Supabase hangs
-   * (sandboxed Keychain at cold launch, slow network, RLS deadlock), the
-   * timeout wins, we fall back to defaults + local AsyncStorage flag, and
-   * setLoading(false) still runs. Without this, a hung profile fetch left
-   * `loading` true forever and the splash never dismissed.
    */
   const fetchOrCreateProfile = async (userId: string) => {
-    __authDiag.fpStarted += 1;
-    const PROFILE_TIMEOUT_MS = 5000;
-    let profileSettled = false;
-
     // H-07 FIX: Check AsyncStorage for local onboarding completion flag
     let localOnboardingCompleted = false;
     try {
@@ -234,86 +161,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Non-blocking — fallback to Supabase only
     }
 
-    const work = (async () => {
-      try {
-        const { data, error } = await supabase
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('has_completed_onboarding, ai_analysis_consent, is_user_plus')
+        .eq('user_id', userId)
+        .single();
+
+      if (data && !error) {
+        // H-07 FIX: If Supabase says not completed but local says completed,
+        // trust local (the Supabase write may have failed silently)
+        const onboardingCompleted = data.has_completed_onboarding || localOnboardingCompleted;
+        setUserProfile({
+          has_completed_onboarding: onboardingCompleted,
+          ai_analysis_consent: data.ai_analysis_consent ?? true,
+          is_user_plus: data.is_user_plus ?? false,
+        });
+      } else if (error?.code === 'PGRST116') {
+        // No profile row exists — create one
+        // H-07 FIX: If local says onboarding completed, set that in the new profile too
+        const { data: newProfile, error: insertError } = await supabase
           .from('user_profiles')
+          .insert({
+            user_id: userId,
+            has_completed_onboarding: localOnboardingCompleted,
+            ai_analysis_consent: true,
+            is_user_plus: false,
+          })
           .select('has_completed_onboarding, ai_analysis_consent, is_user_plus')
-          .eq('user_id', userId)
           .single();
 
-        if (profileSettled) return;
-
-        if (data && !error) {
-          // H-07 FIX: If Supabase says not completed but local says completed,
-          // trust local (the Supabase write may have failed silently)
-          const onboardingCompleted = data.has_completed_onboarding || localOnboardingCompleted;
+        if (newProfile && !insertError) {
           setUserProfile({
-            has_completed_onboarding: onboardingCompleted,
-            ai_analysis_consent: data.ai_analysis_consent ?? true,
-            is_user_plus: data.is_user_plus ?? false,
+            has_completed_onboarding: newProfile.has_completed_onboarding || localOnboardingCompleted,
+            ai_analysis_consent: newProfile.ai_analysis_consent,
+            is_user_plus: newProfile.is_user_plus,
           });
-        } else if (error?.code === 'PGRST116') {
-          // No profile row exists — create one
-          // H-07 FIX: If local says onboarding completed, set that in the new profile too
-          const { data: newProfile, error: insertError } = await supabase
-            .from('user_profiles')
-            .insert({
-              user_id: userId,
-              has_completed_onboarding: localOnboardingCompleted,
-              ai_analysis_consent: true,
-              is_user_plus: false,
-            })
-            .select('has_completed_onboarding, ai_analysis_consent, is_user_plus')
-            .single();
-
-          if (profileSettled) return;
-
-          if (newProfile && !insertError) {
-            setUserProfile({
-              has_completed_onboarding: newProfile.has_completed_onboarding || localOnboardingCompleted,
-              ai_analysis_consent: newProfile.ai_analysis_consent,
-              is_user_plus: newProfile.is_user_plus,
-            });
-          } else {
-            // Fallback if insert fails (e.g. table doesn't exist yet)
-            setUserProfile({ ...defaultProfile, has_completed_onboarding: localOnboardingCompleted });
-          }
         } else {
-          // Some other error — use defaults but respect local onboarding flag
+          // Fallback if insert fails (e.g. table doesn't exist yet)
           setUserProfile({ ...defaultProfile, has_completed_onboarding: localOnboardingCompleted });
         }
-
-        __authDiag.fpResolved += 1;
-      } catch (err) {
-        if (profileSettled) return;
-        __authDiag.fpFailed += 1;
-        recordAuthError('fetchProfile', err);
+      } else {
+        // Some other error — use defaults but respect local onboarding flag
         setUserProfile({ ...defaultProfile, has_completed_onboarding: localOnboardingCompleted });
-      } finally {
-        if (!profileSettled) {
-          profileSettled = true;
-          setLoading(false);
-        }
       }
-    })();
-
-    const timeout = new Promise<void>((resolve) =>
-      setTimeout(() => {
-        if (profileSettled) {
-          resolve();
-          return;
-        }
-        profileSettled = true;
-        __authDiag.fpTimedOut += 1;
-        addBreadcrumb('auth', 'fetchOrCreateProfile timed out after 5s — defaulting to local flag');
-        setUserProfile({ ...defaultProfile, has_completed_onboarding: localOnboardingCompleted });
-        setLoading(false);
-        resolve();
-      }, PROFILE_TIMEOUT_MS),
-    );
-
-    await Promise.race([work, timeout]);
+    } catch {
+      setUserProfile({ ...defaultProfile, has_completed_onboarding: localOnboardingCompleted });
+    } finally {
+      setLoading(false);
+    }
   };
 
   /**
@@ -387,24 +283,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    // Build #44: clear per-user AsyncStorage state BEFORE Supabase sign-out
-    // so the next user to sign in on this device starts fresh (no inherited
-    // streak, no skipped onboarding, no leftover scan backups). Wrapped in
-    // try/catch internally; never blocks sign-out.
-    await clearLocalUserState();
     await supabase.auth.signOut();
     setSession(null);
     setUserProfile(null);
   };
 
+  /**
+   * Sign in with an OAuth provider (Google or Apple) using expo-web-browser.
+   *
+   * Flow:
+   * 1. Call signInWithOAuth({ skipBrowserRedirect: true }) — gets the OAuth URL from
+   *    Supabase without auto-opening a browser (required for React Native).
+   * 2. Open the URL in SFSafariViewController (iOS) via WebBrowser.openAuthSessionAsync.
+   *    This intercepts the app-scheme redirect before it leaves the in-app browser,
+   *    so Expo Router never sees the callback URL as a navigation event.
+   * 3. Exchange the returned PKCE code for a Supabase session.
+   *
+   * Note: add "algorithmLens://auth/callback" to your Supabase project's
+   * Auth → URL Configuration → Redirect URLs allowlist. Without this, Supabase
+   * will reject the redirectTo with "redirect_uri_mismatch".
+   */
   const signInWithOAuth = async (provider: 'google' | 'apple') => {
-    const { error } = await supabase.auth.signInWithOAuth({
+    // Use Linking.createURL so the scheme and host exactly match app.config.ts scheme.
+    // This produces "algorithmlens://auth/callback" on device.
+    const redirectTo = Linking.createURL('/auth/callback');
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: 'algorithmLens://auth/callback',
+        // skipBrowserRedirect: true is mandatory for React Native.
+        // Without it, Supabase JS tries window.location.replace() which
+        // does not exist in React Native and throws a TypeError.
+        skipBrowserRedirect: true,
+        redirectTo,
       },
     });
+
     if (error) throw error;
+    if (!data.url) throw new Error('OAuth sign-in failed: no authorization URL returned from Supabase.');
+
+    addBreadcrumb('auth', `Opening OAuth browser for ${provider}`, { redirectTo });
+
+    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+
+    if (result.type === 'success') {
+      // Exchange the PKCE authorization code for a Supabase session.
+      // onAuthStateChange will fire automatically once the session is set.
+      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(result.url);
+      if (exchangeError) throw exchangeError;
+    } else if (result.type === 'cancel') {
+      // User cancelled — not an error, just a no-op.
+      addBreadcrumb('auth', `OAuth cancelled by user (${provider})`);
+    }
+    // type === 'dismiss' also means no action — both are non-error exits.
   };
 
   const contextValue = useMemo(() => ({
