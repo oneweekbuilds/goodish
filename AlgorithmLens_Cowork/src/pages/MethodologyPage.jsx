@@ -212,7 +212,7 @@ const SCHEMA_FIELDS = [
   ['political.policy_area', 'Per post', 'Free-text policy area, or null.'],
   ['wellbeing.wellbeing_relevance', 'Per post', 'NONE, LOW, MODERATE, or HIGH, for content related to body image, mental health, financial anxiety, FOMO, comparison triggers, or toxic positivity.'],
   ['wellbeing.themes', 'Per post', 'Wellbeing-related themes observed.'],
-  ['wellbeing.potential_risk_flags', 'Per post', 'Extracted and stored but not currently displayed anywhere in the app.'],
+  ['wellbeing.potential_risk_flags', 'Per post', 'Requested from the model but deliberately not stored in the database and not displayed anywhere in the app.'],
   ['emotions.valence', 'Per post', 'POSITIVE, NEUTRAL, NEGATIVE, or MIXED, per the valence rules in the prompt.'],
   ['source_origin', 'Per post', 'suggested, followed, or null when no origin signal was observed.'],
   ['ai_disclosure', 'Per post', 'LABELED_AI when the platform shows an AI-content label, NOT_LABELED, or null. This is the thinnest extraction field in practice.'],
@@ -278,7 +278,7 @@ export default function MethodologyPage() {
                 <div>
                   <h3 className="text-lg font-semibold text-text-main mb-2">Screenshot import</h3>
                   <p className="text-text-muted leading-relaxed">
-                    The user picks screenshots of their feed from their photo library (between 3 and 60 per scan; the app recommends 10 or more). The screenshots run through the same analysis pipeline, the same consent gate, and the same sample-size gates as screen recording. Because imported photos never pass through the recording extension, on-device OCR is not available for them, which disables one verification step described under limitations below.
+                    The user picks screenshots of their feed from their photo library (between 3 and 60 per scan; the app recommends 10 or more). The screenshots run through the same analysis pipeline, the same consent gate, and the same downstream sample-size floors as screen recording, though the save minimums differ (a recording requires 20 posts and 60 seconds; an import requires at least 3 screenshots). Because imported photos never pass through the recording extension, on-device OCR is not available for them, which disables one verification step described under limitations below.
                   </p>
                 </div>
                 <div>
