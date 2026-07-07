@@ -121,11 +121,10 @@ const LABELS = [
   'High Anxiety', 'Easily Nudged', 'Validation Seeking', 'Sports Fan', 'Impulse Buyer',
   'New Parent', 'News Avoider', 'Early Adopter', 'Night Owl', 'Homebody',
 ];
-// Three offset orderings so the stacked marquee rows never line up.
+// Two offset orderings so the stacked marquee rows never line up.
 const LABEL_ROWS = [
   LABELS,
-  [...LABELS.slice(7), ...LABELS.slice(0, 7)],
-  [...LABELS.slice(13), ...LABELS.slice(0, 13)],
+  [...LABELS.slice(10), ...LABELS.slice(0, 10)],
 ];
 const LABEL_MASK = 'linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent)';
 
@@ -498,11 +497,11 @@ export default function LandingV12() {
             <p data-reveal style={{ ...leadP, maxWidth: 500 }}>
               Tap the video, follow, like, and ad in this sample feed, and watch a platform turn four taps into a profile.
             </p>
-            <div data-reveal className="al-try" style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 22, marginBottom: 2 }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 14, background: '#1868D8', borderRadius: 999, padding: '12px 14px 12px 22px' }}>
-                <span style={{ font: `700 16px/1 ${FONT}`, color: '#fff', letterSpacing: '0.01em' }}>Try it yourself</span>
-                <span data-nudge-x="true" style={{ display: 'inline-flex', width: 34, height: 34, borderRadius: '50%', background: '#fff', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h13m0 0l-5-5m5 5l-5 5" stroke="#1868D8" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <div data-reveal className="al-try" style={{ marginTop: 22, marginBottom: 2 }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, background: '#1868D8', borderRadius: 999, padding: '11px 16px 11px 20px' }}>
+                <span style={{ font: `700 15px/1 ${FONT}`, color: '#fff', letterSpacing: '0.01em' }}>Try it yourself</span>
+                <span data-nudge-x="true" style={{ display: 'inline-flex', width: 30, height: 30, borderRadius: '50%', background: '#fff', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h13m0 0l-5-5m5 5l-5 5" stroke="#1868D8" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </span>
               </div>
             </div>
@@ -555,7 +554,7 @@ export default function LandingV12() {
 
           {/* Phone */}
           <div data-reveal>
-            <div className="al-phone" style={{ justifySelf: 'center', width: 360, zoom: 0.68, background: '#0A0A0A', borderRadius: 46, padding: 8, boxShadow: '0 2px 8px rgba(16,24,40,0.06), 0 44px 88px rgba(16,24,40,0.40)' }}>
+            <div className="al-phone" style={{ justifySelf: 'center', width: 300, background: '#0A0A0A', borderRadius: 44, padding: 7, boxShadow: '0 2px 8px rgba(16,24,40,0.06), 0 40px 80px rgba(16,24,40,0.38)' }}>
               <div style={{ position: 'relative', background: '#fff', borderRadius: 39, overflow: 'hidden' }}>
                 {/* status bar */}
                 <div style={{ position: 'relative', padding: '12px 22px 8px' }}>
@@ -589,7 +588,7 @@ export default function LandingV12() {
                   )}
                 </div>
                 {/* Feed body */}
-                <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 12, background: '#F5F6F8' }}>
+                <div className="al-feed" style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 12, background: '#F5F6F8', height: 452, overflowY: 'auto', overscrollBehavior: 'contain' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 9, background: 'rgba(24,104,216,0.1)', border: '1px solid rgba(24,104,216,0.28)', borderRadius: 12, padding: '11px 13px' }}>
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 11V6a1.8 1.8 0 013.6 0v5M12.6 11V8.5a1.6 1.6 0 013.2 0V11M15.8 11.2V9.6a1.5 1.5 0 013 0V15a5 5 0 01-5 5h-1.6a4 4 0 01-2.9-1.2L5.6 15a1.7 1.7 0 012.5-2.3L9.4 14V6" stroke="#1868D8" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     <span style={{ color: '#1868D8' }}>Tap play, Follow, the heart, or Shop to see what it infers.</span>
@@ -703,26 +702,26 @@ export default function LandingV12() {
       </div>
 
       {/* ============================ LABELS MARQUEE ============================ */}
-      <div className="al-labels" style={{ padding: 0, minHeight: '92vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+      <div className="al-labels al-section" style={{ padding: '104px 0' }}>
         <div className="al-labels-pad" style={{ maxWidth: 1180, margin: '0 auto', padding: '0 56px', width: '100%', boxSizing: 'border-box' }}>
           <h2 data-reveal className="al-h2" style={h2Big}>Algorithms infer hidden labels.</h2>
           <p data-reveal style={{ ...leadP, maxWidth: 620 }}>From small signals, systems sort people into clusters that shape what comes next.</p>
         </div>
-        <div className="al-labels-rows" style={{ margin: '56px 0', display: 'flex', flexDirection: 'column', gap: 22 }}>
+        <div className="al-labels-rows" style={{ margin: '48px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
           {LABEL_ROWS.map((row, ri) => (
             <div key={ri} style={{ overflow: 'hidden', maskImage: LABEL_MASK, WebkitMaskImage: LABEL_MASK }}>
               <div
                 data-mqx={ri % 2 === 1 ? 'reverse' : 'true'}
-                style={{ display: 'flex', gap: 16, width: 'max-content', padding: '4px 8px', animationDuration: ri === 1 ? '66s' : ri === 2 ? '60s' : '54s' }}
+                style={{ display: 'flex', gap: 14, width: 'max-content', padding: '4px 8px', animationDuration: ri === 1 ? '64s' : '56s' }}
               >
                 {[...row, ...row].map((label, i) => {
                   const blue = i % 2 === 0;
                   return (
                     <span key={i} style={{
                       display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap',
-                      background: blue ? 'rgba(24,104,216,0.12)' : 'rgba(32,168,136,0.14)',
-                      border: blue ? '1.5px solid rgba(24,104,216,0.45)' : '1.5px solid rgba(32,168,136,0.5)',
-                      borderRadius: 999, padding: '17px 32px', color: '#0A0A0A', fontSize: 17,
+                      background: blue ? 'rgba(24,104,216,0.1)' : 'rgba(32,168,136,0.12)',
+                      border: blue ? '1px solid rgba(24,104,216,0.35)' : '1px solid rgba(32,168,136,0.4)',
+                      borderRadius: 999, padding: '13px 24px', color: '#0A0A0A', fontSize: 15,
                     }}>{label}</span>
                   );
                 })}
