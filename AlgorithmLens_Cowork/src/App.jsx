@@ -3,14 +3,7 @@ import { Routes, Route, Link, Navigate, useLocation, useNavigate } from 'react-r
 import { AnimatePresence, motion } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Logo from './components/Logo';
-import HeroSection from './components/Hero/HeroSection';
-import SectionTracking from './components/Sections/SectionTracking';
-import LabelsPreviewSection from './components/Sections/LabelsPreviewSection';
-import SectionLoop from './components/Sections/SectionLoop';
-import HeroDashboardPreview from './components/Hero/HeroDashboardPreview';
-import HowItWorksSection from './components/Sections/HowItWorksSection';
-import TwoWaysSection from './components/Sections/TwoWaysSection';
-// import SocialProofSection from './components/Sections/SocialProofSection'; // Removed: contained unverified claims
+import LandingV12 from './components/landing/LandingV12';
 import SEO from './components/SEO';
 
 // Static imports for landing page (always needed)
@@ -60,6 +53,9 @@ function App() {
   const comingSoonMode = isComingSoon();
   const location = useLocation();
   const navigate = useNavigate();
+  // The rebuilt v12 landing ships its own nav + footer, so the shared chrome
+  // is hidden on the home route (except in coming-soon mode).
+  const isLandingV12 = location.pathname === '/' && !comingSoonMode;
   const [showRedirectMessage, setShowRedirectMessage] = useState(false);
 
   // Route guard: Block direct URL access to gated routes when Coming Soon mode is enabled
@@ -121,7 +117,7 @@ function App() {
               </div>
             )}
 
-            <Navbar />
+            {!isLandingV12 && <Navbar />}
 
             <main id="main-content">
               <ErrorBoundary fallbackTitle="Something went wrong" fallbackMessage="An error occurred while loading this page. Please try refreshing.">
@@ -139,12 +135,9 @@ function App() {
                       <Route
                         path="/"
                         element={
-                          <>
-                            <SEO path="/" />
-                            <HeroSection />
-
-                            {/* Waitlist Block #1 (Coming Soon mode only) */}
-                            {comingSoonMode && (
+                          comingSoonMode ? (
+                            <>
+                              <SEO path="/" />
                               <section className="py-12 sm:py-20 bg-bg-page">
                                 <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
                                   {/* #18: Fixed h3 → h2 for proper heading hierarchy */}
@@ -157,50 +150,13 @@ function App() {
                                   <WaitlistSignup id="waitlist" />
                                 </div>
                               </section>
-                            )}
-
-                            {/* <SocialProofSection /> — Removed: contained unverified claims */}
-                            <SectionTracking />
-                            <LabelsPreviewSection />
-                            <SectionLoop />
-                            <HeroDashboardPreview />
-                            <HowItWorksSection />
-                            <TwoWaysSection />
-
-                            {/* Waitlist Block #2 - Differentiated messaging (#10.3) */}
-                            {comingSoonMode && (
-                              <section className="py-12 sm:py-20 bg-bg-page/50">
-                                <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-                                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-text-main mb-3">
-                                    Be the First to Know
-                                  </h2>
-                                  <p className="text-base sm:text-lg text-text-muted mb-8 sm:mb-10 px-2">
-                                    Sign up now and we'll notify you on launch day
-                                  </p>
-                                  <WaitlistSignup id="waitlist-footer" />
-                                </div>
-                              </section>
-                            )}
-
-                            {!comingSoonMode && (
-                              <section className="py-12 sm:py-26 mt-12 sm:mt-20 bg-bg-page text-center">
-                                <div className="max-w-4xl mx-auto px-4 sm:px-6">
-                                  <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-main mb-6 sm:mb-8">
-                                    Ready to see what's really in your feed?
-                                  </h2>
-                                  <p className="text-base sm:text-lg text-text-muted mb-8 sm:mb-12 max-w-xl mx-auto px-2">
-                                    Scan your feed and get your AlgorithmLens dashboard in minutes.
-                                  </p>
-                                  <Link
-                                    to="/start"
-                                    className="inline-block px-8 sm:px-10 py-3 sm:py-4 bg-primary-blue text-white rounded-full font-bold text-base sm:text-lg shadow-glow hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-                                  >
-                                    Start a Scan
-                                  </Link>
-                                </div>
-                              </section>
-                            )}
-                          </>
+                            </>
+                          ) : (
+                            <>
+                              <SEO path="/" />
+                              <LandingV12 />
+                            </>
+                          )
                         }
                       />
 
@@ -251,7 +207,8 @@ function App() {
               </ErrorBoundary>
             </main>
 
-            {/* #17: Enhanced footer with refined styling */}
+            {/* #17: Enhanced footer with refined styling (hidden on the v12 landing, which ships its own) */}
+            {!isLandingV12 && (
             <footer className="py-16 bg-bg-page">
               {/* Subtle gradient divider replacing hard border */}
               <div className="h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent"></div>
@@ -296,6 +253,7 @@ function App() {
                 </div>
               </div>
             </footer>
+            )}
           </div>
         </ToastProvider>
       </PaywallProvider>

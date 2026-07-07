@@ -1,0 +1,181 @@
+/*
+ * AlgorithmLens Landing v12 — ported from the approved Claude Design export
+ * (AlgorithmLens Landing v12-canon.dc.html). All styling is scoped under
+ * `.alv12` so it never collides with the rest of the site's Tailwind layer.
+ *
+ * Structural pixel values live inline on the JSX (faithful to the export);
+ * this file carries the keyframes, hover/pseudo behaviour, data-attribute
+ * driven animations, and the responsive (<=768px) overrides that inline
+ * styles cannot express.
+ */
+
+.alv12 {
+  --al-ink: #0A0A0A;
+  --al-blue: #1868D8;
+  --al-green: #20A888;
+  --al-muted: #6B6B70;
+  --al-faint: #A0A0A5;
+  --al-line: #E5E5EA;
+  --al-panel: #F7F7F8;
+  background: #ffffff;
+  color: var(--al-ink);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.alv12 a { color: var(--al-blue); text-decoration: none; }
+.alv12 a:hover { color: var(--al-blue); }
+.alv12 *, .alv12 *::before, .alv12 *::after { box-sizing: border-box; }
+.alv12 ::selection { background: rgba(24, 104, 216, 0.16); }
+
+/* ---- Keyframes (verbatim from the export) ---- */
+@keyframes alv12Flow { to { stroke-dashoffset: -280; } }
+@keyframes alv12ScrollY { to { transform: translateY(-50%); } }
+@keyframes alv12ScrollX { to { transform: translateX(-50%); } }
+@keyframes alv12Pop { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
+@keyframes alv12Grow { from { transform: scaleX(0); } }
+@keyframes alv12Rise { from { opacity: 0; transform: translateY(26px); } }
+@keyframes alv12Orbit { to { offset-distance: 100%; } }
+@keyframes alv12Scan {
+  0% { transform: translateY(-70px); opacity: 0; }
+  10% { opacity: 1; }
+  86% { opacity: 1; }
+  100% { transform: translateY(460px); opacity: 0; }
+}
+@keyframes alv12ScanM {
+  0% { transform: translateY(-60px); opacity: 0; }
+  10% { opacity: 1; }
+  86% { opacity: 1; }
+  100% { transform: translateY(320px); opacity: 0; }
+}
+@keyframes alv12Pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.82); }
+}
+@keyframes alv12TapRing {
+  0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.6); }
+  70% { box-shadow: 0 0 0 13px rgba(255,255,255,0); }
+  100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+}
+@keyframes alv12NudgeX { 0%,100% { transform: translateX(0); } 50% { transform: translateX(6px); } }
+@keyframes alv12NudgeY { 0%,100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+@keyframes alv12Shim { to { background-position: 200% 0; } }
+
+/* ---- Data-attribute driven animation hooks ---- */
+.alv12 [data-marquee="true"] { animation: alv12ScrollY 26s linear infinite; }
+.alv12 [data-marquee="true"]:hover { animation-play-state: paused; }
+.alv12 [data-mqx="true"] { animation: alv12ScrollX 54s linear infinite; }
+.alv12 [data-mqx="true"]:hover { animation-play-state: paused; }
+.alv12 [data-mqx="reverse"] { animation: alv12ScrollX 54s linear infinite reverse; }
+.alv12 [data-mqx="reverse"]:hover { animation-play-state: paused; }
+.alv12 [data-grow="true"] { animation: alv12Grow 1.1s cubic-bezier(0.22,1,0.36,1) both; transform-origin: left; }
+.alv12 [data-pulse="true"] { animation: alv12Pulse 2s ease-in-out infinite; }
+.alv12 [data-scan="true"] { animation: alv12Scan 3.8s cubic-bezier(0.4,0,0.2,1) infinite; }
+.alv12 [data-scan="mobile"] { animation: alv12ScanM 3.8s cubic-bezier(0.4,0,0.2,1) infinite; }
+.alv12 [data-nudge-x="true"] { animation: alv12NudgeX 1.3s ease-in-out infinite; }
+.alv12 [data-tapring="true"] { animation: alv12TapRing 1.9s ease-out infinite; }
+.alv12 [data-pop="true"] { animation: alv12Pop 0.4s ease both; }
+
+.alv12 .al-skel {
+  background: linear-gradient(90deg, #F0F0F2 25%, #F7F7F8 37%, #F0F0F2 63%);
+  background-size: 200% 100%;
+  animation: alv12Shim 2.4s ease-in-out infinite;
+}
+
+/* ---- Nav link underline sweep ---- */
+.alv12 .al-navlink { position: relative; }
+.alv12 .al-navlink::after {
+  content: ""; position: absolute; left: 0; right: 100%; bottom: -5px;
+  height: 2px; background: var(--al-blue); transition: right 0.22s ease;
+}
+.alv12 .al-navlink:hover::after { right: 0; }
+
+/* ---- Card / lift hovers ---- */
+.alv12 .al-card { transition: transform 0.2s cubic-bezier(0.22,1,0.36,1), box-shadow 0.2s ease; }
+.alv12 .al-card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(16,24,40,0.07), 0 24px 48px -20px rgba(16,24,40,0.24); }
+.alv12 .al-lift { transition: transform 0.2s cubic-bezier(0.22,1,0.36,1), box-shadow 0.2s ease, border-color 0.2s ease; }
+.alv12 .al-lift:hover { transform: translateY(-4px); border-color: rgba(24,104,216,0.35); box-shadow: 0 6px 16px rgba(16,24,40,0.08), 0 30px 60px -24px rgba(16,24,40,0.26); }
+.alv12 .al-way { transition: transform 0.2s cubic-bezier(0.22,1,0.36,1), box-shadow 0.2s ease; }
+.alv12 .al-way:hover { transform: translateY(-4px); box-shadow: 0 6px 16px rgba(16,24,40,0.08), 0 30px 60px -24px rgba(16,24,40,0.26); }
+.alv12 .al-way:hover .al-ico { transform: scale(1.09) rotate(-3deg); }
+.alv12 .al-ico { transition: transform 0.28s cubic-bezier(0.22,1,0.36,1); }
+
+.alv12 button { transition: transform 0.14s ease, box-shadow 0.16s ease, filter 0.16s ease; }
+.alv12 button:hover { transform: translateY(-1px); filter: brightness(1.04); }
+.alv12 button:active { transform: translateY(0); filter: brightness(0.97); }
+
+/* ---- Scroll reveal (IntersectionObserver adds .al-revealed) ---- */
+.alv12 [data-reveal] { opacity: 1; }
+.alv12.al-js [data-reveal] { opacity: 0; transform: translateY(26px); }
+.alv12.al-js [data-reveal].al-revealed {
+  animation: alv12Rise 0.85s cubic-bezier(0.22,1,0.36,1) both;
+  opacity: 1;
+}
+
+/* ---- Desktop / mobile frame visibility ---- */
+.alv12 .al-desktop-only { display: initial; }
+.alv12 .al-mobile-only { display: none; }
+
+/* ==================================================================
+   Responsive: <=768px collapses the 1440 layout toward the 390 frame
+   ================================================================== */
+@media (max-width: 768px) {
+  .alv12 .al-desktop-only { display: none !important; }
+  .alv12 .al-mobile-only { display: flex !important; }
+
+  /* Nav: drop the desktop link cluster, keep wordmark + app CTA */
+  .alv12 .al-nav { padding: 0 20px !important; height: 58px !important; gap: 12px !important; }
+  .alv12 .al-nav-links { display: none !important; }
+  .alv12 .al-nav-cta { margin-left: auto !important; }
+
+  /* Section rhythm */
+  .alv12 .al-section { padding: 56px 20px !important; }
+  .alv12 .al-hero { padding: 36px 20px 32px !important; }
+
+  /* Hero */
+  .alv12 .al-hero-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+  .alv12 .al-hero-h1 { font-size: 44px !important; line-height: 0.97 !important; letter-spacing: -0.036em !important; }
+  .alv12 .al-hero-sub { font-size: 16px !important; line-height: 25px !important; }
+  .alv12 .al-hero-cta { width: 100% !important; justify-content: center !important; }
+
+  /* Any 2+ column grid stacks */
+  .alv12 .al-report-metrics { grid-template-columns: repeat(2, 1fr) !important; }
+  .alv12 .al-report-charts { grid-template-columns: 1fr !important; }
+  .alv12 .al-report-charts > * { grid-column: auto !important; grid-row: auto !important; }
+  .alv12 .al-report-h2 { font-size: 27px !important; white-space: normal !important; line-height: 1.1 !important; }
+
+  .alv12 .al-loop-grid { grid-template-columns: 1fr !important; gap: 36px !important; }
+  .alv12 .al-how-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+  .alv12 .al-privacy-grid { grid-template-columns: 1fr !important; gap: 28px !important; }
+  .alv12 .al-privacy-cards { grid-template-columns: 1fr 1fr !important; }
+  .alv12 .al-ways-grid { grid-template-columns: 1fr 1fr !important; }
+  .alv12 .al-trust-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+  .alv12 .al-footer-grid { grid-template-columns: 1fr 1fr !important; gap: 32px !important; }
+
+  /* Section headings */
+  .alv12 .al-h2 { font-size: 31px !important; line-height: 1.1 !important; letter-spacing: -0.022em !important; }
+  .alv12 .al-final-h2 { font-size: 40px !important; }
+  .alv12 .al-how-cta { flex-direction: column !important; align-items: flex-start !important; gap: 16px !important; }
+  /* Phone shows at full size on mobile (no desktop zoom-down) */
+  .alv12 .al-phone { width: 100% !important; max-width: 340px !important; margin: 0 auto !important; zoom: 1 !important; }
+  /* Labels section: full-bleed rows, text blocks get mobile gutters */
+  .alv12 .al-labels { min-height: auto !important; padding: 56px 0 !important; }
+  .alv12 .al-labels-pad { padding: 0 20px !important; }
+  .alv12 .al-try { justify-content: flex-start !important; }
+}
+
+@media (max-width: 460px) {
+  .alv12 .al-privacy-cards { grid-template-columns: 1fr !important; }
+  .alv12 .al-ways-grid { grid-template-columns: 1fr !important; }
+  .alv12 .al-report-metrics { grid-template-columns: 1fr 1fr !important; }
+}
+
+/* ---- Respect reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  .alv12 *, .alv12 *::before, .alv12 *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .alv12.al-js [data-reveal] { opacity: 1 !important; transform: none !important; }
+}
