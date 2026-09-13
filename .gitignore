@@ -1,6 +1,8 @@
 # Dependencies
 node_modules/
 package-lock.json
+# The website lock file must be tracked so Vercel and CI install with npm ci
+!AlgorithmLens_Cowork/package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
