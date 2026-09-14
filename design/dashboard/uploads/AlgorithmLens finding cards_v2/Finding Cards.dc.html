@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+body{margin:0;background:#EDE7D9;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+a{color:#1868D8}a:hover{color:#1256B8}
+.dv-turn{padding:40px 44px 32px;scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 18px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#23201A;color:#fff;border-radius:4px;text-decoration:none}
+.dv-tname{font:600 13px/1.2 system-ui,sans-serif;color:#23201A}
+.dv-opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(35,32,26,.08);color:#23201A;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11.5px/1.3 system-ui,sans-serif;color:rgba(35,32,26,.6)}
+.dv-card{max-width:100%;background:#F7F2E8;border:1px solid rgba(35,32,26,.1);border-radius:10px;overflow:hidden}
+.dv-opt:target .dv-oid{background:#1868D8;color:#fff}
+.dv-next{margin:24px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(35,32,26,.55)}
+</style>
+</helmet>
+<section class="dv-turn" id="t2">
+<div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">Refinement pass: craft, rhythm, and a signature. Structure of <a class="dv-oid" href="#1a">1a</a> kept as is</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="2a" data-screen-label="2a refined system screen">
+  <div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>The refined stack. Lead finding sits larger; ads treatment <a class="dv-oid" href="#1b">1b</a> ships. Tap Details</div>
+  <div class="dv-card" style="width:390px;padding:28px 20px 36px">
+    <div style="font:600 15px/20px system-ui,-apple-system,'Segoe UI',Roboto,sans-serif"><span style="color:#1868D8">Algorithm</span><span style="color:#20A888">Lens</span></div>
+    <div style="margin-top:20px;font:400 13px/18px system-ui,sans-serif;color:#6D675C">Instagram · today at 2:41 pm · 17 posts</div>
+    <h1 style="margin:6px 0 0;font:400 30px/37px 'New York',ui-serif,Charter,Georgia,serif;letter-spacing:-0.015em;color:#23201A">What your feed was made of</h1>
+    <div style="margin-top:24px;display:flex;flex-direction:column;gap:16px">
+
+      <article data-screen-label="lead ads card" style="background:#FFFFFF;border:1px solid #E7E0D1;border-radius:12px;padding:24px 24px 10px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:10px;height:10px;border-radius:9999px;border:2px solid #1868D8;box-sizing:border-box;flex:none"></span>
+          <span style="font:600 12px/16px system-ui,sans-serif;letter-spacing:0.02em;color:#6D675C">Ads</span>
+          <span style="flex:1;height:1px;background:#F0EADD"></span>
+        </div>
+        <h2 style="margin:12px 0 0;font:400 30px/37px 'New York',ui-serif,Charter,Georgia,serif;letter-spacing:-0.015em;color:#23201A;text-wrap:pretty">About a third of what you scrolled was an ad.</h2>
+        <div style="margin-top:24px;display:flex;gap:4px">
+          <sc-for list="{{ feedDotsL }}" as="d" hint-placeholder-count="17"><span style="{{ d.s }}"></span></sc-for>
+        </div>
+        <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:baseline">
+          <span style="display:inline-flex;align-items:center;gap:6px;font:400 12.5px/16px system-ui,sans-serif;color:#6D675C"><span style="width:8px;height:8px;border-radius:9999px;background:#1868D8"></span>ad<span style="width:8px;height:8px;border-radius:9999px;border:1.5px solid #C7BFAD;box-sizing:border-box;margin-left:6px"></span>post, in feed order</span>
+          <span style="font:600 12.5px/16px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">5 of 17 · 29%</span>
+        </div>
+        <p style="margin:14px 0 0;font:italic 400 14px/20px 'New York',ui-serif,Charter,Georgia,serif;color:#6D675C">They came in a cluster early in your scroll.</p>
+        <div onClick="{{ toggleAds2 }}" style="margin-top:16px;border-top:1px solid #E7E0D1;min-height:48px;display:flex;align-items:center;gap:12px;cursor:pointer">
+          <span style="flex:1;font:400 13px/18px system-ui,sans-serif;color:#6D675C">Watch this after your next scan</span>
+          <span style="display:inline-flex;align-items:center;gap:8px;font:600 13px/18px system-ui,sans-serif;color:#1868D8">Details<span style="width:26px;height:26px;border-radius:9999px;border:1px solid #E7E0D1;display:inline-flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1868D8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ ads2Chev }};transition:transform 280ms cubic-bezier(0.32,0.72,0,1)"><path d="m6 9 6 6 6-6"></path></svg></span></span>
+        </div>
+        <div style="display:grid;grid-template-rows:{{ ads2Rows }};transition:grid-template-rows 280ms cubic-bezier(0.32,0.72,0,1)">
+          <div style="overflow:hidden;min-height:0">
+            <div style="border-top:1px solid #E7E0D1;padding:4px 0 14px">
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #F0EADD"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Posts with an ad label</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">5 of 17</span></div>
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #F0EADD"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Share of this scan</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">29%</span></div>
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Typical share</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">about 15%</span></div>
+              <div style="margin-top:6px"><span style="display:inline-flex;padding:6px 12px;background:rgba(255,204,0,0.12);border-radius:9999px;font:500 12px/16px system-ui,sans-serif;color:#23201A">One small scan · 17 posts</span></div>
+              <div style="margin-top:12px;background:#F7F2E8;border-radius:8px;padding:12px 14px;font:400 13px/19px system-ui,sans-serif;color:#6D675C">We can count what was labeled an ad. We cannot see how or why anything was placed. The 15% reference comes from published feed audits, not from your own history.</div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article data-screen-label="refined sources card" style="background:#FFFFFF;border:1px solid #E7E0D1;border-radius:12px;padding:20px 20px 8px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:10px;height:10px;border-radius:9999px;border:2px solid #20A888;box-sizing:border-box;flex:none"></span>
+          <span style="font:600 12px/16px system-ui,sans-serif;letter-spacing:0.02em;color:#6D675C">Sources</span>
+          <span style="flex:1;height:1px;background:#F0EADD"></span>
+        </div>
+        <h2 style="margin:12px 0 0;font:400 26px/33px 'New York',ui-serif,Charter,Georgia,serif;letter-spacing:-0.015em;color:#23201A;text-wrap:pretty">Much of what you saw came from just five accounts.</h2>
+        <div style="margin-top:24px;display:flex;gap:2px;height:20px;border-radius:9999px;overflow:hidden">
+          <span style="width:11.8%;background:#20A888"></span>
+          <span style="width:11.8%;background:#20A888"></span>
+          <span style="width:5.9%;background:#20A888"></span>
+          <span style="width:5.9%;background:#20A888"></span>
+          <span style="width:5.9%;background:#20A888"></span>
+          <span style="flex:1;background:#ECE5D5"></span>
+        </div>
+        <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:baseline">
+          <span style="display:inline-flex;align-items:center;gap:6px;font:400 12.5px/16px system-ui,sans-serif;color:#6D675C"><span style="width:8px;height:8px;border-radius:9999px;background:#20A888"></span><span style="font-weight:600;color:#23201A">5 accounts · 41%</span></span>
+          <span style="font:400 12.5px/16px system-ui,sans-serif;color:#6D675C">12 others · 59%</span>
+        </div>
+        <p style="margin:14px 0 0;font:italic 400 14px/20px 'New York',ui-serif,Charter,Georgia,serif;color:#6D675C">Just two of them supplied half of that share.</p>
+        <div onClick="{{ toggleSrc2 }}" style="margin-top:16px;border-top:1px solid #E7E0D1;min-height:48px;display:flex;align-items:center;gap:12px;cursor:pointer">
+          <span style="flex:1;font:400 13px/18px system-ui,sans-serif;color:#6D675C">See if the same five lead next week</span>
+          <span style="display:inline-flex;align-items:center;gap:8px;font:600 13px/18px system-ui,sans-serif;color:#1868D8">Details<span style="width:26px;height:26px;border-radius:9999px;border:1px solid #E7E0D1;display:inline-flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1868D8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ src2Chev }};transition:transform 280ms cubic-bezier(0.32,0.72,0,1)"><path d="m6 9 6 6 6-6"></path></svg></span></span>
+        </div>
+        <div style="display:grid;grid-template-rows:{{ src2Rows }};transition:grid-template-rows 280ms cubic-bezier(0.32,0.72,0,1)">
+          <div style="overflow:hidden;min-height:0">
+            <div style="border-top:1px solid #E7E0D1;padding:4px 0 14px">
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #F0EADD"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Top five accounts</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">7 of 17 posts</span></div>
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Everyone else</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">10 posts from 12 accounts</span></div>
+              <div style="margin-top:6px"><span style="display:inline-flex;padding:6px 12px;background:rgba(255,204,0,0.12);border-radius:9999px;font:500 12px/16px system-ui,sans-serif;color:#23201A">One small scan · 17 posts</span></div>
+              <div style="margin-top:12px;background:#F7F2E8;border-radius:8px;padding:12px 14px;font:400 13px/19px system-ui,sans-serif;color:#6D675C">Shares count posts, not time on screen. Whether you follow these accounts was not part of this scan.</div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article data-screen-label="refined tone card" style="background:#FFFFFF;border:1px solid #E7E0D1;border-radius:12px;padding:20px 20px 8px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:10px;height:10px;border-radius:9999px;border:2px solid #1868D8;box-sizing:border-box;flex:none"></span>
+          <span style="font:600 12px/16px system-ui,sans-serif;letter-spacing:0.02em;color:#6D675C">Tone</span>
+          <span style="flex:1;height:1px;background:#F0EADD"></span>
+        </div>
+        <h2 style="margin:12px 0 0;font:400 26px/33px 'New York',ui-serif,Charter,Georgia,serif;letter-spacing:-0.015em;color:#23201A;text-wrap:pretty">Mostly neutral in tone.</h2>
+        <div style="margin-top:24px;display:flex;gap:2px;height:20px;border-radius:9999px;overflow:hidden">
+          <span style="width:37.5%;background:#20A888"></span>
+          <span style="flex:1;background:#1868D8"></span>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:14px;align-items:baseline">
+          <span style="display:inline-flex;align-items:center;gap:6px;font:400 12.5px/16px system-ui,sans-serif;color:#6D675C"><span style="width:8px;height:8px;border-radius:9999px;background:#20A888"></span><span style="font-weight:600;color:#23201A">6</span>positive</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;font:400 12.5px/16px system-ui,sans-serif;color:#6D675C"><span style="width:8px;height:8px;border-radius:9999px;background:#1868D8"></span><span style="font-weight:600;color:#23201A">10</span>neutral</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;font:400 12.5px/16px system-ui,sans-serif;color:#6D675C"><span style="width:8px;height:8px;border-radius:9999px;border:1.5px solid #C7BFAD;box-sizing:border-box"></span><span style="font-weight:600;color:#23201A">0</span>negative</span>
+        </div>
+        <p style="margin:14px 0 0;font:italic 400 14px/20px 'New York',ui-serif,Charter,Georgia,serif;color:#6D675C">Nothing in this scan read as negative.</p>
+        <div onClick="{{ toggleTone2 }}" style="margin-top:16px;border-top:1px solid #E7E0D1;min-height:48px;display:flex;align-items:center;gap:12px;cursor:pointer">
+          <span style="flex:1;font:400 13px/18px system-ui,sans-serif;color:#6D675C">Watch the balance over time</span>
+          <span style="display:inline-flex;align-items:center;gap:8px;font:600 13px/18px system-ui,sans-serif;color:#1868D8">Details<span style="width:26px;height:26px;border-radius:9999px;border:1px solid #E7E0D1;display:inline-flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1868D8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ tone2Chev }};transition:transform 280ms cubic-bezier(0.32,0.72,0,1)"><path d="m6 9 6 6 6-6"></path></svg></span></span>
+        </div>
+        <div style="display:grid;grid-template-rows:{{ tone2Rows }};transition:grid-template-rows 280ms cubic-bezier(0.32,0.72,0,1)">
+          <div style="overflow:hidden;min-height:0">
+            <div style="border-top:1px solid #E7E0D1;padding:4px 0 14px">
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #F0EADD"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Rated</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">16 of 17 posts</span></div>
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #F0EADD"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Positive</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">6</span></div>
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #F0EADD"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Neutral</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">10</span></div>
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #F0EADD"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Negative</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">0</span></div>
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Could not be rated</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">1</span></div>
+              <div style="margin-top:6px"><span style="display:inline-flex;padding:6px 12px;background:rgba(255,204,0,0.12);border-radius:9999px;font:500 12px/16px system-ui,sans-serif;color:#23201A">One small scan · 17 posts</span></div>
+              <div style="margin-top:12px;background:#F7F2E8;border-radius:8px;padding:12px 14px;font:400 13px/19px system-ui,sans-serif;color:#6D675C">Tone is the model's read of wording and imagery, not of how anything made you feel.</div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article data-screen-label="refined politics card" style="background:#FFFFFF;border:1px solid #E7E0D1;border-radius:12px;padding:20px 20px 8px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:10px;height:10px;border-radius:9999px;border:2px solid #20A888;box-sizing:border-box;flex:none"></span>
+          <span style="font:600 12px/16px system-ui,sans-serif;letter-spacing:0.02em;color:#6D675C">Politics</span>
+          <span style="flex:1;height:1px;background:#F0EADD"></span>
+        </div>
+        <h2 style="margin:12px 0 0;font:400 26px/33px 'New York',ui-serif,Charter,Georgia,serif;letter-spacing:-0.015em;color:#23201A;text-wrap:pretty">None of the posts read as political.</h2>
+        <div style="margin-top:24px;display:flex;gap:6px">
+          <sc-for list="{{ polDots }}" as="d" hint-placeholder-count="17"><span style="{{ d.s }}"></span></sc-for>
+        </div>
+        <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+          <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:rgba(32,168,136,0.12);border-radius:9999px;font:600 12px/16px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums"><span style="width:8px;height:8px;border-radius:9999px;background:#20A888"></span>None found · 0 of 17</span>
+          <span style="font:400 12.5px/16px system-ui,sans-serif;color:#6D675C">every post checked</span>
+        </div>
+        <p style="margin:14px 0 0;font:italic 400 14px/20px 'New York',ui-serif,Charter,Georgia,serif;color:#6D675C">That may be your feed, or just this one sample.</p>
+        <div onClick="{{ togglePol2 }}" style="margin-top:16px;border-top:1px solid #E7E0D1;min-height:48px;display:flex;align-items:center;gap:12px;cursor:pointer">
+          <span style="flex:1;font:400 13px/18px system-ui,sans-serif;color:#6D675C">Scan again next week to confirm</span>
+          <span style="display:inline-flex;align-items:center;gap:8px;font:600 13px/18px system-ui,sans-serif;color:#1868D8">Details<span style="width:26px;height:26px;border-radius:9999px;border:1px solid #E7E0D1;display:inline-flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1868D8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ pol2Chev }};transition:transform 280ms cubic-bezier(0.32,0.72,0,1)"><path d="m6 9 6 6 6-6"></path></svg></span></span>
+        </div>
+        <div style="display:grid;grid-template-rows:{{ pol2Rows }};transition:grid-template-rows 280ms cubic-bezier(0.32,0.72,0,1)">
+          <div style="overflow:hidden;min-height:0">
+            <div style="border-top:1px solid #E7E0D1;padding:4px 0 14px">
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #F0EADD"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Posts checked</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">17 of 17</span></div>
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Read as political</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">0</span></div>
+              <div style="margin-top:6px"><span style="display:inline-flex;padding:6px 12px;background:rgba(255,204,0,0.12);border-radius:9999px;font:500 12px/16px system-ui,sans-serif;color:#23201A">One small scan · 17 posts</span></div>
+              <div style="margin-top:12px;background:#F7F2E8;border-radius:8px;padding:12px 14px;font:400 13px/19px system-ui,sans-serif;color:#6D675C">Political here means elections, policy, or civic topics as the model reads them. A quiet result from one scan is a data point, not a pattern.</div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <div style="margin-top:8px;background:#FFFFFF;border:1px solid #E7E0D1;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:10px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6D675C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+        <span style="flex:1;font:400 13px/18px system-ui,sans-serif;color:#6D675C">How this scan works</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A29B8C" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="dv-opt" id="2b" data-screen-label="2b lead finding close-up">
+  <div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>The lead finding, close up. What changed and why</div>
+  <div class="dv-card" style="width:390px;padding:20px">
+    <article style="background:#FFFFFF;border:1px solid #E7E0D1;border-radius:12px;padding:24px 24px 10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="width:10px;height:10px;border-radius:9999px;border:2px solid #1868D8;box-sizing:border-box;flex:none"></span>
+        <span style="font:600 12px/16px system-ui,sans-serif;letter-spacing:0.02em;color:#6D675C">Ads</span>
+        <span style="flex:1;height:1px;background:#F0EADD"></span>
+      </div>
+      <h2 style="margin:12px 0 0;font:400 30px/37px 'New York',ui-serif,Charter,Georgia,serif;letter-spacing:-0.015em;color:#23201A;text-wrap:pretty">About a third of what you scrolled was an ad.</h2>
+      <div style="margin-top:24px;display:flex;gap:4px">
+        <sc-for list="{{ feedDotsL }}" as="d" hint-placeholder-count="17"><span style="{{ d.s }}"></span></sc-for>
+      </div>
+      <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:baseline">
+        <span style="display:inline-flex;align-items:center;gap:6px;font:400 12.5px/16px system-ui,sans-serif;color:#6D675C"><span style="width:8px;height:8px;border-radius:9999px;background:#1868D8"></span>ad<span style="width:8px;height:8px;border-radius:9999px;border:1.5px solid #C7BFAD;box-sizing:border-box;margin-left:6px"></span>post, in feed order</span>
+        <span style="font:600 12.5px/16px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">5 of 17 · 29%</span>
+      </div>
+      <p style="margin:14px 0 0;font:italic 400 14px/20px 'New York',ui-serif,Charter,Georgia,serif;color:#6D675C">They came in a cluster early in your scroll.</p>
+      <div style="margin-top:16px;border-top:1px solid #E7E0D1;min-height:48px;display:flex;align-items:center;gap:12px">
+        <span style="flex:1;font:400 13px/18px system-ui,sans-serif;color:#6D675C">Watch this after your next scan</span>
+        <span style="display:inline-flex;align-items:center;gap:8px;font:600 13px/18px system-ui,sans-serif;color:#1868D8">Details<span style="width:26px;height:26px;border-radius:9999px;border:1px solid #E7E0D1;display:inline-flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1868D8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></span></span>
+      </div>
+    </article>
+    <div style="margin:16px 4px 0;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;gap:8px;font:400 12px/17px system-ui,sans-serif;color:#6D675C"><span style="font-weight:600;color:#23201A;flex:none">1</span><span>Headline steps up to 30/37; only the lead finding gets this size, the rest of the stack sits at 26/33.</span></div>
+      <div style="display:flex;gap:8px;font:400 12px/17px system-ui,sans-serif;color:#6D675C"><span style="font-weight:600;color:#23201A;flex:none">2</span><span>The lens ring opens the card: a hollow ring in the subject color, then the label, then a faint rule. See <a class="dv-oid" href="#2c">2c</a>.</span></div>
+      <div style="display:flex;gap:8px;font:400 12px/17px system-ui,sans-serif;color:#6D675C"><span style="font-weight:600;color:#23201A;flex:none">3</span><span>Dots grow to 14 with tighter 4 gaps, so the row reads as one object; 24 of air above and a full-width sweep.</span></div>
+      <div style="display:flex;gap:8px;font:400 12px/17px system-ui,sans-serif;color:#6D675C"><span style="font-weight:600;color:#23201A;flex:none">4</span><span>The caption becomes a serif italic aside, a quiet second voice under the chart.</span></div>
+      <div style="display:flex;gap:8px;font:400 12px/17px system-ui,sans-serif;color:#6D675C"><span style="font-weight:600;color:#23201A;flex:none">5</span><span>Details gains a ringed chevron; the ring echoes the lens mark and gives the tap a target.</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="dv-opt" id="2c" data-screen-label="2c signature element">
+  <div class="dv-olabel"><a class="dv-oid" href="#2c">2c</a>The signature: the lens ring</div>
+  <div class="dv-card" style="padding:20px">
+    <article style="width:440px;background:#FFFFFF;border:1px solid #E7E0D1;border-radius:12px;padding:24px">
+      <h2 style="margin:0;font:400 22px/28px 'New York',ui-serif,Charter,Georgia,serif;letter-spacing:-0.01em;color:#23201A">One quiet mark, repeated</h2>
+      <p style="margin:10px 0 0;font:400 13px/19px system-ui,sans-serif;color:#6D675C">Every finding opens with a small hollow ring in the card's subject color, the same grammar as the post dots inside the charts. Blue and green alternate down the stack, so both brand colors are always on screen without a single decorative element. The ring never holds an icon and never fills; it is the lens.</p>
+      <div style="margin-top:18px;display:flex;flex-direction:column;gap:14px;border-top:1px solid #F0EADD;padding-top:16px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:10px;height:10px;border-radius:9999px;border:2px solid #1868D8;box-sizing:border-box;flex:none"></span>
+          <span style="font:600 12px/16px system-ui,sans-serif;letter-spacing:0.02em;color:#6D675C">Ads</span>
+          <span style="flex:1;height:1px;background:#F0EADD"></span>
+          <span style="font:400 11.5px/16px system-ui,sans-serif;color:#A29B8C">blue, the counted thing</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:10px;height:10px;border-radius:9999px;border:2px solid #20A888;box-sizing:border-box;flex:none"></span>
+          <span style="font:600 12px/16px system-ui,sans-serif;letter-spacing:0.02em;color:#6D675C">Sources</span>
+          <span style="flex:1;height:1px;background:#F0EADD"></span>
+          <span style="font:400 11.5px/16px system-ui,sans-serif;color:#A29B8C">green, alternating</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:10px;height:10px;border-radius:9999px;border:2px solid #20A888;box-sizing:border-box;flex:none"></span>
+          <span style="font:600 12px/16px system-ui,sans-serif;letter-spacing:0.02em;color:#6D675C">Politics</span>
+          <span style="flex:1;height:1px;background:#F0EADD"></span>
+          <span style="font:400 11.5px/16px system-ui,sans-serif;color:#A29B8C">green on an all-clear</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="display:inline-flex;align-items:center;gap:8px;font:600 13px/18px system-ui,sans-serif;color:#1868D8">Details<span style="width:26px;height:26px;border-radius:9999px;border:1px solid #E7E0D1;display:inline-flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1868D8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></span></span>
+          <span style="flex:1"></span>
+          <span style="font:400 11.5px/16px system-ui,sans-serif;color:#A29B8C">the same ring gives Details its tap target</span>
+        </div>
+      </div>
+    </article>
+  </div>
+</div>
+
+<div class="dv-opt" id="2d" data-screen-label="2d updated spec">
+  <div class="dv-olabel"><a class="dv-oid" href="#2d">2d</a>Spec deltas from <a class="dv-oid" href="#1f">1f</a>. Everything else in <a class="dv-oid" href="#1f">1f</a> still holds</div>
+  <div class="dv-card" style="padding:20px">
+    <article style="width:480px;background:#FFFFFF;border:1px solid #E7E0D1;border-radius:12px;padding:24px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="width:10px;height:10px;border-radius:9999px;border:2px solid #1868D8;box-sizing:border-box;flex:none"></span>
+        <span style="font:600 12px/16px system-ui,sans-serif;letter-spacing:0.02em;color:#6D675C">Spec, revision 2</span>
+        <span style="flex:1;height:1px;background:#F0EADD"></span>
+      </div>
+      <h2 style="margin:12px 0 0;font:400 22px/28px 'New York',ui-serif,Charter,Georgia,serif;letter-spacing:-0.01em;color:#23201A">What changed</h2>
+      <div style="margin-top:16px;border-top:1px solid #F0EADD;padding-top:14px">
+        <div style="font:600 12.5px/17px system-ui,sans-serif;color:#23201A;margin-bottom:10px">Type</div>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:7px 16px;font:400 12.5px/17px system-ui,sans-serif;color:#6D675C">
+          <span>Headline, standard cards</span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">26/33 · 400 · -1.5%</span>
+          <span>Headline, lead finding only</span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">30/37 · 400 · -1.5%</span>
+          <span>Screen title</span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">30/37 · 400</span>
+          <span>Caption, now serif italic, second voice</span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">14/20 · 400 italic</span>
+          <span>Finding label, +2% tracking</span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">12/16 · 600</span>
+        </div>
+      </div>
+      <div style="margin-top:16px;border-top:1px solid #F0EADD;padding-top:14px">
+        <div style="font:600 12.5px/17px system-ui,sans-serif;color:#23201A;margin-bottom:8px">The lens ring</div>
+        <div style="font:400 12.5px/19px system-ui,sans-serif;color:#6D675C">10px hollow ring, 2px stroke, in the card's subject color (#1868D8 or #20A888, alternating down the stack), then 8 gap, label, 8 gap, a 1px #F0EADD rule to the card edge. 12 below to the headline. The Details chevron sits in a 26px circle with a 1px #E7E0D1 ring.</div>
+      </div>
+      <div style="margin-top:16px;border-top:1px solid #F0EADD;padding-top:14px">
+        <div style="font:600 12.5px/17px system-ui,sans-serif;color:#23201A;margin-bottom:8px">Visuals and rhythm</div>
+        <div style="font:400 12.5px/19px system-ui,sans-serif;color:#6D675C">Bars are now full pills, 20 tall, radius 9999, 2px slits between segments. Dots stay 12 with 6 gaps; the lead card uses 14 dots with 4 gaps so the row reads as one object. Headline to visual 24. Visual to legend 12, legend to caption 14, footer 16 above at min height 48. Cards sit 16 apart; lead card padding 24, others 20. Green is #20A888 exactly, everywhere; colored text is reserved for the blue Details link, all other color lives in the graphics.</div>
+      </div>
+      <div style="margin-top:16px;border-top:1px solid #F0EADD;padding-top:14px">
+        <div style="font:600 12.5px/17px system-ui,sans-serif;color:#23201A;margin-bottom:8px">Motion, described</div>
+        <div style="font:400 12.5px/19px system-ui,sans-serif;color:#6D675C">On first view of a scan, dots fade in once, in feed order, 12ms apart, 240ms total; bar fills draw from zero width over 420ms. Both use cubic-bezier(0.32, 0.72, 0, 1), run once, and never replay on scroll. Details expands 280ms with content fading in over the last 120ms; the chevron rotates on the same curve. Press states tint, nothing scales or bounces.</div>
+      </div>
+    </article>
+  </div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "apply the lead treatment to whichever finding matters most, not just the first" · "try a bolder serif weight on <a class="dv-oid" href="#2b">2b</a>" · "animate the dot draw-in in <a class="dv-oid" href="#2a">2a</a>"</p>
+</section>
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">AlgorithmLens finding card system</span></div>
+<div style="max-width:1000px;background:#FFFFFF;border:1px solid rgba(35,32,26,.1);border-radius:10px;padding:18px 20px;margin-bottom:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px">
+  <div>
+    <div style="font:600 11.5px/16px system-ui,sans-serif;color:#6D675C;margin-bottom:6px">Assumptions</div>
+    <div style="font:400 12.5px/18px system-ui,sans-serif;color:#23201A">One scan of 17 posts. Ads 5 of 17 (29%) vs a 15% reference. Top five sources 7 posts (41%). Tone rated on 16 of 17. Politics 0 of 17. The 15% reference wording is a placeholder until you confirm its source.</div>
+  </div>
+  <div>
+    <div style="font:600 11.5px/16px system-ui,sans-serif;color:#6D675C;margin-bottom:6px">Decisions</div>
+    <div style="font:400 12.5px/18px system-ui,sans-serif;color:#23201A">Cream stage, white cards, warm neutrals. Blue is the counted thing plus the Details action; green is positive, reference and all-clear states. Headlines are the system serif (New York on iOS), carry no digits; every number lives in chart labels or Details. Radius, spacing and motion keep the existing tokens.</div>
+  </div>
+  <div>
+    <div style="font:600 11.5px/16px system-ui,sans-serif;color:#6D675C;margin-bottom:6px">Open</div>
+    <div style="font:400 12.5px/18px system-ui,sans-serif;color:#23201A">Which ads treatment ships in <a class="dv-oid" href="#1b">1b</a>, <a class="dv-oid" href="#1c">1c</a> or <a class="dv-oid" href="#1d">1d</a>. Whether footer prompts become real actions (reminders) or stay as quiet suggestions. In <a class="dv-oid" href="#1a">1a</a>, tap Details on any card to see the expand behavior.</div>
+  </div>
+</div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a" data-screen-label="1a system screen">
+  <div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>The system, all four findings. Tap Details to expand</div>
+  <div class="dv-card" style="width:390px;padding:24px 20px 32px">
+    <div style="font:600 15px/20px system-ui,-apple-system,'Segoe UI',Roboto,sans-serif"><span style="color:#1868D8">Algorithm</span><span style="color:#20A888">Lens</span></div>
+    <div style="margin-top:14px;font:400 13px/18px system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#6D675C">Instagram · today at 2:41 pm · 17 posts</div>
+    <h1 style="margin:4px 0 0;font:400 26px/32px 'New York',ui-serif,Charter,Georgia,serif;letter-spacing:-0.01em;color:#23201A">What your feed was made of</h1>
+    <div style="margin-top:20px;display:flex;flex-direction:column;gap:12px">
+
+      <article data-screen-label="ads card" style="background:#FFFFFF;border:1px solid #E7E0D1;border-radius:12px;padding:20px 20px 8px">
+        <div style="font:500 13px/18px system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#6D675C">Ads</div>
+        <h2 style="margin:6px 0 0;font:400 23px/30px 'New York',ui-serif,Charter,Georgia,serif;letter-spacing:-0.01em;color:#23201A;text-wrap:pretty">About a third of what you scrolled was an ad.</h2>
+        <sc-if value="{{ showDots }}" hint-placeholder-val="{{ true }}">
+          <div style="margin-top:20px;display:flex;gap:6px">
+            <sc-for list="{{ feedDots }}" as="d" hint-placeholder-count="17"><span style="{{ d.s }}"></span></sc-for>
+          </div>
+          <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:baseline">
+            <span style="display:inline-flex;align-items:center;gap:6px;font:400 12.5px/16px system-ui,sans-serif;color:#6D675C"><span style="width:8px;height:8px;border-radius:9999px;background:#1868D8"></span>ad<span style="width:8px;height:8px;border-radius:9999px;border:1.5px solid #C7BFAD;box-sizing:border-box;margin-left:6px"></span>post, in feed order</span>
+            <span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">5 of 17 · 29%</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ showBar }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:22px;position:relative">
+            <div style="height:24px;border-radius:6px;background:#ECE5D5;overflow:hidden">
+              <div style="width:29.4%;height:100%;background:#1868D8;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;box-sizing:border-box"><span style="font:600 12px/1 system-ui,sans-serif;color:#FFFFFF;font-variant-numeric:tabular-nums">29%</span></div>
+            </div>
+            <div style="position:absolute;left:15%;top:-5px;width:2px;height:34px;background:#20A888;border-radius:1px"></div>
+            <div style="position:absolute;left:15%;top:32px;transform:translateX(-50%);font:500 12px/16px system-ui,sans-serif;color:#158066;white-space:nowrap">typical · 15%</div>
+          </div>
+          <div style="margin-top:32px;display:flex;justify-content:space-between;align-items:baseline">
+            <span style="display:inline-flex;align-items:center;gap:6px;font:400 12.5px/16px system-ui,sans-serif;color:#6D675C"><span style="width:8px;height:8px;border-radius:2px;background:#1868D8"></span>your scan</span>
+            <span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">5 of 17 posts</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ showFraction }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:20px;display:flex;gap:12px">
+            <span style="width:56px;height:56px;border-radius:9999px;background:#1868D8"></span>
+            <span style="width:56px;height:56px;border-radius:9999px;border:2px solid #C7BFAD;box-sizing:border-box"></span>
+            <span style="width:56px;height:56px;border-radius:9999px;border:2px solid #C7BFAD;box-sizing:border-box"></span>
+          </div>
+          <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:baseline">
+            <span style="font:400 12.5px/16px system-ui,sans-serif;color:#6D675C">1 ad for every 3 posts</span>
+            <span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">5 of 17 · 29%</span>
+          </div>
+        </sc-if>
+        <p style="margin:12px 0 0;font:400 13px/19px system-ui,sans-serif;color:#6D675C">They came in a cluster early in your scroll.</p>
+        <div onClick="{{ toggleAds }}" style="margin-top:14px;border-top:1px solid #E7E0D1;min-height:44px;display:flex;align-items:center;gap:12px;cursor:pointer">
+          <span style="flex:1;font:400 13px/18px system-ui,sans-serif;color:#6D675C">Watch this after your next scan</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;font:600 13px/18px system-ui,sans-serif;color:#1868D8">Details<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1868D8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ adsChev }};transition:transform 280ms cubic-bezier(0.32,0.72,0,1)"><path d="m6 9 6 6 6-6"></path></svg></span>
+        </div>
+        <div style="display:grid;grid-template-rows:{{ adsRows }};transition:grid-template-rows 280ms cubic-bezier(0.32,0.72,0,1)">
+          <div style="overflow:hidden;min-height:0">
+            <div style="border-top:1px solid #E7E0D1;padding:4px 0 14px">
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #F0EADD"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Posts with an ad label</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">5 of 17</span></div>
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #F0EADD"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Share of this scan</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">29%</span></div>
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Typical share</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">about 15%</span></div>
+              <div style="margin-top:6px"><span style="display:inline-flex;padding:6px 12px;background:rgba(255,204,0,0.12);border-radius:9999px;font:500 12px/16px system-ui,sans-serif;color:#23201A">One small scan · 17 posts</span></div>
+              <div style="margin-top:12px;background:#F7F2E8;border-radius:8px;padding:12px 14px;font:400 13px/19px system-ui,sans-serif;color:#6D675C">We can count what was labeled an ad. We cannot see how or why anything was placed. The 15% reference comes from published feed audits, not from your own history.</div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article data-screen-label="sources card" style="background:#FFFFFF;border:1px solid #E7E0D1;border-radius:12px;padding:20px 20px 8px">
+        <div style="font:500 13px/18px system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#6D675C">Sources</div>
+        <h2 style="margin:6px 0 0;font:400 23px/30px 'New York',ui-serif,Charter,Georgia,serif;letter-spacing:-0.01em;color:#23201A;text-wrap:pretty">Much of what you saw came from just five accounts.</h2>
+        <div style="margin-top:20px;display:flex;gap:2px;height:24px;border-radius:6px;overflow:hidden">
+          <span style="width:11.8%;background:#20A888"></span>
+          <span style="width:11.8%;background:#20A888"></span>
+          <span style="width:5.9%;background:#20A888"></span>
+          <span style="width:5.9%;background:#20A888"></span>
+          <span style="width:5.9%;background:#20A888"></span>
+          <span style="flex:1;background:#ECE5D5"></span>
+        </div>
+        <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:baseline">
+          <span style="display:inline-flex;align-items:center;gap:6px;font:600 12.5px/16px system-ui,sans-serif;color:#158066"><span style="width:8px;height:8px;border-radius:2px;background:#20A888"></span>5 accounts · 41%</span>
+          <span style="font:400 12.5px/16px system-ui,sans-serif;color:#6D675C">12 others · 59%</span>
+        </div>
+        <p style="margin:12px 0 0;font:400 13px/19px system-ui,sans-serif;color:#6D675C">Just two of them supplied half of that share.</p>
+        <div onClick="{{ toggleSrc }}" style="margin-top:14px;border-top:1px solid #E7E0D1;min-height:44px;display:flex;align-items:center;gap:12px;cursor:pointer">
+          <span style="flex:1;font:400 13px/18px system-ui,sans-serif;color:#6D675C">See if the same five lead next week</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;font:600 13px/18px system-ui,sans-serif;color:#1868D8">Details<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1868D8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ srcChev }};transition:transform 280ms cubic-bezier(0.32,0.72,0,1)"><path d="m6 9 6 6 6-6"></path></svg></span>
+        </div>
+        <div style="display:grid;grid-template-rows:{{ srcRows }};transition:grid-template-rows 280ms cubic-bezier(0.32,0.72,0,1)">
+          <div style="overflow:hidden;min-height:0">
+            <div style="border-top:1px solid #E7E0D1;padding:4px 0 14px">
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #F0EADD"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Top five accounts</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">7 of 17 posts</span></div>
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Everyone else</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">10 posts from 12 accounts</span></div>
+              <div style="margin-top:6px"><span style="display:inline-flex;padding:6px 12px;background:rgba(255,204,0,0.12);border-radius:9999px;font:500 12px/16px system-ui,sans-serif;color:#23201A">One small scan · 17 posts</span></div>
+              <div style="margin-top:12px;background:#F7F2E8;border-radius:8px;padding:12px 14px;font:400 13px/19px system-ui,sans-serif;color:#6D675C">Shares count posts, not time on screen. Whether you follow these accounts was not part of this scan.</div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article data-screen-label="tone card" style="background:#FFFFFF;border:1px solid #E7E0D1;border-radius:12px;padding:20px 20px 8px">
+        <div style="font:500 13px/18px system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#6D675C">Tone</div>
+        <h2 style="margin:6px 0 0;font:400 23px/30px 'New York',ui-serif,Charter,Georgia,serif;letter-spacing:-0.01em;color:#23201A;text-wrap:pretty">Mostly neutral in tone.</h2>
+        <div style="margin-top:20px;display:flex;gap:2px;height:24px;border-radius:6px;overflow:hidden">
+          <span style="width:37.5%;background:#20A888"></span>
+          <span style="flex:1;background:#1868D8"></span>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:14px;align-items:baseline">
+          <span style="display:inline-flex;align-items:center;gap:6px;font:400 12.5px/16px system-ui,sans-serif;color:#6D675C"><span style="width:8px;height:8px;border-radius:9999px;background:#20A888"></span><span style="font-weight:600;color:#23201A">6</span>positive</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;font:400 12.5px/16px system-ui,sans-serif;color:#6D675C"><span style="width:8px;height:8px;border-radius:9999px;background:#1868D8"></span><span style="font-weight:600;color:#23201A">10</span>neutral</span>
+          <span style="display:inline-flex;align-items:center;gap:6px;font:400 12.5px/16px system-ui,sans-serif;color:#6D675C"><span style="width:8px;height:8px;border-radius:9999px;border:1.5px solid #C7BFAD;box-sizing:border-box"></span><span style="font-weight:600;color:#23201A">0</span>negative</span>
+        </div>
+        <p style="margin:12px 0 0;font:400 13px/19px system-ui,sans-serif;color:#6D675C">Nothing in this scan read as negative.</p>
+        <div onClick="{{ toggleTone }}" style="margin-top:14px;border-top:1px solid #E7E0D1;min-height:44px;display:flex;align-items:center;gap:12px;cursor:pointer">
+          <span style="flex:1;font:400 13px/18px system-ui,sans-serif;color:#6D675C">Watch the balance over time</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;font:600 13px/18px system-ui,sans-serif;color:#1868D8">Details<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1868D8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ toneChev }};transition:transform 280ms cubic-bezier(0.32,0.72,0,1)"><path d="m6 9 6 6 6-6"></path></svg></span>
+        </div>
+        <div style="display:grid;grid-template-rows:{{ toneRows }};transition:grid-template-rows 280ms cubic-bezier(0.32,0.72,0,1)">
+          <div style="overflow:hidden;min-height:0">
+            <div style="border-top:1px solid #E7E0D1;padding:4px 0 14px">
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #F0EADD"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Rated</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">16 of 17 posts</span></div>
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #F0EADD"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Positive</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">6</span></div>
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #F0EADD"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Neutral</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">10</span></div>
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #F0EADD"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Negative</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">0</span></div>
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Could not be rated</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">1</span></div>
+              <div style="margin-top:6px"><span style="display:inline-flex;padding:6px 12px;background:rgba(255,204,0,0.12);border-radius:9999px;font:500 12px/16px system-ui,sans-serif;color:#23201A">One small scan · 17 posts</span></div>
+              <div style="margin-top:12px;background:#F7F2E8;border-radius:8px;padding:12px 14px;font:400 13px/19px system-ui,sans-serif;color:#6D675C">Tone is the model's read of wording and imagery, not of how anything made you feel.</div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article data-screen-label="politics card" style="background:#FFFFFF;border:1px solid #E7E0D1;border-radius:12px;padding:20px 20px 8px">
+        <div style="font:500 13px/18px system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#6D675C">Politics</div>
+        <h2 style="margin:6px 0 0;font:400 23px/30px 'New York',ui-serif,Charter,Georgia,serif;letter-spacing:-0.01em;color:#23201A;text-wrap:pretty">None of the posts read as political.</h2>
+        <div style="margin-top:20px;display:flex;gap:6px">
+          <sc-for list="{{ polDots }}" as="d" hint-placeholder-count="17"><span style="{{ d.s }}"></span></sc-for>
+        </div>
+        <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+          <span style="display:inline-flex;padding:5px 12px;background:rgba(32,168,136,0.12);border-radius:9999px;font:600 12px/16px system-ui,sans-serif;color:#158066;font-variant-numeric:tabular-nums">None found · 0 of 17</span>
+          <span style="font:400 12.5px/16px system-ui,sans-serif;color:#6D675C">every post checked</span>
+        </div>
+        <p style="margin:12px 0 0;font:400 13px/19px system-ui,sans-serif;color:#6D675C">That may be your feed, or just this one sample.</p>
+        <div onClick="{{ togglePol }}" style="margin-top:14px;border-top:1px solid #E7E0D1;min-height:44px;display:flex;align-items:center;gap:12px;cursor:pointer">
+          <span style="flex:1;font:400 13px/18px system-ui,sans-serif;color:#6D675C">Scan again next week to confirm</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;font:600 13px/18px system-ui,sans-serif;color:#1868D8">Details<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1868D8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:{{ polChev }};transition:transform 280ms cubic-bezier(0.32,0.72,0,1)"><path d="m6 9 6 6 6-6"></path></svg></span>
+        </div>
+        <div style="display:grid;grid-template-rows:{{ polRows }};transition:grid-template-rows 280ms cubic-bezier(0.32,0.72,0,1)">
+          <div style="overflow:hidden;min-height:0">
+            <div style="border-top:1px solid #E7E0D1;padding:4px 0 14px">
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #F0EADD"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Posts checked</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">17 of 17</span></div>
+              <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Read as political</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">0</span></div>
+              <div style="margin-top:6px"><span style="display:inline-flex;padding:6px 12px;background:rgba(255,204,0,0.12);border-radius:9999px;font:500 12px/16px system-ui,sans-serif;color:#23201A">One small scan · 17 posts</span></div>
+              <div style="margin-top:12px;background:#F7F2E8;border-radius:8px;padding:12px 14px;font:400 13px/19px system-ui,sans-serif;color:#6D675C">Political here means elections, policy, or civic topics as the model reads them. A quiet result from one scan is a data point, not a pattern.</div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <div style="margin-top:8px;background:#FFFFFF;border:1px solid #E7E0D1;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:10px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6D675C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+        <span style="flex:1;font:400 13px/18px system-ui,sans-serif;color:#6D675C">How this scan works</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A29B8C" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="dv-opt" id="1b" data-screen-label="1b ads treatment A">
+  <div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Ads treatment A · feed rhythm dots (used in <a class="dv-oid" href="#1a">1a</a>)</div>
+  <div class="dv-card" style="width:390px;padding:20px">
+    <article style="background:#FFFFFF;border:1px solid #E7E0D1;border-radius:12px;padding:20px 20px 8px">
+      <div style="font:500 13px/18px system-ui,sans-serif;color:#6D675C">Ads</div>
+      <h2 style="margin:6px 0 0;font:400 23px/30px 'New York',ui-serif,Charter,Georgia,serif;letter-spacing:-0.01em;color:#23201A;text-wrap:pretty">About a third of what you scrolled was an ad.</h2>
+      <div style="margin-top:20px;display:flex;gap:6px">
+        <sc-for list="{{ feedDots }}" as="d" hint-placeholder-count="17"><span style="{{ d.s }}"></span></sc-for>
+      </div>
+      <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:baseline">
+        <span style="display:inline-flex;align-items:center;gap:6px;font:400 12.5px/16px system-ui,sans-serif;color:#6D675C"><span style="width:8px;height:8px;border-radius:9999px;background:#1868D8"></span>ad<span style="width:8px;height:8px;border-radius:9999px;border:1.5px solid #C7BFAD;box-sizing:border-box;margin-left:6px"></span>post, in feed order</span>
+        <span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">5 of 17 · 29%</span>
+      </div>
+      <p style="margin:12px 0 0;font:400 13px/19px system-ui,sans-serif;color:#6D675C">They came in a cluster early in your scroll.</p>
+      <div style="margin-top:14px;border-top:1px solid #E7E0D1;min-height:44px;display:flex;align-items:center;gap:12px">
+        <span style="flex:1;font:400 13px/18px system-ui,sans-serif;color:#6D675C">Watch this after your next scan</span>
+        <span style="display:inline-flex;align-items:center;gap:4px;font:600 13px/18px system-ui,sans-serif;color:#1868D8">Details<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1868D8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></span>
+      </div>
+    </article>
+    <p style="margin:14px 4px 0;font:400 12px/17px system-ui,sans-serif;color:#6D675C">Strongest story: shows how much and also where the ads sat. The caption can point at the pattern the dots already show.</p>
+  </div>
+</div>
+
+<div class="dv-opt" id="1c" data-screen-label="1c ads treatment B">
+  <div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Ads treatment B · share bar with reference</div>
+  <div class="dv-card" style="width:390px;padding:20px">
+    <article style="background:#FFFFFF;border:1px solid #E7E0D1;border-radius:12px;padding:20px 20px 8px">
+      <div style="font:500 13px/18px system-ui,sans-serif;color:#6D675C">Ads</div>
+      <h2 style="margin:6px 0 0;font:400 23px/30px 'New York',ui-serif,Charter,Georgia,serif;letter-spacing:-0.01em;color:#23201A;text-wrap:pretty">About a third of what you scrolled was an ad.</h2>
+      <div style="margin-top:22px;position:relative">
+        <div style="height:24px;border-radius:6px;background:#ECE5D5;overflow:hidden">
+          <div style="width:29.4%;height:100%;background:#1868D8;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;box-sizing:border-box"><span style="font:600 12px/1 system-ui,sans-serif;color:#FFFFFF;font-variant-numeric:tabular-nums">29%</span></div>
+        </div>
+        <div style="position:absolute;left:15%;top:-5px;width:2px;height:34px;background:#20A888;border-radius:1px"></div>
+        <div style="position:absolute;left:15%;top:32px;transform:translateX(-50%);font:500 12px/16px system-ui,sans-serif;color:#158066;white-space:nowrap">typical · 15%</div>
+      </div>
+      <div style="margin-top:32px;display:flex;justify-content:space-between;align-items:baseline">
+        <span style="display:inline-flex;align-items:center;gap:6px;font:400 12.5px/16px system-ui,sans-serif;color:#6D675C"><span style="width:8px;height:8px;border-radius:2px;background:#1868D8"></span>your scan</span>
+        <span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">5 of 17 posts</span>
+      </div>
+      <p style="margin:12px 0 0;font:400 13px/19px system-ui,sans-serif;color:#6D675C">About twice the typical share for a feed like this.</p>
+      <div style="margin-top:14px;border-top:1px solid #E7E0D1;min-height:44px;display:flex;align-items:center;gap:12px">
+        <span style="flex:1;font:400 13px/18px system-ui,sans-serif;color:#6D675C">Watch this after your next scan</span>
+        <span style="display:inline-flex;align-items:center;gap:4px;font:600 13px/18px system-ui,sans-serif;color:#1868D8">Details<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1868D8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></span>
+      </div>
+    </article>
+    <p style="margin:14px 4px 0;font:400 12px/17px system-ui,sans-serif;color:#6D675C">Strongest comparison: the green typical mark does the interpreting, so the caption can editorialize less. Loses the position story.</p>
+  </div>
+</div>
+
+<div class="dv-opt" id="1d" data-screen-label="1d ads treatment C">
+  <div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>Ads treatment C · one in three</div>
+  <div class="dv-card" style="width:390px;padding:20px">
+    <article style="background:#FFFFFF;border:1px solid #E7E0D1;border-radius:12px;padding:20px 20px 8px">
+      <div style="font:500 13px/18px system-ui,sans-serif;color:#6D675C">Ads</div>
+      <h2 style="margin:6px 0 0;font:400 23px/30px 'New York',ui-serif,Charter,Georgia,serif;letter-spacing:-0.01em;color:#23201A;text-wrap:pretty">About a third of what you scrolled was an ad.</h2>
+      <div style="margin-top:20px;display:flex;gap:12px">
+        <span style="width:56px;height:56px;border-radius:9999px;background:#1868D8"></span>
+        <span style="width:56px;height:56px;border-radius:9999px;border:2px solid #C7BFAD;box-sizing:border-box"></span>
+        <span style="width:56px;height:56px;border-radius:9999px;border:2px solid #C7BFAD;box-sizing:border-box"></span>
+      </div>
+      <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:baseline">
+        <span style="font:400 12.5px/16px system-ui,sans-serif;color:#6D675C">1 ad for every 3 posts</span>
+        <span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">5 of 17 · 29%</span>
+      </div>
+      <p style="margin:12px 0 0;font:400 13px/19px system-ui,sans-serif;color:#6D675C">They came in a cluster early in your scroll.</p>
+      <div style="margin-top:14px;border-top:1px solid #E7E0D1;min-height:44px;display:flex;align-items:center;gap:12px">
+        <span style="flex:1;font:400 13px/18px system-ui,sans-serif;color:#6D675C">Watch this after your next scan</span>
+        <span style="display:inline-flex;align-items:center;gap:4px;font:600 13px/18px system-ui,sans-serif;color:#1868D8">Details<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1868D8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></span>
+      </div>
+    </article>
+    <p style="margin:14px 4px 0;font:400 12px/17px system-ui,sans-serif;color:#6D675C">Fastest read, least information: restates the headline as a picture. Works best if the caption keeps the position insight.</p>
+  </div>
+</div>
+
+<div class="dv-opt" id="1e" data-screen-label="1e details expanded">
+  <div class="dv-olabel"><a class="dv-oid" href="#1e">1e</a>The Details state, expanded. All counts, references and limits live here</div>
+  <div class="dv-card" style="padding:20px;display:flex;gap:12px;align-items:flex-start">
+    <article style="width:350px;flex:none;background:#FFFFFF;border:1px solid #E7E0D1;border-radius:12px;padding:20px 20px 8px">
+      <div style="font:500 13px/18px system-ui,sans-serif;color:#6D675C">Ads</div>
+      <h2 style="margin:6px 0 0;font:400 23px/30px 'New York',ui-serif,Charter,Georgia,serif;letter-spacing:-0.01em;color:#23201A;text-wrap:pretty">About a third of what you scrolled was an ad.</h2>
+      <div style="margin-top:20px;display:flex;gap:6px">
+        <sc-for list="{{ feedDots }}" as="d" hint-placeholder-count="17"><span style="{{ d.s }}"></span></sc-for>
+      </div>
+      <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:baseline">
+        <span style="display:inline-flex;align-items:center;gap:6px;font:400 12.5px/16px system-ui,sans-serif;color:#6D675C"><span style="width:8px;height:8px;border-radius:9999px;background:#1868D8"></span>ad<span style="width:8px;height:8px;border-radius:9999px;border:1.5px solid #C7BFAD;box-sizing:border-box;margin-left:6px"></span>post, in feed order</span>
+        <span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">5 of 17 · 29%</span>
+      </div>
+      <p style="margin:12px 0 0;font:400 13px/19px system-ui,sans-serif;color:#6D675C">They came in a cluster early in your scroll.</p>
+      <div style="margin-top:14px;border-top:1px solid #E7E0D1;min-height:44px;display:flex;align-items:center;gap:12px">
+        <span style="flex:1;font:400 13px/18px system-ui,sans-serif;color:#6D675C">Watch this after your next scan</span>
+        <span style="display:inline-flex;align-items:center;gap:4px;font:600 13px/18px system-ui,sans-serif;color:#1868D8">Details<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1868D8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(180deg)"><path d="m6 9 6 6 6-6"></path></svg></span>
+      </div>
+      <div style="border-top:1px solid #E7E0D1;padding:4px 0 14px">
+        <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #F0EADD"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Posts with an ad label</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">5 of 17</span></div>
+        <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #F0EADD"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Share of this scan</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">29%</span></div>
+        <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Typical share</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">about 15%</span></div>
+        <div style="margin-top:6px"><span style="display:inline-flex;padding:6px 12px;background:rgba(255,204,0,0.12);border-radius:9999px;font:500 12px/16px system-ui,sans-serif;color:#23201A">One small scan · 17 posts</span></div>
+        <div style="margin-top:12px;background:#F7F2E8;border-radius:8px;padding:12px 14px;font:400 13px/19px system-ui,sans-serif;color:#6D675C">We can count what was labeled an ad. We cannot see how or why anything was placed. The 15% reference comes from published feed audits, not from your own history.</div>
+      </div>
+    </article>
+    <article style="width:350px;flex:none;background:#FFFFFF;border:1px solid #E7E0D1;border-radius:12px;padding:20px 20px 8px">
+      <div style="font:500 13px/18px system-ui,sans-serif;color:#6D675C">Politics</div>
+      <h2 style="margin:6px 0 0;font:400 23px/30px 'New York',ui-serif,Charter,Georgia,serif;letter-spacing:-0.01em;color:#23201A;text-wrap:pretty">None of the posts read as political.</h2>
+      <div style="margin-top:20px;display:flex;gap:6px">
+        <sc-for list="{{ polDots }}" as="d" hint-placeholder-count="17"><span style="{{ d.s }}"></span></sc-for>
+      </div>
+      <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+        <span style="display:inline-flex;padding:5px 12px;background:rgba(32,168,136,0.12);border-radius:9999px;font:600 12px/16px system-ui,sans-serif;color:#158066;font-variant-numeric:tabular-nums">None found · 0 of 17</span>
+        <span style="font:400 12.5px/16px system-ui,sans-serif;color:#6D675C">every post checked</span>
+      </div>
+      <p style="margin:12px 0 0;font:400 13px/19px system-ui,sans-serif;color:#6D675C">That may be your feed, or just this one sample.</p>
+      <div style="margin-top:14px;border-top:1px solid #E7E0D1;min-height:44px;display:flex;align-items:center;gap:12px">
+        <span style="flex:1;font:400 13px/18px system-ui,sans-serif;color:#6D675C">Scan again next week to confirm</span>
+        <span style="display:inline-flex;align-items:center;gap:4px;font:600 13px/18px system-ui,sans-serif;color:#1868D8">Details<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1868D8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(180deg)"><path d="m6 9 6 6 6-6"></path></svg></span>
+      </div>
+      <div style="border-top:1px solid #E7E0D1;padding:4px 0 14px">
+        <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #F0EADD"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Posts checked</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">17 of 17</span></div>
+        <div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0"><span style="font:400 13px/18px system-ui,sans-serif;color:#6D675C">Read as political</span><span style="font:600 13px/18px system-ui,sans-serif;color:#23201A;font-variant-numeric:tabular-nums">0</span></div>
+        <div style="margin-top:6px"><span style="display:inline-flex;padding:6px 12px;background:rgba(255,204,0,0.12);border-radius:9999px;font:500 12px/16px system-ui,sans-serif;color:#23201A">One small scan · 17 posts</span></div>
+        <div style="margin-top:12px;background:#F7F2E8;border-radius:8px;padding:12px 14px;font:400 13px/19px system-ui,sans-serif;color:#6D675C">Political here means elections, policy, or civic topics as the model reads them. A quiet result from one scan is a data point, not a pattern.</div>
+      </div>
+    </article>
+  </div>
+</div>
+
+<div class="dv-opt" id="1f" data-screen-label="1f build spec">
+  <div class="dv-olabel"><a class="dv-oid" href="#1f">1f</a>Build spec, handoff-ready</div>
+  <div class="dv-card" style="padding:20px">
+    <article style="width:480px;background:#FFFFFF;border:1px solid #E7E0D1;border-radius:12px;padding:24px">
+      <div style="font:500 13px/18px system-ui,sans-serif;color:#6D675C">Spec</div>
+      <h2 style="margin:6px 0 0;font:400 22px/28px 'New York',ui-serif,Charter,Georgia,serif;letter-spacing:-0.01em;color:#23201A">The finding card, specified</h2>
+
+      <div style="margin-top:18px;border-top:1px solid #F0EADD;padding-top:14px">
+        <div style="font:600 12.5px/17px system-ui,sans-serif;color:#23201A;margin-bottom:8px">Anatomy, top to bottom</div>
+        <div style="font:400 12.5px/19px system-ui,sans-serif;color:#6D675C">Finding label · headline (the story, no digits) · one visual · one caption line · agency footer with Details. Details expands below the footer; nothing above it moves. Wordy counts, references and caveats live only in Details.</div>
+      </div>
+
+      <div style="margin-top:16px;border-top:1px solid #F0EADD;padding-top:14px">
+        <div style="font:600 12.5px/17px system-ui,sans-serif;color:#23201A;margin-bottom:10px">Type scale</div>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:7px 16px;font:400 12.5px/17px system-ui,sans-serif;color:#6D675C">
+          <span>Headline · system serif, New York on iOS, Charter or Georgia elsewhere</span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">23/30 · 400 · -1%</span>
+          <span>Screen title, same serif</span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">26/32 · 400</span>
+          <span>Finding label · SF Pro</span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">13/18 · 500</span>
+          <span>Caption and footer prompt</span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">13/19 · 400</span>
+          <span>Details link, brand blue</span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">13/18 · 600</span>
+          <span>Chart labels and detail values · tabular</span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">12.5-13 · 600</span>
+          <span>Legend and helper text</span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">12.5/16 · 400</span>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;border-top:1px solid #F0EADD;padding-top:14px">
+        <div style="font:600 12.5px/17px system-ui,sans-serif;color:#23201A;margin-bottom:10px">Color, exactly where each is used</div>
+        <div style="display:grid;grid-template-columns:16px 150px 1fr;gap:8px 10px;align-items:center;font:400 12.5px/17px system-ui,sans-serif;color:#6D675C">
+          <span style="width:16px;height:16px;border-radius:5px;background:#1868D8"></span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">#1868D8</span><span>brand blue: the counted thing, neutral tone, Details link</span>
+          <span style="width:16px;height:16px;border-radius:5px;background:#20A888"></span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">#20A888</span><span>brand green: positive tone, source share, reference marks, all-clear states</span>
+          <span style="width:16px;height:16px;border-radius:5px;background:#F7F2E8;border:1px solid #E7E0D1;box-sizing:border-box"></span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">#F7F2E8</span><span>cream: screen background, limits panel inside Details</span>
+          <span style="width:16px;height:16px;border-radius:5px;background:#FFFFFF;border:1px solid #E7E0D1;box-sizing:border-box"></span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">#FFFFFF</span><span>card surface, no shadow</span>
+          <span style="width:16px;height:16px;border-radius:5px;background:#23201A"></span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">#23201A</span><span>ink: headlines, values</span>
+          <span style="width:16px;height:16px;border-radius:5px;background:#6D675C"></span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">#6D675C</span><span>warm grey: labels, captions, footers</span>
+          <span style="width:16px;height:16px;border-radius:5px;background:#ECE5D5"></span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">#ECE5D5</span><span>track, the unfilled share of any bar</span>
+          <span style="width:16px;height:16px;border-radius:5px;border:1.5px solid #C7BFAD;box-sizing:border-box"></span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">#C7BFAD</span><span>empty unit ring: plain posts, zero states</span>
+          <span style="width:16px;height:16px;border-radius:5px;background:#E7E0D1"></span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">#E7E0D1</span><span>hairlines: card border, footer and Details dividers</span>
+          <span style="width:16px;height:16px;border-radius:5px;background:rgba(255,204,0,0.25)"></span><span style="font:500 11.5px/17px ui-monospace,Menlo,monospace;color:#23201A">#FFCC00 12%</span><span>caution tint, sample-size pill only, never elsewhere</span>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;border-top:1px solid #F0EADD;padding-top:14px">
+        <div style="font:600 12.5px/17px system-ui,sans-serif;color:#23201A;margin-bottom:8px">Spacing, radius, motion</div>
+        <div style="font:400 12.5px/19px system-ui,sans-serif;color:#6D675C">Card padding 20, radius 12, hairline 1px. Label to headline 6, headline to visual 20, visual to legend 10, caption above 12, footer 14 above with min height 44 (full row is the tap target). Cards 12 apart, screen padding 20 by 24. Bars 24 tall radius 6, dots 12 with 6 gaps. Expand 280ms cubic-bezier(0.32, 0.72, 0, 1); detail content fades in over the last 120ms. Press states tint the row, never scale.</div>
+      </div>
+
+      <div style="margin-top:16px;border-top:1px solid #F0EADD;padding-top:14px">
+        <div style="font:600 12.5px/17px system-ui,sans-serif;color:#23201A;margin-bottom:8px">Near-empty findings, like politics at zero</div>
+        <div style="font:400 12.5px/19px system-ui,sans-serif;color:#6D675C">Keep the full card and the full geometry: all 17 units render as empty rings, so the reader sees everything was checked and nothing was found. The headline states the absence, a quiet green pill marks it as an all-clear, the caption names the sample honestly, and Details still expands. Never hide, shrink, or grey out the card.</div>
+      </div>
+
+      <div style="margin-top:16px;border-top:1px solid #F0EADD;padding-top:14px">
+        <div style="font:600 12.5px/17px system-ui,sans-serif;color:#23201A;margin-bottom:8px">How it generalizes to any finding</div>
+        <div style="font:400 12.5px/19px system-ui,sans-serif;color:#6D675C">Every finding reduces to a subject count over a basis (n of N) plus an optional reference. Pick one of three visual grammars: a proportion bar when the story is how much against a benchmark, unit dots in feed order when the story is where or how often, a segmented bar when the story is a mix of 2 to 4 parts. One visual per card, subject ink alternates blue and green down the stack, everything else stays fixed. Zero results always use the empty-unit treatment above.</div>
+      </div>
+    </article>
+  </div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "ship treatment <a class="dv-oid" href="#1c">1c</a> in <a class="dv-oid" href="#1a">1a</a>" · "put <a class="dv-oid" href="#1a">1a</a> in an iPhone frame" · "riff on headline size and serif weight"</p>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;adsTreatment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dots&quot;,&quot;bar&quot;,&quot;fraction&quot;],&quot;default&quot;:&quot;dots&quot;,&quot;tsType&quot;:&quot;'dots'|'bar'|'fraction'&quot;,&quot;section&quot;:&quot;System screen 1a&quot;},&quot;openAllDetails&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;System screen 1a&quot;}}">
+class Component extends DCLogic {
+  state = { open: { ads: false, src: false, tone: false, pol: false, ads2: false, src2: false, tone2: false, pol2: false } };
+  t(k) { this.setState(s => ({ open: { ...s.open, [k]: !s.open[k] } })); }
+  renderVals() {
+    const ad = { width: '12px', height: '12px', borderRadius: '9999px', background: '#1868D8', flex: 'none' };
+    const post = { width: '12px', height: '12px', borderRadius: '9999px', border: '1.5px solid #C7BFAD', boxSizing: 'border-box', flex: 'none' };
+    const adL = { ...ad, width: '14px', height: '14px' };
+    const postL = { ...post, width: '14px', height: '14px' };
+    const adAt = [2, 4, 5, 9, 14];
+    const openAll = this.props.openAllDetails ?? false;
+    const o = k => openAll || this.state.open[k];
+    const v = {};
+    ['ads', 'src', 'tone', 'pol', 'ads2', 'src2', 'tone2', 'pol2'].forEach(k => {
+      v[k + 'Rows'] = o(k) ? '1fr' : '0fr';
+      v[k + 'Chev'] = o(k) ? 'rotate(180deg)' : 'none';
+    });
+    const tr = this.props.adsTreatment ?? 'dots';
+    return {
+      ...v,
+      feedDots: Array.from({ length: 17 }, (_, i) => ({ s: adAt.includes(i + 1) ? ad : post })),
+      polDots: Array.from({ length: 17 }, () => ({ s: post })),
+      showDots: tr === 'dots', showBar: tr === 'bar', showFraction: tr === 'fraction',
+      feedDotsL: Array.from({ length: 17 }, (_, i) => ({ s: adAt.includes(i + 1) ? adL : postL })),
+      toggleAds: () => this.t('ads'), toggleSrc: () => this.t('src'),
+      toggleTone: () => this.t('tone'), togglePol: () => this.t('pol'),
+      toggleAds2: () => this.t('ads2'), toggleSrc2: () => this.t('src2'),
+      toggleTone2: () => this.t('tone2'), togglePol2: () => this.t('pol2')
+    };
+  }
+}
+</script>
+</body>
+</html>

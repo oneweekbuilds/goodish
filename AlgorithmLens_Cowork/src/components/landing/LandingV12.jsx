@@ -34,15 +34,18 @@ function AppleGlyph({ w = 18, h = 22 }) {
   );
 }
 
-/* Black "Download on the App Store" button used across the page. */
+/* Black "Download on the App Store" button used across the page. The app is
+ * not on the store yet, so this routes to the waitlist signup for now instead
+ * of a dead link. */
 function AppStoreButton({ style, className, glyph = { w: 18, h: 22 }, subSize = 20 }) {
   return (
-    <button
-      type="button"
+    <a
+      href="/#waitlist"
+      aria-label="Join the waitlist"
       className={className}
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 12,
-        background: '#0A0A0A', color: '#fff', border: 'none',
+        background: '#0A0A0A', color: '#fff', border: 'none', textDecoration: 'none',
         borderRadius: 13, padding: '11px 24px', cursor: 'pointer', ...style,
       }}
     >
@@ -51,7 +54,7 @@ function AppStoreButton({ style, className, glyph = { w: 18, h: 22 }, subSize = 
         <span style={{ font: `400 11px/1.4 ${FONT}`, letterSpacing: '0.02em', opacity: 0.85 }}>Download on the</span>
         <span style={{ font: `600 ${subSize}px/1.1 ${FONT}`, letterSpacing: '-0.01em' }}>App Store</span>
       </span>
-    </button>
+    </a>
   );
 }
 
@@ -313,8 +316,9 @@ export default function LandingV12() {
                     <path d="M12 7v5l3 2" stroke="#20A888" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </span>
-                <span style={{ display: 'block', maxWidth: 320, fontSize: 20, lineHeight: '27px', color: '#0A0A0A', letterSpacing: '-0.015em' }}>
-                  <strong style={{ fontWeight: 700 }}>Two minutes a week</strong> is the whole commitment.
+                <span style={{ display: 'block', maxWidth: 320, fontSize: 20, lineHeight: '27px', letterSpacing: '-0.015em' }}>
+                  <span style={{ display: 'block', color: '#0A0A0A' }}>Two minutes a week is the whole commitment.</span>
+                  <span style={{ display: 'block', color: '#6B6B70' }}>One quick scan keeps your picture current.</span>
                 </span>
               </div>
               <div style={{ color: '#A0A0A5', marginTop: 16 }}>Free · iPhone · works with YouTube, Instagram, TikTok, X, and Reddit.</div>
@@ -417,7 +421,7 @@ export default function LandingV12() {
                     <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: '#20A888' }} />
                     <span>Top inferred interests</span>
                   </div>
-                  <div style={{ color: '#A0A0A5', marginBottom: 16 }}>Illustrative examples — not your data</div>
+                  <div style={{ color: '#A0A0A5', marginBottom: 16 }}>Illustrative examples, not your data</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
                     {INTEREST_BARS.map(([label, pct]) => (
                       <div key={label}>
@@ -739,7 +743,7 @@ export default function LandingV12() {
         <div style={{ maxWidth: 1180, margin: '0 auto' }}>
           <div style={{ maxWidth: 620, marginBottom: 44 }}>
             <h2 data-reveal className="al-h2" style={h2Big}>Three steps. No jargon.</h2>
-            <p data-reveal style={{ ...leadP, maxWidth: 560 }}>Click through what happens from your feed to a finished report — it advances on its own too.</p>
+            <p data-reveal style={{ ...leadP, maxWidth: 560 }}>Click through what happens from your feed to a finished report. It advances on its own too.</p>
           </div>
           <div data-reveal className="al-how-grid" style={{ display: 'grid', gridTemplateColumns: '0.92fr 1.08fr', gap: 40, alignItems: 'stretch' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'center' }}>
