@@ -12,16 +12,23 @@
       ]
     },
     {
-      "source": "/algorithmlens/(.*)",
+      "source": "/",
       "headers": [
         { "key": "Content-Security-Policy", "value": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; media-src 'self'; connect-src https://czrehjybsqzmudtgneqy.supabase.co; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'" },
         { "key": "Cache-Control", "value": "public, max-age=600, must-revalidate" }
       ]
     },
     {
-      "source": "/algorithmlens/explore/(.*)",
+      "source": "/landing.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=600, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/explore/(.*)",
       "headers": [
         { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "Cache-Control", "value": "public, max-age=600, must-revalidate" },
         { "key": "Content-Security-Policy", "value": "default-src 'none'; script-src https://www.algorithmlens.com; style-src https://www.algorithmlens.com 'unsafe-inline'; img-src https://www.algorithmlens.com; font-src https://www.algorithmlens.com; media-src https://www.algorithmlens.com; connect-src 'none'; frame-ancestors https://www.algorithmlens.com; object-src 'none'; base-uri https://www.algorithmlens.com; form-action 'none'" }
       ]
     },
@@ -45,7 +52,32 @@
       ]
     }
   ],
+  "redirects": [
+    { "source": "/algorithmlens", "destination": "/", "statusCode": 301 },
+    { "source": "/algorithmlens/", "destination": "/", "statusCode": 301 },
+    { "source": "/algorithmlens/index.html", "destination": "/", "statusCode": 301 },
+    { "source": "/algorithmlens/explore", "destination": "/explore/", "statusCode": 301 },
+    { "source": "/algorithmlens/explore/", "destination": "/explore/", "statusCode": 301 },
+    { "source": "/algorithmlens/explore/:path*", "destination": "/explore/:path*", "statusCode": 301 },
+    { "source": "/index.html", "destination": "/", "statusCode": 301 },
+    { "source": "/explore/index.html", "destination": "/explore/", "statusCode": 301 },
+    { "source": "/privacy", "destination": "/privacy/", "statusCode": 301 },
+    { "source": "/dashboard", "destination": "/", "statusCode": 307 },
+    { "source": "/dashboard/:path*", "destination": "/", "statusCode": 307 },
+    { "source": "/start", "destination": "/", "statusCode": 307 },
+    { "source": "/scan", "destination": "/", "statusCode": 307 },
+    { "source": "/scan/:path*", "destination": "/", "statusCode": 307 },
+    { "source": "/scan-history", "destination": "/", "statusCode": 307 },
+    { "source": "/scan-test", "destination": "/", "statusCode": 307 },
+    { "source": "/history", "destination": "/", "statusCode": 307 },
+    { "source": "/plus", "destination": "/", "statusCode": 307 },
+    { "source": "/pricing", "destination": "/", "statusCode": 307 },
+    { "source": "/settings", "destination": "/", "statusCode": 307 },
+    { "source": "/dev/:path*", "destination": "/", "statusCode": 307 },
+    { "source": "/auth/:path*", "destination": "/", "statusCode": 307 }
+  ],
   "rewrites": [
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    { "source": "/terms", "destination": "/app.html" },
+    { "source": "/methodology", "destination": "/app.html" }
   ]
 }

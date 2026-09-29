@@ -50,8 +50,8 @@ while (i < lines.length) {
     const cells = (r) => r.replace(/^\||\|$/g, '').split('|').map((c) => c.trim());
     const head = cells(rows[0]);
     const data = rows.slice(2).map(cells);
-    body.push('<table><thead><tr>' + head.map((h) => `<th scope="col">${inline(h)}</th>`).join('') + '</tr></thead><tbody>' +
-      data.map((r) => '<tr>' + r.map((c) => `<td>${inline(c)}</td>`).join('') + '</tr>').join('') + '</tbody></table>');
+    body.push('<div class="table-wrap"><table><thead><tr>' + head.map((h) => `<th scope="col">${inline(h)}</th>`).join('') + '</tr></thead><tbody>' +
+      data.map((r) => '<tr>' + r.map((c) => `<td>${inline(c)}</td>`).join('') + '</tr>').join('') + '</tbody></table></div>');
     continue;
   }
   if ((m = line.match(/^- (.+)/))) { if (inList !== 'ul') { closeList(); body.push('<ul>'); inList = 'ul'; } body.push(`<li>${inline(m[1])}</li>`); i++; continue; }
@@ -99,8 +99,10 @@ p,li{max-width:66ch}
 .site-note h2{margin-top:0;font-size:24px}
 .site-note p{margin:8px 0}
 hr{border:0;border-top:1px solid var(--line);margin:28px 0}
-table{border-collapse:collapse;width:100%;font-size:15px;margin:12px 0;display:block;overflow-x:auto;max-width:100%}
+.table-wrap{overflow-x:auto;max-width:100%;margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:15px}
 td,th{min-width:12ch}
+code,a{overflow-wrap:anywhere}
 th,td{text-align:left;vertical-align:top;padding:10px 12px 10px 0;border-bottom:1px solid var(--line)}
 th{font-weight:600}
 blockquote{margin:16px 0;padding:12px 16px;border-left:2px solid var(--line);color:var(--muted)}

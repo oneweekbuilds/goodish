@@ -30,8 +30,10 @@ p,li{max-width:66ch}
 .site-note h2{margin-top:0;font-size:24px}
 .site-note p{margin:8px 0}
 hr{border:0;border-top:1px solid var(--line);margin:28px 0}
-table{border-collapse:collapse;width:100%;font-size:15px;margin:12px 0;display:block;overflow-x:auto;max-width:100%}
+.table-wrap{overflow-x:auto;max-width:100%;margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:15px}
 td,th{min-width:12ch}
+code,a{overflow-wrap:anywhere}
 th,td{text-align:left;vertical-align:top;padding:10px 12px 10px 0;border-bottom:1px solid var(--line)}
 th{font-weight:600}
 blockquote{margin:16px 0;padding:12px 16px;border-left:2px solid var(--line);color:var(--muted)}
@@ -190,7 +192,7 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 </ul>
 <hr>
 <h2>5. Data Retention</h2>
-<table><thead><tr><th scope="col">Data Type</th><th scope="col">Retention Period</th></tr></thead><tbody><tr><td>Screen recording frames (images)</td><td>Deleted from your device immediately after analysis completes. If the app crashes, cleaned up on next session start.</td></tr><tr><td>In-memory frame data (base64)</td><td>Released from memory within 5 minutes of analysis completion or when you leave the results screen.</td></tr><tr><td>Scan results (text data)</td><td>Stored on our servers for as long as your account exists, or until you request deletion.</td></tr><tr><td>Account information</td><td>Retained for as long as your account is active. Deleted upon account deletion request.</td></tr><tr><td>Streak and preference data</td><td>Stored locally on your device. Deleted when you uninstall the App or clear app data.</td></tr><tr><td>Platform login state cache</td><td>Automatically expires after 30 days. Stored locally on your device only.</td></tr><tr><td>Error and diagnostic data</td><td>Retained by Sentry for up to 90 days per their default retention policy.</td></tr><tr><td>Research participation record</td><td>Kept for as long as your account exists, including after you withdraw: the record of the withdrawal and the random participant identifier are what let us keep honoring it. Deleted when your account is deleted.</td></tr><tr><td>Research dataset rows</td><td>Deleted when you withdraw. No research dataset exists as of the Last Updated date above, so there is currently nothing of anyone's to delete.</td></tr></tbody></table>
+<div class="table-wrap"><table><thead><tr><th scope="col">Data Type</th><th scope="col">Retention Period</th></tr></thead><tbody><tr><td>Screen recording frames (images)</td><td>Deleted from your device immediately after analysis completes. If the app crashes, cleaned up on next session start.</td></tr><tr><td>In-memory frame data (base64)</td><td>Released from memory within 5 minutes of analysis completion or when you leave the results screen.</td></tr><tr><td>Scan results (text data)</td><td>Stored on our servers for as long as your account exists, or until you request deletion.</td></tr><tr><td>Account information</td><td>Retained for as long as your account is active. Deleted upon account deletion request.</td></tr><tr><td>Streak and preference data</td><td>Stored locally on your device. Deleted when you uninstall the App or clear app data.</td></tr><tr><td>Platform login state cache</td><td>Automatically expires after 30 days. Stored locally on your device only.</td></tr><tr><td>Error and diagnostic data</td><td>Retained by Sentry for up to 90 days per their default retention policy.</td></tr><tr><td>Research participation record</td><td>Kept for as long as your account exists, including after you withdraw: the record of the withdrawal and the random participant identifier are what let us keep honoring it. Deleted when your account is deleted.</td></tr><tr><td>Research dataset rows</td><td>Deleted when you withdraw. No research dataset exists as of the Last Updated date above, so there is currently nothing of anyone's to delete.</td></tr></tbody></table></div>
 <hr>
 <h2>6. Data Security</h2>
 <p>We implement the following security measures:</p>

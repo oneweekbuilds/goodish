@@ -22,7 +22,7 @@ Add this environment variable in Vercel's project settings:
 
 | Name | Value | Description |
 |------|-------|-------------|
-| `VITE_COMING_SOON_MODE` | `true` | Enables the Coming Soon overlay |
+| `VITE_COMING_SOON_MODE` | (retired) | The Coming Soon overlay was retired in September 2026; the static landing page in public/ is the root and the app routes redirect to it (vercel.json). The variable is ignored. |
 
 **Important:** All Vite environment variables must be prefixed with `VITE_` to be available in the browser.
 

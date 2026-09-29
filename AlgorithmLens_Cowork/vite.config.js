@@ -50,6 +50,10 @@ export default defineConfig({
   build: {
     sourcemap: true, // Required for Sentry source map upload
     rollupOptions: {
+      // The SPA entry is app.html: the static landing page in public/ owns
+      // index.html and therefore the root URL. Vercel rewrites the surviving
+      // SPA routes (/terms, /methodology) to /app.html.
+      input: { app: path.resolve(__dirname, "app.html") },
       output: {
         manualChunks: {
           // Vendor libraries

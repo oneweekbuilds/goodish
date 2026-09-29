@@ -88,7 +88,7 @@ See [.env.example](.env.example) for required environment variables.
 Key vars:
 - `VITE_ALG_API_BASE_URL`: Backend API URL (default: http://localhost:8000)
 - `VITE_STRIPE_PUBLISHABLE_KEY`: Stripe public key for payments
-- `VITE_COMING_SOON_MODE`: Toggle coming-soon page
+- `VITE_COMING_SOON_MODE`: retired (September 2026). The static landing page in public/ owns the root URL; the web app routes redirect there in vercel.json.
 
 ## Observability
 

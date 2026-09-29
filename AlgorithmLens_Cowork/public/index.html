@@ -3,23 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>See your feed clearly | AlgorithmLens</title>
-<meta name="description" content="AlgorithmLens reads a short recording of a social feed and reports what appeared, as counts with their limits. Explore a fictional example and join the launch list.">
-<link rel="canonical" href="https://www.algorithmlens.com/algorithmlens/">
+<title>AlgorithmLens: see what a short scan of your feed could read</title>
+<meta name="description" content="A short scan of a feed you use, read into a plain report: which posts appeared, which accounts they came from, which carried an ad label. Counts with their limits, a fictional example to explore, and a launch list.">
+<link rel="canonical" href="https://www.algorithmlens.com/">
 <link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#F5F4F0">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="AlgorithmLens">
-<meta property="og:title" content="See your feed clearly | AlgorithmLens">
-<meta property="og:description" content="AlgorithmLens reads a short recording of a social feed and reports what appeared, as counts with their limits. Explore a fictional example and join the launch list.">
-<meta property="og:url" content="https://www.algorithmlens.com/algorithmlens/">
+<meta property="og:title" content="AlgorithmLens: see what a short scan of your feed could read">
+<meta property="og:description" content="A short scan of a feed you use, read into a plain report: which posts appeared, which accounts they came from, which carried an ad label. Counts with their limits, a fictional example to explore, and a launch list.">
+<meta property="og:url" content="https://www.algorithmlens.com/">
 <meta property="og:image" content="https://www.algorithmlens.com/static/img/og-example.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="An example scan, labeled as an example: a grid of 45 marks, 6 of them blue for posts that carried an ad label.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="See your feed clearly | AlgorithmLens">
-<meta name="twitter:description" content="AlgorithmLens reads a short recording of a social feed and reports what appeared, as counts with their limits. Explore a fictional example and join the launch list.">
+<meta name="twitter:title" content="AlgorithmLens: see what a short scan of your feed could read">
+<meta name="twitter:description" content="A short scan of a feed you use, read into a plain report: which posts appeared, which accounts they came from, which carried an ad label. Counts with their limits, a fictional example to explore, and a launch list.">
 <meta name="twitter:image" content="https://www.algorithmlens.com/static/img/og-example.png">
 <link rel="preload" href="/static/fonts/source-serif-4-regular.woff2" as="font" type="font/woff2" crossorigin>
 <style>
@@ -63,10 +63,10 @@ h3{font-size:22px;line-height:1.2;margin:0 0 8px}
 .hero details{grid-column:2;margin:0 auto;width:100%}
 .film-card{max-width:400px;margin:0 auto;padding:16px 16px 16px}
 .film-card .label{margin-bottom:12px}
-.film-card video{display:block;width:100%;max-width:236px;margin:0 auto;height:auto;aspect-ratio:9/16;background:var(--paper);border:1px solid var(--line);border-radius:14px}
-.film-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px}
+.film-card video{display:block;width:100%;max-width:min(236px,100%);margin:0 auto;height:auto;aspect-ratio:9/16;background:var(--paper);border:1px solid var(--line);border-radius:14px}
+.film-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}
 .film-foot .caption{flex:1 1 auto;font-size:15px}
-.film-foot .secondary{flex:0 0 auto;padding:0 14px;font-size:14px}
+.film-foot .secondary{flex:0 1 auto;padding:8px 14px;font-size:14px;white-space:normal;max-width:100%;text-align:center}
 details{margin:16px auto 0;max-width:400px}
 summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-size:15px;color:var(--muted)}
 details p{margin:8px 0 0;font-size:15px;max-width:60ch}
@@ -80,6 +80,8 @@ iframe{display:block;width:100%;height:720px;border:0;background:var(--card);mar
 .step i{width:36px;height:36px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;font:italic 17px var(--serif);color:var(--muted);background:var(--card)}
 .step p{margin:0;color:var(--muted);font-size:16px}
 .signup-card{display:grid;grid-template-columns:1fr 1fr;gap:40px;padding:32px}
+.signup-card>*{min-width:0}
+.small,.consent span,.caption{overflow-wrap:anywhere}
 form{max-width:480px}
 label{display:block;margin:0 0 8px;font-size:15px}
 input[type=email]{width:100%;padding:0 16px;font:inherit;border:1px solid var(--field);border-radius:12px;background:var(--card);min-height:56px;color:var(--ink)}
@@ -91,7 +93,8 @@ form .button{width:100%}
 #formStatus.is-error{font-weight:600}
 footer.bottom{border-top:1px solid var(--line);padding:24px 0 48px;color:var(--muted);font-size:15px}
 footer.bottom .wrap{display:flex;justify-content:space-between;gap:16px 24px;flex-wrap:wrap;align-items:center}
-footer nav{display:flex;gap:8px 24px;flex-wrap:wrap}
+footer nav{display:flex;gap:8px 24px;flex-wrap:wrap;min-width:0}
+footer a,footer span{overflow-wrap:anywhere;max-width:100%}
 footer a{display:inline-flex;align-items:center;min-height:44px}
 @media(max-width:899px){
 .hero{grid-template-columns:1fr;gap:16px;padding:16px 24px 40px}

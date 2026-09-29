@@ -1,19 +1,13 @@
-import React, { useEffect, useState, Suspense } from 'react';
-import { Routes, Route, Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import React, { Suspense } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import Navbar from './components/Navbar';
-import Logo from './components/Logo';
-import LandingV12 from './components/landing/LandingV12';
-import SEO from './components/SEO';
+import { SiteHeader, SiteFooter } from './components/SiteChrome';
 
 // Static imports for landing page (always needed)
 // PricingPage removed — /pricing now redirects to /plus
 import NotFoundPage from './pages/NotFoundPage';
 import { AuthProvider } from './lib/auth';
 import { PaywallProvider } from './lib/plan/PaywallProvider';
-import { isComingSoon } from './config/comingSoon';
-import ComingSoonBanner from './components/ComingSoonBanner';
-import WaitlistSignup from './components/WaitlistSignup';
 import { ToastProvider } from './components/ui/Toast';
 import ErrorBoundary from './components/ui/ErrorBoundary';
 
@@ -50,36 +44,9 @@ function LoadingFallback() {
 }
 
 function App() {
-  const comingSoonMode = isComingSoon();
   const location = useLocation();
-  const navigate = useNavigate();
-  // The rebuilt v12 landing ships its own nav + footer, so the shared chrome
-  // is hidden on the home route (except in coming-soon mode).
-  const isLandingV12 = location.pathname === '/' && !comingSoonMode;
-  const [showRedirectMessage, setShowRedirectMessage] = useState(false);
-
-  // Route guard: Block direct URL access to gated routes when Coming Soon mode is enabled
-  useEffect(() => {
-    let timeoutId;
-    if (comingSoonMode && location.pathname !== '/') {
-      const isGated = [
-        '/dashboard',
-        '/start',
-        '/scan',
-        '/history',
-        '/plus',
-        '/settings',
-      ].some(route => location.pathname.startsWith(route));
-
-      if (isGated) {
-        navigate('/', { replace: true });
-        setShowRedirectMessage(true);
-        // (Audit 8 M7) Store timeout ID for cleanup to prevent memory leak
-        timeoutId = setTimeout(() => setShowRedirectMessage(false), 5000);
-      }
-    }
-    return () => { if (timeoutId) clearTimeout(timeoutId); };
-  }, [location.pathname, comingSoonMode, navigate]);
+  // The former Coming Soon gate is retired. The landing page is a static
+  // file at /, and the unlaunched web-app routes redirect there (vercel.json).
 
   return (
     <AuthProvider>
@@ -94,30 +61,8 @@ function App() {
               Skip to main content
             </a>
 
-            {/* Coming Soon Banner */}
-            {comingSoonMode && <ComingSoonBanner />}
 
-            {/* Redirect Message */}
-            {showRedirectMessage && (
-              <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-md w-full mx-4">
-                <div className="bg-primary-blue/10 border border-primary-blue/30 rounded-lg p-4 shadow-lg backdrop-blur-sm">
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="text-sm text-text-main font-medium flex-1">
-                      AlgorithmLens is coming soon. Join the waitlist.
-                    </p>
-                    <button
-                      onClick={() => setShowRedirectMessage(false)}
-                      className="text-text-muted hover:text-text-main transition-colors"
-                      aria-label="Dismiss message"
-                    >
-                      ×
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {!isLandingV12 && <Navbar />}
+            <SiteHeader />
 
             <main id="main-content">
               <ErrorBoundary fallbackTitle="Something went wrong" fallbackMessage="An error occurred while loading this page. Please try refreshing.">
@@ -131,34 +76,8 @@ function App() {
                       transition={{ duration: 0.2 }}
                     >
                       <Routes>
-                      {/* HOME ROUTE */}
-                      <Route
-                        path="/"
-                        element={
-                          comingSoonMode ? (
-                            <>
-                              <SEO path="/" />
-                              <section className="py-12 sm:py-20 bg-bg-page">
-                                <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-                                  {/* #18: Fixed h3 → h2 for proper heading hierarchy */}
-                                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-text-main mb-3">
-                                    Join the Waitlist
-                                  </h2>
-                                  <p className="text-base sm:text-lg text-text-muted mb-8 sm:mb-10 px-2">
-                                    Get early access when AlgorithmLens launches
-                                  </p>
-                                  <WaitlistSignup id="waitlist" />
-                                </div>
-                              </section>
-                            </>
-                          ) : (
-                            <>
-                              <SEO path="/" />
-                              <LandingV12 />
-                            </>
-                          )
-                        }
-                      />
+                      {/* HOME ROUTE: the static landing page owns / in production */}
+                      <Route path="/" element={<Navigate to="/methodology" replace />} />
 
                       {/* PRICING REDIRECT */}
                       <Route path="/pricing" element={<Navigate to="/plus" replace />} />
@@ -207,53 +126,7 @@ function App() {
               </ErrorBoundary>
             </main>
 
-            {/* #17: Enhanced footer with refined styling (hidden on the v12 landing, which ships its own) */}
-            {!isLandingV12 && (
-            <footer className="py-16 bg-bg-page">
-              {/* Subtle gradient divider replacing hard border */}
-              <div className="h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent"></div>
-              
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16">
-                <div className="flex flex-col md:flex-row justify-between items-start gap-6 sm:gap-8">
-                  <div className="flex flex-col gap-2">
-                    <Logo variant="footer" />
-                    <p className="text-sm font-medium text-text-muted max-w-xs">
-                      Understand what appears in your social media feed. Built at MIT.
-                    </p>
-                  </div>
-
-                  {/* (Audit 8 H5) Added nav landmark for footer navigation */}
-                  <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-8 sm:gap-x-12 gap-y-6">
-                    <div>
-                      <h3 className="text-sm font-semibold text-text-main mb-3">Product</h3>
-                      <ul className="space-y-2">
-                        <li><Link to="/start" className="text-sm text-text-muted hover:text-primary-blue transition-colors">Start a Scan</Link></li>
-                        <li><Link to="/dashboard" className="text-sm text-text-muted hover:text-primary-blue transition-colors">Dashboard</Link></li>
-                        <li><Link to="/plus" className="text-sm text-text-muted hover:text-primary-blue transition-colors">Plus</Link></li>
-                        <li><Link to="/methodology" className="text-sm text-text-muted hover:text-primary-blue transition-colors">Methodology</Link></li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-text-main mb-3">Legal</h3>
-                      <ul className="space-y-2">
-                        <li><Link to="/privacy" className="text-sm text-text-muted hover:text-primary-blue transition-colors">Privacy Policy</Link></li>
-                        <li><Link to="/terms" className="text-sm text-text-muted hover:text-primary-blue transition-colors">Terms of Service</Link></li>
-                      </ul>
-                    </div>
-                  </nav>
-                </div>
-
-                <div className="mt-10 pt-6 border-t border-border-light/50 flex flex-col sm:flex-row justify-between items-center gap-4">
-                  <p className="text-xs text-text-muted">
-                    © 2026 AlgorithmLens. All rights reserved.
-                  </p>
-                  <p className="text-sm font-medium text-text-muted">
-                    Built at MIT.
-                  </p>
-                </div>
-              </div>
-            </footer>
-            )}
+            <SiteFooter />
           </div>
         </ToastProvider>
       </PaywallProvider>

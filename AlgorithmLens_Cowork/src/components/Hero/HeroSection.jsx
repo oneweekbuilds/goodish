@@ -2,11 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, ChevronDown, Monitor, Smartphone } from 'lucide-react';
-import { isComingSoon } from '../../config/comingSoon';
 
 const HeroSection = () => {
     const navigate = useNavigate();
-    const comingSoonMode = isComingSoon();
+    const comingSoonMode = false; // the Coming Soon gate is retired
     const [showScrollHint, setShowScrollHint] = useState(true);
 
     useEffect(() => {

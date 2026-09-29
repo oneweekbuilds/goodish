@@ -4,14 +4,13 @@ import { X, Home, LayoutDashboard, ScanLine, Clock, Star, Settings } from 'lucid
 import { useUserProfile } from '../context/UserProfileContext';
 import { useAuth } from '../lib/auth/useAuth';
 import Logo from './Logo';
-import { isComingSoon } from '../config/comingSoon';
 import SignInPrompt from './auth/SignInPrompt';
 
 const Navbar = () => {
     const { userProfile } = useUserProfile();
     const { session, authReady } = useAuth();
     const isSignedIn = authReady && !!session;
-    const comingSoonMode = isComingSoon();
+    const comingSoonMode = false; // the Coming Soon gate is retired
     const location = useLocation();
     const [showSignInModal, setShowSignInModal] = useState(false);
     const [scrolled, setScrolled] = useState(false);
