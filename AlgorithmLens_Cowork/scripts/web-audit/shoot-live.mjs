@@ -73,7 +73,8 @@ for (const w of WIDTHS.filter((x) => !ONLY || ONLY.has(x.name))) {
     if (w.name === '1440') { await page.locator('nav.sections a').first().hover(); await wait(page, 200); await el(page.locator('header.top'), `root-${w.name}-state-nav-hover.jpg`); }
     // the example record: turn back to the first dated sheet
     if (await page.locator('#chips .chip').count()) { await page.locator('#chips .chip').first().click(); await wait(page, 600); await el(page.locator('#report .record-card'), `root-${w.name}-state-record-aug30.jpg`); await page.locator('#chips .chip').nth(3).click(); await wait(page, 600); }
-    // the header once the page has scrolled
+    // the header once the page has scrolled (full() pinned it for the full-page capture; let it stick again)
+    await page.addStyleTag({ content: '.topbar{position:sticky!important}' });
     await page.evaluate(() => window.scrollTo({ top: 600, behavior: 'instant' })); await wait(page, 500);
     await page.screenshot({ path: resolve(OUT, `root-${w.name}-state-header-scrolled.jpg`), clip: { x: 0, y: 0, width: w.viewport.width, height: 120 }, ...JPG });
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' })); await wait(page, 400);
