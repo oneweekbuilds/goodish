@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe } from '@stripe/stripe-js/pure';
 import PaywallModal from '../../components/plan/PaywallModal';
 import { track } from '../analytics/analyticsClient';
 import { EVENTS } from '../analytics/events';
