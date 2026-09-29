@@ -22,7 +22,9 @@ const WIDTHS = [
   { name: '1440', viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 },
   { name: 'iphone', viewport: iphone.viewport, deviceScaleFactor: 2, isMobile: true, hasTouch: true, userAgent: iphone.userAgent },
 ];
-const FULL_STATES_AT = new Set(['390', '1440']); // interactive states only at two widths
+// ONLY=390,1440 limits the run to those widths; NOSTATES=1 skips interactive states.
+const ONLY = process.env.ONLY ? new Set(process.env.ONLY.split(',')) : null;
+const FULL_STATES_AT = new Set(process.env.NOSTATES === '1' ? [] : ['390', '1440']); // interactive states only at two widths
 const wait = (page, ms = 500) => page.waitForTimeout(ms);
 async function full(page, f) {
   // Sticky headers smear across full-page captures; pin them for the shot.
@@ -41,7 +43,7 @@ async function walk(page) {
 }
 
 const browser = await chromium.launch({ headless: !headed });
-for (const w of WIDTHS) {
+for (const w of WIDTHS.filter((x) => !ONLY || ONLY.has(x.name))) {
   const ctx = await browser.newContext({ viewport: w.viewport, deviceScaleFactor: w.deviceScaleFactor, isMobile: !!w.isMobile, hasTouch: !!w.hasTouch, userAgent: w.userAgent });
   const page = await ctx.newPage();
   const states = FULL_STATES_AT.has(w.name);
@@ -110,7 +112,7 @@ for (const w of WIDTHS) {
   }
 
   // ---------- Specimen, film, privacy, terms, methodology ----------
-  for (const [path, name] of [['/explore/specimen.html', 'specimen'], ['/explore/experience-film.html', 'film'], ['/privacy/', 'privacy'], ['/terms', 'terms'], ['/methodology', 'methodology']]) {
+  for (const [path, name] of [['/explore/specimen.html', 'specimen'], ['/explore/experience-film.html', 'film'], ['/privacy/', 'privacy'], ['/terms', 'terms'], ['/methodology', 'methodology'], ['/this-page-does-not-exist', '404']]) {
     await page.goto(BASE + path, { waitUntil: 'networkidle' }); await wait(page, 1200);
     await fold(page, `${name}-${w.name}-fold.jpg`);
     await walk(page);
@@ -119,7 +121,7 @@ for (const w of WIDTHS) {
   await ctx.close();
 }
 // Reduced motion, root and explorer at 390 and 1440
-for (const w of WIDTHS.filter((x) => FULL_STATES_AT.has(x.name))) {
+for (const w of WIDTHS.filter((x) => FULL_STATES_AT.has(x.name) && (!ONLY || ONLY.has(x.name)))) {
   const ctx = await browser.newContext({ viewport: w.viewport, deviceScaleFactor: w.deviceScaleFactor, reducedMotion: 'reduce' });
   const page = await ctx.newPage();
   await page.goto(BASE + '/', { waitUntil: 'networkidle' }); await wait(page, 1200);

@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /design-brief/
 
 Sitemap: https://www.algorithmlens.com/sitemap.xml
