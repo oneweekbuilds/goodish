@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>About AlgorithmLens | AlgorithmLens</title>
+<meta name="description" content="Who builds AlgorithmLens and why, what the app will never do, and the loop it is built around: record a few minutes, review what appeared, keep both scans side by side.">
+<link rel="canonical" href="https://www.algorithmlens.com/about/">
+<link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#F5F4F0">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="AlgorithmLens">
+<meta property="og:title" content="About AlgorithmLens">
+<meta property="og:description" content="Who builds AlgorithmLens and why, what the app will never do, and the loop it is built around.">
+<meta property="og:url" content="https://www.algorithmlens.com/about/">
+<meta property="og:image" content="https://www.algorithmlens.com/static/img/og-example.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="An example scan, labeled as an example: a grid of 45 marks, 6 of them blue for posts that carried an ad label.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="About AlgorithmLens">
+<meta name="twitter:description" content="Who builds AlgorithmLens and why, what the app will never do, and the loop it is built around.">
+<meta name="twitter:image" content="https://www.algorithmlens.com/static/img/og-example.png">
+<link rel="preload" href="/static/fonts/source-serif-4-regular.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:Source;src:url(/static/fonts/source-serif-4-regular.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:Source;src:url(/static/fonts/source-serif-4-italic.woff2) format('woff2');font-weight:400;font-style:italic;font-display:swap}
+:root{--paper:#F5F4F0;--panel:#FFFFFF;--field:#FFFDF9;--line:#DDD8CD;--mark:#E6E1D6;--muted:#6D685F;--ink:#3A3730;--ink-press:#141311;--blue:#1868D8;--blue-bg:#ECF3FC;--green:#20A888;--green-bg:#EDF8F5;--on-ink:#F7F5EF;--serif:Source,Georgia,"Times New Roman",serif;--sans:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;--shadow-panel:0 16px 40px rgba(58,55,48,.08);--shadow-pill:0 6px 16px rgba(58,55,48,.18);--tick:160ms;--beat:240ms;--settle:400ms;--ease:cubic-bezier(.22,1,.36,1);--gutter:24px}
+@media(min-width:600px){:root{--gutter:48px}}
+@media(min-width:900px){:root{--gutter:clamp(48px,8.333vw,120px)}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/23px var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column}
+p{margin:0}
+svg{display:block}
+.wrap{max-width:1440px;margin:0 auto;padding:0 var(--gutter);width:100%}
+.grid{display:grid;grid-template-columns:minmax(0,1fr)}
+@media(min-width:900px){.grid{grid-template-columns:repeat(12,minmax(0,1fr));column-gap:24px}}
+a{color:var(--ink);text-underline-offset:4px}
+:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0;text-wrap:balance}
+.skip{position:absolute;left:-999px;top:8px;background:var(--ink);color:var(--on-ink);padding:12px 16px;border-radius:8px;z-index:30}
+.skip:focus{left:8px}
+.label{display:inline-flex;align-items:center;gap:8px;font-size:14px;line-height:18px;color:var(--muted)}
+.label::before{content:"";width:12px;height:12px;border:1.5px solid var(--ink);border-radius:50%;flex-shrink:0}
+.pill{display:inline-flex;align-items:center;justify-content:center;background:var(--ink);color:var(--on-ink);border-radius:22px;height:44px;padding:0 18px;font:600 15px/1 var(--sans);text-decoration:none;white-space:nowrap;transition:transform var(--tick) var(--ease),background var(--tick),box-shadow var(--tick)}
+.pill:hover{background:var(--ink-press);transform:translateY(-1px);box-shadow:var(--shadow-pill)}
+.pill:active{transform:translateY(1px);box-shadow:none}
+.textlink{font-size:16px;text-decoration:underline;text-underline-offset:4px;display:inline-flex;align-items:center;min-height:44px}
+/* header */
+.topbar{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--line);transition:background var(--beat),box-shadow var(--beat)}
+.topbar.scrolled{background:rgba(245,244,240,.86);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 1px 0 var(--line),0 8px 24px rgba(58,55,48,.06)}
+header.top{display:flex;justify-content:space-between;align-items:center;gap:24px;height:64px;transition:height var(--beat) var(--ease)}
+.brand{width:139px;height:28px;display:flex;align-items:center;transition:width var(--beat) var(--ease)}
+.brand svg{width:100%;height:auto}
+.topnav{display:flex;align-items:center;gap:32px;margin-left:auto}
+nav.sections{display:none;gap:32px;font-size:15px}
+nav.sections a{position:relative;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:6px 0}
+nav.sections a::after{content:"";position:absolute;left:0;right:0;bottom:8px;height:2px;background:var(--blue);transform:scaleX(0);transform-origin:left;transition:transform var(--beat) var(--ease)}
+nav.sections a:hover::after,nav.sections a:focus-visible::after{transform:scaleX(1)}
+@media(min-width:900px){header.top{height:72px}.topbar.scrolled header.top{height:64px}.brand{width:188px;height:38px}.topbar.scrolled .brand{width:158px;height:32px}nav.sections{display:flex}.topbar .pill{padding:0 20px;margin-left:8px}}
+/* hero */
+.dots{background-color:var(--paper);background-image:radial-gradient(circle,var(--line) 1px,transparent 1.3px);background-size:26px 26px}
+.hero{padding-top:40px;padding-bottom:48px}
+.hero .copy{display:flex;flex-direction:column;gap:20px}
+h1{font-size:40px;line-height:44px;letter-spacing:-.8px}
+.hero .lede{font-size:18px;line-height:28px;text-wrap:pretty}
+.hero .body{font-size:15px;line-height:24px;text-wrap:pretty}
+.never{margin-top:32px;padding:20px;border:1px solid var(--line);border-radius:20px;background:var(--panel);box-shadow:var(--shadow-panel);display:flex;flex-direction:column;gap:12px}
+.never h2{font-size:22px;line-height:28px}
+.never div{display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:22px}
+.never div i{width:8px;height:8px;border-radius:50%;border:1.2px solid var(--muted);margin-top:7px;flex-shrink:0}
+@media(min-width:900px){
+.hero{padding-top:88px;padding-bottom:64px}
+.hero .copy{grid-column:1/span 7;gap:24px}
+h1{font-size:clamp(46px,4.444vw,64px);line-height:1.094;letter-spacing:-1.2px}
+.hero .lede{font-size:21px;line-height:32px;max-width:640px}
+.hero .body{font-size:17px;line-height:28px;max-width:640px}
+.never{grid-column:9/span 4;align-self:start;margin-top:0;padding:24px;gap:14px}
+.never h2{font-size:24px;line-height:30px}
+}
+/* loop */
+.band{background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.loop-section{padding:56px 0}
+.loop-copy{display:flex;flex-direction:column;gap:16px;margin-bottom:32px}
+h2.section{font-size:34px;line-height:40px;letter-spacing:-.5px}
+.loop-copy p{font-size:15px;line-height:24px;text-wrap:pretty}
+.loop{padding:0}
+.loop .note{font-size:13px;line-height:18px;color:var(--muted);margin:0 0 20px}
+.rail-wrap{position:relative;padding:0 0 32px 30px}
+.boxes{display:flex;flex-direction:column;align-items:stretch}
+.box{display:flex;align-items:center;justify-content:center;gap:10px;text-align:center;padding:12px;min-height:80px;border:1px solid var(--ink);border-radius:12px;background:var(--paper);font-size:15px;line-height:22px;width:100%;max-width:280px;margin:0 auto}
+.box.white{background:var(--panel)}
+.box b{font-weight:600}
+.box svg{flex-shrink:0}
+.arrow{position:relative;width:2px;height:40px;background:var(--muted);margin:0 auto}
+.arrow::after{content:"";position:absolute;left:-4px;bottom:-1px;border:5px solid transparent;border-top:8px solid var(--muted);border-bottom:0}
+.return{position:absolute;left:8px;top:40px;bottom:72px;width:16px;border:2px dashed var(--muted);border-right:0;border-radius:12px 0 0 12px}
+.return::before{content:"";position:absolute;right:-1px;top:-6px;border:5px solid transparent;border-left:8px solid var(--muted);border-right:0}
+.return span{position:absolute;left:-2px;top:calc(100% + 46px);white-space:nowrap;font-size:13px;color:var(--muted)}
+@media(min-width:900px){
+.loop-section{padding:72px 0}
+.loop-grid{align-items:center}
+.loop-copy{grid-column:1/span 4;margin:0}
+h2.section{font-size:40px;line-height:46px;letter-spacing:-.6px}
+.loop-copy p{font-size:17px;line-height:27px}
+.loop{grid-column:5/span 8;padding:0}
+.loop .note{margin:0 0 28px}
+.rail-wrap{padding:0 0 60px}
+.boxes{flex-direction:row;align-items:center}
+.box{flex:0 0 180px;margin:0;max-width:none}
+.arrow{flex:1 1 40px;min-width:40px;height:2px;width:auto;margin:0}
+.arrow::after{left:auto;right:-1px;top:-4px;bottom:auto;border:5px solid transparent;border-left:8px solid var(--muted);border-right:0}
+.return{left:90px;right:90px;top:auto;bottom:12px;width:auto;height:48px;border:2px dashed var(--muted);border-top:0;border-radius:0 0 12px 12px}
+.return::before{right:auto;left:-7px;top:-7px;border:6px solid transparent;border-bottom:9px solid var(--muted);border-top:0}
+.return span{left:50%;top:auto;bottom:-9px;transform:translateX(-50%);padding:0 8px;background:var(--panel)}
+}
+@media(min-width:1100px){.box{flex-basis:200px}.return{left:100px;right:100px}}
+/* open and write */
+.two{padding-top:56px;padding-bottom:64px;display:flex;flex-direction:column;gap:40px}
+.two>div{display:flex;flex-direction:column;gap:16px}
+.two p{font-size:15px;line-height:24px;text-wrap:pretty}
+.two a{color:var(--ink)}
+@media(min-width:900px){
+.two{padding-top:64px;padding-bottom:72px;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:24px}
+.two .open{grid-column:1/span 6}
+.two .write{grid-column:8/span 5}
+.two p{font-size:17px;line-height:27px;max-width:560px}
+}
+/* footer */
+footer.bottom{background:var(--panel);border-top:1px solid var(--line);padding:40px 0;color:var(--muted);font-size:14px;margin-top:auto}
+.foot-brand{display:flex;flex-direction:column;gap:14px;margin-bottom:24px}
+.foot-brand .brand{width:139px;height:28px}
+.foot-brand p{margin:0;font-size:15px;line-height:22px;color:var(--muted);max-width:360px}
+.foot-cols{display:grid;grid-template-columns:1fr 1.4fr;gap:8px 16px}
+.foot-col{display:flex;flex-direction:column;font-size:14px;line-height:28px}
+.foot-col b{font-weight:600;color:var(--ink)}
+.foot-col a{color:var(--ink);text-decoration:none;display:inline-flex;align-items:center;min-height:30px;overflow-wrap:anywhere}
+.foot-col a:hover{text-decoration:underline;text-decoration-color:var(--blue);text-underline-offset:4px}
+.foot-row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:24px;padding-top:16px;border-top:1px solid var(--line);font-size:13px}
+@media(min-width:900px){
+footer.bottom{padding:56px 0 48px}
+.foot-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:24px}
+.foot-brand{grid-column:1/span 4;gap:16px;margin:0}
+.foot-brand .brand{width:188px;height:38px}
+.foot-cols{display:contents}
+.foot-col{font-size:15px;line-height:30px}
+.foot-col.product{grid-column:6/span 2}
+.foot-col.company{grid-column:8/span 3}
+.foot-col.legal{grid-column:11/span 2}
+.foot-row{margin-top:32px;padding-top:20px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}.topbar.scrolled{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--paper)}.pill:hover{transform:none}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="topbar" id="topbar"><div class="wrap">
+<header class="top">
+<a class="brand" href="/" aria-label="AlgorithmLens home"><svg viewBox="0 0 436 88" role="img" aria-label="AlgorithmLens"><use href="/static/img/wordmark.svg#wordmark"/></svg></a>
+<div class="topnav">
+<nav class="sections" aria-label="Site">
+<a href="/#how">How it works</a>
+<a href="/#report">The report</a>
+<a href="/#privacy">Privacy</a>
+<a href="/methodology">Methodology</a>
+</nav>
+<a class="pill" href="/#launch">Join the launch list</a>
+</div>
+</header>
+</div></div>
+<main id="main">
+<section class="dots">
+<div class="wrap hero grid">
+<div class="copy">
+<span class="label">About</span>
+<h1>Who builds this, and why.</h1>
+<p class="lede">AlgorithmLens is built by one person, Justin Winuk, in Somerville, Massachusetts. It started from a plain question: what was actually in my feed this week? A feed keeps no record of itself, so the only way to answer was to make one.</p>
+<p class="body">The app is a counting instrument. It reads a short recording of a feed you already scroll and reports what appeared: which posts carried a printed ad label, which accounts came around again, what the platform marked as suggested. It stops where the screen stops. The method is published, the limits sit beside every number, and the example data on this site is fictional and says so.</p>
+</div>
+<aside class="never" aria-labelledby="never-title">
+<h2 id="never-title">What it will never do</h2>
+<div><i aria-hidden="true"></i>Claim to know why a platform showed you a post.</div>
+<div><i aria-hidden="true"></i>Score you, streak you, or grade your habits.</div>
+<div><i aria-hidden="true"></i>Store the text of posts, or sell anything about you.</div>
+<div><i aria-hidden="true"></i>Run ads on the platforms it measures.</div>
+<div><i aria-hidden="true"></i>Present a guess as an observation.</div>
+</aside>
+</div>
+</section>
+
+<section class="band loop-section">
+<div class="wrap grid loop-grid">
+<div class="loop-copy">
+<h2 class="section">The loop</h2>
+<p>Record a few minutes. Review what appeared. Record again another week, and the two scans sit side by side. Nothing in the loop looks at the platform's model, because nothing can.</p>
+</div>
+<div class="loop" role="img" aria-label="A loop diagram: record a few minutes of a feed, review what appeared counted, keep both scans side by side, then a dashed return path labeled another week leads back to record.">
+<p class="note">Nothing here reads the platform's model. The loop only ever sees the screen.</p>
+<div class="rail-wrap">
+<div class="boxes">
+<div class="box"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#1868D8" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><circle cx="11" cy="11" r="3" fill="#1868D8" stroke="none"/></svg><span><b>Record</b><br>a few minutes of a feed</span></div>
+<div class="arrow" aria-hidden="true"></div>
+<div class="box white"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#1868D8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="14" height="14" rx="2"/><path d="M7.5 9h7M7.5 13h4"/></svg><span><b>Review</b><br>what appeared, counted</span></div>
+<div class="arrow" aria-hidden="true"></div>
+<div class="box"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#1868D8" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="6" height="12" rx="1.5"/><rect x="13" y="5" width="6" height="12" rx="1.5"/></svg><span><b>Keep both</b><br>two scans, side by side</span></div>
+</div>
+<div class="return" aria-hidden="true"><span>another week</span></div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="wrap two">
+<div class="open">
+<h2 class="section">Open to check</h2>
+<p>The methodology page lists every metric, its sample size and the prompts used to read a frame, verbatim. If a number on this site cannot be traced to that page, treat it as a mistake and tell us.</p>
+<a class="textlink" href="/methodology">Read the methodology</a>
+</div>
+<div class="write">
+<h2 class="section">Write to us</h2>
+<p>Questions, corrections and research inquiries: <a href="mailto:hello@algorithmlens.com">hello@algorithmlens.com</a>. Privacy requests: <a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a>.</p>
+</div>
+</section>
+</main>
+<footer class="bottom">
+<div class="wrap">
+<div class="foot-grid">
+<div class="foot-brand">
+<a class="brand" href="/" aria-label="AlgorithmLens home"><svg viewBox="0 0 436 88" role="img" aria-label="AlgorithmLens"><use href="/static/img/wordmark.svg#wordmark"/></svg></a>
+<p>A feed, made legible. Example data shown throughout is fictional.</p>
+</div>
+<div class="foot-cols">
+<nav class="foot-col product" aria-label="Product"><b>Product</b><a href="/#report">The report</a><a href="/#how">How it works</a><a href="/#limits">Read the limits</a><a href="/explore/">Explore the example</a></nav>
+<nav class="foot-col company" aria-label="Company"><b>Company</b><a href="/about/">About</a><a href="/methodology">Methodology</a><a href="/#privacy">Privacy</a><a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a></nav>
+<nav class="foot-col legal" aria-label="Legal"><b>Legal</b><a href="/privacy/">Privacy policy</a><a href="/terms">Terms</a></nav>
+</div>
+</div>
+<div class="foot-row"><span>&copy; 2026 AlgorithmLens</span><span>A scan reads what appeared. It cannot say why.</span></div>
+</div>
+</footer>
+<script src="/chrome.js"></script>
+</body>
+</html>

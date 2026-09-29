@@ -10,43 +10,76 @@
 <style>
 @font-face{font-family:Source;src:url(/static/fonts/source-serif-4-regular.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:Source;src:url(/static/fonts/source-serif-4-italic.woff2) format('woff2');font-weight:400;font-style:italic;font-display:swap}
-:root{--blue:#1868D8;--green:#20A888;--ink:#3A3730;--dark:#1A1712;--paper:#F5F4F0;--card:#FFFFFF;--line:#DDD8CD;--muted:#6D685F}
+:root{--paper:#F5F4F0;--panel:#FFFFFF;--line:#DDD8CD;--muted:#6D685F;--ink:#3A3730;--ink-press:#141311;--blue:#1868D8;--on-ink:#F7F5EF;--serif:Source,Georgia,"Times New Roman",serif;--sans:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;--shadow-sheet:9px 16px 0 rgba(58,55,48,.08),0 24px 22px rgba(58,55,48,.12);--shadow-pill:0 6px 16px rgba(58,55,48,.18);--tick:160ms;--beat:240ms;--ease:cubic-bezier(.22,1,.36,1);--gutter:24px}
+@media(min-width:600px){:root{--gutter:48px}}
+@media(min-width:900px){:root{--gutter:clamp(48px,8.333vw,120px)}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh;display:flex;flex-direction:column}
-.wrap{max-width:1180px;margin:0 auto;padding:0 24px;width:100%}
-header{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:72px;border-bottom:1px solid var(--line)}
-header a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink)}
-.brand{width:188px;max-width:52vw}
-.brand svg{width:100%;height:auto;display:block}
-main{flex:1;display:grid;place-items:center;padding:64px 24px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:32px;max-width:520px;box-shadow:4px 6px 0 rgba(58,55,48,.08)}
-.ring{width:64px;height:64px;border:1.5px solid var(--line);border-radius:50%;margin:0 0 20px;display:grid;place-items:center;font:italic 22px Source,Georgia,serif;color:var(--muted)}
-h1{font:400 clamp(34px,5vw,48px)/1.05 Source,Georgia,serif;letter-spacing:-1.2px;margin:0 0 12px}
-p{margin:0 0 20px;color:var(--muted)}
-.limit{font:italic 18px/1.4 Source,Georgia,serif}
-.button{display:inline-flex;align-items:center;justify-content:center;background:var(--dark);color:var(--paper);border-radius:14px;min-height:52px;padding:0 24px;font:600 16px/1 system-ui,sans-serif;text-decoration:none;margin-right:12px}
-.secondary{display:inline-flex;align-items:center;min-height:44px;color:var(--ink);text-underline-offset:4px}
-a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
-footer{border-top:1px solid var(--line);padding:24px 0;font-size:14px;color:var(--muted)}
-footer nav{display:flex;gap:20px;flex-wrap:wrap}
-footer a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink)}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/23px var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column}
+p{margin:0}
+svg{display:block}
+.wrap{max-width:1440px;margin:0 auto;padding:0 var(--gutter);width:100%}
+a{color:var(--ink);text-underline-offset:4px}
+:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+header.top{display:flex;justify-content:space-between;align-items:center;gap:24px;height:64px;border-bottom:1px solid var(--line)}
+.brand{width:139px;height:28px;display:flex;align-items:center}
+.brand svg{width:100%;height:auto}
+.pill{display:inline-flex;align-items:center;justify-content:center;background:var(--ink);color:var(--on-ink);border-radius:22px;height:44px;padding:0 18px;font:600 15px/1 var(--sans);text-decoration:none;white-space:nowrap;transition:transform var(--tick) var(--ease),background var(--tick),box-shadow var(--tick)}
+.pill:hover,.button:hover{background:var(--ink-press);transform:translateY(-1px);box-shadow:var(--shadow-pill)}
+.pill:active,.button:active{transform:translateY(1px);box-shadow:none}
+main{flex:1;display:flex;align-items:center;background-color:var(--paper);background-image:radial-gradient(circle,var(--line) 1px,transparent 1.3px);background-size:26px 26px;padding:48px 0}
+.copy{display:flex;flex-direction:column;gap:20px}
+.label{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+.label::before{content:"";width:12px;height:12px;border:1.5px solid var(--ink);border-radius:50%}
+h1{font:400 38px/44px var(--serif);letter-spacing:-.5px;margin:0;text-wrap:balance}
+.lede{font-size:17px;line-height:26px;max-width:520px;text-wrap:pretty}
+.actions{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.button{display:inline-flex;align-items:center;justify-content:center;background:var(--ink);color:var(--on-ink);border-radius:26px;height:52px;padding:0 24px;font:600 16px/1 var(--sans);text-decoration:none;transition:transform var(--tick) var(--ease),background var(--tick),box-shadow var(--tick)}
+.textlink{font-size:16px;text-decoration:underline;text-underline-offset:4px;display:inline-flex;align-items:center;min-height:44px}
+.stage{height:260px;position:relative;overflow:hidden;margin-top:24px}
+.sheet{position:absolute;left:50%;top:50%;width:230px;height:236px;margin:-118px 0 0 -115px;border-radius:10px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow-sheet);transform:perspective(900px) rotateX(38deg) rotateZ(-23deg)}
+.sheet .foot{position:absolute;left:0;right:0;bottom:16px;display:flex;justify-content:space-between;padding:0 20px;font-size:13px;color:var(--muted)}
+.sheet .empty{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);font:italic 16px var(--serif);color:var(--muted);white-space:nowrap}
+@media(min-width:900px){
+header.top{height:72px}
+.brand{width:188px;height:38px}
+.pill{padding:0 20px}
+main{padding:0}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:24px;align-items:center}
+.copy{grid-column:1/span 6}
+h1{font-size:clamp(44px,3.889vw,56px);line-height:1.107;letter-spacing:-1px}
+.lede{font-size:19px;line-height:30px}
+.stage{grid-column:8/span 5;height:360px;margin:0}
+.sheet{width:270px;height:278px;margin:-139px 0 0 -135px}
+}
+footer{background:var(--panel);border-top:1px solid var(--line);padding:16px 0}
+footer .row{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+footer nav{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+footer nav a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink);text-decoration:none}
+footer nav a:hover{text-decoration:underline;text-decoration-color:var(--blue)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}.pill:hover,.button:hover{transform:none}}
 </style>
 </head>
 <body>
-<div class="wrap"><header>
+<div class="wrap"><header class="top">
 <a class="brand" href="/" aria-label="AlgorithmLens home"><svg viewBox="0 0 436 88" role="img" aria-label="AlgorithmLens"><use href="/static/img/wordmark.svg#wordmark"/></svg></a>
-<a href="/">Front page</a>
+<a class="pill" href="/#launch">Join the launch list</a>
 </header></div>
 <main>
-<div class="card">
-<div class="ring" aria-hidden="true">?</div>
-<h1>This page is not on record.</h1>
-<p>The address may have moved, or it never existed. Nothing was recorded.</p>
-<p class="limit">A missing page says nothing about the rest of the site.</p>
-<a class="button" href="/">Go to the front page</a>
-<a class="secondary" href="/explore/">Explore the example</a>
+<div class="wrap grid">
+<div class="copy">
+<span class="label">404</span>
+<h1>Nothing was read at this address.</h1>
+<p class="lede">The page may have moved, or the link had a typo. Everything on this site is one level from the front page.</p>
+<div class="actions"><a class="button" href="/">Back to the front page</a><a class="textlink" href="/explore/">Open the explorer</a></div>
+</div>
+<div class="stage" aria-hidden="true">
+<div class="sheet"><span class="empty">An empty sheet stays empty.</span><span class="foot"><span>No date</span><span>0 posts</span></span></div>
+</div>
 </div>
 </main>
-<footer><div class="wrap"><nav aria-label="More pages"><a href="/privacy/">Privacy policy</a><a href="/terms">Terms</a><a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a></nav></div></footer>
+<footer><div class="wrap row">
+<nav aria-label="More pages"><span>&copy; 2026 AlgorithmLens</span><a href="/privacy/">Privacy policy</a><a href="/terms">Terms</a><a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a></nav>
+<span>A scan reads what appeared. It cannot say why.</span>
+</div></footer>
 </body>
 </html>

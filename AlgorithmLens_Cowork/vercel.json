@@ -69,6 +69,7 @@
     { "source": "/index.html", "destination": "/", "statusCode": 301 },
     { "source": "/explore/index.html", "destination": "/explore/", "statusCode": 301 },
     { "source": "/privacy", "destination": "/privacy/", "statusCode": 301 },
+    { "source": "/about", "destination": "/about/", "statusCode": 301 },
     { "source": "/dashboard", "destination": "/", "statusCode": 307 },
     { "source": "/dashboard/:path*", "destination": "/", "statusCode": 307 },
     { "source": "/start", "destination": "/", "statusCode": 307 },
@@ -84,7 +85,7 @@
     { "source": "/auth/:path*", "destination": "/", "statusCode": 307 }
   ],
   "rewrites": [
-    { "source": "/terms", "destination": "/app.html" },
-    { "source": "/methodology", "destination": "/app.html" }
+    { "source": "/terms", "destination": "/terms.html" },
+    { "source": "/methodology", "destination": "/methodology.html" }
   ]
 }

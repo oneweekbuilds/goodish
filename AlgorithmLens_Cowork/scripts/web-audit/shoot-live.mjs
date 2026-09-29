@@ -2,7 +2,7 @@
 // Safari emulation (Chromium engine, iPhone user agent and viewport).
 //   node scripts/web-audit/shoot-live.mjs <outDir> [baseUrl]
 // Every section and interactive state of /, /explore/, /explore/specimen.html,
-// /explore/experience-film.html, /privacy/, /terms and /methodology.
+// /explore/experience-film.html, /privacy/, /terms, /methodology, /about/ and the 404.
 import { chromium, devices } from 'playwright';
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -71,6 +71,12 @@ for (const w of WIDTHS.filter((x) => !ONLY || ONLY.has(x.name))) {
       await page.locator('.way').first().hover(); await wait(page, 300); await el(page.locator('#ways'), `root-${w.name}-state-way-hover.jpg`);
     }
     if (w.name === '1440') { await page.locator('nav.sections a').first().hover(); await wait(page, 200); await el(page.locator('header.top'), `root-${w.name}-state-nav-hover.jpg`); }
+    // the example record: turn back to the first dated sheet
+    if (await page.locator('#chips .chip').count()) { await page.locator('#chips .chip').first().click(); await wait(page, 600); await el(page.locator('#report .record-card'), `root-${w.name}-state-record-aug30.jpg`); await page.locator('#chips .chip').nth(3).click(); await wait(page, 600); }
+    // the header once the page has scrolled
+    await page.evaluate(() => window.scrollTo({ top: 600, behavior: 'instant' })); await wait(page, 500);
+    await page.screenshot({ path: resolve(OUT, `root-${w.name}-state-header-scrolled.jpg`), clip: { x: 0, y: 0, width: w.viewport.width, height: 120 }, ...JPG });
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' })); await wait(page, 400);
     const launch = page.locator('#launch');
     await page.locator('#submit').click(); await wait(page, 400);
     await el(launch, `root-${w.name}-state-form-empty.jpg`);
@@ -112,7 +118,7 @@ for (const w of WIDTHS.filter((x) => !ONLY || ONLY.has(x.name))) {
   }
 
   // ---------- Specimen, film, privacy, terms, methodology ----------
-  for (const [path, name] of [['/explore/specimen.html', 'specimen'], ['/explore/experience-film.html', 'film'], ['/privacy/', 'privacy'], ['/terms', 'terms'], ['/methodology', 'methodology'], ['/this-page-does-not-exist', '404']]) {
+  for (const [path, name] of [['/explore/specimen.html', 'specimen'], ['/explore/experience-film.html', 'film'], ['/privacy/', 'privacy'], ['/terms', 'terms'], ['/methodology', 'methodology'], ['/about/', 'about'], ['/this-page-does-not-exist', '404']]) {
     await page.goto(BASE + path, { waitUntil: 'networkidle' }); await wait(page, 1200);
     await fold(page, `${name}-${w.name}-fold.jpg`);
     await walk(page);

@@ -39,17 +39,6 @@ const LAUNCH_LIST_ENDPOINT = "https://czrehjybsqzmudtgneqy.supabase.co/functions
   motion.addEventListener('change', policy);
   policy();
 
-  // The example record: the explorer's record view in a sandboxed frame.
-  // The frame reports its own height; nothing else crosses the boundary.
-  const frame = $('specimen');
-  window.addEventListener('message', (e) => {
-    if (e.source !== frame.contentWindow) return;
-    const data = e.data;
-    if (data && data.type === 'specimen-height' && Number.isFinite(data.height)) {
-      frame.style.height = Math.max(320, Math.min(1800, Math.ceil(data.height))) + 'px';
-    }
-  });
-
   // The launch-list form. One POST, no credentials, distinct copy for each
   // way it can fail, and nothing is ever reported as saved unless the server
   // said so.
@@ -57,6 +46,7 @@ const LAUNCH_LIST_ENDPOINT = "https://czrehjybsqzmudtgneqy.supabase.co/functions
   const status = $('formStatus');
   const email = $('email');
   const button = $('submit');
+  const buttonLabel = button.textContent;
   const COPY = {
     sending: 'Sending your request.',
     received: 'Your launch-list request was received.',
@@ -70,6 +60,7 @@ const LAUNCH_LIST_ENDPOINT = "https://czrehjybsqzmudtgneqy.supabase.co/functions
   function say(text, isError) {
     status.textContent = text;
     status.classList.toggle('is-error', !!isError);
+    status.classList.toggle('is-ok', text === COPY.received);
     email.setAttribute('aria-invalid', isError && text === COPY.rejected ? 'true' : 'false');
   }
   form.addEventListener('submit', async (e) => {
@@ -85,6 +76,7 @@ const LAUNCH_LIST_ENDPOINT = "https://czrehjybsqzmudtgneqy.supabase.co/functions
       return;
     }
     button.disabled = true;
+    button.textContent = 'Sending';
     say(COPY.sending, false);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
@@ -111,18 +103,32 @@ const LAUNCH_LIST_ENDPOINT = "https://czrehjybsqzmudtgneqy.supabase.co/functions
     } finally {
       clearTimeout(timeout);
       button.disabled = false;
+      button.textContent = buttonLabel;
     }
   });
 })();
 
-// Brand batch: the old site's micro-interactions, adapted to the paper canon.
-// Reveal on scroll, the film panel's playing state, the tappable fictional
-// feed whose readout is the record forming, and the selectable three steps.
-// Everything here is decorative or illustrative; nothing leaves the page.
+// Polish pass: the header's scrolled state, the film panel's playing state,
+// the example record's sheet stack, the tappable fictional feed whose readout
+// is the record forming, and the selectable three steps. Everything here is
+// decorative or illustrative; nothing leaves the page.
 (function () {
   'use strict';
   const $ = (id) => document.getElementById(id);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+
+  // Header: 72 px on the paper ground at rest, 64 px on translucent paper once
+  // the page has scrolled. Reduced motion keeps the ground opaque (CSS).
+  const topbar = $('topbar');
+  if (topbar) {
+    let scrolled = null;
+    const check = () => {
+      const now = window.scrollY > 8;
+      if (now !== scrolled) { scrolled = now; topbar.classList.toggle('scrolled', now); }
+    };
+    window.addEventListener('scroll', check, { passive: true });
+    check();
+  }
 
   // Reveal: elements rise 12 px over 400 ms once, when they enter the viewport.
   if ('IntersectionObserver' in window && !reduced.matches) {
@@ -140,6 +146,66 @@ const LAUNCH_LIST_ENDPOINT = "https://czrehjybsqzmudtgneqy.supabase.co/functions
     const state = () => panel.classList.toggle('playing', !film.paused && !film.ended);
     ['play', 'playing', 'pause', 'ended', 'emptied'].forEach((ev) => film.addEventListener(ev, state));
     state();
+  }
+
+  // The example record: four fictional Instagram scans, the same data the
+  // explorer's record view shows (explore/examples.js). One mark, one post;
+  // blue where the post carried a printed ad label, hollow where the label
+  // could not be read. The rest pose follows the native port contract.
+  const SCANS = [
+    { date: 'Aug 30', n: 33, ads: [1, 8, 17, 24, 33], unknown: [7] },
+    { date: 'Sep 6', n: 39, ads: [1, 8, 17, 24, 33], unknown: [7] },
+    { date: 'Sep 13', n: 8, ads: [1, 8], unknown: [7] },
+    { date: 'Sep 20', n: 45, ads: [1, 8, 17, 24, 33, 41], unknown: [7] },
+  ];
+  const stage = $('stage');
+  const chips = $('chips');
+  if (stage && chips) {
+    const total = SCANS.reduce((a, s) => a + s.n, 0);
+    const wide = () => matchMedia('(min-width: 900px)').matches;
+    const sheets = SCANS.map(() => { const s = document.createElement('div'); s.className = 'sheet'; stage.append(s); return s; });
+    const buttons = SCANS.map((scan, i) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = scan.date; b.id = 'week-' + i;
+      b.addEventListener('click', () => select(i)); chips.append(b); return b;
+    });
+    const inspect = document.createElement('a'); inspect.className = 'chip inspect'; inspect.textContent = 'Inspect this scan'; chips.append(inspect);
+    function marks(sheet, scan) {
+      sheet.replaceChildren();
+      const step = wide() ? 27 : 24;
+      for (let p = 1; p <= scan.n; p++) {
+        const i = document.createElement('i');
+        const col = (p - 1) % 8, row = Math.floor((p - 1) / 8);
+        i.style.left = (20 + col * step) + 'px';
+        i.style.top = (23 + row * 19) + 'px';
+        if (scan.ads.includes(p)) i.className = 'ad'; else if (scan.unknown.includes(p)) i.className = 'un';
+        sheet.append(i);
+      }
+      const foot = document.createElement('span'); foot.className = 'foot';
+      const d = document.createElement('span'); d.textContent = scan.date;
+      const c = document.createElement('span'); c.textContent = scan.n + ' posts';
+      foot.append(d, c); sheet.append(foot);
+    }
+    let current = SCANS.length - 1;
+    function select(i) {
+      current = i;
+      sheets.forEach((sheet, k) => {
+        const depth = i - k;
+        const behind = depth > 0 ? depth : (SCANS.length - k) + i; // sheets after the chosen one go to the back
+        sheet.classList.toggle('active', k === i);
+        sheet.style.zIndex = k === i ? '8' : String(8 - behind);
+        sheet.style.setProperty('--dx', (-9 * behind) + 'px');
+        sheet.style.setProperty('--dy', (18 * behind) + 'px');
+        sheet.style.setProperty('--s', String(1 - 0.015 * behind));
+        if (k === i) marks(sheet, SCANS[k]); else sheet.replaceChildren();
+      });
+      buttons.forEach((b, k) => b.setAttribute('aria-pressed', String(k === i)));
+      inspect.href = 'explore/#record';
+      const s = SCANS[i];
+      $('recordTitle').textContent = s.date + ', held on record.';
+      $('recordFacts').textContent = s.n + ' posts in this scan. ' + s.ads.length + ' carried a printed ad label. ' + total + ' posts across ' + SCANS.length + ' scans.';
+    }
+    select(current);
+    matchMedia('(min-width: 900px)').addEventListener('change', () => marks(sheets[current], SCANS[current]));
   }
 
   // The record forming: four fictional posts, observable facts only.
@@ -163,7 +229,7 @@ const LAUNCH_LIST_ENDPOINT = "https://czrehjybsqzmudtgneqy.supabase.co/functions
         const row = document.createElement('div'); row.className = 'row';
         const head = document.createElement('div'); head.className = 'row-head';
         const dot = document.createElement('i'); if (p.kind !== 'plain') dot.className = p.kind;
-        const title = document.createElement('span'); title.textContent = 'Post ' + n + ' · ' + p.account;
+        const title = document.createElement('span'); title.textContent = 'Post ' + n + '. ' + p.account;
         const em = document.createElement('em'); em.textContent = p.facts.length + ' facts read';
         head.append(dot, title, em);
         const grid = document.createElement('div'); grid.className = 'row-grid';
@@ -184,7 +250,6 @@ const LAUNCH_LIST_ENDPOINT = "https://czrehjybsqzmudtgneqy.supabase.co/functions
         const n = Number(b.dataset.read);
         b.setAttribute('aria-pressed', String(read.has(n)));
         b.textContent = read.has(n) ? 'In record' : 'Read';
-        b.classList.toggle('ring', !read.size && n === 1);
       });
     }
     buttons.forEach((b) => b.addEventListener('click', () => { const n = Number(b.dataset.read); if (read.has(n)) read.delete(n); else read.add(n); draw(); }));
@@ -208,7 +273,7 @@ const LAUNCH_LIST_ENDPOINT = "https://czrehjybsqzmudtgneqy.supabase.co/functions
     function start() { stop(); if (!reduced.matches) timer = setInterval(tick, 5000); }
     function stop() { if (timer) clearInterval(timer); timer = null; }
     buttons.forEach((b) => b.addEventListener('click', () => { show(Number(b.dataset.step)); start(); }));
-    const box = steps.parentElement;
+    const box = steps.closest('.how-grid') || steps.parentElement;
     box.addEventListener('mouseenter', () => { held = true; });
     box.addEventListener('mouseleave', () => { held = false; });
     box.addEventListener('focusin', () => { held = true; });
