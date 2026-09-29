@@ -190,3 +190,12 @@ Throttled 4G, root document (observed): 5,362 bytes on the wire (14,622 decoded)
 - **P3 · observed** The example film's on-screen card still says "The targeting reason is not" (H-7); a re-cut of the film is the fix.
 - **P3 · observed** The old `/api/subscribe` Beehiiv function remains deployed with no page calling it.
 - **Not done, by decision:** the launch-list table (`mobile/supabase/RUN_MANUALLY.md`) still has to be created before the form can succeed; until then every real submission returns the honest "nothing was saved" sentence.
+
+### Final scores after the follow-up (commit 523c4b5f, observed)
+
+| Page | Performance | Accessibility | Best practices | SEO | FCP | LCP | TBT | CLS |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Root | 99 | 100 | 100 | 100 | 1.1 s | 1.8 s | 0 ms | 0.005 |
+| Explorer | 99 | 100 | 100 | 100 | 1.6 s | 1.7 s | 100 ms | 0 |
+
+The explorer rendered live with its render guard released (body class ready, app visible, four record sheets), the feed cards carry the hidden lead-in and no aria-label, and the console showed no errors. The Lighthouse HTML reports beside this file are from this final run.
