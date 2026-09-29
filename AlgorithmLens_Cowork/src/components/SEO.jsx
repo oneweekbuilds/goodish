@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 
 const DEFAULT_TITLE = 'AlgorithmLens';
 const DEFAULT_DESCRIPTION = 'AlgorithmLens reads a short recording of a social feed and reports what appeared, as counts with their limits.';
-const SITE_URL = 'https://algorithmlens.com';
+const SITE_URL = 'https://www.algorithmlens.com';
 const DEFAULT_IMAGE = '/og.png';
 
 const SEO = ({ title, description, path = '', image, noIndex = false }) => {

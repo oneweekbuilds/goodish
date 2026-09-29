@@ -71,7 +71,7 @@ function feedView(s,st){
  const cards=[];let programmatic=false,scrollEnd=null;
  s.posts.forEach((p,i)=>{
    const mark=el('span','feed-index-mark'+(p.is_ad===true?' ad':''));mark.setAttribute('aria-hidden','true');mark.onclick=()=>go(i);mark.append(el('i'));rail.append(mark);
-   const card=el('div','stream-card'),top=el('div','post-top'),name=el('div','post-name');card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label',(p.creator||'Account unreadable')+', post '+p.position+'. Inspect its classifications.');
+   const card=el('div','stream-card'),top=el('div','post-top'),name=el('div','post-name');card.tabIndex=0;card.setAttribute('role','button');const sr=el('span','sr','Post '+p.position+', inspect its classifications: ');card.append(sr);
    top.append(el('span','avatar',p.creator?p.creator.replace('@','')[0]:'?'));name.append(el('strong','',p.creator||'Account unreadable'));
    const tag=p.is_ad===true?'Sponsored':p.origin==='suggested'?(p.origin_basis==='inferred'?'Suggested · inferred':'Suggested'):p.origin==='followed'?(p.origin_basis==='inferred'?'Followed · inferred':'Following'):'Origin unavailable';name.append(el('small','post-tag',tag));top.append(name,el('span','post-menu','•••'));card.append(top);
    if(p.demo?.media==='coffee'||p.demo?.media==='lake'){const img=el('img','post-photo');img.src=PHOTOS[p.demo.media];img.alt='Fictional example post image';card.append(img)}
@@ -119,7 +119,7 @@ window.addEventListener('hashchange',()=>{if(AL.views.some(v=>v.id===location.ha
 function acceptContext(event){if(!native)return;try{if(typeof event.data==='string'&&event.data.length>1024*1024)throw Error('Context exceeds 1 MB.');const m=typeof event.data==='string'?JSON.parse(event.data):event.data;if(!m||m.channel!=='algorithmlens-experiences'||m.version!==1||m.type!=='set-context')return;const normalized=AL.normalize(m.data);if(!AL.views.some(v=>v.id===m.view))throw Error('Unknown experience');stop();scans=normalized;scanIndex=scans.length-1;view=m.view;selectedPost=0;document.body.classList.remove('awaiting-context');document.body.classList.toggle('reduce-motion',m.reducedMotion===true);$('error').textContent='';render();notify('context-loaded',{view,scanId:scan().scan_id})}catch(err){$('error').textContent='Could not load the supplied context. '+err.message;notify('context-error',{message:err.message})}}
 window.addEventListener('message',acceptContext);document.addEventListener('message',acceptContext);
 window.AlgorithmLensExperiences={load,setView,getState:()=>({view,scanId:scan().scan_id,postCount:scan().posts.length,isExample:scan().is_example}),registry:visibleViews,pause:()=>{stop();render()}};
-render();notify('ready',{});
+render();document.body.classList.add('ready');notify('ready',{});
 if(native&&!window.ReactNativeWebView&&window.parent!==window&&'ResizeObserver' in window){new ResizeObserver(()=>window.parent.postMessage({type:'specimen-height',height:Math.ceil(document.body.getBoundingClientRect().height)},'*')).observe(document.body)}
 
 })();

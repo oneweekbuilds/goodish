@@ -57,3 +57,4 @@
 footer{flex-direction:column;align-items:flex-start;gap:4px}
 }
 body.native-mode{background:var(--card)}
+body:not(.ready) .app{visibility:hidden}

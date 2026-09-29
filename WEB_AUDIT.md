@@ -144,3 +144,49 @@ P2: H-3 H-5 H-6 D-2 L-1 L-2 L-3 L-4 P-4 V-1 A-1 A-2 A-3 A-4 F-2 F-3 F-4 S-1 S-2 
 P3: H-7 H-8 D-3 D-4 D-5 L-5 L-6 P-5 V-3 A-5 A-6 A-7 S-4 S-5 X-3 X-4 K-3 G-3.
 
 What was checked and found clean is listed inline as "positive" (H-9, L-7) so the next auditor does not repeat it.
+
+## After the fixes: live re-check on 28 September 2026
+
+Deployed as commit 5d725be0 (production deployment 6725451254, reported success through the GitHub deployments API). The same Playwright audit and Lighthouse runs were repeated against the live root. After screenshots are in `docs/web-audit/after/`; Lighthouse reports (HTML) for the root and the explorer, before and after, sit beside them.
+
+Live root URL: https://www.algorithmlens.com/
+
+### Lighthouse mobile, before and after (observed)
+
+| Page | Performance | Accessibility | Best practices | SEO | FCP | LCP | TBT | CLS | Weight |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Root, before (Coming Soon gate) | 69 | 100 | 79 | 100 | 3.4 s | 5.9 s | 170 ms | 0 | 532 KiB |
+| Landing, before (at /algorithmlens/) | 29 | 100 | 100 | 100 | 16.7 s | 16.7 s | 1,490 ms | 0.015 | 3,147 KiB |
+| Root, after (the landing at /) | 99 | 100 | 100 | 92 | 1.1 s | 1.8 s | 0 ms | 0.005 | 645 KiB |
+| Explorer, before | 44 | 90 | 100 | 100 | 5.2 s | 5.3 s | 120 ms | 0.628 | 855 KiB |
+| Explorer, after | 72 | 100 | 100 | 92 | 1.4 s | 1.7 s | 250 ms | 0.629 | 240 KiB |
+| Privacy, after (new page) | 99 | 100 | 100 | 92 | 1.0 s | 1.0 s | 140 ms | 0.001 | 54 KiB |
+
+The SEO 92 on every page is one audit, `robots-txt`, which Lighthouse runs by fetching `/robots.txt` from inside the page; the page's own Content-Security-Policy (`connect-src` limited to the launch-list endpoint) blocked that fetch. The policy now allows `'self'` in `connect-src`, which is the follow-up commit below; the file itself is valid and unchanged. The explorer's layout shift is addressed in the same follow-up (the app stays invisible until its first render, so nothing the visitor sees moves), as is the last accessible-name mismatch on the feed cards. The scores after that follow-up are recorded at the end of this section.
+
+Throttled 4G, root document (observed): 5,362 bytes on the wire (14,622 decoded), first paint 0.6 s, load event 1.9 s, 192 KB for every request including the poster and fonts; the film streams on demand with byte ranges (`206 Partial Content`, `Accept-Ranges: bytes`). Before: 3.2 MB on the wire and a 16.2 s load.
+
+### What the live run confirmed
+
+- **Headers (X-1, P-2):** every response now carries `Content-Security-Policy`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy` and `X-Frame-Options`; `/static/*` is `immutable` for a year; HTML is `max-age=600`. The explorer's policy uses host sources rather than `'self'` because it runs in a sandboxed frame with an opaque origin, and the frame rendered its record view live with no policy violations in the console.
+- **Outbound (X-2):** the root, explorer, specimen, film and privacy pages make zero non-origin requests. The only outbound request on the site is the launch-list POST, on submit.
+- **Redirects and 404s (R-1, S-3, K-3):** `/algorithmlens`, `/algorithmlens/`, `/algorithmlens/index.html`, `/algorithmlens/explore/...` and `/index.html` answer 301 to their new homes; `/privacy` 301s to `/privacy/`; the retired app routes (`/dashboard`, `/start`, `/plus`, `/pricing` and the rest) answer 307 to `/`; an unknown path answers a real 404. `/terms` and `/methodology` still serve the app.
+- **Form (F-1, F-2):** from the live root, a valid submission reaches the endpoint (preflight 204, POST, 500 because the table still does not exist) and the page now says "The launch list could not record your address. Nothing was saved. Try again later." Offline: "The launch list could not be reached. Nothing was sent. Check your connection and try again." Simulated 204: "Your launch-list request was received." and the form resets. Invalid email and unchecked consent never send. One POST for a double click.
+- **Video (V-1, V-2):** the film is a file source with a poster; muted, inline, looping, native controls plus an explicit toggle; one autoplay attempt when motion is allowed, none under reduced motion, no retry loop. Real iOS hardware remains unverified.
+- **Links (K-1, K-2):** every internal link on the five pages resolves; the explorer, specimen and film page link back to the front page; the privacy policy and terms are linked from every page.
+- **Layout (L-1 to L-7):** no horizontal overflow at 100 percent at any of the five widths on any page. At 200 percent zoom the root, explorer, specimen and film pages no longer overflow (the earlier 421, 563, 533 and 404 px documents are now 390 px wide at 390). The privacy page's retention table scrolls inside its own box at 200 percent.
+- **Copy (H-1, H-2, H-5, H-6):** rewritten as described; zero em dashes, zero uppercase transforms, zero gradients on the static pages; "Example" or "fictional" stays visible on every dataset.
+
+### Findings still open
+
+- **P3 · observed** Explorer feed at 768 px: the transcript lines under "Read the same evidence in words" run about 100 characters; the reading column is otherwise under 70.
+- **P3 · observed** `Access-Control-Allow-Origin: *` is present on every 200 response from the site, not only on `/static/*`; the source of the header on HTML responses was not identified from the repository (it does not appear on 404s). It exposes nothing that is not public, but it is untidy.
+- **P3 · observed** The privacy page's retention table still widens the document at 200 percent zoom in Chromium's measurement even though it scrolls inside its wrapper; visually nothing is clipped.
+- **P3 · observed** Explorer render-blocking stylesheet, about 370 ms of estimated savings on simulated 4G; inlining the critical rules was not done.
+- **P3 · observed** The photos in the explorer's example feed are JPEG; Lighthouse suggests WebP for about 26 KB.
+- **P3 · observed** `/terms` and `/methodology` (the surviving app pages) keep the old product's typography and spacing; they are linked from the footer only.
+- **P3 · observed** The app's terms text in `mobile/legal/TERMS_OF_SERVICE.md` carries an unresolved counsel note (D-166) and was not published; the July version stays live at `/terms` until counsel resolves it.
+- **P3 · unverified** iOS Safari on hardware: autoplay, low-power refusal and the sandboxed frame's fonts (which load cross-origin from an opaque origin and rely on the `Access-Control-Allow-Origin` header on `/static/*`).
+- **P3 · observed** The example film's on-screen card still says "The targeting reason is not" (H-7); a re-cut of the film is the fix.
+- **P3 · observed** The old `/api/subscribe` Beehiiv function remains deployed with no page calling it.
+- **Not done, by decision:** the launch-list table (`mobile/supabase/RUN_MANUALLY.md`) still has to be created before the form can succeed; until then every real submission returns the honest "nothing was saved" sentence.
