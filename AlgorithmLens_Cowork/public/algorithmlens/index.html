@@ -7,7 +7,7 @@
 <meta name="description" content="AlgorithmLens reads a short recording of a social feed and reports what appeared, as counts with their limits. Explore a fictional example and join the launch list.">
 <link rel="canonical" href="https://www.algorithmlens.com/algorithmlens/">
 <link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml">
-<meta name="theme-color" content="#F7F5EF">
+<meta name="theme-color" content="#F5F4F0">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="AlgorithmLens">
 <meta property="og:title" content="See your feed clearly | AlgorithmLens">
@@ -25,154 +25,203 @@
 <style>
 @font-face{font-family:Source;src:url(/static/fonts/source-serif-4-regular.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:Source;src:url(/static/fonts/source-serif-4-italic.woff2) format('woff2');font-weight:400;font-style:italic;font-display:swap}
-:root{--blue:#1868D8;--green:#20A888;--ink:#3A3730;--paper:#F7F5EF;--line:#DDD8CD;--muted:#6D685F;--surface:#FFFDF9;--field:#9B9488}
+:root{--blue:#1868D8;--green:#20A888;--ink:#3A3730;--dark:#1A1712;--paper:#F5F4F0;--card:#FFFFFF;--line:#DDD8CD;--muted:#6D685F;--field:#9B9488;--serif:Source,Georgia,"Times New Roman",serif;--sans:system-ui,-apple-system,"Segoe UI",sans-serif}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 system-ui,sans-serif}
-main,header,footer{max-width:1160px;margin:auto;padding:24px}
-.skip{position:absolute;left:-999px;top:8px;background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:6px;z-index:10}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.55 var(--sans)}
+p{margin:0 0 16px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--dark);color:var(--paper);padding:12px 16px;border-radius:8px;z-index:10}
 .skip:focus{left:8px}
-header{display:flex;justify-content:space-between;align-items:center;gap:24px;border-bottom:1px solid var(--line)}
-.brand{width:190px;max-width:60vw;flex-shrink:0;display:flex;align-items:center;min-height:44px}
-svg{display:block}
-nav.sections{display:flex;gap:8px 20px;flex-wrap:wrap;font-size:14px}
-a{color:var(--ink);text-underline-offset:5px}
+header.top{display:flex;justify-content:space-between;align-items:center;gap:24px;min-height:72px;border-bottom:1px solid var(--line)}
+.brand{width:160px;max-width:55vw;display:flex;align-items:center;min-height:44px}
+.brand svg{display:block;width:100%;height:auto}
+nav.sections{display:flex;gap:8px 24px;flex-wrap:wrap;font-size:15px}
+a{color:var(--ink);text-underline-offset:4px}
 nav.sections a{text-decoration:none;display:inline-flex;align-items:center;min-height:44px}
-h1,h2,h3{font-family:Source,Georgia,serif;font-weight:400;line-height:1.1}
-h1{font-size:clamp(42px,5.2vw,68px);letter-spacing:-2px;margin:20px 0 24px;max-width:14ch}
-h2{font-size:clamp(32px,4vw,48px);letter-spacing:-1px;margin:0 0 20px;max-width:20ch}
-h3{font-size:25px;margin:16px 0 10px}
-.hero{display:grid;grid-template-columns:1fr .85fr;gap:70px;align-items:center;padding:50px 0 60px}
-.eyebrow{font-size:14px;color:var(--muted)}
-.intro{font-size:19px;max-width:32ch}
-.limit{color:var(--muted);font-family:Source,Georgia,serif;font-style:italic;max-width:44ch}
-.button,button{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--ink);background:var(--ink);color:var(--paper);padding:12px 22px;border-radius:24px;font:inherit;text-decoration:none;cursor:pointer;min-height:44px}
-.hero figure{margin:0 auto;max-width:390px;width:100%}
-.hero video{width:100%;height:auto;aspect-ratio:9/16;display:block;background:var(--surface);border:1px solid var(--line);border-radius:18px}
-.caption{font-size:13px;color:var(--muted);max-width:60ch}
-.film-control{margin-top:12px;background:transparent;color:var(--ink);font-size:14px;padding:8px 18px}
-.section{border-top:1px solid var(--line);padding:60px 0}
-.section>p{max-width:66ch}
-.record-label{display:inline-block;border:1px solid var(--line);padding:5px 12px;border-radius:4px;font-size:14px;margin-bottom:20px}
-iframe{display:block;width:100%;height:720px;border:0;background:var(--paper);margin-top:20px}
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:36px;margin-top:32px}
-.steps article{border-top:1px solid var(--line);padding-top:16px}
-.number{font:italic 24px Source,serif;color:var(--muted)}
-.signup{display:grid;grid-template-columns:1fr 1fr;gap:60px}
-form{max-width:520px}
-label{display:block;margin:0 0 8px}
-input[type=email]{width:100%;padding:13px 16px;font:inherit;border:1px solid var(--field);border-radius:4px;background:var(--surface);min-height:48px;color:var(--ink)}
+nav.sections a:hover{text-decoration:underline}
+h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0}
+h1{font-size:clamp(40px,4.6vw,64px);line-height:1.05;letter-spacing:-1.5px;max-width:13ch;margin:0 0 24px}
+h2{font-size:clamp(30px,3.4vw,44px);line-height:1.1;letter-spacing:-1px;max-width:20ch;margin:0 0 16px}
+h3{font-size:22px;line-height:1.2;margin:0 0 8px}
+.label{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);line-height:1.3;margin:0 0 16px}
+.label::before{content:"";width:10px;height:10px;border:1.5px solid var(--ink);border-radius:50%;flex-shrink:0}
+.label.blue::before{border-color:var(--blue)}
+.lede{font-size:19px;max-width:32ch;margin:0 0 24px}
+.limit{font:italic 19px/1.4 var(--serif);color:var(--muted);max-width:40ch;margin:0 0 24px}
+.caption{font:italic 17px/1.4 var(--serif);color:var(--muted);margin:0;max-width:60ch}
+.small{font-size:14px;color:var(--muted);line-height:1.5;max-width:60ch}
+.button{display:inline-flex;align-items:center;justify-content:center;background:var(--dark);color:var(--paper);border:1px solid var(--dark);border-radius:14px;min-height:56px;padding:0 28px;font:600 17px/1 var(--sans);text-decoration:none;cursor:pointer}
+.button:hover{background:#000}
+.secondary{display:inline-flex;align-items:center;justify-content:center;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:22px;min-height:44px;padding:0 18px;font:15px/1 var(--sans);text-decoration:none;cursor:pointer}
+.secondary:hover{border-color:var(--ink)}
+:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px}
+.hero{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;padding:56px 24px 64px}
+.hero .copy{display:block}
+.hero .button{min-width:240px;margin-bottom:32px}
+.hero details{grid-column:2;margin:0 auto;width:100%}
+.film-card{max-width:400px;margin:0 auto;padding:16px 16px 16px}
+.film-card .label{margin-bottom:12px}
+.film-card video{display:block;width:100%;max-width:236px;margin:0 auto;height:auto;aspect-ratio:9/16;background:var(--paper);border:1px solid var(--line);border-radius:14px}
+.film-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px}
+.film-foot .caption{flex:1 1 auto;font-size:15px}
+.film-foot .secondary{flex:0 0 auto;padding:0 14px;font-size:14px}
+details{margin:16px auto 0;max-width:400px}
+summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-size:15px;color:var(--muted)}
+details p{margin:8px 0 0;font-size:15px;max-width:60ch}
+.section{padding:64px 0;border-top:1px solid var(--line)}
+.section>.wrap>p:not(.caption):not(.limit){max-width:60ch}
+.record-card{padding:24px 24px 16px}
+iframe{display:block;width:100%;height:720px;border:0;background:var(--card);margin:8px 0 16px;border-radius:12px}
+.record-foot{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-top:8px}
+.step{display:grid;grid-template-columns:36px 1fr;gap:16px;align-items:start}
+.step i{width:36px;height:36px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;font:italic 17px var(--serif);color:var(--muted);background:var(--card)}
+.step p{margin:0;color:var(--muted);font-size:16px}
+.signup-card{display:grid;grid-template-columns:1fr 1fr;gap:40px;padding:32px}
+form{max-width:480px}
+label{display:block;margin:0 0 8px;font-size:15px}
+input[type=email]{width:100%;padding:0 16px;font:inherit;border:1px solid var(--field);border-radius:12px;background:var(--card);min-height:56px;color:var(--ink)}
 input[aria-invalid=true]{border-color:var(--ink);border-width:2px}
-.consent{display:flex;align-items:flex-start;gap:12px;font-size:14px;margin:16px 0;min-height:44px}
-.consent input{margin-top:5px;width:20px;height:20px;flex-shrink:0}
-#formStatus{min-height:48px;font-size:14px}
+.consent{display:flex;align-items:flex-start;gap:12px;font-size:15px;margin:16px 0 24px;min-height:44px}
+.consent input{margin-top:4px;width:20px;height:20px;flex-shrink:0}
+form .button{width:100%}
+#formStatus{min-height:48px;font-size:15px;margin:16px 0 0}
 #formStatus.is-error{font-weight:600}
-.legal{font-size:13px;color:var(--muted);max-width:60ch}
-footer{border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:24px;color:var(--muted);font-size:14px;flex-wrap:wrap}
-footer nav{display:flex;gap:8px 20px;flex-wrap:wrap}
+footer.bottom{border-top:1px solid var(--line);padding:24px 0 48px;color:var(--muted);font-size:15px}
+footer.bottom .wrap{display:flex;justify-content:space-between;gap:16px 24px;flex-wrap:wrap;align-items:center}
+footer nav{display:flex;gap:8px 24px;flex-wrap:wrap}
 footer a{display:inline-flex;align-items:center;min-height:44px}
-a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--blue);outline-offset:4px}
-details{margin-top:18px}
-summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
-button:disabled{opacity:.6;cursor:wait}
-.explore-link{display:inline-flex;align-items:center;min-height:44px}
-@media(max-width:750px){
-header{align-items:flex-start;flex-direction:column;gap:8px}
-nav.sections{gap:4px 18px}
-.hero{grid-template-columns:1fr;gap:28px;padding-top:24px}
-.hero video{max-height:680px}
-.hero figure{max-width:390px;margin:auto}
-.steps,.signup{grid-template-columns:1fr;gap:28px}
+@media(max-width:899px){
+.hero{grid-template-columns:1fr;gap:16px;padding:16px 24px 40px}
+.hero .copy{display:contents}
+.hero h1{order:1;margin-bottom:0}
+.hero .film-card{order:2;width:100%}
+.hero .limit{order:3;margin:0}
+.hero .button{order:4;width:100%}
+.hero .lede{order:5;margin:8px 0 0}
+.hero details{order:6;grid-column:auto}
+.film-card{padding:12px 12px 12px}
+.film-card .label{margin-bottom:8px}
+.film-card video{max-width:176px}
+.hero .button{min-width:0}
+.hero .lede{order:5;margin:8px 0 0}
+nav.sections{display:none}
 .section{padding:40px 0}
-main,header,footer{padding-left:20px;padding-right:20px}
-footer{flex-direction:column;gap:8px}
-iframe{height:760px}
+.steps{grid-template-columns:1fr;gap:24px}
+.signup-card{grid-template-columns:1fr;gap:24px;padding:24px}
+iframe{height:760px;margin:0 -8px 12px;width:calc(100% + 16px)}
+.record-card{padding:20px 16px 12px}
+footer.bottom .wrap{flex-direction:column;align-items:flex-start}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header>
+<div class="wrap">
+<header class="top">
 <a class="brand" href="#top" aria-label="AlgorithmLens home"><svg viewBox="0 0 436 88" role="img" aria-label="AlgorithmLens"><use href="/static/img/wordmark.svg#wordmark"/></svg></a>
 <nav class="sections" aria-label="Page sections">
-<a href="#how">How it works</a>
 <a href="#record">The report</a>
+<a href="#how">How it works</a>
 <a href="#limits">What we can know</a>
 <a href="#launch">Join the launch list</a>
 </nav>
 </header>
+</div>
 <main id="main">
-<section class="hero" id="top">
-<div>
-<p class="eyebrow">A closer look at a feed</p>
+<section class="hero wrap" id="top">
+<div class="copy">
 <h1>See your feed clearly.</h1>
-<p class="intro">Scan a feed you use. Get a plain report: what appeared, which accounts it came from, and which posts carried an ad label.</p>
 <p class="limit">A scan reads what appeared on screen. It cannot say why any post was there.</p>
 <a class="button" href="#launch">Join the launch list</a>
-<p class="caption">Explore the fictional example first. No email needed.</p>
+<p class="lede">Scan a feed you use. Get a plain report: what appeared, which accounts it came from, and which posts carried an ad label.</p>
 </div>
-<figure>
+<figure class="card film-card">
+<span class="label">Example film · four fictional posts</span>
 <video id="heroFilm" muted playsinline loop controls preload="metadata" poster="/static/film/feed-replay-poster.jpg" aria-label="Twenty-second illustrated feed replay of four fictional posts">
 <source src="/static/film/feed-replay-1080.mp4" type="video/mp4" media="(min-width: 900px)">
 <source src="/static/film/feed-replay-720.mp4" type="video/mp4">
 </video>
-<button class="film-control" id="filmToggle" type="button" aria-pressed="false">Play the example film</button>
+<div class="film-foot">
 <figcaption class="caption">Fictional example. Review happens after recording.</figcaption>
+<button class="secondary" id="filmToggle" type="button" aria-pressed="false">Play the example film</button>
+</div>
+</figure>
 <details>
-<summary>Read the film</summary>
+<summary>Read the film in words</summary>
 <p>An ad label is visible. A political-content classification is an inference. A suggested label does not explain why the post was selected. One readable account appears twice. Four fictional posts become a small record, not a representative feed.</p>
 </details>
-</figure>
 </section>
 
 <section id="record" class="section">
-<span class="record-label">Example record · four fictional scans</span>
+<div class="wrap">
 <h2>One scan. One plain-language report.</h2>
 <p>Turn back to a date. Each sheet holds only that scan's posts. A small scan stays small, and unknown labels remain unknown.</p>
+<div class="card record-card">
+<span class="label">Example record · four fictional scans</span>
 <iframe id="specimen" src="explore/index.html?embed=1&amp;view=record" title="Interactive example record with four dated sheets" sandbox="allow-scripts" loading="lazy"></iframe>
-<p class="limit">Separate scans add context. They do not, by themselves, establish a stable rate or certify a change.</p>
-<p class="caption"><a class="explore-link" href="explore/">Open the full example explorer</a></p>
+<div class="record-foot">
+<p class="caption">Separate scans add context. They do not, by themselves, establish a stable rate or certify a change.</p>
+<a class="secondary" href="explore/">Open the full example explorer</a>
+</div>
+</div>
+</div>
 </section>
 
 <section id="how" class="section">
+<div class="wrap">
 <h2>Three steps. No jargon.</h2>
 <div class="steps">
-<article><span class="number">01</span><h3>Start a scan</h3><p>Follow the app's recording instructions, then scroll a feed as you normally would.</p></article>
-<article><span class="number">02</span><h3>Review what appeared</h3><p>After recording, inspect readable labels, account names, and content classifications. Missing evidence stays unknown.</p></article>
-<article><span class="number">03</span><h3>Get a clearer picture</h3><p>Read the counts with their sample size and limits. Return to a dated scan when you want another look.</p></article>
+<div class="step"><i>1</i><div><h3>Start a scan</h3><p>Follow the app's recording instructions, then scroll a feed as you normally would.</p></div></div>
+<div class="step"><i>2</i><div><h3>Review what appeared</h3><p>After recording, inspect readable labels, account names, and content classifications. Missing evidence stays unknown.</p></div></div>
+<div class="step"><i>3</i><div><h3>Get a clearer picture</h3><p>Read the counts with their sample size and limits. Return to a dated scan when you want another look.</p></div></div>
+</div>
 </div>
 </section>
 
 <section id="limits" class="section">
+<div class="wrap">
+<span class="label">The honest limit</span>
 <h2>Honest about limits.</h2>
 <p>We show what appeared in a sample and distinguish observed labels from inferences. Political content describes a post, not your beliefs. Tone describes a reading of the content, not your mood. A suggested post does not tell us which action led to the recommendation.</p>
 <p class="caption">This page is an example, not a live scan or a demonstration of a running classifier. It does not record your screen or analyze your feed.</p>
+</div>
 </section>
 
-<section id="launch" class="section signup">
+<section id="launch" class="section">
+<div class="wrap">
+<div class="card signup-card">
 <div>
+<span class="label">Launch list</span>
 <h2>Curious what yours would show?</h2>
 <p>Join the launch list for news about AlgorithmLens.</p>
-<p class="legal">This form asks only for an email address and your consent to receive launch updates. Your address is used for launch news and nothing else, and is never sold. To be removed, write to <a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a>. Details are in the <a href="/privacy/">privacy policy</a>.</p>
+<p class="small">This form asks only for an email address and your consent to receive launch updates. Your address is used for launch news and nothing else, and is never sold. To be removed, write to <a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a>. Details are in the <a href="/privacy/">privacy policy</a>.</p>
 </div>
 <form id="launchForm">
 <label for="email">Email address</label>
 <input id="email" name="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com" aria-describedby="formStatus" aria-invalid="false">
 <label class="consent"><input type="checkbox" id="consent" required><span>I agree to receive AlgorithmLens launch updates by email. I can withdraw at any time by writing to privacy@algorithmlens.com.</span></label>
-<button type="submit" id="submit">Join the launch list</button>
+<button type="submit" class="button" id="submit">Join the launch list</button>
 <p id="formStatus" role="status" aria-live="polite"></p>
 </form>
+</div>
+</div>
 </section>
 </main>
-<footer>
+<footer class="bottom">
+<div class="wrap">
 <span>AlgorithmLens · A feed, made legible.</span>
 <nav aria-label="Legal and more">
 <a href="#limits">Read the limits</a>
+<a href="explore/">Explore the example</a>
 <a href="/privacy/">Privacy policy</a>
 <a href="/terms">Terms</a>
 <a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a>
 </nav>
+</div>
 </footer>
 <script src="landing.js"></script>
 </body>
