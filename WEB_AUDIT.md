@@ -7,7 +7,7 @@ Method: Playwright 1.57 with bundled Chromium 143 at 375, 390, 430, 768 and 1440
 
 Labels: **observed** means measured or seen directly in this session; **inferred** means a conclusion drawn from what was observed; **unverified** means it could not be checked from here (for example real iOS hardware).
 
-Screenshots from the run are in `docs/web-audit/before/`. Full-page captures do not paint the sandboxed specimen iframe on the landing page (a Chromium out-of-process frame limitation); a viewport capture of the same region confirmed that the iframe does render, so the blank block in `landing-390.jpg` and `landing-1440.jpg` is a capture artifact, not a page defect.
+Screenshots from the run are in `docs/web-audit/before-2026-09-28/`. Full-page captures do not paint the sandboxed specimen iframe on the landing page (a Chromium out-of-process frame limitation); a viewport capture of the same region confirmed that the iframe does render, so the blank block in `landing-390.jpg` and `landing-1440.jpg` is a capture artifact, not a page defect.
 
 ## Summary
 
@@ -63,8 +63,8 @@ IDs are grouped by the audit areas in the brief. Each carries a priority, a labe
 ### (c) Layout at every width
 
 - **L-1 · P2 · observed** Explorer at 200 percent zoom (375 to 430 px) overflows the page horizontally: document width 563 px in a 390 px viewport, driven by the fixed 310 px feed frame plus its 40 px right padding and the mobile nav chips (`public/algorithmlens/explore/index.html:16,25`). Specimen at 200 percent: 533 px in 390 (`specimen.html:6`, fixed 225 px scene). Landing at 200 percent: 421 px in 390 (the 190 px brand plus the wrapped nav). Root: no overflow.
-- **L-2 · P2 · observed** Explorer record view at 390 px: the date chips sit under the sheet stack and the first chip ("Aug 30") is partly hidden behind the lowest sheet (`docs/web-audit/before/explore-record-390.jpg`; `explore/index.html:26`, `.record-stage{height:340px}` with chips laid out inside the same scene).
-- **L-3 · P2 · observed** Root page at 375 to 430 px: the fixed bottom tab bar covers the footer's "Plus" link and the Legal column (`docs/web-audit/before/root-390.jpg`). Goes away with the gate.
+- **L-2 · P2 · observed** Explorer record view at 390 px: the date chips sit under the sheet stack and the first chip ("Aug 30") is partly hidden behind the lowest sheet (`docs/web-audit/before-2026-09-28/explore-record-390.jpg`; `explore/index.html:26`, `.record-stage{height:340px}` with chips laid out inside the same scene).
+- **L-3 · P2 · observed** Root page at 375 to 430 px: the fixed bottom tab bar covers the footer's "Plus" link and the Legal column (`docs/web-audit/before-2026-09-28/root-390.jpg`). Goes away with the gate.
 - **L-4 · P2 · observed** Explorer mobile nav chips overflow their strip by design (horizontal scroll) but the last chip is clipped at the right edge with no fade or scroll hint at 375 to 768 px, and two chips sit outside the strip at 768 px (`explore/index.html:25`).
 - **L-5 · P3 · observed** Tap targets under 44 px: landing nav links 22 px tall, the "Open the full example explorer" link 17 px, the consent checkbox 18 px (row is 44 px via its label); explorer "Next experience" button 40 by 40 px, mobile nav chips 42 px tall, the 45 feed index marks 20 by 9 px each (Lighthouse target-size fail); specimen marks 16 px (an accessible list exists as the alternative); film page links 21 px. (`index.html:6-10`, `explore/index.html:16,25`, `specimen.html:6`.)
 - **L-6 · P3 · observed** Measure: at 768 and 1440 px the landing's section paragraphs run about 90 to 93 characters per line at 16 px (max-width 740 px, `index.html:5`), and explorer transcript lines run 98 to 103 characters. The brief asks for under 70.
