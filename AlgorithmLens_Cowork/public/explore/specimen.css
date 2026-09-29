@@ -15,3 +15,10 @@ header a{display:flex;align-items:center;min-height:44px}
 .sample{display:inline-flex;align-items:center;gap:8px;border:0;padding:0;font-size:14px;color:var(--muted)}
 .sample::before{content:"";width:10px;height:10px;border:1.5px solid var(--ink);border-radius:50%;flex-shrink:0}
 .week-tabs button[aria-pressed=true]{background:var(--dark);border-color:var(--dark)}
+
+/* Brand batch: shared header links. */
+header svg{width:188px}
+.site-links{display:flex;gap:20px;flex-wrap:wrap}
+.site-links a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink);text-decoration:none;position:relative;font-size:15px}
+.site-links a::after{content:"";position:absolute;left:0;right:100%;bottom:8px;height:2px;background:var(--blue);transition:right var(--beat) var(--ease)}
+.site-links a:hover::after,.site-links a:focus-visible::after{right:0}

@@ -147,7 +147,7 @@ What was checked and found clean is listed inline as "positive" (H-9, L-7) so th
 
 ## After the fixes: live re-check on 28 September 2026
 
-Deployed as commit 5d725be0 (production deployment 6725451254, reported success through the GitHub deployments API). The same Playwright audit and Lighthouse runs were repeated against the live root. After screenshots are in `docs/web-audit/after/`; Lighthouse reports (HTML) for the root and the explorer, before and after, sit beside them.
+Deployed as commit 5d725be0 (production deployment 6725451254, reported success through the GitHub deployments API). The same Playwright audit and Lighthouse runs were repeated against the live root. After screenshots are in `docs/web-audit/after-2026-09-28/`; Lighthouse reports (HTML) for the root and the explorer, before and after, sit beside them.
 
 Live root URL: https://www.algorithmlens.com/
 

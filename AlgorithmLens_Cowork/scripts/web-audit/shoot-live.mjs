@@ -24,7 +24,11 @@ const WIDTHS = [
 ];
 const FULL_STATES_AT = new Set(['390', '1440']); // interactive states only at two widths
 const wait = (page, ms = 500) => page.waitForTimeout(ms);
-const full = (page, f) => page.screenshot({ path: resolve(OUT, f), fullPage: true, ...JPG });
+async function full(page, f) {
+  // Sticky headers smear across full-page captures; pin them for the shot.
+  await page.addStyleTag({ content: '.topbar,.sidebar{position:static!important}' });
+  await page.screenshot({ path: resolve(OUT, f), fullPage: true, ...JPG });
+}
 const fold = (page, f) => page.screenshot({ path: resolve(OUT, f), ...JPG });
 async function el(loc, f) {
   try { await loc.scrollIntoViewIfNeeded(); await loc.page().waitForTimeout(350); await loc.screenshot({ path: resolve(OUT, f), ...JPG }); }
@@ -32,8 +36,8 @@ async function el(loc, f) {
 }
 async function walk(page) {
   const h = await page.evaluate(() => document.documentElement.scrollHeight);
-  for (let y = 0; y < h; y += 600) { await page.evaluate((y) => window.scrollTo(0, y), y); await page.waitForTimeout(80); }
-  await page.evaluate(() => window.scrollTo(0, 0)); await wait(page, 400);
+  for (let y = 0; y < h; y += 600) { await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), y); await page.waitForTimeout(120); }
+  await page.evaluate(() => { document.querySelectorAll('[data-reveal]').forEach((e) => e.classList.add('in')); window.scrollTo(0, 0); }); await wait(page, 600);
 }
 
 const browser = await chromium.launch({ headless: !headed });
@@ -47,16 +51,23 @@ for (const w of WIDTHS) {
   await fold(page, `root-${w.name}-fold.jpg`);
   await walk(page);
   await full(page, `root-${w.name}.jpg`);
-  const sections = [['header.top', 'nav'], ['section.hero', 'hero'], ['#record', 'record'], ['#how', 'how'], ['#limits', 'limits'], ['#launch', 'launch'], ['footer.bottom', 'footer']];
+  const sections = [['header.top', 'nav'], ['section#top, section.hero', 'hero'], ['#report, #record', 'record'], ['#try', 'try'], ['#limits', 'limits'], ['#how', 'how'], ['#privacy', 'privacy'], ['#ways', 'ways'], ['#trust', 'trust'], ['#launch', 'launch'], ['footer.bottom', 'footer']];
   for (const [sel, name] of sections) await el(page.locator(sel).first(), `root-${w.name}-s-${name}.jpg`);
   if (states) {
     // film toggled, details open, focus ring, form states
     await page.locator('#filmToggle').click(); await wait(page, 400);
     await el(page.locator('.film-card'), `root-${w.name}-state-film-toggled.jpg`);
-    await page.locator('section.hero details summary').click(); await wait(page, 300);
-    await el(page.locator('section.hero'), `root-${w.name}-state-details-open.jpg`);
-    await page.locator('.hero .button').focus(); await wait(page, 200);
-    await el(page.locator('section.hero'), `root-${w.name}-state-button-focus.jpg`);
+    await page.locator('section#top details summary, section.hero details summary').first().click(); await wait(page, 300);
+    await el(page.locator('section#top, section.hero').first(), `root-${w.name}-state-details-open.jpg`);
+    await page.locator('.hero .button').first().focus(); await wait(page, 200);
+    await el(page.locator('section#top, section.hero').first(), `root-${w.name}-state-button-focus.jpg`);
+    if (await page.locator('#tapFeed').count()) {
+      for (let i = 1; i <= 4; i++) { await page.locator(`.read[data-read="${i}"]`).dispatchEvent('click'); await wait(page, 300); if (i === 1) await el(page.locator('#try'), `root-${w.name}-state-try-1tap.jpg`); }
+      await el(page.locator('#try'), `root-${w.name}-state-try-4taps.jpg`);
+      await page.locator('#readReset').dispatchEvent('click');
+      for (let i = 2; i <= 3; i++) { await page.locator(`.step[data-step="${i}"]`).dispatchEvent('click'); await wait(page, 400); await el(page.locator('#how'), `root-${w.name}-state-how-step${i}.jpg`); }
+      await page.locator('.way').first().hover(); await wait(page, 300); await el(page.locator('#ways'), `root-${w.name}-state-way-hover.jpg`);
+    }
     if (w.name === '1440') { await page.locator('nav.sections a').first().hover(); await wait(page, 200); await el(page.locator('header.top'), `root-${w.name}-state-nav-hover.jpg`); }
     const launch = page.locator('#launch');
     await page.locator('#submit').click(); await wait(page, 400);

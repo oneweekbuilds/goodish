@@ -18,7 +18,8 @@ body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 system-ui,s
 main{max-width:720px;margin:auto;padding:24px 20px 48px}
 header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:24px}
 header a{display:inline-flex;align-items:center;min-height:44px}
-header svg{width:150px;height:auto}
+header svg{width:188px;max-width:52vw;height:auto}
+header nav{display:flex;gap:20px}
 a{color:var(--ink);text-underline-offset:4px}
 a:focus-visible{outline:2px solid var(--blue);outline-offset:4px}
 h1{font:400 clamp(34px,6vw,52px)/1.08 Source,Georgia,serif;letter-spacing:-1px;margin:8px 0 8px}
@@ -26,7 +27,7 @@ h2{font:400 clamp(24px,3.4vw,32px)/1.15 Source,Georgia,serif;margin:40px 0 12px}
 h3{font:400 22px/1.2 Source,Georgia,serif;margin:28px 0 8px}
 p,li{max-width:66ch}
 .meta{color:var(--muted);font-size:14px;margin:0 0 20px}
-.site-note{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin:0 0 8px}
+.site-note{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:4px 6px 0 rgba(58,55,48,.08);padding:20px 22px;margin:0 0 8px}
 .site-note h2{margin-top:0;font-size:24px}
 .site-note p{margin:8px 0}
 hr{border:0;border-top:1px solid var(--line);margin:28px 0}
@@ -46,10 +47,11 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 <main>
 <header>
 <a href="/" aria-label="AlgorithmLens home"><svg viewBox="0 0 436 88" role="img" aria-label="AlgorithmLens"><use href="/static/img/wordmark.svg#wordmark"/></svg></a>
-<a href="/">Front page</a>
+<nav aria-label="Site"><a href="/">Front page</a><a href="/explore/">Explore the example</a></nav>
 </header>
 <h1>AlgorithmLens Privacy Policy</h1>
-<p class="meta">Last updated September 1, 2026. This is the same text the AlgorithmLens app shows in Settings.</p>
+<p class="meta">Last updated September 1, 2026
+. This is the same text the AlgorithmLens app shows in Settings.</p>
 <section class="site-note" aria-labelledby="site-note-title">
 <h2 id="site-note-title">This website</h2>
 <p>The pages on algorithmlens.com set no cookies, run no analytics, and request nothing from third parties. The only data they send anywhere is the launch-list form: when you submit it, your email address and your consent are sent to our launch-list service (a function hosted for us by Supabase) and stored there so that we can send launch news. Nothing is sent until you press the button, and nothing is saved if the service reports a failure.</p>

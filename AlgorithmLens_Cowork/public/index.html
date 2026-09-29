@@ -25,62 +25,261 @@
 <style>
 @font-face{font-family:Source;src:url(/static/fonts/source-serif-4-regular.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:Source;src:url(/static/fonts/source-serif-4-italic.woff2) format('woff2');font-weight:400;font-style:italic;font-display:swap}
-:root{--blue:#1868D8;--green:#20A888;--ink:#3A3730;--dark:#1A1712;--paper:#F5F4F0;--card:#FFFFFF;--line:#DDD8CD;--muted:#6D685F;--field:#9B9488;--serif:Source,Georgia,"Times New Roman",serif;--sans:system-ui,-apple-system,"Segoe UI",sans-serif}
+:root{--blue:#1868D8;--green:#20A888;--ink:#3A3730;--dark:#1A1712;--paper:#F5F4F0;--card:#FFFFFF;--line:#DDD8CD;--soft:#E6E1D6;--muted:#6D685F;--field:#9B9488;--adbg:#ECF3FC;--greenbg:#EDF8F5;--shadow:rgba(58,55,48,.08);--serif:Source,Georgia,"Times New Roman",serif;--sans:system-ui,-apple-system,"Segoe UI",sans-serif;--tick:160ms;--beat:240ms;--settle:400ms;--ease:cubic-bezier(.22,1,.36,1)}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.55 var(--sans)}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
 p{margin:0 0 16px}
-.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
-.skip{position:absolute;left:-999px;top:8px;background:var(--dark);color:var(--paper);padding:12px 16px;border-radius:8px;z-index:10}
+img,svg,video{display:block;max-width:100%}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--dark);color:var(--paper);padding:12px 16px;border-radius:8px;z-index:30}
 .skip:focus{left:8px}
-header.top{display:flex;justify-content:space-between;align-items:center;gap:24px;min-height:72px;border-bottom:1px solid var(--line)}
-.brand{width:160px;max-width:55vw;display:flex;align-items:center;min-height:44px}
-.brand svg{display:block;width:100%;height:auto}
-nav.sections{display:flex;gap:8px 24px;flex-wrap:wrap;font-size:15px}
 a{color:var(--ink);text-underline-offset:4px}
-nav.sections a{text-decoration:none;display:inline-flex;align-items:center;min-height:44px}
-nav.sections a:hover{text-decoration:underline}
-h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0}
-h1{font-size:clamp(40px,4.6vw,64px);line-height:1.05;letter-spacing:-1.5px;max-width:13ch;margin:0 0 24px}
-h2{font-size:clamp(30px,3.4vw,44px);line-height:1.1;letter-spacing:-1px;max-width:20ch;margin:0 0 16px}
+:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0;text-wrap:balance}
+h1{font-size:clamp(42px,5vw,68px);line-height:1.02;letter-spacing:-1.8px;max-width:14ch;margin:0 0 20px}
+h2{font-size:clamp(32px,3.6vw,48px);line-height:1.06;letter-spacing:-1.2px;max-width:20ch;margin:0 0 14px}
 h3{font-size:22px;line-height:1.2;margin:0 0 8px}
-.label{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);line-height:1.3;margin:0 0 16px}
-.label::before{content:"";width:10px;height:10px;border:1.5px solid var(--ink);border-radius:50%;flex-shrink:0}
-.label.blue::before{border-color:var(--blue)}
-.lede{font-size:19px;max-width:32ch;margin:0 0 24px}
+.lede{font-size:20px;line-height:1.5;max-width:34ch;margin:0 0 28px;text-wrap:pretty}
 .limit{font:italic 19px/1.4 var(--serif);color:var(--muted);max-width:40ch;margin:0 0 24px}
 .caption{font:italic 17px/1.4 var(--serif);color:var(--muted);margin:0;max-width:60ch}
 .small{font-size:14px;color:var(--muted);line-height:1.5;max-width:60ch}
-.button{display:inline-flex;align-items:center;justify-content:center;background:var(--dark);color:var(--paper);border:1px solid var(--dark);border-radius:14px;min-height:56px;padding:0 28px;font:600 17px/1 var(--sans);text-decoration:none;cursor:pointer}
-.button:hover{background:#000}
-.secondary{display:inline-flex;align-items:center;justify-content:center;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:22px;min-height:44px;padding:0 18px;font:15px/1 var(--sans);text-decoration:none;cursor:pointer}
-.secondary:hover{border-color:var(--ink)}
-:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+.label{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);line-height:1.3;margin:0 0 16px}
+.label::before{content:"";width:10px;height:10px;border:1.5px solid var(--ink);border-radius:50%;flex-shrink:0}
+.label.blue::before{border-color:var(--blue)}
+.label.green::before{border-color:var(--green)}
+.button{display:inline-flex;align-items:center;justify-content:center;background:var(--dark);color:var(--paper);border:1px solid var(--dark);border-radius:14px;min-height:56px;padding:0 28px;font:600 17px/1 var(--sans);text-decoration:none;cursor:pointer;transition:transform var(--tick) var(--ease),background var(--tick)}
+.button:hover{background:#000;transform:translateY(-1px)}
+.button:active{transform:none}
+.pill{display:inline-flex;align-items:center;justify-content:center;background:var(--dark);color:var(--paper);border:1px solid var(--dark);border-radius:999px;min-height:44px;padding:0 18px;font:600 15px/1 var(--sans);text-decoration:none;white-space:nowrap;transition:transform var(--tick) var(--ease),background var(--tick)}
+.pill:hover{background:#000;transform:translateY(-1px)}
+.secondary{display:inline-flex;align-items:center;justify-content:center;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:22px;min-height:44px;padding:0 18px;font:15px/1 var(--sans);text-decoration:none;cursor:pointer;transition:border-color var(--tick),transform var(--tick) var(--ease)}
+.secondary:hover{border-color:var(--ink);transform:translateY(-1px)}
+.linkish{background:none;border:0;padding:0;font:inherit;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:4px;min-height:44px}
+.linkish:hover{color:var(--ink)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px}
-.hero{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;padding:56px 24px 64px}
-.hero .copy{display:block}
-.hero .button{min-width:240px;margin-bottom:32px}
-.hero details{grid-column:2;margin:0 auto;width:100%}
-.film-card{max-width:400px;margin:0 auto;padding:16px 16px 16px}
-.film-card .label{margin-bottom:12px}
-.film-card video{display:block;width:100%;max-width:min(236px,100%);margin:0 auto;height:auto;aspect-ratio:9/16;background:var(--paper);border:1px solid var(--line);border-radius:14px}
-.film-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}
-.film-foot .caption{flex:1 1 auto;font-size:15px}
-.film-foot .secondary{flex:0 1 auto;padding:8px 14px;font-size:14px;white-space:normal;max-width:100%;text-align:center}
-details{margin:16px auto 0;max-width:400px}
+.sheet{box-shadow:4px 6px 0 var(--shadow);transition:transform var(--beat) var(--ease),box-shadow var(--beat) var(--ease)}
+.sheet:hover{transform:translateY(-2px);box-shadow:6px 9px 0 var(--shadow)}
+.dots{position:relative}
+.dots::before{content:"";position:absolute;inset:0;background-image:radial-gradient(var(--line) 1.2px,transparent 1.3px);background-size:26px 26px;-webkit-mask-image:linear-gradient(rgba(0,0,0,.7),transparent 70%);mask-image:linear-gradient(rgba(0,0,0,.7),transparent 70%);pointer-events:none}
+.dots.center::before{-webkit-mask-image:radial-gradient(60% 70% at 50% 50%,rgba(0,0,0,.7),transparent);mask-image:radial-gradient(60% 70% at 50% 50%,rgba(0,0,0,.7),transparent)}
+.dots>*{position:relative}
+.band{background:var(--card);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.section{padding:88px 0}
+.section-head{max-width:640px;margin-bottom:40px}
+.tab{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+/* header */
+.topbar{position:sticky;top:0;z-index:20;background:rgba(245,244,240,.88);-webkit-backdrop-filter:saturate(160%) blur(14px);backdrop-filter:saturate(160%) blur(14px);border-bottom:1px solid var(--line)}
+header.top{display:flex;justify-content:space-between;align-items:center;gap:24px;min-height:72px}
+.brand{width:188px;max-width:52vw;display:flex;align-items:center;min-height:44px}
+.brand svg{width:100%;height:auto}
+.topnav{display:flex;align-items:center;gap:28px;margin-left:auto}
+nav.sections{display:flex;gap:26px;font-size:15px}
+nav.sections a{position:relative;text-decoration:none;display:inline-flex;align-items:center;min-height:44px}
+nav.sections a::after{content:"";position:absolute;left:0;right:100%;bottom:8px;height:2px;background:var(--blue);transition:right var(--beat) var(--ease)}
+nav.sections a:hover::after,nav.sections a:focus-visible::after{right:0}
+.divider{width:1px;height:22px;background:var(--line)}
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 520px;gap:56px;align-items:center;padding:56px 0 80px}
+.hero .copy{max-width:560px}
+.hero .lede{margin-bottom:28px}
+.hero .button{min-width:260px;margin-bottom:16px}
+.hero .limit{font-size:17px;margin:0 0 28px;max-width:44ch}
+.underline{position:relative;white-space:nowrap}
+.underline svg{position:absolute;left:0;bottom:-.08em;width:100%;height:.14em;overflow:visible}
+.underline svg path{stroke:var(--green);stroke-width:4;fill:none;stroke-linecap:round;stroke-dasharray:180;stroke-dashoffset:180;animation:draw var(--settle) var(--ease) .3s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.clockline{display:flex;gap:14px;align-items:flex-start;max-width:420px;margin-bottom:16px}
+.clockline i{flex:0 0 42px;width:42px;height:42px;border-radius:50%;background:var(--greenbg);display:grid;place-items:center}
+.clockline span{display:block;font-size:18px;line-height:1.35}
+.clockline span+span{color:var(--muted)}
+.platforms{font-size:14px;color:var(--muted);margin:0}
+.panel{padding:0;overflow:hidden}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line)}
+.panel-head .title{display:flex;align-items:center;gap:10px;font-size:15px;min-width:0;flex:1}
+.panel-head .label{flex-shrink:0}
+.panel-head .title small{display:block;font-size:13px;color:var(--muted)}
+.pulse{width:9px;height:9px;border-radius:50%;background:var(--ink);box-shadow:0 0 0 4px rgba(58,55,48,.12);flex-shrink:0}
+.playing .pulse{background:var(--green);box-shadow:0 0 0 4px rgba(32,168,136,.16);animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.panel-head .label{margin:0}
+.panel-body{padding:20px 20px 16px;background:var(--paper)}
+.film-box{position:relative;width:264px;max-width:100%;margin:0 auto;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--card)}
+.film-box video{width:100%;height:auto;aspect-ratio:9/16;background:var(--paper)}
+.scan{position:absolute;left:0;right:0;top:-70px;height:66px;background:rgba(24,104,216,.06);border-top:1.5px solid rgba(24,104,216,.5);pointer-events:none;opacity:0}
+.playing .scan{animation:scan 4s cubic-bezier(.4,0,.2,1) infinite}
+@keyframes scan{0%{top:-70px;opacity:0}10%{opacity:1}86%{opacity:1}100%{top:100%;opacity:0}}
+.tally{display:flex;align-items:center;gap:12px;padding:12px 20px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
+.tally .bar{flex:1;display:flex;gap:3px;height:8px}
+.tally .bar i{flex:1;background:var(--soft);border-radius:4px}
+.tally .bar i.ad{background:var(--blue)}
+.tally b{font-weight:600;color:var(--ink)}
+.panel-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 20px 8px}
+.panel-foot .caption{flex:1 1 200px;font-size:15px}
+.panel-foot .secondary{padding:8px 14px;font-size:14px;min-height:40px}
+.panel details{padding:0 20px 16px}
 summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-size:15px;color:var(--muted)}
-details p{margin:8px 0 0;font-size:15px;max-width:60ch}
-.section{padding:64px 0;border-top:1px solid var(--line)}
-.section>.wrap>p:not(.caption):not(.limit){max-width:60ch}
-.record-card{padding:24px 24px 16px}
-iframe{display:block;width:100%;height:720px;border:0;background:var(--card);margin:8px 0 16px;border-radius:12px}
-.record-foot{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-top:8px}
-.step{display:grid;grid-template-columns:36px 1fr;gap:16px;align-items:start}
-.step i{width:36px;height:36px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;font:italic 17px var(--serif);color:var(--muted);background:var(--card)}
-.step p{margin:0;color:var(--muted);font-size:16px}
-.signup-card{display:grid;grid-template-columns:1fr 1fr;gap:40px;padding:32px}
+details p{margin:4px 0 0;font-size:15px;max-width:60ch}
+/* tiles */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:0 0 20px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.tile span{display:block;font-size:14px;color:var(--muted);margin-bottom:6px}
+.tile b{display:block;font:400 30px/1 var(--serif);letter-spacing:-.6px;font-variant-numeric:tabular-nums}
+.tile.blue b{color:var(--blue)}
+.record-card{padding:0;overflow:hidden}
+.record-card .panel-head{padding:16px 24px}
+.frame-wrap{position:relative;background:var(--card);min-height:560px}
+.frame-wrap::before{content:"Loading the example record.";position:absolute;inset:0;display:grid;place-items:center;font:italic 17px var(--serif);color:var(--muted)}
+iframe{position:relative;display:block;width:100%;height:560px;border:0;background:var(--card)}
+.record-foot{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:16px 24px 20px;border-top:1px solid var(--line)}
+.record-foot .small{margin:0}
+/* try it */
+.try-grid{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:56px;align-items:start}
+.tryhint{display:inline-flex;align-items:center;gap:10px;font-size:15px;color:var(--muted);margin:0 0 20px}
+.tryhint i{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;border:1px solid var(--ink);animation:nudge .9s ease-in-out 1s 2}
+@keyframes nudge{50%{transform:translateX(6px)}}
+.readout{padding:20px}
+.readout-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:8px}
+.readout-head span+span{font-variant-numeric:tabular-nums;color:var(--muted);font-size:15px}
+.progress{height:6px;border-radius:3px;background:var(--soft);overflow:hidden;margin-bottom:16px}
+.progress i{display:block;height:100%;width:0;background:var(--ink);transition:width var(--settle) var(--ease)}
+.rows{display:flex;flex-direction:column;gap:12px}
+.row{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:13px 15px;animation:pop var(--beat) var(--ease) both}
+@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.98)}}
+.row-head{display:flex;align-items:center;gap:9px;margin-bottom:10px;font-size:15px}
+.row-head i{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink);flex-shrink:0}
+.row-head i.ad{background:var(--blue);border-color:var(--blue)}
+.row-head i.mine{background:var(--green);border-color:var(--green)}
+.row-head em{margin-left:auto;font-style:normal;font-size:12px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 9px;white-space:nowrap}
+.row-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row-grid div{background:var(--card);border-radius:9px;padding:8px 11px;min-width:0}
+.row-grid small{display:block;font-size:12px;color:var(--muted);margin-bottom:3px}
+.row-grid span{font-size:14px;overflow-wrap:anywhere}
+.readout-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;font-size:14px;color:var(--muted)}
+.readout-foot .linkish{min-height:32px}
+.readout .empty{font-size:15px;color:var(--muted);margin:0}
+.phone{width:320px;max-width:100%;background:var(--dark);border-radius:44px;padding:8px;box-shadow:6px 10px 0 var(--shadow);justify-self:center}
+.screen{background:var(--card);border-radius:37px;overflow:hidden;position:relative}
+.status{display:flex;justify-content:space-between;align-items:center;padding:12px 22px 6px;font-size:13px;font-weight:600}
+.island{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:86px;height:24px;border-radius:13px;background:var(--dark)}
+.status .glyphs{display:flex;gap:6px;align-items:center}
+.feed-head{display:flex;align-items:center;gap:10px;padding:6px 16px 12px;font-size:16px}
+.feed-head i{width:26px;height:26px;border-radius:8px;background:var(--ink)}
+.feed-head .label{margin:0 0 0 auto;font-size:12px}
+.tuned{display:flex;align-items:center;gap:8px;padding:9px 16px;border-top:1px solid var(--soft);border-bottom:1px solid var(--soft);font-size:12px;color:var(--muted);background:var(--paper);overflow:hidden;white-space:nowrap}
+.tuned span{display:inline-flex;gap:6px;overflow:hidden}
+.tuned b{font-weight:500;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px 9px;font-size:11px}
+.feed{height:480px;overflow-y:auto;overscroll-behavior:contain;background:var(--paper);padding:12px;display:flex;flex-direction:column;gap:12px;scrollbar-width:none}
+.feed::-webkit-scrollbar{display:none}
+.feed .hint{font-size:13px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.post{background:var(--card);border:1px solid var(--soft);border-radius:16px;overflow:hidden}
+.post-top{display:flex;align-items:center;gap:9px;padding:11px 12px 9px}
+.avatar{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font:italic 16px var(--serif)}
+.post-top div{flex:1;min-width:0;font-size:13px;line-height:1.3}
+.post-top small{display:block;font-size:11px;color:var(--muted)}
+.post-top small.tag{display:inline-block;margin-top:3px;padding:1px 6px;border-radius:4px;outline:1.5px solid var(--blue);color:var(--blue)}
+.post-top small.tag.green{outline-color:var(--green);color:var(--ink)}
+.post img{width:100%;height:150px;object-fit:cover}
+.news{padding:16px 14px;background:#EEEBE4;min-height:120px}
+.news small{font-size:11px;color:var(--muted)}
+.news p{font:400 22px/1.15 var(--serif);margin:8px 0 0}
+.post-copy{padding:10px 12px 12px;font-size:13px;display:flex;align-items:center;gap:10px}
+.post-copy p{margin:0;flex:1;min-width:0}
+.read{position:relative;flex-shrink:0;min-height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--ink);background:var(--card);font:600 12px/1 var(--sans);color:var(--ink);cursor:pointer;transition:background var(--tick),color var(--tick),transform var(--tick) var(--ease)}
+.read:hover{transform:translateY(-1px)}
+.read[aria-pressed=true]{background:var(--dark);border-color:var(--dark);color:var(--paper)}
+.read.ring::after{content:"";position:absolute;inset:-2px;border-radius:999px;animation:ring 1.9s ease-out infinite;pointer-events:none}
+@keyframes ring{0%{box-shadow:0 0 0 0 rgba(58,55,48,.35)}70%{box-shadow:0 0 0 12px rgba(58,55,48,0)}100%{box-shadow:0 0 0 0 rgba(58,55,48,0)}}
+.try-limit{margin-top:16px}
+/* marquee */
+.marquee-wrap{margin:36px 0 28px;display:flex;flex-direction:column;gap:14px}
+.marquee{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.marquee ul{list-style:none;margin:0;padding:4px 8px;display:flex;gap:14px;width:max-content;animation:slide 56s linear infinite}
+.marquee.reverse ul{animation-direction:reverse;animation-duration:64s}
+.marquee:hover ul{animation-play-state:paused}
+@keyframes slide{to{transform:translateX(-50%)}}
+.marquee li{display:inline-flex;align-items:center;gap:9px;white-space:nowrap;border:1px solid var(--ink);border-radius:999px;padding:12px 20px;font-size:15px;background:var(--card)}
+.marquee li::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--ink)}
+.marquee.cannot li{border-color:var(--line);color:var(--muted);border-style:dashed;background:transparent}
+.marquee.cannot li::before{background:transparent;border:1.5px solid var(--muted)}
+.limits-copy{max-width:60ch}
+/* steps */
+.how-grid{display:grid;grid-template-columns:.92fr 1.08fr;gap:40px;align-items:stretch}
+.steps{display:flex;flex-direction:column;gap:8px;justify-content:center}
+.step{position:relative;display:flex;gap:16px;align-items:center;text-align:left;width:100%;background:transparent;border:1px solid transparent;border-radius:16px;padding:18px 22px;cursor:pointer;font:inherit;color:inherit;transition:background var(--beat),border-color var(--beat),transform var(--beat) var(--ease)}
+.step:hover{transform:translateY(-1px)}
+.step[aria-pressed=true]{background:var(--card);border-color:var(--line);align-items:flex-start;box-shadow:4px 6px 0 var(--shadow)}
+.step[aria-pressed=true]::before{content:"";position:absolute;left:0;top:18px;bottom:18px;width:4px;border-radius:0 3px 3px 0;background:var(--green)}
+.step i{flex:0 0 42px;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--card);display:grid;place-items:center;font:italic 18px var(--serif);color:var(--muted)}
+.step[aria-pressed=true] i{background:var(--dark);border-color:var(--dark);color:var(--paper);font-style:normal}
+.step h3{margin:0;font-size:22px}
+.step[aria-pressed=false] h3{color:var(--muted)}
+.step p{margin:4px 0 0;color:var(--muted);font-size:16px;display:none}
+.step[aria-pressed=true] p{display:block}
+.preview{min-height:360px;padding:28px 30px;display:flex;flex-direction:column;justify-content:center}
+.preview[hidden]{display:none}
+.preview .label{margin-bottom:14px}
+.plat{display:flex;flex-direction:column;gap:10px}
+.plat div{display:flex;align-items:center;gap:10px;background:var(--paper);border-radius:12px;padding:12px 14px;font-size:15px}
+.plat div i{width:26px;height:26px;border-radius:7px;background:var(--ink);display:grid;place-items:center}
+.plat div i::after{content:"";width:9px;height:9px;border-radius:2px;background:var(--paper)}
+.plat div span{margin-left:auto;color:var(--muted);font-size:14px}
+.checks{display:flex;flex-direction:column;gap:12px}
+.checks div{display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:10px;font-size:15px}
+.checks div span{color:var(--muted);font-size:14px;white-space:nowrap}
+.checks div span.blue{color:var(--blue)}
+.preview .tiles{grid-template-columns:repeat(3,1fr);margin:0 0 14px}
+.preview .tile{background:var(--paper);border-color:transparent}
+.countbar{display:flex;gap:2px;height:12px;border-radius:6px;overflow:hidden;margin:0 0 10px}
+.countbar i{display:block;flex:1;background:var(--soft)}
+.countbar i.ad{background:var(--blue)}
+.countbar i.un{background:transparent;border:1px solid var(--muted)}
+.preview .small{margin:0}
+/* privacy */
+.privacy-grid{display:grid;grid-template-columns:440px 1fr;gap:72px;align-items:start}
+.privacy-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.privacy-cards .card{padding:22px}
+.icon{width:40px;height:40px;border-radius:11px;background:var(--greenbg);display:grid;place-items:center;margin-bottom:14px}
+.icon.blue{background:var(--adbg)}
+.privacy-cards h3{font-size:20px}
+.privacy-cards p{margin:0;font-size:15px;color:var(--muted)}
+/* ways */
+.ways{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.way{border-radius:18px;padding:26px 24px;border:1px solid var(--line);background:var(--card);transition:transform var(--beat) var(--ease),box-shadow var(--beat) var(--ease)}
+.way:hover{transform:translateY(-4px);box-shadow:6px 9px 0 var(--shadow)}
+.way .icon{width:50px;height:50px;border-radius:14px;margin-bottom:18px;transition:transform var(--beat) var(--ease)}
+.way:hover .icon{transform:scale(1.09) rotate(-3deg)}
+.way.blue{background:var(--adbg);border-color:transparent}
+.way.green{background:var(--greenbg);border-color:transparent}
+.way h3{font-size:21px}
+.way p{margin:0;font-size:15px;color:var(--muted)}
+/* trust */
+.trust-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:72px;align-items:center}
+.points{display:flex;flex-direction:column;gap:18px;margin:0 0 28px}
+.point{display:flex;gap:14px;align-items:flex-start}
+.point .icon{margin:0;flex:0 0 40px}
+.point b{display:block;font-weight:600}
+.point span{color:var(--muted);font-size:15px}
+.worked .bignum{display:flex;align-items:baseline;gap:12px;margin:18px 0 10px;flex-wrap:wrap}
+.worked .bignum b{font:400 48px/1 var(--serif);letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.worked .bignum span{font-size:17px;max-width:24ch}
+.worked .countbar{height:14px;margin:0 0 12px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--muted);margin:0 0 16px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:9px;height:9px;border-radius:50%;background:var(--soft)}
+.legend i.ad{background:var(--blue)}
+.legend i.un{background:transparent;border:1.5px solid var(--muted)}
+.arith{background:var(--paper);border-radius:10px;padding:12px 14px;font-size:15px;color:var(--muted);text-align:center;margin-bottom:16px}
+.arith b{color:var(--ink);font-weight:600}
+.worked .foot{padding-top:14px;border-top:1px solid var(--line);font-size:15px}
+/* launch */
+.launch{padding:96px 0}
+.launch .section-head{margin:0 auto 36px;text-align:center}
+.launch h2{margin:0 auto 14px}
+.launch .lede{margin:0 auto}
+.signup-card{display:grid;grid-template-columns:1fr 1fr;gap:40px;padding:32px;align-items:start}
 .signup-card>*{min-width:0}
+.signup-card h3{font-size:24px;margin:0 0 12px}
 .small,.consent span,.caption{overflow-wrap:anywhere}
 form{max-width:480px}
 label{display:block;margin:0 0 8px;font-size:15px}
@@ -91,116 +290,347 @@ input[aria-invalid=true]{border-color:var(--ink);border-width:2px}
 form .button{width:100%}
 #formStatus{min-height:48px;font-size:15px;margin:16px 0 0}
 #formStatus.is-error{font-weight:600}
-footer.bottom{border-top:1px solid var(--line);padding:24px 0 48px;color:var(--muted);font-size:15px}
-footer.bottom .wrap{display:flex;justify-content:space-between;gap:16px 24px;flex-wrap:wrap;align-items:center}
-footer nav{display:flex;gap:8px 24px;flex-wrap:wrap;min-width:0}
+/* footer */
+footer.bottom{border-top:1px solid var(--line);background:var(--card);padding:64px 0 40px;color:var(--muted);font-size:15px}
+.foot-grid{display:grid;grid-template-columns:1.7fr 1fr 1fr 1fr;gap:40px}
+.foot-grid .brand{width:150px;margin-bottom:16px}
+.foot-grid p{max-width:28ch;margin:0 0 8px}
+.foot-col b{display:block;font-weight:500;color:var(--muted);margin-bottom:12px}
+.foot-col a{display:flex;align-items:center;min-height:40px;text-decoration:none;color:var(--ink)}
+.foot-col a:hover{text-decoration:underline}
+.foot-row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:40px;padding-top:24px;border-top:1px solid var(--line);font-size:14px}
 footer a,footer span{overflow-wrap:anywhere;max-width:100%}
-footer a{display:inline-flex;align-items:center;min-height:44px}
-@media(max-width:899px){
-.hero{grid-template-columns:1fr;gap:16px;padding:16px 24px 40px}
-.hero .copy{display:contents}
-.hero h1{order:1;margin-bottom:0}
-.hero .film-card{order:2;width:100%}
-.hero .limit{order:3;margin:0}
-.hero .button{order:4;width:100%}
-.hero .lede{order:5;margin:8px 0 0}
-.hero details{order:6;grid-column:auto}
-.film-card{padding:12px 12px 12px}
-.film-card .label{margin-bottom:8px}
-.film-card video{max-width:176px}
-.hero .button{min-width:0}
-.hero .lede{order:5;margin:8px 0 0}
-nav.sections{display:none}
-.section{padding:40px 0}
-.steps{grid-template-columns:1fr;gap:24px}
-.signup-card{grid-template-columns:1fr;gap:24px;padding:24px}
-iframe{height:760px;margin:0 -8px 12px;width:calc(100% + 16px)}
-.record-card{padding:20px 16px 12px}
-footer.bottom .wrap{flex-direction:column;align-items:flex-start}
+/* reveal */
+.js [data-reveal]{opacity:0;transform:translateY(12px);transition:opacity var(--settle) var(--ease),transform var(--settle) var(--ease)}
+.js [data-reveal].in{opacity:1;transform:none}
+@media(max-width:1100px){
+.hero{grid-template-columns:minmax(0,1fr) 460px;gap:40px}
+.ways{grid-template-columns:1fr 1fr}
+.privacy-grid{grid-template-columns:1fr;gap:32px}
+.trust-grid{grid-template-columns:1fr;gap:40px}
+.try-grid{gap:36px}
+.foot-grid{grid-template-columns:1fr 1fr;gap:32px}
 }
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+@media(max-width:899px){
+nav.sections,.divider{display:none}
+.section{padding:64px 0}
+.how-grid{grid-template-columns:1fr;gap:20px}
+.tiles{grid-template-columns:1fr 1fr}
+.signup-card{grid-template-columns:1fr;gap:24px;padding:24px}
+}
+@media(max-width:719px){
+.hero{grid-template-columns:1fr;gap:16px;padding:24px 0 48px}
+.hero .copy{display:contents}
+.hero h1{order:1;margin-bottom:8px}
+.hero .lede{order:2;margin:0 0 16px;font-size:18px}
+.hero .panel{order:3;width:100%}
+.hero .button{order:4;width:100%;margin:8px 0 12px}
+.hero .limit{order:5;margin:0 0 20px}
+.hero .clockline{order:6}
+.hero .platforms{order:7}
+.hero .label{order:0}
+.film-box{width:240px}
+.section{padding:56px 0}
+.try-grid{grid-template-columns:1fr}
+.phone{width:100%;max-width:340px;margin:0 auto}
+.privacy-cards{grid-template-columns:1fr}
+.ways{grid-template-columns:1fr}
+.frame-wrap,iframe{min-height:640px;height:640px}
+.record-card .panel-head{padding:14px 16px}
+.record-foot{padding:14px 16px 16px}
+.foot-grid{grid-template-columns:1fr;gap:24px}
+.launch{padding:64px 0}
+.launch .section-head{text-align:left}
+.launch h2,.launch .lede{margin-left:0}
+}
+@media(max-width:400px){.tiles{grid-template-columns:1fr 1fr;gap:8px}.tile{padding:12px 14px}.tile b{font-size:26px}.preview{padding:20px 18px}.preview .tiles{grid-template-columns:1fr 1fr}}
+@media(prefers-reduced-motion:reduce){
+html{scroll-behavior:auto}
+*,*::before,*::after{animation:none!important;transition:none!important}
+.js [data-reveal]{opacity:1;transform:none}
+.underline svg path{stroke-dashoffset:0}
+.marquee{mask-image:none;-webkit-mask-image:none}
+.marquee ul{width:auto;flex-wrap:wrap;transform:none}
+.marquee ul li.dup{display:none}
+}
 </style>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="wrap">
+<div class="topbar"><div class="wrap">
 <header class="top">
 <a class="brand" href="#top" aria-label="AlgorithmLens home"><svg viewBox="0 0 436 88" role="img" aria-label="AlgorithmLens"><use href="/static/img/wordmark.svg#wordmark"/></svg></a>
+<div class="topnav">
 <nav class="sections" aria-label="Page sections">
-<a href="#record">The report</a>
 <a href="#how">How it works</a>
-<a href="#limits">What we can know</a>
-<a href="#launch">Join the launch list</a>
+<a href="#report">The report</a>
+<a href="#privacy">Privacy</a>
+<a href="/methodology">Methodology</a>
 </nav>
+<span class="divider" aria-hidden="true"></span>
+<a class="pill" href="#launch">Join the launch list</a>
+</div>
 </header>
-</div>
+</div></div>
 <main id="main">
-<section class="hero wrap" id="top">
+<section class="dots" id="top">
+<div class="wrap hero">
 <div class="copy">
-<h1>See your feed clearly.</h1>
-<p class="limit">A scan reads what appeared on screen. It cannot say why any post was there.</p>
-<a class="button" href="#launch">Join the launch list</a>
+<span class="label">A free iPhone app · example data on this page</span>
+<h1>See your feed <span class="underline">clearly.<svg viewBox="0 0 160 10" preserveAspectRatio="none" aria-hidden="true"><path d="M2 7 Q 30 2, 62 6 T 120 6 T 158 5"/></svg></span></h1>
 <p class="lede">Scan a feed you use. Get a plain report: what appeared, which accounts it came from, and which posts carried an ad label.</p>
+<a class="button" href="#launch">Join the launch list</a>
+<p class="limit">A scan reads what appeared on screen. It cannot say why any post was there.</p>
+<div class="clockline">
+<i aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#20A888" stroke-width="1.8"/><path d="M12 7v5l3 2" stroke="#20A888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></i>
+<span><span>One short recording of a feed you already scroll.</span><span>Review after, not during.</span></span>
 </div>
-<figure class="card film-card">
-<span class="label">Example film · four fictional posts</span>
+<p class="platforms">Free · iPhone · works with Instagram, TikTok, YouTube, X, Facebook and Reddit.</p>
+</div>
+<figure class="card panel film-card" id="filmPanel">
+<div class="panel-head">
+<span class="title"><i class="pulse" aria-hidden="true"></i><span>Example film<small>Four fictional posts, twenty seconds</small></span></span>
+<span class="label">Example</span>
+</div>
+<div class="panel-body">
+<div class="film-box">
 <video id="heroFilm" muted playsinline loop controls preload="metadata" poster="/static/film/feed-replay-poster.jpg" aria-label="Twenty-second illustrated feed replay of four fictional posts">
 <source src="/static/film/feed-replay-1080.mp4" type="video/mp4" media="(min-width: 900px)">
 <source src="/static/film/feed-replay-720.mp4" type="video/mp4">
 </video>
-<div class="film-foot">
+<div class="scan" aria-hidden="true"></div>
+</div>
+</div>
+<div class="tally" aria-label="Four fictional posts, one carried an ad label"><span>Four posts</span><span class="bar" aria-hidden="true"><i class="ad"></i><i></i><i></i><i></i></span><span><b>1</b> carried an ad label</span></div>
+<div class="panel-foot">
 <figcaption class="caption">Fictional example. Review happens after recording.</figcaption>
 <button class="secondary" id="filmToggle" type="button" aria-pressed="false">Play the example film</button>
 </div>
-</figure>
 <details>
 <summary>Read the film in words</summary>
 <p>An ad label is visible. A political-content classification is an inference. A suggested label does not explain why the post was selected. One readable account appears twice. Four fictional posts become a small record, not a representative feed.</p>
 </details>
+</figure>
+</div>
 </section>
 
-<section id="record" class="section">
+<section id="report" class="section band">
 <div class="wrap">
-<h2>One scan. One plain-language report.</h2>
-<p>Turn back to a date. Each sheet holds only that scan's posts. A small scan stays small, and unknown labels remain unknown.</p>
-<div class="card record-card">
-<span class="label">Example record · four fictional scans</span>
+<div class="section-head">
+<h2 data-reveal>One scan. One plain-language report.</h2>
+<p class="lede" data-reveal>Four dated scans, kept separate. Turn back to any of them. A small scan stays small, and unknown labels stay unknown.</p>
+</div>
+<div class="tiles" data-reveal aria-label="Counts from the example scan of September 20">
+<div class="tile"><span>Posts recorded</span><b>45</b></div>
+<div class="tile"><span>Accounts read</span><b>42</b></div>
+<div class="tile blue"><span>Printed ad labels</span><b>6</b></div>
+<div class="tile"><span>Scans on record</span><b>4</b></div>
+</div>
+<div class="card sheet record-card" data-reveal>
+<div class="panel-head">
+<span class="title"><span>Example record<small>Instagram · four fictional scans · August 30 to September 20</small></span></span>
+<span class="label">Example</span>
+</div>
+<div class="frame-wrap">
 <iframe id="specimen" src="explore/index.html?embed=1&amp;view=record" title="Interactive example record with four dated sheets" sandbox="allow-scripts" loading="lazy"></iframe>
+</div>
 <div class="record-foot">
-<p class="caption">Separate scans add context. They do not, by themselves, establish a stable rate or certify a change.</p>
+<p class="small">The counts above are from the September 20 sheet. Each sheet holds only its own posts.</p>
 <a class="secondary" href="explore/">Open the full example explorer</a>
 </div>
 </div>
 </div>
 </section>
 
+<section id="try" class="section">
+<div class="wrap try-grid">
+<div>
+<h2 data-reveal>Tap four posts. Watch the record form.</h2>
+<p class="lede" data-reveal>A fictional feed. Each tap adds what a scan could read from that post, and stops at what it could not.</p>
+<p class="tryhint" data-reveal><i aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h13m0 0l-5-5m5 5l-5 5" stroke="#3A3730" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></i>Try it in the phone</p>
+<div class="card readout" data-reveal>
+<div class="readout-head"><span>The record forming</span><span id="readCount">0 of 4 posts</span></div>
+<div class="progress"><i id="readBar"></i></div>
+<p class="empty" id="readEmpty">Nothing yet. Tap Read on any post in the phone.</p>
+<div class="rows" id="readRows" aria-live="polite"></div>
+<div class="readout-foot" id="readFoot" hidden><span id="readNote"></span><button type="button" class="linkish" id="readReset">Start over</button></div>
+</div>
+<p class="caption try-limit" data-reveal>Illustrative. A scan reads what appeared; it cannot see a platform's model or say why a post was shown.</p>
+</div>
+<div class="phone" data-reveal>
+<div class="screen">
+<div class="island" aria-hidden="true"></div>
+<div class="status" aria-hidden="true"><span>9:41</span><span class="glyphs"><svg width="17" height="11" viewBox="0 0 17 11" fill="#3A3730"><rect x="0" y="7.5" width="2.6" height="3.5" rx=".8"/><rect x="4.6" y="5" width="2.6" height="6" rx=".8"/><rect x="9.2" y="2.5" width="2.6" height="8.5" rx=".8"/><rect x="13.8" y="0" width="2.6" height="11" rx=".8"/></svg><svg width="24" height="12" viewBox="0 0 24 12" fill="none"><rect x=".5" y=".5" width="20" height="11" rx="3" stroke="#3A3730" opacity=".35"/><rect x="2" y="2" width="16" height="8" rx="1.8" fill="#3A3730"/></svg></span></div>
+<div class="feed-head"><i aria-hidden="true"></i><span>For you</span><span class="label">Fictional</span></div>
+<div class="tuned"><span>Record so far</span><span id="tunedChips"><b>nothing yet</b></span></div>
+<div class="feed" id="tapFeed">
+<div class="hint">Four fictional posts. Tap Read to add one to the record.</div>
+<article class="post">
+<div class="post-top"><span class="avatar" aria-hidden="true">h</span><div>@harbor.coffee<small class="tag">Sponsored</small></div></div>
+<img src="/static/img/photo-coffee.jpg" alt="Fictional example post image: a glass of iced coffee beside a paper bag" loading="lazy" width="320" height="150">
+<div class="post-copy"><p>A slower start. A fictional sponsored coffee post.</p><button type="button" class="read ring" data-read="1" aria-pressed="false">Read</button></div>
+</article>
+<article class="post">
+<div class="post-top"><span class="avatar" aria-hidden="true">c</span><div>@city.notes<small class="tag green">Following</small></div></div>
+<div class="news"><small>The local edition</small><p>City council votes on a new transit plan.</p></div>
+<div class="post-copy"><p>On the local agenda this week.</p><button type="button" class="read" data-read="2" aria-pressed="false">Read</button></div>
+</article>
+<article class="post">
+<div class="post-top"><span class="avatar" aria-hidden="true">w</span><div>@wildpath.journal<small class="tag">Suggested</small></div></div>
+<img src="/static/img/photo-lake.jpg" alt="Fictional example post image: a still lake at dawn" loading="lazy" width="320" height="150">
+<div class="post-copy"><p>A long way from the morning rush.</p><button type="button" class="read" data-read="3" aria-pressed="false">Read</button></div>
+</article>
+<article class="post">
+<div class="post-top"><span class="avatar" aria-hidden="true">h</span><div>@harbor.coffee<small class="tag green">Following</small></div></div>
+<img src="/static/img/photo-coffee.jpg" alt="Fictional example post image: the same coffee shop, before opening" loading="lazy" width="320" height="150">
+<div class="post-copy"><p>Behind the counter, before the doors open.</p><button type="button" class="read" data-read="4" aria-pressed="false">Read</button></div>
+</article>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="limits" class="section band">
+<div class="wrap">
+<div class="section-head">
+<span class="label" data-reveal>What a scan can read</span>
+<h2 data-reveal>What a scan can read. What it cannot.</h2>
+<p class="lede" data-reveal>A recording holds what was on the screen. The report stops where the screen stops.</p>
+</div>
+</div>
+<div class="marquee-wrap" aria-label="What a scan can read, and what it cannot">
+<div class="marquee can"><ul>
+<li>a printed ad label</li><li>an account name</li><li>a post's position in the feed</li><li>the date recorded</li><li>how many posts appeared</li><li>an account that returns</li><li>a suggested label</li><li>a following label</li><li>a headline on screen</li>
+<li class="dup" aria-hidden="true">a printed ad label</li><li class="dup" aria-hidden="true">an account name</li><li class="dup" aria-hidden="true">a post's position in the feed</li><li class="dup" aria-hidden="true">the date recorded</li><li class="dup" aria-hidden="true">how many posts appeared</li><li class="dup" aria-hidden="true">an account that returns</li><li class="dup" aria-hidden="true">a suggested label</li><li class="dup" aria-hidden="true">a following label</li><li class="dup" aria-hidden="true">a headline on screen</li>
+</ul></div>
+<div class="marquee cannot reverse"><ul>
+<li>why a post appeared</li><li>your beliefs</li><li>your mood</li><li>the platform's model</li><li>what you scrolled past</li><li>which tap led where</li><li>the whole feed</li><li>the next feed</li><li>who else saw it</li>
+<li class="dup" aria-hidden="true">why a post appeared</li><li class="dup" aria-hidden="true">your beliefs</li><li class="dup" aria-hidden="true">your mood</li><li class="dup" aria-hidden="true">the platform's model</li><li class="dup" aria-hidden="true">what you scrolled past</li><li class="dup" aria-hidden="true">which tap led where</li><li class="dup" aria-hidden="true">the whole feed</li><li class="dup" aria-hidden="true">the next feed</li><li class="dup" aria-hidden="true">who else saw it</li>
+</ul></div>
+</div>
+<div class="wrap limits-copy">
+<p data-reveal>We show what appeared in a sample and keep observed labels apart from inferences. Political content describes a post, not your beliefs. Tone describes a reading of the content, not your mood. A suggested post does not tell us which action led to the recommendation.</p>
+<p class="caption" data-reveal>This page is an example, not a live scan or a demonstration of a running classifier. It does not record your screen or analyze your feed.</p>
+</div>
+</section>
+
 <section id="how" class="section">
 <div class="wrap">
-<h2>Three steps. No jargon.</h2>
-<div class="steps">
-<div class="step"><i>1</i><div><h3>Start a scan</h3><p>Follow the app's recording instructions, then scroll a feed as you normally would.</p></div></div>
-<div class="step"><i>2</i><div><h3>Review what appeared</h3><p>After recording, inspect readable labels, account names, and content classifications. Missing evidence stays unknown.</p></div></div>
-<div class="step"><i>3</i><div><h3>Get a clearer picture</h3><p>Read the counts with their sample size and limits. Return to a dated scan when you want another look.</p></div></div>
+<div class="section-head">
+<h2 data-reveal>Three steps. No jargon.</h2>
+<p class="lede" data-reveal>Click through what happens from a recording to a report. It advances on its own too.</p>
+</div>
+<div class="how-grid" data-reveal>
+<div class="steps" id="steps">
+<button type="button" class="step" aria-pressed="true" data-step="1"><i>1</i><span><h3>Start a scan</h3><p>Open the app, start the recording, then scroll a feed as you normally would.</p></span></button>
+<button type="button" class="step" aria-pressed="false" data-step="2"><i>2</i><span><h3>Review what appeared</h3><p>After recording, the app reads printed labels, account names and content classifications. Missing evidence stays unknown.</p></span></button>
+<button type="button" class="step" aria-pressed="false" data-step="3"><i>3</i><span><h3>Get a clearer picture</h3><p>Counts with their sample size and limits, kept on a dated record you can turn back to.</p></span></button>
+</div>
+<div class="card sheet preview-box">
+<div class="preview" data-preview="1">
+<span class="label">Step 1 · Start a scan</span>
+<div class="plat">
+<div><i aria-hidden="true"></i>Instagram<span>Ready to record</span></div>
+<div><i aria-hidden="true"></i>TikTok<span>Ready to record</span></div>
+<div><i aria-hidden="true"></i>YouTube<span>Ready to record</span></div>
+<div><i aria-hidden="true"></i>X<span>Ready to record</span></div>
+<div><i aria-hidden="true"></i>Facebook<span>Ready to record</span></div>
+<div><i aria-hidden="true"></i>Reddit<span>Ready to record</span></div>
+</div>
+</div>
+<div class="preview" data-preview="2" hidden>
+<span class="label">Step 2 · Review what appeared</span>
+<div class="checks">
+<div>Printed ad labels<span class="blue">read as observed</span></div>
+<div>Account names<span>read as observed</span></div>
+<div>Following and suggested labels<span>read where printed</span></div>
+<div>Political content and tone<span>marked as inference</span></div>
+<div>Anything unreadable<span>left unknown</span></div>
+</div>
+<p class="small" style="margin-top:16px">Nothing is filled in. A blurred label stays unknown.</p>
+</div>
+<div class="preview" data-preview="3" hidden>
+<span class="label">Step 3 · Get a clearer picture</span>
+<div class="tiles">
+<div class="tile"><span>Posts recorded</span><b>45</b></div>
+<div class="tile blue"><span>Printed ad labels</span><b>6</b></div>
+<div class="tile"><span>Accounts read</span><b>42</b></div>
+</div>
+<div class="countbar" aria-hidden="true"><i class="ad"></i><i class="ad"></i><i class="ad"></i><i class="ad"></i><i class="ad"></i><i class="ad"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="un"></i></div>
+<p class="small">6 of 45 posts carried a printed ad label; 1 could not be read. One fictional scan, September 20.</p>
+</div>
+</div>
 </div>
 </div>
 </section>
 
-<section id="limits" class="section">
-<div class="wrap">
-<span class="label">The honest limit</span>
-<h2>Honest about limits.</h2>
-<p>We show what appeared in a sample and distinguish observed labels from inferences. Political content describes a post, not your beliefs. Tone describes a reading of the content, not your mood. A suggested post does not tell us which action led to the recommendation.</p>
-<p class="caption">This page is an example, not a live scan or a demonstration of a running classifier. It does not record your screen or analyze your feed.</p>
+<section id="privacy" class="section band">
+<div class="wrap privacy-grid">
+<div>
+<h2 data-reveal>Your data stays yours.</h2>
+<p class="lede" data-reveal>A scan handles sensitive material. Here is how it is treated.</p>
+<a href="/privacy/" data-reveal>Read the privacy policy</a>
+</div>
+<div class="privacy-cards">
+<div class="card sheet" data-reveal><span class="icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="10" rx="2.5" stroke="#20A888" stroke-width="1.8"/><path d="M8 10V7a4 4 0 018 0v3" stroke="#20A888" stroke-width="1.8"/></svg></span><h3>Read, then deleted</h3><p>Frames of your screen are analyzed to build the report, then deleted from your device.</p></div>
+<div class="card sheet" data-reveal><span class="icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 5h16M7 5l1 14a2 2 0 002 2h4a2 2 0 002-2l1-14M10 5V4a2 2 0 014 0v1" stroke="#20A888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><h3>Delete anytime</h3><p>Deleting your account removes your scan results and profile.</p></div>
+<div class="card sheet" data-reveal><span class="icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 3l18 18M10.6 5.1A9.8 9.8 0 0121 12a15.9 15.9 0 01-3.3 3.9M6.2 6.2A15.4 15.4 0 003 12a9.9 9.9 0 0011.3 4.8" stroke="#20A888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><h3>Never sold</h3><p>No ad tech and no analytics on this site, and your data is not for sale.</p></div>
+<div class="card sheet" data-reveal><span class="icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M8 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2h-2M9 3h6v4H9V3zM8 12h8M8 16h5" stroke="#20A888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><h3>Public methodology</h3><p>Each metric is documented, and the analysis prompts are published in full.</p></div>
+</div>
 </div>
 </section>
 
-<section id="launch" class="section">
+<section id="ways" class="section">
 <div class="wrap">
-<div class="card signup-card">
+<div class="section-head">
+<h2 data-reveal>What people do with it</h2>
+<p class="lede" data-reveal>A read on a feed you can act on.</p>
+</div>
+<div class="ways">
+<div class="way blue" data-reveal><span class="icon blue" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 6a1 1 0 011-1h12a1 1 0 011 1v13a1 1 0 001 1H5a2 2 0 01-2-2V6z" stroke="#1868D8" stroke-width="1.8" stroke-linejoin="round"/><path d="M17 8h3a1 1 0 011 1v9a2 2 0 01-2 2M7 9h6M7 13h6M7 17h4" stroke="#1868D8" stroke-width="1.8" stroke-linecap="round"/></svg></span><h3>Check your news diet</h3><p>See which accounts fill your feed, not the ones you think do.</p></div>
+<div class="way blue" data-reveal><span class="icon blue" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0l-6.2-6.2A2 2 0 013.8 13V5.5A1.5 1.5 0 015.3 4H13a2 2 0 011.4.6l6.2 6.2a2 2 0 010 2.6z" stroke="#1868D8" stroke-width="1.8" stroke-linejoin="round"/><circle cx="8.5" cy="8.5" r="1.4" fill="#1868D8"/></svg></span><h3>Audit the ads</h3><p>Which posts carried an ad label, and how many, in each scan.</p></div>
+<div class="way green" data-reveal><span class="icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 21v-6M4 11V3M12 21v-9M12 8V3M20 21v-4M20 13V3M1 15h6M9 8h6M17 17h6" stroke="#20A888" stroke-width="1.8" stroke-linecap="round"/></svg></span><h3>Re-tune on purpose</h3><p>Unfollow, mute and follow deliberately, then scan again and keep both records.</p></div>
+<div class="way green" data-reveal><span class="icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 5a2 2 0 012-2h13v15H6a2 2 0 00-2 2V5z" stroke="#20A888" stroke-width="1.8" stroke-linejoin="round"/><path d="M19 18v3H6a2 2 0 01-2-2" stroke="#20A888" stroke-width="1.8" stroke-linecap="round"/></svg></span><h3>Teach and research</h3><p>Example records for classrooms studying recommender systems.</p></div>
+</div>
+</div>
+</section>
+
+<section id="trust" class="section band">
+<div class="wrap trust-grid">
+<div>
+<h2 data-reveal>You shouldn't have to take our word for it.</h2>
+<p class="lede" data-reveal>Each number the app reports is a count with its sample size, documented and open to check.</p>
+<div class="points" data-reveal>
+<div class="point"><span class="icon" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M8 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2h-2M9 3h6v4H9V3zM8 12h8M8 16h5" stroke="#20A888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>Public methodology</b><span>Each metric documented, the prompts published verbatim.</span></div></div>
+<div class="point"><span class="icon blue" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#1868D8" stroke-width="1.8"/><path d="M12 11v5" stroke="#1868D8" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7.6" r="1.1" fill="#1868D8"/></svg></span><div><b>Honest about limits</b><span>We show what you saw, and say what we cannot read.</span></div></div>
+<div class="point"><span class="icon" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M3 3l18 18M10.6 5.1A9.8 9.8 0 0121 12a15.9 15.9 0 01-3.3 3.9M6.2 6.2A15.4 15.4 0 003 12a9.9 9.9 0 0011.3 4.8" stroke="#20A888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>No analytics on this site</b><span>These pages set no cookies and request nothing from third parties.</span></div></div>
+</div>
+<a href="/methodology" data-reveal>Read the methodology</a>
+</div>
+<div class="card sheet worked" data-reveal>
+<div class="tab" style="justify-content:space-between;margin-bottom:14px"><span class="small" style="margin:0">Worked example</span><span class="label" style="margin:0">Example</span></div>
+<h3>How a count is made</h3>
+<p class="small">Printed ad labels, from one fictional scan.</p>
+<div class="bignum"><b>6 of 45</b><span>posts carried a printed ad label.</span></div>
+<div class="countbar" aria-hidden="true"><i class="ad"></i><i class="ad"></i><i class="ad"></i><i class="ad"></i><i class="ad"></i><i class="ad"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="un"></i></div>
+<div class="legend"><span><i class="ad"></i>Ad label · 6</span><span><i></i>No label · 38</span><span><i class="un"></i>Unknown · 1</span></div>
+<div class="arith">6 with a printed label, 38 without, 1 unreadable. <b>45 recorded.</b></div>
+<div class="foot"><a href="explore/#ads">See this count in the explorer</a></div>
+</div>
+</div>
+</section>
+
+<section id="launch" class="dots center launch">
+<div class="wrap">
+<div class="section-head">
+<h2 data-reveal>Curious what yours would show?</h2>
+<p class="lede" data-reveal>One email when the app is out. Nothing else.</p>
+</div>
+<div class="card sheet signup-card" data-reveal>
 <div>
 <span class="label">Launch list</span>
-<h2>Curious what yours would show?</h2>
-<p>Join the launch list for news about AlgorithmLens.</p>
+<h3>Join the launch list</h3>
 <p class="small">This form asks only for an email address and your consent to receive launch updates. Your address is used for launch news and nothing else, and is never sold. To be removed, write to <a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a>. Details are in the <a href="/privacy/">privacy policy</a>.</p>
 </div>
 <form id="launchForm">
@@ -216,14 +646,17 @@ footer.bottom .wrap{flex-direction:column;align-items:flex-start}
 </main>
 <footer class="bottom">
 <div class="wrap">
-<span>AlgorithmLens · A feed, made legible.</span>
-<nav aria-label="Legal and more">
-<a href="#limits">Read the limits</a>
-<a href="explore/">Explore the example</a>
-<a href="/privacy/">Privacy policy</a>
-<a href="/terms">Terms</a>
-<a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a>
-</nav>
+<div class="foot-grid">
+<div>
+<a class="brand" href="#top" aria-label="AlgorithmLens home"><svg viewBox="0 0 436 88" role="img" aria-label="AlgorithmLens"><use href="/static/img/wordmark.svg#wordmark"/></svg></a>
+<p>A feed, made legible.</p>
+<p>Example data shown throughout is fictional.</p>
+</div>
+<nav class="foot-col" aria-label="Product"><b>Product</b><a href="#report">The report</a><a href="#how">How it works</a><a href="#limits">Read the limits</a><a href="explore/">Explore the example</a></nav>
+<nav class="foot-col" aria-label="Company"><b>Company</b><a href="/methodology">Methodology</a><a href="#privacy">Privacy</a><a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a></nav>
+<nav class="foot-col" aria-label="Legal"><b>Legal</b><a href="/privacy/">Privacy policy</a><a href="/terms">Terms</a></nav>
+</div>
+<div class="foot-row"><span>© 2026 AlgorithmLens</span><span>One scan is a snapshot.</span></div>
 </div>
 </footer>
 <script src="landing.js"></script>
