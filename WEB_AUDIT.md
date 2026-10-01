@@ -199,3 +199,29 @@ Throttled 4G, root document (observed): 5,362 bytes on the wire (14,622 decoded)
 | Explorer | 99 | 100 | 100 | 100 | 1.6 s | 1.7 s | 100 ms | 0 |
 
 The explorer rendered live with its render guard released (body class ready, app visible, four record sheets), the feed cards carry the hidden lead-in and no aria-label, and the console showed no errors. The Lighthouse HTML reports beside this file are from this final run.
+
+### Mega run, 1 October 2026 (commit 9ccc0896, observed)
+
+Lighthouse 13.5 mobile, simulated throttling, one run each, after the
+phase 5 deploy (the shared canon, the exported example record, the
+explorer's easing and the specimen's two colours brought to the canon).
+Captures from the same deploy are in `docs/web-audit/mega-run-2026-10-01/`
+(58 files at 390 and 1440, states skipped) and the Lighthouse JSON in its
+`lighthouse/` folder.
+
+| Page | Performance | Accessibility | Best practices | SEO | FCP | LCP | TBT | CLS |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Root `/` | 95 | 100 | 100 | 100 | 1.2 s | 2.4 s | 210 ms | 0 |
+| Explorer `/explore/` | 99 | 100 | 100 | 100 | 1.7 s | 1.7 s | 0 ms | 0 |
+| About `/about/` | 100 | 100 | 100 | 100 | 1.1 s | 1.2 s | 70 ms | 0 |
+| Methodology `/methodology` | 100 | 100 | 100 | 100 | 1.3 s | 1.4 s | 0 ms | 0 |
+
+Nothing under 95. The site canon scanner (`scripts/web-audit/copy-check.mjs`,
+now reading `canon/canon.json`) passes all nine pages with zero canon
+drift; before the deploy it had flagged the explorer's easing curve and
+the specimen's muted and line colours, both fixed in this commit.
+
+A first Lighthouse pass with `--preset=perf` reported performance 0 and
+undefined metrics on the root and about pages; that was the preset's
+throttling, not the pages, and the numbers above are the simulated run
+the earlier audits used.
