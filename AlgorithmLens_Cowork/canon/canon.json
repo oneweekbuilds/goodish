@@ -1,0 +1,62 @@
+{
+  "$comment": "The shared canon (mega run phase 2d, D-181). One file read by the mobile canon scanner (src/lib/inferenceGuard.ts, src/__tests__/canonScanner.test.ts, src/components/field/motion.ts) and by the website canon scanner (scripts/web-audit/copy-check.mjs, through the copy that scripts/export-example-record.mjs makes). Patterns are JavaScript regular expression sources; every consumer compiles them with the flags given here. Extend the lists, never shrink them.",
+  "version": 1,
+  "forbiddenInferenceVerbs": [
+    { "pattern": "\\bbecause\\b", "flags": "i", "description": "causal claim (\"because\")" },
+    { "pattern": "\\bprove(s|d|n)?\\b", "flags": "i", "description": "certainty claim (\"proves\")" },
+    { "pattern": "\\bshows that\\b", "flags": "i", "description": "certainty claim (\"shows that\")" },
+    { "pattern": "\\bis designed to\\b", "flags": "i", "description": "platform-internal-logic claim (\"is designed to\")" },
+    { "pattern": "\\bthe algorithm wants\\b", "flags": "i", "description": "anthropomorphized platform-agency claim" },
+    { "pattern": "\\bdefinitely\\b", "flags": "i", "description": "certainty claim (\"definitely\")" },
+    { "pattern": "\\balways\\b", "flags": "i", "description": "certainty claim (\"always\")" }
+  ],
+  "allowedInferenceFrames": {
+    "pattern": "\\b(usually means|often points? to|tends? to happen when|is consistent with|is a common sign of|we think it'?s likely that)\\b",
+    "flags": "i"
+  },
+  "agencyClaims": [
+    { "pattern": "\\b(the )?algorithm('s)? (chose|chooses|wants|wanted|decided|decides|knows|picked|selected|choice|decision|agenda|is (showing|targeting) you)\\b", "flags": "i", "description": "unhedged algorithmic-agency claim" },
+    { "pattern": "\\bchosen for you\\b", "flags": "i", "description": "unhedged algorithmic-agency claim" },
+    { "pattern": "\\bwants you to\\b", "flags": "i", "description": "unhedged algorithmic-agency claim" },
+    { "pattern": "\\btargeting you\\b", "flags": "i", "description": "unhedged algorithmic-agency claim" },
+    { "pattern": "\\bmanipulat(e|es|ing) (you|your)\\b", "flags": "i", "description": "unhedged manipulation claim" }
+  ],
+  "certaintyMarkers": [
+    { "pattern": "\\b(proves that|scientifically proven|guaranteed to)\\b", "flags": "i", "description": "fabricated-certainty marker" }
+  ],
+  "completenessClaims": [
+    { "pattern": "\\byour (whole|entire|full) feed\\b", "flags": "i", "description": "claims the whole feed" },
+    { "pattern": "\\bevery post\\b", "flags": "i", "description": "claims every post" },
+    { "pattern": "\\ball (of )?your posts\\b", "flags": "i", "description": "claims all posts" },
+    { "pattern": "\\beverything (you|in your feed)\\b", "flags": "i", "description": "claims everything" },
+    { "pattern": "\\bcomplete (picture|history)\\b", "flags": "i", "description": "claims completeness" }
+  ],
+  "completenessNegation": { "pattern": "\\b(not|cannot|never|only)\\b", "flags": "i" },
+  "emDash": "—",
+  "colours": {
+    "paper": "#F5F4F0",
+    "panel": "#FFFFFF",
+    "field": "#FFFDF9",
+    "line": "#DDD8CD",
+    "mark": "#E6E1D6",
+    "muted": "#6D685F",
+    "ink": "#3A3730",
+    "blue": "#1868D8",
+    "blueGround": "#ECF3FC",
+    "green": "#20A888",
+    "greenGround": "#EDF8F5",
+    "$comment": "Green is a mark only, never text. Blue on blueGround, green on greenGround. The app's screen palette (src/lib/theme.ts PAPER) predates this sheet and keeps its own ink; new surfaces use theme tokens, never literals."
+  },
+  "motion": {
+    "tick": 160,
+    "beat": 240,
+    "settle": 400,
+    "curve": [0.22, 1, 0.36, 1],
+    "$comment": "Every animation uses one of the three durations on the one curve, and is gated by the reduce-motion preference."
+  },
+  "typography": {
+    "headlineFamily": "Source Serif 4",
+    "case": "sentence",
+    "uppercaseEyebrows": false
+  }
+}

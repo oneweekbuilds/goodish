@@ -1,0 +1,26 @@
+{
+  "$comment": "The one example dataset (mega run phase 5a, D-191). The website's record section and explorer, and the app's feed replay explainer, all read from this file; scripts/export-example-record.mjs copies it into the site. Every figure here is fictional and is labelled Example wherever it renders. Positions are 1-based post numbers within a sheet.",
+  "version": 1,
+  "label": "Example",
+  "platform": "instagram",
+  "record": {
+    "windowDays": 28,
+    "scans": [
+      { "id": "example-week-0", "date": "Aug 30", "recordedAt": "2026-08-30T18:40:00Z", "posts": 33, "ads": [1, 8, 17, 24, 33], "unknown": [7] },
+      { "id": "example-week-1", "date": "Sep 6", "recordedAt": "2026-09-06T18:40:00Z", "posts": 39, "ads": [1, 8, 17, 24, 33], "unknown": [7] },
+      { "id": "example-week-2", "date": "Sep 13", "recordedAt": "2026-09-13T18:40:00Z", "posts": 8, "ads": [1, 8], "unknown": [7] },
+      { "id": "example-week-3", "date": "Sep 20", "recordedAt": "2026-09-20T18:40:00Z", "posts": 45, "ads": [1, 8, 17, 24, 33, 41], "unknown": [7] }
+    ],
+    "limit": "More context does not by itself establish a stable rate or a certified change."
+  },
+  "replay": {
+    "posts": [
+      { "id": "p1", "account": "@harbor.coffee", "tag": "Sponsored", "ad": true, "political": false },
+      { "id": "p2", "account": "@city.notes", "tag": "Following", "ad": false, "political": true },
+      { "id": "p3", "account": "@wildpath.journal", "tag": "Suggested for you", "ad": false, "political": false },
+      { "id": "p4", "account": "@harbor.coffee", "tag": "Following", "ad": false, "political": false }
+    ],
+    "counts": { "postsRead": 4, "adLabels": 1, "political": 1, "accountsNamed": 3, "repeatedAccountPosts": 2 },
+    "limit": "Counts from four fictional posts. A real checkup counts only what your recording shows."
+  }
+}

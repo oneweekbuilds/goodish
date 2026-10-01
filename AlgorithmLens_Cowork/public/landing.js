@@ -152,12 +152,20 @@ const LAUNCH_LIST_ENDPOINT = "https://czrehjybsqzmudtgneqy.supabase.co/functions
   // explorer's record view shows (explore/examples.js). One mark, one post;
   // blue where the post carried a printed ad label, hollow where the label
   // could not be read. The rest pose follows the native port contract.
-  const SCANS = [
+  // D-191: the data is the exported copy of the mobile repo's
+  // canon/example-record.json (public/example-record.js, loaded before this
+  // script); the inline list is the fallback if that file is missing, and
+  // src/exampleRecord.test.js pins the two to each other.
+  const FALLBACK_SCANS = [
     { date: 'Aug 30', n: 33, ads: [1, 8, 17, 24, 33], unknown: [7] },
     { date: 'Sep 6', n: 39, ads: [1, 8, 17, 24, 33], unknown: [7] },
     { date: 'Sep 13', n: 8, ads: [1, 8], unknown: [7] },
     { date: 'Sep 20', n: 45, ads: [1, 8, 17, 24, 33, 41], unknown: [7] },
   ];
+  const exported = window.EXAMPLE_RECORD && window.EXAMPLE_RECORD.record && Array.isArray(window.EXAMPLE_RECORD.record.scans)
+    ? window.EXAMPLE_RECORD.record.scans.map((s) => ({ date: s.date, n: s.posts, ads: s.ads, unknown: s.unknown }))
+    : null;
+  const SCANS = exported && exported.length ? exported : FALLBACK_SCANS;
   const stage = $('stage');
   const chips = $('chips');
   if (stage && chips) {
