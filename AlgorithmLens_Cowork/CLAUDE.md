@@ -44,6 +44,19 @@ with the product's trust position.
 - Gates for any mobile change: `npx tsc --noEmit` clean and `npm test` fully
   green before a commit counts as done.
 
+## Legal pages on the website
+- `public/privacy/index.html` (live at /privacy/) is GENERATED from the
+  mobile repo's `mobile/legal/PRIVACY_POLICY.md` by
+  `node scripts/build-legal-pages.mjs [path/to/PRIVACY_POLICY.md]`. Never
+  edit the HTML by hand. Whenever a file in `mobile/legal/` changes, re-run
+  the script and commit the regenerated page in the same change, so the
+  website and the app never show two different policies.
+- `public/terms.html` (live at /terms) is rendered by
+  `scripts/build-paper-pages.mjs` from `src/pages/TermsPage.jsx` (July 2026
+  text). The newer `mobile/legal/TERMS_OF_SERVICE.md` carries an unresolved
+  counsel flag (D-166) and must not be published until counsel clears it;
+  when that happens, publish it the same way and in the same change.
+
 ## Key documents
 - `mobile/PRODUCT_DECISIONS.md`: judgment-call log from unattended batches.
 - `mobile/PRODUCT_UPGRADE_REPORT.md`: July 2026 product batch report, incl.

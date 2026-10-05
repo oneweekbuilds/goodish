@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- Generated from mobile/legal/PRIVACY_POLICY.md by scripts/build-legal-pages.mjs. Do not edit by hand; re-run the script. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -50,15 +51,14 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 <nav aria-label="Site"><a href="/">Front page</a><a href="/explore/">Explore the example</a></nav>
 </header>
 <h1>AlgorithmLens Privacy Policy</h1>
-<p class="meta">Last updated September 1, 2026
-. This is the same text the AlgorithmLens app shows in Settings.</p>
+<p class="meta">Last updated October 4, 2026. This is the same text the AlgorithmLens app shows in Settings.</p>
 <section class="site-note" aria-labelledby="site-note-title">
 <h2 id="site-note-title">This website</h2>
 <p>The pages on algorithmlens.com set no cookies, run no analytics, and request nothing from third parties. The only data they send anywhere is the launch-list form: when you submit it, your email address and your consent are sent to our launch-list service (a function hosted for us by Supabase) and stored there so that we can send launch news. Nothing is sent until you press the button, and nothing is saved if the service reports a failure.</p>
 <p>Your address is used only for launch news and is never sold or shared. To be removed from the list, write to <a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a> from the address you signed up with.</p>
 <p>The example scans shown on this site are fictional. Nothing on this site records your screen or reads your feed.</p>
 </section>
-<p><strong>Last Updated:</strong> September 1, 2026 <strong>Effective Date:</strong> February 22, 2026</p>
+<p><strong>Last Updated:</strong> October 4, 2026 <strong>Effective Date:</strong> February 22, 2026</p>
 <p>AlgorithmLens ("we," "us," or "our") operates the AlgorithmLens mobile application (the "App"). This Privacy Policy explains what information we collect, how we use it, who we share it with, and your rights regarding your data.</p>
 <p>We designed AlgorithmLens to help you understand your social media feeds. Because the App captures and analyzes what's on your screen, we take your privacy seriously and want you to fully understand how your data is handled.</p>
 <hr>
@@ -126,22 +126,12 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 <p>This is the most sensitive part of what AlgorithmLens does, so we want to be very clear:</p>
 <ol>
 <li><strong>Capture</strong>: When you start a scan, your device captures screenshots of your screen using the operating system's built-in screen recording APIs (ReplayKit on iOS, MediaProjection on Android). You must grant explicit permission through a system dialog before this happens.</li>
-</ol>
-<ol>
 <li><strong>On-device processing</strong>: Frames are compressed, deduplicated, and OCR text is extracted, all on your device.</li>
-</ol>
-<p>&lt;!-- Model name corrected 2026-07-19 per owner mandate (DOC_ACCURACY_REPORT.md L-1); it must track src/lib/analysis/geminiClient.ts GEMINI_MODEL. Note: the "paid billing account / not used to train" sentence in the "What Google receives" paragraph is a billing-tier fact not verifiable from this repo (PRETEST_READINESS B4 flags it as must-verify before launch). --&gt;</p>
-<ol>
 <li><strong>Sent to Google Gemini for AI analysis</strong>: The compressed frame images (as base64-encoded JPEG data) and extracted OCR text are sent to Google's Gemini API (currently the Gemini 3.1 Flash-Lite model) over an encrypted HTTPS connection. Gemini analyzes the visual content to identify and categorize individual posts in your social media feed.</li>
-</ol>
-<ol>
 <li><strong>Results returned</strong>: Gemini returns structured data (JSON) describing the feed items it identified, post text, creator names, content categories, etc. No images are returned by Gemini.</li>
-</ol>
-<ol>
 <li><strong>Frames deleted</strong>: After analysis is complete, the frame image files are deleted from your device. The base64-encoded frame data held in memory is released. Only the structured analysis results (text data, not images) are stored.</li>
-</ol>
-<ol>
-<li><strong>Results saved</strong>: The structured analysis results (text data, not images) are saved by the App directly to our database (hosted on Supabase) and linked to your account so you can view your scan history. No separate backend enrichment processing currently occurs; all analysis happens in the step above via Google's Gemini API. If we add server-side enrichment in the future, we will update this section before it is enabled.</li>
+<li><strong>Results saved</strong>: The structured analysis results (text data, not images) are saved by the App directly to our database (hosted on Supabase) and linked to your account so you can view your scan history. No server-side enrichment of your results occurs; the research step below does not change what you see.</li>
+<li><strong>Research step, only for study participants.</strong> If you have opted in to the research study (Section 3A), the text extracted in step 3 (the caption or title the model read from each post, the account names shown with it, and its hashtags) is sent once, over an encrypted HTTPS connection, from our server to TypeSafe AI, which returns a probability for each question in a fixed question bank. Only those numbers are stored (Section 3A.2). The text is not stored by us at any point. TypeSafe AI acts as our processor under its Data Processing Agreement (Section 4.5).</li>
 </ol>
 <p><strong>What Google receives:</strong> Google's Gemini API receives the JPEG images of your screen frames and the OCR text extracted from them. We send this data solely for the purpose of AI analysis. Our Gemini API access is configured on a paid billing account, and under Google's paid-tier API terms, data submitted through it is not used to train Google's AI models. The frames are deleted after analysis and are never shared beyond this analysis step. Google processes the data to return results according to their API terms. See <a href="https://ai.google.dev/gemini-api/terms" rel="noopener">Google's Gemini API Privacy Policy</a> for details.</p>
 <hr>
@@ -151,9 +141,9 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 <h3>3A.1 What we record when you opt in</h3>
 <p>Your choice, the version of the participation terms, the date of your decision, a self-attestation that you are 18 or older and in the United States (we do not verify either), and a random participant identifier. That identifier is not derived from your account, your email, or your device.</p>
 <h3>3A.2 What can be used for research</h3>
-<p>Only the scan results described in Section 1.3, and only from scans you ran <strong>on or after</strong> the day you opted in. Nothing from before that day is included. Specifically, research material can include: the counts (posts read, ads, suggested versus followed), the per-post classifications (ad, origin and how it was determined, content type, topic, political reading and stance guess, tone reading, AI-disclosure flag, position in feed), the account names and hashtags shown on posts, and the scan metadata (platform, date, capture method, duration, frame counts).</p>
+<p>Only the scan results described in Section 1.3, and only from scans you ran <strong>on or after</strong> the day you opted in. Nothing from before that day is included. Specifically, research material can include: the counts (posts read, ads, suggested versus followed), the per-post classifications (ad, origin and how it was determined, content type, topic, political reading and stance guess, tone reading, AI-disclosure flag, position in feed), the account names and hashtags shown on posts, and the scan metadata (platform, date, capture method, duration, frame counts). For checkups you ran after joining, research material also includes a set of numbers per post: the probabilities a second model (TypeSafe AI's Jev) assigned to a fixed bank of yes-or-no and rating questions about the post's text, together with the model version and bank version used.</p>
 <h3>3A.3 What is never used for research</h3>
-<p>The text of your posts, which is read during analysis and never stored at all (Section 1.3), and therefore cannot reach a research dataset. Nor the sponsored-label text on ads, the links behind posts, the screen frames themselves (deleted after analysis), your email address, your name, your account identifier, or anything from outside a scan.</p>
+<p>The text of your posts, which is read during analysis and, for study participants, read once more by TypeSafe AI, and is never stored at all by us (Section 1.3), and therefore cannot reach a research dataset as text. Nor the sponsored-label text on ads, the links behind posts, the screen frames themselves (deleted after analysis), your email address, your name, your account identifier, or anything from outside a scan.</p>
 <h3>3A.4 How findings are published</h3>
 <p>Only as aggregates and contrasts across many participants: shares, averages, and comparisons between platforms or over time. Never one participant's feed, never a quotation from anyone's feed, and never a figure drawn from a group small enough to identify a person. The participant identifier is an internal key used to honor withdrawals; it is never published.</p>
 <h3>3A.5 Withdrawing</h3>
@@ -161,7 +151,7 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 <p>A figure that has already been published cannot be recalled. It was a count across many people and identifies no one; removing your rows changes what future figures are counted from, not what is already in print. If a research extract has been shared with a collaborator outside our systems, deleting our copy does not delete theirs, so extracts are kept inside the project and re-cut from live data rather than passed around.</p>
 <p>Withdrawing from research is not account deletion, and does not remove your own scan history from the App. Deleting your account (Section 7.2) removes everything, including your research participation record.</p>
 <h3>3A.6 Where this stands today</h3>
-<p>As of the Last Updated date at the top of this policy, <strong>no research dataset exists</strong>. Nothing from any account has been copied into one, and the App contains no mechanism that does so. Opting in today records permission so that if and when a dataset is assembled, it can be assembled only from people who opted in and have not withdrawn.</p>
+<p>As of the Last Updated date at the top of this policy, the research dataset consists of the per-post numbers described in Section 3A.2, filed under participant identifiers. No text, image, name, or account identifier is in it. Per-post rows are retained for 90 days and then aggregated per checkup; aggregates carry no per-post detail.</p>
 <h3>3A.7 Who can take part</h3>
 <p>Research participation is currently offered only to people aged 18 or over who are in the United States. That is a limit on the study, not on the App: anyone may use AlgorithmLens anywhere, without taking part.</p>
 <hr>
@@ -192,9 +182,15 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 <li><strong>Why:</strong> To create and authenticate your account.</li>
 <li><strong>Their privacy policies:</strong> <a href="https://www.apple.com/privacy/" rel="noopener">Apple Privacy Policy</a> | <a href="https://policies.google.com/privacy" rel="noopener">Google Privacy Policy</a></li>
 </ul>
+<h3>4.5 TypeSafe AI (research step only)</h3>
+<ul>
+<li><strong>What we send:</strong> For study participants only, the text extracted from each post (caption or title, account names shown, hashtags) and, if enabled, a one-sentence description of the post's visual. Never screenshots.</li>
+<li><strong>Why:</strong> To answer a fixed bank of questions about the post for the research study (Section 3A).</li>
+<li><strong>Their role:</strong> TypeSafe AI is a processor and AlgorithmLens is the controller under their Data Processing Agreement (last updated 2026-04-24, https://typesafe.ai/legal/data-processing). They do not sell or share the data, retain it only as long as necessary to provide the service, and do not use inputs or outputs to train their models (Privacy Policy, last updated 2025-11-19, https://typesafe.ai/legal/privacy-policy; Master Customer Agreement, last updated 2026-09-23, https://typesafe.ai/legal/mca). Zero data retention is available from TypeSafe AI only to enterprise customers, which we are not; we therefore do not promise zero retention on their side.</li>
+</ul>
 <hr>
 <h2>5. Data Retention</h2>
-<div class="table-wrap"><table><thead><tr><th scope="col">Data Type</th><th scope="col">Retention Period</th></tr></thead><tbody><tr><td>Screen recording frames (images)</td><td>Deleted from your device immediately after analysis completes. If the app crashes, cleaned up on next session start.</td></tr><tr><td>In-memory frame data (base64)</td><td>Released from memory within 5 minutes of analysis completion or when you leave the results screen.</td></tr><tr><td>Scan results (text data)</td><td>Stored on our servers for as long as your account exists, or until you request deletion.</td></tr><tr><td>Account information</td><td>Retained for as long as your account is active. Deleted upon account deletion request.</td></tr><tr><td>Streak and preference data</td><td>Stored locally on your device. Deleted when you uninstall the App or clear app data.</td></tr><tr><td>Platform login state cache</td><td>Automatically expires after 30 days. Stored locally on your device only.</td></tr><tr><td>Error and diagnostic data</td><td>Retained by Sentry for up to 90 days per their default retention policy.</td></tr><tr><td>Research participation record</td><td>Kept for as long as your account exists, including after you withdraw: the record of the withdrawal and the random participant identifier are what let us keep honoring it. Deleted when your account is deleted.</td></tr><tr><td>Research dataset rows</td><td>Deleted when you withdraw. No research dataset exists as of the Last Updated date above, so there is currently nothing of anyone's to delete.</td></tr></tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th scope="col">Data Type</th><th scope="col">Retention Period</th></tr></thead><tbody><tr><td>Screen recording frames (images)</td><td>Deleted from your device immediately after analysis completes. If the app crashes, cleaned up on next session start.</td></tr><tr><td>In-memory frame data (base64)</td><td>Released from memory within 5 minutes of analysis completion or when you leave the results screen.</td></tr><tr><td>Scan results (text data)</td><td>Stored on our servers for as long as your account exists, or until you request deletion.</td></tr><tr><td>Account information</td><td>Retained for as long as your account is active. Deleted upon account deletion request.</td></tr><tr><td>Streak and preference data</td><td>Stored locally on your device. Deleted when you uninstall the App or clear app data.</td></tr><tr><td>Platform login state cache</td><td>Automatically expires after 30 days. Stored locally on your device only.</td></tr><tr><td>Error and diagnostic data</td><td>Retained by Sentry for up to 90 days per their default retention policy.</td></tr><tr><td>Research participation record</td><td>Kept for as long as your account exists, including after you withdraw: the record of the withdrawal and the random participant identifier are what let us keep honoring it. Deleted when your account is deleted.</td></tr><tr><td>Research dataset rows</td><td>Per-post number rows: 90 days, then folded into per-checkup totals. Per-checkup totals: for as long as you remain in the study. All rows under your participant identifier are deleted when you withdraw or delete your account.</td></tr></tbody></table></div>
 <hr>
 <h2>6. Data Security</h2>
 <p>We implement the following security measures:</p>
@@ -217,7 +213,7 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 </ul>
 <p>Upon receiving a deletion request, we will delete your account, scan results, and profile data from our Supabase database within 30 days. Note that:</p>
 <ul>
-<li>Data already sent to third-party services (Google Gemini, Sentry) is subject to those services' own retention and deletion policies.</li>
+<li>Data already sent to third-party services (Google Gemini, Sentry, TypeSafe AI) is subject to those services' own retention and deletion policies.</li>
 <li>Locally stored data (streaks, preferences) is deleted when you uninstall the App.</li>
 <li>We may retain certain data where required by law.</li>
 </ul>
@@ -246,6 +242,7 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 <li><strong>Supabase</strong> hosts data on cloud infrastructure which may be located in the United States or other regions.</li>
 <li><strong>Google Gemini API</strong> processes data on Google's servers, which may be located globally.</li>
 <li><strong>Sentry</strong> processes error data on servers that may be located in the United States.</li>
+<li><strong>TypeSafe AI</strong> processes research-step data on its servers; see their DPA for locations.</li>
 </ul>
 <p>Where data is transferred outside of the EEA, we rely on Standard Contractual Clauses and/or the service provider's compliance frameworks (such as participation in data protection frameworks) to ensure adequate protection of your data.</p>
 <hr>
@@ -281,7 +278,7 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 <p>If you have questions about this Privacy Policy, want to exercise your data rights, or have a privacy concern, contact us at:</p>
 <p><strong>Email:</strong> privacy@algorithmlens.com <strong>Website:</strong> https://algorithmlens.com/privacy</p>
 <hr>
-<p><em>This Privacy Policy applies to version 1.0.0 and later of the AlgorithmLens mobile application. The terms of research participation referred to in Section 3A are version 2026-09-01.</em></p>
+<p><em>This Privacy Policy applies to version 1.0.0 and later of the AlgorithmLens mobile application. The terms of research participation referred to in Section 3A are version 2026-10-04.</em></p>
 <nav class="foot" aria-label="More pages">
 <a href="/">Front page</a>
 <a href="/explore/">Explore the example</a>

@@ -15,7 +15,8 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const src = process.argv[2] || path.join(here, '..', 'mobile', 'legal', 'PRIVACY_POLICY.md');
 const out = process.argv[3] || path.join(here, '..', 'public', 'privacy', 'index.html');
 
-const md = readFileSync(src, 'utf8');
+// Editor notes written as HTML comments in the Markdown are not policy text.
+const md = readFileSync(src, 'utf8').replace(/<!--[\s\S]*?-->/g, '');
 const lines = md.split(/\r?\n/);
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -55,7 +56,15 @@ while (i < lines.length) {
     continue;
   }
   if ((m = line.match(/^- (.+)/))) { if (inList !== 'ul') { closeList(); body.push('<ul>'); inList = 'ul'; } body.push(`<li>${inline(m[1])}</li>`); i++; continue; }
-  if ((m = line.match(/^\d+\. (.+)/))) { if (inList !== 'ol') { closeList(); body.push('<ol>'); inList = 'ol'; } body.push(`<li>${inline(m[1])}</li>`); i++; continue; }
+  if ((m = line.match(/^\d+\. (.+)/))) {
+    if (inList !== 'ol') {
+      closeList();
+      // Numbered steps separated by blank lines are one list, not several.
+      if (body[body.length - 1] === '</ol>') body.pop(); else body.push('<ol>');
+      inList = 'ol';
+    }
+    body.push(`<li>${inline(m[1])}</li>`); i++; continue;
+  }
   if (line.startsWith('> ')) { closeList(); const q = []; while (i < lines.length && lines[i].startsWith('>')) { q.push(lines[i].replace(/^>\s?/, '')); i++; } body.push(`<blockquote>${inline(q.join(' '))}</blockquote>`); continue; }
   // paragraph: gather consecutive plain lines
   closeList();
@@ -65,9 +74,10 @@ while (i < lines.length) {
 }
 closeList();
 
-const updated = (md.match(/\*\*Last Updated:\*\*\s*([^\n]+)/) || [])[1] || '';
+const updated = ((md.match(/\*\*Last Updated:\*\*\s*([^\r\n]+)/) || [])[1] || '').trim();
 
 const html = `<!doctype html>
+<!-- Generated from mobile/legal/PRIVACY_POLICY.md by scripts/build-legal-pages.mjs. Do not edit by hand; re-run the script. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -87,7 +97,8 @@ body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 system-ui,s
 main{max-width:720px;margin:auto;padding:24px 20px 48px}
 header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:24px}
 header a{display:inline-flex;align-items:center;min-height:44px}
-header svg{width:150px;height:auto}
+header svg{width:188px;max-width:52vw;height:auto}
+header nav{display:flex;gap:20px}
 a{color:var(--ink);text-underline-offset:4px}
 a:focus-visible{outline:2px solid var(--blue);outline-offset:4px}
 h1{font:400 clamp(34px,6vw,52px)/1.08 Source,Georgia,serif;letter-spacing:-1px;margin:8px 0 8px}
@@ -95,7 +106,7 @@ h2{font:400 clamp(24px,3.4vw,32px)/1.15 Source,Georgia,serif;margin:40px 0 12px}
 h3{font:400 22px/1.2 Source,Georgia,serif;margin:28px 0 8px}
 p,li{max-width:66ch}
 .meta{color:var(--muted);font-size:14px;margin:0 0 20px}
-.site-note{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin:0 0 8px}
+.site-note{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:4px 6px 0 rgba(58,55,48,.08);padding:20px 22px;margin:0 0 8px}
 .site-note h2{margin-top:0;font-size:24px}
 .site-note p{margin:8px 0}
 hr{border:0;border-top:1px solid var(--line);margin:28px 0}
@@ -115,7 +126,7 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 <main>
 <header>
 <a href="/" aria-label="AlgorithmLens home"><svg viewBox="0 0 436 88" role="img" aria-label="AlgorithmLens"><use href="/static/img/wordmark.svg#wordmark"/></svg></a>
-<a href="/">Front page</a>
+<nav aria-label="Site"><a href="/">Front page</a><a href="/explore/">Explore the example</a></nav>
 </header>
 <h1>${esc(title)}</h1>
 <p class="meta">Last updated ${esc(updated)}. This is the same text the AlgorithmLens app shows in Settings.</p>
