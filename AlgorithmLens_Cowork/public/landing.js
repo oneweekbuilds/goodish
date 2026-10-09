@@ -1,6 +1,6 @@
 const LAUNCH_LIST_ENDPOINT = "https://czrehjybsqzmudtgneqy.supabase.co/functions/v1/launch-list";
 // Publish the TestFlight link here. While this is empty the home page shows no beta button at all.
-const BETA_LINK = "";
+const BETA_LINK = "https://testflight.apple.com/join/7n7n3scz";
 
 (function () {
   'use strict';
