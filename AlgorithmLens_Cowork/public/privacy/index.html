@@ -134,7 +134,7 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 <li><strong>Research step, only for study participants.</strong> If you have opted in to the research study (Section 3A), the text extracted in step 3 (the caption or title the model read from each post, the account names shown with it, and its hashtags) is sent once, over an encrypted HTTPS connection, from our server to TypeSafe AI, which returns a probability for each question in a fixed question bank. Only those numbers are stored (Section 3A.2). The text is not stored by us at any point. TypeSafe AI acts as our processor under its Data Processing Agreement (Section 4.5).</li>
 <li><strong>Quick check, only for study participants who choose to answer.</strong> After a checkup, the App may show three of the posts it read and ask yes-or-no questions about them, and one question about the checkup as a whole. Answering is optional at every step. Your answers are sent to our server as numbers with the post's position and the question's identifier, and stored under your participant identifier (Section 3A.2). The post's text is shown to you on your own screen and is not sent with the answers.</li>
 </ol>
-<p><strong>What Google receives:</strong> Google's Gemini API receives the JPEG images of your screen frames and the OCR text extracted from them. We send this data solely for the purpose of AI analysis. Our Gemini API access is configured on a paid billing account, and under Google's paid-tier API terms, data submitted through it is not used to train Google's AI models. The frames are deleted after analysis and are never shared beyond this analysis step. Google processes the data to return results according to their API terms. See <a href="https://ai.google.dev/gemini-api/terms" rel="noopener">Google's Gemini API Privacy Policy</a> for details.</p>
+<p><strong>What Google receives:</strong> Google's Gemini API receives the JPEG images of your screen frames and the OCR text extracted from them. We send this data solely for the purpose of AI analysis. Our Gemini API access is configured on a paid billing account, and under Google's paid-tier API terms, data submitted through it is not used to train Google's AI models. The frames are deleted after analysis and are never shared beyond this analysis step. Google processes the data to return results according to their API terms. See <a href="https://ai.google.dev/gemini-api/terms" rel="noopener noreferrer">Google's Gemini API Privacy Policy</a> for details.</p>
 <hr>
 <h2>3A. Research Participation (Optional, Off By Default)</h2>
 <p>You can choose to let your measurements be used as material for published research about social media feeds. This is a separate decision from using AlgorithmLens and from AI analysis consent. It is off unless you turn it on, on a dedicated screen in the App, and every feature of the App works exactly the same whether you take part or not.</p>
@@ -162,26 +162,26 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 <ul>
 <li><strong>What we send:</strong> Base64-encoded JPEG screenshots of your screen and OCR-extracted text.</li>
 <li><strong>Why:</strong> To analyze social media feed content and categorize posts.</li>
-<li><strong>Their privacy policy:</strong> <a href="https://ai.google.dev/gemini-api/terms" rel="noopener">Google Gemini API Terms</a> and <a href="https://policies.google.com/privacy" rel="noopener">Google Privacy Policy</a></li>
+<li><strong>Their privacy policy:</strong> <a href="https://ai.google.dev/gemini-api/terms" rel="noopener noreferrer">Google Gemini API Terms</a> and <a href="https://policies.google.com/privacy" rel="noopener noreferrer">Google Privacy Policy</a></li>
 </ul>
 <h3>4.2 Supabase (Authentication and Database)</h3>
 <ul>
 <li><strong>What is stored:</strong> Your account information (email, user ID, auth provider) and scan results.</li>
 <li><strong>Why:</strong> To authenticate you, store your scan history, and manage your profile.</li>
 <li><strong>Where:</strong> Supabase hosts data on cloud infrastructure. Your data is stored in a Supabase-managed PostgreSQL database with row-level security, meaning each user can only access their own data.</li>
-<li><strong>Their privacy policy:</strong> <a href="https://supabase.com/privacy" rel="noopener">Supabase Privacy Policy</a></li>
+<li><strong>Their privacy policy:</strong> <a href="https://supabase.com/privacy" rel="noopener noreferrer">Supabase Privacy Policy</a></li>
 </ul>
 <h3>4.3 Sentry (Error Monitoring)</h3>
 <ul>
 <li><strong>What they receive:</strong> Error reports including stack traces, your user ID, device model, OS version, and app version. Your email and name are explicitly removed before reports are sent.</li>
 <li><strong>Why:</strong> To identify and fix bugs and crashes.</li>
-<li><strong>Their privacy policy:</strong> <a href="https://sentry.io/privacy/" rel="noopener">Sentry Privacy Policy</a></li>
+<li><strong>Their privacy policy:</strong> <a href="https://sentry.io/privacy/" rel="noopener noreferrer">Sentry Privacy Policy</a></li>
 </ul>
 <h3>4.4 Apple and Google (OAuth Authentication)</h3>
 <ul>
 <li><strong>What they facilitate:</strong> When you sign in with Google or Apple, the respective provider handles the authentication flow and shares your email address with us (and, for Apple Sign-In, a relay email if you choose to hide your real email).</li>
 <li><strong>Why:</strong> To create and authenticate your account.</li>
-<li><strong>Their privacy policies:</strong> <a href="https://www.apple.com/privacy/" rel="noopener">Apple Privacy Policy</a> | <a href="https://policies.google.com/privacy" rel="noopener">Google Privacy Policy</a></li>
+<li><strong>Their privacy policies:</strong> <a href="https://www.apple.com/privacy/" rel="noopener noreferrer">Apple Privacy Policy</a> | <a href="https://policies.google.com/privacy" rel="noopener noreferrer">Google Privacy Policy</a></li>
 </ul>
 <h3>4.5 TypeSafe AI (research step only)</h3>
 <ul>

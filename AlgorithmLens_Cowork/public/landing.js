@@ -1,4 +1,6 @@
 const LAUNCH_LIST_ENDPOINT = "https://czrehjybsqzmudtgneqy.supabase.co/functions/v1/launch-list";
+// Publish the TestFlight link here. While this is empty the home page shows no beta button at all.
+const BETA_LINK = "";
 
 (function () {
   'use strict';
@@ -289,4 +291,22 @@ const LAUNCH_LIST_ENDPOINT = "https://czrehjybsqzmudtgneqy.supabase.co/functions
     reduced.addEventListener('change', start);
     show(1); start();
   }
+})();
+
+// The beta call to action. Rendered only while BETA_LINK (top of this file)
+// holds an https URL; with it empty the page is exactly as it was before.
+(function () {
+  'use strict';
+  if (!BETA_LINK) return;
+  let href;
+  try { href = new URL(BETA_LINK); } catch { return; }
+  if (href.protocol !== 'https:') return;
+  const actions = document.querySelector('.hero .actions');
+  if (!actions) return;
+  const a = document.createElement('a');
+  a.className = 'button beta';
+  a.href = href.href;
+  a.rel = 'noopener noreferrer';
+  a.textContent = 'Join the beta on TestFlight';
+  actions.prepend(a);
 })();

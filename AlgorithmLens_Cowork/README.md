@@ -90,6 +90,10 @@ Key vars:
 - `VITE_STRIPE_PUBLISHABLE_KEY`: Stripe public key for payments
 - `VITE_COMING_SOON_MODE`: retired (September 2026). The static landing page in public/ owns the root URL; the web app routes redirect there in vercel.json.
 
+## Publishing the TestFlight beta link
+
+To publish the link, edit `public/landing.js` line 3 (`const BETA_LINK = "";`), paste the TestFlight URL between the quotes, commit and push to main. The "Join the beta on TestFlight" button appears on the home page only while that string is non-empty; leave it empty to hide the button again.
+
 ## Observability
 
 For setting up error tracking (Sentry), performance monitoring, and Web Vitals, see [docs/observability-setup.md](docs/observability-setup.md).

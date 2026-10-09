@@ -24,7 +24,7 @@ function inline(s) {
   let t = esc(s);
   // Em dashes: a colon after a bold lead-in, a comma elsewhere.
   t = t.replace(/\*\*\s+—\s+/g, '**: ').replace(/\s+—\s+/g, ', ').replace(/—/g, ', ');
-  t = t.replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g, '<a href="$2" rel="noopener">$1</a>');
+  t = t.replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g, '<a href="$2" rel="noopener noreferrer">$1</a>');
   t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   t = t.replace(/(^|[\s(])\*([^*]+)\*(?=[\s).,;:]|$)/g, '$1<em>$2</em>');
   t = t.replace(/`([^`]+)`/g, '<code>$1</code>');

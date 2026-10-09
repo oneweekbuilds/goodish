@@ -285,7 +285,7 @@ export default function PrivacyPage() {
               <div className="bg-gray-50 rounded-xl p-5 mt-4 border border-border-light">
                 <p className="text-sm text-text-main mb-2 font-semibold">What Google receives</p>
                 <p className="text-sm text-text-muted leading-relaxed">
-                  Google's Gemini API receives the JPEG images of your screen frames and the OCR text extracted from them. We send this data solely for the purpose of AI analysis. Our Gemini API access is configured on a paid billing account, and under Google's paid-tier API terms, data submitted through it is not used to train Google's AI models. The frames are deleted after analysis and are never shared beyond this analysis step. See <a href="https://ai.google.dev/gemini-api/terms" className="text-primary-blue hover:underline">Google's Gemini API terms</a> for details.
+                  Google's Gemini API receives the JPEG images of your screen frames and the OCR text extracted from them. We send this data solely for the purpose of AI analysis. Our Gemini API access is configured on a paid billing account, and under Google's paid-tier API terms, data submitted through it is not used to train Google's AI models. The frames are deleted after analysis and are never shared beyond this analysis step. See <a href="https://ai.google.dev/gemini-api/terms" rel="noopener noreferrer" className="text-primary-blue hover:underline">Google's Gemini API terms</a> for details.
                 </p>
               </div>
             </section>
@@ -301,7 +301,7 @@ export default function PrivacyPage() {
                     Receives compressed screenshots of your screen and OCR-extracted text, solely to analyze feed content and categorize posts.
                   </p>
                   <p className="text-sm text-text-muted italic">
-                    <a href="https://ai.google.dev/gemini-api/terms" className="text-primary-blue hover:underline">Google Gemini API terms</a> · <a href="https://policies.google.com/privacy" className="text-primary-blue hover:underline">Google privacy policy</a>
+                    <a href="https://ai.google.dev/gemini-api/terms" rel="noopener noreferrer" className="text-primary-blue hover:underline">Google Gemini API terms</a> · <a href="https://policies.google.com/privacy" rel="noopener noreferrer" className="text-primary-blue hover:underline">Google privacy policy</a>
                   </p>
                 </div>
 
@@ -311,7 +311,7 @@ export default function PrivacyPage() {
                     Stores your account information (email, user ID, auth provider) and scan results in a PostgreSQL database with row-level security, meaning each user can only access their own data.
                   </p>
                   <p className="text-sm text-text-muted italic">
-                    <a href="https://supabase.com/privacy" className="text-primary-blue hover:underline">Supabase privacy policy</a>
+                    <a href="https://supabase.com/privacy" rel="noopener noreferrer" className="text-primary-blue hover:underline">Supabase privacy policy</a>
                   </p>
                 </div>
 
@@ -321,7 +321,7 @@ export default function PrivacyPage() {
                     Receives error reports including stack traces, your user ID, device model, OS version, and app version. Your email and name are explicitly removed before reports are sent.
                   </p>
                   <p className="text-sm text-text-muted italic">
-                    <a href="https://sentry.io/privacy/" className="text-primary-blue hover:underline">Sentry privacy policy</a>
+                    <a href="https://sentry.io/privacy/" rel="noopener noreferrer" className="text-primary-blue hover:underline">Sentry privacy policy</a>
                   </p>
                 </div>
 
@@ -331,7 +331,7 @@ export default function PrivacyPage() {
                     When you sign in with Google or Apple, the provider handles the authentication flow and shares your email address with us (for Apple sign-in, a relay email if you choose to hide your real one).
                   </p>
                   <p className="text-sm text-text-muted italic">
-                    <a href="https://www.apple.com/privacy/" className="text-primary-blue hover:underline">Apple privacy policy</a> · <a href="https://policies.google.com/privacy" className="text-primary-blue hover:underline">Google privacy policy</a>
+                    <a href="https://www.apple.com/privacy/" rel="noopener noreferrer" className="text-primary-blue hover:underline">Apple privacy policy</a> · <a href="https://policies.google.com/privacy" rel="noopener noreferrer" className="text-primary-blue hover:underline">Google privacy policy</a>
                   </p>
                 </div>
 
@@ -341,7 +341,7 @@ export default function PrivacyPage() {
                     This website is hosted on Vercel.
                   </p>
                   <p className="text-sm text-text-muted italic">
-                    <a href="https://vercel.com/privacy" className="text-primary-blue hover:underline">Vercel privacy policy</a>
+                    <a href="https://vercel.com/privacy" rel="noopener noreferrer" className="text-primary-blue hover:underline">Vercel privacy policy</a>
                   </p>
                 </div>
               </div>
