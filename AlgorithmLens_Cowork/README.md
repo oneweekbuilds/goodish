@@ -92,7 +92,7 @@ Key vars:
 
 ## Publishing the TestFlight beta link
 
-To publish the link, edit `public/landing.js` line 3 (`const BETA_LINK = "";`), paste the TestFlight URL between the quotes, commit and push to main. The "Join the beta on TestFlight" button appears on the home page only while that string is non-empty; leave it empty to hide the button again.
+The link is `BETA_LINK` at the top of `public/landing.js` (line 6). The home page's "Join the beta on iPhone" button and its "Join the beta" header pill point at it. To change it, edit the string between the quotes, commit and push to main. With the string empty the home page falls back to the launch-list call to action it carried before the beta (no beta button, "Join the launch list" in the hero and header). The other pages (404, /about/, /explore/, /methodology, /terms) carry the public link literally in their header pill; search for `testflight.apple.com` to update them, and for /methodology and /terms edit the template in `scripts/build-paper-pages.mjs` as well so a regeneration emits the same.
 
 ## Observability
 

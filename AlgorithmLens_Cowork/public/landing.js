@@ -1,5 +1,8 @@
 const LAUNCH_LIST_ENDPOINT = "https://czrehjybsqzmudtgneqy.supabase.co/functions/v1/launch-list";
-// Publish the TestFlight link here. While this is empty the home page shows no beta button at all.
+// The public beta on TestFlight. BETA_LINK is the general beta group: the home
+// page's "Join the beta on iPhone" button and "Join the beta" header pill point
+// here. While it is empty the home page falls back to the launch-list call to
+// action it carried before the beta (see the last block of this file).
 const BETA_LINK = "https://testflight.apple.com/join/7n7n3scz";
 
 (function () {
@@ -209,7 +212,7 @@ const BETA_LINK = "https://testflight.apple.com/join/7n7n3scz";
         if (k === i) marks(sheet, SCANS[k]); else sheet.replaceChildren();
       });
       buttons.forEach((b, k) => b.setAttribute('aria-pressed', String(k === i)));
-      inspect.href = 'explore/#record';
+      inspect.href = '/explore/#record';
       const s = SCANS[i];
       $('recordTitle').textContent = s.date + ', held on record.';
       $('recordFacts').textContent = s.n + ' posts in this scan. ' + s.ads.length + ' carried a printed ad label. ' + total + ' posts across ' + SCANS.length + ' scans.';
@@ -293,20 +296,37 @@ const BETA_LINK = "https://testflight.apple.com/join/7n7n3scz";
   }
 })();
 
-// The beta call to action. Rendered only while BETA_LINK (top of this file)
-// holds an https URL; with it empty the page is exactly as it was before.
+// The beta call to action. The markup ships beta-first: the hero's primary
+// button (#betaButton) and the header pill (#betaPill) are labelled for the
+// beta and this block points them at BETA_LINK (top of this file). The
+// launch list stays on the page, framed for people who cannot install yet.
+// While BETA_LINK holds no https URL the page falls back to the launch-list
+// call to action it carried before the beta: both links go to #launch and
+// the hero note and launch section take back their pre-beta wording.
 (function () {
   'use strict';
-  if (!BETA_LINK) return;
-  let href;
-  try { href = new URL(BETA_LINK); } catch { return; }
-  if (href.protocol !== 'https:') return;
-  const actions = document.querySelector('.hero .actions');
-  if (!actions) return;
-  const a = document.createElement('a');
-  a.className = 'button beta';
-  a.href = href.href;
-  a.rel = 'noopener noreferrer';
-  a.textContent = 'Join the beta on TestFlight';
-  actions.prepend(a);
+  let href = null;
+  try {
+    const u = new URL(BETA_LINK);
+    if (u.protocol === 'https:') href = u.href;
+  } catch { href = null; }
+  const button = document.getElementById('betaButton');
+  const pill = document.getElementById('betaPill');
+  if (href) {
+    if (button) button.href = href;
+    if (pill) pill.href = href;
+    return;
+  }
+  const FALLBACK = {
+    betaButton: 'Join the launch list',
+    betaPill: 'Join the launch list',
+    heroNote: 'A free iPhone app. Example data on this page.',
+    launchHeading: 'Curious what yours would show?',
+    launchLede: 'One email when the app is out. Nothing else.',
+  };
+  Object.keys(FALLBACK).forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = FALLBACK[id];
+  });
+  [button, pill].forEach((a) => { if (a) { a.href = '#launch'; a.removeAttribute('rel'); } });
 })();

@@ -51,7 +51,7 @@ describe('the example record on the site (D-191)', () => {
     expect(html).toContain(`<div class="tile blue"><b>${newest.ads.length}</b><span>Printed ad labels</span></div>`);
     expect(html).toContain(`<div class="tile"><b>${json.record.scans.length}</b><span>Scans on record</span></div>`);
     expect(html).toContain(`${newest.posts} posts in this scan. ${newest.ads.length} carried a printed ad label. ${total} posts across ${json.record.scans.length} scans.`);
-    expect(html).toContain('<script src="example-record.js"></script>');
+    expect(html).toContain('<script src="/example-record.js"></script>');
   });
 
   it('every dataset is labelled Example and carries its limit', () => {

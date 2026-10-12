@@ -207,7 +207,7 @@ footer.bottom{background:var(--panel);border-top:1px solid var(--line);padding:4
 <a href="/#privacy">Privacy</a>
 <a href="/methodology">Methodology</a>
 </nav>
-<a class="pill" href="/#launch">Join the launch list</a>
+<a class="pill" href="https://testflight.apple.com/join/7n7n3scz" rel="noopener noreferrer">Join the beta</a>
 </div>
 </header>
 </div></div>

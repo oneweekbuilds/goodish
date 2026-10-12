@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AlgorithmLens: see what a short scan of your feed could read</title>
-<meta name="description" content="A short scan of a feed you use, read into a plain report: which posts appeared, which accounts they came from, which carried an ad label. Counts with their limits, a fictional example to explore, and a launch list.">
+<meta name="description" content="A short scan of a feed you use, read into a plain report: which posts appeared, which accounts they came from, which carried an ad label. Counts with their limits, a fictional example to explore, and a public beta on iPhone.">
 <link rel="canonical" href="https://www.algorithmlens.com/">
 <link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#F5F4F0">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="AlgorithmLens">
 <meta property="og:title" content="AlgorithmLens: see what a short scan of your feed could read">
-<meta property="og:description" content="A short scan of a feed you use, read into a plain report: which posts appeared, which accounts they came from, which carried an ad label. Counts with their limits, a fictional example to explore, and a launch list.">
+<meta property="og:description" content="A short scan of a feed you use, read into a plain report: which posts appeared, which accounts they came from, which carried an ad label. Counts with their limits, a fictional example to explore, and a public beta on iPhone.">
 <meta property="og:url" content="https://www.algorithmlens.com/">
 <meta property="og:image" content="https://www.algorithmlens.com/static/img/og-example.png">
 <meta property="og:image:width" content="1200">
@@ -19,7 +19,7 @@
 <meta property="og:image:alt" content="An example scan, labeled as an example: a grid of 45 marks, 6 of them blue for posts that carried an ad label.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="AlgorithmLens: see what a short scan of your feed could read">
-<meta name="twitter:description" content="A short scan of a feed you use, read into a plain report: which posts appeared, which accounts they came from, which carried an ad label. Counts with their limits, a fictional example to explore, and a launch list.">
+<meta name="twitter:description" content="A short scan of a feed you use, read into a plain report: which posts appeared, which accounts they came from, which carried an ad label. Counts with their limits, a fictional example to explore, and a public beta on iPhone.">
 <meta name="twitter:image" content="https://www.algorithmlens.com/static/img/og-example.png">
 <link rel="preload" href="/static/fonts/source-serif-4-regular.woff2" as="font" type="font/woff2" crossorigin>
 <style>
@@ -58,6 +58,8 @@ h3{font-size:var(--h3);line-height:var(--h3-lh)}
 .label{display:inline-flex;align-items:center;gap:8px;font-size:13px;line-height:18px;color:var(--muted);margin:0}
 .label::before{content:"";width:12px;height:12px;border:1.5px solid var(--ink);border-radius:50%;flex-shrink:0}
 .eyebrow{font-size:14px}
+.hero .eyebrow{align-items:flex-start;max-width:52ch}
+.hero .eyebrow::before{margin-top:3px}
 .button{display:inline-flex;align-items:center;justify-content:center;background:var(--ink);color:var(--on-ink);border:0;border-radius:28px;height:56px;padding:0 28px;font:600 17px/1 var(--sans);text-decoration:none;cursor:pointer;transition:transform var(--tick) var(--ease),background var(--tick),box-shadow var(--tick)}
 .button:hover{background:var(--ink-press);transform:translateY(-1px);box-shadow:var(--shadow-pill)}
 .button:active{transform:translateY(1px);box-shadow:none}
@@ -499,7 +501,7 @@ html{scroll-behavior:auto}
 <a href="#privacy">Privacy</a>
 <a href="/methodology">Methodology</a>
 </nav>
-<a class="pill" href="#launch">Join the launch list</a>
+<a class="pill" id="betaPill" href="#launch" rel="noopener noreferrer">Join the beta</a>
 </div>
 </header>
 </div></div>
@@ -507,10 +509,10 @@ html{scroll-behavior:auto}
 <section class="dots" id="top">
 <div class="wrap hero grid">
 <div class="copy">
-<span class="label eyebrow">A free iPhone app. Example data on this page.</span>
+<span class="label eyebrow" id="heroNote">A free iPhone app, now in public beta. Example data on this page.</span>
 <h1>See your feed <span class="underline">clearly.<svg viewBox="0 0 160 10" preserveAspectRatio="none" aria-hidden="true"><path d="M2 7 Q 30 2, 62 6 T 120 6 T 158 5"/></svg></span></h1>
 <p class="lede">Scan a feed you use. Get a plain report: what appeared, which accounts it came from, and which posts carried an ad label.</p>
-<div class="actions"><a class="button" href="#launch">Join the launch list</a><a class="textlink" href="#film">Watch the example film</a></div>
+<div class="actions"><a class="button" id="betaButton" href="#launch" rel="noopener noreferrer">Join the beta on iPhone</a><a class="textlink" href="#film">Watch the example film</a></div>
 <p class="limit">A scan reads what appeared on screen. It cannot say why any post was there.</p>
 <div class="effort"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#1868D8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8.5"/><path d="M11 6.5v5l3 2"/></svg><span><b>One short recording of a feed you already scroll.</b> Review after, not during.</span></div>
 <p class="platforms">Free. iPhone. Works with Instagram, TikTok, YouTube, X, Facebook and Reddit.</p>
@@ -562,7 +564,7 @@ html{scroll-behavior:auto}
 <div class="tile"><b>4</b><span>Scans on record</span></div>
 </div>
 <p class="small tiles-note" data-reveal>Counts from the September 20 sheet. Each sheet holds only its own posts.</p>
-<a class="textlink" href="explore/" data-reveal>Turn over the whole example in the explorer</a>
+<a class="textlink" href="/explore/" data-reveal>Turn over the whole example in the explorer</a>
 </div>
 <figure class="record-card" data-reveal>
 <div class="panel-head">
@@ -764,7 +766,7 @@ html{scroll-behavior:auto}
 <div class="countbar" aria-hidden="true"><i class="ad"></i><i class="ad"></i><i class="ad"></i><i class="ad"></i><i class="ad"></i><i class="ad"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="un"></i></div>
 <div class="legend"><span><i class="ad"></i>Ad label, 6</span><span><i></i>No label, 38</span><span><i class="un"></i>Unknown, 1</span></div>
 <div class="arith">6 with a printed label, 38 without, 1 unreadable. <b>45 recorded.</b></div>
-<a class="textlink" href="explore/#ads">See this count in the explorer</a>
+<a class="textlink" href="/explore/#ads">See this count in the explorer</a>
 </div>
 </div>
 </section>
@@ -772,8 +774,8 @@ html{scroll-behavior:auto}
 <section id="launch" class="dots launch">
 <div class="wrap">
 <div class="section-head">
-<h2 data-reveal>Curious what yours would show?</h2>
-<p class="lede" data-reveal>One email when the app is out. Nothing else.</p>
+<h2 id="launchHeading" data-reveal>Not on iPhone yet?</h2>
+<p class="lede" id="launchLede" data-reveal>One email when AlgorithmLens is on the App Store or Android. Nothing else.</p>
 </div>
 <form id="launchForm" class="card signup" data-reveal>
 <label for="email">Email address</label>
@@ -794,7 +796,7 @@ html{scroll-behavior:auto}
 <p>A feed, made legible. Example data shown throughout is fictional.</p>
 </div>
 <div class="foot-cols">
-<nav class="foot-col product" aria-label="Product"><b>Product</b><a href="#report">The report</a><a href="#how">How it works</a><a href="#limits">Read the limits</a><a href="explore/">Explore the example</a></nav>
+<nav class="foot-col product" aria-label="Product"><b>Product</b><a href="#report">The report</a><a href="#how">How it works</a><a href="#limits">Read the limits</a><a href="/explore/">Explore the example</a></nav>
 <nav class="foot-col company" aria-label="Company"><b>Company</b><a href="/about/">About</a><a href="/methodology">Methodology</a><a href="#privacy">Privacy</a><a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a></nav>
 <nav class="foot-col legal" aria-label="Legal"><b>Legal</b><a href="/privacy/">Privacy policy</a><a href="/terms">Terms</a></nav>
 </div>
@@ -802,7 +804,7 @@ html{scroll-behavior:auto}
 <div class="foot-row"><span>&copy; 2026 AlgorithmLens</span><span>A scan reads what appeared. It cannot say why.</span></div>
 </div>
 </footer>
-<script src="example-record.js"></script>
-<script src="landing.js"></script>
+<script src="/example-record.js"></script>
+<script src="/landing.js"></script>
 </body>
 </html>
