@@ -5,8 +5,9 @@ on:
   pull_request:
     branches: [main]
 # The website lives in AlgorithmLens_Cowork, not at the repo root.
-# The mobile app is a separate repo with its own remote; the copy under
-# AlgorithmLens_Cowork/mobile is a stale duplicate and is not checked here.
+# The mobile app is a separate repository with its own remote and is not
+# checked here (the stale copy once kept under AlgorithmLens_Cowork/mobile
+# was removed in October 2026).
 jobs:
   lint:
     runs-on: ubuntu-latest

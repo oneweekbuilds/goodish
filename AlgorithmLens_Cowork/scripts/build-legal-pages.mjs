@@ -5,15 +5,22 @@
 // into HTML and its em dashes (which the site's copy rules forbid) become
 // colons after a bold lead-in and commas elsewhere.
 //
-// Usage: node scripts/build-legal-pages.mjs [path/to/PRIVACY_POLICY.md] [out.html]
-// Defaults: ../mobile/legal/PRIVACY_POLICY.md -> public/privacy/index.html
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+// Usage: node scripts/build-legal-pages.mjs path/to/PRIVACY_POLICY.md [out.html]
+// The policy lives in the mobile repository, a separate checkout, so pass its
+// legal/PRIVACY_POLICY.md as the first argument. The default
+// ../mobile/legal/PRIVACY_POLICY.md is only right when that checkout is
+// nested here. Output defaults to public/privacy/index.html.
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const src = process.argv[2] || path.join(here, '..', 'mobile', 'legal', 'PRIVACY_POLICY.md');
 const out = process.argv[3] || path.join(here, '..', 'public', 'privacy', 'index.html');
+if (!existsSync(src)) {
+  console.error(`build-legal-pages: no policy at ${src}. Pass the mobile repository's legal/PRIVACY_POLICY.md as the first argument.`);
+  process.exit(1);
+}
 
 // Editor notes written as HTML comments in the Markdown are not policy text.
 const md = readFileSync(src, 'utf8').replace(/<!--[\s\S]*?-->/g, '');
