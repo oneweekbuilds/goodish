@@ -48,7 +48,11 @@ export default defineConfig({
   // Splits vendor libraries and feature groups into separate chunks for better caching
   // and parallel loading. This reduces initial bundle size.
   build: {
-    sourcemap: true, // Required for Sentry source map upload
+    // Source maps are built only when the Sentry plugin will upload them
+    // (SENTRY_AUTH_TOKEN set); it deletes them from dist afterwards, and
+    // 'hidden' keeps the sourceMappingURL comment out of the bundles. With
+    // no token (the normal case) no .js.map file is built or shipped.
+    sourcemap: process.env.SENTRY_AUTH_TOKEN ? 'hidden' : false,
     rollupOptions: {
       // The SPA entry is app.html: the static landing page in public/ owns
       // index.html and therefore the root URL. Vercel rewrites the surviving

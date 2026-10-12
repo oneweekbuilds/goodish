@@ -75,6 +75,7 @@
     { "source": "/algorithmlens/explore/", "destination": "/explore/", "statusCode": 301 },
     { "source": "/algorithmlens/explore/:path*", "destination": "/explore/:path*", "statusCode": 301 },
     { "source": "/index.html", "destination": "/", "statusCode": 301 },
+    { "source": "/app.html", "destination": "/", "statusCode": 301 },
     { "source": "/explore/index.html", "destination": "/explore/", "statusCode": 301 },
     { "source": "/privacy", "destination": "/privacy/", "statusCode": 301 },
     { "source": "/about", "destination": "/about/", "statusCode": 301 },

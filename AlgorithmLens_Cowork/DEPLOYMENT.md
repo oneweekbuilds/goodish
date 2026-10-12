@@ -1,124 +1,83 @@
 # Vercel Deployment Guide
 
-This guide explains how to deploy the alg-gemini app to Vercel.
+This guide explains how algorithmlens.com is deployed to Vercel. The website lives in the `AlgorithmLens_Cowork` folder of the goodish repository, not at the repository root. Vercel deploys every push to `main`.
 
-## Initial Setup in Vercel
-
-When you create a new Vercel project or configure an existing one, use these settings:
-
-### Project Settings
+## Project Settings in Vercel
 
 | Setting | Value |
 |---------|-------|
-| **Root Directory** | `apps/alg-gemini` |
+| **Root Directory** | `AlgorithmLens_Cowork` |
 | **Framework Preset** | Vite |
 | **Build Command** | `npm run build` |
 | **Output Directory** | `dist` |
 | **Install Command** | `npm install` |
 
+`npm run build` first regenerates `public/tt/index.html` from `public/index.html` (the `prebuild` script, `scripts/build-tt-page.mjs`) and then runs `vite build`. Vite copies everything in `public/` into `dist/` unchanged and builds the React app from `app.html`.
+
 ### Environment Variables
 
-Add this environment variable in Vercel's project settings:
+All Vite environment variables must be prefixed with `VITE_` to be available in the browser.
 
-| Name | Value | Description |
-|------|-------|-------------|
-| `VITE_COMING_SOON_MODE` | (retired) | The Coming Soon overlay was retired in September 2026; the static landing page in public/ is the root and the app routes redirect to it (vercel.json). The variable is ignored. |
+| Name | Description |
+|------|-------------|
+| `SENTRY_AUTH_TOKEN` | Optional. When set, `vite.config.js` builds hidden source maps and the Sentry plugin uploads them, then deletes them from `dist/`. When unset (the normal case), no `.js.map` files are built at all. |
+| `VITE_COMING_SOON_MODE` | Retired in September 2026. The static landing page in `public/` is the root and the app routes redirect to it (`vercel.json`). The variable is ignored. |
 
-**Important:** All Vite environment variables must be prefixed with `VITE_` to be available in the browser.
+## What Is Deployed
 
-## Launch Day: Disabling Coming Soon Mode
+The site is static pages in `public/`, served from the root:
 
-When you're ready to launch the full app:
+- `/` is `public/index.html`, the landing page, with `public/landing.js`. `/tt/` is the same page for the TikTok beta group (see README.md, "Publishing the TestFlight beta links").
+- `/about/`, `/privacy/` and `/explore/` are folders in `public/`.
+- `/terms` and `/methodology` are rewritten by `vercel.json` to `public/terms.html` and `public/methodology.html`, which `scripts/build-paper-pages.mjs` renders from the React pages' text. `/privacy/` is rendered by `scripts/build-legal-pages.mjs` from the mobile repository's `legal/PRIVACY_POLICY.md` (a separate checkout; pass its path).
+- `public/404.html` is the not-found page.
 
-1. Go to your Vercel project settings
-2. Navigate to **Environment Variables**
-3. Find `VITE_COMING_SOON_MODE`
-4. Change the value from `true` to `false`
-5. Trigger a new deployment (Vercel will automatically redeploy when you change env vars)
+The React app in `src/` still builds (to `dist/app.html` and `dist/assets/`), but nothing serves it: every one of its routes, and `/app.html` itself, redirects to `/` in `vercel.json`.
 
-Alternatively, remove the environment variable entirely - the app defaults to showing the full experience when the variable is not set.
+## How Routing Works
 
-## How SPA Routing Works
+`vercel.json` in `AlgorithmLens_Cowork` holds three lists:
 
-The `vercel.json` file in this directory configures Vercel to:
-- Rewrite all routes to `/index.html`
-- This allows React Router to handle client-side navigation
-- Static assets (CSS, JS, images) are served directly from the `/assets` folder
+- `headers`: security headers for every path (nosniff, DENY, Referrer-Policy, Permissions-Policy, a Content-Security-Policy), with tighter per-route policies for `/`, `/tt/`, `/explore/` and `/privacy/`, and cache lifetimes for `/static/` and `/assets/`.
+- `redirects`: the old `/algorithmlens/` paths and every React app route (`/dashboard`, `/scan`, `/plus`, `/settings`, `/auth/*`, `/app.html` and the rest) to `/`; `/privacy`, `/about` and `/tt` to their trailing-slash form.
+- `rewrites`: `/terms` and `/methodology` to their static files.
+
+There is no catch-all rewrite to an `index.html`. A new page is a new file or folder under `public/`; if it needs a clean URL without `.html`, add a rewrite.
 
 ## Common Deployment Issues
 
 ### Build Fails with "Command not found"
 
-**Problem:** Vercel can't find npm or the build command.
+Verify the Root Directory is `AlgorithmLens_Cowork`, the Install Command is `npm install` and the Build Command is `npm run build`.
 
-**Solution:** Verify these settings:
-- Root Directory is set to `apps/alg-gemini`
-- Install Command is `npm install`
-- Build Command is `npm run build`
+### A Page Is Missing or Wrong After Deployment
 
-### Blank Page After Deployment
-
-**Problem:** The app loads but shows a blank page.
-
-**Solutions:**
-1. Check browser console for errors (F12 in most browsers)
-2. Verify the Output Directory is set to `dist`
-3. Ensure `vercel.json` exists and has the correct rewrite rule
-4. Check that all environment variables use the `VITE_` prefix
-
-### 404 Errors on Page Refresh
-
-**Problem:** Direct navigation or page refresh shows Vercel's 404 page.
-
-**Solution:** Verify that `vercel.json` exists in `apps/alg-gemini` with this content:
-```json
-{
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
-}
-```
-
-### Coming Soon Mode Not Working
-
-**Problem:** The overlay doesn't appear even though the env var is set.
-
-**Solutions:**
-1. Verify the environment variable is named exactly `VITE_COMING_SOON_MODE` (case-sensitive)
-2. Ensure the value is the string `"true"`, not a boolean
-3. Trigger a new deployment after adding/changing the env var
-4. Check the Vercel deployment logs to confirm the variable is being set
+1. Check that the file exists under `public/` with the right name (`index.html` inside a folder for a trailing-slash URL).
+2. For `/terms` and `/methodology`, re-run `node scripts/build-paper-pages.mjs` and commit the output.
+3. For `/tt/`, run `npm run build:tt` and commit `public/tt/index.html`; `src/ttPage.test.js` fails while it is out of date.
+4. Check the Vercel deployment logs for the build output.
 
 ### Build Succeeds Locally But Fails on Vercel
 
-**Problem:** `npm run build` works on your machine but fails in Vercel.
-
-**Solutions:**
-1. Check Node.js version compatibility (Vercel uses Node 18.x by default)
-2. Ensure all dependencies are in `dependencies`, not just `devDependencies`
-3. Check for hardcoded absolute paths that might not exist on Vercel's build servers
-4. Review Vercel's build logs for specific error messages
+1. Check the Node.js version (the CI workflow uses Node 20).
+2. Ensure all dependencies are in `dependencies`, not just `devDependencies`.
+3. Check for hardcoded absolute paths that might not exist on Vercel's build servers.
+4. Review Vercel's build logs for specific error messages.
 
 ## Verifying the Deployment
 
-After deploying, test these scenarios:
+After deploying, check:
 
-1. **Homepage loads:** Visit the root URL
-2. **Coming Soon overlay appears:** If `VITE_COMING_SOON_MODE=true`, you should see the overlay
-3. **Direct route navigation works:** Try visiting `/dashboard` directly (should not 404)
-4. **Page refresh works:** Navigate to a route, then refresh (should stay on the same page)
-5. **Static assets load:** Check that images, fonts, and styles load correctly
+1. `/` loads and its "Join the beta on iPhone" button points at the public TestFlight link; `/tt/` loads, carries a robots noindex and points at the TikTok TestFlight link.
+2. `/privacy/`, `/terms`, `/methodology`, `/about/` and `/explore/` load.
+3. `/app.html` and `/dashboard` redirect to `/`.
+4. No `.js.map` file is served from `/assets/`.
+5. The pages set no cookies and request nothing from third parties (only the launch-list form posts to the Supabase function).
 
 ## Rollback Plan
 
-If something goes wrong:
-
-1. **Instant rollback:** In Vercel's Deployments tab, click the three dots next to a previous working deployment and select "Promote to Production"
-2. **Git rollback:** If needed, revert to the `pre-vercel-deploy` tag:
-   ```bash
-   git checkout pre-vercel-deploy
-   git push origin HEAD:coming-soon-minimal-overlay --force
-   ```
+1. **Instant rollback:** In Vercel's Deployments tab, open the menu next to a previous working deployment and select "Promote to Production".
+2. **Git rollback:** revert the commit on `main` and push; Vercel redeploys.
 
 ## Additional Resources
 
