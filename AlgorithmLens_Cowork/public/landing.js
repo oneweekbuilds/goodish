@@ -4,6 +4,13 @@ const LAUNCH_LIST_ENDPOINT = "https://czrehjybsqzmudtgneqy.supabase.co/functions
 // here. While it is empty the home page falls back to the launch-list call to
 // action it carried before the beta (see the last block of this file).
 const BETA_LINK = "https://testflight.apple.com/join/7n7n3scz";
+// TIKTOK_BETA_LINK is a separate TestFlight group used only on /tt/, the page
+// linked from TikTok, so installs that came from TikTok can be counted in App
+// Store Connect. /tt/ marks itself with data-beta-group="tiktok" on <html>
+// (scripts/build-tt-page.mjs). If this is empty, /tt/ falls back to BETA_LINK.
+const TIKTOK_BETA_LINK = "https://testflight.apple.com/join/qUgygVHs";
+// Which beta group this page belongs to: 'tiktok' on /tt/, '' on the home page.
+const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '';
 
 (function () {
   'use strict';
@@ -89,7 +96,9 @@ const BETA_LINK = "https://testflight.apple.com/join/7n7n3scz";
       const response = await fetch(endpoint.href, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.value.trim(), consent: true, source: 'algorithmlens-launch-list' }),
+        // The source names the page: the launch-list table keeps it, so
+        // signups from /tt/ can be counted apart from the home page's.
+        body: JSON.stringify({ email: email.value.trim(), consent: true, source: BETA_GROUP === 'tiktok' ? 'algorithmlens-launch-list-tt' : 'algorithmlens-launch-list' }),
         credentials: 'omit',
         signal: controller.signal,
       });
@@ -298,16 +307,18 @@ const BETA_LINK = "https://testflight.apple.com/join/7n7n3scz";
 
 // The beta call to action. The markup ships beta-first: the hero's primary
 // button (#betaButton) and the header pill (#betaPill) are labelled for the
-// beta and this block points them at BETA_LINK (top of this file). The
-// launch list stays on the page, framed for people who cannot install yet.
-// While BETA_LINK holds no https URL the page falls back to the launch-list
-// call to action it carried before the beta: both links go to #launch and
-// the hero note and launch section take back their pre-beta wording.
+// beta and this block points them at BETA_LINK (top of this file), or at
+// TIKTOK_BETA_LINK on /tt/. The launch list stays on the page, framed for
+// people who cannot install yet. While the chosen link holds no https URL
+// the page falls back to the launch-list call to action it carried before
+// the beta: both links go to #launch and the hero note and launch section
+// take back their pre-beta wording.
 (function () {
   'use strict';
+  const chosen = BETA_GROUP === 'tiktok' && TIKTOK_BETA_LINK ? TIKTOK_BETA_LINK : BETA_LINK;
   let href = null;
   try {
-    const u = new URL(BETA_LINK);
+    const u = new URL(chosen);
     if (u.protocol === 'https:') href = u.href;
   } catch { href = null; }
   const button = document.getElementById('betaButton');

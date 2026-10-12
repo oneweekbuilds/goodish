@@ -90,9 +90,16 @@ Key vars:
 - `VITE_STRIPE_PUBLISHABLE_KEY`: Stripe public key for payments
 - `VITE_COMING_SOON_MODE`: retired (September 2026). The static landing page in public/ owns the root URL; the web app routes redirect there in vercel.json.
 
-## Publishing the TestFlight beta link
+## Publishing the TestFlight beta links
 
-The link is `BETA_LINK` at the top of `public/landing.js` (line 6). The home page's "Join the beta on iPhone" button and its "Join the beta" header pill point at it. To change it, edit the string between the quotes, commit and push to main. With the string empty the home page falls back to the launch-list call to action it carried before the beta (no beta button, "Join the launch list" in the hero and header). The other pages (404, /about/, /explore/, /methodology, /terms) carry the public link literally in their header pill; search for `testflight.apple.com` to update them, and for /methodology and /terms edit the template in `scripts/build-paper-pages.mjs` as well so a regeneration emits the same.
+Both links live at the top of `public/landing.js`. To change one, edit the string between the quotes, commit and push to main.
+
+- `BETA_LINK` (line 6) is the general public beta group. The home page's "Join the beta on iPhone" button and its "Join the beta" header pill point at it. With the string empty the home page falls back to the launch-list call to action it carried before the beta (no beta button, "Join the launch list" in the hero and header).
+- `TIKTOK_BETA_LINK` (line 11) is a separate TestFlight group used only on /tt/, the page linked from TikTok, so installs that came from TikTok can be counted in App Store Connect. If it is empty, /tt/ falls back to `BETA_LINK`.
+
+/tt/ is `public/tt/index.html`, generated from `public/index.html` by `scripts/build-tt-page.mjs`: the same page with `data-beta-group="tiktok"` on `<html>` and a robots noindex. The generator runs before every `npm run build`; after editing `public/index.html` run `npm run build:tt` so the committed copy stays in sync (`src/ttPage.test.js` checks it). The launch-list form on /tt/ names `algorithmlens-launch-list-tt` as its source, so its signups can be counted apart from the home page's.
+
+The other pages (404, /about/, /explore/, /methodology, /terms) carry the public link literally in their header pill; search for `testflight.apple.com` to update them, and for /methodology and /terms edit the template in `scripts/build-paper-pages.mjs` as well so a regeneration emits the same.
 
 ## Observability
 
