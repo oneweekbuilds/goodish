@@ -331,7 +331,7 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
   const FALLBACK = {
     betaButton: 'Join the launch list',
     betaPill: 'Join the launch list',
-    heroNote: 'A free iPhone app. Example data on this page.',
+    heroNote: 'A free iPhone app. Example data on this page, except the one real scan marked as such.',
     launchHeading: 'Curious what yours would show?',
     launchLede: 'One email when the app is out. Nothing else.',
   };

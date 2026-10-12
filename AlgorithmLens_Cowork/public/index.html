@@ -205,6 +205,19 @@ details p{margin:4px 0 0;font-size:14px;line-height:20px;max-width:60ch}
 .record-foot .col{display:flex;flex-direction:column;gap:8px}
 .record-foot .col+.col{gap:10px}
 }
+/* one real scan */
+.real-copy{display:flex;flex-direction:column;gap:20px}
+.label.real::before{background:var(--green);border-color:var(--green)}
+.real-card{margin-top:24px;padding:20px;border-radius:18px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow-card)}
+.real-card .head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.real-card .countbar{grid-template-columns:repeat(12,minmax(0,1fr))}
+.real-card .caption{font-size:14px;line-height:20px}
+@media(min-width:900px){
+.real-grid{align-items:start}
+.real-copy{grid-column:1/span 5;gap:24px}
+.real-card{grid-column:7/span 6;margin-top:0;padding:28px;border-radius:20px;gap:16px;box-shadow:var(--shadow-panel)}
+.real-card .caption{font-size:15px;line-height:22px}
+}
 /* try it */
 .try-copy{display:flex;flex-direction:column;gap:20px}
 .readout{padding:16px 18px;border-radius:16px;box-shadow:var(--shadow-card)}
@@ -509,7 +522,7 @@ html{scroll-behavior:auto}
 <section class="dots" id="top">
 <div class="wrap hero grid">
 <div class="copy">
-<span class="label eyebrow" id="heroNote">A free iPhone app, now in public beta. Example data on this page.</span>
+<span class="label eyebrow" id="heroNote">A free iPhone app, now in public beta. Example data on this page, except the one real scan marked as such.</span>
 <h1>See your feed <span class="underline">clearly.<svg viewBox="0 0 160 10" preserveAspectRatio="none" aria-hidden="true"><path d="M2 7 Q 30 2, 62 6 T 120 6 T 158 5"/></svg></span></h1>
 <p class="lede">Scan a feed you use. Get a plain report: what appeared, which accounts it came from, and which posts carried an ad label.</p>
 <div class="actions"><a class="button" id="betaButton" href="#launch" rel="noopener noreferrer">Join the beta on iPhone</a><a class="textlink" href="#film">Watch the example film</a></div>
@@ -588,6 +601,26 @@ html{scroll-behavior:auto}
 </div>
 </section>
 
+<section id="real" class="section">
+<div class="wrap grid real-grid">
+<div class="real-copy">
+<span class="label eyebrow real" data-reveal>One real scan</span>
+<h2 data-reveal>One real scan, marked as such.</h2>
+<p class="lede" data-reveal>Everything else on this page is a fictional example. This is a single real scan of the founder's own X feed, read by the app on 6 October 2026.</p>
+<p class="limit" data-reveal>One scan of one feed. It shows what this scan read, not what X shows people in general.</p>
+</div>
+<figure class="card real-card" data-reveal>
+<div class="head"><span>X feed, 6 October 2026</span><span class="label real">Real scan, n=1</span></div>
+<div class="tiles" aria-label="Counts from one real scan on 6 October 2026">
+<div class="tile"><b>36</b><span>Posts read</span></div>
+<div class="tile blue"><b>5</b><span>Carried a printed ad label</span></div>
+</div>
+<div class="countbar" aria-hidden="true"><i class="ad"></i><i class="ad"></i><i class="ad"></i><i class="ad"></i><i class="ad"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<figcaption class="caption">A single real scan of the founder's own feed, n=1. One mark, one post. Account names are not shown.</figcaption>
+</figure>
+</div>
+</section>
+
 <section id="try" class="section">
 <div class="wrap grid try-grid">
 <div class="try-copy">
@@ -662,7 +695,7 @@ html{scroll-behavior:auto}
 </div>
 <div class="limits-copy">
 <p data-reveal>We show what appeared in a sample and keep observed labels apart from inferences. Political content describes a post, not your beliefs. Tone describes a reading of the content, not your mood. A suggested post does not tell us which action led to the recommendation.</p>
-<p class="caption" data-reveal>This page is an example, not a live scan or a demonstration of a running classifier. It does not record your screen or analyze your feed.</p>
+<p class="caption" data-reveal>The example on this page is fictional, not a live scan or a demonstration of a running classifier. The one real scan is marked as such. This page does not record your screen or analyze your feed.</p>
 </div>
 </div>
 </section>
@@ -793,7 +826,7 @@ html{scroll-behavior:auto}
 <div class="foot-grid">
 <div class="foot-brand">
 <a class="brand" href="#top" aria-label="AlgorithmLens home"><svg viewBox="0 0 436 88" role="img" aria-label="AlgorithmLens"><use href="/static/img/wordmark.svg#wordmark"/></svg></a>
-<p>A feed, made legible. Example data shown throughout is fictional.</p>
+<p>A feed, made legible. Example data on this page is fictional, except the one real scan marked as such.</p>
 </div>
 <div class="foot-cols">
 <nav class="foot-col product" aria-label="Product"><b>Product</b><a href="#report">The report</a><a href="#how">How it works</a><a href="#limits">Read the limits</a><a href="/explore/">Explore the example</a></nav>
