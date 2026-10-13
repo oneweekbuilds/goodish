@@ -5,20 +5,42 @@
 // into HTML and its em dashes (which the site's copy rules forbid) become
 // colons after a bold lead-in and commas elsewhere.
 //
-// Usage: node scripts/build-legal-pages.mjs path/to/PRIVACY_POLICY.md [out.html]
-// The policy lives in the mobile repository, a separate checkout, so pass its
-// legal/PRIVACY_POLICY.md as the first argument. The default
-// ../mobile/legal/PRIVACY_POLICY.md is only right when that checkout is
-// nested here. Output defaults to public/privacy/index.html.
+// Usage: node scripts/build-legal-pages.mjs [path/to/PRIVACY_POLICY.md] [out.html]
+// The policy lives in the mobile repository, a separate checkout. The source
+// is found in this order:
+//   1. the first argument, if given;
+//   2. legal/PRIVACY_POLICY.md under the folder named by the environment
+//      variable ALGLENS_MOBILE_REPO;
+//   3. legal/PRIVACY_POLICY.md under the usual local checkout
+//      (C:\Users\jwjwi\Desktop\AlgorithmLens_ParentFolder\AlgorithmLens_Cowork\mobile),
+//      when that folder exists.
+// If none of these exists the script stops with a message rather than writing
+// a page from nothing. Output defaults to public/privacy/index.html.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const src = process.argv[2] || path.join(here, '..', 'mobile', 'legal', 'PRIVACY_POLICY.md');
+const POLICY_REL = path.join('legal', 'PRIVACY_POLICY.md');
+const LOCAL_MOBILE_REPO = 'C:/Users/jwjwi/Desktop/AlgorithmLens_ParentFolder/AlgorithmLens_Cowork/mobile';
+
+function resolveSource() {
+  if (process.argv[2]) return process.argv[2];
+  const envRepo = process.env.ALGLENS_MOBILE_REPO;
+  if (envRepo) return path.join(envRepo, POLICY_REL);
+  if (existsSync(LOCAL_MOBILE_REPO)) return path.join(LOCAL_MOBILE_REPO, POLICY_REL);
+  console.error(
+    'build-legal-pages: cannot find the mobile repository. Set ALGLENS_MOBILE_REPO to the ' +
+    'mobile checkout, or pass its legal/PRIVACY_POLICY.md as the first argument. ' +
+    `The usual local checkout (${LOCAL_MOBILE_REPO}) does not exist.`
+  );
+  process.exit(1);
+}
+
+const src = resolveSource();
 const out = process.argv[3] || path.join(here, '..', 'public', 'privacy', 'index.html');
 if (!existsSync(src)) {
-  console.error(`build-legal-pages: no policy at ${src}. Pass the mobile repository's legal/PRIVACY_POLICY.md as the first argument.`);
+  console.error(`build-legal-pages: no policy at ${src}. Check ALGLENS_MOBILE_REPO or pass the mobile repository's legal/PRIVACY_POLICY.md as the first argument.`);
   process.exit(1);
 }
 
