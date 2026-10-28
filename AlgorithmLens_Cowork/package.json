@@ -19,7 +19,8 @@
     "test:smoke": "playwright test tests/dashboard-smoke.spec.js",
     "test:smoke:ui": "playwright test tests/dashboard-smoke.spec.js --ui",
     "env:setup": "node scripts/setup-env.mjs",
-    "env:verify": "node scripts/verify-env.mjs"
+    "env:verify": "node scripts/verify-env.mjs",
+    "build:methodology": "node scripts/sync-methodology-prompts.mjs && node scripts/build-paper-pages.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

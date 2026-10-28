@@ -247,7 +247,7 @@ const PAGES = [
   {
     src: 'MethodologyPage', out: 'methodology.html', pathName: '/methodology', eyebrow: 'Methodology',
     title: 'Methodology',
-    description: 'How AlgorithmLens measures feed composition: the full extraction schema, the verbatim analysis prompts, the data flow, known limitations, and the validation study.',
+    description: 'How AlgorithmLens measures a feed: the schema, the exact prompts, where data goes, what has been measured about the instrument, and its limits.',
   },
   {
     src: 'TermsPage', out: 'terms.html', pathName: '/terms', eyebrow: 'Terms',
