@@ -65,7 +65,7 @@ const ACCURACY_ROWS = [
   },
   {
     dimension: 'Tone',
-    judgeable: 40, labeled: 7, agreed: 6, pct: 'withheld (under 20 items)', interval: '48.7 to 97.4', errors: 1, declined: 33,
+    judgeable: 40, labeled: 7, agreed: 6, pct: 'rate withheld under 20 items', interval: '48.7 to 97.4', errors: 1, declined: 33,
     note: 'The reader declined on 33 of the 40 posts a person could read. Declines cost coverage and are never counted as errors; the app leaves such posts out of every tone count.',
     source: 'methodologyEvidence.ts ACCURACY_STUDY (2026-08-09)',
   },
@@ -321,37 +321,12 @@ export default function MethodologyPage() {
               <p className="text-text-muted leading-relaxed mb-3">
                 On 9 August 2026 one annotator (the app's owner) labeled {f.goldItems} items that the reader had pulled from {f.goldFrames} frames of one YouTube session, in a tool that never shows the model's answer first. Consecutive frames of a scroll show the same posts again, so under the app's own duplicate rule those {f.goldItems} items are {f.distinctPosts} distinct posts, and intervals that treat items as independent are optimistic. Three numbers are kept apart per dimension: coverage (how often the reader labeled a post at all), conditional agreement (where both labeled, how often they matched, with a 95 percent interval), and errors. Declining to label is not a wrong answer and is never counted as one. Under {f.pointEstimateFloor} items the rate is withheld and only the interval is quoted.
               </p>
-              <div className="overflow-x-auto rounded-xl border border-border-light">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gray-50 text-left">
-                      <th className="p-3 font-semibold text-text-main">Dimension</th>
-                      <th className="p-3 font-semibold text-text-main">A person could judge</th>
-                      <th className="p-3 font-semibold text-text-main">Reader labeled</th>
-                      <th className="p-3 font-semibold text-text-main">Agreed, where both labeled</th>
-                      <th className="p-3 font-semibold text-text-main">95% interval</th>
-                      <th className="p-3 font-semibold text-text-main">Errors</th>
-                      <th className="p-3 font-semibold text-text-main">Declined</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ACCURACY_ROWS.map((row) => (
-                      <tr key={row.dimension} className="border-t border-border-light align-top">
-                        <td className="p-3 text-text-main">{row.dimension}</td>
-                        <td className="p-3 text-text-muted">{row.judgeable}</td>
-                        <td className="p-3 text-text-muted">{row.labeled}</td>
-                        <td className="p-3 text-text-muted">{row.agreed} of {row.labeled} ({row.pct})</td>
-                        <td className="p-3 text-text-muted">{row.interval}</td>
-                        <td className="p-3 text-text-muted">{row.errors}</td>
-                        <td className="p-3 text-text-muted">{row.declined}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <ul className="space-y-2 text-text-muted mt-4">
+              {/* Sentences rather than a seven-column table: on a phone the
+                  paper layout stacks table cells and the column labels go
+                  with them, leaving bare numbers. Each figure keeps its name. */}
+              <ul className="space-y-3 text-text-muted">
                 {ACCURACY_ROWS.map((row) => (
-                  <li key={row.dimension} className="flex gap-3"><span className="flex-shrink-0 mt-1">•</span><span><strong>{row.dimension}.</strong> {row.note} <span className="text-xs">Source: {row.source}.</span></span></li>
+                  <li key={row.dimension} className="flex gap-3"><span className="flex-shrink-0 mt-1">•</span><span><strong>{row.dimension}.</strong> A person could judge {row.judgeable}; the reader labeled {row.labeled}; where both labeled, {row.agreed} of {row.labeled} agreed ({row.pct}; 95 percent interval {row.interval}); {row.errors} {row.errors === 1 ? 'error' : 'errors'}, {row.declined} declined. {row.note} <span className="text-xs">Source: {row.source}.</span></span></li>
                 ))}
               </ul>
               <p className="text-text-muted leading-relaxed mt-4">
@@ -367,26 +342,11 @@ export default function MethodologyPage() {
               <p className="text-text-muted leading-relaxed mb-3">
                 The model is a third-party service under a name Google resolves, and the prompt can change on our side. Every scan therefore carries its instrument version (a revision counter, the model identifier and a hash over the prompt surface), and the protocol for changing the instrument re-scores the committed gold set under the old and the new instrument in one session, both arms against the same labels, before the change ships (METHODOLOGY_EVIDENCE.md, section 11). One change has that evidence: on 10 August 2026 the reader was required to answer the politics question. Both arms ran back to back, lossless frames, no text channel:
               </p>
-              <div className="overflow-x-auto rounded-xl border border-border-light">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gray-50 text-left">
-                      <th className="p-3 font-semibold text-text-main">Dimension</th>
-                      <th className="p-3 font-semibold text-text-main">Control (before)</th>
-                      <th className="p-3 font-semibold text-text-main">Current (after)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {BRIDGING_ROWS.map(([dimension, before, after]) => (
-                      <tr key={dimension} className="border-t border-border-light align-top">
-                        <td className="p-3 text-text-main">{dimension}</td>
-                        <td className="p-3 text-text-muted">{before}</td>
-                        <td className="p-3 text-text-muted">{after}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <ul className="space-y-2 text-text-muted">
+                {BRIDGING_ROWS.map(([dimension, before, after]) => (
+                  <li key={dimension} className="flex gap-3"><span className="flex-shrink-0 mt-1">•</span><span><strong>{dimension}.</strong> Before the change: {before}. After: {after}.</span></li>
+                ))}
+              </ul>
               <p className="text-text-muted leading-relaxed mt-4">
                 Read honestly: the change did what it was for (politics coverage from 2 of 54 to 54 of 54); ads, origin, extraction and creator transcription were identical across the two arms; and tone moved without being touched, on counts far below the floor for a point estimate, which was never explained and would have to be under the protocol as it now stands. What no version scheme can close: Google can change what the model name resolves to with no notice and no sign in the app, so every figure here describes the reader as it was measured on the dates given, not the reader running right now. Re-running the harness is cheap and dated result files are kept.
               </p>
