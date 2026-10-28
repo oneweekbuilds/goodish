@@ -169,7 +169,7 @@ export default function MethodologyPage() {
                 <div>
                   <h3 className="text-lg font-semibold text-text-main mb-2">Discarding</h3>
                   <p className="text-text-muted leading-relaxed">
-                    The frames and the post wording go once the count finishes. What stays is the tally: handles, labels, topic and tone readings, and the date, platform and post count of the scan.
+                    The frames and the post wording go once the count finishes. What stays is the tally: handles, labels, hashtags, topic and tone readings, and the date, platform and post count of the scan.
                   </p>
                 </div>
               </div>
@@ -296,7 +296,7 @@ export default function MethodologyPage() {
                   <strong>The training question.</strong> The app's privacy policy states that its Gemini API access is configured on a paid billing account, and that under Google's paid-tier API terms, data submitted through it is not used to train Google's AI models. That is the basis for the claim; it depends on Google's terms and on the billing configuration.
                 </li>
                 <li className="leading-relaxed">
-                  <strong>What is stored:</strong> per-post tallies (source handle, ad label, origin label, topic, tone reading) and scan metadata (date, platform, post count, capture duration and frame count), saved per user in a Supabase database with row-level security, so each user can only read their own rows. The text of posts is never stored on any path. Users can delete their whole account, and everything referencing it, from inside the app.
+                  <strong>What is stored:</strong> per-post tallies (source handle, ad label, origin label, topic, tone reading, hashtags) and scan metadata (date, platform, post count, capture duration and frame count), saved per user in a Supabase database with row-level security, so each user can only read their own rows. The text of posts is never stored on any path. Users can delete their whole account, and everything referencing it, from inside the app.
                 </li>
                 <li className="leading-relaxed">
                   <strong>What is never stored centrally:</strong> raw frames or screenshots, and the wording of posts. Images exist only transiently on the user's device and at Google's API during analysis.
@@ -314,7 +314,7 @@ export default function MethodologyPage() {
             <section>
               <h2 className="text-2xl font-bold text-text-main mb-4">How we evaluate ourselves</h2>
               <p className="text-text-muted leading-relaxed mb-4">
-                Four kinds of evidence exist about the instrument, each thin in a stated way, and one list of what has not been evaluated at all. Every figure here is also rendered inside the app, from constants a test pins to the dated result files in the repository.
+                Four kinds of evidence exist about the instrument, each thin in a stated way, and one list of what has not been evaluated at all. The core figures are also rendered inside the app, from constants a test pins to the dated result files in the repository; the extraction-precision row, the control run and the re-score note appear only here, from the documents named beside them.
               </p>
 
               <h3 className="text-lg font-semibold text-text-main mt-6 mb-2">1. The gold set: one person checked the reader against one feed</h3>
