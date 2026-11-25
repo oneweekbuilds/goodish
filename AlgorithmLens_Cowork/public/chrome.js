@@ -12,3 +12,30 @@
   window.addEventListener('scroll', check, { passive: true });
   check();
 })();
+
+// Document pages (/methodology, /terms): the contents link for the section
+// being read is marked as the current location. The section is the last one
+// whose heading has reached the top of the window. /privacy/ is served under
+// a policy that allows no script, so its contents list stays unmarked.
+(function () {
+  'use strict';
+  var links = Array.prototype.slice.call(document.querySelectorAll('.toc a[href^="#"]'));
+  if (!links.length) return;
+  var heads = links.map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); });
+  var current = -1, queued = false;
+  function mark() {
+    queued = false;
+    var now = -1;
+    for (var i = 0; i < heads.length; i++) {
+      if (heads[i] && heads[i].getBoundingClientRect().top <= 140) now = i;
+    }
+    if (now === current) return;
+    if (current >= 0) links[current].removeAttribute('aria-current');
+    if (now >= 0) links[now].setAttribute('aria-current', 'location');
+    current = now;
+  }
+  window.addEventListener('scroll', function () {
+    if (!queued) { queued = true; window.requestAnimationFrame(mark); }
+  }, { passive: true });
+  mark();
+})();

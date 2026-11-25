@@ -23,48 +23,142 @@
 <meta name="twitter:title" content="AlgorithmLens Privacy Policy | AlgorithmLens">
 <meta name="twitter:description" content="What AlgorithmLens collects, how a scan is processed and deleted, and your rights over your data. The same text the app shows.">
 <meta name="twitter:image" content="https://www.algorithmlens.com/static/img/og-example.png">
+<link rel="preload" href="/static/fonts/source-serif-4-regular.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 @font-face{font-family:Source;src:url(/static/fonts/source-serif-4-regular.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:Source;src:url(/static/fonts/source-serif-4-italic.woff2) format('woff2');font-weight:400;font-style:italic;font-display:swap}
-:root{--blue:#1868D8;--green:#20A888;--ink:#3A3730;--paper:#F5F4F0;--line:#DDD8CD;--muted:#6D685F;--surface:#FFFDF9}
+/* Until the serif arrives the page is set in Georgia, scaled to the serif's width (measured: roman 107.4%, italic 95.2%), so no line re-wraps when it swaps in. */
+@font-face{font-family:"Source Fallback";src:local("Georgia");font-weight:400;font-style:normal;size-adjust:107.4%}
+@font-face{font-family:"Source Fallback";src:local("Georgia Italic"),local("Georgia-Italic");font-weight:400;font-style:italic;size-adjust:95.2%}
+:root{--paper:#F5F4F0;--panel:#FFFFFF;--field:#FFFDF9;--line:#DDD8CD;--mark:#E6E1D6;--muted:#6D685F;--ink:#3A3730;--ink-press:#141311;--blue:#1868D8;--blue-bg:#ECF3FC;--green:#20A888;--on-ink:#F7F5EF;--serif:Source,"Source Fallback",Georgia,"Times New Roman",serif;--sans:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;--shadow-pill:0 6px 16px rgba(58,55,48,.18);--tick:160ms;--beat:240ms;--ease:cubic-bezier(.22,1,.36,1);--gutter:24px}
+@media(min-width:600px){:root{--gutter:48px}}
+@media(min-width:900px){:root{--gutter:clamp(48px,8.333vw,120px)}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 system-ui,sans-serif}
-main{max-width:720px;margin:auto;padding:24px 20px 48px}
-header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:24px}
-header a{display:inline-flex;align-items:center;min-height:44px}
-header svg{width:188px;max-width:52vw;height:auto}
-header nav{display:flex;gap:20px}
-a{color:var(--ink);text-underline-offset:4px}
-a:focus-visible{outline:2px solid var(--blue);outline-offset:4px}
-h1{font:400 clamp(34px,6vw,52px)/1.08 Source,Georgia,serif;letter-spacing:-1px;margin:8px 0 8px}
-h2{font:400 clamp(24px,3.4vw,32px)/1.15 Source,Georgia,serif;margin:40px 0 12px}
-h3{font:400 22px/1.2 Source,Georgia,serif;margin:28px 0 8px}
-p,li{max-width:66ch}
-.meta{color:var(--muted);font-size:14px;margin:0 0 20px}
-.site-note{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:4px 6px 0 rgba(58,55,48,.08);padding:20px 22px;margin:0 0 8px}
-.site-note h2{margin-top:0;font-size:24px}
+html{scroll-padding-top:88px}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/26px var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column}
+svg{display:block}
+::selection{background:var(--mark)}
+.wrap{max-width:1440px;margin:0 auto;padding:0 var(--gutter);width:100%}
+a{color:var(--ink);text-underline-offset:4px;overflow-wrap:anywhere}
+:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--ink);color:var(--on-ink);padding:12px 16px;border-radius:8px;z-index:30}
+.skip:focus{left:8px}
+.pill{display:inline-flex;align-items:center;justify-content:center;background:var(--ink);color:var(--on-ink);border-radius:22px;height:44px;padding:0 18px;font:600 15px/1 var(--sans);text-decoration:none;white-space:nowrap;transition:transform var(--tick) var(--ease),background var(--tick) var(--ease),box-shadow var(--tick) var(--ease)}
+.pill:hover{background:var(--ink-press);transform:translateY(-1px);box-shadow:var(--shadow-pill)}
+.pill:active{transform:translateY(1px);box-shadow:none}
+.topbar{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--line);transition:background var(--beat) var(--ease),box-shadow var(--beat) var(--ease)}
+.topbar.scrolled{background:rgba(245,244,240,.86);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 1px 0 var(--line),0 8px 24px rgba(58,55,48,.06)}
+header.top{display:flex;justify-content:space-between;align-items:center;gap:24px;height:64px;transition:height var(--beat) var(--ease)}
+.brand{width:139px;height:28px;display:flex;align-items:center;transition:width var(--beat) var(--ease)}
+.brand svg{width:100%;height:auto}
+.topnav{display:flex;align-items:center;gap:32px;margin-left:auto}
+nav.sections{display:none;gap:32px;font-size:15px}
+nav.sections a{position:relative;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:6px 0}
+nav.sections a::after{content:"";position:absolute;left:0;right:0;bottom:8px;height:2px;background:var(--blue);transform:scaleX(0);transform-origin:left;transition:transform var(--beat) var(--ease)}
+nav.sections a:hover::after,nav.sections a:focus-visible::after,nav.sections a[aria-current]::after{transform:scaleX(1)}
+@media(min-width:900px){header.top{height:72px}.topbar.scrolled header.top{height:64px}.brand{width:188px;height:38px}.topbar.scrolled .brand{width:158px;height:32px}nav.sections{display:flex}.topbar .pill{padding:0 20px;margin-left:8px}}
+main{flex:1;padding:20px 0 72px}
+.label{display:inline-flex;align-items:center;gap:8px;font-size:14px;line-height:18px;color:var(--muted)}
+.label::before{content:"";width:12px;height:12px;border:1.5px solid var(--ink);border-radius:50%;flex-shrink:0}
+.dateline{margin:0;padding-bottom:14px}
+.oxford{height:6px;border-top:2px solid var(--ink);border-bottom:1px solid var(--ink)}
+h1{font:400 clamp(40px,11vw,68px)/1 var(--serif);letter-spacing:-.022em;margin:24px 0 16px;text-wrap:balance}
+.meta{color:var(--muted);font-size:14px;line-height:20px;margin:0 0 28px;max-width:70ch}
+.doc{border-top:1px solid var(--line);padding-top:28px}
+.toc{margin:0 0 40px}
+.toc p{font-size:13px;line-height:18px;color:var(--muted);margin:0 0 10px}
+.toc ol{list-style:none;margin:0;padding:0;border-bottom:1px solid var(--line)}
+.toc li{break-inside:avoid}
+.toc a{display:block;padding:9px 0 10px;border-top:1px solid var(--line);font-size:14px;line-height:20px;text-decoration:none;overflow-wrap:normal;transition:padding-left var(--beat) var(--ease),box-shadow var(--beat) var(--ease)}
+.toc a:hover{text-decoration:underline;text-decoration-color:var(--blue)}
+.toc a[aria-current]{padding-left:12px;box-shadow:inset 2px 0 0 var(--ink)}
+.paper{max-width:70ch}
+.paper h2{font:400 clamp(28px,3vw,40px)/1.12 var(--serif);letter-spacing:-.015em;margin:52px 0 18px;padding-top:26px;border-top:1px solid var(--ink);text-wrap:balance}
+.paper h3{font:400 24px/30px var(--serif);margin:32px 0 10px;text-wrap:balance}
+.paper p{margin:0 0 16px}
+.paper strong{font-weight:600}
+@media(min-width:600px) and (max-width:1099px){.toc ol{column-count:2;column-gap:32px}}
+@media(min-width:900px){main{padding:28px 0 104px}h1{font-size:clamp(60px,7vw,100px);margin:22px 0 18px}.meta{margin-bottom:36px}.doc{padding-top:40px}}
+@media(min-width:1100px){
+.doc{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:24px;align-items:start}
+.toc{grid-column:1/span 3;position:sticky;top:96px;max-height:calc(100vh - 120px);overflow-y:auto;margin:0}
+.paper{grid-column:5/span 8}
+}
+footer.bottom{background:var(--panel);border-top:1px solid var(--line);padding:44px 0 40px;color:var(--muted);font-size:14px;line-height:22px;margin-top:auto}
+.colophon{font:italic clamp(28px,4.5vw,56px)/1.1 var(--serif);letter-spacing:-.02em;color:var(--ink);text-wrap:balance;margin:0 0 36px;padding-bottom:36px;border-bottom:1px solid var(--line)}
+.foot-brand{display:flex;flex-direction:column;gap:14px;margin-bottom:24px}
+.foot-brand .brand{width:139px;height:28px}
+.foot-brand p{margin:0;font-size:15px;line-height:22px;color:var(--muted);max-width:360px}
+.foot-cols{display:grid;grid-template-columns:1fr 1.4fr;gap:8px 16px}
+.foot-col{display:flex;flex-direction:column;font-size:14px;line-height:28px}
+.foot-col b{font-weight:600;color:var(--ink)}
+.foot-col a{color:var(--ink);text-decoration:none;display:inline-flex;align-items:center;min-height:30px}
+.foot-col a:hover{text-decoration:underline;text-decoration-color:var(--blue);text-underline-offset:4px}
+.foot-row{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-top:24px;padding-top:8px;border-top:1px solid var(--line);font-size:13px;min-height:52px}
+@media(min-width:900px){footer.bottom{padding:72px 0 48px}.colophon{margin-bottom:56px;padding-bottom:56px}.foot-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:24px}.foot-brand{grid-column:1/span 4;gap:16px;margin:0}.foot-brand .brand{width:188px;height:38px}.foot-cols{display:contents}.foot-col{font-size:15px;line-height:30px}.foot-col.product{grid-column:6/span 2}.foot-col.company{grid-column:8/span 3}.foot-col.legal{grid-column:11/span 2}.foot-row{margin-top:32px;padding-top:12px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important}.topbar.scrolled{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--paper)}.pill:hover{transform:none}}
+.site-note{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin:0 0 28px}
+.site-note h2{border-top:0;padding-top:0;margin:0 0 10px;font-size:26px;line-height:32px;letter-spacing:0}
 .site-note p{margin:8px 0}
-hr{border:0;border-top:1px solid var(--line);margin:28px 0}
-.table-wrap{overflow-x:auto;max-width:100%;margin:12px 0}
-table{border-collapse:collapse;width:100%;font-size:15px}
+.site-note p:last-child{margin-bottom:0}
+.paper ul,.paper ol{margin:0 0 16px;padding-left:22px}
+.paper li{margin:0 0 8px}
+.paper hr{border:0;border-top:1px solid var(--ink);margin:52px 0 0}
+.paper hr+h2{border-top:0;margin-top:0}
+.paper hr+p{margin-top:24px}
+.table-wrap{overflow-x:auto;max-width:100%;margin:12px 0 16px}
+table{border-collapse:collapse;width:100%;font-size:15px;line-height:23px}
 td,th{min-width:12ch}
-code,a{overflow-wrap:anywhere}
 th,td{text-align:left;vertical-align:top;padding:10px 12px 10px 0;border-bottom:1px solid var(--line)}
 th{font-weight:600}
 blockquote{margin:16px 0;padding:12px 16px;border-left:2px solid var(--line);color:var(--muted)}
-code{font-family:ui-monospace,monospace;font-size:14px}
-nav.foot{display:flex;gap:18px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:40px;padding-top:8px}
-nav.foot a{display:inline-flex;align-items:center;min-height:44px}
+code{font-family:ui-monospace,monospace;font-size:14px;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
-<main>
-<header>
-<a href="/" aria-label="AlgorithmLens home"><svg viewBox="0 0 436 88" role="img" aria-label="AlgorithmLens"><use href="/static/img/wordmark.svg#wordmark"/></svg></a>
-<nav aria-label="Site"><a href="/">Front page</a><a href="/explore/">Explore the example</a></nav>
+<a class="skip" href="#main">Skip to content</a>
+<div class="topbar" id="topbar"><div class="wrap">
+<header class="top">
+<a class="brand" href="/" aria-label="AlgorithmLens home"><svg viewBox="0 0 436 88" role="img" aria-label="AlgorithmLens"><use href="/static/img/wordmark.svg#wordmark"/></svg></a>
+<div class="topnav">
+<nav class="sections" aria-label="Site">
+<a href="/#how">How it works</a>
+<a href="/#report">The report</a>
+<a href="/#privacy">Privacy</a>
+<a href="/methodology">Methodology</a>
+</nav>
+<a class="pill" href="https://testflight.apple.com/join/7n7n3scz" rel="noopener noreferrer">Join the beta</a>
+</div>
 </header>
+</div></div>
+<main id="main"><div class="wrap">
+<div class="pagehead">
+<p class="dateline"><span class="label">Privacy policy</span></p>
+<div class="oxford" aria-hidden="true"></div>
 <h1>AlgorithmLens Privacy Policy</h1>
 <p class="meta">Last updated October 13, 2026. This is the same text the AlgorithmLens app shows in Settings.</p>
+</div>
+<div class="doc">
+<nav class="toc" aria-label="Contents">
+<p>Contents</p>
+<ol>
+<li><a href="#site-note-title">This website</a></li>
+<li><a href="#1-information-we-collect">1. Information We Collect</a></li>
+<li><a href="#2-how-we-use-your-information">2. How We Use Your Information</a></li>
+<li><a href="#3-how-screen-recordings-are-processed">3. How Screen Recordings Are Processed</a></li>
+<li><a href="#3a-research-participation-optional-off-by-default">3A. Research Participation (Optional, Off By Default)</a></li>
+<li><a href="#4-third-party-services">4. Third-Party Services</a></li>
+<li><a href="#5-data-retention">5. Data Retention</a></li>
+<li><a href="#6-data-security">6. Data Security</a></li>
+<li><a href="#7-your-rights-and-choices">7. Your Rights and Choices</a></li>
+<li><a href="#8-children-s-privacy">8. Children's Privacy</a></li>
+<li><a href="#9-international-data-transfers">9. International Data Transfers</a></li>
+<li><a href="#10-what-we-do-not-do">10. What We Do NOT Do</a></li>
+<li><a href="#11-changes-to-this-privacy-policy">11. Changes to This Privacy Policy</a></li>
+<li><a href="#12-contact-us">12. Contact Us</a></li>
+</ol>
+</nav>
+<div class="paper">
 <section class="site-note" aria-labelledby="site-note-title">
 <h2 id="site-note-title">This website</h2>
 <p>The pages on algorithmlens.com set no cookies, run no analytics, and request nothing from third parties. The only data they send anywhere is the launch-list form: when you submit it, your email address and your consent are sent to our launch-list service (a function hosted for us by Supabase) and stored there so that we can send launch news. Nothing is sent until you press the button, and nothing is saved if the service reports a failure.</p>
@@ -75,7 +169,7 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 <p>AlgorithmLens ("we," "us," or "our") operates the AlgorithmLens mobile application (the "App"). This Privacy Policy explains what information we collect, how we use it, who we share it with, and your rights regarding your data.</p>
 <p>We designed AlgorithmLens to help you understand your social media feeds. Because the App captures and analyzes what's on your screen, we take your privacy seriously and want you to fully understand how your data is handled.</p>
 <hr>
-<h2>1. Information We Collect</h2>
+<h2 id="1-information-we-collect">1. Information We Collect</h2>
 <h3>1.1 Account Information</h3>
 <p>When you create an account, we collect:</p>
 <ul>
@@ -122,7 +216,7 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 <li><strong>Performance data</strong>: sampled at a 10% rate, including page load times and API response durations.</li>
 </ul>
 <hr>
-<h2>2. How We Use Your Information</h2>
+<h2 id="2-how-we-use-your-information">2. How We Use Your Information</h2>
 <p>We use your information for the following purposes:</p>
 <ul>
 <li><strong>To provide the App's core functionality</strong>: capturing your screen, analyzing your social media feed via AI, and presenting the results to you.</li>
@@ -133,7 +227,7 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 </ul>
 <p>We do <strong>not</strong> use your data for advertising, ad targeting, or selling to third parties. We do <strong>not</strong> build advertising profiles based on your social media feed analysis.</p>
 <hr>
-<h2>3. How Screen Recordings Are Processed</h2>
+<h2 id="3-how-screen-recordings-are-processed">3. How Screen Recordings Are Processed</h2>
 <p>This is the most sensitive part of what AlgorithmLens does, so we want to be very clear:</p>
 <ol>
 <li><strong>Capture</strong>: When you start a scan, your device captures screenshots of your screen using the operating system's built-in screen recording APIs (ReplayKit on iOS, MediaProjection on Android). You must grant explicit permission through a system dialog before this happens.</li>
@@ -147,7 +241,7 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 </ol>
 <p><strong>What Google receives:</strong> Google's Gemini API receives the JPEG images of your screen frames and the OCR text extracted from them. We send this data solely for the purpose of AI analysis. Our Gemini API access is configured on a paid billing account, and under Google's paid-tier API terms, data submitted through it is not used to train Google's AI models. The frames are deleted after analysis and are never shared beyond this analysis step. Google processes the data to return results according to their API terms. See <a href="https://ai.google.dev/gemini-api/terms" rel="noopener noreferrer">Google's Gemini API Privacy Policy</a> for details.</p>
 <hr>
-<h2>3A. Research Participation (Optional, Off By Default)</h2>
+<h2 id="3a-research-participation-optional-off-by-default">3A. Research Participation (Optional, Off By Default)</h2>
 <p>You can choose to let your measurements be used as material for published research about social media feeds. This is a separate decision from using AlgorithmLens and from AI analysis consent. It is off unless you turn it on, on a dedicated screen in the App, and every feature of the App works exactly the same whether you take part or not.</p>
 <p><strong>Using the App is never consent to research.</strong> Neither is accepting our Terms of Service, continuing to use the App after this policy changes, nor granting AI analysis consent. The only thing that enrolls you is the affirmative action on the research screen, and we record which version of the participation terms you agreed to and when.</p>
 <h3>3A.1 What we record when you opt in</h3>
@@ -167,7 +261,7 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 <h3>3A.7 Who can take part</h3>
 <p>Research participation is currently offered only to people aged 18 or over who are in the United States. That is a limit on the study, not on the App: anyone may use AlgorithmLens anywhere, without taking part.</p>
 <hr>
-<h2>4. Third-Party Services</h2>
+<h2 id="4-third-party-services">4. Third-Party Services</h2>
 <p>We use the following third-party services. Each receives certain data as described below:</p>
 <h3>4.1 Google Gemini API (AI Analysis)</h3>
 <ul>
@@ -207,10 +301,10 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 <li><strong>Their privacy policy:</strong> <a href="https://expo.dev/privacy" rel="noopener noreferrer">Expo Privacy Policy</a></li>
 </ul>
 <hr>
-<h2>5. Data Retention</h2>
+<h2 id="5-data-retention">5. Data Retention</h2>
 <div class="table-wrap"><table><thead><tr><th scope="col">Data Type</th><th scope="col">Retention Period</th></tr></thead><tbody><tr><td>Screen recording frames (images)</td><td>Deleted from your device immediately after analysis completes. If the app crashes, cleaned up on next session start.</td></tr><tr><td>In-memory frame data (base64)</td><td>Released from memory within 5 minutes of analysis completion or when you leave the results screen.</td></tr><tr><td>Scan results (text data)</td><td>Stored on our servers for as long as your account exists. Removed from the live database immediately when you delete your account; database backup copies expire within 7 days (Section 7.2).</td></tr><tr><td>Account information</td><td>Retained for as long as your account is active. Removed from the live database immediately when you delete your account; database backup copies expire within 7 days (Section 7.2).</td></tr><tr><td>Streak and preference data</td><td>Stored locally on your device. Deleted when you uninstall the App or clear app data.</td></tr><tr><td>Error and diagnostic data</td><td>Retained by Sentry for up to 90 days per their default retention policy.</td></tr><tr><td>Research participation record</td><td>Kept for as long as your account exists, including after you withdraw: the record of the withdrawal and the random participant identifier are what let us keep honoring it. Deleted when your account is deleted.</td></tr><tr><td>Research dataset rows</td><td>Second-reader rows per post: 90 days, then folded into per-checkup totals. Per-checkup totals: for as long as you remain in the study. Your own quick-check answers: for as long as you remain in the study. All rows under your participant identifier are deleted when you withdraw or delete your account.</td></tr></tbody></table></div>
 <hr>
-<h2>6. Data Security</h2>
+<h2 id="6-data-security">6. Data Security</h2>
 <p>We implement the following security measures:</p>
 <ul>
 <li><strong>Encryption in transit:</strong> All data transmitted between the App and our servers, and between the App and third-party services, is encrypted using HTTPS/TLS.</li>
@@ -220,7 +314,7 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 <li><strong>PII scrubbing:</strong> Error reports sent to Sentry have personally identifiable information (email, name) stripped before transmission.</li>
 </ul>
 <hr>
-<h2>7. Your Rights and Choices</h2>
+<h2 id="7-your-rights-and-choices">7. Your Rights and Choices</h2>
 <h3>7.1 Access and Export Your Data</h3>
 <p>You can view all your scan history and results within the App. To request a full export of your data in a machine-readable format, contact us at privacy@algorithmlens.com.</p>
 <h3>7.2 Delete Your Data</h3>
@@ -251,10 +345,10 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 <h3>7.9 Rights for California Users (CCPA)</h3>
 <p>If you are a California resident, you have the right to: know what personal information we collect, request deletion of your personal information, and not be discriminated against for exercising your rights. We do not sell your personal information to third parties.</p>
 <hr>
-<h2>8. Children's Privacy</h2>
+<h2 id="8-children-s-privacy">8. Children's Privacy</h2>
 <p>AlgorithmLens is not intended for use by children under the age of 13 (or under 16 in the EEA). We do not knowingly collect personal information from children. If you are a parent or guardian and believe your child has provided us with personal information, please contact us at privacy@algorithmlens.com. If we become aware that we have collected personal information from a child without parental consent, we will take steps to delete that information promptly.</p>
 <hr>
-<h2>9. International Data Transfers</h2>
+<h2 id="9-international-data-transfers">9. International Data Transfers</h2>
 <p>Your data may be processed in countries other than your own. Specifically:</p>
 <ul>
 <li><strong>Supabase</strong> hosts data on cloud infrastructure which may be located in the United States or other regions.</li>
@@ -265,7 +359,7 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 </ul>
 <p>Where data is transferred outside of the EEA, we rely on Standard Contractual Clauses and/or the service provider's compliance frameworks (such as participation in data protection frameworks) to ensure adequate protection of your data.</p>
 <hr>
-<h2>10. What We Do NOT Do</h2>
+<h2 id="10-what-we-do-not-do">10. What We Do NOT Do</h2>
 <p>To be explicit:</p>
 <ul>
 <li>We do <strong>not</strong> sell your personal data to anyone.</li>
@@ -280,7 +374,7 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 <li>We do <strong>not</strong> publish anything that identifies you. Research findings are totals and comparisons across many people.</li>
 </ul>
 <hr>
-<h2>11. Changes to This Privacy Policy</h2>
+<h2 id="11-changes-to-this-privacy-policy">11. Changes to This Privacy Policy</h2>
 <p>We may update this Privacy Policy from time to time. When we make changes:</p>
 <ul>
 <li>We will update the "Last Updated" date at the top of this page.</li>
@@ -290,17 +384,30 @@ nav.foot a{display:inline-flex;align-items:center;min-height:44px}
 <p>Continued use of the App is never acceptance of research participation. If the terms of research participation change, your earlier agreement does not carry over: your data stops being used for research until you have read the new terms and agreed to them again in the App.</p>
 <p>We encourage you to review this Privacy Policy periodically.</p>
 <hr>
-<h2>12. Contact Us</h2>
+<h2 id="12-contact-us">12. Contact Us</h2>
 <p>If you have questions about this Privacy Policy, want to exercise your data rights, or have a privacy concern, contact us at:</p>
 <p><strong>Email:</strong> privacy@algorithmlens.com <strong>Website:</strong> https://algorithmlens.com/privacy</p>
 <hr>
 <p><em>This Privacy Policy applies to version 1.0.0 and later of the AlgorithmLens mobile application. The terms of research participation referred to in Section 3A are version 2026-10-13.</em></p>
-<nav class="foot" aria-label="More pages">
-<a href="/">Front page</a>
-<a href="/explore/">Explore the example</a>
-<a href="/terms">Terms</a>
-<a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a>
-</nav>
-</main>
+</div>
+</div>
+</div></main>
+<footer class="bottom">
+<div class="wrap">
+<p class="colophon">A scan reads what appeared. It cannot say why.</p>
+<div class="foot-grid">
+<div class="foot-brand">
+<a class="brand" href="/" aria-label="AlgorithmLens home"><svg viewBox="0 0 436 88" role="img" aria-label="AlgorithmLens"><use href="/static/img/wordmark.svg#wordmark"/></svg></a>
+<p>A feed, made legible. Example data shown throughout is fictional.</p>
+</div>
+<div class="foot-cols">
+<nav class="foot-col product" aria-label="Product"><b>Product</b><a href="/#report">The report</a><a href="/#how">How it works</a><a href="/#limits">Read the limits</a><a href="/explore/">Explore the example</a></nav>
+<nav class="foot-col company" aria-label="Company"><b>Company</b><a href="/about/">About</a><a href="/methodology">Methodology</a><a href="/#privacy">Privacy</a><a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a></nav>
+<nav class="foot-col legal" aria-label="Legal"><b>Legal</b><a href="/privacy/">Privacy policy</a><a href="/terms">Terms</a></nav>
+</div>
+</div>
+<div class="foot-row"><span>&copy; 2026 AlgorithmLens</span></div>
+</div>
+</footer>
 </body>
 </html>

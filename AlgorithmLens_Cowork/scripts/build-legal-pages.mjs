@@ -16,9 +16,15 @@
 //      when that folder exists.
 // If none of these exists the script stops with a message rather than writing
 // a page from nothing. Output defaults to public/privacy/index.html.
+//
+// The page it is set in (header, footer, page head, contents list, document
+// column) is the shared document template in scripts/paper-document.mjs, the
+// same one /methodology and /terms use. /privacy/ is served under a policy
+// that allows no script, so this page loads none.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { documentPage, withContents } from './paper-document.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const POLICY_REL = path.join('legal', 'PRIVACY_POLICY.md');
@@ -105,90 +111,49 @@ closeList();
 
 const updated = ((md.match(/\*\*Last Updated:\*\*\s*([^\r\n]+)/) || [])[1] || '').trim();
 
-const html = `<!doctype html>
-<!-- Generated from mobile/legal/PRIVACY_POLICY.md by scripts/build-legal-pages.mjs. Do not edit by hand; re-run the script. -->
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(title)} | AlgorithmLens</title>
-<meta name="description" content="What AlgorithmLens collects, how a scan is processed and deleted, and your rights over your data. The same text the app shows.">
-<link rel="canonical" href="https://www.algorithmlens.com/privacy/">
-<link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml">
-<meta name="theme-color" content="#F5F4F0">
-<meta name="robots" content="index,follow">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="AlgorithmLens">
-<meta property="og:title" content="${esc(title)} | AlgorithmLens">
-<meta property="og:description" content="What AlgorithmLens collects, how a scan is processed and deleted, and your rights over your data. The same text the app shows.">
-<meta property="og:url" content="https://www.algorithmlens.com/privacy/">
-<meta property="og:image" content="https://www.algorithmlens.com/static/img/og-example.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="An example scan, labeled as an example: a grid of 45 marks, 6 of them blue for posts that carried an ad label.">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="${esc(title)} | AlgorithmLens">
-<meta name="twitter:description" content="What AlgorithmLens collects, how a scan is processed and deleted, and your rights over your data. The same text the app shows.">
-<meta name="twitter:image" content="https://www.algorithmlens.com/static/img/og-example.png">
-<style>
-@font-face{font-family:Source;src:url(/static/fonts/source-serif-4-regular.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}
-@font-face{font-family:Source;src:url(/static/fonts/source-serif-4-italic.woff2) format('woff2');font-weight:400;font-style:italic;font-display:swap}
-:root{--blue:#1868D8;--green:#20A888;--ink:#3A3730;--paper:#F5F4F0;--line:#DDD8CD;--muted:#6D685F;--surface:#FFFDF9}
-*{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 system-ui,sans-serif}
-main{max-width:720px;margin:auto;padding:24px 20px 48px}
-header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:24px}
-header a{display:inline-flex;align-items:center;min-height:44px}
-header svg{width:188px;max-width:52vw;height:auto}
-header nav{display:flex;gap:20px}
-a{color:var(--ink);text-underline-offset:4px}
-a:focus-visible{outline:2px solid var(--blue);outline-offset:4px}
-h1{font:400 clamp(34px,6vw,52px)/1.08 Source,Georgia,serif;letter-spacing:-1px;margin:8px 0 8px}
-h2{font:400 clamp(24px,3.4vw,32px)/1.15 Source,Georgia,serif;margin:40px 0 12px}
-h3{font:400 22px/1.2 Source,Georgia,serif;margin:28px 0 8px}
-p,li{max-width:66ch}
-.meta{color:var(--muted);font-size:14px;margin:0 0 20px}
-.site-note{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:4px 6px 0 rgba(58,55,48,.08);padding:20px 22px;margin:0 0 8px}
-.site-note h2{margin-top:0;font-size:24px}
+// Styles for what the policy contains: the site note, ordinary lists, the
+// rules the Markdown draws between sections, the retention table.
+const LEGAL_CSS = `.site-note{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin:0 0 28px}
+.site-note h2{border-top:0;padding-top:0;margin:0 0 10px;font-size:26px;line-height:32px;letter-spacing:0}
 .site-note p{margin:8px 0}
-hr{border:0;border-top:1px solid var(--line);margin:28px 0}
-.table-wrap{overflow-x:auto;max-width:100%;margin:12px 0}
-table{border-collapse:collapse;width:100%;font-size:15px}
+.site-note p:last-child{margin-bottom:0}
+.paper ul,.paper ol{margin:0 0 16px;padding-left:22px}
+.paper li{margin:0 0 8px}
+.paper hr{border:0;border-top:1px solid var(--ink);margin:52px 0 0}
+.paper hr+h2{border-top:0;margin-top:0}
+.paper hr+p{margin-top:24px}
+.table-wrap{overflow-x:auto;max-width:100%;margin:12px 0 16px}
+table{border-collapse:collapse;width:100%;font-size:15px;line-height:23px}
 td,th{min-width:12ch}
-code,a{overflow-wrap:anywhere}
 th,td{text-align:left;vertical-align:top;padding:10px 12px 10px 0;border-bottom:1px solid var(--line)}
 th{font-weight:600}
 blockquote{margin:16px 0;padding:12px 16px;border-left:2px solid var(--line);color:var(--muted)}
-code{font-family:ui-monospace,monospace;font-size:14px}
-nav.foot{display:flex;gap:18px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:40px;padding-top:8px}
-nav.foot a{display:inline-flex;align-items:center;min-height:44px}
-</style>
-</head>
-<body>
-<main>
-<header>
-<a href="/" aria-label="AlgorithmLens home"><svg viewBox="0 0 436 88" role="img" aria-label="AlgorithmLens"><use href="/static/img/wordmark.svg#wordmark"/></svg></a>
-<nav aria-label="Site"><a href="/">Front page</a><a href="/explore/">Explore the example</a></nav>
-</header>
-<h1>${esc(title)}</h1>
-<p class="meta">Last updated ${esc(updated)}. This is the same text the AlgorithmLens app shows in Settings.</p>
-<section class="site-note" aria-labelledby="site-note-title">
+code{font-family:ui-monospace,monospace;font-size:14px;overflow-wrap:anywhere}`;
+
+// The note about this website is the site's own text, not the policy's; it
+// sits first in the document column and first in the contents list.
+const SITE_NOTE = `<section class="site-note" aria-labelledby="site-note-title">
 <h2 id="site-note-title">This website</h2>
 <p>The pages on algorithmlens.com set no cookies, run no analytics, and request nothing from third parties. The only data they send anywhere is the launch-list form: when you submit it, your email address and your consent are sent to our launch-list service (a function hosted for us by Supabase) and stored there so that we can send launch news. Nothing is sent until you press the button, and nothing is saved if the service reports a failure.</p>
 <p>Your address is used only for launch news and is never sold or shared. To be removed from the list, write to <a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a> from the address you signed up with.</p>
 <p>The example scans shown on this site are fictional. Nothing on this site records your screen or reads your feed.</p>
 </section>
-${body.join('\n')}
-<nav class="foot" aria-label="More pages">
-<a href="/">Front page</a>
-<a href="/explore/">Explore the example</a>
-<a href="/terms">Terms</a>
-<a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a>
-</nav>
-</main>
-</body>
-</html>
 `;
+
+const sections = withContents(body.join('\n'), ['site-note-title']);
+const html = documentPage({
+  title,
+  description: 'What AlgorithmLens collects, how a scan is processed and deleted, and your rights over your data. The same text the app shows.',
+  canonical: 'https://www.algorithmlens.com/privacy/',
+  eyebrow: 'Privacy policy',
+  meta: `Last updated ${updated}. This is the same text the AlgorithmLens app shows in Settings.`,
+  contents: [{ id: 'site-note-title', text: 'This website' }, ...sections.contents],
+  lead: SITE_NOTE,
+  body: sections.body,
+  css: LEGAL_CSS,
+  comment: '<!-- Generated from mobile/legal/PRIVACY_POLICY.md by scripts/build-legal-pages.mjs. Do not edit by hand; re-run the script. -->',
+  scripts: false,
+});
 
 mkdirSync(path.dirname(out), { recursive: true });
 writeFileSync(out, html);
