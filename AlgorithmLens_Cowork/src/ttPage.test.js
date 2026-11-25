@@ -4,10 +4,12 @@
 // output and checks the two differences the page exists for.
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { renderTt, SOURCE, TARGET } from '../scripts/build-tt-page.mjs';
+import { renderTt, lf, SOURCE, TARGET } from '../scripts/build-tt-page.mjs';
 
-const home = readFileSync(SOURCE, 'utf8');
-const tt = readFileSync(TARGET, 'utf8');
+// Compared with LF line endings, as git stores them: a Windows checkout with
+// core.autocrlf=true may hold either file with CRLF in the working tree.
+const home = lf(readFileSync(SOURCE, 'utf8'));
+const tt = lf(readFileSync(TARGET, 'utf8'));
 
 describe('the /tt/ page', () => {
   it('is the generator output for the current home page (run npm run build:tt after editing index.html)', () => {
@@ -33,7 +35,7 @@ describe('the /tt/ page', () => {
   });
 
   it('landing.js holds both beta links and picks the TikTok one for this group', () => {
-    const js = readFileSync(new URL('../public/landing.js', import.meta.url), 'utf8');
+    const js = lf(readFileSync(new URL('../public/landing.js', import.meta.url), 'utf8'));
     expect(js).toMatch(/^const BETA_LINK = "https:\/\/testflight\.apple\.com\/join\/[A-Za-z0-9]+";$/m);
     expect(js).toMatch(/^const TIKTOK_BETA_LINK = "(https:\/\/testflight\.apple\.com\/join\/[A-Za-z0-9]+)?";$/m);
     expect(js).toContain("BETA_GROUP === 'tiktok' && TIKTOK_BETA_LINK");

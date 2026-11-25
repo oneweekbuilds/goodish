@@ -33,9 +33,17 @@ function once(html, from, to) {
   return html.replace(from, to);
 }
 
+/**
+ * Line endings as git stores them. On a Windows clone with core.autocrlf=true a
+ * checkout (a branch switch, a pull) rewrites these files with CRLF, and the
+ * anchors below are written with LF; normalizing here keeps the generator and
+ * its test independent of how the working tree happens to be checked out.
+ */
+export const lf = (text) => text.replace(/\r\n/g, '\n');
+
 /** The home page's markup, turned into the /tt/ page. */
 export function renderTt(html) {
-  let out = html;
+  let out = lf(html);
   out = once(out, '<!doctype html>\n<html lang="en">',
     '<!doctype html>\n<!-- Generated from public/index.html by scripts/build-tt-page.mjs. Do not edit by hand; run npm run build:tt. -->\n<html lang="en" data-beta-group="tiktok">');
   out = once(out, '<meta name="viewport" content="width=device-width,initial-scale=1">',
@@ -53,7 +61,7 @@ function main() {
   const html = readFileSync(SOURCE, 'utf8');
   const out = renderTt(html);
   if (process.argv.includes('--check')) {
-    const current = existsSync(TARGET) ? readFileSync(TARGET, 'utf8') : null;
+    const current = existsSync(TARGET) ? lf(readFileSync(TARGET, 'utf8')) : null;
     if (current !== out) {
       console.error('public/tt/index.html is out of date; run npm run build:tt');
       process.exit(1);
