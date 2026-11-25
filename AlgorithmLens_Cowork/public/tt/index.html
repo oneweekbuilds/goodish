@@ -28,9 +28,12 @@
 <style>
 @font-face{font-family:Source;src:url(/static/fonts/source-serif-4-regular.woff2) format('woff2');font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:Source;src:url(/static/fonts/source-serif-4-italic.woff2) format('woff2');font-weight:400;font-style:italic;font-display:swap}
+/* Until the serif arrives the page is set in Georgia, scaled to the serif's width (measured: roman 107.4%, italic 95.2%), so no line re-wraps when it swaps in. */
+@font-face{font-family:"Source Fallback";src:local("Georgia");font-weight:400;font-style:normal;size-adjust:107.4%}
+@font-face{font-family:"Source Fallback";src:local("Georgia Italic"),local("Georgia-Italic");font-weight:400;font-style:italic;size-adjust:95.2%}
 /* Tokens: canon/canon.json. The November 2026 facelift changes composition and scale, not the tokens. */
 :root{--paper:#F5F4F0;--panel:#FFFFFF;--field:#FFFDF9;--line:#DDD8CD;--mark:#E6E1D6;--muted:#6D685F;--ink:#3A3730;--ink-press:#141311;--blue:#1868D8;--blue-bg:#ECF3FC;--green:#20A888;--green-bg:#EDF8F5;--on-ink:#F7F5EF;
---serif:Source,Georgia,"Times New Roman",serif;--sans:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;
+--serif:Source,"Source Fallback",Georgia,"Times New Roman",serif;--sans:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;
 --shadow-card:0 8px 24px rgba(58,55,48,.06);--shadow-card-hover:0 12px 32px rgba(58,55,48,.10);--shadow-panel:0 16px 40px rgba(58,55,48,.08);--shadow-sheet:9px 16px 0 rgba(58,55,48,.08),0 24px 22px rgba(58,55,48,.12);--shadow-pill:0 6px 16px rgba(58,55,48,.18);--shadow-phone:0 22px 44px rgba(58,55,48,.2);
 --tick:160ms;--beat:240ms;--settle:400ms;--ease:cubic-bezier(.22,1,.36,1);
 --gutter:24px;--section:64px;
@@ -68,7 +71,7 @@ h3{font-size:24px;line-height:30px}
 .label.real::before{background:var(--green);border-color:var(--green)}
 .eyebrow{font-size:14px}
 .sec-head{display:flex;align-items:center;gap:14px;margin:0}
-.num{display:inline-flex;align-items:center;gap:14px;font:13px/18px var(--sans);font-variant-numeric:tabular-nums;letter-spacing:.04em;color:var(--muted)}
+.num{display:inline-flex;align-items:center;gap:14px;font:italic 17px/18px var(--serif);color:var(--muted)}
 .num::after{content:"";width:28px;height:1px;background:var(--line)}
 .button{display:inline-flex;align-items:center;justify-content:center;background:var(--ink);color:var(--on-ink);border:0;border-radius:28px;height:56px;padding:0 28px;font:600 17px/1 var(--sans);text-decoration:none;cursor:pointer;transition:transform var(--tick) var(--ease),background var(--tick) var(--ease),box-shadow var(--tick) var(--ease)}
 .button:hover{background:var(--ink-press);transform:translateY(-1px);box-shadow:var(--shadow-pill)}
@@ -94,6 +97,16 @@ h3{font-size:24px;line-height:30px}
 .sec-lede{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
 @media(min-width:900px){.sec-top{margin-bottom:56px;align-items:end}.sec-title{grid-column:1/span 7;gap:22px}.sec-lede{grid-column:8/span 5;padding-bottom:6px}}
 @media(min-width:1200px){.sec-title{grid-column:1/span 8}.sec-lede{grid-column:9/span 4}}
+/* contents: the nine sections, listed the way a report lists them (shown once they fit on one line) */
+.contents{display:none}
+@media(min-width:1100px){
+.contents{display:block;border-top:1px solid var(--line)}
+.contents ol{list-style:none;margin:0;padding:0;display:flex;justify-content:space-between;gap:0 12px}
+.contents a{position:relative;display:inline-flex;align-items:baseline;gap:8px;min-height:52px;padding:16px 0;font-size:14px;line-height:20px;text-decoration:none;white-space:nowrap}
+.contents a i{font:italic 15px/20px var(--serif);color:var(--muted)}
+.contents a::after{content:"";position:absolute;left:0;right:0;bottom:13px;height:1px;background:var(--ink);transform:scaleX(0);transform-origin:left;transition:transform var(--beat) var(--ease)}
+.contents a:hover::after,.contents a:focus-visible::after{transform:scaleX(1)}
+}
 /* header */
 .topbar{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--line);transition:background var(--beat) var(--ease),box-shadow var(--beat) var(--ease)}
 .topbar.scrolled{background:rgba(245,244,240,.86);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 1px 0 var(--line),0 8px 24px rgba(58,55,48,.06)}
@@ -104,7 +117,7 @@ header.top{display:flex;justify-content:space-between;align-items:center;gap:24p
 nav.sections{display:none;gap:32px;font-size:15px}
 nav.sections a{position:relative;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:6px 0}
 nav.sections a::after{content:"";position:absolute;left:0;right:0;bottom:8px;height:2px;background:var(--blue);transform:scaleX(0);transform-origin:left;transition:transform var(--beat) var(--ease)}
-nav.sections a:hover::after,nav.sections a:focus-visible::after{transform:scaleX(1)}
+nav.sections a:hover::after,nav.sections a:focus-visible::after,nav.sections a[aria-current]::after{transform:scaleX(1)}
 .topbar .pill{padding:0 18px}
 @media(min-width:900px){header.top{height:72px}.topbar.scrolled header.top{height:64px}.brand{width:188px;height:38px}.topbar.scrolled .brand{width:158px;height:32px}nav.sections{display:flex}.topnav{gap:32px}.topbar .pill{padding:0 20px;margin-left:8px}}
 /* front page: dateline, rule, banner headline, then ruled columns */
@@ -151,9 +164,10 @@ h1{font-size:clamp(40px,calc((100vw - 2*var(--gutter))/6.3),104px);line-height:.
 .playing .scan{animation:scan 4s var(--ease) infinite}
 @keyframes scan{0%{transform:translateY(0);opacity:0}8%{opacity:.5}92%{opacity:.5}100%{transform:translateY(var(--scan));opacity:0}}
 .film-foot{display:flex;flex-direction:column;gap:12px}
-.tally{display:flex;align-items:center;gap:10px;font-size:13px;line-height:18px;color:var(--muted)}
-.tally .bar{flex:1;height:6px;border-radius:3px;background:var(--mark);overflow:hidden}
-.tally .bar i{display:block;width:25%;height:100%;background:var(--blue)}
+.tally{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 12px;font-size:13px;line-height:18px;color:var(--muted)}
+.tally .bar{order:-1;flex:0 0 100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+.tally .bar i{display:block;height:14px;border-radius:3px;background:var(--mark)}
+.tally .bar i.ad{background:var(--blue)}
 .film-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .film-foot .caption{flex:1 1 180px}
 summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-size:14px;color:var(--ink);text-decoration:underline;text-underline-offset:3px}
@@ -177,9 +191,9 @@ h1{font-size:clamp(64px,8.8vw,126px);margin:22px 0 32px}
 @media(min-width:1200px){
 .film-card{display:grid;grid-template-columns:auto minmax(200px,268px);grid-template-rows:auto auto 1fr;gap:0;width:auto;padding:0;border-left:0}
 .film-stage{grid-column:1;grid-row:1/span 3;align-items:flex-start;padding:32px 44px 56px;border-left:1px solid var(--line);border-right:1px solid var(--line)}
-.film-card .panel-head{grid-column:2;grid-row:1;padding:32px 0 0 32px;flex-direction:column-reverse;gap:14px}
-.film-foot{grid-column:2;grid-row:2;padding:20px 0 0 32px;gap:14px}
-.film-card details{grid-column:2;grid-row:3;padding:14px 0 56px 32px}
+.film-card .panel-head{grid-column:2;grid-row:1;margin-left:32px;padding:32px 0 20px;flex-direction:column-reverse;gap:14px;border-bottom:1px solid var(--line)}
+.film-foot{grid-column:2;grid-row:2;margin-left:32px;padding:20px 0;gap:16px;border-bottom:1px solid var(--line)}
+.film-card details{grid-column:2;grid-row:3;margin-left:32px;padding:8px 0 56px}
 .drawn{--scan:425px;width:280px;border-radius:44px}
 .drawn .screen{border-radius:36px}
 .drawn .island i{width:80px;height:20px;border-radius:10px}
@@ -197,6 +211,8 @@ h1{font-size:clamp(64px,8.8vw,126px);margin:22px 0 32px}
 .stage{height:350px;position:relative;overflow:hidden;--ml:20px;--mt:23px;--mx:24px;--my:19px;--ms:7px}
 .sheet{position:absolute;left:50%;top:37%;width:230px;height:236px;margin:-118px 0 0 -115px;border-radius:10px;background:var(--panel);border:1px solid var(--line);box-shadow:4px 8px 0 rgba(58,55,48,.08);transform:perspective(900px) rotateX(38deg) rotateZ(-23deg) translate(var(--dx,0),var(--dy,0)) scale(var(--s,1));transition:transform var(--settle) var(--ease),box-shadow var(--settle) var(--ease),border-color var(--settle) var(--ease)}
 .sheet.active{border-color:var(--ink);box-shadow:var(--shadow-sheet);z-index:8}
+.sheet:not(.active){cursor:pointer}
+.sheet:not(.active):hover{border-color:var(--muted)}
 .sheet .marks{position:absolute;left:var(--ml);top:var(--mt);display:grid;grid-template-columns:repeat(8,var(--mx));grid-auto-rows:var(--my)}
 .sheet .marks i{width:var(--ms);height:var(--ms);border-radius:50%;background:var(--mark)}
 .sheet .marks i.ad{background:var(--blue)}
@@ -297,10 +313,12 @@ h1{font-size:clamp(64px,8.8vw,126px);margin:22px 0 32px}
 .read{flex-shrink:0;height:44px;min-width:76px;padding:0 16px;border-radius:22px;border:1px solid var(--ink);background:var(--panel);font:600 14px/1 var(--sans);color:var(--ink);cursor:pointer;transition:background var(--tick) var(--ease),color var(--tick) var(--ease),transform var(--tick) var(--ease)}
 .read:hover{transform:translateY(-1px)}
 .read[aria-pressed=true]{background:var(--ink);color:var(--on-ink)}
-.slot{flex:1;min-height:52px;border:1px dashed var(--muted);border-color:color-mix(in srgb,var(--muted) 55%,var(--paper));border-radius:14px;display:flex;align-items:center;justify-content:center}
-.slot::before{content:"";width:10px;height:10px;border-radius:50%;border:1.2px solid var(--muted)}
+.slot{flex:1;min-height:52px;border:1px dashed var(--muted);border-color:color-mix(in srgb,var(--muted) 55%,var(--paper));border-radius:14px;display:flex}
 .slot.filled{border:0;display:block;min-height:0}
-.slot.filled::before{display:none}
+.blank{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;line-height:18px}
+.blank-head{display:inline-flex;align-items:center;gap:9px}
+.blank-head i{width:10px;height:10px;border-radius:50%;border:1.2px solid var(--muted);flex-shrink:0}
+.blank-rows{display:none}
 .row{background:var(--panel);border:1px solid var(--ink);border-radius:14px;padding:14px 14px 12px;animation:pop var(--beat) var(--ease) both}
 @keyframes pop{from{opacity:0;transform:translateY(-8px) scale(.98)}}
 .row-head{display:flex;align-items:center;gap:6px 9px;flex-wrap:wrap;margin-bottom:10px;font-size:14px;line-height:20px;font-weight:600}
@@ -318,7 +336,15 @@ h1{font-size:clamp(64px,8.8vw,126px);margin:22px 0 32px}
 .tuned b{font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12px;line-height:16px}
 .readout-foot{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .try-limit{margin-top:28px}
-@media(min-width:600px){.frames{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}.slot{min-height:236px}.post img,.news{height:150px}}
+@media(min-width:600px){
+.frames{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.slot{min-height:236px}
+.post img,.news{height:150px}
+.blank{flex-direction:column;align-items:stretch;justify-content:flex-start;padding:14px 14px 12px}
+.blank-head{margin-bottom:10px;font-size:14px;line-height:20px}
+.blank-rows{display:block}
+.blank-rows span{display:block;border-top:1px solid var(--line);padding:7px 0;font-size:12px;line-height:18px}
+}
 @media(min-width:900px){
 .strip{padding:28px}
 .strip-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,360px);column-gap:48px;align-items:end;margin-bottom:26px}
@@ -353,14 +379,14 @@ h1{font-size:clamp(64px,8.8vw,126px);margin:22px 0 32px}
 .steps{display:flex;flex-direction:column;border-top:1px solid var(--ink)}
 .step{position:relative;display:flex;gap:16px;align-items:flex-start;text-align:left;width:100%;background:transparent;border:0;border-bottom:1px solid var(--line);padding:16px 0 18px;cursor:pointer;font:inherit;color:inherit}
 .step i{flex:0 0 40px;font:italic 40px/40px var(--serif);color:var(--muted);transition:color var(--beat) var(--ease)}
-.step .st{display:block;font:24px/30px var(--serif);padding-top:5px}
-.step .sd{display:none;margin-top:6px;color:var(--muted);font-size:15px;line-height:22px;max-width:46ch}
+.step .st{display:block;font:24px/30px var(--serif);padding-top:5px;color:var(--muted);transition:color var(--beat) var(--ease)}
+.step .sd{display:block;margin-top:6px;color:var(--muted);font-size:15px;line-height:22px;max-width:46ch}
 .step::before{content:"";position:absolute;left:-14px;top:18px;bottom:20px;width:4px;border-radius:2px;background:var(--green);transform:scaleY(0);transform-origin:top;transition:transform var(--beat) var(--ease)}
 .step[aria-pressed=true]::before{transform:scaleY(1)}
-.step[aria-pressed=true] i{color:var(--ink)}
-.step[aria-pressed=true] .sd{display:block}
-.preview-box{padding:20px;border-radius:20px;margin-top:28px;box-shadow:var(--shadow-panel)}
-.preview{display:flex;flex-direction:column;gap:12px;animation:pop var(--beat) var(--ease) both}
+.step[aria-pressed=true] i,.step[aria-pressed=true] .st{color:var(--ink)}
+.preview-box{padding:20px;border-radius:20px;margin-top:28px;box-shadow:var(--shadow-panel);display:grid}
+.preview{grid-area:1/1;display:flex;flex-direction:column;gap:12px;animation:pop var(--beat) var(--ease) both}
+.preview-box .preview[hidden]{display:flex!important;visibility:hidden;animation:none}
 .plat{display:flex;flex-direction:column}
 .plat div{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line);padding:11px 0;font-size:15px}
 .plat div:last-child{border-bottom:0}
@@ -438,6 +464,7 @@ h1{font-size:clamp(64px,8.8vw,126px);margin:22px 0 32px}
 .worked .sub{font-size:14px;color:var(--muted);margin-top:-8px}
 .bignum{display:flex;flex-direction:column;gap:6px;padding:6px 0 2px}
 .bignum b{font:400 clamp(72px,23vw,104px)/.92 var(--serif);letter-spacing:-.035em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bignum b i{font-size:.62em;letter-spacing:-.01em}
 .bignum span{font:var(--lede)/var(--lede-lh) var(--serif)}
 .worked .legend{gap:8px 16px;margin:0}
 .arith{padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:14px;line-height:20px}
@@ -494,7 +521,9 @@ footer.bottom{background:var(--panel);border-top:1px solid var(--line);padding:4
 .foot-col b{font-weight:600;color:var(--ink)}
 .foot-col a{color:var(--ink);text-decoration:none;display:inline-flex;align-items:center;min-height:30px;overflow-wrap:anywhere}
 .foot-col a:hover{text-decoration:underline;text-decoration-color:var(--blue);text-underline-offset:4px}
-.foot-row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:24px;padding-top:16px;border-top:1px solid var(--line);font-size:13px}
+.foot-row{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-top:24px;padding-top:8px;border-top:1px solid var(--line);font-size:13px}
+.foot-row a{color:var(--ink);text-decoration:none;display:inline-flex;align-items:center;min-height:44px}
+.foot-row a:hover{text-decoration:underline;text-decoration-color:var(--blue);text-underline-offset:4px}
 @media(min-width:900px){
 footer.bottom{padding:72px 0 48px}
 .colophon{padding-bottom:56px;margin-bottom:56px}
@@ -506,7 +535,7 @@ footer.bottom{padding:72px 0 48px}
 .foot-col.product{grid-column:6/span 2}
 .foot-col.company{grid-column:8/span 3}
 .foot-col.legal{grid-column:11/span 2}
-.foot-row{margin-top:32px;padding-top:20px}
+.foot-row{margin-top:32px;padding-top:12px}
 }
 /* motion: one entrance for the front page, a 12 px rise on scroll, counts that tick in */
 @keyframes rise{from{opacity:0;transform:translateY(14px)}}
@@ -523,10 +552,13 @@ footer.bottom{padding:72px 0 48px}
 .js [data-reveal].in{opacity:1;transform:none}
 .js [data-reveal] .countbar i{opacity:0;transform:scaleY(.35);transform-origin:bottom}
 .js [data-reveal].in .countbar i{opacity:1;transform:none;transition:opacity var(--tick) var(--ease),transform var(--beat) var(--ease);transition-delay:calc(var(--i,0)*14ms + 160ms)}
+.js .ledger[data-reveal]{opacity:1;transform:none}
+.js .ledger[data-reveal] li{opacity:0;transform:translateY(8px)}
+.js .ledger[data-reveal].in li{opacity:1;transform:none;transition:opacity var(--settle) var(--ease),transform var(--settle) var(--ease);transition-delay:calc(var(--i,0)*36ms)}
 @media(prefers-reduced-motion:reduce){
 html{scroll-behavior:auto}
 *,*::before,*::after{animation:none!important;transition:none!important}
-.js [data-reveal],.js [data-reveal] .countbar i{opacity:1;transform:none}
+.js [data-reveal],.js [data-reveal] .countbar i,.js .ledger[data-reveal] li{opacity:1;transform:none}
 .underline svg path{stroke-dashoffset:0}
 .topbar.scrolled{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--paper)}
 .button:hover,.pill:hover,.way:hover,.read:hover{transform:none}
@@ -584,7 +616,7 @@ html{scroll-behavior:auto}
 </div>
 </div>
 <div class="film-foot">
-<div class="tally" aria-label="Four fictional posts, one carried an ad label"><span>Four posts</span><span class="bar" aria-hidden="true"><i></i></span><span>1 carried an ad label</span></div>
+<div class="tally" aria-label="Four fictional posts, one carried an ad label"><span>Four posts</span><span class="bar" aria-hidden="true"><i class="ad"></i><i></i><i></i><i></i></span><span>1 carried an ad label</span></div>
 <div class="film-row">
 <figcaption class="caption">Fictional example. Review happens after recording.</figcaption>
 <button class="secondary" id="filmToggle" type="button" aria-pressed="false">Play the example film</button>
@@ -599,6 +631,22 @@ html{scroll-behavior:auto}
 </div>
 </div>
 </section>
+
+<nav class="contents" aria-label="Contents">
+<div class="wrap">
+<ol>
+<li><a href="#report"><i aria-hidden="true">01</i>The report</a></li>
+<li><a href="#real"><i aria-hidden="true">02</i>One real scan</a></li>
+<li><a href="#try"><i aria-hidden="true">03</i>Try it</a></li>
+<li><a href="#limits"><i aria-hidden="true">04</i>The limits</a></li>
+<li><a href="#how"><i aria-hidden="true">05</i>How it works</a></li>
+<li><a href="#privacy"><i aria-hidden="true">06</i>Privacy</a></li>
+<li><a href="#ways"><i aria-hidden="true">07</i>In use</a></li>
+<li><a href="#trust"><i aria-hidden="true">08</i>Methodology</a></li>
+<li><a href="#launch"><i aria-hidden="true">09</i>Launch list</a></li>
+</ol>
+</div>
+</nav>
 
 <section id="report" class="section band">
 <div class="wrap">
@@ -620,7 +668,7 @@ html{scroll-behavior:auto}
 <div class="chips" id="chips" role="group" aria-label="Choose a dated scan"></div>
 </div>
 <figcaption class="record-foot">
-<div class="col">
+<div class="col" aria-live="polite">
 <span class="label">Separate observations</span>
 <h3 id="recordTitle">Sep 20, held on record.</h3>
 <p class="facts" id="recordFacts">45 posts in this scan. 6 carried a printed ad label. 125 posts across 4 scans.</p>
@@ -691,7 +739,7 @@ html{scroll-behavior:auto}
 <img src="/static/img/photo-coffee.jpg" alt="Fictional example post image: a glass of iced coffee beside a paper bag" loading="lazy" width="320" height="150">
 <div class="post-copy"><p>A slower start. A fictional sponsored coffee post.</p><button type="button" class="read" data-read="1" aria-pressed="false">Read</button></div>
 </article>
-<div class="slot" id="slot-1" aria-live="polite"></div>
+<div class="slot" id="slot-1" aria-live="polite"><div class="blank" aria-hidden="true"><span class="blank-head"><i></i>Post 1</span><span class="blank-rows"><span>Ad label</span><span>Origin</span><span>Account</span><span>Position</span></span></div></div>
 </div>
 <div class="frame">
 <span class="pos" aria-hidden="true">2</span>
@@ -700,7 +748,7 @@ html{scroll-behavior:auto}
 <div class="news"><small>The local edition</small><p>City council votes on a new transit plan.</p></div>
 <div class="post-copy"><p>On the local agenda this week.</p><button type="button" class="read" data-read="2" aria-pressed="false">Read</button></div>
 </article>
-<div class="slot" id="slot-2" aria-live="polite"></div>
+<div class="slot" id="slot-2" aria-live="polite"><div class="blank" aria-hidden="true"><span class="blank-head"><i></i>Post 2</span><span class="blank-rows"><span>Ad label</span><span>Origin</span><span>Account</span><span>Position</span></span></div></div>
 </div>
 <div class="frame">
 <span class="pos" aria-hidden="true">3</span>
@@ -709,7 +757,7 @@ html{scroll-behavior:auto}
 <img src="/static/img/photo-lake.jpg" alt="Fictional example post image: a still lake at dawn" loading="lazy" width="320" height="150">
 <div class="post-copy"><p>A long way from the morning rush.</p><button type="button" class="read" data-read="3" aria-pressed="false">Read</button></div>
 </article>
-<div class="slot" id="slot-3" aria-live="polite"></div>
+<div class="slot" id="slot-3" aria-live="polite"><div class="blank" aria-hidden="true"><span class="blank-head"><i></i>Post 3</span><span class="blank-rows"><span>Ad label</span><span>Origin</span><span>Account</span><span>Position</span></span></div></div>
 </div>
 <div class="frame">
 <span class="pos" aria-hidden="true">4</span>
@@ -718,7 +766,7 @@ html{scroll-behavior:auto}
 <img src="/static/img/photo-coffee.jpg" alt="Fictional example post image: the same coffee shop, before opening" loading="lazy" width="320" height="150">
 <div class="post-copy"><p>Behind the counter, before the doors open.</p><button type="button" class="read" data-read="4" aria-pressed="false">Read</button></div>
 </article>
-<div class="slot" id="slot-4" aria-live="polite"></div>
+<div class="slot" id="slot-4" aria-live="polite"><div class="blank" aria-hidden="true"><span class="blank-head"><i></i>Post 4</span><span class="blank-rows"><span>Ad label</span><span>Origin</span><span>Account</span><span>Position</span></span></div></div>
 </div>
 </div>
 <div class="strip-foot">
@@ -870,7 +918,7 @@ html{scroll-behavior:auto}
 <div class="head"><span>Worked example</span><span class="label">Example</span></div>
 <h3>How a count is made</h3>
 <p class="sub">Printed ad labels, from one fictional scan.</p>
-<div class="bignum"><b>6 of 45</b><span>posts carried a printed ad label.</span></div>
+<div class="bignum"><b>6 <i>of</i> 45</b><span>posts carried a printed ad label.</span></div>
 <div class="countbar" aria-hidden="true"><i class="ad"></i><i class="ad"></i><i class="ad"></i><i class="ad"></i><i class="ad"></i><i class="ad"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="un"></i></div>
 <div class="legend"><span><i class="ad"></i>Ad label, 6</span><span><i></i>No label, 38</span><span><i class="un"></i>Unknown, 1</span></div>
 <div class="arith">6 with a printed label, 38 without, 1 unreadable. <b>45 recorded.</b></div>
@@ -911,7 +959,7 @@ html{scroll-behavior:auto}
 <nav class="foot-col legal" aria-label="Legal"><b>Legal</b><a href="/privacy/">Privacy policy</a><a href="/terms">Terms</a></nav>
 </div>
 </div>
-<div class="foot-row"><span>&copy; 2026 AlgorithmLens</span></div>
+<div class="foot-row"><span>&copy; 2026 AlgorithmLens</span><a href="#top">Back to top</a></div>
 </div>
 </footer>
 <script src="/example-record.js"></script>

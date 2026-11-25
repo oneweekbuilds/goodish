@@ -144,6 +144,22 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
     check();
   }
 
+  // Header links that point at sections of this page: the one whose section
+  // lies across the middle of the viewport is marked as the current location
+  // (and keeps the underline the others show on hover).
+  const spyLinks = Array.from(document.querySelectorAll('nav.sections a[href^="#"]'));
+  if (spyLinks.length && 'IntersectionObserver' in window) {
+    const byId = new Map(spyLinks.map((a) => [a.getAttribute('href').slice(1), a]));
+    const spy = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        const a = byId.get(e.target.id);
+        if (!a) return;
+        if (e.isIntersecting) a.setAttribute('aria-current', 'location'); else a.removeAttribute('aria-current');
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    byId.forEach((a, id) => { const section = $(id); if (section) spy.observe(section); });
+  }
+
   // Reveal: elements rise 12 px over 400 ms once, when they enter the viewport.
   if ('IntersectionObserver' in window && !reduced.matches) {
     document.documentElement.classList.add('js');
@@ -174,6 +190,12 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
     Array.from(bar.children).forEach((cell, i) => cell.style.setProperty('--i', String(i)));
   });
 
+  // The can and cannot lists: each row carries its index too, so the two
+  // lists come in row by row, side by side, when the ledger is revealed.
+  document.querySelectorAll('.readlist').forEach((list) => {
+    Array.from(list.children).forEach((row, i) => row.style.setProperty('--i', String(i)));
+  });
+
   // The example record: four fictional Instagram scans, the same data the
   // explorer's record view shows (explore/examples.js). One mark, one post;
   // blue where the post carried a printed ad label, hollow where the label
@@ -196,7 +218,14 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
   const chips = $('chips');
   if (stage && chips) {
     const total = SCANS.reduce((a, s) => a + s.n, 0);
-    const sheets = SCANS.map(() => { const s = document.createElement('div'); s.className = 'sheet'; stage.append(s); return s; });
+    // A sheet behind the chosen one can be clicked to bring it forward. The
+    // stage is hidden from assistive technology (the dated chips below it are
+    // the control), so this is a pointer convenience only.
+    const sheets = SCANS.map((scan, i) => {
+      const s = document.createElement('div'); s.className = 'sheet';
+      s.addEventListener('click', () => { if (i !== current) select(i); });
+      stage.append(s); return s;
+    });
     const buttons = SCANS.map((scan, i) => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = scan.date; b.id = 'week-' + i;
       b.addEventListener('click', () => select(i)); chips.append(b); return b;
@@ -233,8 +262,11 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
       buttons.forEach((b, k) => b.setAttribute('aria-pressed', String(k === i)));
       inspect.href = '/explore/#record';
       const s = SCANS[i];
-      $('recordTitle').textContent = s.date + ', held on record.';
-      $('recordFacts').textContent = s.n + ' posts in this scan. ' + s.ads.length + ' carried a printed ad label. ' + total + ' posts across ' + SCANS.length + ' scans.';
+      // The caption is a live region: write only when the words change, so
+      // loading the page does not announce the sheet it already shows.
+      const say = (id, text) => { const el = $(id); if (el.textContent !== text) el.textContent = text; };
+      say('recordTitle', s.date + ', held on record.');
+      say('recordFacts', s.n + ' posts in this scan. ' + s.ads.length + ' carried a printed ad label. ' + total + ' posts across ' + SCANS.length + ' scans.');
     }
     select(current);
   }
@@ -246,12 +278,14 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
     3: { account: '@wildpath.journal', kind: 'plain', facts: [['Ad label', 'None printed'], ['Origin', 'Suggested, as labeled'], ['Account', '@wildpath.journal'], ['Position', '3 of 4']], chip: 'suggested', extra: 'Suggested. Which action led here: unknown.' },
     4: { account: '@harbor.coffee', kind: 'mine', facts: [['Ad label', 'None printed'], ['Origin', 'Following, as labeled'], ['Account', '@harbor.coffee, also at post 1'], ['Position', '4 of 4']], chip: 'repeat account', extra: 'The same account returns. A repeat in four posts, not a pattern.' },
   };
-  // Each post has a slot beneath it (#slot-1 to #slot-4): reading a post
-  // writes its entry into that slot, so the record forms beside the post it
-  // came from. A slot is only rebuilt when its own post changes.
+  // Each post has a slot beneath it (#slot-1 to #slot-4). An unread slot
+  // holds a blank form (static markup: the four fields, no values); reading
+  // the post replaces it with the entry, so the record forms beside the post
+  // it came from. A slot is only rebuilt when its own post changes.
   const feed = $('tapFeed');
   if (feed) {
     const read = new Set();
+    const blanks = new Map();
     const buttons = Array.from(feed.querySelectorAll('.read[data-read]'));
     function entry(n) {
       const p = POSTS[n];
@@ -276,8 +310,11 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
         b.setAttribute('aria-pressed', String(on));
         b.textContent = on ? 'In record' : 'Read';
         if (slot) {
-          if (on && !slot.firstChild) slot.append(entry(n));
-          if (!on && slot.firstChild) slot.replaceChildren();
+          // Keep the blank form the page shipped with, so "Start over" can put it back.
+          if (!blanks.has(n)) blanks.set(n, slot.firstElementChild);
+          const filled = slot.classList.contains('filled');
+          if (on && !filled) slot.replaceChildren(entry(n));
+          if (!on && filled) { const blank = blanks.get(n); if (blank) slot.replaceChildren(blank); else slot.replaceChildren(); }
           slot.classList.toggle('filled', on);
         }
       });
@@ -296,13 +333,17 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
     draw();
   }
 
-  // Three steps: click to select; advances every five seconds unless the
-  // visitor asked for reduced motion, is hovering or has focus inside.
+  // Three steps: click to select; advances every five seconds while the
+  // steps are on screen, unless the visitor asked for reduced motion, is
+  // hovering or has focus inside. The three previews share one grid cell
+  // (CSS), so the panel keeps the height of the tallest and nothing below
+  // it moves when the step changes.
   const steps = $('steps');
   if (steps) {
     const buttons = Array.from(steps.querySelectorAll('.step'));
     const previews = Array.from(document.querySelectorAll('.preview'));
-    let current = 1, timer = null, held = false;
+    const canWatch = 'IntersectionObserver' in window;
+    let current = 1, timer = null, held = false, visible = !canWatch;
     function show(n) {
       current = n;
       buttons.forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.step) === n)));
@@ -317,8 +358,16 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
     box.addEventListener('mouseleave', () => { held = false; });
     box.addEventListener('focusin', () => { held = true; });
     box.addEventListener('focusout', () => { held = false; });
-    reduced.addEventListener('change', start);
-    show(1); start();
+    reduced.addEventListener('change', () => { if (visible) start(); else stop(); });
+    show(1);
+    if (canWatch) {
+      new IntersectionObserver((entries) => {
+        visible = entries[entries.length - 1].isIntersecting;
+        if (visible) start(); else stop();
+      }, { threshold: 0.2 }).observe(box);
+    } else {
+      start();
+    }
   }
 })();
 
