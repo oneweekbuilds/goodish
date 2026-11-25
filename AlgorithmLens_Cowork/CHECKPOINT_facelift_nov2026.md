@@ -43,7 +43,7 @@ The full table is in `DESIGN_NOTES.md` (repo root), under "Audit fixes". In shor
 - **The explorer's** example posts have believable account names and captions.
 - **Methodology** opens with a summary and ends with a dated list of changes. **Terms** state the public beta.
 - **On phones** the header has a menu, and every button is big enough to tap.
-- **Not changed: the privacy policy's own text.** One item asked for it; it is left for you, with the exact proposed wording in the final report of that work.
+- **The privacy policy** no longer says two things about the text of posts. It now says once, in three places, that the text is read and not saved; the leftover "streak" wording is gone; and its date is November 25, 2026. This was edited in the app repository with your approval. The app opens this same page from Settings, so no app update is needed.
 
 ## Files modified
 

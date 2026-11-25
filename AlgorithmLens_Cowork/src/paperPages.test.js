@@ -100,3 +100,26 @@ describe('the methodology page', () => {
     expect(text(methodology)).toContain('A server-side proxy that would move the API credential off the device is built and not yet switched on');
   });
 });
+
+describe('the privacy policy page', () => {
+  const policy = text(page('privacy/index.html'));
+
+  it('says one thing about the text of posts, in all three places', () => {
+    expect(policy).toContain('We do not store the text of your posts: it is read during analysis and discarded.');
+    expect(policy).toContain('These items are stored in our database as text, never as images');
+    expect(policy).toContain('The post text is read during analysis and is not saved (Section 1.3).');
+    expect(policy).toContain('Only the structured analysis results are stored: text data, not images, and without the text of your posts.');
+    expect(policy).toContain('The structured analysis results (text data, not images, and without the text of your posts) are saved by the App');
+    // The sentence that read as the opposite of the one before it.
+    expect(policy).not.toContain('This text-based data is stored');
+  });
+
+  it('describes no streak feature: the app has none', () => {
+    expect(policy).not.toMatch(/streak/i);
+    expect(policy).toContain('Locally stored data (preferences) is deleted when you uninstall the App.');
+  });
+
+  it('carries the date of its source and says where the app shows it', () => {
+    expect(policy).toMatch(/Last updated [A-Z][a-z]+ \d{1,2}, 2026\. This is the same text the AlgorithmLens app shows in Settings\./);
+  });
+});

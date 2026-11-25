@@ -187,7 +187,7 @@ Eighteen fixes from an audit of the live site, on the branch `site-audit-fixes`.
 | --- | --- |
 | 1 | Already fixed by the facelift (the four posts are laid out side by side; nothing is clipped). No commit of its own. |
 | 2 | The privacy card names Google. Wording differs from the audit by one phrase: "Once you approve the analysis", since the app never shows the frames to approve one by one. |
-| 3 | Not changed. The policy text lives in the app repository, which this work was told not to touch, and the site page is generated from it. See "Left for a decision". |
+| 3 | Done on 25 November, after the owner approved it. The policy text lives in the app repository (`mobile/legal/PRIVACY_POLICY.md`, D-219 there); the site page is regenerated from it. Sections 1.3 and 3 now say the same thing about post text, the streak wording is gone, and the date is November 25, 2026. |
 | 4 | "Accuracy checked on YouTube so far" beside the platform list; the methodology says "never been accuracy-tested against human labels". |
 | 5 | Terms: public beta stated, "(when available)" removed from account deletion, date updated. Liability, arbitration and indemnity untouched. |
 | 6 | Two ad-label mark grids instead of five. Three views added to the report section: where posts came from, accounts that came back, and the observed, inferred, unknown key. |
@@ -230,7 +230,7 @@ Each sits between a pair of comment markers or is a whole generated file. Edit t
 
 ### Left for a decision
 
-- **Item 3, the privacy policy.** The save path stores no post text (the app's own tests pin this), so the true statement is "not stored". Three passages need to agree on it, and the "Streak" row and the "(streaks, preferences)" line describe a feature that does not exist. Two things kept this from being done here: the text is in the app repository, and whether scans saved before 26 July 2026 were purged of their text is recorded in that repository as not run.
+- **Item 3 is no longer open.** It was held back at first because the policy text is in the app repository, then done with the owner's approval. A correction to what these notes first said: the purge of post text from scans saved before 26 July 2026 is recorded in the app repository as run on 28 July 2026 (`RUN_MANUALLY.md`), not as pending. The app keeps no copy of the policy: Settings and onboarding open `algorithmlens.com/privacy`, so the regenerated page is what users read and no app update is needed.
 - **Other places where the policy and Terms are behind the app:** both describe Android capture and Google or Apple sign-in; the app is iPhone only and signs in by email.
 - **The in-app Terms** still say "(when available)" and do not mention the beta.
 - **Methodology, reported and not changed:** ads agreement reads 78 of 78 in the gold set section and 77 of 78 in the control runs; the Instagram hint marks unlabeled home-feed posts as followed while rule 5 says the absence of a label is never evidence of followed.
