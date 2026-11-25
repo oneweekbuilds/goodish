@@ -58,15 +58,26 @@ a{color:var(--ink);text-underline-offset:4px;overflow-wrap:anywhere}
 .pill:active{transform:translateY(1px);box-shadow:none}
 .topbar{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--line);transition:background var(--beat) var(--ease),box-shadow var(--beat) var(--ease)}
 .topbar.scrolled{background:rgba(245,244,240,.86);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 1px 0 var(--line),0 8px 24px rgba(58,55,48,.06)}
-header.top{display:flex;justify-content:space-between;align-items:center;gap:24px;height:64px;transition:height var(--beat) var(--ease)}
-.brand{width:139px;height:28px;display:flex;align-items:center;transition:width var(--beat) var(--ease)}
+header.top{display:flex;justify-content:space-between;align-items:center;gap:12px;height:64px;transition:height var(--beat) var(--ease)}
+.brand{width:139px;min-width:96px;height:44px;display:flex;align-items:center;transition:width var(--beat) var(--ease)}
 .brand svg{width:100%;height:auto}
-.topnav{display:flex;align-items:center;gap:32px;margin-left:auto}
+.topnav{display:flex;align-items:center;gap:8px;margin-left:auto}
 nav.sections{display:none;gap:32px;font-size:15px}
 nav.sections a{position:relative;text-decoration:none;display:inline-flex;align-items:center;min-height:44px;padding:6px 0}
 nav.sections a::after{content:"";position:absolute;left:0;right:0;bottom:8px;height:2px;background:var(--blue);transform:scaleX(0);transform-origin:left;transition:transform var(--beat) var(--ease)}
 nav.sections a:hover::after,nav.sections a:focus-visible::after,nav.sections a[aria-current]::after{transform:scaleX(1)}
-@media(min-width:900px){header.top{height:72px}.topbar.scrolled header.top{height:64px}.brand{width:188px;height:38px}.topbar.scrolled .brand{width:158px;height:32px}nav.sections{display:flex}.topbar .pill{padding:0 20px;margin-left:8px}}
+/* below 900 px the section links fold into a menu (a native disclosure, so it works without script) */
+.menu summary{list-style:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;min-width:44px;min-height:0;padding:0 14px;border:1px solid var(--line);border-radius:22px;background:var(--panel);color:var(--ink);font:600 14px/1 var(--sans);text-decoration:none;cursor:pointer;transition:border-color var(--tick) var(--ease)}
+.menu summary::-webkit-details-marker{display:none}
+.menu summary:hover,.menu[open] summary{border-color:var(--ink)}
+.menu .bars{display:grid;gap:4px;width:16px}
+.menu .bars i{display:block;height:2px;border-radius:1px;background:var(--ink)}
+.menu nav{position:absolute;left:0;right:0;top:100%;display:flex;flex-direction:column;background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line);box-shadow:0 16px 24px rgba(58,55,48,.08);padding:4px var(--gutter) 12px}
+.menu nav a{display:flex;align-items:center;min-height:52px;font:22px/28px var(--serif);text-decoration:none;border-top:1px solid var(--line)}
+.menu nav a:first-child{border-top:0}
+@media(max-width:399px){.menu summary{padding:0}.menu-word{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}.topbar .pill{padding:0 13px;font-size:14px}}
+@media(min-width:900px){.menu{display:none}}
+@media(min-width:900px){header.top{gap:24px;height:72px}.topbar.scrolled header.top{height:64px}.brand{width:188px}.topbar.scrolled .brand{width:158px}nav.sections{display:flex}.topbar .pill{padding:0 20px;margin-left:8px}}
 main{flex:1;padding:20px 0 72px}
 .label{display:inline-flex;align-items:center;gap:8px;font-size:14px;line-height:18px;color:var(--muted)}
 .label::before{content:"";width:12px;height:12px;border:1.5px solid var(--ink);border-radius:50%;flex-shrink:0}
@@ -79,7 +90,7 @@ h1{font:400 clamp(40px,11vw,68px)/1 var(--serif);letter-spacing:-.022em;margin:2
 .toc p{font-size:13px;line-height:18px;color:var(--muted);margin:0 0 10px}
 .toc ol{list-style:none;margin:0;padding:0;border-bottom:1px solid var(--line)}
 .toc li{break-inside:avoid}
-.toc a{display:block;padding:9px 0 10px;border-top:1px solid var(--line);font-size:14px;line-height:20px;text-decoration:none;overflow-wrap:normal;transition:padding-left var(--beat) var(--ease),box-shadow var(--beat) var(--ease)}
+.toc a{display:block;padding:12px 0;border-top:1px solid var(--line);font-size:14px;line-height:20px;text-decoration:none;overflow-wrap:normal;transition:padding-left var(--beat) var(--ease),box-shadow var(--beat) var(--ease)}
 .toc a:hover{text-decoration:underline;text-decoration-color:var(--blue)}
 .toc a[aria-current]{padding-left:12px;box-shadow:inset 2px 0 0 var(--ink)}
 .paper{max-width:70ch}
@@ -97,15 +108,15 @@ h1{font:400 clamp(40px,11vw,68px)/1 var(--serif);letter-spacing:-.022em;margin:2
 footer.bottom{background:var(--panel);border-top:1px solid var(--line);padding:44px 0 40px;color:var(--muted);font-size:14px;line-height:22px;margin-top:auto}
 .colophon{font:italic clamp(28px,4.5vw,56px)/1.1 var(--serif);letter-spacing:-.02em;color:var(--ink);text-wrap:balance;margin:0 0 36px;padding-bottom:36px;border-bottom:1px solid var(--line)}
 .foot-brand{display:flex;flex-direction:column;gap:14px;margin-bottom:24px}
-.foot-brand .brand{width:139px;height:28px}
+.foot-brand .brand{width:139px}
 .foot-brand p{margin:0;font-size:15px;line-height:22px;color:var(--muted);max-width:360px}
 .foot-cols{display:grid;grid-template-columns:1fr 1.4fr;gap:8px 16px}
 .foot-col{display:flex;flex-direction:column;font-size:14px;line-height:28px}
 .foot-col b{font-weight:600;color:var(--ink)}
-.foot-col a{color:var(--ink);text-decoration:none;display:inline-flex;align-items:center;min-height:30px}
+.foot-col a{color:var(--ink);text-decoration:none;display:inline-flex;align-items:center;min-height:44px;line-height:20px}
 .foot-col a:hover{text-decoration:underline;text-decoration-color:var(--blue);text-underline-offset:4px}
 .foot-row{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-top:24px;padding-top:8px;border-top:1px solid var(--line);font-size:13px;min-height:52px}
-@media(min-width:900px){footer.bottom{padding:72px 0 48px}.colophon{margin-bottom:56px;padding-bottom:56px}.foot-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:24px}.foot-brand{grid-column:1/span 4;gap:16px;margin:0}.foot-brand .brand{width:188px;height:38px}.foot-cols{display:contents}.foot-col{font-size:15px;line-height:30px}.foot-col.product{grid-column:6/span 2}.foot-col.company{grid-column:8/span 3}.foot-col.legal{grid-column:11/span 2}.foot-row{margin-top:32px;padding-top:12px}}
+@media(min-width:900px){footer.bottom{padding:72px 0 48px}.colophon{margin-bottom:56px;padding-bottom:56px}.foot-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:24px}.foot-brand{grid-column:1/span 4;gap:16px;margin:0}.foot-brand .brand{width:188px}.foot-cols{display:contents}.foot-col{font-size:15px;line-height:30px}.foot-col.product{grid-column:6/span 2}.foot-col.company{grid-column:8/span 3}.foot-col.legal{grid-column:11/span 2}.foot-row{margin-top:32px;padding-top:12px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important}.topbar.scrolled{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--paper)}.pill:hover{transform:none}}`;
 
 /**
@@ -171,6 +182,15 @@ ${css}
 <a href="/#privacy">Privacy</a>
 <a href="/methodology">Methodology</a>
 </nav>
+<details class="menu" id="menu">
+<summary><span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="menu-word">Menu</span></summary>
+<nav aria-label="Menu">
+<a href="/#how">How it works</a>
+<a href="/#report">The report</a>
+<a href="/#privacy">Privacy</a>
+<a href="/methodology">Methodology</a>
+</nav>
+</details>
 <a class="pill" href="https://testflight.apple.com/join/7n7n3scz" rel="noopener noreferrer">Join the beta</a>
 </div>
 </header>

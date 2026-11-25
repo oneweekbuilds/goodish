@@ -13,6 +13,18 @@
   check();
 })();
 
+// The header menu (below 900 px) is a native disclosure, so it opens without
+// script. Script only closes it: when a link inside it is followed, on
+// Escape, and when a click lands outside it.
+(function () {
+  'use strict';
+  var menu = document.getElementById('menu');
+  if (!menu) return;
+  menu.addEventListener('click', function (e) { if (e.target.closest('nav a')) menu.open = false; });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && menu.open) { menu.open = false; menu.querySelector('summary').focus(); } });
+  document.addEventListener('click', function (e) { if (menu.open && !menu.contains(e.target)) menu.open = false; });
+})();
+
 // Document pages (/methodology, /terms): the contents link for the section
 // being read is marked as the current location. The section is the last one
 // whose heading has reached the top of the window. /privacy/ is served under

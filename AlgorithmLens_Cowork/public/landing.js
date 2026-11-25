@@ -144,6 +144,16 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
     check();
   }
 
+  // The header menu (below 900 px) is a native disclosure, so it opens
+  // without script. Script only closes it: when a link inside it is
+  // followed, on Escape, and when a click lands outside it.
+  const menu = $('menu');
+  if (menu) {
+    menu.addEventListener('click', (e) => { if (e.target.closest('nav a')) menu.open = false; });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.open) { menu.open = false; menu.querySelector('summary').focus(); } });
+    document.addEventListener('click', (e) => { if (menu.open && !menu.contains(e.target)) menu.open = false; });
+  }
+
   // Header links that point at sections of this page: the one whose section
   // lies across the middle of the viewport is marked as the current location
   // (and keeps the underline the others show on hover).
@@ -343,14 +353,14 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
     const buttons = Array.from(steps.querySelectorAll('.step'));
     const previews = Array.from(document.querySelectorAll('.preview'));
     const canWatch = 'IntersectionObserver' in window;
-    let current = 1, timer = null, held = false, visible = !canWatch;
+    let current = 1, timer = null, held = false, visible = !canWatch, paused = false;
     function show(n) {
       current = n;
       buttons.forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.step) === n)));
       previews.forEach((p) => { p.hidden = Number(p.dataset.preview) !== n; });
     }
     function tick() { if (!held && !document.hidden) show((current % 3) + 1); }
-    function start() { stop(); if (!reduced.matches) timer = setInterval(tick, 5000); }
+    function start() { stop(); if (!reduced.matches && !paused) timer = setInterval(tick, 5000); }
     function stop() { if (timer) clearInterval(timer); timer = null; }
     buttons.forEach((b) => b.addEventListener('click', () => { show(Number(b.dataset.step)); start(); }));
     const box = steps.closest('.how-grid') || steps.parentElement;
@@ -359,6 +369,15 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
     box.addEventListener('focusin', () => { held = true; });
     box.addEventListener('focusout', () => { held = false; });
     reduced.addEventListener('change', () => { if (visible) start(); else stop(); });
+    // A control to stop the steps advancing on their own, and to start them
+    // again. It is hidden when nothing advances (reduced motion).
+    const pause = $('stepsPause');
+    if (pause) {
+      const sync = () => { pause.hidden = reduced.matches; pause.textContent = paused ? 'Play the steps' : 'Pause the steps'; };
+      pause.addEventListener('click', () => { paused = !paused; sync(); if (paused) stop(); else if (visible) start(); });
+      reduced.addEventListener('change', sync);
+      sync();
+    }
     show(1);
     if (canWatch) {
       new IntersectionObserver((entries) => {
