@@ -1,14 +1,11 @@
 # Checkpoint: site facelift and audit fixes
-**Dates:** November 24, 2026 (facelift, two rounds) and November 24 to 25, 2026 (18 audit fixes)
+**Dates:** November 24, 2026 (facelift, two rounds) and November 24 to 25, 2026 (18 audit fixes). **Published November 25, 2026.**
 
 ## Where things stand
 
-- **The live site has not changed.** algorithmlens.com is still the version from before this work.
-- There are two saved lines of work (git branches). The live site is built from the branch called `main`, and nothing was added to `main`.
-  - `facelift-fable-5-2`: the new look only.
-  - `site-audit-fixes`: the new look plus the 18 audit fixes. This is the one to review and publish. It contains everything in the first.
-- The exact version that is live today is bookmarked (a git tag) as `pre-facelift-2026-11-24`. That bookmark never moves, so the old site can always be brought back. The bookmark is on this computer only.
-- `site-audit-fixes` was sent to GitHub so that Vercel builds a preview of it. A preview is a private-looking copy at its own address; it is not the live site.
+- **This is the live site.** On November 25, 2026 the new look, the 18 audit fixes and the privacy policy fix were published to algorithmlens.com together, at your say-so.
+- The live site is built from the branch called `main`, which now holds all of it. The two work branches, `facelift-fable-5-2` and `site-audit-fixes`, are kept as they were.
+- The exact version that was live before is bookmarked (a git tag) as `pre-facelift-2026-11-24`. That bookmark never moves, so the old site can always be brought back with the one line under "Undo" below. The bookmark is on this computer only.
 
 ## What changed: the facelift
 
@@ -55,47 +52,29 @@ The full table is in `DESIGN_NOTES.md` (repo root), under "Audit fixes". In shor
 - Scripts: `scripts/build-home-page.mjs`, `build-tt-page.mjs`, `build-paper-pages.mjs`, `build-legal-pages.mjs`, `build-share-image.mjs`, `paper-document.mjs`, `qr.mjs`, `scripts/web-audit/serve-local.mjs`, `scripts/web-audit/shoot-live.mjs`, and `package.json`
 - Tests: `src/homePage.test.js`, `src/ttPage.test.js`, `src/explorerData.test.js`, `src/paperPages.test.js`, `src/exampleRecord.test.js`
 - `DESIGN_NOTES.md` and this file
+- In the app repository (separate): `mobile/legal/PRIVACY_POLICY.md`, the test that pins its date, and decision D-219
 
-## How to look at it
+## How it was published
 
-Ask Claude to "show me the site preview". It opens in the app's Browser pane, and every link works there as it would on the real site. The Viewport menu in that pane switches between desktop and phone. The Vercel preview address shows the same thing on any device, including your iPhone.
+`main` was moved forward to the tip of `site-audit-fixes` (a fast-forward: nothing on `main` was rewritten) and sent to GitHub. Vercel rebuilt the site from it.
 
-## Publish and undo
+## Undo
 
-Each block below is one line. Paste it into PowerShell and press Enter.
+The block below is one line. Paste it into PowerShell and press Enter.
 (The `-c core.autocrlf=input` part keeps the files' line endings the way the site's build expects on Windows. It changes no setting; it only applies to that one command.)
 
-### To publish it (make it the live site)
-One line. Its last part is the moment it goes live; Vercel rebuilds the site by itself a few minutes later. If the first part fails for any reason, the rest does nothing.
-
-```powershell
-git -C "C:\Users\jwjwi\Desktop\goodish" -c core.autocrlf=input switch main; git -C "C:\Users\jwjwi\Desktop\goodish" -c core.autocrlf=input merge --ff-only site-audit-fixes; git -C "C:\Users\jwjwi\Desktop\goodish" push origin main
-```
-
-To publish the new look without the audit fixes, use the same line with `facelift-fable-5-2` in place of `site-audit-fixes`.
-
-### If you do not like it and it has NOT been published
-There is nothing to undo on the live site. To put this computer's copy of the site back to the live version:
-
-```powershell
-git -C "C:\Users\jwjwi\Desktop\goodish" -c core.autocrlf=input switch main
-```
-
-The work stays saved on its branches in case you want it later.
-
-### If you published it and want the old site back
-One line. It puts the whole site folder back exactly as it was before any of this work, and publishes that. Its last part is the moment the old site is live again. This was rehearsed on a throwaway copy: the folder came back identical to the bookmark, file for file.
+### If you want the old site back
+It puts the whole site folder back exactly as it was before any of this work, and publishes that. Its last part is the moment the old site is live again. This was rehearsed on a throwaway copy before publishing: the folder came back identical to the bookmark, file for file.
 
 ```powershell
 git -C "C:\Users\jwjwi\Desktop\goodish" -c core.autocrlf=input switch main; git -C "C:\Users\jwjwi\Desktop\goodish" -c core.autocrlf=input restore --source pre-facelift-2026-11-24 --staged --worktree -- AlgorithmLens_Cowork; git -C "C:\Users\jwjwi\Desktop\goodish" commit -m "Undo the November 2026 site changes: the site folder back to the pre-facelift version"; git -C "C:\Users\jwjwi\Desktop\goodish" push origin main
 ```
 
-This file is inside that folder, so it goes too; `DESIGN_NOTES.md` keeps the record. The work itself stays saved on its two branches.
+This file is inside that folder, so it goes too; `DESIGN_NOTES.md` keeps the record. The work itself stays saved on its two branches. One thing the undo does not reverse: the privacy policy's wording fix lives in the app repository, and the old site's privacy page would show the policy as it read on October 13.
 
 If you want to keep some of it and undo the rest (for example, keep the new look but drop one audit fix), ask Claude; each fix was saved separately so it can be undone on its own.
 
 ## Not yet checked
 
 - A real iPhone in Safari (everything was checked in a desktop browser at phone size).
-- The live site itself, since nothing has been published.
 - Lighthouse scores.

@@ -179,6 +179,8 @@ Home page: added "Back to top", and "Post 1" to "Post 4" with the four field nam
 
 ## Audit fixes, 24 to 25 November 2026
 
+**Published 25 November 2026**, together with the facelift, by moving `main` forward to this branch at the owner's say-so.
+
 Eighteen fixes from an audit of the live site, on the branch `site-audit-fixes`. The branch starts from the facelift (`facelift-fable-5-2`), not from `main`: twelve of the eighteen items touch pages the facelift rewrote, so starting from `main` would have meant fixing pages that were about to be replaced. One commit per item, the item number first in its message.
 
 ### What each item did
@@ -235,7 +237,7 @@ Each sits between a pair of comment markers or is a whole generated file. Edit t
 - **The in-app Terms** still say "(when available)" and do not mention the beta.
 - **Methodology, reported and not changed:** ads agreement reads 78 of 78 in the gold set section and 77 of 78 in the control runs; the Instagram hint marks unlabeled home-feed posts as followed while rule 5 says the absence of a label is never evidence of followed.
 
-### Verification, 25 November 2026 (on the built site, served locally under the real headers; nothing deployed)
+### Verification, 25 November 2026 (before publishing: on the built site, served locally under the real headers)
 
 - `npm run build` succeeds, and the built pages are byte for byte the committed ones.
 - 319 tests pass; eslint is clean on every touched script and test.
