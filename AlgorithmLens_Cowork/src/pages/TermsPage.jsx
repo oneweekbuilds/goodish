@@ -13,7 +13,7 @@
  * - Intellectual property, liability, indemnification
  * - Termination, third-party services, governing law
  *
- * Last updated: July 2026
+ * Last updated: November 2026
  */
 
 import React from 'react';
@@ -44,7 +44,7 @@ export default function TermsPage() {
                 Terms of service
               </h1>
               <p className="text-text-muted">
-                Last updated: July 2026
+                Last updated: November 2026
               </p>
             </div>
           </div>
@@ -67,7 +67,7 @@ export default function TermsPage() {
               <h2 className="text-2xl font-bold text-text-main mb-4">1. What AlgorithmLens does</h2>
 
               <p className="text-text-muted leading-relaxed mb-4">
-                AlgorithmLens is a tool that captures screenshots of your social media feed, uses AI to analyze the content, and presents you with a breakdown of what is in your feed (ads, political content, entertainment, and so on). The App uses Google's Gemini AI to perform this analysis.
+                AlgorithmLens is a tool that captures screenshots of your social media feed, uses AI to analyze the content, and presents you with a breakdown of what is in your feed (ads, political content, entertainment, and so on). The App uses Google's Gemini AI to perform this analysis. The App is currently in public beta, distributed through Apple's TestFlight.
               </p>
 
               <p className="text-text-muted leading-relaxed">
@@ -391,7 +391,7 @@ export default function TermsPage() {
                 <div>
                   <h3 className="font-semibold text-text-main mb-2">By you</h3>
                   <p className="text-text-muted leading-relaxed">
-                    You may request deletion of your account at any time using the account deletion option in the App's settings (when available) or by contacting support@algorithmlens.com. Your account data, scan results, and profile information are then deleted from our servers.
+                    You may request deletion of your account at any time using the account deletion option in the App's settings or by contacting support@algorithmlens.com. Your account data, scan results, and profile information are then deleted from our servers.
                   </p>
                 </div>
 
