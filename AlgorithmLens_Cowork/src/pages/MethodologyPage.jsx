@@ -19,7 +19,7 @@
  * PRODUCT_DECISIONS.md (D-54). Nothing here is a number the app does not
  * itself stand behind.
  *
- * Last updated: October 27, 2026
+ * Last updated: November 24, 2026
  */
 
 import React from 'react';
@@ -117,7 +117,7 @@ export default function MethodologyPage() {
                 Methodology
               </h1>
               <p className="text-text-muted">
-                Last updated: October 27, 2026
+                Last updated: November 24, 2026
               </p>
             </div>
           </div>
@@ -135,7 +135,7 @@ export default function MethodologyPage() {
                   <li>The app is in a public TestFlight beta on iPhone (iOS 15.1 and later).</li>
                   <li>Stability (does the reader say the same thing twice?) was measured once, on 7 August 2026, on one YouTube capture.</li>
                   <li>Accuracy (does it agree with a person?) was measured once, on 9 August 2026 with politics re-measured on 10 August, by one annotator, on {f.goldItems} items from one YouTube session. That is enough to find a weakness and not enough to certify a strength.</li>
-                  <li>Five of the six supported feeds (Instagram, TikTok, X, Facebook, Reddit) have never been tested against a real capture.</li>
+                  <li>Five of the six supported feeds (Instagram, TikTok, X, Facebook, Reddit) have never been accuracy-tested against human labels.</li>
                   <li>Every AI-derived label is a model's reading of a post, not a fact about the post, and the app says so wherever a number rests on one.</li>
                 </ul>
               </div>
@@ -358,7 +358,7 @@ export default function MethodologyPage() {
 
               <h3 className="text-lg font-semibold text-text-main mt-6 mb-2">5. What has not been validated</h3>
               <ul className="space-y-2 text-text-muted">
-                <li className="flex gap-3"><span className="flex-shrink-0 mt-1">•</span><span><strong>Five of six feeds.</strong> Instagram, TikTok, X, Facebook and Reddit have never been tested against a real capture, for stability or accuracy. Nothing measured on YouTube carries over to them. Inside the app, an "Accuracy by platform" card will state a per-feed reading only once {f.platformAccuracyFloor} posts on that feed have been labeled by research participants; as of 5 October 2026 no feed had reached that floor, and every row reads "not yet measured".</span></li>
+                <li className="flex gap-3"><span className="flex-shrink-0 mt-1">•</span><span><strong>Five of six feeds.</strong> Instagram, TikTok, X, Facebook and Reddit have never been accuracy-tested against human labels, and their stability has never been measured. Nothing measured on YouTube carries over to them. Inside the app, an "Accuracy by platform" card will state a per-feed reading only once {f.platformAccuracyFloor} posts on that feed have been labeled by research participants; as of 5 October 2026 no feed had reached that floor, and every row reads "not yet measured".</span></li>
                 <li className="flex gap-3"><span className="flex-shrink-0 mt-1">•</span><span><strong>Tone.</strong> The reader labeled 7 of 40 readable posts, never once produced "mixed" on this capture, and the counts are below the floor for a point estimate. It is the least stable dimension as well.</span></li>
                 <li className="flex gap-3"><span className="flex-shrink-0 mt-1">•</span><span><strong>Inter-rater agreement.</strong> One annotator. Nothing here measures how much two careful people would differ, so none of the agreement figures should be quoted as accuracy against truth.</span></li>
                 <li className="flex gap-3"><span className="flex-shrink-0 mt-1">•</span><span><strong>Extraction recall.</strong> The person only ever judged items the model proposed, so posts on screen the model never extracted are invisible to the study.</span></li>
