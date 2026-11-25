@@ -7,15 +7,19 @@
 // The live host named in the /explore/ policy is swapped for this one;
 // otherwise that policy would block the explorer's own assets on localhost.
 //
-// Usage: node scripts/web-audit/serve-local.mjs [port]     (default 5190)
+// Usage: node scripts/web-audit/serve-local.mjs [port] [folder]     (default 5190, public)
 // Then:  node scripts/web-audit/copy-check.mjs http://localhost:5190
+//
+// The folder is relative to the app root. Pass "dist" after `npm run build`
+// to check the built site exactly as it will be deployed:
+//   node scripts/web-audit/serve-local.mjs 5191 dist
 import http from 'node:http';
 import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const root = path.resolve(here, '..', '..', 'public');
+const root = path.resolve(here, '..', '..', process.argv[3] || 'public');
 const cfg = JSON.parse(readFileSync(path.resolve(here, '..', '..', 'vercel.json'), 'utf8'));
 const port = Number(process.argv[2] || 5190);
 

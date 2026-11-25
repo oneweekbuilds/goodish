@@ -176,3 +176,73 @@ Home page: added "Back to top", and "Post 1" to "Post 4" with the four field nam
 - Home page interactions at 1440 and 390: the date chips, a pointer click on a back sheet, the four Read buttons and start over (the blank forms come back), the three steps (list 466 px and panel 399 px at every step on desktop, 427 and 377 on a phone, page height unchanged), the header's current-section mark, the film toggle and the form's outcomes.
 - Contents links on the three documents: no missing targets (8, 16 and 14 links); a click lands the heading 88 px from the top and, where scripts run, marks that link.
 - Not done here: Lighthouse, real iOS Safari, and any check against the live host.
+
+## Audit fixes, 24 to 25 November 2026
+
+Eighteen fixes from an audit of the live site, on the branch `site-audit-fixes`. The branch starts from the facelift (`facelift-fable-5-2`), not from `main`: twelve of the eighteen items touch pages the facelift rewrote, so starting from `main` would have meant fixing pages that were about to be replaced. One commit per item, the item number first in its message.
+
+### What each item did
+
+| Item | Outcome |
+| --- | --- |
+| 1 | Already fixed by the facelift (the four posts are laid out side by side; nothing is clipped). No commit of its own. |
+| 2 | The privacy card names Google. Wording differs from the audit by one phrase: "Once you approve the analysis", since the app never shows the frames to approve one by one. |
+| 3 | Not changed. The policy text lives in the app repository, which this work was told not to touch, and the site page is generated from it. See "Left for a decision". |
+| 4 | "Accuracy checked on YouTube so far" beside the platform list; the methodology says "never been accuracy-tested against human labels". |
+| 5 | Terms: public beta stated, "(when available)" removed from account deletion, date updated. Liability, arbitration and indemnity untouched. |
+| 6 | Two ad-label mark grids instead of five. Three views added to the report section: where posts came from, accounts that came back, and the observed, inferred, unknown key. |
+| 7 | A real screen from the app in the hero (a render from the app's own gallery run of 27 October). The film moved under the four posts. |
+| 8 | Three lines under the beta button. The third says "You approve the analysis before anything is sent": the app shows a summary, not the recording. |
+| 9 | A QR code for the beta beside the button from 1024 px, on devices with a mouse or trackpad. The launch heading renamed. An optional Android box that needs no change to the database. |
+| 10 | A questions section, five answers, each linked to the passage it comes from. "Why is it free?" is asked as "Is it really free?": the documents say that it is free, not why. |
+| 11 | One Example label per example; the page-level statement kept only in the limits section; each limit stated once. |
+| 12 | Plain words for the archive vocabulary, on the home page, the about page and the explorer. |
+| 13 | `/tt/` is a short page: headline, one example visual, three findings, the button. No script. |
+| 14 | Methodology: a 151-word summary, the author, an id on every heading, a dated list of changes. |
+| 15 | The explorer's posts have names and captions; build words and the file picker are gone; the page that draws one scan up close reads the same data as the explorer. |
+| 16 | New title, the beta links in the markup, structured data, a new share image used by every page. |
+| 17 | The launch form names its page in a hidden field and says so. The source was already being sent and stored; nothing to migrate. |
+| 18 | A menu for the header links on phones, a pause control for the steps, 44 px tap targets, no phone text under 13 px. |
+
+### Parts of the pages that are generated
+
+Each sits between a pair of comment markers or is a whole generated file. Edit the source, then run the generator; the tests fail if a committed page is out of date.
+
+| What | Source | Run |
+| --- | --- | --- |
+| Home page: the QR code, the beta links, the three report views, the structured data | `BETA_LINK` in `public/landing.js`; `public/explore/examples.js`; the questions section of `public/index.html` | `npm run build:home` |
+| `/tt/` | the home page, `TIKTOK_BETA_LINK`, `examples.js` | `npm run build:tt` (after `build:home`) |
+| Methodology and Terms | `src/pages/MethodologyPage.jsx`, `src/pages/TermsPage.jsx` | `npm run build:methodology` |
+| Privacy policy | `mobile/legal/PRIVACY_POLICY.md` in the app repository, plus the website note in `scripts/build-legal-pages.mjs` | `node scripts/build-legal-pages.mjs` |
+| The share image | `scripts/build-share-image.mjs` | `npm run build:share` |
+
+`npm run build` runs the first two before every build. `scripts/qr.mjs` is the QR encoder (no dependencies).
+
+### Decisions worth knowing
+
+- **The Android box and the page name ride in the existing `source` column.** The launch-list function stores a free-text source of up to 120 characters. The home page sends `algorithmlens-launch-list`, and `algorithmlens-launch-list+android` when the box is ticked. To list those addresses: `select email, created_at from public.launch_list where source like '%+android' order by created_at;`
+- **No field of the launch form has a `name`.** With the script unavailable, a press of the button used to put the address into this site's own URL. Now it sends nothing, and a line says the form needs JavaScript.
+- **The film loads nothing until asked.** Its poster is fetched when its disclosure is opened and the film when it is played.
+- **The hero screen's numbers (27 posts, 16 of 27) belong to the app's own sample data**, not to the site's example scan (45 posts). Each carries its own Example label. The share image shows the same screen.
+- **One example dataset.** The explorer, the home page's views, `/tt/` and the page that draws one scan up close all count from `public/explore/examples.js`. The up-close page used to carry a second copy with the ad labels at other positions.
+- **The old share image, `og-example.png`, is no longer named by any page** (its marks did not match the explorer). The file is left in place for old link previews.
+- **Dates.** The methodology's "Last updated" and the two November entries in its list of changes are the dates of the edits (24 and 25 November 2026), not the date of publication.
+
+### Left for a decision
+
+- **Item 3, the privacy policy.** The save path stores no post text (the app's own tests pin this), so the true statement is "not stored". Three passages need to agree on it, and the "Streak" row and the "(streaks, preferences)" line describe a feature that does not exist. Two things kept this from being done here: the text is in the app repository, and whether scans saved before 26 July 2026 were purged of their text is recorded in that repository as not run.
+- **Other places where the policy and Terms are behind the app:** both describe Android capture and Google or Apple sign-in; the app is iPhone only and signs in by email.
+- **The in-app Terms** still say "(when available)" and do not mention the beta.
+- **Methodology, reported and not changed:** ads agreement reads 78 of 78 in the gold set section and 77 of 78 in the control runs; the Instagram hint marks unlabeled home-feed posts as followed while rule 5 says the absence of a label is never evidence of followed.
+
+### Verification, 25 November 2026 (on the built site, served locally under the real headers; nothing deployed)
+
+- `npm run build` succeeds, and the built pages are byte for byte the committed ones.
+- 319 tests pass; eslint is clean on every touched script and test.
+- Ten pages at 375, 1024 and 1440: no console message, no Content-Security-Policy violation, no request leaving the site, no failed request, no sideways scroll, no cookie.
+- 208 internal links and anchors resolve.
+- The demo, the record, the steps, the form (simulated answers) and the film, clicked through at 375, 1024 and 1440.
+- Every number on the home page, `/tt/`, the explorer's views and the up-close page agrees with the example data.
+- Nothing unfinished in what a visitor can read: no brackets, "TBD", "TODO", "example_" or empty blanks, in any page or explorer view; none of those strings anywhere in the built folder.
+- The QR codes read back as the right links, by a decoder written for the tests and by OpenCV from screenshots.
+- Not done here: Lighthouse, a real iPhone in Safari, and any check against the live host.
