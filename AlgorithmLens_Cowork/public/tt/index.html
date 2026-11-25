@@ -380,7 +380,6 @@ h1{font-size:clamp(64px,8.8vw,126px);margin:22px 0 32px}
 .tuned span{display:inline-flex;gap:6px;flex-wrap:wrap}
 .tuned b{font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:13px;line-height:18px}
 .readout-foot{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.try-limit{margin-top:28px}
 @media(min-width:600px){
 .frames{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
 .slot{min-height:236px}
@@ -396,7 +395,6 @@ h1{font-size:clamp(64px,8.8vw,126px);margin:22px 0 32px}
 .feed-head{font-size:26px;line-height:32px}
 .strip-foot{flex-direction:row;align-items:center;justify-content:space-between;gap:24px;margin-top:24px;padding-top:16px}
 .readout-foot{gap:24px}
-.try-limit{margin-top:36px;font-size:22px;line-height:31px;max-width:30em}
 }
 @media(min-width:1200px){.frames{grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}.slot{min-height:272px}}
 /* the example film, kept under the four posts for anyone who would rather watch; nothing loads until it is played */
@@ -513,7 +511,6 @@ h1{font-size:clamp(64px,8.8vw,126px);margin:22px 0 32px}
 .worked{padding:22px 20px 14px;border-radius:20px;margin-top:28px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow-panel)}
 .worked .head{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted)}
 .worked h3{font-size:24px;line-height:30px}
-.worked .sub{font-size:14px;color:var(--muted);margin-top:-8px}
 .bignum{display:flex;flex-direction:column;gap:6px;padding:6px 0 2px}
 .bignum b{font:400 clamp(72px,23vw,104px)/.92 var(--serif);letter-spacing:-.035em;font-variant-numeric:tabular-nums;white-space:nowrap}
 .bignum b i{font-size:.62em;letter-spacing:-.01em}
@@ -525,7 +522,6 @@ h1{font-size:clamp(64px,8.8vw,126px);margin:22px 0 32px}
 .point{font-size:16px;line-height:24px;padding:16px 0}
 .worked{grid-column:7/span 6;padding:28px 28px 16px;gap:16px;margin-top:0}
 .worked h3{font-size:28px;line-height:34px}
-.worked .sub{font-size:15px}
 .bignum b{font-size:clamp(96px,9.4vw,136px)}
 .worked .textlink{font-size:16px}
 }
@@ -670,7 +666,7 @@ html{scroll-behavior:auto}
 <main id="main">
 <section class="dots" id="top">
 <div class="wrap hero">
-<p class="dateline"><span class="label eyebrow" id="heroNote">A free iPhone app, now in public beta. Example data on this page, except the one real scan marked as such.</span></p>
+<p class="dateline"><span class="label eyebrow" id="heroNote">A free iPhone app, now in public beta.</span></p>
 <div class="oxford" aria-hidden="true"></div>
 <h1><span class="l1">See your feed</span> <span class="underline">clearly.<svg viewBox="0 0 160 10" preserveAspectRatio="none" aria-hidden="true"><path d="M2 7 Q 30 2, 62 6 T 120 6 T 158 5"/></svg></span></h1>
 <div class="front">
@@ -741,7 +737,7 @@ html{scroll-behavior:auto}
 <figure class="record-card" data-reveal>
 <div class="table dots">
 <div class="panel-head">
-<span class="title"><span><b>Example record</b><small>Instagram. Four fictional scans, Aug 30 to Sep 20</small></span></span>
+<span class="title"><span><b>Instagram, four weekly scans</b><small>Aug 30 to Sep 20</small></span></span>
 <span class="label">Example</span>
 </div>
 <div class="stage" id="stage" aria-hidden="true"></div>
@@ -770,7 +766,7 @@ html{scroll-behavior:auto}
 </div>
 <!-- report-views:start -->
 <div class="views">
-<p class="views-head" data-reveal><span class="label">Also in the report, from the September 20 scan</span></p>
+<p class="views-head" data-reveal><span class="label">Also in the report, from the scan of September 20</span></p>
 <div class="views-grid">
 <figure class="view" data-reveal>
 <figcaption><span class="kicker">Where posts came from</span><h3>16 followed, 14 suggested, 15 unknown</h3></figcaption>
@@ -795,7 +791,7 @@ html{scroll-behavior:auto}
 <dl class="keylist">
 <div><dt><i class="obs"></i>Observed</dt><dd>A label or a name the scan could read. 6 of 45 posts carried an ad label.</dd></div>
 <div><dt><i class="inf"></i>Inferred</dt><dd>A reading of the content, marked as one. 5 of 45 posts were classified as political.</dd></div>
-<div><dt><i class="unk"></i>Unknown</dt><dd>What the scan could not read: 1 ad label, and 6 posts not assessed for politics. Why a post appeared stays unknown too.</dd></div>
+<div><dt><i class="unk"></i>Unknown</dt><dd>What the scan could not read: 1 ad label, and 6 posts not assessed for politics.</dd></div>
 </dl>
 </figure>
 </div>
@@ -809,7 +805,7 @@ html{scroll-behavior:auto}
 <div class="real-copy">
 <p class="sec-head" data-reveal><span class="num">02</span><span class="label eyebrow real">One real scan</span></p>
 <h2 data-reveal>One real scan, marked as such.</h2>
-<p class="lede" data-reveal>Everything else on this page is a fictional example. This is a single real scan of the founder's own X feed, read by the app on 6 October 2026.</p>
+<p class="lede" data-reveal>Everything else on this page is example data. This is one real scan of the founder's own X feed, read by the app on 6 October 2026.</p>
 <p class="limit" data-reveal>One scan of one feed. It shows what this scan read, not what X shows people in general.</p>
 </div>
 <figure class="card real-card" data-reveal>
@@ -831,13 +827,13 @@ html{scroll-behavior:auto}
 <p class="sec-head" data-reveal><span class="num">03</span><span class="label eyebrow">Try it</span></p>
 <h2 data-reveal>Tap four posts. Watch the record form.</h2>
 </div>
-<div class="sec-lede"><p class="lede" data-reveal>A fictional feed. Each tap adds what a scan could read from that post, and stops at what it could not.</p></div>
+<div class="sec-lede"><p class="lede" data-reveal>Each tap adds what a scan could read from that post, and stops at what it could not.</p></div>
 </div>
 <div class="strip table dots" data-reveal>
 <div class="strip-head">
 <div>
-<div class="feed-head"><span>For you</span><span class="label">Fictional</span></div>
-<p class="hint">Four fictional posts. Tap Read to add one to the record.</p>
+<div class="feed-head"><span>For you</span><span class="label">Example</span></div>
+<p class="hint">Four posts. Tap Read to add one to the record.</p>
 </div>
 <div>
 <div class="readout-head"><span>The record forming</span><span id="readCount">0 of 4 posts</span></div>
@@ -849,8 +845,8 @@ html{scroll-behavior:auto}
 <span class="pos" aria-hidden="true">1</span>
 <article class="post">
 <div class="post-top"><span class="avatar" aria-hidden="true">h</span><div>@harbor.coffee<small class="tag">Sponsored</small></div></div>
-<img src="/static/img/photo-coffee.jpg" alt="Fictional example post image: a glass of iced coffee beside a paper bag" loading="lazy" width="320" height="150">
-<div class="post-copy"><p>A slower start. A fictional sponsored coffee post.</p><button type="button" class="read" data-read="1" aria-pressed="false">Read</button></div>
+<img src="/static/img/photo-coffee.jpg" alt="Example post image: a glass of iced coffee beside a paper bag" loading="lazy" width="320" height="150">
+<div class="post-copy"><p>A slower start. Our new cold brew is here.</p><button type="button" class="read" data-read="1" aria-pressed="false">Read</button></div>
 </article>
 <div class="slot" id="slot-1" aria-live="polite"><div class="blank" aria-hidden="true"><span class="blank-head"><i></i>Post 1</span><span class="blank-rows"><span>Ad label</span><span>Origin</span><span>Account</span><span>Position</span></span></div></div>
 </div>
@@ -867,7 +863,7 @@ html{scroll-behavior:auto}
 <span class="pos" aria-hidden="true">3</span>
 <article class="post">
 <div class="post-top"><span class="avatar" aria-hidden="true">w</span><div>@wildpath.journal<small class="tag">Suggested for you</small></div></div>
-<img src="/static/img/photo-lake.jpg" alt="Fictional example post image: a still lake at dawn" loading="lazy" width="320" height="150">
+<img src="/static/img/photo-lake.jpg" alt="Example post image: a still lake at dawn" loading="lazy" width="320" height="150">
 <div class="post-copy"><p>A long way from the morning rush.</p><button type="button" class="read" data-read="3" aria-pressed="false">Read</button></div>
 </article>
 <div class="slot" id="slot-3" aria-live="polite"><div class="blank" aria-hidden="true"><span class="blank-head"><i></i>Post 3</span><span class="blank-rows"><span>Ad label</span><span>Origin</span><span>Account</span><span>Position</span></span></div></div>
@@ -876,7 +872,7 @@ html{scroll-behavior:auto}
 <span class="pos" aria-hidden="true">4</span>
 <article class="post">
 <div class="post-top"><span class="avatar" aria-hidden="true">h</span><div>@harbor.coffee<small class="tag green">Following</small></div></div>
-<img src="/static/img/photo-coffee.jpg" alt="Fictional example post image: the same coffee shop, before opening" loading="lazy" width="320" height="150">
+<img src="/static/img/photo-coffee.jpg" alt="Example post image: the same coffee shop, before opening" loading="lazy" width="320" height="150">
 <div class="post-copy"><p>Behind the counter, before the doors open.</p><button type="button" class="read" data-read="4" aria-pressed="false">Read</button></div>
 </article>
 <div class="slot" id="slot-4" aria-live="polite"><div class="blank" aria-hidden="true"><span class="blank-head"><i></i>Post 4</span><span class="blank-rows"><span>Ad label</span><span>Origin</span><span>Account</span><span>Position</span></span></div></div>
@@ -891,17 +887,16 @@ html{scroll-behavior:auto}
 <details class="film-more" id="film">
 <summary>Watch the same four posts as a twenty-second film</summary>
 <div class="film-grid">
-<video id="exampleFilm" muted playsinline controls preload="none" width="1080" height="1920" data-poster="/static/film/feed-replay-poster.jpg" aria-label="Twenty-second illustrated feed replay of four fictional posts">
+<video id="exampleFilm" muted playsinline controls preload="none" width="1080" height="1920" data-poster="/static/film/feed-replay-poster.jpg" aria-label="Twenty-second illustrated replay of the four example posts">
 <source src="/static/film/feed-replay-1080.mp4" type="video/mp4" media="(min-width: 900px)">
 <source src="/static/film/feed-replay-720.mp4" type="video/mp4">
 </video>
 <div class="film-words">
 <b>The film in words</b>
-<p>An ad label is visible. A political-content classification is an inference. A suggested label does not explain why the post was selected. One readable account appears twice. Four fictional posts become a small record, not a representative feed.</p>
+<p>An ad label is visible. A political-content classification is an inference. A suggested label does not explain why the post was selected. One readable account appears twice. The four posts become a small record, not a representative feed.</p>
 </div>
 </div>
 </details>
-<p class="limit try-limit" data-reveal>Illustrative. A scan reads what appeared; it cannot see a platform's model or say why a post was shown.</p>
 </div>
 </section>
 
@@ -930,7 +925,7 @@ html{scroll-behavior:auto}
 </div>
 <div class="limits-copy grid">
 <p data-reveal>We show what appeared in a sample and keep observed labels apart from inferences. Political content describes a post, not your beliefs. Tone describes a reading of the content, not your mood. A suggested post does not tell us which action led to the recommendation.</p>
-<p class="caption" data-reveal>The example on this page is fictional, not a live scan or a demonstration of a running classifier. The one real scan is marked as such. This page does not record your screen or analyze your feed.</p>
+<p class="caption" data-reveal>The examples on this page are fictional: not a live scan, and not a demonstration of a running classifier. The one real scan is marked as such. This page does not record your screen or analyze your feed.</p>
 </div>
 </div>
 </section>
@@ -971,7 +966,6 @@ html{scroll-behavior:auto}
 <div>Political content and tone<span>marked as inference</span></div>
 <div>Anything unreadable<span>left unknown</span></div>
 </div>
-<p class="small">Nothing is filled in. A blurred label stays unknown.</p>
 </div>
 <div class="preview" data-preview="3" hidden>
 <span class="label">Step 3. Get a clearer picture</span>
@@ -980,7 +974,7 @@ html{scroll-behavior:auto}
 <div class="tile blue"><b>6</b><span>Printed ad labels</span></div>
 <div class="tile"><b>42</b><span>Accounts read</span></div>
 </div>
-<p class="small">6 of 45 posts carried a printed ad label; 1 could not be read. One fictional scan, September 20.</p>
+<p class="small">6 of 45 posts carried a printed ad label; 1 could not be read. The example scan of September 20.</p>
 </div>
 </div>
 </div>
@@ -1040,9 +1034,8 @@ html{scroll-behavior:auto}
 <a class="textlink" href="/methodology" data-reveal>Read the methodology</a>
 </div>
 <div class="card worked" data-reveal>
-<div class="head"><span>Worked example</span><span class="label">Example</span></div>
+<div class="head"><span>The scan of September 20</span><span class="label">Example</span></div>
 <h3>How a count is made</h3>
-<p class="sub">Printed ad labels, from one fictional scan.</p>
 <div class="bignum"><b>6 <i>of</i> 45</b><span>posts carried a printed ad label.</span></div>
 <table class="tally">
 <tbody>
@@ -1131,11 +1124,11 @@ html{scroll-behavior:auto}
 </main>
 <footer class="bottom">
 <div class="wrap">
-<p class="colophon">A scan reads what appeared. It cannot say why.</p>
+<p class="colophon">A feed, made legible.</p>
 <div class="foot-grid">
 <div class="foot-brand">
 <a class="brand" href="#top" aria-label="AlgorithmLens home"><svg viewBox="0 0 436 88" role="img" aria-label="AlgorithmLens"><use href="/static/img/wordmark.svg#wordmark"/></svg></a>
-<p>A feed, made legible. Example data on this page is fictional, except the one real scan marked as such.</p>
+<p>A free iPhone app, now in public beta.</p>
 </div>
 <div class="foot-cols">
 <nav class="foot-col product" aria-label="Product"><b>Product</b><a href="#report">The report</a><a href="#how">How it works</a><a href="#limits">Read the limits</a><a href="#faq">Questions</a><a href="/explore/">Explore the example</a></nav>

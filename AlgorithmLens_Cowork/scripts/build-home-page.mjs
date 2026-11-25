@@ -158,12 +158,12 @@ ${tracks}
 <dl class="keylist">
 <div><dt><i class="obs"></i>Observed</dt><dd>A label or a name the scan could read. ${st.ads} of ${st.n} posts carried an ad label.</dd></div>
 <div><dt><i class="inf"></i>Inferred</dt><dd>A reading of the content, marked as one. ${st.political} of ${st.n} posts were classified as political.</dd></div>
-<div><dt><i class="unk"></i>Unknown</dt><dd>What the scan could not read: ${plural(st.adUnknown, 'ad label', 'ad labels')}, and ${plural(st.politicalUnknown, 'post', 'posts')} not assessed for politics. Why a post appeared stays unknown too.</dd></div>
+<div><dt><i class="unk"></i>Unknown</dt><dd>What the scan could not read: ${plural(st.adUnknown, 'ad label', 'ad labels')}, and ${plural(st.politicalUnknown, 'post', 'posts')} not assessed for politics.</dd></div>
 </dl>
 </figure>`;
 
   return `<div class="views">
-<p class="views-head" data-reveal><span class="label">Also in the report, from the ${day} scan</span></p>
+<p class="views-head" data-reveal><span class="label">Also in the report, from the scan of ${day}</span></p>
 <div class="views-grid">
 ${origin}
 ${accounts}
