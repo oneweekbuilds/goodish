@@ -179,7 +179,7 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
 
   // The example record: four fictional Instagram scans, the same data the
   // explorer's record view shows (explore/examples.js). One mark, one post;
-  // blue where the post carried a printed ad label, hollow where the label
+  // blue where the post carried an ad label, hollow where the label
   // could not be read. The rest pose follows the native port contract.
   // D-191: the data is the exported copy of the mobile repo's
   // canon/example-record.json (public/example-record.js, loaded before this
@@ -246,18 +246,18 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
       // The caption is a live region: write only when the words change, so
       // loading the page does not announce the sheet it already shows.
       const say = (id, text) => { const el = $(id); if (el.textContent !== text) el.textContent = text; };
-      say('recordTitle', s.date + ', held on record.');
-      say('recordFacts', s.n + ' posts in this scan. ' + s.ads.length + ' carried a printed ad label. ' + total + ' posts across ' + SCANS.length + ' scans.');
+      say('recordTitle', 'The scan of ' + s.date);
+      say('recordFacts', s.n + ' posts in this scan. ' + s.ads.length + ' carried an ad label. ' + total + ' posts across all ' + SCANS.length + ' scans.');
     }
     select(current);
   }
 
   // The record forming: four fictional posts, observable facts only.
   const POSTS = {
-    1: { account: '@harbor.coffee', kind: 'ad', facts: [['Ad label', 'Printed: Sponsored'], ['Origin', 'No label read'], ['Account', '@harbor.coffee'], ['Position', '1 of 4']], chip: 'ad label', extra: 'Why it was shown: unknown.' },
-    2: { account: '@city.notes', kind: 'mine', facts: [['Ad label', 'None printed'], ['Origin', 'Following, as labeled'], ['Account', '@city.notes'], ['Position', '2 of 4']], chip: 'following', extra: 'A headline was on screen. Whether it is political is an inference, not a fact.' },
-    3: { account: '@wildpath.journal', kind: 'plain', facts: [['Ad label', 'None printed'], ['Origin', 'Suggested, as labeled'], ['Account', '@wildpath.journal'], ['Position', '3 of 4']], chip: 'suggested', extra: 'Suggested. Which action led here: unknown.' },
-    4: { account: '@harbor.coffee', kind: 'mine', facts: [['Ad label', 'None printed'], ['Origin', 'Following, as labeled'], ['Account', '@harbor.coffee, also at post 1'], ['Position', '4 of 4']], chip: 'repeat account', extra: 'The same account returns. A repeat in four posts, not a pattern.' },
+    1: { account: '@harbor.coffee', kind: 'ad', facts: [['Ad label', 'Shown: Sponsored'], ['Came from', 'No label shown'], ['Account', '@harbor.coffee'], ['Position', '1 of 4']], chip: 'ad label', extra: 'Why it was shown: unknown.' },
+    2: { account: '@city.notes', kind: 'mine', facts: [['Ad label', 'None shown'], ['Came from', 'Following, as labeled'], ['Account', '@city.notes'], ['Position', '2 of 4']], chip: 'following', extra: 'A headline was on screen. Whether it is political is an inference, not a fact.' },
+    3: { account: '@wildpath.journal', kind: 'plain', facts: [['Ad label', 'None shown'], ['Came from', 'Suggested, as labeled'], ['Account', '@wildpath.journal'], ['Position', '3 of 4']], chip: 'suggested', extra: 'Suggested. Which action led here: unknown.' },
+    4: { account: '@harbor.coffee', kind: 'mine', facts: [['Ad label', 'None shown'], ['Came from', 'Following, as labeled'], ['Account', '@harbor.coffee, also at post 1'], ['Position', '4 of 4']], chip: 'repeat account', extra: 'The same account returns. A repeat in four posts, not a pattern.' },
   };
   // Each post has a slot beneath it (#slot-1 to #slot-4). An unread slot
   // holds a blank form (static markup: the four fields, no values); reading
@@ -289,7 +289,7 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
         const on = read.has(n);
         const slot = $('slot-' + n);
         b.setAttribute('aria-pressed', String(on));
-        b.textContent = on ? 'In record' : 'Read';
+        b.textContent = on ? 'In report' : 'Read';
         if (slot) {
           // Keep the blank form the page shipped with, so "Start over" can put it back.
           if (!blanks.has(n)) blanks.set(n, slot.firstElementChild);
@@ -307,7 +307,7 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
       $('readBar').style.width = (order.length / 4) * 100 + '%';
       $('readEmpty').hidden = order.length > 0;
       $('readFoot').hidden = order.length === 0;
-      $('readNote').textContent = order.length === 4 ? 'Four posts read. Why any of them appeared: still unknown.' : order.length + ' of 4 posts read. The record grows only with what is on screen.';
+      $('readNote').textContent = order.length === 4 ? 'Four posts read. Why any of them appeared: still unknown.' : order.length + ' of 4 posts read. The report grows only with what is on screen.';
     }
     buttons.forEach((b) => b.addEventListener('click', () => { const n = Number(b.dataset.read); if (read.has(n)) read.delete(n); else read.add(n); draw(); }));
     $('readReset').addEventListener('click', () => { read.clear(); draw(); });

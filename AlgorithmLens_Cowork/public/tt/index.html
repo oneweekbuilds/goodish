@@ -731,7 +731,7 @@ html{scroll-behavior:auto}
 <p class="sec-head" data-reveal><span class="num">01</span><span class="label eyebrow">The report</span></p>
 <h2 data-reveal>One scan. One <span class="nb">plain-language</span> report.</h2>
 </div>
-<div class="sec-lede"><p class="lede" data-reveal>Four dated scans, kept separate. Turn back to any of them. A small scan stays small, and unknown labels stay unknown.</p></div>
+<div class="sec-lede"><p class="lede" data-reveal>Four weekly scans, each counted on its own. Pick a date to see that scan. A small scan stays small.</p></div>
 </div>
 <div class="grid record-grid">
 <figure class="record-card" data-reveal>
@@ -745,22 +745,22 @@ html{scroll-behavior:auto}
 </div>
 <figcaption class="record-foot">
 <div class="col" aria-live="polite">
-<span class="label">Separate observations</span>
-<h3 id="recordTitle">Sep 20, held on record.</h3>
-<p class="facts" id="recordFacts">45 posts in this scan. 6 carried a printed ad label. 125 posts across 4 scans.</p>
+<span class="label">Chosen date</span>
+<h3 id="recordTitle">The scan of Sep 20</h3>
+<p class="facts" id="recordFacts">45 posts in this scan. 6 carried an ad label. 125 posts across all 4 scans.</p>
 </div>
-<div class="legend"><span><i class="ad"></i>Ad label</span><span><i class="un"></i>Unknown</span><span><i></i>One mark, one post</span></div>
+<div class="legend"><span><i class="ad"></i>Ad label</span><span><i class="un"></i>Could not be read</span><span><i></i>One mark, one post</span></div>
 </figcaption>
 </figure>
 <div class="record-side">
 <div class="tiles" data-reveal aria-label="Counts from the example scan of September 20">
 <div class="tile"><b>45</b><span>Posts recorded</span></div>
-<div class="tile"><b>42</b><span>Accounts read</span></div>
-<div class="tile blue"><b>6</b><span>Printed ad labels</span></div>
-<div class="tile"><b>4</b><span>Scans on record</span></div>
+<div class="tile"><b>42</b><span>Different accounts</span></div>
+<div class="tile blue"><b>6</b><span>Ad labels</span></div>
+<div class="tile"><b>4</b><span>Scans so far</span></div>
 </div>
-<p class="small tiles-note" data-reveal>Counts from the September 20 sheet. Each sheet holds only its own posts.</p>
-<a class="textlink" href="/explore/" data-reveal>Turn over the whole example in the explorer</a>
+<p class="small tiles-note" data-reveal>Counts from the scan of September 20.</p>
+<a class="textlink" href="/explore/" data-reveal>See the whole example in the explorer</a>
 <p class="limit" data-reveal>More context does not by itself establish a stable rate or a certified change.</p>
 </div>
 </div>
@@ -812,7 +812,7 @@ html{scroll-behavior:auto}
 <div class="head"><span>X feed, 6 October 2026</span><span class="label real">Real scan, n=1</span></div>
 <div class="tiles" aria-label="Counts from one real scan on 6 October 2026">
 <div class="tile"><b>36</b><span>Posts read</span></div>
-<div class="tile blue"><b>5</b><span>Carried a printed ad label</span></div>
+<div class="tile blue"><b>5</b><span>Carried an ad label</span></div>
 </div>
 <div class="countbar" aria-hidden="true"><i class="ad"></i><i class="ad"></i><i class="ad"></i><i class="ad"></i><i class="ad"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
 <figcaption class="caption">A single real scan of the founder's own feed, n=1. One mark, one post. Account names are not shown.</figcaption>
@@ -825,7 +825,7 @@ html{scroll-behavior:auto}
 <div class="sec-top grid">
 <div class="sec-title">
 <p class="sec-head" data-reveal><span class="num">03</span><span class="label eyebrow">Try it</span></p>
-<h2 data-reveal>Tap four posts. Watch the record form.</h2>
+<h2 data-reveal>Tap four posts. Watch the report fill in.</h2>
 </div>
 <div class="sec-lede"><p class="lede" data-reveal>Each tap adds what a scan could read from that post, and stops at what it could not.</p></div>
 </div>
@@ -833,10 +833,10 @@ html{scroll-behavior:auto}
 <div class="strip-head">
 <div>
 <div class="feed-head"><span>For you</span><span class="label">Example</span></div>
-<p class="hint">Four posts. Tap Read to add one to the record.</p>
+<p class="hint">Four posts. Tap Read to add one to the report.</p>
 </div>
 <div>
-<div class="readout-head"><span>The record forming</span><span id="readCount">0 of 4 posts</span></div>
+<div class="readout-head"><span>The report so far</span><span id="readCount">0 of 4 posts</span></div>
 <div class="progress"><i id="readBar"></i></div>
 </div>
 </div>
@@ -848,7 +848,7 @@ html{scroll-behavior:auto}
 <img src="/static/img/photo-coffee.jpg" alt="Example post image: a glass of iced coffee beside a paper bag" loading="lazy" width="320" height="150">
 <div class="post-copy"><p>A slower start. Our new cold brew is here.</p><button type="button" class="read" data-read="1" aria-pressed="false">Read</button></div>
 </article>
-<div class="slot" id="slot-1" aria-live="polite"><div class="blank" aria-hidden="true"><span class="blank-head"><i></i>Post 1</span><span class="blank-rows"><span>Ad label</span><span>Origin</span><span>Account</span><span>Position</span></span></div></div>
+<div class="slot" id="slot-1" aria-live="polite"><div class="blank" aria-hidden="true"><span class="blank-head"><i></i>Post 1</span><span class="blank-rows"><span>Ad label</span><span>Came from</span><span>Account</span><span>Position</span></span></div></div>
 </div>
 <div class="frame">
 <span class="pos" aria-hidden="true">2</span>
@@ -857,7 +857,7 @@ html{scroll-behavior:auto}
 <div class="news"><small>The local edition</small><p>City council votes on a new transit plan.</p></div>
 <div class="post-copy"><p>On the local agenda this week.</p><button type="button" class="read" data-read="2" aria-pressed="false">Read</button></div>
 </article>
-<div class="slot" id="slot-2" aria-live="polite"><div class="blank" aria-hidden="true"><span class="blank-head"><i></i>Post 2</span><span class="blank-rows"><span>Ad label</span><span>Origin</span><span>Account</span><span>Position</span></span></div></div>
+<div class="slot" id="slot-2" aria-live="polite"><div class="blank" aria-hidden="true"><span class="blank-head"><i></i>Post 2</span><span class="blank-rows"><span>Ad label</span><span>Came from</span><span>Account</span><span>Position</span></span></div></div>
 </div>
 <div class="frame">
 <span class="pos" aria-hidden="true">3</span>
@@ -866,7 +866,7 @@ html{scroll-behavior:auto}
 <img src="/static/img/photo-lake.jpg" alt="Example post image: a still lake at dawn" loading="lazy" width="320" height="150">
 <div class="post-copy"><p>A long way from the morning rush.</p><button type="button" class="read" data-read="3" aria-pressed="false">Read</button></div>
 </article>
-<div class="slot" id="slot-3" aria-live="polite"><div class="blank" aria-hidden="true"><span class="blank-head"><i></i>Post 3</span><span class="blank-rows"><span>Ad label</span><span>Origin</span><span>Account</span><span>Position</span></span></div></div>
+<div class="slot" id="slot-3" aria-live="polite"><div class="blank" aria-hidden="true"><span class="blank-head"><i></i>Post 3</span><span class="blank-rows"><span>Ad label</span><span>Came from</span><span>Account</span><span>Position</span></span></div></div>
 </div>
 <div class="frame">
 <span class="pos" aria-hidden="true">4</span>
@@ -875,12 +875,12 @@ html{scroll-behavior:auto}
 <img src="/static/img/photo-coffee.jpg" alt="Example post image: the same coffee shop, before opening" loading="lazy" width="320" height="150">
 <div class="post-copy"><p>Behind the counter, before the doors open.</p><button type="button" class="read" data-read="4" aria-pressed="false">Read</button></div>
 </article>
-<div class="slot" id="slot-4" aria-live="polite"><div class="blank" aria-hidden="true"><span class="blank-head"><i></i>Post 4</span><span class="blank-rows"><span>Ad label</span><span>Origin</span><span>Account</span><span>Position</span></span></div></div>
+<div class="slot" id="slot-4" aria-live="polite"><div class="blank" aria-hidden="true"><span class="blank-head"><i></i>Post 4</span><span class="blank-rows"><span>Ad label</span><span>Came from</span><span>Account</span><span>Position</span></span></div></div>
 </div>
 </div>
 <div class="strip-foot">
 <p id="readEmpty">Nothing yet. Tap Read on any post.</p>
-<div class="tuned" id="tuned" hidden><span>Record so far</span><span id="tunedChips"></span></div>
+<div class="tuned" id="tuned" hidden><span>Read so far</span><span id="tunedChips"></span></div>
 <div class="readout-foot" id="readFoot" hidden><span id="readNote"></span><button type="button" class="linkish" id="readReset">Start over</button></div>
 </div>
 </div>
@@ -893,7 +893,7 @@ html{scroll-behavior:auto}
 </video>
 <div class="film-words">
 <b>The film in words</b>
-<p>An ad label is visible. A political-content classification is an inference. A suggested label does not explain why the post was selected. One readable account appears twice. The four posts become a small record, not a representative feed.</p>
+<p>An ad label is visible. A political-content classification is an inference. A suggested label does not explain why the post was selected. One readable account appears twice. The four posts become a small report, not a representative feed.</p>
 </div>
 </div>
 </details>
@@ -913,7 +913,7 @@ html{scroll-behavior:auto}
 <div class="ledger-col">
 <p class="rowlabel" id="canLabel">Can read</p>
 <ul class="readlist can" aria-labelledby="canLabel">
-<li>a printed ad label</li><li>an account name</li><li>a post's position in the feed</li><li>the date recorded</li><li>how many posts appeared</li><li>an account that returns</li><li>a suggested label</li><li>a following label</li><li>a headline on screen</li>
+<li>an ad label on a post</li><li>an account name</li><li>a post's position in the feed</li><li>the date recorded</li><li>how many posts appeared</li><li>an account that returns</li><li>a suggested label</li><li>a following label</li><li>a headline on screen</li>
 </ul>
 </div>
 <div class="ledger-col">
@@ -942,8 +942,8 @@ html{scroll-behavior:auto}
 <div class="grid how-grid">
 <div class="steps" id="steps" data-reveal>
 <button type="button" class="step" aria-pressed="true" data-step="1"><i>1</i><span><span class="st">Start a scan</span><span class="sd">Open the app, start the recording, then scroll a feed as you normally would.</span></span></button>
-<button type="button" class="step" aria-pressed="false" data-step="2"><i>2</i><span><span class="st">Review what appeared</span><span class="sd">After recording, the app reads printed labels, account names and content classifications. Missing evidence stays unknown.</span></span></button>
-<button type="button" class="step" aria-pressed="false" data-step="3"><i>3</i><span><span class="st">Get a clearer picture</span><span class="sd">Counts with their sample size and limits, kept on a dated record you can turn back to.</span></span></button>
+<button type="button" class="step" aria-pressed="false" data-step="2"><i>2</i><span><span class="st">Review what appeared</span><span class="sd">After recording, the app reads ad labels and account names and sorts each post by its content. Anything it cannot read stays unknown.</span></span></button>
+<button type="button" class="step" aria-pressed="false" data-step="3"><i>3</i><span><span class="st">Get a clearer picture</span><span class="sd">Counts, each with the number of posts behind it and what it cannot say. Every scan is dated, so you can look back.</span></span></button>
 </div>
 <div class="card preview-box" data-reveal>
 <div class="preview" data-preview="1">
@@ -960,9 +960,9 @@ html{scroll-behavior:auto}
 <div class="preview" data-preview="2" hidden>
 <span class="label">Step 2. Review what appeared</span>
 <div class="checks">
-<div>Printed ad labels<span class="blue">read as observed</span></div>
-<div>Account names<span class="blue">read as observed</span></div>
-<div>Following and suggested labels<span>read where printed</span></div>
+<div>Ad labels<span class="blue">read off the screen</span></div>
+<div>Account names<span class="blue">read off the screen</span></div>
+<div>Following and suggested labels<span>read where shown</span></div>
 <div>Political content and tone<span>marked as inference</span></div>
 <div>Anything unreadable<span>left unknown</span></div>
 </div>
@@ -971,10 +971,10 @@ html{scroll-behavior:auto}
 <span class="label">Step 3. Get a clearer picture</span>
 <div class="tiles">
 <div class="tile"><b>45</b><span>Posts recorded</span></div>
-<div class="tile blue"><b>6</b><span>Printed ad labels</span></div>
-<div class="tile"><b>42</b><span>Accounts read</span></div>
+<div class="tile blue"><b>6</b><span>Ad labels</span></div>
+<div class="tile"><b>42</b><span>Different accounts</span></div>
 </div>
-<p class="small">6 of 45 posts carried a printed ad label; 1 could not be read. The example scan of September 20.</p>
+<p class="small">6 of 45 posts carried an ad label; 1 could not be read. The example scan of September 20.</p>
 </div>
 </div>
 </div>
@@ -1007,14 +1007,14 @@ html{scroll-behavior:auto}
 <div class="sec-top grid">
 <div class="sec-title">
 <p class="sec-head" data-reveal><span class="num">07</span><span class="label eyebrow">In use</span></p>
-<h2 data-reveal>What people do with it</h2>
+<h2 data-reveal>What you can do with it</h2>
 </div>
 <div class="sec-lede"><p class="lede" data-reveal>A read on a feed you can act on.</p></div>
 </div>
 <div class="ways">
 <div class="way blue" data-reveal><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#1868D8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="15" height="13" rx="2"/><path d="M7 8.5h8M7 12h8M7 15h5"/></svg><h3>Check your news diet</h3><p>See which accounts fill your feed, not the ones you think do.</p></div>
 <div class="way blue" data-reveal><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#1868D8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11.5V5h6.5l7.5 7.5-6.5 6.5L4 11.5z"/><circle cx="8" cy="8.5" r="1.2"/></svg><h3>Audit the ads</h3><p>Which posts carried an ad label, and how many, in each scan.</p></div>
-<div class="way green" data-reveal><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#20A888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h14M4 15h14"/><circle cx="8" cy="7" r="2"/><circle cx="14" cy="15" r="2"/></svg><h3>Re-tune on purpose</h3><p>Unfollow, mute and follow deliberately, then scan again and keep both records.</p></div>
+<div class="way green" data-reveal><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#20A888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h14M4 15h14"/><circle cx="8" cy="7" r="2"/><circle cx="14" cy="15" r="2"/></svg><h3>Change your feed on purpose</h3><p>Unfollow, mute and follow deliberately, then scan again and keep both reports.</p></div>
 <div class="way green" data-reveal><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#20A888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5h6a2 2 0 0 1 2 2v10a1.5 1.5 0 0 0-1.5-1.5H4V5.5zM18 5.5h-6a2 2 0 0 0-2 2v10a1.5 1.5 0 0 1 1.5-1.5H18V5.5z"/></svg><h3>Teach and research</h3><p>Example records for classrooms studying recommender systems.</p></div>
 </div>
 </div>
@@ -1036,10 +1036,10 @@ html{scroll-behavior:auto}
 <div class="card worked" data-reveal>
 <div class="head"><span>The scan of September 20</span><span class="label">Example</span></div>
 <h3>How a count is made</h3>
-<div class="bignum"><b>6 <i>of</i> 45</b><span>posts carried a printed ad label.</span></div>
+<div class="bignum"><b>6 <i>of</i> 45</b><span>posts carried an ad label.</span></div>
 <table class="tally">
 <tbody>
-<tr><th scope="row"><i class="ad" aria-hidden="true"></i>With a printed ad label</th><td>6</td></tr>
+<tr><th scope="row"><i class="ad" aria-hidden="true"></i>With an ad label</th><td>6</td></tr>
 <tr><th scope="row"><i aria-hidden="true"></i>Without one</th><td>38</td></tr>
 <tr><th scope="row"><i class="un" aria-hidden="true"></i>Label could not be read</th><td>1</td></tr>
 </tbody>
