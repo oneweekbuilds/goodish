@@ -148,9 +148,10 @@ h1{font-size:clamp(40px,calc((100vw - 2*var(--gutter))/6.3),104px);line-height:.
 .hero .button{width:100%}
 .hero .textlink{display:none}
 .platforms{font-size:13px;line-height:18px;color:var(--muted);margin-top:-6px}
-.effort{display:flex;gap:12px;align-items:flex-start;font-size:15px;line-height:22px;max-width:44ch}
-.effort svg{flex-shrink:0;margin-top:1px}
-.effort b{font-weight:600}
+/* what to expect, in three short numbered lines under the button */
+.expect{list-style:none;margin:0;padding:0;counter-reset:expect;width:100%;max-width:31em;border-top:1px solid var(--line)}
+.expect li{counter-increment:expect;display:flex;gap:12px;align-items:baseline;padding:9px 0 10px;border-bottom:1px solid var(--line);font-size:15px;line-height:22px}
+.expect li::before{content:counter(expect);flex:0 0 12px;font:italic 16px/22px var(--serif);color:var(--muted)}
 @media(min-width:600px){.hero .lede{font-size:22px;line-height:32px;max-width:27em}}
 .filmwrap{padding:28px 0 44px}
 .film-card{display:flex;flex-direction:column;gap:16px}
@@ -192,8 +193,7 @@ h1{font-size:clamp(64px,8.8vw,126px);margin:22px 0 32px}
 .hero .button{width:auto}
 .hero .textlink{display:inline-flex}
 .platforms{font-size:14px;line-height:20px}
-.effort{order:1;font-size:16px;line-height:24px}
-.hero .limit{order:2;margin-top:auto;font-size:22px;line-height:31px;max-width:22em}
+.hero .limit{margin-top:auto;font-size:22px;line-height:31px;max-width:22em}
 .filmwrap{padding:0;display:flex}
 .film-card{width:330px;padding:32px 0 56px 40px;border-left:1px solid var(--line);gap:18px}
 }
@@ -612,9 +612,13 @@ html{scroll-behavior:auto}
 <div class="copy">
 <p class="lede">Scan a feed you use. Get a plain report: what appeared, which accounts it came from, and which posts carried an ad label.</p>
 <div class="actions"><a class="button" id="betaButton" href="#launch" rel="noopener noreferrer">Join the beta on iPhone</a><a class="textlink" href="#film">Watch the example film</a></div>
+<ol class="expect">
+<li>You install Apple's TestFlight app first, then AlgorithmLens through it.</li>
+<li>A scan is about two minutes of scrolling.</li>
+<li>You approve the analysis before anything is sent.</li>
+</ol>
 <p class="platforms">Free. iPhone. Works with Instagram, TikTok, YouTube, X, Facebook and Reddit. Accuracy checked on YouTube so far.</p>
 <p class="limit">A scan reads what appeared on screen. It cannot say why any post was there.</p>
-<div class="effort"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#1868D8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8.5"/><path d="M11 6.5v5l3 2"/></svg><span><b>One short recording of a feed you already scroll.</b> Review after, not during.</span></div>
 </div>
 <div class="filmwrap" id="film">
 <figure class="film-card" id="filmPanel">
