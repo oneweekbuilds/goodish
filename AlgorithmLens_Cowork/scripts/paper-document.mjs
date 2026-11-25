@@ -10,14 +10,15 @@ const escText = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').re
 const escAttr = (s) => escText(s).replace(/"/g, '&quot;');
 
 /**
- * Gives every plain <h2> in a document body an id and returns the list of
- * sections for the contents list. The link text is the heading's own text
- * (its markup stripped); nothing is added or reworded.
+ * Gives every plain heading in a document body an id, and returns the list
+ * of sections (the <h2> headings) for the contents list. The link text is
+ * the heading's own text (its markup stripped); nothing is added or
+ * reworded.
  */
 export function withContents(body, taken = []) {
   const used = new Set(taken);
   const contents = [];
-  const out = body.replace(/<h2>([\s\S]*?)<\/h2>/g, (all, inner) => {
+  const slug = (inner) => {
     const text = inner.replace(/<[^>]+>/g, '').trim();
     const base = text
       .replace(/&[#a-z0-9]+;/gi, '')
@@ -27,9 +28,16 @@ export function withContents(body, taken = []) {
     let id = base;
     for (let n = 2; used.has(id); n++) id = base + '-' + n;
     used.add(id);
+    return { id, text };
+  };
+  // The section headings first, so their ids (which other pages link to) never depend on the headings inside them.
+  let out = body.replace(/<h2>([\s\S]*?)<\/h2>/g, (all, inner) => {
+    const { id, text } = slug(inner);
     contents.push({ id, text });
     return `<h2 id="${id}">${inner}</h2>`;
   });
+  // Then every heading below them, so any passage of a document can be linked to. They do not join the contents list.
+  out = out.replace(/<h([3-6])>([\s\S]*?)<\/h\1>/g, (all, level, inner) => `<h${level} id="${slug(inner).id}">${inner}</h${level}>`);
   return { body: out, contents };
 }
 

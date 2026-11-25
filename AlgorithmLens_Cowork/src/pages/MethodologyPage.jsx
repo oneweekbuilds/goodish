@@ -19,7 +19,14 @@
  * PRODUCT_DECISIONS.md (D-54). Nothing here is a number the app does not
  * itself stand behind.
  *
- * Last updated: November 24, 2026
+ * 25 November 2026: a summary at the top (each sentence restates something
+ * the page says further down, with its figures taken from the same
+ * constants), the author's name, and a dated list of changes at the foot,
+ * seeded from this file's git history. The static page gives every heading
+ * an id (scripts/paper-document.mjs). No change to the method or to any
+ * figure.
+ *
+ * Last updated: November 25, 2026
  */
 
 import React from 'react';
@@ -117,12 +124,23 @@ export default function MethodologyPage() {
                 Methodology
               </h1>
               <p className="text-text-muted">
-                Last updated: November 24, 2026
+                Last updated: November 25, 2026
+              </p>
+              <p className="text-text-muted">
+                Written by Justin Winuk
               </p>
             </div>
           </div>
 
           <div className="prose prose-sm max-w-none space-y-10">
+
+            {/* Summary: about 150 words. Every sentence restates something this page says further down. */}
+            <section className="summary-block">
+              <h2 className="text-2xl font-bold text-text-main mb-4">In short</h2>
+              <p className="text-text-muted leading-relaxed">
+                AlgorithmLens reads a screen recording you make of your own feed. There is no scraping and no platform API access. The phone samples one frame every 2.5 seconds, and each frame goes to Google's Gemini API with the prompts printed on this page. Ordinary code on the phone then does the counting. Ads and account names are counted from labels printed on the post. Topics, politics and tone are a model's reading of the post. Suggested versus followed is marked inferred wherever it rests on which feed was scanned and not on a label. The frames and the wording of posts go once the count finishes; the tallies stay. Accuracy has been measured once, by one annotator, on {f.goldItems} items from one YouTube session, and stability once, on one YouTube capture. The other five feeds have never been accuracy-tested against human labels. The app measures what appeared. It cannot see why.
+              </p>
+            </section>
 
             {/* Intro and status */}
             <section>
@@ -440,6 +458,17 @@ export default function MethodologyPage() {
               <p className="text-text-muted leading-relaxed">
                 If you are evaluating this instrument for reporting or research and want the response schema, the aggregation code, a test build, or answers about anything on this page, contact privacy@algorithmlens.com. If you find an error on this page, or a difference between it and what the app does, we will correct it and note the correction. This page changes whenever the method changes.
               </p>
+            </section>
+
+            {/* Changes: seeded from this file's git history (git log -- src/pages/MethodologyPage.jsx), newest first. */}
+            <section>
+              <h2 className="text-2xl font-bold text-text-main mb-4">Changes to this page</h2>
+              <ul className="changelog space-y-3 text-text-muted">
+                <li><time dateTime="2026-11-25">25 November 2026</time><span>Added the summary at the top, this list of changes, an anchor on every heading and the author's name. No change to the method or to any figure.</span></li>
+                <li><time dateTime="2026-11-24">24 November 2026</time><span>The status line about the five other feeds now reads "never been accuracy-tested against human labels"; it had said "never been tested against a real capture". The list of what has not been validated adds that their stability has never been measured. The same day the page was set in the site's new layout with a contents list; its wording did not change.</span></li>
+                <li><time dateTime="2026-10-27">27 October 2026</time><span>Rebuilt on the app's current method and evidence: one capture method with its constants, the current model, the prompts generated from the app's source code, and the section "How we evaluate ourselves" with dated figures. The same day the evaluation figures were rewritten as sentences so they read on a phone, the page stopped saying that every figure also appears in the app (three appear only here), and hashtags were added to the list of what is stored.</span></li>
+                <li><time dateTime="2026-07-03">3 July 2026</time><span>First published, with the extraction schema and the prompts. Corrected the same day on two points about what is saved.</span></li>
+              </ul>
             </section>
 
           </div>

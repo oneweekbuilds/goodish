@@ -94,6 +94,8 @@ function restyle(html) {
     if (c.includes(' font-mono ')) out.push('mono');
     if (c.includes(' list-decimal ')) out.push('numbered');
     if (c.includes(' text-sm ') && c.includes(' font-semibold ')) out.push('lead');
+    if (c.includes(' summary-block ')) out.push('summary');
+    if (c.includes(' changelog ')) out.push('changelog');
     return out.length ? ' class="' + out.join(' ') + '"' : '';
   }).replace(/<pre>/g, '<pre tabindex="0">');
 }
@@ -123,6 +125,12 @@ thead th{border-top:0;font-weight:600;background:var(--paper)}
 td.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;white-space:nowrap}
 td:nth-child(2){white-space:nowrap}
 .numbered li{margin:0 0 12px}
+.summary p{font:20px/30px var(--serif);text-wrap:pretty}
+.changelog{list-style:none;padding:0;margin:0}
+.changelog li{display:grid;gap:4px;padding:14px 0;margin:0;border-top:1px solid var(--line)}
+.changelog li:first-child{border-top:0;padding-top:0}
+.changelog time{font-size:14px;line-height:20px;color:var(--muted);font-variant-numeric:tabular-nums}
+@media(min-width:900px){.summary p{font-size:21px;line-height:31px}.changelog li{grid-template-columns:150px minmax(0,1fr);gap:20px}}
 @media(max-width:599px){.table-wrap table,.table-wrap tbody,.table-wrap tr,.table-wrap td{display:block}.table-wrap thead{display:none}.table-wrap tr{padding:12px 14px;border-top:1px solid var(--line)}.table-wrap tr:first-child{border-top:0}.table-wrap td{border:0;padding:0}.table-wrap td.mono{white-space:normal;font-size:13px;font-weight:600;margin-bottom:2px}.table-wrap td:nth-child(2){font-size:13px;color:var(--muted);margin-bottom:4px}}
 @media(min-width:900px){.paper>section:first-of-type>p:first-child{font-size:21px;line-height:31px}}`;
 
@@ -142,13 +150,15 @@ const PAGES = [
 for (const p of PAGES) {
   const html = await render(p.src);
   const updated = (html.match(/Last updated:\s*([^<]+)</) || [, ''])[1].trim();
+  // A page that names its author in its header ("Written by ...") carries the name beside the date.
+  const author = (html.match(/Written by\s*([^<]+)</) || [, ''])[1].trim();
   const { body, contents } = withContents(restyle(inner(html, 'class="prose')));
   const doc = documentPage({
     title: p.title,
     description: p.description,
     canonical: 'https://www.algorithmlens.com' + p.pathName,
     eyebrow: p.eyebrow,
-    meta: 'Last updated: ' + updated,
+    meta: 'Last updated: ' + updated + (author ? '. Written by ' + author + '.' : ''),
     contents,
     body,
     css: PAPER_CSS,
