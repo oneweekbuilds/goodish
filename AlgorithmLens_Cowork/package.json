@@ -11,6 +11,7 @@
     "build": "vite build",
     "build:home": "node scripts/build-home-page.mjs",
     "build:tt": "node scripts/build-tt-page.mjs",
+    "build:share": "node scripts/build-share-image.mjs",
     "lint": "node scripts/lint-changed.mjs",
     "lint:changed": "node scripts/lint-changed.mjs",
     "lint:all": "eslint .",

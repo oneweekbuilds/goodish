@@ -297,3 +297,97 @@ describe('the questions section', () => {
     expect(home).toContain('<input type="checkbox" id="android"><span>Tell me about Android.');
   });
 });
+
+describe('the home page head and the beta links', () => {
+  const head = home.slice(0, home.indexOf('</head>'));
+  const allPages = ['about/index.html', '404.html', 'privacy/index.html', 'terms.html', 'methodology.html', 'explore/index.html', 'explore/experience-film.html'];
+  const page = (file) => lf(readFileSync(new URL(`../public/${file}`, import.meta.url), 'utf8'));
+
+  it('carries the title in the three places a title is read from', () => {
+    const title = 'AlgorithmLens: see what is actually in your social media feed';
+    expect(head).toContain(`<title>${title}</title>`);
+    expect(head).toContain(`<meta property="og:title" content="${title}">`);
+    expect(head).toContain(`<meta name="twitter:title" content="${title}">`);
+  });
+
+  it('points the header pill and the hero button at the TestFlight link in the markup itself', () => {
+    expect(home).toContain(`<a class="pill" id="betaPill" href="${links.beta}" rel="noopener noreferrer">Join the beta</a>`);
+    expect(home).toContain(`<a class="button" id="betaButton" href="${links.beta}" rel="noopener noreferrer">Join the beta on iPhone</a>`);
+    const group = links.tiktok || links.beta;
+    expect(tt).toContain(`id="betaPill" href="${group}"`);
+    expect(tt).toContain(`id="betaButton" href="${group}"`);
+  });
+
+  it('every other page that says "Join the beta" links to the same address', () => {
+    for (const file of allPages) {
+      const pills = page(file).match(/<a [^>]*>Join the beta<\/a>/g) || [];
+      expect(`${file}: ${pills.length}`).toBe(`${file}: 1`);
+      expect(pills[0]).toContain(`href="${links.beta}"`);
+    }
+  });
+
+  it('the share image named in the head is a 1200 by 630 PNG that exists', () => {
+    const address = head.match(/<meta property="og:image" content="https:\/\/www\.algorithmlens\.com(\/static\/img\/[^"]+\.png)">/)[1];
+    expect(head).toContain(`<meta name="twitter:image" content="https://www.algorithmlens.com${address}">`);
+    const png = readFileSync(new URL(`../public${address}`, import.meta.url));
+    expect(png.subarray(1, 4).toString('latin1')).toBe('PNG');
+    expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([1200, 630]);
+    expect(head).toContain('<meta property="og:image:width" content="1200">');
+    expect(head).toContain('<meta property="og:image:height" content="630">');
+  });
+
+  it('every page that names a share image names this one', () => {
+    const address = head.match(/<meta property="og:image" content="([^"]+)">/)[1];
+    for (const file of [...allPages, 'explore/specimen.html', 'tt/index.html']) {
+      // The 404 page names none, and has no reason to.
+      const named = [...page(file).matchAll(/<meta (?:property="og:image"|name="twitter:image") content="([^"]+)">/g)].map((m) => m[1]);
+      if (file !== '404.html') expect(named.length).toBeGreaterThan(0);
+      for (const one of named) expect(`${file}: ${one}`).toBe(`${file}: ${address}`);
+      expect(page(file)).not.toContain('og-example');
+    }
+  });
+});
+
+describe('the structured data in the head', () => {
+  const block = home.slice(home.indexOf('<!-- structured-data:start -->'), home.indexOf('<!-- structured-data:end -->'));
+  const json = JSON.parse(block.match(/<script type="application\/ld\+json">\n([\s\S]*?)\n<\/script>/)[1]);
+  const [app, faq] = json['@graph'];
+  const faqSection = home.slice(home.indexOf('<section id="faq"'), home.indexOf('<section id="launch"'));
+  const text = (markup) => markup.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/\s+/g, ' ').trim();
+
+  it('is the only inline script, sits in the head, and is data, not code', () => {
+    const inline = home.match(/<script(?![^>]*\ssrc=)[^>]*>/g) || [];
+    expect(inline).toEqual(['<script type="application/ld+json">']);
+    expect(home.indexOf('<!-- structured-data:start -->')).toBeLessThan(home.indexOf('</head>'));
+    expect(tt).not.toContain('ld+json');
+  });
+
+  it('describes the app with what the site already states, and nothing more', () => {
+    expect(app['@type']).toBe('SoftwareApplication');
+    expect(app.name).toBe('AlgorithmLens');
+    expect(home).toContain(`<meta name="description" content="${app.description}">`);
+    expect(app.installUrl).toBe(links.beta);
+    expect(app.offers).toEqual({ '@type': 'Offer', price: '0', priceCurrency: 'USD' });
+    // The questions section says iPhone, iOS 15.1 and later; the about page names who builds it.
+    expect(faqSection).toContain('iPhone, iOS 15.1 and later');
+    expect(app.operatingSystem).toBe('iOS 15.1 and later');
+    expect(readFileSync(new URL('../public/about/index.html', import.meta.url), 'utf8')).toContain('built by one person, Justin Winuk');
+    expect(app.author).toEqual({ '@type': 'Person', name: 'Justin Winuk' });
+    // No rating, no review, no company details: the app's description has exactly these fields.
+    expect(Object.keys(app).sort()).toEqual(['@type', 'author', 'description', 'installUrl', 'isAccessibleForFree', 'name', 'offers', 'operatingSystem', 'url']);
+    const keys = new Set();
+    const walk = (node) => { if (node && typeof node === 'object') { for (const [k, v] of Object.entries(node)) { if (!Array.isArray(node)) keys.add(k); walk(v); } } };
+    walk(json);
+    for (const key of ['aggregateRating', 'review', 'ratingValue', 'publisher', 'address', 'telephone', 'email', 'sameAs', 'downloadCount', 'interactionStatistic']) {
+      expect(keys.has(key)).toBe(false);
+    }
+    expect(JSON.stringify(json)).not.toContain('Organization');
+  });
+
+  it('repeats the questions and answers of the page word for word', () => {
+    expect(faq['@type']).toBe('FAQPage');
+    const visible = [...faqSection.matchAll(/<div class="qa"[^>]*>\s*<h3>(.*?)<\/h3>\s*<div class="a">\s*<p>(.*?)<\/p>/gs)].map((m) => [text(m[1]), text(m[2])]);
+    expect(visible).toHaveLength(5);
+    expect(faq.mainEntity.map((q) => [q.name, q.acceptedAnswer.text])).toEqual(visible);
+  });
+});

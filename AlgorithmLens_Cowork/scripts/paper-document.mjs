@@ -156,14 +156,14 @@ ${comment ? comment + '\n' : ''}<html lang="en">
 <meta property="og:title" content="${escAttr(title)} | AlgorithmLens">
 <meta property="og:description" content="${escAttr(description)}">
 <meta property="og:url" content="${canonical}">
-<meta property="og:image" content="https://www.algorithmlens.com/static/img/og-example.png">
+<meta property="og:image" content="https://www.algorithmlens.com/static/img/og-home-2026-11.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="An example scan, labeled as an example: a grid of 45 marks, 6 of them blue for posts that carried an ad label.">
+<meta property="og:image:alt" content="The AlgorithmLens wordmark, the words See what is actually in your social media feed, Free iPhone app, in beta, and an example screen from the app that reads: About half of what you saw came from just five accounts.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${escAttr(title)} | AlgorithmLens">
 <meta name="twitter:description" content="${escAttr(description)}">
-<meta name="twitter:image" content="https://www.algorithmlens.com/static/img/og-example.png">
+<meta name="twitter:image" content="https://www.algorithmlens.com/static/img/og-home-2026-11.png">
 <link rel="preload" href="/static/fonts/source-serif-4-regular.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 ${BASE_CSS}

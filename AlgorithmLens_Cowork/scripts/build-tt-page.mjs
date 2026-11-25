@@ -23,7 +23,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { betaLinks, fillBetaQr, LANDING_JS } from './build-home-page.mjs';
+import { betaLinks, fill, fillBetaQr, setBetaHrefs, LANDING_JS } from './build-home-page.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const SOURCE = path.join(here, '..', 'public', 'index.html');
@@ -62,6 +62,9 @@ export function renderTt(html, js = readFileSync(LANDING_JS, 'utf8')) {
   // The same rule landing.js applies to the buttons: the TikTok link, or the general one while it is empty.
   const links = betaLinks(js);
   out = fillBetaQr(out, links.tiktok || links.beta);
+  out = setBetaHrefs(out, links.tiktok || links.beta);
+  // The home page is the one copy search engines should describe.
+  out = fill(out, 'structured-data', '');
   return out;
 }
 

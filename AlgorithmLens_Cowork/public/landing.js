@@ -361,14 +361,15 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
   }
 })();
 
-// The beta call to action. The markup ships beta-first: the hero's primary
-// button (#betaButton) and the header pill (#betaPill) are labelled for the
-// beta and this block points them at BETA_LINK (top of this file), or at
-// TIKTOK_BETA_LINK on /tt/. The launch list stays on the page, framed for
-// people who cannot install yet. While the chosen link holds no https URL
-// the page falls back to the launch-list call to action it carried before
-// the beta: both links go to #launch and the hero note and launch section
-// take back their pre-beta wording.
+// The beta call to action. The markup ships with the beta link already in
+// it: scripts/build-home-page.mjs writes BETA_LINK (top of this file) into
+// the hero's primary button (#betaButton) and the header pill (#betaPill),
+// and scripts/build-tt-page.mjs writes TIKTOK_BETA_LINK on /tt/, so both
+// work before this script runs and without it. This block only handles the
+// case of no link: while the chosen link holds no https URL the page falls
+// back to the launch-list call to action it carried before the beta, both
+// links go to #launch, and the hero note and launch section take back their
+// pre-beta wording.
 (function () {
   'use strict';
   const chosen = BETA_GROUP === 'tiktok' && TIKTOK_BETA_LINK ? TIKTOK_BETA_LINK : BETA_LINK;
@@ -377,13 +378,9 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
     const u = new URL(chosen);
     if (u.protocol === 'https:') href = u.href;
   } catch { href = null; }
+  if (href) return;
   const button = document.getElementById('betaButton');
   const pill = document.getElementById('betaPill');
-  if (href) {
-    if (button) button.href = href;
-    if (pill) pill.href = href;
-    return;
-  }
   const FALLBACK = {
     betaButton: 'Join the launch list',
     betaPill: 'Join the launch list',

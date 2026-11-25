@@ -20,6 +20,20 @@
 //    explorer cannot quote different counts. src/homePage.test.js runs the
 //    explorer's stats() beside scanStats() below to hold the two together.
 //
+// 3. The beta links themselves. The hero button (#betaButton) and the header
+//    pill (#betaPill) carry BETA_LINK in their href in the markup, so they
+//    work before any script runs. While BETA_LINK is empty they point at
+//    #launch, and landing.js relabels them.
+//
+// 4. Structured data ("structured-data", in the head): one JSON-LD block
+//    describing the app and the page's questions. It is built from what the
+//    page already says: the description from the meta description, the
+//    questions and answers from the questions section word for word, the
+//    install address from BETA_LINK, the author from the about page. It
+//    carries no rating, no review and no company detail. A block of type
+//    application/ld+json is data, not script, so the Content-Security-Policy
+//    (script-src 'self') has nothing to refuse.
+//
 // Runs before every `npm run build` (the prebuild script, ahead of the /tt/
 // page, which is rendered from this one) and by hand as `npm run build:home`.
 // src/homePage.test.js pins the committed page to this output, so a change
@@ -172,11 +186,67 @@ ${key}
 </div>`;
 }
 
+/** The page with the hero button and the header pill pointed at `link` (or at the launch list when there is none). */
+export function setBetaHrefs(html, link) {
+  const target = link || '#launch';
+  let out = html;
+  for (const anchor of ['<a class="pill" id="betaPill" href="', '<a class="button" id="betaButton" href="']) {
+    const at = out.indexOf(anchor);
+    if (at < 0 || out.indexOf(anchor, at + 1) >= 0) throw new Error(`build-home-page: expected exactly one ${anchor}`);
+    const from = at + anchor.length;
+    out = out.slice(0, from) + target + out.slice(out.indexOf('"', from));
+  }
+  return out;
+}
+
+const decode = (text) => text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+const plainText = (markup) => decode(markup.replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim();
+
+/** The questions section as written on the page: [{ question, answer }], the answer without its "From the ..." line. */
+export function pageQuestions(html) {
+  const from = html.indexOf('<section id="faq"');
+  const to = html.indexOf('</section>', from);
+  if (from < 0 || to < 0) throw new Error('build-home-page: the questions section is missing');
+  const section = html.slice(from, to);
+  const out = [];
+  const each = /<div class="qa"[^>]*>\s*<h3>(.*?)<\/h3>\s*<div class="a">\s*<p>(.*?)<\/p>/gs;
+  let m;
+  while ((m = each.exec(section))) out.push({ question: plainText(m[1]), answer: plainText(m[2]) });
+  if (!out.length) throw new Error('build-home-page: no questions found in the questions section');
+  return out;
+}
+
+/** The JSON-LD block for the head: the app, and the page's questions. */
+export function structuredDataBlock(html, link) {
+  const description = (html.match(/<meta name="description" content="([^"]*)">/) || [])[1];
+  if (!description) throw new Error('build-home-page: the meta description is missing');
+  const app = {
+    '@type': 'SoftwareApplication',
+    name: 'AlgorithmLens',
+    description: decode(description),
+    url: 'https://www.algorithmlens.com/',
+    operatingSystem: 'iOS 15.1 and later',
+    isAccessibleForFree: true,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    author: { '@type': 'Person', name: 'Justin Winuk' },
+  };
+  if (link) app.installUrl = link;
+  const faq = {
+    '@type': 'FAQPage',
+    mainEntity: pageQuestions(html).map(({ question, answer }) => ({ '@type': 'Question', name: question, acceptedAnswer: { '@type': 'Answer', text: answer } })),
+  };
+  const json = JSON.stringify({ '@context': 'https://schema.org', '@graph': [app, faq] }, null, 1).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+  return `<script type="application/ld+json">\n${json}\n</script>`;
+}
+
 /** The home page as it should be committed, given landing.js and the explorer's examples.js. */
 export function renderHome(html, js, examplesSrc) {
-  let out = fillBetaQr(lf(html), betaLinks(js).beta);
+  const link = betaLinks(js).beta;
+  let out = fillBetaQr(lf(html), link);
+  out = setBetaHrefs(out, link);
   const scans = loadExamples(examplesSrc).record.scans;
   out = fill(out, 'report-views', reportViewsBlock(scans[scans.length - 1]));
+  out = fill(out, 'structured-data', structuredDataBlock(out, link));
   return out;
 }
 
