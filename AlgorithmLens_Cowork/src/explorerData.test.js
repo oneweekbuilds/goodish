@@ -9,8 +9,9 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const pub = path.resolve(__dirname, '..', 'public');
+const pub = fileURLToPath(new URL('../public', import.meta.url));
 const read = (file) => readFileSync(path.join(pub, file), 'utf8');
 
 const window = {};

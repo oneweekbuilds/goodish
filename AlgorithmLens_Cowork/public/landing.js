@@ -6,11 +6,11 @@ const LAUNCH_LIST_ENDPOINT = "https://czrehjybsqzmudtgneqy.supabase.co/functions
 const BETA_LINK = "https://testflight.apple.com/join/7n7n3scz";
 // TIKTOK_BETA_LINK is a separate TestFlight group used only on /tt/, the page
 // linked from TikTok, so installs that came from TikTok can be counted in App
-// Store Connect. /tt/ marks itself with data-beta-group="tiktok" on <html>
-// (scripts/build-tt-page.mjs). If this is empty, /tt/ falls back to BETA_LINK.
+// Store Connect. This script does not read it: /tt/ is a short page with no
+// script, and scripts/build-tt-page.mjs writes this link into its buttons at
+// build time. It is kept here so both links live in one place. If it is
+// empty, /tt/ carries BETA_LINK.
 const TIKTOK_BETA_LINK = "https://testflight.apple.com/join/qUgygVHs";
-// Which beta group this page belongs to: 'tiktok' on /tt/, '' on the home page.
-const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '';
 
 (function () {
   'use strict';
@@ -65,8 +65,7 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
         headers: { 'Content-Type': 'application/json' },
         // The source names the page the form was sent from. It is the value
         // of the form's hidden field ("algorithmlens-launch-list" on the
-        // home page; scripts/build-tt-page.mjs writes
-        // "algorithmlens-launch-list-tt" on /tt/), and the launch-list
+        // home page, the only page with the form), and the launch-list
         // table keeps it, so signups can be counted by page. It also
         // carries the optional Android box: a ticked box adds "+android".
         // The launch-list function stores the source as sent (free text,
@@ -364,18 +363,16 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
 // The beta call to action. The markup ships with the beta link already in
 // it: scripts/build-home-page.mjs writes BETA_LINK (top of this file) into
 // the hero's primary button (#betaButton) and the header pill (#betaPill),
-// and scripts/build-tt-page.mjs writes TIKTOK_BETA_LINK on /tt/, so both
-// work before this script runs and without it. This block only handles the
-// case of no link: while the chosen link holds no https URL the page falls
+// so both work before this script runs and without it. This block only
+// handles the case of no link: while BETA_LINK holds no https URL the page falls
 // back to the launch-list call to action it carried before the beta, both
 // links go to #launch, and the hero note and launch section take back their
 // pre-beta wording.
 (function () {
   'use strict';
-  const chosen = BETA_GROUP === 'tiktok' && TIKTOK_BETA_LINK ? TIKTOK_BETA_LINK : BETA_LINK;
   let href = null;
   try {
-    const u = new URL(chosen);
+    const u = new URL(BETA_LINK);
     if (u.protocol === 'https:') href = u.href;
   } catch { href = null; }
   if (href) return;

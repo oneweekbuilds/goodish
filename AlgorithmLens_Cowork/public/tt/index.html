@@ -637,6 +637,28 @@ html{scroll-behavior:auto}
 .button:hover,.pill:hover,.way:hover,.read:hover{transform:none}
 }
 </style>
+<style>
+/* /tt/ only: three findings from the example scan, the closing button, a one-row footer */
+.tt-finds{list-style:none;margin:0;padding:0;border-top:2px solid var(--ink)}
+.tt-finds li{display:flex;flex-direction:column;gap:6px;padding:18px 0 22px;border-bottom:1px solid var(--line)}
+.tt-finds .kicker{font-size:13px;line-height:18px;color:var(--muted)}
+.tt-finds b{font:400 28px/34px var(--serif);letter-spacing:-.01em;text-wrap:balance}
+.tt-cta{display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin-top:32px}
+.tt-cta .button{width:100%}
+.tt-foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0 16px;font-size:13px}
+.tt-foot nav{display:flex;flex-wrap:wrap;gap:0 22px}
+.tt-foot a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink);text-decoration:none}
+.tt-foot a:hover{text-decoration:underline;text-decoration-color:var(--blue);text-underline-offset:4px}
+footer.bottom.tt{padding:16px 0 20px}
+@media(min-width:900px){
+.tt-finds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 32px;border-top:0}
+.tt-finds li{border-top:2px solid var(--ink);border-bottom:0;padding:16px 0 0}
+.tt-finds b{font-size:30px;line-height:36px}
+.tt-cta{flex-direction:row;align-items:center;gap:24px;margin-top:48px}
+.tt-cta .button{width:auto}
+.tt-foot{font-size:14px}
+}
+</style>
 <!-- structured-data:start -->
 <!-- structured-data:end -->
 </head>
@@ -644,23 +666,8 @@ html{scroll-behavior:auto}
 <a class="skip" href="#main">Skip to content</a>
 <div class="topbar" id="topbar"><div class="wrap">
 <header class="top">
-<a class="brand" href="#top" aria-label="AlgorithmLens home"><svg viewBox="0 0 436 88" role="img" aria-label="AlgorithmLens"><use href="/static/img/wordmark.svg#wordmark"/></svg></a>
+<a class="brand" href="/" aria-label="AlgorithmLens home"><svg viewBox="0 0 436 88" role="img" aria-label="AlgorithmLens"><use href="/static/img/wordmark.svg#wordmark"/></svg></a>
 <div class="topnav">
-<nav class="sections" aria-label="Page sections">
-<a href="#how">How it works</a>
-<a href="#report">The report</a>
-<a href="#privacy">Privacy</a>
-<a href="/methodology">Methodology</a>
-</nav>
-<details class="menu" id="menu">
-<summary><span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="menu-word">Menu</span></summary>
-<nav aria-label="Menu">
-<a href="#how">How it works</a>
-<a href="#report">The report</a>
-<a href="#privacy">Privacy</a>
-<a href="/methodology">Methodology</a>
-</nav>
-</details>
 <a class="pill" id="betaPill" href="https://testflight.apple.com/join/qUgygVHs" rel="noopener noreferrer">Join the beta</a>
 </div>
 </header>
@@ -686,7 +693,6 @@ html{scroll-behavior:auto}
 <li>A scan is about two minutes of scrolling.</li>
 <li>You approve the analysis before anything is sent.</li>
 </ol>
-<p class="platforms">Free. iPhone. Works with Instagram, TikTok, YouTube, X, Facebook and Reddit. Accuracy checked on YouTube so far.</p>
 <p class="limit">A scan reads what appeared on screen. It cannot say why any post was there.</p>
 </div>
 <div class="shotwrap">
@@ -709,439 +715,29 @@ html{scroll-behavior:auto}
 </div>
 </section>
 
-<nav class="contents" aria-label="Contents">
+<section class="section band" id="findings">
 <div class="wrap">
-<ol>
-<li><a href="#report"><i aria-hidden="true">01</i>The report</a></li>
-<li><a href="#real"><i aria-hidden="true">02</i>One real scan</a></li>
-<li><a href="#try"><i aria-hidden="true">03</i>Try it</a></li>
-<li><a href="#limits"><i aria-hidden="true">04</i>The limits</a></li>
-<li><a href="#how"><i aria-hidden="true">05</i>How it works</a></li>
-<li><a href="#privacy"><i aria-hidden="true">06</i>Privacy</a></li>
-<li><a href="#ways"><i aria-hidden="true">07</i>In use</a></li>
-<li><a href="#trust"><i aria-hidden="true">08</i>Methodology</a></li>
-<li><a href="#faq"><i aria-hidden="true">09</i>Questions</a></li>
-<li><a href="#launch"><i aria-hidden="true">10</i>Launch list</a></li>
+<div class="sec-top grid">
+<div class="sec-title">
+<p class="sec-head"><span class="label eyebrow">Example</span></p>
+<h2>Three findings from one scan.</h2>
+</div>
+<div class="sec-lede"><p class="lede">Instagram, 45 posts, September 20. Your own scan gives you these counts for your feed.</p></div>
+</div>
+<ol class="tt-finds">
+<li><span class="kicker">Ad labels</span><b>6 of 45 posts carried an ad label.</b></li>
+<li><span class="kicker">Where posts came from</span><b>16 followed, 14 suggested, 15 unknown.</b></li>
+<li><span class="kicker">Accounts that came back</span><b>2 of 42 accounts appeared more than once.</b></li>
 </ol>
-</div>
-</nav>
-
-<section id="report" class="section band">
-<div class="wrap">
-<div class="sec-top grid">
-<div class="sec-title">
-<p class="sec-head" data-reveal><span class="num">01</span><span class="label eyebrow">The report</span></p>
-<h2 data-reveal>One scan. One <span class="nb">plain-language</span> report.</h2>
-</div>
-<div class="sec-lede"><p class="lede" data-reveal>Four weekly scans, each counted on its own. Pick a date to see that scan. A small scan stays small.</p></div>
-</div>
-<div class="grid record-grid">
-<figure class="record-card" data-reveal>
-<div class="table dots">
-<div class="panel-head">
-<span class="title"><span><b>Instagram, four weekly scans</b><small>Aug 30 to Sep 20</small></span></span>
-<span class="label">Example</span>
-</div>
-<div class="stage" id="stage" aria-hidden="true"></div>
-<div class="chips" id="chips" role="group" aria-label="Choose a dated scan"></div>
-</div>
-<figcaption class="record-foot">
-<div class="col" aria-live="polite">
-<span class="label">Chosen date</span>
-<h3 id="recordTitle">The scan of Sep 20</h3>
-<p class="facts" id="recordFacts">45 posts in this scan. 6 carried an ad label. 125 posts across all 4 scans.</p>
-</div>
-<div class="legend"><span><i class="ad"></i>Ad label</span><span><i class="un"></i>Could not be read</span><span><i></i>One mark, one post</span></div>
-</figcaption>
-</figure>
-<div class="record-side">
-<div class="tiles" data-reveal aria-label="Counts from the example scan of September 20">
-<div class="tile"><b>45</b><span>Posts recorded</span></div>
-<div class="tile"><b>42</b><span>Different accounts</span></div>
-<div class="tile blue"><b>6</b><span>Ad labels</span></div>
-<div class="tile"><b>4</b><span>Scans so far</span></div>
-</div>
-<p class="small tiles-note" data-reveal>Counts from the scan of September 20.</p>
-<a class="textlink" href="/explore/" data-reveal>See the whole example in the explorer</a>
-<p class="limit" data-reveal>More context does not by itself establish a stable rate or a certified change.</p>
-</div>
-</div>
-<!-- report-views:start -->
-<div class="views">
-<p class="views-head" data-reveal><span class="label">Also in the report, from the scan of September 20</span></p>
-<div class="views-grid">
-<figure class="view" data-reveal>
-<figcaption><span class="kicker">Where posts came from</span><h3>16 followed, 14 suggested, 15 unknown</h3></figcaption>
-<div class="units" role="img" aria-label="45 posts as marks in three rows: 16 followed, 14 suggested, 15 unknown">
-<div class="unit f"><span>Followed</span><span class="marks"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
-<div class="unit s"><span>Suggested</span><span class="marks"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
-<div class="unit u"><span>Unknown</span><span class="marks"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
-</div>
-<p class="view-note">One mark is one post. Unknown means the scan could not tell which.</p>
-</figure>
-<figure class="view" data-reveal>
-<figcaption><span class="kicker">Accounts that came back</span><h3>2 of 42 accounts appeared more than once</h3></figcaption>
-<div class="tracks">
-<div class="track"><div class="track-head"><b>@harbor.coffee</b><span>posts 1, 4 and 22</span></div><div class="ticks" aria-hidden="true"><i class="on"></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
-<div class="track"><div class="track-head"><b>@city.notes</b><span>posts 2 and 18</span></div><div class="ticks" aria-hidden="true"><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
-</div>
-<p class="view-note">Each strip is the feed in order, 45 posts. The other 40 accounts appeared once.</p>
-<p class="view-limit">Appearances in this scan, not a measure of influence or of your preference.</p>
-</figure>
-<figure class="view" data-reveal>
-<figcaption><span class="kicker">How each fact is marked</span><h3>Observed, inferred or unknown</h3></figcaption>
-<dl class="keylist">
-<div><dt><i class="obs"></i>Observed</dt><dd>A label or a name the scan could read. 6 of 45 posts carried an ad label.</dd></div>
-<div><dt><i class="inf"></i>Inferred</dt><dd>A reading of the content, marked as one. 5 of 45 posts were classified as political.</dd></div>
-<div><dt><i class="unk"></i>Unknown</dt><dd>What the scan could not read: 1 ad label, and 6 posts not assessed for politics.</dd></div>
-</dl>
-</figure>
-</div>
-</div>
-<!-- report-views:end -->
-</div>
-</section>
-
-<section id="real" class="section">
-<div class="wrap grid real-grid">
-<div class="real-copy">
-<p class="sec-head" data-reveal><span class="num">02</span><span class="label eyebrow real">One real scan</span></p>
-<h2 data-reveal>One real scan, marked as such.</h2>
-<p class="lede" data-reveal>Everything else on this page is example data. This is one real scan of the founder's own X feed, read by the app on 6 October 2026.</p>
-<p class="limit" data-reveal>One scan of one feed. It shows what this scan read, not what X shows people in general.</p>
-</div>
-<figure class="card real-card" data-reveal>
-<div class="head"><span>X feed, 6 October 2026</span><span class="label real">Real scan, n=1</span></div>
-<div class="tiles" aria-label="Counts from one real scan on 6 October 2026">
-<div class="tile"><b>36</b><span>Posts read</span></div>
-<div class="tile blue"><b>5</b><span>Carried an ad label</span></div>
-</div>
-<div class="countbar" aria-hidden="true"><i class="ad"></i><i class="ad"></i><i class="ad"></i><i class="ad"></i><i class="ad"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-<figcaption class="caption">A single real scan of the founder's own feed, n=1. One mark, one post. Account names are not shown.</figcaption>
-</figure>
-</div>
-</section>
-
-<section id="try" class="section band">
-<div class="wrap">
-<div class="sec-top grid">
-<div class="sec-title">
-<p class="sec-head" data-reveal><span class="num">03</span><span class="label eyebrow">Try it</span></p>
-<h2 data-reveal>Tap four posts. Watch the report fill in.</h2>
-</div>
-<div class="sec-lede"><p class="lede" data-reveal>Each tap adds what a scan could read from that post, and stops at what it could not.</p></div>
-</div>
-<div class="strip table dots" data-reveal>
-<div class="strip-head">
-<div>
-<div class="feed-head"><span>For you</span><span class="label">Example</span></div>
-<p class="hint">Four posts. Tap Read to add one to the report.</p>
-</div>
-<div>
-<div class="readout-head"><span>The report so far</span><span id="readCount">0 of 4 posts</span></div>
-<div class="progress"><i id="readBar"></i></div>
-</div>
-</div>
-<div class="frames" id="tapFeed">
-<div class="frame">
-<span class="pos" aria-hidden="true">1</span>
-<article class="post">
-<div class="post-top"><span class="avatar" aria-hidden="true">h</span><div>@harbor.coffee<small class="tag">Sponsored</small></div></div>
-<img src="/static/img/photo-coffee.jpg" alt="Example post image: a glass of iced coffee beside a paper bag" loading="lazy" width="320" height="150">
-<div class="post-copy"><p>A slower start. Our new cold brew is here.</p><button type="button" class="read" data-read="1" aria-pressed="false">Read</button></div>
-</article>
-<div class="slot" id="slot-1" aria-live="polite"><div class="blank" aria-hidden="true"><span class="blank-head"><i></i>Post 1</span><span class="blank-rows"><span>Ad label</span><span>Came from</span><span>Account</span><span>Position</span></span></div></div>
-</div>
-<div class="frame">
-<span class="pos" aria-hidden="true">2</span>
-<article class="post">
-<div class="post-top"><span class="avatar" aria-hidden="true">c</span><div>@city.notes<small class="tag green">Following</small></div></div>
-<div class="news"><small>The local edition</small><p>City council votes on a new transit plan.</p></div>
-<div class="post-copy"><p>On the local agenda this week.</p><button type="button" class="read" data-read="2" aria-pressed="false">Read</button></div>
-</article>
-<div class="slot" id="slot-2" aria-live="polite"><div class="blank" aria-hidden="true"><span class="blank-head"><i></i>Post 2</span><span class="blank-rows"><span>Ad label</span><span>Came from</span><span>Account</span><span>Position</span></span></div></div>
-</div>
-<div class="frame">
-<span class="pos" aria-hidden="true">3</span>
-<article class="post">
-<div class="post-top"><span class="avatar" aria-hidden="true">w</span><div>@wildpath.journal<small class="tag">Suggested for you</small></div></div>
-<img src="/static/img/photo-lake.jpg" alt="Example post image: a still lake at dawn" loading="lazy" width="320" height="150">
-<div class="post-copy"><p>A long way from the morning rush.</p><button type="button" class="read" data-read="3" aria-pressed="false">Read</button></div>
-</article>
-<div class="slot" id="slot-3" aria-live="polite"><div class="blank" aria-hidden="true"><span class="blank-head"><i></i>Post 3</span><span class="blank-rows"><span>Ad label</span><span>Came from</span><span>Account</span><span>Position</span></span></div></div>
-</div>
-<div class="frame">
-<span class="pos" aria-hidden="true">4</span>
-<article class="post">
-<div class="post-top"><span class="avatar" aria-hidden="true">h</span><div>@harbor.coffee<small class="tag green">Following</small></div></div>
-<img src="/static/img/photo-coffee.jpg" alt="Example post image: the same coffee shop, before opening" loading="lazy" width="320" height="150">
-<div class="post-copy"><p>Behind the counter, before the doors open.</p><button type="button" class="read" data-read="4" aria-pressed="false">Read</button></div>
-</article>
-<div class="slot" id="slot-4" aria-live="polite"><div class="blank" aria-hidden="true"><span class="blank-head"><i></i>Post 4</span><span class="blank-rows"><span>Ad label</span><span>Came from</span><span>Account</span><span>Position</span></span></div></div>
-</div>
-</div>
-<div class="strip-foot">
-<p id="readEmpty">Nothing yet. Tap Read on any post.</p>
-<div class="tuned" id="tuned" hidden><span>Read so far</span><span id="tunedChips"></span></div>
-<div class="readout-foot" id="readFoot" hidden><span id="readNote"></span><button type="button" class="linkish" id="readReset">Start over</button></div>
-</div>
-</div>
-<details class="film-more" id="film">
-<summary>Watch the same four posts as a twenty-second film</summary>
-<div class="film-grid">
-<video id="exampleFilm" muted playsinline controls preload="none" width="1080" height="1920" data-poster="/static/film/feed-replay-poster.jpg" aria-label="Twenty-second illustrated replay of the four example posts">
-<source src="/static/film/feed-replay-1080.mp4" type="video/mp4" media="(min-width: 900px)">
-<source src="/static/film/feed-replay-720.mp4" type="video/mp4">
-</video>
-<div class="film-words">
-<b>The film in words</b>
-<p>An ad label is visible. A political-content classification is an inference. A suggested label does not explain why the post was selected. One readable account appears twice. The four posts become a small report, not a representative feed.</p>
-</div>
-</div>
-</details>
-</div>
-</section>
-
-<section id="limits" class="section">
-<div class="wrap">
-<div class="sec-top grid">
-<div class="sec-title">
-<p class="sec-head" data-reveal><span class="num">04</span><span class="label eyebrow">The limits</span></p>
-<h2 data-reveal>What a scan can read. What it cannot.</h2>
-</div>
-<div class="sec-lede"><p class="lede" data-reveal>A recording holds what was on the screen. The report stops where the screen stops.</p></div>
-</div>
-<div class="ledger" data-reveal>
-<div class="ledger-col">
-<p class="rowlabel" id="canLabel">Can read</p>
-<ul class="readlist can" aria-labelledby="canLabel">
-<li>an ad label on a post</li><li>an account name</li><li>a post's position in the feed</li><li>the date recorded</li><li>how many posts appeared</li><li>an account that returns</li><li>a suggested label</li><li>a following label</li><li>a headline on screen</li>
-</ul>
-</div>
-<div class="ledger-col">
-<p class="rowlabel" id="cannotLabel">Cannot read</p>
-<ul class="readlist cannot" aria-labelledby="cannotLabel">
-<li>why a post appeared</li><li>your beliefs</li><li>your mood</li><li>the platform's model</li><li>what you scrolled past</li><li>which tap led where</li><li>the whole feed</li><li>the next feed</li><li>who else saw it</li>
-</ul>
-</div>
-</div>
-<div class="limits-copy grid">
-<p data-reveal>We show what appeared in a sample and keep observed labels apart from inferences. Political content describes a post, not your beliefs. Tone describes a reading of the content, not your mood. A suggested post does not tell us which action led to the recommendation.</p>
-<p class="caption" data-reveal>The examples on this page are fictional: not a live scan, and not a demonstration of a running classifier. The one real scan is marked as such. This page does not record your screen or analyze your feed.</p>
-</div>
-</div>
-</section>
-
-<section id="how" class="section band">
-<div class="wrap">
-<div class="sec-top grid">
-<div class="sec-title">
-<p class="sec-head" data-reveal><span class="num">05</span><span class="label eyebrow">How it works</span></p>
-<h2 data-reveal>Three steps. No jargon.</h2>
-</div>
-<div class="sec-lede"><p class="lede" data-reveal>Click through what happens from a recording to a report. It advances on its own too.</p><button type="button" class="linkish" id="stepsPause" hidden>Pause the steps</button></div>
-</div>
-<div class="grid how-grid">
-<div class="steps" id="steps" data-reveal>
-<button type="button" class="step" aria-pressed="true" data-step="1"><i>1</i><span><span class="st">Start a scan</span><span class="sd">Open the app, start the recording, then scroll a feed as you normally would.</span></span></button>
-<button type="button" class="step" aria-pressed="false" data-step="2"><i>2</i><span><span class="st">Review what appeared</span><span class="sd">After recording, the app reads ad labels and account names and sorts each post by its content. Anything it cannot read stays unknown.</span></span></button>
-<button type="button" class="step" aria-pressed="false" data-step="3"><i>3</i><span><span class="st">Get a clearer picture</span><span class="sd">Counts, each with the number of posts behind it and what it cannot say. Every scan is dated, so you can look back.</span></span></button>
-</div>
-<div class="card preview-box" data-reveal>
-<div class="preview" data-preview="1">
-<span class="label">Step 1. Start a scan</span>
-<div class="plat">
-<div><i aria-hidden="true"></i>Instagram<span>Ready to record</span></div>
-<div><i aria-hidden="true"></i>TikTok<span>Ready to record</span></div>
-<div><i aria-hidden="true"></i>YouTube<span>Ready to record</span></div>
-<div><i aria-hidden="true"></i>X<span>Ready to record</span></div>
-<div><i aria-hidden="true"></i>Facebook<span>Ready to record</span></div>
-<div><i aria-hidden="true"></i>Reddit<span>Ready to record</span></div>
-</div>
-</div>
-<div class="preview" data-preview="2" hidden>
-<span class="label">Step 2. Review what appeared</span>
-<div class="checks">
-<div>Ad labels<span class="blue">read off the screen</span></div>
-<div>Account names<span class="blue">read off the screen</span></div>
-<div>Following and suggested labels<span>read where shown</span></div>
-<div>Political content and tone<span>marked as inference</span></div>
-<div>Anything unreadable<span>left unknown</span></div>
-</div>
-</div>
-<div class="preview" data-preview="3" hidden>
-<span class="label">Step 3. Get a clearer picture</span>
-<div class="tiles">
-<div class="tile"><b>45</b><span>Posts recorded</span></div>
-<div class="tile blue"><b>6</b><span>Ad labels</span></div>
-<div class="tile"><b>42</b><span>Different accounts</span></div>
-</div>
-<p class="small">6 of 45 posts carried an ad label; 1 could not be read. The example scan of September 20.</p>
-</div>
-</div>
-</div>
-</div>
-</section>
-
-<section id="privacy" class="section">
-<div class="wrap">
-<div class="sec-top grid">
-<div class="sec-title">
-<p class="sec-head" data-reveal><span class="num">06</span><span class="label eyebrow">Privacy</span></p>
-<h2 data-reveal>Your data stays yours.</h2>
-</div>
-<div class="sec-lede">
-<p class="lede" data-reveal>A scan handles sensitive material. Here is how it is treated.</p>
-<a class="textlink" href="/privacy/" data-reveal>Read the privacy policy</a>
-</div>
-</div>
-<div class="privacy-cards">
-<div class="pcard" data-reveal><span class="well" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#20A888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="9.5" width="14" height="9" rx="2"/><path d="M7.5 9.5V7a3.5 3.5 0 0 1 7 0v2.5"/></svg></span><h3>Read, then deleted</h3><p>Once you approve the analysis, the frames are sent to Google's Gemini API to be read, then deleted from your phone. Google is the only company that receives them.</p></div>
-<div class="pcard" data-reveal><span class="well" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#20A888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h12M9 7V5h4v2M7 7l1 11h6l1-11"/></svg></span><h3>Delete anytime</h3><p>Deleting your account removes your scan results and profile.</p></div>
-<div class="pcard" data-reveal><span class="well" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#20A888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11s3-5 8-5 8 5 8 5-3 5-8 5-8-5-8-5z"/><path d="M4 4l14 14"/></svg></span><h3>Never sold</h3><p>No ad tech and no analytics on this site, and your data is not for sale.</p></div>
-<div class="pcard" data-reveal><span class="well" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#20A888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3.5" width="12" height="15" rx="2"/><path d="M8 8h6M8 11.5h6M8 15h4"/></svg></span><h3>Public methodology</h3><p>Each metric is documented, and the analysis prompts are published in full.</p></div>
-</div>
-</div>
-</section>
-
-<section id="ways" class="section band">
-<div class="wrap">
-<div class="sec-top grid">
-<div class="sec-title">
-<p class="sec-head" data-reveal><span class="num">07</span><span class="label eyebrow">In use</span></p>
-<h2 data-reveal>What you can do with it</h2>
-</div>
-<div class="sec-lede"><p class="lede" data-reveal>A read on a feed you can act on.</p></div>
-</div>
-<div class="ways">
-<div class="way blue" data-reveal><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#1868D8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="15" height="13" rx="2"/><path d="M7 8.5h8M7 12h8M7 15h5"/></svg><h3>Check your news diet</h3><p>See which accounts fill your feed, not the ones you think do.</p></div>
-<div class="way blue" data-reveal><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#1868D8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11.5V5h6.5l7.5 7.5-6.5 6.5L4 11.5z"/><circle cx="8" cy="8.5" r="1.2"/></svg><h3>Audit the ads</h3><p>Which posts carried an ad label, and how many, in each scan.</p></div>
-<div class="way green" data-reveal><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#20A888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h14M4 15h14"/><circle cx="8" cy="7" r="2"/><circle cx="14" cy="15" r="2"/></svg><h3>Change your feed on purpose</h3><p>Unfollow, mute and follow deliberately, then scan again and keep both reports.</p></div>
-<div class="way green" data-reveal><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#20A888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5h6a2 2 0 0 1 2 2v10a1.5 1.5 0 0 0-1.5-1.5H4V5.5zM18 5.5h-6a2 2 0 0 0-2 2v10a1.5 1.5 0 0 1 1.5-1.5H18V5.5z"/></svg><h3>Teach and research</h3><p>Example records for classrooms studying recommender systems.</p></div>
-</div>
-</div>
-</section>
-
-<section id="trust" class="section">
-<div class="wrap grid trust-grid">
-<div class="trust-copy">
-<p class="sec-head" data-reveal><span class="num">08</span><span class="label eyebrow">Methodology</span></p>
-<h2 data-reveal>You shouldn't have to take our word for it.</h2>
-<p class="lede" data-reveal>Each number the app reports is a count with its sample size, documented and open to check.</p>
-<div class="points" data-reveal>
-<div class="point"><span class="well" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 22 22" fill="none" stroke="#20A888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3.5" width="12" height="15" rx="2"/><path d="M8 8h6M8 11.5h6M8 15h4"/></svg></span><div><b>Public methodology</b><span>Each metric documented, the prompts published verbatim.</span></div></div>
-<div class="point"><span class="well" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 22 22" fill="none" stroke="#20A888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M11 7v4.5M11 15h.01"/></svg></span><div><b>Honest about limits</b><span>We show what you saw, and say what we cannot read.</span></div></div>
-<div class="point"><span class="well" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 22 22" fill="none" stroke="#20A888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11s3-5 8-5 8 5 8 5-3 5-8 5-8-5-8-5z"/><path d="M4 4l14 14"/></svg></span><div><b>No analytics on this site</b><span>These pages set no cookies and request nothing from third parties.</span></div></div>
-</div>
-<a class="textlink" href="/methodology" data-reveal>Read the methodology</a>
-</div>
-<div class="card worked" data-reveal>
-<div class="head"><span>The scan of September 20</span><span class="label">Example</span></div>
-<h3>How a count is made</h3>
-<div class="bignum"><b>6 <i>of</i> 45</b><span>posts carried an ad label.</span></div>
-<table class="tally">
-<tbody>
-<tr><th scope="row"><i class="ad" aria-hidden="true"></i>With an ad label</th><td>6</td></tr>
-<tr><th scope="row"><i aria-hidden="true"></i>Without one</th><td>38</td></tr>
-<tr><th scope="row"><i class="un" aria-hidden="true"></i>Label could not be read</th><td>1</td></tr>
-</tbody>
-<tfoot>
-<tr><th scope="row">Posts recorded</th><td>45</td></tr>
-</tfoot>
-</table>
-<a class="textlink" href="/explore/#ads">See this count in the explorer</a>
-</div>
-</div>
-</section>
-
-<section id="faq" class="section band">
-<div class="wrap">
-<div class="sec-top grid">
-<div class="sec-title">
-<p class="sec-head" data-reveal><span class="num">09</span><span class="label eyebrow">Questions</span></p>
-<h2 data-reveal>Fair questions, short answers.</h2>
-</div>
-<div class="sec-lede"><p class="lede" data-reveal>Each answer comes from the privacy policy, the Terms or the methodology, and says which.</p></div>
-</div>
-<div class="faq">
-<div class="qa" data-reveal>
-<h3>Does it see my messages and notifications?</h3>
-<div class="a">
-<p>It can, if they are on your screen while you record. A scan is a recording of the screen, so a notification or a message that appears during it is captured along with the feed. Those frames are sent to Google's Gemini API to be read by software, like any others, then deleted from your phone, and no person reviews them. Close sensitive apps before you start a scan.</p>
-<p class="src">From the <a href="/privacy/#1-information-we-collect">privacy policy, section 1.2</a>.</p>
-</div>
-</div>
-<div class="qa" data-reveal>
-<h3>Who receives the recording?</h3>
-<div class="a">
-<p>Google, and no one else. When you approve the analysis, the frames (compressed images of your screen and the text recognized on them) go from your phone to Google's Gemini API to be read. They are then deleted from your phone, and AlgorithmLens keeps no copy of them: what is saved to your account is the results as text, not images. If you separately join the optional research study, the text read from each post, never an image, is also sent to a second service, TypeSafe AI.</p>
-<p class="src">From the <a href="/privacy/#3-how-screen-recordings-are-processed">privacy policy, section 3</a>, and the <a href="/methodology#where-the-data-goes">methodology, where the data goes</a>.</p>
-</div>
-</div>
-<div class="qa" data-reveal>
-<h3>Is it really free?</h3>
-<div class="a">
-<p>Yes. The Terms say AlgorithmLens is currently free to use, with no subscriptions, no paid tiers and no in-app purchases, and that it does not process payments. If paid features are ever introduced, the Terms will be updated with the pricing before any charge applies. The privacy policy says your data is not sold and is not used for advertising.</p>
-<p class="src">From the <a href="/terms#7-pricing">Terms, section 7</a>, and the <a href="/privacy/#10-what-we-do-not-do">privacy policy, section 10</a>.</p>
-</div>
-</div>
-<div class="qa" data-reveal>
-<h3>Why TestFlight?</h3>
-<div class="a">
-<p>The app is still in public beta, and the beta is distributed through Apple's TestFlight. It runs on iPhone, iOS 15.1 and later. If you would rather wait for the App Store, the launch list below sends one email when the app is there.</p>
-<p class="src">From the <a href="/terms#1-what-algorithmlens-does">Terms, section 1</a>, and the <a href="/methodology">methodology</a>.</p>
-</div>
-</div>
-<div class="qa" data-reveal>
-<h3>Is there an Android version?</h3>
-<div class="a">
-<p>No. AlgorithmLens is iPhone only for now. To hear if that changes, tick "Tell me about Android" on the <a href="#launch">launch list form</a> below.</p>
-<p class="src">From the <a href="/methodology">methodology</a>, which describes an iPhone app in a TestFlight beta.</p>
-</div>
-</div>
-</div>
-</div>
-</section>
-
-<section id="launch" class="dots launch">
-<div class="wrap grid launch-grid">
-<div class="launch-copy">
-<p class="sec-head" data-reveal><span class="num">10</span><span class="label eyebrow">Launch list</span></p>
-<h2 id="launchHeading" data-reveal>Prefer to wait for the App Store?</h2>
-<p class="lede" id="launchLede" data-reveal>One email when AlgorithmLens is on the App Store. Nothing else.</p>
-</div>
-<form id="launchForm" class="card signup" data-reveal>
-<label for="email">Email address</label>
-<input id="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com" aria-describedby="formStatus" aria-invalid="false">
-<input type="hidden" id="source" value="algorithmlens-launch-list-tt">
-<p id="formStatus" role="status" aria-live="polite"></p>
-<label class="consent"><input type="checkbox" id="consent" required><span>I agree to receive AlgorithmLens launch updates by email. I can withdraw at any time by writing to privacy@algorithmlens.com.</span></label>
-<label class="consent"><input type="checkbox" id="android"><span>Tell me about Android. <span class="opt">Optional. The app is iPhone only for now.</span></span></label>
-<button type="submit" class="button" id="submit">Join the launch list</button>
-<noscript><p class="note">This form needs JavaScript. Without it, pressing the button sends nothing.</p></noscript>
-<p class="note">This form asks only for an email address and your consent to receive launch updates. It also records which page you signed up on, and the Android box if you tick it. Your address is used for launch news and nothing else, and is never sold. To be removed, write to <a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a>. Details are in the <a href="/privacy/">privacy policy</a>.</p>
-</form>
+<div class="tt-cta"><a class="button" href="https://testflight.apple.com/join/qUgygVHs" rel="noopener noreferrer">Join the beta on iPhone</a><a class="textlink" href="/">See the full site</a></div>
 </div>
 </section>
 </main>
-<footer class="bottom">
-<div class="wrap">
-<p class="colophon">A feed, made legible.</p>
-<div class="foot-grid">
-<div class="foot-brand">
-<a class="brand" href="#top" aria-label="AlgorithmLens home"><svg viewBox="0 0 436 88" role="img" aria-label="AlgorithmLens"><use href="/static/img/wordmark.svg#wordmark"/></svg></a>
-<p>A free iPhone app, now in public beta.</p>
-</div>
-<div class="foot-cols">
-<nav class="foot-col product" aria-label="Product"><b>Product</b><a href="#report">The report</a><a href="#how">How it works</a><a href="#limits">Read the limits</a><a href="#faq">Questions</a><a href="/explore/">Explore the example</a></nav>
-<nav class="foot-col company" aria-label="Company"><b>Company</b><a href="/about/">About</a><a href="/methodology">Methodology</a><a href="#privacy">Privacy</a><a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a></nav>
-<nav class="foot-col legal" aria-label="Legal"><b>Legal</b><a href="/privacy/">Privacy policy</a><a href="/terms">Terms</a></nav>
-</div>
-</div>
-<div class="foot-row"><span>&copy; 2026 AlgorithmLens</span><a href="#top">Back to top</a></div>
+<footer class="bottom tt">
+<div class="wrap tt-foot">
+<span>&copy; 2026 AlgorithmLens</span>
+<nav aria-label="More pages"><a href="/">The full site</a><a href="/methodology">Methodology</a><a href="/privacy/">Privacy policy</a><a href="/terms">Terms</a></nav>
 </div>
 </footer>
-<script src="/example-record.js"></script>
-<script src="/landing.js"></script>
 </body>
 </html>

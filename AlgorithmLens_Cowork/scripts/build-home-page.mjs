@@ -8,8 +8,8 @@
 //    page shows it from 1024 px on devices with a mouse or trackpad (the CSS
 //    decides), for a visitor reading on a computer who wants to open the beta
 //    on their iPhone. If BETA_LINK is empty the block is left empty and
-//    nothing shows. The same functions serve scripts/build-tt-page.mjs,
-//    which draws the code for TIKTOK_BETA_LINK on /tt/.
+//    nothing shows. scripts/build-tt-page.mjs uses the same function to
+//    draw the code for TIKTOK_BETA_LINK on /tt/.
 //
 // 2. Three views of the newest example scan, in the report section
 //    ("report-views"): followed, suggested and unknown; the accounts that
