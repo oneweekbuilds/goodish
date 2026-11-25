@@ -1,19 +1,26 @@
-// The home page's generated part: the QR code beside the beta button.
-// scripts/build-home-page.mjs writes it from BETA_LINK in public/landing.js
-// (and scripts/build-tt-page.mjs writes the one on /tt/ from
-// TIKTOK_BETA_LINK). These tests pin the committed pages to the generators
-// and read both codes back with a decoder written separately from the
-// encoder in scripts/qr.mjs, so a code that does not open the link it sits
-// beside fails here.
+// The home page's generated parts (scripts/build-home-page.mjs).
+//
+// The QR code beside the beta button is written from BETA_LINK in
+// public/landing.js (and scripts/build-tt-page.mjs writes the one on /tt/
+// from TIKTOK_BETA_LINK). These tests pin the committed pages to the
+// generators and read both codes back with a decoder written separately
+// from the encoder in scripts/qr.mjs, so a code that does not open the link
+// it sits beside fails here.
+//
+// The three views in the report section are counted from the explorer's
+// data. The tests run the explorer's own stats() function, lifted out of
+// public/explore/explore.js, beside the generator's, and check the numbers
+// the page prints against it.
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { renderHome, betaLinks, lf, HOME, LANDING_JS } from '../scripts/build-home-page.mjs';
+import { renderHome, betaLinks, loadExamples, scanStats, lf, HOME, LANDING_JS, EXAMPLES_JS } from '../scripts/build-home-page.mjs';
 import { TARGET as TT } from '../scripts/build-tt-page.mjs';
 import { qrMatrix, versionFor, QUIET_ZONE } from '../scripts/qr.mjs';
 
 const home = lf(readFileSync(HOME, 'utf8'));
 const tt = lf(readFileSync(TT, 'utf8'));
 const js = readFileSync(LANDING_JS, 'utf8');
+const examplesSrc = readFileSync(EXAMPLES_JS, 'utf8');
 const links = betaLinks(js);
 
 // ---- a small QR reader, for symbols with one Reed-Solomon block (versions 1 to 3 at level M) ----
@@ -131,7 +138,7 @@ function readQr(m) {
 
 describe('the home page QR code', () => {
   it('is what scripts/build-home-page.mjs writes for the current BETA_LINK (run npm run build:home after changing the link)', () => {
-    expect(renderHome(home, js)).toBe(home);
+    expect(renderHome(home, js, examplesSrc)).toBe(home);
   });
 
   it('sits between its markers, beside the beta button, with an accessible name and one line of help', () => {
@@ -195,5 +202,71 @@ describe('scripts/qr.mjs', () => {
       seen.add(mask);
     }
     expect(seen.size).toBeGreaterThan(1);
+  });
+});
+
+describe('the three report views on the home page', () => {
+  const scans = loadExamples(examplesSrc).record.scans;
+  const newest = scans[scans.length - 1];
+  // The explorer's own counting function, taken from its source as written.
+  const explorerJs = lf(readFileSync(new URL('../public/explore/explore.js', import.meta.url), 'utf8'));
+  const statsLine = explorerJs.split('\n').find((line) => line.startsWith('function stats(scan){'));
+  const explorerStats = new Function(`${statsLine}; return stats;`)();
+  const views = home.slice(home.indexOf('<!-- report-views:start -->'), home.indexOf('<!-- report-views:end -->'));
+
+  it('counts every scan the way the explorer does', () => {
+    expect(statsLine).toBeTruthy();
+    for (const scan of scans) {
+      const mine = scanStats(scan);
+      const theirs = explorerStats(scan);
+      expect(mine.n).toBe(theirs.n);
+      expect(mine.ads).toBe(theirs.ads.length);
+      expect(mine.adUnknown).toBe(theirs.adUnknown.length);
+      expect(mine.followed).toBe(theirs.origins.followed.length);
+      expect(mine.suggested).toBe(theirs.origins.suggested.length);
+      expect(mine.originUnknown).toBe(theirs.origins.unknown.length);
+      expect(mine.accounts).toEqual(theirs.accounts);
+      expect(mine.accountUnknown).toBe(theirs.accountUnknown);
+      expect(mine.political).toBe(theirs.political.yes.length);
+      expect(mine.politicalUnknown).toBe(theirs.political.unknown.length);
+    }
+  });
+
+  it('prints the explorer\'s numbers for the newest scan', () => {
+    const st = explorerStats(newest);
+    expect(views).toContain(`<h3>${st.origins.followed.length} followed, ${st.origins.suggested.length} suggested, ${st.origins.unknown.length} unknown</h3>`);
+    expect(st.origins.followed.length + st.origins.suggested.length + st.origins.unknown.length).toBe(st.n);
+    const repeats = st.accounts.filter((a) => a.positions.length > 1);
+    expect(views).toContain(`<h3>${repeats.length} of ${st.accounts.length} accounts appeared more than once</h3>`);
+    for (const a of repeats) {
+      expect(views).toContain(`<b>${a.name}</b>`);
+      expect(views).toContain(`posts ${a.positions.slice(0, -1).join(', ')} and ${a.positions[a.positions.length - 1]}`);
+    }
+    expect(views).toContain(`${st.ads.length} of ${st.n} posts carried an ad label.`);
+    expect(views).toContain(`${st.political.yes.length} of ${st.n} posts were classified as political.`);
+    expect(views).toContain(`${st.political.unknown.length} posts not assessed for politics`);
+  });
+
+  it('draws one mark per post in the origin rows and one tick per post in each account strip', () => {
+    const st = explorerStats(newest);
+    const row = (cls) => (views.match(new RegExp(`<div class="unit ${cls}">.*?</div>`, 's'))[0].match(/<i><\/i>/g) || []).length;
+    expect([row('f'), row('s'), row('u')]).toEqual([st.origins.followed.length, st.origins.suggested.length, st.origins.unknown.length]);
+    const strips = views.match(/<div class="ticks" aria-hidden="true">.*?<\/div>/gs);
+    const repeats = st.accounts.filter((a) => a.positions.length > 1);
+    expect(strips).toHaveLength(repeats.length);
+    strips.forEach((strip, i) => {
+      const ticks = strip.match(/<i( class="on")?><\/i>/g);
+      expect(ticks).toHaveLength(st.n);
+      const on = ticks.map((tick, k) => (tick.includes('on') ? k + 1 : 0)).filter(Boolean);
+      expect(on).toEqual(repeats[i].positions);
+    });
+  });
+
+  it('leaves the page with two ad-label mark grids: the record sheets and the one real scan', () => {
+    const bars = home.match(/<div class="countbar"/g) || [];
+    expect(bars).toHaveLength(1);
+    expect(home.indexOf('<div class="countbar"')).toBeGreaterThan(home.indexOf('<section id="real"'));
+    expect(home.indexOf('<div class="countbar"')).toBeLessThan(home.indexOf('<section id="try"'));
+    expect(home).toContain('<div class="stage" id="stage" aria-hidden="true"></div>');
   });
 });
