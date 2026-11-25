@@ -162,6 +162,18 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
     state();
   }
 
+  // The film's transcript: closed by default, opened where the front page
+  // gives it a column of its own beside the phone (1200 px and wider).
+  const words = $('filmWords');
+  if (words && matchMedia('(min-width: 1200px)').matches) words.open = true;
+
+  // Count bars: each cell carries its index so the bar can tick in from the
+  // left when it is revealed (the stagger itself is CSS, and reduced motion
+  // skips it).
+  document.querySelectorAll('.countbar').forEach((bar) => {
+    Array.from(bar.children).forEach((cell, i) => cell.style.setProperty('--i', String(i)));
+  });
+
   // The example record: four fictional Instagram scans, the same data the
   // explorer's record view shows (explore/examples.js). One mark, one post;
   // blue where the post carried a printed ad label, hollow where the label
@@ -184,28 +196,26 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
   const chips = $('chips');
   if (stage && chips) {
     const total = SCANS.reduce((a, s) => a + s.n, 0);
-    const wide = () => matchMedia('(min-width: 900px)').matches;
     const sheets = SCANS.map(() => { const s = document.createElement('div'); s.className = 'sheet'; stage.append(s); return s; });
     const buttons = SCANS.map((scan, i) => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = scan.date; b.id = 'week-' + i;
       b.addEventListener('click', () => select(i)); chips.append(b); return b;
     });
     const inspect = document.createElement('a'); inspect.className = 'chip inspect'; inspect.textContent = 'Inspect this scan'; chips.append(inspect);
+    // One mark per post, eight to a row in feed order. The geometry (mark
+    // size and pitch) is CSS on .stage, so it follows the sheet's size.
     function marks(sheet, scan) {
       sheet.replaceChildren();
-      const step = wide() ? 27 : 24;
+      const grid = document.createElement('span'); grid.className = 'marks';
       for (let p = 1; p <= scan.n; p++) {
         const i = document.createElement('i');
-        const col = (p - 1) % 8, row = Math.floor((p - 1) / 8);
-        i.style.left = (20 + col * step) + 'px';
-        i.style.top = (23 + row * 19) + 'px';
         if (scan.ads.includes(p)) i.className = 'ad'; else if (scan.unknown.includes(p)) i.className = 'un';
-        sheet.append(i);
+        grid.append(i);
       }
       const foot = document.createElement('span'); foot.className = 'foot';
       const d = document.createElement('span'); d.textContent = scan.date;
       const c = document.createElement('span'); c.textContent = scan.n + ' posts';
-      foot.append(d, c); sheet.append(foot);
+      foot.append(d, c); sheet.append(grid, foot);
     }
     let current = SCANS.length - 1;
     function select(i) {
@@ -227,7 +237,6 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
       $('recordFacts').textContent = s.n + ' posts in this scan. ' + s.ads.length + ' carried a printed ad label. ' + total + ' posts across ' + SCANS.length + ' scans.';
     }
     select(current);
-    matchMedia('(min-width: 900px)').addEventListener('change', () => marks(sheets[current], SCANS[current]));
   }
 
   // The record forming: four fictional posts, observable facts only.
@@ -237,42 +246,50 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
     3: { account: '@wildpath.journal', kind: 'plain', facts: [['Ad label', 'None printed'], ['Origin', 'Suggested, as labeled'], ['Account', '@wildpath.journal'], ['Position', '3 of 4']], chip: 'suggested', extra: 'Suggested. Which action led here: unknown.' },
     4: { account: '@harbor.coffee', kind: 'mine', facts: [['Ad label', 'None printed'], ['Origin', 'Following, as labeled'], ['Account', '@harbor.coffee, also at post 1'], ['Position', '4 of 4']], chip: 'repeat account', extra: 'The same account returns. A repeat in four posts, not a pattern.' },
   };
-  const rows = $('readRows');
-  if (rows) {
+  // Each post has a slot beneath it (#slot-1 to #slot-4): reading a post
+  // writes its entry into that slot, so the record forms beside the post it
+  // came from. A slot is only rebuilt when its own post changes.
+  const feed = $('tapFeed');
+  if (feed) {
     const read = new Set();
-    const buttons = Array.from(document.querySelectorAll('.read[data-read]'));
+    const buttons = Array.from(feed.querySelectorAll('.read[data-read]'));
+    function entry(n) {
+      const p = POSTS[n];
+      const row = document.createElement('div'); row.className = 'row';
+      const head = document.createElement('div'); head.className = 'row-head';
+      const dot = document.createElement('i'); if (p.kind !== 'plain') dot.className = p.kind;
+      const title = document.createElement('span'); title.textContent = 'Post ' + n + '. ' + p.account;
+      const em = document.createElement('em'); em.textContent = p.facts.length + ' facts read';
+      head.append(dot, title, em);
+      const grid = document.createElement('div'); grid.className = 'row-grid';
+      p.facts.forEach(([k, v]) => { const cell = document.createElement('div'); const s = document.createElement('small'); s.textContent = k; const val = document.createElement('span'); val.textContent = v; cell.append(s, val); grid.append(cell); });
+      const extra = document.createElement('p'); extra.className = 'extra'; extra.textContent = p.extra;
+      row.append(head, grid, extra);
+      return row;
+    }
     function draw() {
-      rows.replaceChildren();
+      const order = buttons.map((b) => Number(b.dataset.read)).filter((n) => read.has(n));
+      buttons.forEach((b) => {
+        const n = Number(b.dataset.read);
+        const on = read.has(n);
+        const slot = $('slot-' + n);
+        b.setAttribute('aria-pressed', String(on));
+        b.textContent = on ? 'In record' : 'Read';
+        if (slot) {
+          if (on && !slot.firstChild) slot.append(entry(n));
+          if (!on && slot.firstChild) slot.replaceChildren();
+          slot.classList.toggle('filled', on);
+        }
+      });
       const chips = $('tunedChips');
       chips.replaceChildren();
-      const order = buttons.map((b) => Number(b.dataset.read)).filter((n) => read.has(n));
-      order.forEach((n) => {
-        const p = POSTS[n];
-        const row = document.createElement('div'); row.className = 'row';
-        const head = document.createElement('div'); head.className = 'row-head';
-        const dot = document.createElement('i'); if (p.kind !== 'plain') dot.className = p.kind;
-        const title = document.createElement('span'); title.textContent = 'Post ' + n + '. ' + p.account;
-        const em = document.createElement('em'); em.textContent = p.facts.length + ' facts read';
-        head.append(dot, title, em);
-        const grid = document.createElement('div'); grid.className = 'row-grid';
-        p.facts.forEach(([k, v]) => { const cell = document.createElement('div'); const s = document.createElement('small'); s.textContent = k; const val = document.createElement('span'); val.textContent = v; cell.append(s, val); grid.append(cell); });
-        const extra = document.createElement('p'); extra.className = 'small'; extra.style.margin = '10px 0 0'; extra.textContent = p.extra;
-        row.append(head, grid, extra);
-        rows.append(row);
-        const chip = document.createElement('b'); chip.textContent = p.chip; chips.append(chip);
-      });
-      if (!order.length) { const b = document.createElement('b'); b.textContent = 'nothing yet'; chips.append(b); }
+      order.forEach((n) => { const chip = document.createElement('b'); chip.textContent = POSTS[n].chip; chips.append(chip); });
+      $('tuned').hidden = order.length === 0;
       $('readCount').textContent = order.length + ' of 4 posts';
       $('readBar').style.width = (order.length / 4) * 100 + '%';
       $('readEmpty').hidden = order.length > 0;
-      const foot = $('readFoot');
-      foot.hidden = order.length === 0;
+      $('readFoot').hidden = order.length === 0;
       $('readNote').textContent = order.length === 4 ? 'Four posts read. Why any of them appeared: still unknown.' : order.length + ' of 4 posts read. The record grows only with what is on screen.';
-      buttons.forEach((b) => {
-        const n = Number(b.dataset.read);
-        b.setAttribute('aria-pressed', String(read.has(n)));
-        b.textContent = read.has(n) ? 'In record' : 'Read';
-      });
     }
     buttons.forEach((b) => b.addEventListener('click', () => { const n = Number(b.dataset.read); if (read.has(n)) read.delete(n); else read.add(n); draw(); }));
     $('readReset').addEventListener('click', () => { read.clear(); draw(); });

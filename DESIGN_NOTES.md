@@ -92,3 +92,46 @@ Deployed as commit 2b6cebb3 (production deployment 6738761160, success) and the 
 - **Weight and requests.** HTML on the wire: root 60,072 bytes, About 17,423, terms 27,949, methodology 40,994, 404 6,350; all under 300 KB. Film and fonts are files under `/static/`. Every request from the root, About, terms, methodology and 404 pages goes to www.algorithmlens.com; the launch-list POST on submit is the site's only outbound request. No analytics.
 - **Headers, redirects, form.** Every response still carries the audit's Content-Security-Policy, X-Content-Type-Options, X-Frame-Options, Referrer-Policy and Permissions-Policy; `/about` answers 301 to `/about/`; `/terms` and `/methodology` answer 200 as static pages; an unknown path answers 404 with the new page. The form's five outcomes were exercised from the live root: empty and invalid addresses never send (native validation), a 500 says nothing was saved, an aborted request says nothing was sent, a simulated 204 says the request was received and resets the form.
 - **What could not be verified here.** Real iOS Safari hardware (autoplay in the drawn phone, backdrop blur on the scrolled header) remains an emulation; the About page's hello@ mailbox is unconfirmed.
+
+# Facelift notes
+
+Date: 24 November 2026. Scope: the home page only (`public/index.html`, `public/landing.js`, and `public/tt/index.html`, which is generated from the home page). Branch `facelift-fable-5-2`; the site as it was live before this pass is the tag `pre-facelift-2026-11-24`. Nothing here is on `main` until Justin says so; the plain-language checkpoint and the undo steps are in `AlgorithmLens_Cowork/CHECKPOINT_facelift_nov2026.md`. The sibling pages (About, 404, methodology, terms, privacy, the explorer) are untouched and keep the September polish design; they share the header, the wordmark and every token with the new page.
+
+The idea: the product turns a feed into a plain report, so the page is set like one. A front page with a dateline, a rule and a banner headline; numbered sections; ledgers and hairline rules where the polish pass used rounded tiles; the honest limit lines set as pull quotes instead of small grey captions. Paper lies flat and only physical things (the sheets, the phone, the cards that stand for an artifact) cast a shadow.
+
+## What changed
+
+1. **Tokens: none.** Every colour, the three durations, the curve and the headline family are `canon/canon.json` as before (`scripts/web-audit/copy-check.mjs` reports no drift). The only new values are sizes and one shadow for the drawn phone.
+2. **Front page.** The eyebrow becomes a dateline over a thick and thin rule. The headline runs across the whole measure on one line from 900 px (clamp 64 to 126 px, 8.8 vw) and on two lines below that, sized so "See your feed" fits the column at every width. "clearly." is italic and keeps the green drawn underline. Under a hairline, three ruled columns from 1200 px: the copy (lede, button, platforms, effort line, and the limit pinned to the foot of the column), the drawn phone with the film, and the film's notes (label, tally, caption, play control, transcript). Between 900 and 1199 px the figure is one column beside the copy; below 900 everything stacks in reading order.
+3. **Section heads.** Each section opens with a two-digit number, a short rule and the ring label, then the headline on columns 1 to 8 and the lede on 9 to 12 (7 and 5 below 1200). Headlines are clamp 40 to 62 px at 1.06. Ledes are Source Serif at 21/31 (19/28 on phones); they were the system sans.
+4. **The limit lines** are Source Serif italic at 19 to 22 px in ink under a 28 px ink tick. Same sentences, more weight.
+5. **The report.** The sheet stack sits on a dotted tabletop (columns 1 to 8) at 330 by 340 px on desktop, in the same rest pose and depth offsets as before; the marks are laid out by CSS grid instead of inline positions, so the sheet can change size without touching the script. The four counts are a ledger beside it: one count per row, the figure at up to 72 px, ink rules above and below. The stack is fully inside its stage at every width (it was clipped at the bottom corner on phones), and the four date chips are equal cells on phones.
+6. **One real scan.** The card's head strip is the green ground with the filled green dot; the two counts are 76 to 120 px.
+7. **Try it.** The drawn phone is gone. The four fictional posts lie on a tabletop in feed order (four across from 1200 px, two by two from 600, stacked on phones), each with its position numeral, and each post's entry appears in a slot directly beneath it when Read is pressed. An unread slot is a dashed outline with the hollow ring. This also repairs a defect on the live page: the posts sat in a fixed-height flex column and were squashed to about 90 px, which clipped all four Read buttons out of view, so the demonstration could not be used with a pointer or a finger. The Read buttons are now 44 px tall.
+8. **The limits.** Two ruled lists side by side, "Can read" in roman with the filled blue dot, "Cannot read" in italic muted with the hollow ring, rows aligned across the two lists (CSS subgrid, with independent lists as the fallback). The marquee, its mask and the duplicated list items are gone, so nothing in this section moves.
+9. **Three steps.** Large italic numerals, hairlines between steps, the selected step marked by the green rail in the margin. The step titles are spans inside the buttons now (a heading inside a button was invalid HTML).
+10. **Privacy** is four ruled columns from 1100 px (two from 600, a list on phones). **In use** keeps the blue and green tinted cards, taller, with the title at the foot. **Methodology** sets "6 of 45" at up to 136 px over the count bar. **Launch list** puts the question on the left and the form on the right.
+11. **Footer.** The closing line "A scan reads what appeared. It cannot say why." is set large in italic above the footer columns; it was the small line at the right of the bottom row. Same sentence, once.
+12. **Motion.** One entrance for the front page (dateline, rule, the two halves of the headline, then the columns, 80 ms apart, 400 ms each on the canon curve), the existing 12 px reveal on scroll, count bars whose cells tick in from the left when revealed, and the step preview's 240 ms pop. The marquee loop is removed; the pulse, the scan line and the step auto-advance are unchanged. Reduced motion: nothing moves.
+
+## Copy
+
+Compared word for word with the page on `main`. Changed: the limits eyebrow "What a scan can read" is now "The limits"; the empty-state line is "Nothing yet. Tap Read on any post." (it ended "in the phone", and the phone is gone). Added: the section numbers 01 to 09, the ring labels "How it works", "Privacy", "In use", "Methodology" and "Launch list" on the five sections that had none, and the numerals 1 to 4 over the posts. Removed: the "nothing yet" chip (the "Record so far" row now appears with the first entry), the drawn phone's "9:41", and the marquee's hidden duplicates. Every other sentence, the form's outcome sentences, the consent sentence and the three strings `src/exampleRecord.test.js` pins are byte for byte the same.
+
+## Kept from canon
+
+Sentence case, no em dashes, no gradients other than the dot texture, green as a mark and never as text, blue for the platform's labels, one mark for one post, count bars as sorted tallies (cells) and sheets as positions (round marks). The header is unchanged so that it matches the sibling pages.
+
+## Also in this branch
+
+`scripts/build-tt-page.mjs` and `src/ttPage.test.js` now compare with LF line endings. On this Windows clone git is set to `core.autocrlf=true`, so a branch switch or a pull rewrites `index.html` with CRLF, and the generator's anchors (written with LF) then failed. It is its own commit, so the facelift can be undone without it.
+
+## Verification, 24 November 2026 (local only, nothing deployed)
+
+Served from a local stand-in for the Vercel deployment that applies `vercel.json`'s redirects, rewrites and headers, including the root's Content-Security-Policy.
+
+- `scripts/web-audit/copy-check.mjs`: all nine pages ok. `scripts/web-audit/overflow-check.mjs`: every page at 375, 390, 430, 768 and 1440 is exactly the viewport width; the home page was also checked at 320, 360, 600, 899, 900, 1024, 1100, 1199, 1200, 1280, 1366 and 1920.
+- `src/ttPage.test.js` and `src/exampleRecord.test.js` pass; `/tt/` is regenerated and points at the TikTok TestFlight group.
+- Interactions in Chromium at 1440 and at 390 on `/tt/`: the four date chips and their counts, the four Read buttons, start over, the three steps, the film toggle, and the form (an empty submit sends nothing, a simulated 500 says nothing was saved, a simulated 204 says the request was received and resets the form). No console errors and no policy violations.
+- Layout shift on load: 0 at 1440, 1280 and 390.
+- Not done here: Lighthouse, real iOS Safari, and any check against the live host.
