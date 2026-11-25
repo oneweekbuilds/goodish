@@ -23,6 +23,7 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
   const status = $('formStatus');
   const email = $('email');
   const android = $('android');
+  const source = $('source');
   const button = $('submit');
   const buttonLabel = button.textContent;
   const COPY = {
@@ -62,13 +63,16 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
       const response = await fetch(endpoint.href, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // The source names the page: the launch-list table keeps it, so
-        // signups from /tt/ can be counted apart from the home page's. It
-        // also carries the optional Android box: a ticked box adds
-        // "+android". The launch-list function stores the source as sent
-        // (free text, up to 120 characters), so the choice is recorded
-        // without a new column or a change to the function.
-        body: JSON.stringify({ email: email.value.trim(), consent: true, source: (BETA_GROUP === 'tiktok' ? 'algorithmlens-launch-list-tt' : 'algorithmlens-launch-list') + (android && android.checked ? '+android' : '') }),
+        // The source names the page the form was sent from. It is the value
+        // of the form's hidden field ("algorithmlens-launch-list" on the
+        // home page; scripts/build-tt-page.mjs writes
+        // "algorithmlens-launch-list-tt" on /tt/), and the launch-list
+        // table keeps it, so signups can be counted by page. It also
+        // carries the optional Android box: a ticked box adds "+android".
+        // The launch-list function stores the source as sent (free text,
+        // up to 120 characters), so neither needs a new column or a change
+        // to the function. The form note and the privacy page say both.
+        body: JSON.stringify({ email: email.value.trim(), consent: true, source: (source && source.value ? source.value : 'algorithmlens-launch-list') + (android && android.checked ? '+android' : '') }),
         credentials: 'omit',
         signal: controller.signal,
       });

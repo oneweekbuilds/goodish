@@ -34,11 +34,21 @@ describe('the /tt/ page', () => {
     expect(tt).not.toMatch(/(href|src)="(explore\/|example-record\.js|landing\.js)/);
   });
 
+  it('names itself as the source of a launch-list signup, in the form\'s hidden field', () => {
+    expect(home).toContain('<input type="hidden" id="source" value="algorithmlens-launch-list">');
+    expect(tt).toContain('<input type="hidden" id="source" value="algorithmlens-launch-list-tt">');
+    expect(tt).not.toContain('value="algorithmlens-launch-list">');
+    // No field of the form has a name, so a submit without the script sends nothing.
+    const form = home.slice(home.indexOf('<form id="launchForm"'), home.indexOf('</form>'));
+    expect(form).not.toMatch(/\sname=/);
+  });
+
   it('landing.js holds both beta links and picks the TikTok one for this group', () => {
     const js = lf(readFileSync(new URL('../public/landing.js', import.meta.url), 'utf8'));
     expect(js).toMatch(/^const BETA_LINK = "https:\/\/testflight\.apple\.com\/join\/[A-Za-z0-9]+";$/m);
     expect(js).toMatch(/^const TIKTOK_BETA_LINK = "(https:\/\/testflight\.apple\.com\/join\/[A-Za-z0-9]+)?";$/m);
     expect(js).toContain("BETA_GROUP === 'tiktok' && TIKTOK_BETA_LINK");
-    expect(js).toContain("'algorithmlens-launch-list-tt'");
+    // The source comes from the hidden field; the home page's value is the fallback.
+    expect(js).toContain("source && source.value ? source.value : 'algorithmlens-launch-list'");
   });
 });

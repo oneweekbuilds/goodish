@@ -4,8 +4,9 @@
 // /tt/ is the page linked from TikTok. It is the home page with two
 // differences: <html data-beta-group="tiktok">, which makes landing.js point
 // the beta buttons at TIKTOK_BETA_LINK (a separate TestFlight group, so
-// installs that came from TikTok can be counted in App Store Connect) and
-// name the launch-list form's source "algorithmlens-launch-list-tt"; and
+// installs that came from TikTok can be counted in App Store Connect); the
+// launch-list form's hidden source field, which names this page
+// ("algorithmlens-launch-list-tt"); and
 // <meta name="robots" content="noindex">, so search engines keep the home
 // page as the one copy. The canonical link stays on the home page for the
 // same reason; og:url names /tt/ so a share of the TikTok page lands back
@@ -52,6 +53,8 @@ export function renderTt(html, js = readFileSync(LANDING_JS, 'utf8')) {
     '<meta name="viewport" content="width=device-width,initial-scale=1">\n<meta name="robots" content="noindex">');
   out = once(out, '<meta property="og:url" content="https://www.algorithmlens.com/">',
     '<meta property="og:url" content="https://www.algorithmlens.com/tt/">');
+  out = once(out, '<input type="hidden" id="source" value="algorithmlens-launch-list">',
+    '<input type="hidden" id="source" value="algorithmlens-launch-list-tt">');
   // The canonical link must still name the home page.
   if (!out.includes('<link rel="canonical" href="https://www.algorithmlens.com/">')) {
     throw new Error('build-tt-page: the canonical link to the home page is missing');

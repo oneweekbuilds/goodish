@@ -965,12 +965,14 @@ html{scroll-behavior:auto}
 </div>
 <form id="launchForm" class="card signup" data-reveal>
 <label for="email">Email address</label>
-<input id="email" name="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com" aria-describedby="formStatus" aria-invalid="false">
+<input id="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com" aria-describedby="formStatus" aria-invalid="false">
+<input type="hidden" id="source" value="algorithmlens-launch-list">
 <p id="formStatus" role="status" aria-live="polite"></p>
 <label class="consent"><input type="checkbox" id="consent" required><span>I agree to receive AlgorithmLens launch updates by email. I can withdraw at any time by writing to privacy@algorithmlens.com.</span></label>
 <label class="consent"><input type="checkbox" id="android"><span>Tell me about Android. <span class="opt">Optional. The app is iPhone only for now.</span></span></label>
 <button type="submit" class="button" id="submit">Join the launch list</button>
-<p class="note">This form asks only for an email address and your consent to receive launch updates. If you tick the Android box, that choice is saved with your address. Your address is used for launch news and nothing else, and is never sold. To be removed, write to <a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a>. Details are in the <a href="/privacy/">privacy policy</a>.</p>
+<noscript><p class="note">This form needs JavaScript. Without it, pressing the button sends nothing.</p></noscript>
+<p class="note">This form asks only for an email address and your consent to receive launch updates. It also records which page you signed up on, and the Android box if you tick it. Your address is used for launch news and nothing else, and is never sold. To be removed, write to <a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a>. Details are in the <a href="/privacy/">privacy policy</a>.</p>
 </form>
 </div>
 </section>
