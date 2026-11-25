@@ -89,3 +89,5 @@ body:not(.ready) .app{visibility:hidden}
 }
 @media(max-width:400px){.pill{display:none}}
 @media(prefers-reduced-motion:reduce){.mobile-nav{mask-image:none;-webkit-mask-image:none}}
+/* The file picker is kept in the page for the script that listens to it, and hidden: the app has no scan file to open here. */
+.upload[hidden]{display:none}
