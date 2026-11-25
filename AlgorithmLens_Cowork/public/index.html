@@ -144,42 +144,26 @@ h1{font-size:clamp(40px,calc((100vw - 2*var(--gutter))/6.3),104px);line-height:.
 .front{border-top:1px solid var(--line)}
 .hero .copy{display:flex;flex-direction:column;gap:20px;align-items:flex-start;padding:24px 0 4px}
 .hero .lede{font-size:20px;line-height:29px;max-width:34ch}
-.hero .actions{display:flex;align-items:center;gap:8px 24px;flex-wrap:wrap;width:100%}
+.hero .actions{width:100%}
 .hero .button{width:100%}
-.hero .textlink{display:none}
 .platforms{font-size:13px;line-height:18px;color:var(--muted);margin-top:-6px}
 /* what to expect, in three short numbered lines under the button */
 .expect{list-style:none;margin:0;padding:0;counter-reset:expect;width:100%;max-width:31em;border-top:1px solid var(--line)}
 .expect li{counter-increment:expect;display:flex;gap:12px;align-items:baseline;padding:9px 0 10px;border-bottom:1px solid var(--line);font-size:15px;line-height:22px}
 .expect li::before{content:counter(expect);flex:0 0 12px;font:italic 16px/22px var(--serif);color:var(--muted)}
 @media(min-width:600px){.hero .lede{font-size:22px;line-height:32px;max-width:27em}}
-.filmwrap{padding:28px 0 44px}
-.film-card{display:flex;flex-direction:column;gap:16px}
+/* the plate: one real screen from the app (a render from the app's own gallery, with its sample data), in a drawn phone that rises from the bottom edge of the front page */
+.shotwrap{padding:28px 0 0}
+.shot-card{display:flex;flex-direction:column;gap:18px}
 .panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .panel-head .title{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:20px;min-width:0}
 .panel-head .title b{font-weight:600}
 .panel-head .title small{display:block;font-size:14px;color:var(--muted)}
 .panel-head .label{white-space:nowrap;flex-shrink:0}
-.pulse{width:10px;height:10px;border-radius:50%;background:var(--line);margin-top:5px;flex-shrink:0}
-.playing .pulse{background:var(--green);animation:pulse 2.4s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.film-stage{display:flex;justify-content:center;padding:8px 0 4px}
-.drawn{--scan:378px;width:250px;max-width:100%;border-radius:40px;background:var(--ink);padding:10px;box-shadow:var(--shadow-phone)}
-.drawn .screen{border-radius:32px;background:var(--field);overflow:hidden;position:relative}
-.drawn .island{height:30px;display:flex;justify-content:center;align-items:flex-end}
-.drawn .island i{width:72px;height:18px;border-radius:9px;background:var(--ink);display:block}
-.film-box{position:relative;margin:6px 8px 8px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--panel)}
-.film-box video{width:100%;height:auto;aspect-ratio:9/16;background:var(--paper)}
-.scan{position:absolute;left:0;right:0;top:0;height:2px;background:var(--green);opacity:0;pointer-events:none;will-change:transform,opacity}
-.playing .scan{animation:scan 4s var(--ease) infinite}
-@keyframes scan{0%{transform:translateY(0);opacity:0}8%{opacity:.5}92%{opacity:.5}100%{transform:translateY(var(--scan));opacity:0}}
-.film-foot{display:flex;flex-direction:column;gap:12px}
-.tally{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 12px;font-size:13px;line-height:18px;color:var(--muted)}
-.tally .bar{order:-1;flex:0 0 100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
-.tally .bar i{display:block;height:14px;border-radius:3px;background:var(--mark)}
-.tally .bar i.ad{background:var(--blue)}
-.film-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-.film-foot .caption{flex:1 1 180px}
+.shot-stage{display:flex;justify-content:center;margin:0 -12px;clip-path:inset(-80px -80px 0 -80px)}
+.phone{width:min(100%,391px);aspect-ratio:391/612;overflow:hidden;border-radius:42px 42px 0 0;background:var(--ink);padding:8px 8px 0;box-shadow:var(--shadow-phone)}
+.phone img{display:block;width:100%;height:auto;border-radius:34px 34px 0 0;background:var(--field)}
+.shot-notes{display:none}
 summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-size:14px;color:var(--ink);text-decoration:underline;text-underline-offset:3px}
 details p{margin:4px 0 0;font-size:14px;line-height:21px;max-width:60ch;color:var(--muted)}
 @media(min-width:900px){
@@ -188,25 +172,27 @@ details p{margin:4px 0 0;font-size:14px;line-height:21px;max-width:60ch;color:va
 h1{font-size:clamp(64px,8.8vw,126px);margin:22px 0 32px}
 .l1{display:inline-block}
 .front{display:grid;grid-template-columns:minmax(0,1fr) auto}
-.hero .copy{padding:32px 48px 56px 0;gap:24px}
+.hero .copy{padding:32px 32px 56px 0;gap:24px}
 .hero .lede{font-size:23px;line-height:34px;max-width:21em}
 .hero .button{width:auto}
-.hero .textlink{display:inline-flex}
 .platforms{font-size:14px;line-height:20px}
 .hero .limit{margin-top:auto;font-size:22px;line-height:31px;max-width:22em}
-.filmwrap{padding:0;display:flex}
-.film-card{width:330px;padding:32px 0 56px 40px;border-left:1px solid var(--line);gap:18px}
+.shotwrap{padding:0;display:flex}
+.shot-card{width:375px;padding:32px 0 0 32px;border-left:1px solid var(--line)}
+.shot-stage{margin:auto 0 0}
 }
-@media(min-width:1200px){
-.film-card{display:grid;grid-template-columns:auto minmax(200px,268px);grid-template-rows:auto auto 1fr;gap:0;width:auto;padding:0;border-left:0}
-.film-stage{grid-column:1;grid-row:1/span 3;align-items:flex-start;padding:32px 44px 56px;border-left:1px solid var(--line);border-right:1px solid var(--line)}
-.film-card .panel-head{grid-column:2;grid-row:1;margin-left:32px;padding:32px 0 20px;flex-direction:column-reverse;gap:14px;border-bottom:1px solid var(--line)}
-.film-foot{grid-column:2;grid-row:2;margin-left:32px;padding:20px 0;gap:16px;border-bottom:1px solid var(--line)}
-.film-card details{grid-column:2;grid-row:3;margin-left:32px;padding:8px 0 56px}
-.drawn{--scan:425px;width:280px;border-radius:44px}
-.drawn .screen{border-radius:36px}
-.drawn .island i{width:80px;height:20px;border-radius:10px}
-.film-box{margin:6px 10px 10px;border-radius:14px}
+@media(min-width:1024px){
+.shot-card{width:423px}
+}
+@media(min-width:1400px){
+.hero .copy{padding-right:48px}
+.shot-card{display:grid;grid-template-columns:463px minmax(200px,236px);grid-template-rows:auto 1fr;gap:0;width:auto;padding:0;border-left:0}
+.phone{width:391px;flex:none}
+.shot-stage{grid-column:1;grid-row:1/span 2;align-items:flex-end;margin:0;padding:32px 36px 0;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+.shot-card .panel-head{grid-column:2;grid-row:1;margin-left:32px;padding:32px 0 20px;flex-direction:column-reverse;gap:14px;border-bottom:1px solid var(--line)}
+.shot-notes{display:block;grid-column:2;grid-row:2;margin:0 0 0 32px;padding:0;list-style:none;counter-reset:note}
+.shot-notes li{counter-increment:note;display:flex;gap:12px;align-items:baseline;padding:14px 0;border-bottom:1px solid var(--line);font-size:15px;line-height:22px;color:var(--muted)}
+.shot-notes li::before{content:counter(note);flex:0 0 12px;font:italic 16px/22px var(--serif)}
 }
 /* 01 the report */
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0}
@@ -363,6 +349,13 @@ h1{font-size:clamp(64px,8.8vw,126px);margin:22px 0 32px}
 .try-limit{margin-top:36px;font-size:22px;line-height:31px;max-width:30em}
 }
 @media(min-width:1200px){.frames{grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}.slot{min-height:272px}}
+/* the example film, kept under the four posts for anyone who would rather watch; nothing loads until it is played */
+.film-more{margin-top:18px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.film-grid{display:grid;gap:16px;padding:6px 0 20px}
+.film-more video{display:block;width:min(100%,300px);height:auto;aspect-ratio:9/16;border-radius:14px;border:1px solid var(--line);background:var(--paper)}
+.film-words b{display:block;font-size:14px;line-height:20px;font-weight:600}
+.film-words p{margin:6px 0 0;font-size:15px;line-height:23px;max-width:44ch}
+@media(min-width:600px){.film-grid{grid-template-columns:300px minmax(0,1fr);gap:28px;align-items:start}}
 /* 04 the limits: a ledger, not a list of chips */
 .ledger{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:20px;border-top:1px solid var(--ink)}
 .ledger-col{min-width:0}
@@ -558,7 +551,7 @@ footer.bottom{padding:72px 0 48px}
 .l1{animation-delay:80ms}
 .underline{animation-delay:160ms}
 .front>.copy{animation-delay:240ms}
-.front>.filmwrap{animation-delay:320ms}
+.front>.shotwrap{animation-delay:320ms}
 }
 .js [data-reveal]{opacity:0;transform:translateY(12px);transition:opacity var(--settle) var(--ease),transform var(--settle) var(--ease)}
 .js [data-reveal].in{opacity:1;transform:none}
@@ -611,7 +604,7 @@ html{scroll-behavior:auto}
 <div class="front">
 <div class="copy">
 <p class="lede">Scan a feed you use. Get a plain report: what appeared, which accounts it came from, and which posts carried an ad label.</p>
-<div class="actions"><a class="button" id="betaButton" href="#launch" rel="noopener noreferrer">Join the beta on iPhone</a><a class="textlink" href="#film">Watch the example film</a></div>
+<div class="actions"><a class="button" id="betaButton" href="#launch" rel="noopener noreferrer">Join the beta on iPhone</a></div>
 <ol class="expect">
 <li>You install Apple's TestFlight app first, then AlgorithmLens through it.</li>
 <li>A scan is about two minutes of scrolling.</li>
@@ -620,37 +613,20 @@ html{scroll-behavior:auto}
 <p class="platforms">Free. iPhone. Works with Instagram, TikTok, YouTube, X, Facebook and Reddit. Accuracy checked on YouTube so far.</p>
 <p class="limit">A scan reads what appeared on screen. It cannot say why any post was there.</p>
 </div>
-<div class="filmwrap" id="film">
-<figure class="film-card" id="filmPanel">
-<div class="panel-head">
-<span class="title"><i class="pulse" aria-hidden="true"></i><span><b>Example film</b><small>Four fictional posts, twenty seconds</small></span></span>
+<div class="shotwrap">
+<figure class="shot-card">
+<figcaption class="panel-head">
+<span class="title"><span><b>A screen from the app</b><small>The first card after a scan</small></span></span>
 <span class="label">Example</span>
+</figcaption>
+<div class="shot-stage">
+<div class="phone"><img src="/static/img/app-first-card-2026-10-27.png" width="750" height="1334" decoding="async" alt="Example screen from the AlgorithmLens app, the first card after a scan. Your first Instagram checkup, July 17, 27 posts in 3 minutes. Sources: about half of what you saw came from just five accounts. 5 accounts, 16 of 27. 9 others, 11 posts."></div>
 </div>
-<div class="film-stage">
-<div class="drawn">
-<div class="screen">
-<div class="island" aria-hidden="true"><i></i></div>
-<div class="film-box">
-<video id="heroFilm" muted playsinline loop controls preload="metadata" poster="/static/film/feed-replay-poster.jpg" aria-label="Twenty-second illustrated feed replay of four fictional posts">
-<source src="/static/film/feed-replay-1080.mp4" type="video/mp4" media="(min-width: 900px)">
-<source src="/static/film/feed-replay-720.mp4" type="video/mp4">
-</video>
-<div class="scan" aria-hidden="true"></div>
-</div>
-</div>
-</div>
-</div>
-<div class="film-foot">
-<div class="tally" aria-label="Four fictional posts, one carried an ad label"><span>Four posts</span><span class="bar" aria-hidden="true"><i class="ad"></i><i></i><i></i><i></i></span><span>1 carried an ad label</span></div>
-<div class="film-row">
-<figcaption class="caption">Fictional example. Review happens after recording.</figcaption>
-<button class="secondary" id="filmToggle" type="button" aria-pressed="false">Play the example film</button>
-</div>
-</div>
-<details id="filmWords">
-<summary>Read the film in words</summary>
-<p>An ad label is visible. A political-content classification is an inference. A suggested label does not explain why the post was selected. One readable account appears twice. Four fictional posts become a small record, not a representative feed.</p>
-</details>
+<ol class="shot-notes">
+<li>The card is dated and says how many posts the scan read.</li>
+<li>The finding comes first, in plain words.</li>
+<li>The count behind it is shown underneath: 16 of 27 posts.</li>
+</ol>
 </figure>
 </div>
 </div>
@@ -800,6 +776,19 @@ html{scroll-behavior:auto}
 <div class="readout-foot" id="readFoot" hidden><span id="readNote"></span><button type="button" class="linkish" id="readReset">Start over</button></div>
 </div>
 </div>
+<details class="film-more" id="film">
+<summary>Watch the same four posts as a twenty-second film</summary>
+<div class="film-grid">
+<video id="exampleFilm" muted playsinline controls preload="none" width="1080" height="1920" data-poster="/static/film/feed-replay-poster.jpg" aria-label="Twenty-second illustrated feed replay of four fictional posts">
+<source src="/static/film/feed-replay-1080.mp4" type="video/mp4" media="(min-width: 900px)">
+<source src="/static/film/feed-replay-720.mp4" type="video/mp4">
+</video>
+<div class="film-words">
+<b>The film in words</b>
+<p>An ad label is visible. A political-content classification is an inference. A suggested label does not explain why the post was selected. One readable account appears twice. Four fictional posts become a small record, not a representative feed.</p>
+</div>
+</div>
+</details>
 <p class="limit try-limit" data-reveal>Illustrative. A scan reads what appeared; it cannot see a platform's model or say why a post was shown.</p>
 </div>
 </section>

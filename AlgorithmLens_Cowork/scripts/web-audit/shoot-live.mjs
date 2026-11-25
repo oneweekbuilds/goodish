@@ -57,10 +57,20 @@ for (const w of WIDTHS.filter((x) => !ONLY || ONLY.has(x.name))) {
   for (const [sel, name] of sections) await el(page.locator(sel).first(), `root-${w.name}-s-${name}.jpg`);
   if (states) {
     // film toggled, details open, focus ring, form states
-    await page.locator('#filmToggle').click(); await wait(page, 400);
-    await el(page.locator('.film-card'), `root-${w.name}-state-film-toggled.jpg`);
-    await page.locator('section#top details summary, section.hero details summary').first().click(); await wait(page, 300);
-    await el(page.locator('section#top, section.hero').first(), `root-${w.name}-state-details-open.jpg`);
+    // The hero film and its transcript left the hero in November 2026 (the film now sits in a
+    // disclosure under the try-it demo), so these two states are shot only where they still exist.
+    if (await page.locator('#filmToggle').count()) {
+      await page.locator('#filmToggle').click(); await wait(page, 400);
+      await el(page.locator('.film-card'), `root-${w.name}-state-film-toggled.jpg`);
+    }
+    if (await page.locator('section#top details summary, section.hero details summary').count()) {
+      await page.locator('section#top details summary, section.hero details summary').first().click(); await wait(page, 300);
+      await el(page.locator('section#top, section.hero').first(), `root-${w.name}-state-details-open.jpg`);
+    }
+    if (await page.locator('#film summary').count()) {
+      await page.locator('#film summary').click(); await wait(page, 400);
+      await el(page.locator('#film'), `root-${w.name}-state-film-open.jpg`);
+    }
     await page.locator('.hero .button').first().focus(); await wait(page, 200);
     await el(page.locator('section#top, section.hero').first(), `root-${w.name}-state-button-focus.jpg`);
     if (await page.locator('#tapFeed').count()) {

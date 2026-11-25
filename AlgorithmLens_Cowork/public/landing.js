@@ -16,41 +16,6 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
   'use strict';
   const $ = (id) => document.getElementById(id);
 
-  // The hero film. Muted, inline, looping, with native controls and an
-  // explicit toggle. Autoplay is requested once, only when the visitor has
-  // not asked for reduced motion; a refusal only changes the button label.
-  const film = $('heroFilm');
-  const toggle = $('filmToggle');
-  const motion = matchMedia('(prefers-reduced-motion: reduce)');
-  function sync() {
-    toggle.textContent = film.paused ? 'Play the example film' : 'Pause the example film';
-    toggle.setAttribute('aria-pressed', String(!film.paused));
-  }
-  function policy() {
-    if (motion.matches) {
-      film.autoplay = false;
-      film.pause();
-    } else {
-      film.autoplay = true;
-      const attempt = film.play();
-      if (attempt && typeof attempt.catch === 'function') attempt.catch(sync);
-    }
-    sync();
-  }
-  film.muted = true;
-  film.addEventListener('play', sync);
-  film.addEventListener('pause', sync);
-  toggle.addEventListener('click', () => {
-    if (film.paused) {
-      const attempt = film.play();
-      if (attempt && typeof attempt.catch === 'function') attempt.catch(sync);
-    } else {
-      film.pause();
-    }
-  });
-  motion.addEventListener('change', policy);
-  policy();
-
   // The launch-list form. One POST, no credentials, distinct copy for each
   // way it can fail, and nothing is ever reported as saved unless the server
   // said so.
@@ -122,8 +87,7 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
   });
 })();
 
-// Polish pass: the header's scrolled state, the film panel's playing state,
-// the example record's sheet stack, the tappable fictional feed whose readout
+// Polish pass: the header's scrolled state, the example record's sheet stack, the tappable fictional feed whose readout
 // is the record forming, and the selectable three steps. Everything here is
 // decorative or illustrative; nothing leaves the page.
 (function () {
@@ -179,19 +143,17 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
     document.querySelectorAll('[data-reveal]').forEach((el) => io.observe(el));
   }
 
-  // Film panel: the pulse dot and the scan line run only while the film plays.
-  const film = $('heroFilm');
-  const panel = $('filmPanel');
-  if (film && panel) {
-    const state = () => panel.classList.toggle('playing', !film.paused && !film.ended);
-    ['play', 'playing', 'pause', 'ended', 'emptied'].forEach((ev) => film.addEventListener(ev, state));
-    state();
+  // The example film sits in a closed disclosure under the four posts. Its
+  // poster is fetched when the disclosure is first opened, and the film
+  // itself only when it is played (preload="none"), so a visitor who never
+  // opens it downloads none of it.
+  const filmMore = $('film');
+  const exampleFilm = $('exampleFilm');
+  if (filmMore && exampleFilm) {
+    const dress = () => { if (filmMore.open && !exampleFilm.poster && exampleFilm.dataset.poster) exampleFilm.poster = exampleFilm.dataset.poster; };
+    filmMore.addEventListener('toggle', dress);
+    dress();
   }
-
-  // The film's transcript: closed by default, opened where the front page
-  // gives it a column of its own beside the phone (1200 px and wider).
-  const words = $('filmWords');
-  if (words && matchMedia('(min-width: 1200px)').matches) words.open = true;
 
   // Count bars: each cell carries its index so the bar can tick in from the
   // left when it is revealed (the stagger itself is CSS, and reduced motion
