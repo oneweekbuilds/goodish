@@ -95,7 +95,7 @@ Deployed as commit 2b6cebb3 (production deployment 6738761160, success) and the 
 
 # Facelift notes
 
-Date: 24 November 2026. Scope: the home page only (`public/index.html`, `public/landing.js`, and `public/tt/index.html`, which is generated from the home page). Branch `facelift-fable-5-2`; the site as it was live before this pass is the tag `pre-facelift-2026-11-24`. Nothing here is on `main` until Justin says so; the plain-language checkpoint and the undo steps are in `AlgorithmLens_Cowork/CHECKPOINT_facelift_nov2026.md`. The sibling pages (About, 404, methodology, terms, privacy, the explorer) are untouched and keep the September polish design; they share the header, the wordmark and every token with the new page.
+Date: 24 November 2026, in two rounds. Round one: the home page only (`public/index.html`, `public/landing.js`, and `public/tt/index.html`, which is generated from the home page). Round two (below, "Round two"): a second pass over the home page, and the same look carried to About, the 404 page, methodology, terms and privacy. The explorer, the specimen and the film page are untouched. Branch `facelift-fable-5-2`; the site as it was live before this work is the tag `pre-facelift-2026-11-24`. Nothing here is on `main` until Justin says so; the plain-language checkpoint and the undo steps are in `AlgorithmLens_Cowork/CHECKPOINT_facelift_nov2026.md`.
 
 The idea: the product turns a feed into a plain report, so the page is set like one. A front page with a dateline, a rule and a banner headline; numbered sections; ledgers and hairline rules where the polish pass used rounded tiles; the honest limit lines set as pull quotes instead of small grey captions. Paper lies flat and only physical things (the sheets, the phone, the cards that stand for an artifact) cast a shadow.
 
@@ -134,4 +134,45 @@ Served from a local stand-in for the Vercel deployment that applies `vercel.json
 - `src/ttPage.test.js` and `src/exampleRecord.test.js` pass; `/tt/` is regenerated and points at the TikTok TestFlight group.
 - Interactions in Chromium at 1440 and at 390 on `/tt/`: the four date chips and their counts, the four Read buttons, start over, the three steps, the film toggle, and the form (an empty submit sends nothing, a simulated 500 says nothing was saved, a simulated 204 says the request was received and resets the form). No console errors and no policy violations.
 - Layout shift on load: 0 at 1440, 1280 and 390.
+- Not done here: Lighthouse, real iOS Safari, and any check against the live host.
+
+## Round two, 24 November 2026
+
+Asked for after round one was reviewed: another pass at the same level of detail, shown before anything is published.
+
+### Home page
+
+1. **Contents row.** Between the front page and section 01, the nine sections as one ruled line of links, each with its number ("01 The report" to "09 Launch list"). Shown from 1100 px, where it fits on one line; the numbers are hidden from screen readers because the list is already ordered.
+2. **Ordinals are italic, counts are roman.** Section numbers, the contents row, the post positions and the step numerals are Source Serif italic; every count (45, 6 of 45, 36) stays roman. The "of" in "6 of 45" is italic at 0.62 em.
+3. **Film notes.** The tally is four cells, one per post, the first one blue, over "Four posts" and "1 carried an ad label"; it was a bar filled to a quarter. From 1200 px the notes column is three ruled groups (label, tally and control, transcript).
+4. **Blank record forms.** An unread slot under a post is now the empty form: a hollow ring, "Post 1", and the four field names (Ad label, Origin, Account, Position) with nothing beside them. Pressing Read fills it in. On phones the blank is one line. The field names are the ones the filled entry uses; the blank is hidden from screen readers and the filled entry is announced.
+5. **The sheet stack** answers a click: a sheet behind the chosen one comes forward when clicked (the dated chips remain the keyboard and screen reader control). The caption under the stack is a live region, written only when its words change.
+6. **Three steps no longer move the page.** All three descriptions are always visible (the chosen step is ink with the green rail, the others muted) and the three previews share one grid cell, so the list and the panel keep one height. Before, the panel changed height with each step, and on a browser without scroll anchoring (Safari on iPhone) everything below it jumped every five seconds. The steps also advance only while they are on screen.
+7. **Header.** The link for the section across the middle of the window keeps its underline and is marked `aria-current="location"`.
+8. **The can and cannot lists** come in row by row, side by side, 36 ms apart, instead of fading as one block.
+9. **Footer.** "Back to top" at the right of the bottom row.
+
+### The other pages
+
+10. **About** and **404** use the front page's head: the ring label as a dateline, the thick and thin rule, a banner headline (clamp 60 to 100 px on About, 52 to 78 on 404). About's "What it will never do" is a ruled list with hollow rings beside the copy; "Open to check" and "Write to us" are two ruled columns; the loop diagram's boxes now share the width they are given (at 900 px they overflowed the page by 53 px) and the section stacks until 1100 px. Both carry the closing line large in the footer. Every word is unchanged.
+11. **Methodology, terms and privacy** are set by one template, `scripts/paper-document.mjs`, used by `build-paper-pages.mjs` and `build-legal-pages.mjs`: the same page head, a contents list built from each document's own section headings (a sticky column from 1100 px, a ruled list above the text below that), sections under an ink rule, and the shared header and footer. The privacy page had its own older header and footer; it now has the site's, which adds the "Join the beta" pill to that page. On methodology and terms the contents link for the section being read is marked (`chrome.js`); `/privacy/` is served under a policy that allows no script, so its list is unmarked and the page loads none.
+12. **The documents' words are untouched.** After regeneration the document column of each page was compared with the committed one as a single normalized string: methodology 40,040 characters, terms 13,560, privacy 29,736, all identical. The only added text is the contents lists (each heading once more, as a link) and the word "Contents". Before the templates were touched, all three pages were regenerated with the old templates and came out byte for byte the same as the committed pages, so the sources had not drifted.
+
+### Under the surface
+
+13. **A fallback cut to the serif's width.** Source Serif 4 is 7.4 percent wider than Georgia in roman and 4.8 percent narrower in italic (measured in Chromium on nine roman and three italic strings from these pages). Every restyled page now names a "Source Fallback" face: Georgia with `size-adjust` 107.4 and 95.2 percent. With the font files held back 1.5 s, layout shift fell from 0.392 to 0.001 on the 404 page at 899 px, from 0.022 to 0 on About at 390 px, and is 0.005 or less everywhere else measured (the 404 page at 390 px is 0.036).
+14. **Long tokens wrap.** A file name in the methodology (GOLDSET_SCORING_AND_HEADROOM.md) widened the page by 29 px at 320 px; bulleted rows now let such a token break.
+15. **A preview that behaves like the live site:** `scripts/web-audit/serve-local.mjs` serves `public/` with `vercel.json`'s redirects, rewrites and headers, so `/terms` and `/methodology` resolve and every page runs under its real Content-Security-Policy. The audit scripts can be pointed at it.
+
+### Copy, round two
+
+Home page: added "Back to top", and "Post 1" to "Post 4" with the four field names in the blank forms (hidden from screen readers). Document pages: added "Contents" and the contents links. Privacy page: gained the shared header and footer text and lost its own "Front page" links. Nothing else changed on any page.
+
+### Verification, round two (local only, nothing deployed)
+
+- All 267 tests pass; `/tt/` is regenerated and current; eslint is clean on every touched script.
+- `copy-check.mjs`: all nine pages ok. `overflow-check.mjs`: ok.
+- Home, `/tt/`, About, methodology, terms, privacy, an unknown path and the explorer, each at 320, 360, 390, 430, 600, 768, 899, 900, 1024, 1099, 1100, 1200, 1366, 1440 and 1920 px, under the real headers: no horizontal overflow, no console errors or policy violations, no layout shift on load.
+- Home page interactions at 1440 and 390: the date chips, a pointer click on a back sheet, the four Read buttons and start over (the blank forms come back), the three steps (list 466 px and panel 399 px at every step on desktop, 427 and 377 on a phone, page height unchanged), the header's current-section mark, the film toggle and the form's outcomes.
+- Contents links on the three documents: no missing targets (8, 16 and 14 links); a click lands the heading 88 px from the top and, where scripts run, marks that link.
 - Not done here: Lighthouse, real iOS Safari, and any check against the live host.
