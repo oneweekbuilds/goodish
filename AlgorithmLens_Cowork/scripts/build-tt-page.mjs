@@ -9,7 +9,8 @@
 // <meta name="robots" content="noindex">, so search engines keep the home
 // page as the one copy. The canonical link stays on the home page for the
 // same reason; og:url names /tt/ so a share of the TikTok page lands back
-// on it.
+// on it. The QR code beside the beta button is redrawn for TIKTOK_BETA_LINK,
+// so the code and the button open the same TestFlight group.
 //
 // Runs before every `npm run build` (the prebuild script) and by hand as
 // `npm run build:tt`. src/ttPage.test.js pins the committed copy to this
@@ -21,6 +22,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { betaLinks, fillBetaQr, LANDING_JS } from './build-home-page.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 export const SOURCE = path.join(here, '..', 'public', 'index.html');
@@ -41,8 +43,8 @@ function once(html, from, to) {
  */
 export const lf = (text) => text.replace(/\r\n/g, '\n');
 
-/** The home page's markup, turned into the /tt/ page. */
-export function renderTt(html) {
+/** The home page's markup, turned into the /tt/ page. `js` is landing.js, which holds the two beta links. */
+export function renderTt(html, js = readFileSync(LANDING_JS, 'utf8')) {
   let out = lf(html);
   out = once(out, '<!doctype html>\n<html lang="en">',
     '<!doctype html>\n<!-- Generated from public/index.html by scripts/build-tt-page.mjs. Do not edit by hand; run npm run build:tt. -->\n<html lang="en" data-beta-group="tiktok">');
@@ -54,6 +56,9 @@ export function renderTt(html) {
   if (!out.includes('<link rel="canonical" href="https://www.algorithmlens.com/">')) {
     throw new Error('build-tt-page: the canonical link to the home page is missing');
   }
+  // The same rule landing.js applies to the buttons: the TikTok link, or the general one while it is empty.
+  const links = betaLinks(js);
+  out = fillBetaQr(out, links.tiktok || links.beta);
   return out;
 }
 

@@ -22,6 +22,7 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
   const form = $('launchForm');
   const status = $('formStatus');
   const email = $('email');
+  const android = $('android');
   const button = $('submit');
   const buttonLabel = button.textContent;
   const COPY = {
@@ -62,8 +63,12 @@ const BETA_GROUP = document.documentElement.getAttribute('data-beta-group') || '
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         // The source names the page: the launch-list table keeps it, so
-        // signups from /tt/ can be counted apart from the home page's.
-        body: JSON.stringify({ email: email.value.trim(), consent: true, source: BETA_GROUP === 'tiktok' ? 'algorithmlens-launch-list-tt' : 'algorithmlens-launch-list' }),
+        // signups from /tt/ can be counted apart from the home page's. It
+        // also carries the optional Android box: a ticked box adds
+        // "+android". The launch-list function stores the source as sent
+        // (free text, up to 120 characters), so the choice is recorded
+        // without a new column or a change to the function.
+        body: JSON.stringify({ email: email.value.trim(), consent: true, source: (BETA_GROUP === 'tiktok' ? 'algorithmlens-launch-list-tt' : 'algorithmlens-launch-list') + (android && android.checked ? '+android' : '') }),
         credentials: 'omit',
         signal: controller.signal,
       });

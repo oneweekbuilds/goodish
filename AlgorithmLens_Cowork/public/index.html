@@ -152,6 +152,14 @@ h1{font-size:clamp(40px,calc((100vw - 2*var(--gutter))/6.3),104px);line-height:.
 .expect li{counter-increment:expect;display:flex;gap:12px;align-items:baseline;padding:9px 0 10px;border-bottom:1px solid var(--line);font-size:15px;line-height:22px}
 .expect li::before{content:counter(expect);flex:0 0 12px;font:italic 16px/22px var(--serif);color:var(--muted)}
 @media(min-width:600px){.hero .lede{font-size:22px;line-height:32px;max-width:27em}}
+/* the beta link as a code, for a visitor reading on a computer who wants the app on their iPhone: drawn at build time (scripts/build-home-page.mjs), shown from 1024 px and only where the pointer is a mouse or trackpad */
+.qr,.qr-note{display:none}
+@media(min-width:1024px) and (hover:hover) and (pointer:fine){
+.hero .actions{display:grid;grid-template-columns:auto auto;justify-content:start;gap:12px 24px}
+.hero .actions .button{grid-column:1;grid-row:1}
+.qr-note{display:block;grid-column:1;grid-row:2;align-self:end;max-width:17em;font-size:14px;line-height:20px;color:var(--muted)}
+.qr{display:block;grid-column:2;grid-row:1/span 2;width:113px;height:113px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+}
 /* the plate: one real screen from the app (a render from the app's own gallery, with its sample data), in a drawn phone that rises from the bottom edge of the front page */
 .shotwrap{padding:28px 0 0}
 .shot-card{display:flex;flex-direction:column;gap:18px}
@@ -502,6 +510,7 @@ input[type=email]:disabled{background:var(--paper);color:var(--muted)}
 .consent input::before{content:"";position:absolute;left:10px;top:10px;width:24px;height:24px;border:1.5px solid var(--ink);border-radius:6px;background:var(--field);transition:background var(--tick) var(--ease)}
 .consent input:checked::before{background:var(--ink)}
 .consent input:checked::after{content:"";position:absolute;left:19px;top:14px;width:6px;height:12px;border:solid var(--on-ink);border-width:0 2px 2px 0;transform:rotate(45deg)}
+.consent .opt{color:var(--muted)}
 .signup .button{width:100%}
 .signup .note{font-size:13px;line-height:18px;color:var(--muted);margin:0;max-width:none}
 .signup .note a{color:var(--ink)}
@@ -604,7 +613,13 @@ html{scroll-behavior:auto}
 <div class="front">
 <div class="copy">
 <p class="lede">Scan a feed you use. Get a plain report: what appeared, which accounts it came from, and which posts carried an ad label.</p>
-<div class="actions"><a class="button" id="betaButton" href="#launch" rel="noopener noreferrer">Join the beta on iPhone</a></div>
+<div class="actions">
+<a class="button" id="betaButton" href="#launch" rel="noopener noreferrer">Join the beta on iPhone</a>
+<!-- beta-qr:start -->
+<svg class="qr" viewBox="0 0 37 37" width="111" height="111" shape-rendering="crispEdges" role="img" aria-label="QR code that opens the AlgorithmLens beta on TestFlight"><path fill="#FFFFFF" d="M0 0h37v37H0z"/><path fill="#3A3730" d="M4 4h7v1h-7zM12 4h2v1h-2zM15 4h2v1h-2zM18 4h1v1h-1zM21 4h4v1h-4zM26 4h7v1h-7zM4 5h1v1h-1zM10 5h1v1h-1zM12 5h1v1h-1zM17 5h1v1h-1zM21 5h2v1h-2zM24 5h1v1h-1zM26 5h1v1h-1zM32 5h1v1h-1zM4 6h1v1h-1zM6 6h3v1h-3zM10 6h1v1h-1zM13 6h1v1h-1zM16 6h4v1h-4zM23 6h1v1h-1zM26 6h1v1h-1zM28 6h3v1h-3zM32 6h1v1h-1zM4 7h1v1h-1zM6 7h3v1h-3zM10 7h1v1h-1zM12 7h1v1h-1zM17 7h2v1h-2zM21 7h1v1h-1zM24 7h1v1h-1zM26 7h1v1h-1zM28 7h3v1h-3zM32 7h1v1h-1zM4 8h1v1h-1zM6 8h3v1h-3zM10 8h1v1h-1zM13 8h1v1h-1zM15 8h1v1h-1zM17 8h5v1h-5zM23 8h1v1h-1zM26 8h1v1h-1zM28 8h3v1h-3zM32 8h1v1h-1zM4 9h1v1h-1zM10 9h1v1h-1zM15 9h2v1h-2zM18 9h1v1h-1zM22 9h2v1h-2zM26 9h1v1h-1zM32 9h1v1h-1zM4 10h7v1h-7zM12 10h1v1h-1zM14 10h1v1h-1zM16 10h1v1h-1zM18 10h1v1h-1zM20 10h1v1h-1zM22 10h1v1h-1zM24 10h1v1h-1zM26 10h7v1h-7zM12 11h1v1h-1zM14 11h3v1h-3zM18 11h5v1h-5zM24 11h1v1h-1zM4 12h1v1h-1zM6 12h2v1h-2zM9 12h3v1h-3zM13 12h2v1h-2zM16 12h1v1h-1zM21 12h1v1h-1zM23 12h2v1h-2zM26 12h1v1h-1zM29 12h1v1h-1zM31 12h2v1h-2zM4 13h3v1h-3zM11 13h1v1h-1zM13 13h2v1h-2zM18 13h1v1h-1zM21 13h8v1h-8zM32 13h1v1h-1zM4 14h1v1h-1zM6 14h1v1h-1zM8 14h1v1h-1zM10 14h4v1h-4zM15 14h1v1h-1zM17 14h2v1h-2zM20 14h1v1h-1zM22 14h1v1h-1zM25 14h1v1h-1zM27 14h1v1h-1zM30 14h2v1h-2zM6 15h2v1h-2zM11 15h3v1h-3zM15 15h5v1h-5zM23 15h1v1h-1zM27 15h1v1h-1zM32 15h1v1h-1zM4 16h1v1h-1zM9 16h2v1h-2zM12 16h1v1h-1zM14 16h5v1h-5zM21 16h1v1h-1zM27 16h1v1h-1zM29 16h2v1h-2zM5 17h1v1h-1zM8 17h1v1h-1zM13 17h1v1h-1zM16 17h1v1h-1zM19 17h1v1h-1zM21 17h1v1h-1zM23 17h1v1h-1zM26 17h1v1h-1zM30 17h3v1h-3zM4 18h2v1h-2zM9 18h4v1h-4zM14 18h3v1h-3zM20 18h2v1h-2zM23 18h1v1h-1zM25 18h1v1h-1zM27 18h2v1h-2zM30 18h3v1h-3zM5 19h1v1h-1zM7 19h1v1h-1zM9 19h1v1h-1zM12 19h1v1h-1zM18 19h1v1h-1zM20 19h1v1h-1zM23 19h3v1h-3zM28 19h1v1h-1zM31 19h1v1h-1zM6 20h2v1h-2zM9 20h3v1h-3zM16 20h2v1h-2zM19 20h1v1h-1zM22 20h4v1h-4zM28 20h2v1h-2zM31 20h1v1h-1zM8 21h1v1h-1zM11 21h3v1h-3zM15 21h3v1h-3zM19 21h1v1h-1zM21 21h1v1h-1zM27 21h1v1h-1zM29 21h3v1h-3zM4 22h1v1h-1zM10 22h1v1h-1zM14 22h4v1h-4zM19 22h3v1h-3zM25 22h4v1h-4zM30 22h1v1h-1zM6 23h1v1h-1zM8 23h2v1h-2zM11 23h2v1h-2zM14 23h1v1h-1zM21 23h2v1h-2zM25 23h1v1h-1zM30 23h1v1h-1zM5 24h1v1h-1zM7 24h6v1h-6zM14 24h1v1h-1zM18 24h13v1h-13zM12 25h3v1h-3zM16 25h3v1h-3zM20 25h5v1h-5zM28 25h5v1h-5zM4 26h7v1h-7zM12 26h2v1h-2zM15 26h1v1h-1zM17 26h2v1h-2zM20 26h5v1h-5zM26 26h1v1h-1zM28 26h2v1h-2zM31 26h1v1h-1zM4 27h1v1h-1zM10 27h1v1h-1zM12 27h2v1h-2zM15 27h1v1h-1zM17 27h1v1h-1zM19 27h1v1h-1zM22 27h1v1h-1zM24 27h1v1h-1zM28 27h2v1h-2zM4 28h1v1h-1zM6 28h3v1h-3zM10 28h1v1h-1zM14 28h1v1h-1zM16 28h1v1h-1zM21 28h2v1h-2zM24 28h5v1h-5zM30 28h3v1h-3zM4 29h1v1h-1zM6 29h3v1h-3zM10 29h1v1h-1zM12 29h1v1h-1zM15 29h1v1h-1zM18 29h3v1h-3zM24 29h2v1h-2zM27 29h3v1h-3zM32 29h1v1h-1zM4 30h1v1h-1zM6 30h3v1h-3zM10 30h1v1h-1zM12 30h3v1h-3zM16 30h1v1h-1zM20 30h5v1h-5zM27 30h1v1h-1zM30 30h1v1h-1zM32 30h1v1h-1zM4 31h1v1h-1zM10 31h1v1h-1zM13 31h3v1h-3zM18 31h1v1h-1zM24 31h1v1h-1zM28 31h2v1h-2zM31 31h1v1h-1zM4 32h7v1h-7zM12 32h2v1h-2zM18 32h2v1h-2zM22 32h5v1h-5zM29 32h1v1h-1zM31 32h1v1h-1z"/></svg>
+<p class="qr-note">On a computer? Point your iPhone camera at this code.</p>
+<!-- beta-qr:end -->
+</div>
 <ol class="expect">
 <li>You install Apple's TestFlight app first, then AlgorithmLens through it.</li>
 <li>A scan is about two minutes of scrolling.</li>
@@ -945,7 +960,7 @@ html{scroll-behavior:auto}
 <div class="wrap grid launch-grid">
 <div class="launch-copy">
 <p class="sec-head" data-reveal><span class="num">09</span><span class="label eyebrow">Launch list</span></p>
-<h2 id="launchHeading" data-reveal>Not on iPhone yet?</h2>
+<h2 id="launchHeading" data-reveal>Prefer to wait for the App Store?</h2>
 <p class="lede" id="launchLede" data-reveal>One email when AlgorithmLens is on the App Store. Nothing else.</p>
 </div>
 <form id="launchForm" class="card signup" data-reveal>
@@ -953,8 +968,9 @@ html{scroll-behavior:auto}
 <input id="email" name="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com" aria-describedby="formStatus" aria-invalid="false">
 <p id="formStatus" role="status" aria-live="polite"></p>
 <label class="consent"><input type="checkbox" id="consent" required><span>I agree to receive AlgorithmLens launch updates by email. I can withdraw at any time by writing to privacy@algorithmlens.com.</span></label>
+<label class="consent"><input type="checkbox" id="android"><span>Tell me about Android. <span class="opt">Optional. The app is iPhone only for now.</span></span></label>
 <button type="submit" class="button" id="submit">Join the launch list</button>
-<p class="note">This form asks only for an email address and your consent to receive launch updates. Your address is used for launch news and nothing else, and is never sold. To be removed, write to <a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a>. Details are in the <a href="/privacy/">privacy policy</a>.</p>
+<p class="note">This form asks only for an email address and your consent to receive launch updates. If you tick the Android box, that choice is saved with your address. Your address is used for launch news and nothing else, and is never sold. To be removed, write to <a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a>. Details are in the <a href="/privacy/">privacy policy</a>.</p>
 </form>
 </div>
 </section>
