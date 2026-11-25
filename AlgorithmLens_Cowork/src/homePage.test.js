@@ -270,3 +270,30 @@ describe('the three report views on the home page', () => {
     expect(home).toContain('<div class="stage" id="stage" aria-hidden="true"></div>');
   });
 });
+
+describe('the questions section', () => {
+  const faq = home.slice(home.indexOf('<section id="faq"'), home.indexOf('<section id="launch"'));
+  const page = (file) => lf(readFileSync(new URL(`../public/${file}`, import.meta.url), 'utf8'));
+  const documents = { '/privacy/': page('privacy/index.html'), '/terms': page('terms.html'), '/methodology': page('methodology.html') };
+
+  it('asks five questions and gives each answer a source', () => {
+    const questions = faq.match(/<h3>[^<]+<\/h3>/g) || [];
+    expect(questions).toHaveLength(5);
+    expect((faq.match(/<p class="src">/g) || [])).toHaveLength(5);
+  });
+
+  it('every source link lands on a heading that exists in the document it names', () => {
+    const links = [...faq.matchAll(/<p class="src">(.*?)<\/p>/gs)].flatMap((m) => [...m[1].matchAll(/href="([^"]+)"/g)].map((x) => x[1]));
+    expect(links.length).toBeGreaterThanOrEqual(5);
+    for (const href of links) {
+      const [path, id] = href.split('#');
+      expect(Object.keys(documents)).toContain(path);
+      if (id) expect(documents[path]).toContain(` id="${id}"`);
+    }
+  });
+
+  it('points the Android answer at the launch form, which has the box it names', () => {
+    expect(faq).toContain('tick "Tell me about Android" on the <a href="#launch">launch list form</a>');
+    expect(home).toContain('<input type="checkbox" id="android"><span>Tell me about Android.');
+  });
+});

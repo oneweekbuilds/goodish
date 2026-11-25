@@ -540,7 +540,22 @@ h1{font-size:clamp(64px,8.8vw,126px);margin:22px 0 32px}
 .tally i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--mark);margin-right:10px;vertical-align:1px}
 .tally i.ad{background:var(--blue)}
 .tally i.un{background:transparent;border:1px solid var(--muted)}
-/* 09 launch list */
+/* 09 questions: a ruled ledger, the question on the left, the answer and where it comes from on the right */
+.faq{border-top:2px solid var(--ink)}
+.qa{display:grid;gap:10px;padding:22px 0 24px;border-bottom:1px solid var(--line)}
+.qa h3{font-size:24px;line-height:30px;text-wrap:balance}
+.qa .a{display:flex;flex-direction:column;gap:10px}
+.qa p{font-size:16px;line-height:25px;max-width:62ch}
+.qa .src{font-size:13px;line-height:19px;color:var(--muted)}
+.qa a{text-underline-offset:3px}
+@media(min-width:900px){
+.qa{grid-template-columns:repeat(12,minmax(0,1fr));column-gap:24px;padding:28px 0 32px}
+.qa h3{grid-column:1/span 5;font-size:28px;line-height:34px}
+.qa .a{grid-column:7/span 6}
+.qa p{font-size:17px;line-height:27px}
+.qa .src{font-size:14px;line-height:20px}
+}
+/* 10 launch list */
 .launch{padding:var(--section) 0}
 .launch-copy{display:flex;flex-direction:column;gap:20px;margin-bottom:28px}
 .signup{padding:20px;border-radius:20px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow-panel);width:100%;max-width:560px}
@@ -707,7 +722,8 @@ html{scroll-behavior:auto}
 <li><a href="#privacy"><i aria-hidden="true">06</i>Privacy</a></li>
 <li><a href="#ways"><i aria-hidden="true">07</i>In use</a></li>
 <li><a href="#trust"><i aria-hidden="true">08</i>Methodology</a></li>
-<li><a href="#launch"><i aria-hidden="true">09</i>Launch list</a></li>
+<li><a href="#faq"><i aria-hidden="true">09</i>Questions</a></li>
+<li><a href="#launch"><i aria-hidden="true">10</i>Launch list</a></li>
 </ol>
 </div>
 </nav>
@@ -1043,10 +1059,59 @@ html{scroll-behavior:auto}
 </div>
 </section>
 
+<section id="faq" class="section band">
+<div class="wrap">
+<div class="sec-top grid">
+<div class="sec-title">
+<p class="sec-head" data-reveal><span class="num">09</span><span class="label eyebrow">Questions</span></p>
+<h2 data-reveal>Fair questions, short answers.</h2>
+</div>
+<div class="sec-lede"><p class="lede" data-reveal>Each answer comes from the privacy policy, the Terms or the methodology, and says which.</p></div>
+</div>
+<div class="faq">
+<div class="qa" data-reveal>
+<h3>Does it see my messages and notifications?</h3>
+<div class="a">
+<p>It can, if they are on your screen while you record. A scan is a recording of the screen, so a notification or a message that appears during it is captured along with the feed. Those frames are sent to Google's Gemini API to be read by software, like any others, then deleted from your phone, and no person reviews them. Close sensitive apps before you start a scan.</p>
+<p class="src">From the <a href="/privacy/#1-information-we-collect">privacy policy, section 1.2</a>.</p>
+</div>
+</div>
+<div class="qa" data-reveal>
+<h3>Who receives the recording?</h3>
+<div class="a">
+<p>Google, and no one else. When you approve the analysis, the frames (compressed images of your screen and the text recognized on them) go from your phone to Google's Gemini API to be read. They are then deleted from your phone, and AlgorithmLens keeps no copy of them: what is saved to your account is the results as text, not images. If you separately join the optional research study, the text read from each post, never an image, is also sent to a second service, TypeSafe AI.</p>
+<p class="src">From the <a href="/privacy/#3-how-screen-recordings-are-processed">privacy policy, section 3</a>, and the <a href="/methodology#where-the-data-goes">methodology, where the data goes</a>.</p>
+</div>
+</div>
+<div class="qa" data-reveal>
+<h3>Is it really free?</h3>
+<div class="a">
+<p>Yes. The Terms say AlgorithmLens is currently free to use, with no subscriptions, no paid tiers and no in-app purchases, and that it does not process payments. If paid features are ever introduced, the Terms will be updated with the pricing before any charge applies. The privacy policy says your data is not sold and is not used for advertising.</p>
+<p class="src">From the <a href="/terms#7-pricing">Terms, section 7</a>, and the <a href="/privacy/#10-what-we-do-not-do">privacy policy, section 10</a>.</p>
+</div>
+</div>
+<div class="qa" data-reveal>
+<h3>Why TestFlight?</h3>
+<div class="a">
+<p>The app is still in public beta, and the beta is distributed through Apple's TestFlight. It runs on iPhone, iOS 15.1 and later. If you would rather wait for the App Store, the launch list below sends one email when the app is there.</p>
+<p class="src">From the <a href="/terms#1-what-algorithmlens-does">Terms, section 1</a>, and the <a href="/methodology">methodology</a>.</p>
+</div>
+</div>
+<div class="qa" data-reveal>
+<h3>Is there an Android version?</h3>
+<div class="a">
+<p>No. AlgorithmLens is iPhone only for now. To hear if that changes, tick "Tell me about Android" on the <a href="#launch">launch list form</a> below.</p>
+<p class="src">From the <a href="/methodology">methodology</a>, which describes an iPhone app in a TestFlight beta.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+
 <section id="launch" class="dots launch">
 <div class="wrap grid launch-grid">
 <div class="launch-copy">
-<p class="sec-head" data-reveal><span class="num">09</span><span class="label eyebrow">Launch list</span></p>
+<p class="sec-head" data-reveal><span class="num">10</span><span class="label eyebrow">Launch list</span></p>
 <h2 id="launchHeading" data-reveal>Prefer to wait for the App Store?</h2>
 <p class="lede" id="launchLede" data-reveal>One email when AlgorithmLens is on the App Store. Nothing else.</p>
 </div>
@@ -1073,7 +1138,7 @@ html{scroll-behavior:auto}
 <p>A feed, made legible. Example data on this page is fictional, except the one real scan marked as such.</p>
 </div>
 <div class="foot-cols">
-<nav class="foot-col product" aria-label="Product"><b>Product</b><a href="#report">The report</a><a href="#how">How it works</a><a href="#limits">Read the limits</a><a href="/explore/">Explore the example</a></nav>
+<nav class="foot-col product" aria-label="Product"><b>Product</b><a href="#report">The report</a><a href="#how">How it works</a><a href="#limits">Read the limits</a><a href="#faq">Questions</a><a href="/explore/">Explore the example</a></nav>
 <nav class="foot-col company" aria-label="Company"><b>Company</b><a href="/about/">About</a><a href="/methodology">Methodology</a><a href="#privacy">Privacy</a><a href="mailto:privacy@algorithmlens.com">privacy@algorithmlens.com</a></nav>
 <nav class="foot-col legal" aria-label="Legal"><b>Legal</b><a href="/privacy/">Privacy policy</a><a href="/terms">Terms</a></nav>
 </div>
